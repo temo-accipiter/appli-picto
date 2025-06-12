@@ -1,9 +1,11 @@
 #!/bin/bash
 
-echo "🚀 Lancement du backend..."
+echo "🚀 Lancement du BACKEND..."
 cd backend
 yarn dev &
 
-echo "🎨 Lancement du frontend..."
+sleep 2
+
+echo "🎨 Lancement du FRONTEND..."
 cd ../frontend
 yarn dev
