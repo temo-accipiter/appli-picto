@@ -22,6 +22,7 @@ import Checkbox from '@/components/fields/checkbox/Checkbox'
 import Modal from '@/components/modal/Modal'
 import Input from '@/components/fields/input/Input'
 import ItemForm from '@/components/forms/ItemForm'
+import EditionSidebar from '@/components/edition-sidebar/EditionSidebar'
 import { addRecompense } from '@/utils/api'
 import './Edition.scss'
 
@@ -122,203 +123,208 @@ export default function Edition() {
 
   return (
     <div className="page-edition">
-      <h1>🛠️ Édition</h1>
+      <EditionSidebar onAddTask={() => setModalTacheOpen(true)} />
+      <div className="edition-content">
+        <h1>🛠️ Édition</h1>
 
-      <div className="edition-buttons">
-        <Button
-          label="➕ Ajouter une tâche"
-          variant="primary"
-          onClick={() => setModalTacheOpen(true)}
-        />
-        <Button
-          label="🏱 Ajouter une récompense"
-          variant="primary"
-          onClick={() => setModalRecompenseOpen(true)}
-        />
-        <Button
-          label="⚙️ Gérer catégories"
-          variant="secondary"
-          onClick={() => setManageCatOpen(true)}
-        />
+        <div className="edition-buttons">
+          <Button
+            label="➕ Ajouter une tâche"
+            variant="primary"
+            onClick={() => setModalTacheOpen(true)}
+          />
+          <Button
+            label="🏱 Ajouter une récompense"
+            variant="primary"
+            onClick={() => setModalRecompenseOpen(true)}
+          />
+          <Button
+            label="⚙️ Gérer catégories"
+            variant="secondary"
+            onClick={() => setManageCatOpen(true)}
+          />
 
-        <Select
-          id="filter-category"
-          label="Filtrer par catégorie"
-          options={[{ value: 'all', label: 'Toutes' }, ...categories]}
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        />
+          <Select
+            id="filter-category"
+            label="Filtrer par catégorie"
+            options={[{ value: 'all', label: 'Toutes' }, ...categories]}
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+          />
 
-        <Checkbox
-          id="filter-done"
-          label="Tâches cochées seulement"
-          checked={filterDone}
-          onChange={(e) => setFilterDone(e.target.checked)}
-        />
-
-        {!loadingParam && (
           <Checkbox
-            id="confettis"
-            className="confettis-checkbox"
-            label={
-              parametres.confettis
-                ? '🎉 Confettis activés'
-                : '🎊 Confettis désactivés'
-            }
-            checked={parametres.confettis}
-            onChange={(e) => updateParametres({ confettis: e.target.checked })}
+            id="filter-done"
+            label="Tâches cochées seulement"
+            checked={filterDone}
+            onChange={(e) => setFilterDone(e.target.checked)}
           />
-        )}
 
-        <Button
-          label="♻️ Réinitialiser"
-          variant="reset"
-          onClick={() => setShowConfirmReset(true)}
-        />
-      </div>
+          {!loadingParam && (
+            <Checkbox
+              id="confettis"
+              className="confettis-checkbox"
+              label={
+                parametres.confettis
+                  ? '🎉 Confettis activés'
+                  : '🎊 Confettis désactivés'
+              }
+              checked={parametres.confettis}
+              onChange={(e) =>
+                updateParametres({ confettis: e.target.checked })
+              }
+            />
+          )}
 
-      <ChecklistTachesEdition
-        items={visibleTaches}
-        categories={categories}
-        onToggleAujourdhui={toggleAujourdhui}
-        onUpdateLabel={updateLabel}
-        onUpdateCategorie={updateCategorie}
-        onDelete={(t) => setTacheASupprimer(t)}
-      />
+          <Button
+            label="♻️ Réinitialiser"
+            variant="reset"
+            onClick={() => setShowConfirmReset(true)}
+          />
+        </div>
 
-      <ChecklistRecompensesEdition
-        items={recompenses}
-        onDelete={(r) => setRecompenseASupprimer(r)}
-        onToggleSelect={toggleSelectRecompense}
-      />
-
-      {/* Modals */}
-      <Modal
-        isOpen={showConfirmReset}
-        onClose={() => setShowConfirmReset(false)}
-        actions={[
-          { label: 'Annuler', onClick: () => setShowConfirmReset(false) },
-          {
-            label: 'Confirmer',
-            variant: 'primary',
-            onClick: () => {
-              resetEdition()
-              setShowConfirmReset(false)
-            },
-          },
-        ]}
-      >
-        <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
-      </Modal>
-
-      <Modal
-        isOpen={!!recompenseASupprimer}
-        onClose={() => setRecompenseASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setRecompenseASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => {
-              deleteRecompense(recompenseASupprimer.id)
-              setRecompenseASupprimer(null)
-            },
-          },
-        ]}
-      >
-        <p>❗ Supprimer la récompense “{recompenseASupprimer?.label}” ?</p>
-      </Modal>
-
-      <Modal
-        isOpen={!!tacheASupprimer}
-        onClose={() => setTacheASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setTacheASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => {
-              deleteTache(tacheASupprimer.id)
-              setTacheASupprimer(null)
-            },
-          },
-        ]}
-      >
-        <p>❗ Supprimer la tâche “{tacheASupprimer?.label}” ?</p>
-      </Modal>
-
-      <Modal
-        isOpen={modalTacheOpen}
-        onClose={() => setModalTacheOpen(false)}
-        actions={[]}
-      >
-        <ItemForm
-          includeCategory
+        <ChecklistTachesEdition
+          items={visibleTaches}
           categories={categories}
-          onSubmit={handleSubmitTask}
+          onToggleAujourdhui={toggleAujourdhui}
+          onUpdateLabel={updateLabel}
+          onUpdateCategorie={updateCategorie}
+          onDelete={(t) => setTacheASupprimer(t)}
         />
-      </Modal>
 
-      <Modal
-        isOpen={modalRecompenseOpen}
-        onClose={() => setModalRecompenseOpen(false)}
-        actions={[]}
-      >
-        <ItemForm includeCategory={false} onSubmit={handleSubmitReward} />
-      </Modal>
+        <ChecklistRecompensesEdition
+          items={recompenses}
+          onDelete={(r) => setRecompenseASupprimer(r)}
+          onToggleSelect={toggleSelectRecompense}
+        />
 
-      <Modal
-        isOpen={manageCatOpen}
-        onClose={() => setManageCatOpen(false)}
-        title="Gérer les catégories"
-        actions={[]}
-      >
-        <ul className="category-list">
-          {categories
-            .filter((c) => c.value !== 'none')
-            .map((cat) => (
-              <li key={cat.value} className="category-list__item">
-                {cat.label}
-                <button
-                  className="category-list__delete-btn"
-                  onClick={() => setCatASupprimer(cat.value)}
-                  aria-label={`Supprimer la catégorie ${cat.label}`}
-                >
-                  🗑️
-                </button>
-              </li>
-            ))}
-        </ul>
-        <form className="category-form" onSubmit={handleAddCategory}>
-          <Input
-            id="new-category"
-            label="Nouvelle catégorie"
-            value={newCatLabel}
-            onChange={(e) => setNewCatLabel(e.target.value)}
+        {/* Modals */}
+        <Modal
+          isOpen={showConfirmReset}
+          onClose={() => setShowConfirmReset(false)}
+          actions={[
+            { label: 'Annuler', onClick: () => setShowConfirmReset(false) },
+            {
+              label: 'Confirmer',
+              variant: 'primary',
+              onClick: () => {
+                resetEdition()
+                setShowConfirmReset(false)
+              },
+            },
+          ]}
+        >
+          <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
+        </Modal>
+
+        <Modal
+          isOpen={!!recompenseASupprimer}
+          onClose={() => setRecompenseASupprimer(null)}
+          actions={[
+            { label: 'Annuler', onClick: () => setRecompenseASupprimer(null) },
+            {
+              label: 'Supprimer',
+              variant: 'primary',
+              onClick: () => {
+                deleteRecompense(recompenseASupprimer.id)
+                setRecompenseASupprimer(null)
+              },
+            },
+          ]}
+        >
+          <p>❗ Supprimer la récompense “{recompenseASupprimer?.label}” ?</p>
+        </Modal>
+
+        <Modal
+          isOpen={!!tacheASupprimer}
+          onClose={() => setTacheASupprimer(null)}
+          actions={[
+            { label: 'Annuler', onClick: () => setTacheASupprimer(null) },
+            {
+              label: 'Supprimer',
+              variant: 'primary',
+              onClick: () => {
+                deleteTache(tacheASupprimer.id)
+                setTacheASupprimer(null)
+              },
+            },
+          ]}
+        >
+          <p>❗ Supprimer la tâche “{tacheASupprimer?.label}” ?</p>
+        </Modal>
+
+        <Modal
+          isOpen={modalTacheOpen}
+          onClose={() => setModalTacheOpen(false)}
+          actions={[]}
+        >
+          <ItemForm
+            includeCategory
+            categories={categories}
+            onSubmit={handleSubmitTask}
           />
-          <Button variant="primary" label="Ajouter" type="submit" />
-        </form>
-      </Modal>
+        </Modal>
 
-      <Modal
-        isOpen={!!catASupprimer}
-        onClose={() => setCatASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setCatASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => handleRemoveCategory(catASupprimer),
-          },
-        ]}
-      >
-        <p>
-          ❗ Supprimer la catégorie “
-          {categories.find((c) => c.value === catASupprimer)?.label}” ?
-          <br />
-          Les tâches associées seront réattribuées à “Pas de catégorie”.
-        </p>
-      </Modal>
+        <Modal
+          isOpen={modalRecompenseOpen}
+          onClose={() => setModalRecompenseOpen(false)}
+          actions={[]}
+        >
+          <ItemForm includeCategory={false} onSubmit={handleSubmitReward} />
+        </Modal>
+
+        <Modal
+          isOpen={manageCatOpen}
+          onClose={() => setManageCatOpen(false)}
+          title="Gérer les catégories"
+          actions={[]}
+        >
+          <ul className="category-list">
+            {categories
+              .filter((c) => c.value !== 'none')
+              .map((cat) => (
+                <li key={cat.value} className="category-list__item">
+                  {cat.label}
+                  <button
+                    className="category-list__delete-btn"
+                    onClick={() => setCatASupprimer(cat.value)}
+                    aria-label={`Supprimer la catégorie ${cat.label}`}
+                  >
+                    🗑️
+                  </button>
+                </li>
+              ))}
+          </ul>
+          <form className="category-form" onSubmit={handleAddCategory}>
+            <Input
+              id="new-category"
+              label="Nouvelle catégorie"
+              value={newCatLabel}
+              onChange={(e) => setNewCatLabel(e.target.value)}
+            />
+            <Button variant="primary" label="Ajouter" type="submit" />
+          </form>
+        </Modal>
+
+        <Modal
+          isOpen={!!catASupprimer}
+          onClose={() => setCatASupprimer(null)}
+          actions={[
+            { label: 'Annuler', onClick: () => setCatASupprimer(null) },
+            {
+              label: 'Supprimer',
+              variant: 'primary',
+              onClick: () => handleRemoveCategory(catASupprimer),
+            },
+          ]}
+        >
+          <p>
+            ❗ Supprimer la catégorie “
+            {categories.find((c) => c.value === catASupprimer)?.label}” ?
+            <br />
+            Les tâches associées seront réattribuées à “Pas de catégorie”.
+          </p>
+        </Modal>
+      </div>
     </div>
   )
 }
