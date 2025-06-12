@@ -1,0 +1,75 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+.metro-line {
+  margin-bottom: $spacing-xl;
+  text-align: center;
+
+  .metro-svg {
+    width: 100%;
+    max-width: rem(400);
+    animation: moveMetro 6s linear infinite;
+
+    @include respond-to(xs) {
+      max-width: rem(260);
+    }
+  }
+
+  circle {
+    transition: fill $transition-base ease;
+  }
+}
+
+.recompense-final {
+  margin-top: rem(48);
+  padding: rem(24);
+  text-align: center;
+  background-color: gray(200);
+  border-radius: $radius-lg;
+  box-shadow: 0 rem(6) rem(15) rgba(var(--color-text-rgb), 0.2);
+  transition:
+    transform $transition-base ease,
+    filter $transition-base ease,
+    opacity $transition-base ease;
+  opacity: 0.6;
+  filter: grayscale(100%);
+  max-width: rem(300);
+  margin-inline: auto;
+
+  img {
+    width: rem(150);
+    height: rem(150);
+    object-fit: contain;
+    margin-bottom: $spacing-md;
+
+    @include respond-to(xs) {
+      width: rem(100);
+      height: rem(100);
+    }
+  }
+
+  h3 {
+    font-size: rem(22.4);
+    margin-top: $spacing-xs;
+
+    @include respond-to(xs) {
+      font-size: rem(18);
+    }
+  }
+
+  @include respond-to(xs) {
+    padding: $spacing-lg;
+    max-width: rem(260);
+  }
+
+  &.active {
+    background-color: color.adjust($color-success, $lightness: 20%);
+    filter: none;
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.titre-recompense {
+  text-align: center;
+}

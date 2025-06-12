@@ -1,0 +1,29 @@
+@use '@styles/abstracts' as *;
+
+.item-form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  // Preview de l'image
+  &__image-preview {
+    margin-top: $spacing-sm;
+    display: flex;
+    justify-content: center;
+
+    img {
+      max-width: rem(100); // largeur max 100px
+      max-height: rem(100); // hauteur max 100px
+      object-fit: contain;
+      border: 1px solid gray(300);
+      border-radius: $radius-sm;
+      box-shadow: $box-shadow;
+    }
+  }
+
+  // Bouton submit aligné à droite
+  button.btn {
+    align-self: flex-end;
+    margin-top: $spacing-md;
+  }
+}

@@ -1,0 +1,31 @@
+// _reset.scss
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Désactive les marges système résiduelles */
+body {
+  margin: 0;
+}
+
+/* Images et médias adaptatifs */
+img,
+picture,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Uniformise le comportement scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Désactive les styles système par défaut des boutons */
+button {
+  all: unset;
+  cursor: pointer;
+}

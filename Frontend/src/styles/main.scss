@@ -1,0 +1,13 @@
+@charset "UTF-8";
+
+// 1. 💡 Variables Sass, mixins, fonctions (tout vient de abstracts/_index.scss)
+@use '@styles/abstracts' as *;
+
+// 2. 📦 Librairies externes (ex: normalize.css)
+@use '@styles/vendors' as *;
+
+// 3. 🎨 Variables CSS dynamiques (gérées via :root et [data-theme])
+@use '@styles/themes' as *;
+
+// 4. 🧱 Styles globaux (reset, base typographique, helpers, animations)
+@use '@styles/base' as *;
