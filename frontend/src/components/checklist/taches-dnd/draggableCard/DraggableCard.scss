@@ -1,0 +1,35 @@
+@use '@styles/abstracts' as *;
+
+.draggable-card {
+  @include card-style;
+  @include transition-smooth;
+
+  cursor: grab;
+  user-select: none;
+
+  // Drag actif
+  &.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    transform: scale(0.98);
+  }
+
+  // Hover (si non touch)
+  @include on-event {
+    background-color: var(--color-hover);
+    transform: scale(1.02);
+  }
+
+  // 📱 Responsive
+  @include respond-to(xs) {
+    padding: $spacing-xs;
+  }
+
+  @include respond-to(sm) {
+    padding: $spacing-sm;
+  }
+
+  @include respond-to(md) {
+    padding: $spacing-md;
+  }
+}

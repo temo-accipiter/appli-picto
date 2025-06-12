@@ -1,0 +1,120 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+.checklist-edition {
+  padding: $spacing-xl;
+
+  .liste-taches-edition {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+  }
+
+  .tache-edition {
+    background: var(--pastel-color, #f0f8ff);
+    border-radius: $radius-lg;
+    padding: $spacing-md;
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    box-shadow: $box-shadow;
+    min-width: rem(200);
+    max-width: rem(400);
+    flex: 1 1 rem(300);
+
+    @include transition-smooth;
+
+    &.active {
+      border: rem(2) solid $color-success;
+      background-color: color.adjust($color-success, $lightness: 40%);
+    }
+
+    .tache-icon {
+      width: rem(40);
+      height: rem(40);
+      object-fit: contain;
+      flex-shrink: 0;
+      display: block;
+      max-width: 100%;
+    }
+
+    span {
+      flex: 1;
+      font-weight: $font-weight-semibold;
+    }
+
+    input[type='checkbox'] {
+      transform: scale(1.4);
+      cursor: pointer;
+      accent-color: $color-success;
+    }
+
+    // 📱 Responsive : stack verticalement les éléments
+    @include respond-to(xs) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: $spacing-sm;
+
+      .tache-icon {
+        margin-bottom: $spacing-xs;
+      }
+
+      span,
+      .editable-label,
+      .editable-categorie {
+        width: 100%;
+      }
+
+      input[type='checkbox'] {
+        align-self: flex-end;
+      }
+    }
+  }
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: $color-error;
+  font-size: $font-size-lg;
+  cursor: pointer;
+
+  @include transition-smooth;
+
+  &:hover {
+    color: color.adjust($color-error, $lightness: -10%);
+  }
+}
+
+.edition-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $spacing-xl;
+}
+
+.reset-selection-btn {
+  background-color: color.adjust($color-warning, $lightness: 30%);
+  color: $color-text;
+  border: none;
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+  font-weight: $font-weight-bold;
+  cursor: pointer;
+
+  @include transition-smooth;
+
+  &:hover {
+    background-color: color.adjust($color-warning, $lightness: 15%);
+  }
+}
+
+.editable-label,
+.editable-categorie {
+  width: 100%;
+  padding: $spacing-xs;
+  margin-bottom: $spacing-sm;
+  border-radius: $radius-sm;
+  border: rem(1) solid gray(300);
+  background-color: $color-surface;
+  color: $color-text;
+}
