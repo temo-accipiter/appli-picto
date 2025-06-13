@@ -1,0 +1,73 @@
+@use '@styles/abstracts' as *;
+
+.dropdown-ajout {
+  position: relative;
+
+  .dropdown-btn {
+    padding: $spacing-sm $spacing-md;
+    background-color: var(--color-primary);
+    color: var(--color-text-invert);
+    border: none;
+    border-radius: $radius-md;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+    transition:
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    @include on-event {
+      background-color: var(--color-hover);
+      color: var(--color-text);
+      box-shadow: $box-shadow-hover;
+    }
+
+    &:focus-visible {
+      outline: rem(2) dashed var(--color-accent);
+      outline-offset: rem(2);
+    }
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + $spacing-xs);
+    right: 0;
+    background-color: var(--color-surface);
+    border-radius: $radius-md;
+    box-shadow: $box-shadow;
+    padding: $spacing-xs 0;
+    min-width: rem(180);
+    z-index: $z-overlay;
+    display: flex;
+    flex-direction: column;
+
+    .menu-item {
+      background: none;
+      border: none;
+      color: var(--color-text);
+      text-align: left;
+      padding: $spacing-sm $spacing-md;
+      cursor: pointer;
+      border-radius: $radius-sm;
+      font-size: $font-size-base;
+      width: 100%;
+      transition: background-color 0.15s ease;
+
+      @include on-event {
+        background-color: var(--color-hover);
+      }
+
+      &:focus-visible {
+        outline: rem(2) dashed var(--color-accent);
+        outline-offset: rem(2);
+      }
+    }
+  }
+
+  @include respond-to(xs) {
+    .dropdown-menu {
+      left: 0;
+      right: auto;
+      min-width: 100%;
+    }
+  }
+}
