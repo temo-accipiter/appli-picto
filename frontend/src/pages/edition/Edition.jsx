@@ -23,6 +23,7 @@ import Modal from '@/components/modal/Modal'
 import Input from '@/components/fields/input/Input'
 import ItemForm from '@/components/forms/ItemForm'
 import { addRecompense } from '@/utils/api'
+import DropdownAjout from '@/components/dropdownAjout/DropdownAjout'
 import './Edition.scss'
 
 export default function Edition() {
@@ -125,20 +126,10 @@ export default function Edition() {
       <h1>🛠️ Édition</h1>
 
       <div className="edition-buttons">
-        <Button
-          label="➕ Ajouter une tâche"
-          variant="primary"
-          onClick={() => setModalTacheOpen(true)}
-        />
-        <Button
-          label="🏱 Ajouter une récompense"
-          variant="primary"
-          onClick={() => setModalRecompenseOpen(true)}
-        />
-        <Button
-          label="⚙️ Gérer catégories"
-          variant="secondary"
-          onClick={() => setManageCatOpen(true)}
+        <DropdownAjout
+          setModalTacheOpen={setModalTacheOpen}
+          setModalRecompenseOpen={setModalRecompenseOpen}
+          setManageCatOpen={setManageCatOpen}
         />
 
         <Select
