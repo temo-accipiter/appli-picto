@@ -6,17 +6,6 @@
 }
 
 .page-edition {
-  display: flex;
-  gap: $spacing-lg;
-
-  @include respond-to(sm) {
-    flex-direction: column;
-  }
-
-  .edition-content {
-    flex: 1;
-  }
-
   .edition-buttons {
     display: flex;
     flex-wrap: wrap;
