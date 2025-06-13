@@ -23,12 +23,16 @@ import Modal from '@/components/modal/Modal'
 import Input from '@/components/fields/input/Input'
 import ItemForm from '@/components/forms/ItemForm'
 import { addRecompense } from '@/utils/api'
+import DropdownAjout from '@/components/dropdownAjout/DropdownAjout'
+import ModalRecompensesChoix from '@/components/modalRecompensesChoix/ModalRecompensesChoix'
 import './Edition.scss'
 
 export default function Edition() {
   // États modals & reload
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [modalRecompenseOpen, setModalRecompenseOpen] = useState(false)
+  const [modalRecompensesChoixOpen, setModalRecompensesChoixOpen] =
+    useState(false)
   const [showConfirmReset, setShowConfirmReset] = useState(false)
 
   // Gestion catégories
@@ -125,20 +129,10 @@ export default function Edition() {
       <h1>🛠️ Édition</h1>
 
       <div className="edition-buttons">
-        <Button
-          label="➕ Ajouter une tâche"
-          variant="primary"
-          onClick={() => setModalTacheOpen(true)}
-        />
-        <Button
-          label="🏱 Ajouter une récompense"
-          variant="primary"
-          onClick={() => setModalRecompenseOpen(true)}
-        />
-        <Button
-          label="⚙️ Gérer catégories"
-          variant="secondary"
-          onClick={() => setManageCatOpen(true)}
+        <DropdownAjout
+          setModalTacheOpen={setModalTacheOpen}
+          setModalRecompenseOpen={setModalRecompenseOpen}
+          setManageCatOpen={setManageCatOpen}
         />
 
         <Select
@@ -169,6 +163,12 @@ export default function Edition() {
             onChange={(e) => updateParametres({ confettis: e.target.checked })}
           />
         )}
+
+        <Button
+          label="🎁 Récompenses"
+          variant="primary"
+          onClick={() => setModalRecompensesChoixOpen(true)}
+        />
 
         <Button
           label="♻️ Réinitialiser"
@@ -266,6 +266,14 @@ export default function Edition() {
       >
         <ItemForm includeCategory={false} onSubmit={handleSubmitReward} />
       </Modal>
+
+      <ModalRecompensesChoix
+        isOpen={modalRecompensesChoixOpen}
+        onClose={() => setModalRecompensesChoixOpen(false)}
+        items={recompenses}
+        onDelete={(r) => setRecompenseASupprimer(r)}
+        onToggleSelect={toggleSelectRecompense}
+      />
 
       <Modal
         isOpen={manageCatOpen}

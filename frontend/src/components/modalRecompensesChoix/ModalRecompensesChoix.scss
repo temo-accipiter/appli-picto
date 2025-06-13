@@ -1,0 +1,101 @@
+@use '@styles/abstracts' as *;
+
+.modal-recompenses-choix {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  justify-content: center;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: $spacing-md;
+
+  .recompense-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: var(--pastel-color, #eaf6ff);
+    border-radius: $radius-md;
+    padding: $spacing-md;
+    width: rem(120);
+    max-width: rem(140);
+    box-shadow: $box-shadow;
+    transition:
+      transform $transition-fast ease,
+      box-shadow $transition-fast ease;
+
+    @include on-event {
+      transform: translateY(rem(-2));
+      box-shadow: 0 rem(4) rem(12) rgba($color-text, 0.1);
+    }
+
+    &.active {
+      background-color: $color-info;
+      border: rem(2) solid $color-info-primary;
+    }
+
+    .card-delete-btn {
+      position: absolute;
+      top: $spacing-xxs;
+      right: $spacing-xxs;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: $font-size-sm;
+      color: gray(600);
+      transition: color $transition-fast ease;
+
+      @include on-event {
+        color: $color-error;
+      }
+
+      &:focus-visible {
+        outline: rem(2) dashed $color-accent;
+        outline-offset: rem(2);
+      }
+    }
+
+    .card-label {
+      margin-bottom: $spacing-xs;
+      font-weight: $font-weight-medium;
+      font-size: $font-size-base;
+    }
+
+    .card-icon {
+      width: rem(64);
+      height: rem(64);
+      object-fit: contain;
+      margin-bottom: $spacing-xs;
+      display: block;
+    }
+
+    input[type='checkbox'] {
+      margin-top: $spacing-xs;
+      transform: scale(1.2);
+      cursor: pointer;
+      accent-color: $color-primary;
+    }
+  }
+
+  @include respond-to(sm) {
+    .recompense-card {
+      width: rem(90);
+      max-width: 100%;
+      padding: $spacing-sm;
+
+      .card-icon {
+        width: rem(48);
+        height: rem(48);
+      }
+
+      .card-label {
+        font-size: $font-size-sm;
+      }
+
+      input[type='checkbox'] {
+        transform: scale(1);
+      }
+    }
+  }
+}
