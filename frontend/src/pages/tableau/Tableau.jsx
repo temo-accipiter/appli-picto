@@ -42,7 +42,6 @@ import './Tableau.scss'
 export default function TableauGrille() {
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
-  const [loaded, setLoaded] = useState(false)
 
   const { width, height } = useWindowSize()
   const { parametres } = useParametres()
@@ -51,7 +50,6 @@ export default function TableauGrille() {
     (done, total) => {
       setDoneCount(done)
       setTotalTaches(total)
-      setLoaded(true)
     }
   )
 
@@ -65,13 +63,11 @@ export default function TableauGrille() {
 
   return (
     <div className="tableau-magique">
-      {loaded && (
-        <TrainProgressBar
-          total={totalTaches}
-          done={doneCount}
-          onReset={resetAll}
-        />
-      )}
+      <TrainProgressBar
+        total={totalTaches}
+        done={doneCount}
+        onReset={resetAll}
+      />
 
       <ChecklistTachesDnd
         items={taches}
