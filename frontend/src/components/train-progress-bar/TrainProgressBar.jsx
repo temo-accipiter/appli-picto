@@ -28,15 +28,14 @@ export default function TrainProgressBar({ total, done, onReset }) {
 
   const stations = Array.from({ length: stationCount }, (_, i) => ({
     label: currentStations[i % currentStations.length] || '',
-    left: `${(i / (stationCount - 1)) * 100}%`,
+    left: stationCount > 1 ? `${(i / (stationCount - 1)) * 100}%` : '0%',
     isActive: i === done,
   }))
 
-  const isLast = done === stationCount - 1
+  const isLast = stationCount > 1 && done === stationCount - 1
+  const progress = stationCount > 1 ? (done / (stationCount - 1)) * 100 : 0
   const trainStyle = {
-    left: isLast
-      ? 'calc(100% - 40px)'
-      : `${(done / (stationCount - 1)) * 100}%`,
+    left: isLast ? 'calc(100% - 40px)' : `${progress}%`,
     transform: isLast ? 'none' : 'translateX(-50%)',
   }
 
