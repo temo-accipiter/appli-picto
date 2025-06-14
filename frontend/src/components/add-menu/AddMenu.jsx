@@ -31,23 +31,25 @@ export default function AddMenu({
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="true"
         aria-expanded={open}
+        aria-controls="add-menu-list"
+        aria-label="Menu Ajout"
       >
         Ajout
       </button>
       {open && (
-        <ul className="add-menu__list">
+        <ul id="add-menu-list" className="add-menu__list" role="menu">
           <li>
-            <button onClick={() => handle(onOpenTask)}>
+            <button role="menuitem" onClick={() => handle(onOpenTask)}>
               Ajouter une tâche
             </button>
           </li>
           <li>
-            <button onClick={() => handle(onOpenReward)}>
+            <button role="menuitem" onClick={() => handle(onOpenReward)}>
               Ajouter une récompense
             </button>
           </li>
           <li>
-            <button onClick={() => handle(onOpenCategories)}>
+            <button role="menuitem" onClick={() => handle(onOpenCategories)}>
               Gérer les catégories
             </button>
           </li>
