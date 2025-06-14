@@ -1,0 +1,65 @@
+@use 'sass:color';
+@use '@styles/abstracts' as *;
+
+.edition-navbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm $spacing-md;
+  margin-bottom: $spacing-xl;
+  padding: 0 $spacing-sm;
+
+  > * {
+    @include respond-to(xs) {
+      width: 100%;
+    }
+  }
+
+  .dropdown {
+    position: relative;
+
+    .dropdown-toggle {
+      background-color: $color-primary;
+      color: $color-text-invert;
+      padding: $spacing-xs $spacing-md;
+      border-radius: $radius-sm;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      border: none;
+      box-shadow: $box-shadow;
+
+      @include on-event {
+        background-color: color.adjust($color-primary, $lightness: -8%);
+      }
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + #{$spacing-xs});
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+      background-color: $color-surface;
+      padding: $spacing-sm;
+      border-radius: $radius-sm;
+      box-shadow: $box-shadow;
+      z-index: $z-overlay;
+    }
+  }
+
+  .nav-switch {
+    background-color: $color-secondary;
+    color: $color-text-invert;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-sm;
+    font-weight: $font-weight-semibold;
+    text-decoration: none;
+    box-shadow: $box-shadow;
+
+    @include on-event {
+      background-color: color.adjust($color-secondary, $lightness: -8%);
+    }
+  }
+}

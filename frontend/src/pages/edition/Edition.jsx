@@ -12,13 +12,12 @@
 import { useState } from 'react'
 import ChecklistTachesEdition from '@/components/checklist/taches-edition/ChecklistTachesEdition'
 import ChecklistRecompensesEdition from '@/components/checklist/recompenses-edition/ChecklistRecompensesEdition'
+import EditionNavbar from '@/components/edition-navbar/EditionNavbar'
 import useTachesEdition from '@/hooks/useTachesEdition'
 import useRecompenses from '@/hooks/useRecompenses'
 import useParametres from '@/hooks/useParametres'
 import useCategories from '@/hooks/useCategories'
 import Button from '@/components/button/Button'
-import Select from '@/components/fields/select/Select'
-import Checkbox from '@/components/fields/checkbox/Checkbox'
 import Modal from '@/components/modal/Modal'
 import Input from '@/components/fields/input/Input'
 import ItemForm from '@/components/forms/ItemForm'
@@ -29,6 +28,8 @@ export default function Edition() {
   // États modals & reload
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [modalRecompenseOpen, setModalRecompenseOpen] = useState(false)
+  const [modalChoixRecompenseOpen, setModalChoixRecompenseOpen] =
+    useState(false)
   const [showConfirmReset, setShowConfirmReset] = useState(false)
 
   // Gestion catégories
@@ -122,60 +123,20 @@ export default function Edition() {
 
   return (
     <div className="page-edition">
-      <h1>🛠️ Édition</h1>
-
-      <div className="edition-buttons">
-        <Button
-          label="➕ Ajouter une tâche"
-          variant="primary"
-          onClick={() => setModalTacheOpen(true)}
-        />
-        <Button
-          label="🏱 Ajouter une récompense"
-          variant="primary"
-          onClick={() => setModalRecompenseOpen(true)}
-        />
-        <Button
-          label="⚙️ Gérer catégories"
-          variant="secondary"
-          onClick={() => setManageCatOpen(true)}
-        />
-
-        <Select
-          id="filter-category"
-          label="Filtrer par catégorie"
-          options={[{ value: 'all', label: 'Toutes' }, ...categories]}
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        />
-
-        <Checkbox
-          id="filter-done"
-          label="Tâches cochées seulement"
-          checked={filterDone}
-          onChange={(e) => setFilterDone(e.target.checked)}
-        />
-
-        {!loadingParam && (
-          <Checkbox
-            id="confettis"
-            className="confettis-checkbox"
-            label={
-              parametres.confettis
-                ? '🎉 Confettis activés'
-                : '🎊 Confettis désactivés'
-            }
-            checked={parametres.confettis}
-            onChange={(e) => updateParametres({ confettis: e.target.checked })}
-          />
-        )}
-
-        <Button
-          label="♻️ Réinitialiser"
-          variant="reset"
-          onClick={() => setShowConfirmReset(true)}
-        />
-      </div>
+      <EditionNavbar
+        categories={categories}
+        filterCategory={filterCategory}
+        setFilterCategory={setFilterCategory}
+        filterDone={filterDone}
+        setFilterDone={setFilterDone}
+        confettis={parametres.confettis}
+        setConfettis={(c) => updateParametres({ confettis: c })}
+        onAddTask={() => setModalTacheOpen(true)}
+        onAddReward={() => setModalRecompenseOpen(true)}
+        onManageCategories={() => setManageCatOpen(true)}
+        onChooseReward={() => setModalChoixRecompenseOpen(true)}
+        onReset={() => setShowConfirmReset(true)}
+      />
 
       <ChecklistTachesEdition
         items={visibleTaches}
@@ -184,12 +145,6 @@ export default function Edition() {
         onUpdateLabel={updateLabel}
         onUpdateCategorie={updateCategorie}
         onDelete={(t) => setTacheASupprimer(t)}
-      />
-
-      <ChecklistRecompensesEdition
-        items={recompenses}
-        onDelete={(r) => setRecompenseASupprimer(r)}
-        onToggleSelect={toggleSelectRecompense}
       />
 
       {/* Modals */}
@@ -265,6 +220,18 @@ export default function Edition() {
         actions={[]}
       >
         <ItemForm includeCategory={false} onSubmit={handleSubmitReward} />
+      </Modal>
+
+      <Modal
+        isOpen={modalChoixRecompenseOpen}
+        onClose={() => setModalChoixRecompenseOpen(false)}
+        actions={[]}
+      >
+        <ChecklistRecompensesEdition
+          items={recompenses}
+          onDelete={(r) => setRecompenseASupprimer(r)}
+          onToggleSelect={toggleSelectRecompense}
+        />
       </Modal>
 
       <Modal
