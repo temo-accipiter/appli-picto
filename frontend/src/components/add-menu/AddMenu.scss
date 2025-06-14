@@ -1,0 +1,49 @@
+@use '@styles/abstracts' as *;
+
+.add-menu {
+  position: relative;
+
+  &__button {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  &__list {
+    position: absolute;
+    top: calc(100% + $spacing-xs);
+    left: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-surface);
+    box-shadow: $box-shadow;
+    border-radius: $radius-sm;
+    z-index: $z-overlay;
+
+    li {
+      border-bottom: 1px solid gray(200);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      button {
+        display: block;
+        width: 100%;
+        background: none;
+        border: none;
+        font: inherit;
+        text-align: left;
+        padding: $spacing-xs $spacing-sm;
+        cursor: pointer;
+
+        &:hover,
+        &:focus {
+          background-color: var(--color-bg);
+        }
+      }
+    }
+  }
+}
