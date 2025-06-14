@@ -1,0 +1,18 @@
+@use '@styles/abstracts' as *;
+
+.navbar-edition {
+  position: sticky;
+  top: 0;
+  z-index: $z-modal;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-sm $spacing-lg;
+  background-color: var(--color-bg);
+  box-shadow: $box-shadow;
+
+  &__item {
+    font-weight: $font-weight-medium;
+  }
+}

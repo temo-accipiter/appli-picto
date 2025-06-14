@@ -12,6 +12,7 @@
 import { useState } from 'react'
 import ChecklistTachesEdition from '@/components/checklist/taches-edition/ChecklistTachesEdition'
 import ChecklistRecompensesEdition from '@/components/checklist/recompenses-edition/ChecklistRecompensesEdition'
+import NavbarEdition from '@/components/navbar-edition/NavbarEdition'
 import useTachesEdition from '@/hooks/useTachesEdition'
 import useRecompenses from '@/hooks/useRecompenses'
 import useParametres from '@/hooks/useParametres'
@@ -123,6 +124,8 @@ export default function Edition() {
   return (
     <div className="page-edition">
       <h1>🛠️ Édition</h1>
+
+      <NavbarEdition />
 
       <div className="edition-buttons">
         <Button
