@@ -129,7 +129,7 @@ export default function Edition() {
         setFilterCategory={setFilterCategory}
         filterDone={filterDone}
         setFilterDone={setFilterDone}
-        confettis={parametres.confettis}
+        confettis={parametres?.confettis ?? false}
         setConfettis={(c) => updateParametres({ confettis: c })}
         onAddTask={() => setModalTacheOpen(true)}
         onAddReward={() => setModalRecompenseOpen(true)}
