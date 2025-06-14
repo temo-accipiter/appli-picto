@@ -1,0 +1,11 @@
+@use '@styles/abstracts' as *;
+
+.lang-select {
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-base;
+  border: rem(1) solid var(--color-border);
+  border-radius: $radius-sm;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+}
