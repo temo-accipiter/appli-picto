@@ -55,6 +55,8 @@ export default function Edition() {
     updateParametres,
     loading: loadingParam,
   } = useParametres()
+
+  const confettisActive = parametres?.confettis ?? false
   const {
     taches,
     toggleAujourdhui,
@@ -129,7 +131,7 @@ export default function Edition() {
         setFilterCategory={setFilterCategory}
         filterDone={filterDone}
         setFilterDone={setFilterDone}
-        confettis={parametres?.confettis ?? false}
+        confettis={confettisActive}
         setConfettis={(c) => updateParametres({ confettis: c })}
         onAddTask={() => setModalTacheOpen(true)}
         onAddReward={() => setModalRecompenseOpen(true)}
