@@ -15,4 +15,11 @@
   &__item {
     font-weight: $font-weight-medium;
   }
+
+  &__select {
+    background: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+  }
 }

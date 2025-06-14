@@ -125,7 +125,11 @@ export default function Edition() {
     <div className="page-edition">
       <h1>🛠️ Édition</h1>
 
-      <NavbarEdition />
+      <NavbarEdition
+        onOpenTaskModal={() => setModalTacheOpen(true)}
+        onOpenRewardModal={() => setModalRecompenseOpen(true)}
+        onOpenManageCategories={() => setManageCatOpen(true)}
+      />
 
       <div className="edition-buttons">
         <Button
