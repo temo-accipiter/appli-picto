@@ -1,7 +1,7 @@
 // src/main.jsx
 import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 
 import Layout from '@/components/layout/Layout'
 import '@/i18n/i18n' // 🌍 Initialisation i18n :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
@@ -18,7 +18,8 @@ const router = createBrowserRouter([
     path: '/',
     element: <Layout />,
     children: [
-      { path: '', element: <Tableau /> },
+      { index: true, element: <Navigate to="/tableau" replace /> },
+      { path: 'tableau', element: <Tableau /> },
       { path: 'edition', element: <Edition /> },
       { path: '*', element: <NotFound /> },
     ],
