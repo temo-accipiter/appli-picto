@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import PropTypes from 'prop-types'
 import './AddMenu.scss'
 
 export default function AddMenu({
@@ -6,55 +6,28 @@ export default function AddMenu({
   onOpenReward,
   onOpenCategories,
 }) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef(null)
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (open && menuRef.current && !menuRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
-  }, [open])
-
-  const handle = (fn) => {
-    fn?.()
-    setOpen(false)
+  const handleChange = (e) => {
+    const { value } = e.target
+    if (value === 'task') onOpenTask?.()
+    if (value === 'reward') onOpenReward?.()
+    if (value === 'categories') onOpenCategories?.()
+    e.target.selectedIndex = 0
   }
 
   return (
-    <div className="add-menu" ref={menuRef}>
-      <button
-        className="add-menu__button"
-        onClick={() => setOpen((o) => !o)}
-        aria-haspopup="true"
-        aria-expanded={open}
-        aria-controls="add-menu-list"
-        aria-label="Menu Ajout"
-      >
+    <select className="add-menu" onChange={handleChange} defaultValue="">
+      <option value="" disabled>
         Ajout
-      </button>
-      {open && (
-        <ul id="add-menu-list" className="add-menu__list" role="menu">
-          <li>
-            <button role="menuitem" onClick={() => handle(onOpenTask)}>
-              Ajouter une tâche
-            </button>
-          </li>
-          <li>
-            <button role="menuitem" onClick={() => handle(onOpenReward)}>
-              Ajouter une récompense
-            </button>
-          </li>
-          <li>
-            <button role="menuitem" onClick={() => handle(onOpenCategories)}>
-              Gérer les catégories
-            </button>
-          </li>
-        </ul>
-      )}
-    </div>
+      </option>
+      <option value="task">Ajouter une tâche</option>
+      <option value="reward">Ajouter une récompense</option>
+      <option value="categories">Gérer les catégories</option>
+    </select>
   )
+}
+
+AddMenu.propTypes = {
+  onOpenTask: PropTypes.func.isRequired,
+  onOpenReward: PropTypes.func.isRequired,
+  onOpenCategories: PropTypes.func.isRequired,
 }

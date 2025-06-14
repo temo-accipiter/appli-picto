@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import LangSelect from '@/components/lang-select/LangSelect'
 import ThemeToggle from '@/components/theme-toggle/ThemeToggle'
 import AddMenu from '@/components/add-menu/AddMenu'
@@ -31,4 +32,10 @@ export default function NavbarEdition({
       <div className="navbar-edition__item">Switch</div>
     </nav>
   )
+}
+
+NavbarEdition.propTypes = {
+  onOpenTaskModal: PropTypes.func.isRequired,
+  onOpenRewardModal: PropTypes.func.isRequired,
+  onOpenManageCategories: PropTypes.func.isRequired,
 }
