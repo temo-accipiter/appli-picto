@@ -24,7 +24,7 @@ export default function TrainProgressBar({ total, done, onReset, ready }) {
     }
   }, [loading, ligneStations])
 
-  if (!ready || loading) return null
+  if (!ready || (loading && currentStations.length === 0)) return null
 
   if (error) return <p>Erreur lors du chargement des stations.</p>
 
