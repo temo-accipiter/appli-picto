@@ -16,17 +16,20 @@
 
 import Navbar from '@/components/navbar/Navbar'
 import PageTransition from '@/components/pageTransition/PageTransition'
+import { ProgressProvider } from '@/contexts/ProgressContext'
 import './Layout.scss'
 
 export default function Layout() {
   return (
-    <div className="layout">
-      <div className="layout-main">
-        <Navbar />
-        <main>
-          <PageTransition />
-        </main>
+    <ProgressProvider>
+      <div className="layout">
+        <div className="layout-main">
+          <Navbar />
+          <main>
+            <PageTransition />
+          </main>
+        </div>
       </div>
-    </div>
+    </ProgressProvider>
   )
 }
