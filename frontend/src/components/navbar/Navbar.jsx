@@ -1,9 +1,12 @@
 import { useLocation } from 'react-router-dom'
-import NavbarEdition from './NavbarEdition'
-import NavbarTableau from './NavbarTableau'
+import NavbarEdition from './navbar-edition/NavbarEdition'
+import NavbarTableau from './navbar-tableau/NavbarTableau'
 import './Navbar.scss'
 
 export default function Navbar() {
-  const { pathname } = useLocation()
-  return pathname.startsWith('/edition') ? <NavbarEdition /> : <NavbarTableau />
+  const location = useLocation()
+  if (location.pathname.startsWith('/edition')) {
+    return <NavbarEdition />
+  }
+  return <NavbarTableau />
 }

@@ -16,20 +16,17 @@
 
 import Navbar from '@/components/navbar/Navbar'
 import PageTransition from '@/components/pageTransition/PageTransition'
-import { TableauProvider } from '@/context/TableauContext'
 import './Layout.scss'
 
 export default function Layout() {
   return (
-    <TableauProvider>
-      <div className="layout">
-        <div className="layout-main">
-          <Navbar />
-          <main>
-            <PageTransition />
-          </main>
-        </div>
+    <div className="layout">
+      <div className="layout-main">
+        <Navbar />
+        <main>
+          <PageTransition />
+        </main>
       </div>
-    </TableauProvider>
+    </div>
   )
 }

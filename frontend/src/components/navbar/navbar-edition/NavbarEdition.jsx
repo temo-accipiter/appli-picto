@@ -1,13 +1,13 @@
 import { NavLink } from 'react-router-dom'
-import LangSelector from '@/components/lang-selector/LangSelector'
 import ThemeToggle from '@/components/theme-toggle/ThemeToggle'
+import LangSelector from '@/components/lang-selector/LangSelector'
 
 export default function NavbarEdition() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
         <NavLink
-          to="/"
+          to="/tableau"
           className={({ isActive }) =>
             isActive ? 'nav-link active' : 'nav-link'
           }
@@ -15,7 +15,6 @@ export default function NavbarEdition() {
           Tableau
         </NavLink>
       </div>
-
       <div className="navbar-actions">
         <LangSelector />
         <ThemeToggle />

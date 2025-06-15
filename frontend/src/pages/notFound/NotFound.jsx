@@ -1,18 +1,3 @@
-/**
- * Page : NotFound
- *
- * Rôle :
- *   Affiche la page 404 lorsqu’une route n’existe pas.
- *   • Message indiquant que la page est introuvable.
- *   • Lien de retour à l’accueil.
- *
- * Bibliothèques utilisées :
- *   • Link (react-router-dom) – navigation vers la page d’accueil
- *
- * Props :
- *   (aucune)
- */
-
 import './NotFound.scss'
 import { Link } from 'react-router-dom'
 

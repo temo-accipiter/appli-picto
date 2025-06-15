@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .navbar {
   position: fixed;
@@ -84,65 +83,6 @@
 
     &::after {
       width: 100%;
-    }
-  }
-}
-
-.toolbar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: $spacing-sm;
-  margin: $spacing-md;
-  padding: 0 $spacing-lg;
-  z-index: 10;
-
-  .ligne-select {
-    display: flex;
-    align-items: center;
-    gap: $spacing-xs;
-
-    label {
-      font-weight: $font-weight-medium;
-    }
-
-    select {
-      font-size: $font-size-base;
-      padding: $spacing-xs $spacing-sm;
-      border-radius: $radius-sm;
-      border: rem(1) solid $color-primary;
-      box-shadow: $box-shadow;
-    }
-  }
-
-  .progression {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: #ffffff;
-    text-align: center;
-    background-color: #0a0082;
-    padding: 0.75rem 1.5rem;
-    display: inline-block;
-    box-shadow: $box-shadow;
-    margin: 0;
-  }
-
-  .reset-button {
-    background-color: $color-secondary;
-    color: $color-text-invert;
-    border: none;
-    padding: $spacing-xs $spacing-sm;
-    border-radius: $radius-sm;
-    font-weight: $font-weight-semibold;
-    box-shadow: $box-shadow;
-    cursor: pointer;
-
-    @include transition-smooth;
-
-    @include on-event {
-      background-color: color.adjust($color-secondary, $lightness: -6%);
     }
   }
 }
