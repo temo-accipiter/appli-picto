@@ -1,3 +1,4 @@
+// src/components/train-progress-bar/TrainProgressBar.jsx
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
@@ -33,11 +34,16 @@ export default function TrainProgressBar({ total, done, onReset }) {
   }))
 
   const isLast = done === stationCount - 1
+
   const trainStyle = {
-    left: isLast
-      ? 'calc(100% - 40px)'
-      : `${(done / (stationCount - 1)) * 100}%`,
-    transform: isLast ? 'none' : 'translateX(-50%)',
+    left:
+      done === 0 || total === 0
+        ? '0%'
+        : isLast
+          ? 'calc(100% - 40px)'
+          : `${(done / (stationCount - 1)) * 100}%`,
+    transform:
+      done === 0 || total === 0 || isLast ? 'none' : 'translateX(-50%)',
   }
 
   return (
@@ -51,37 +57,34 @@ export default function TrainProgressBar({ total, done, onReset }) {
           />
         </svg>
 
-        {stations.map(({ label, left, isActive }, index) => {
-          const isLastStation = index === stations.length - 1
-
-          return (
-            <div
-              key={index}
-              className={`station ${isActive ? 'active' : ''} ${done > index && !isLastStation ? 'passed' : ''}`}
-              style={{ left }}
-            >
-              <div className="label" title={label}>
-                {label}
-              </div>
-              {isLastStation ? (
-                <div className={`dot-logo ${isActive ? 'arrivee' : ''}`}>
-                  <img
-                    src={`/src/assets/images/ligne/ligne${ligne}.png`}
-                    alt={`Ligne ${ligne}`}
-                  />
-                </div>
-              ) : (
-                <div className="dot" />
-              )}
+        {/* Affichage des stations sans le logo */}
+        {stations.map(({ label, left, isActive }, index) => (
+          <div
+            key={index}
+            className={`station ${isActive ? 'active' : ''} ${done > index ? 'passed' : ''}`}
+            style={{ left }}
+          >
+            <div className="label" title={label}>
+              {label}
             </div>
-          )
-        })}
+            <div className="dot" />
+          </div>
+        ))}
 
+        {/* Train en mouvement */}
         <div className="train" style={trainStyle}>
           <img
             src="/src/assets/images/train.png"
             alt="Métro"
             className="train-icon"
+          />
+        </div>
+
+        {/* Logo ligne figé à droite */}
+        <div className="dot-logo fixed-logo">
+          <img
+            src={`/src/assets/images/ligne/ligne${ligne}.png`}
+            alt={`Ligne ${ligne}`}
           />
         </div>
       </div>
