@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import Modal from '@/components/modal/Modal'
+import SelectedRecompense from '@/components/selected-recompense/SelectedRecompense'
+import useRecompenses from '@/hooks/useRecompenses'
 import { useProgress } from '@/contexts/ProgressContext'
 
 export default function NavbarTableau() {
   const [showConfirm, setShowConfirm] = useState(false)
   const { ligne, setLigne, done, total, onReset } = useProgress()
+  const { recompenses, selectRecompense } = useRecompenses()
+  const selected = recompenses.find((r) => r.selected === 1)
 
   return (
     <nav className="navbar">
@@ -66,7 +70,20 @@ export default function NavbarTableau() {
           </>
         </div>
       </div>
-      <div className="navbar-actions" />
+      <div className="navbar-actions">
+        {selected && (
+          <>
+            <SelectedRecompense
+              recompense={selected}
+              done={done}
+              total={total}
+              onSelect={selectRecompense}
+              small
+            />
+            <span className="reward-text">Récompense</span>
+          </>
+        )}
+      </div>
     </nav>
   )
 }
