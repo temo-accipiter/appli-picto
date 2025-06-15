@@ -27,7 +27,7 @@
  *   (aucune – page ‘Tableau’ gère tout en interne via hooks)
  */
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
 
@@ -37,15 +37,12 @@ import SelectedRecompense from '@/components/selected-recompense/SelectedRecompe
 import useTachesDnd from '@/hooks/useTachesDnd'
 import useRecompenses from '@/hooks/useRecompenses'
 import useParametres from '@/hooks/useParametres'
-import { useProgress } from '@/contexts/ProgressContext'
 import './Tableau.scss'
 
 export default function TableauGrille() {
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
   const [loaded, setLoaded] = useState(false)
-
-  const { setDone, setTotal, setOnReset } = useProgress()
 
   const { width, height } = useWindowSize()
   const { parametres } = useParametres()
@@ -55,8 +52,6 @@ export default function TableauGrille() {
       setDoneCount(done)
       setTotalTaches(total)
       setLoaded(true)
-      setDone(done)
-      setTotal(total)
     }
   )
 
@@ -68,14 +63,15 @@ export default function TableauGrille() {
   const { recompenses, selectRecompense } = useRecompenses()
   const selected = recompenses.find((r) => r.selected === 1)
 
-  useEffect(() => {
-    setOnReset(() => resetAll)
-  }, [resetAll, setOnReset])
-
   return (
     <div className="tableau-magique">
       {loaded && (
-        <TrainProgressBar total={totalTaches} done={doneCount} ready={loaded} />
+        <TrainProgressBar
+          total={totalTaches}
+          done={doneCount}
+          onReset={resetAll}
+          ready={loaded}
+        />
       )}
 
       <ChecklistTachesDnd

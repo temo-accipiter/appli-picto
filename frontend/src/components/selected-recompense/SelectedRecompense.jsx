@@ -27,7 +27,6 @@ export default function SelectedRecompense({
   done,
   total,
   onSelect,
-  small = false,
 }) {
   if (!recompense) return null
 
@@ -35,9 +34,7 @@ export default function SelectedRecompense({
 
   return (
     <div
-      className={`selected-recompense ${
-        isUnlocked ? 'unlocked' : 'locked'
-      } ${small ? 'small' : ''}`}
+      className={`selected-recompense ${isUnlocked ? 'unlocked' : 'locked'}`}
       onClick={() => isUnlocked && onSelect(recompense.id)}
     >
       <span className="label">{recompense.label}</span>
@@ -62,5 +59,4 @@ SelectedRecompense.propTypes = {
   done: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,
   onSelect: PropTypes.func.isRequired,
-  small: PropTypes.bool,
 }

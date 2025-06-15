@@ -56,21 +56,4 @@
     width: rem(100);
     padding: $spacing-sm;
   }
-
-  &.small {
-    flex-direction: row;
-    width: auto;
-    padding: $spacing-xs $spacing-sm;
-    gap: $spacing-xs;
-    border-radius: $radius-sm;
-
-    .label {
-      font-size: $font-size-sm;
-    }
-
-    .icon {
-      width: rem(32);
-      height: rem(32);
-    }
-  }
 }

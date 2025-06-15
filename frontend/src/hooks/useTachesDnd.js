@@ -63,23 +63,20 @@ export default function useTachesDnd(onChange) {
   }, [loadTaches])
 
   // 2️⃣ Bascule « fait »
-  const toggleDone = useCallback(
-    (id, wasDone) => {
-      patchTache(id, { fait: wasDone ? 0 : 1 })
-        .then(() => {
-          setDone((prev) => ({ ...prev, [id]: !wasDone }))
-          const count = Object.values({ ...doneMap, [id]: !wasDone }).filter(
-            Boolean
-          ).length
-          onChange(count, taches.length)
-        })
-        .catch(console.error)
-    },
-    [doneMap, onChange, taches]
-  )
+  function toggleDone(id, wasDone) {
+    patchTache(id, { fait: wasDone ? 0 : 1 })
+      .then(() => {
+        setDone((prev) => ({ ...prev, [id]: !wasDone }))
+        const count = Object.values({ ...doneMap, [id]: !wasDone }).filter(
+          Boolean
+        ).length
+        onChange(count, taches.length)
+      })
+      .catch(console.error)
+  }
 
   // 3️⃣ Reset des cochés
-  const resetAll = useCallback(() => {
+  function resetAll() {
     patchResetFait()
       .then(() => {
         const resetMap = Object.fromEntries(taches.map((t) => [t.id, false]))
@@ -87,10 +84,10 @@ export default function useTachesDnd(onChange) {
         onChange(0, taches.length)
       })
       .catch(console.error)
-  }, [taches, onChange])
+  }
 
   // 4️⃣ Réordonnancement local (renvoie la nouvelle liste)
-  const moveTask = useCallback((activeId, overId) => {
+  function moveTask(activeId, overId) {
     let newList = []
     setTaches((prev) => {
       const oldIndex = prev.findIndex((t) => t.id.toString() === activeId)
@@ -102,21 +99,16 @@ export default function useTachesDnd(onChange) {
       return arr
     })
     return newList
-  }, [])
+  }
 
   // 5️⃣ Sauvegarde en base puis rechargement pour persister l’ordre
-  const saveOrder = useCallback(
-    (list) => {
-      Promise.all(
-        list.map((t, i) =>
-          patchTache(t.id, { position: i }).catch(console.error)
-        )
-      )
-        .then(() => loadTaches()) // recharger depuis le serveur
-        .catch(console.error)
-    },
-    [loadTaches]
-  )
+  function saveOrder(list) {
+    Promise.all(
+      list.map((t, i) => patchTache(t.id, { position: i }).catch(console.error))
+    )
+      .then(() => loadTaches()) // recharger depuis le serveur
+      .catch(console.error)
+  }
 
   return {
     taches,

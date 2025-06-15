@@ -1,17 +1,18 @@
 import PropTypes from 'prop-types'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
+import Modal from '@/components/modal/Modal'
 import './TrainProgressBar.scss'
 import useStations from '@/hooks/useStations'
-import { useProgress } from '@/contexts/ProgressContext'
 
-export default function TrainProgressBar({ total, done, ready }) {
-  const { ligne } = useProgress()
+export default function TrainProgressBar({ total, done, onReset, ready }) {
+  const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur = COULEURS_LIGNES[ligne] || '#999'
   const stationCount = total + 1
 
   const { stations: ligneStations, loading, error } = useStations(ligne)
   const [currentStations, setCurrentStations] = useState([])
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)
@@ -89,6 +90,54 @@ export default function TrainProgressBar({ total, done, ready }) {
           />
         </div>
       </div>
+
+      <div className="toolbar">
+        <div className="ligne-select">
+          <label htmlFor="ligne">Ligne :</label>
+          <select
+            id="ligne"
+            value={ligne}
+            onChange={(e) => {
+              const nouvelleLigne = e.target.value
+              setLigne(nouvelleLigne)
+              localStorage.setItem('ligne', nouvelleLigne)
+            }}
+          >
+            <option value="1">Ligne 1</option>
+            <option value="6">Ligne 6</option>
+            <option value="12">Ligne 12</option>
+          </select>
+        </div>
+
+        <p className="progression">
+          Progression : {done} / {total} tâches
+        </p>
+
+        <>
+          <button className="reset-button" onClick={() => setShowConfirm(true)}>
+            Réinitialiser
+          </button>
+
+          <Modal
+            isOpen={showConfirm}
+            onClose={() => setShowConfirm(false)}
+            actions={[
+              { label: 'Annuler', onClick: () => setShowConfirm(false) },
+              {
+                label: 'Réinitialiser',
+                onClick: () => {
+                  setShowConfirm(false)
+                  onReset()
+                },
+                variant: 'primary',
+                autoFocus: true,
+              },
+            ]}
+          >
+            <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
+          </Modal>
+        </>
+      </div>
     </div>
   )
 }
@@ -96,5 +145,6 @@ export default function TrainProgressBar({ total, done, ready }) {
 TrainProgressBar.propTypes = {
   total: PropTypes.number.isRequired,
   done: PropTypes.number.isRequired,
+  onReset: PropTypes.func.isRequired,
   ready: PropTypes.bool.isRequired,
 }

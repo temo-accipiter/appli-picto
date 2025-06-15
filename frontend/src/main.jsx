@@ -4,8 +4,8 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 
 import Layout from '@/components/layout/Layout'
-import '@/i18n/i18n' // 🌍 Initialisation i18n :contentReference[oaicite:0]{index=0}&#8203;:contentReference[oaicite:1]{index=1}
-import '@/styles/main.scss' // 🎨 Styles globaux
+import '@/i18n/i18n'
+import '@/styles/main.scss'
 
 // Lazy-loaded pages
 const Tableau = lazy(() => import('@/pages/tableau/Tableau'))
