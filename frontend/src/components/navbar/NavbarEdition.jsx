@@ -7,7 +7,7 @@ export default function NavbarEdition() {
     <nav className="navbar">
       <div className="navbar-left">
         <NavLink
-          to="/tableau"
+          to="/"
           className={({ isActive }) =>
             isActive ? 'nav-link active' : 'nav-link'
           }
