@@ -27,22 +27,25 @@
  *   (aucune – page ‘Tableau’ gère tout en interne via hooks)
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
 
-import TrainProgressBar from '@/components/train-progress-bar/TrainProgressBar'
 import ChecklistTachesDnd from '@/components/checklist/taches-dnd/checklistTachesDnd/ChecklistTachesDnd'
 import SelectedRecompense from '@/components/selected-recompense/SelectedRecompense'
 import useTachesDnd from '@/hooks/useTachesDnd'
 import useRecompenses from '@/hooks/useRecompenses'
 import useParametres from '@/hooks/useParametres'
+import TrainProgressBar from '@/components/train-progress-bar/TrainProgressBar'
+import { useTableau } from '@/context/TableauContext'
 import './Tableau.scss'
 
 export default function TableauGrille() {
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
   const [loaded, setLoaded] = useState(false)
+
+  const { setDone, setTotal, setOnReset } = useTableau()
 
   const { width, height } = useWindowSize()
   const { parametres } = useParametres()
@@ -51,6 +54,8 @@ export default function TableauGrille() {
     (done, total) => {
       setDoneCount(done)
       setTotalTaches(total)
+      setDone(done)
+      setTotal(total)
       setLoaded(true)
     }
   )
@@ -60,18 +65,17 @@ export default function TableauGrille() {
     saveOrder(newList)
   }
 
+  useEffect(() => {
+    setOnReset(() => resetAll)
+  }, [resetAll, setOnReset])
+
   const { recompenses, selectRecompense } = useRecompenses()
   const selected = recompenses.find((r) => r.selected === 1)
 
   return (
     <div className="tableau-magique">
       {loaded && (
-        <TrainProgressBar
-          total={totalTaches}
-          done={doneCount}
-          onReset={resetAll}
-          ready={loaded}
-        />
+        <TrainProgressBar total={totalTaches} done={doneCount} ready={loaded} />
       )}
 
       <ChecklistTachesDnd
