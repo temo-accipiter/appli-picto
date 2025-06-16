@@ -27,7 +27,7 @@
  *   (aucune – page ‘Tableau’ gère tout en interne via hooks)
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
 
@@ -52,6 +52,12 @@ export default function TableauGrille() {
       setTotalTaches(total)
     }
   )
+
+  useEffect(() => {
+    const handler = () => resetAll()
+    window.addEventListener('resetTasks', handler)
+    return () => window.removeEventListener('resetTasks', handler)
+  }, [resetAll])
 
   const handleReorder = (newOrderIds) => {
     const newList = newOrderIds.map((id) => taches.find((t) => t.id === id))

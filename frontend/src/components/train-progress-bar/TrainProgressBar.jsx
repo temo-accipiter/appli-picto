@@ -2,7 +2,6 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
-import Modal from '@/components/modal/Modal'
 import './TrainProgressBar.scss'
 import useStations from '@/hooks/useStations'
 
@@ -13,7 +12,6 @@ export default function TrainProgressBar({ total, done, onReset }) {
 
   const { stations: ligneStations, loading, error } = useStations(ligne)
   const [currentStations, setCurrentStations] = useState([])
-  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)
@@ -110,31 +108,6 @@ export default function TrainProgressBar({ total, done, onReset }) {
         <p className="progression">
           Progression : {done} / {total} tâches
         </p>
-
-        <>
-          <button className="reset-button" onClick={() => setShowConfirm(true)}>
-            Réinitialiser
-          </button>
-
-          <Modal
-            isOpen={showConfirm}
-            onClose={() => setShowConfirm(false)}
-            actions={[
-              { label: 'Annuler', onClick: () => setShowConfirm(false) },
-              {
-                label: 'Réinitialiser',
-                onClick: () => {
-                  setShowConfirm(false)
-                  onReset()
-                },
-                variant: 'primary',
-                autoFocus: true,
-              },
-            ]}
-          >
-            <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
-          </Modal>
-        </>
       </div>
     </div>
   )
