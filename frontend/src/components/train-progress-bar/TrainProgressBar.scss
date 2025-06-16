@@ -60,22 +60,6 @@
       box-shadow: $box-shadow;
       margin: 0;
     }
-    .reset-button {
-      background-color: $color-secondary;
-      color: $color-text-invert;
-      border: none;
-      padding: $spacing-xs $spacing-sm;
-      border-radius: $radius-sm;
-      font-weight: $font-weight-semibold;
-      box-shadow: $box-shadow;
-      cursor: pointer;
-
-      @include transition-smooth;
-
-      @include on-event {
-        background-color: color.adjust($color-secondary, $lightness: -6%);
-      }
-    }
   }
 
   .metroline {

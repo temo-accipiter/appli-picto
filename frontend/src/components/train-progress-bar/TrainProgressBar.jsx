@@ -5,7 +5,7 @@ import { COULEURS_LIGNES } from '@/data/colors'
 import './TrainProgressBar.scss'
 import useStations from '@/hooks/useStations'
 
-export default function TrainProgressBar({ total, done, onReset }) {
+export default function TrainProgressBar({ total, done }) {
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur = COULEURS_LIGNES[ligne] || '#999'
   const stationCount = total + 1
@@ -116,5 +116,4 @@ export default function TrainProgressBar({ total, done, onReset }) {
 TrainProgressBar.propTypes = {
   total: PropTypes.number.isRequired,
   done: PropTypes.number.isRequired,
-  onReset: PropTypes.func.isRequired,
 }

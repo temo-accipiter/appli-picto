@@ -47,19 +47,23 @@
 }
 
 .reset-button {
-  background-color: $color-secondary;
+  background-color: #0a0082;
   color: $color-text-invert;
   border: none;
-  padding: $spacing-xs $spacing-sm;
-  border-radius: $radius-sm;
-  font-weight: $font-weight-semibold;
+  padding: $spacing-xs $spacing-md;
+  border-radius: 0;
+  font-family: 'Arial', Helvetica, sans-serif;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   box-shadow: $box-shadow;
   cursor: pointer;
 
   @include transition-smooth;
 
   @include on-event {
-    background-color: color.adjust($color-secondary, $lightness: -6%);
+    background-color: color.adjust(#0a0082, $lightness: -6%);
   }
 }
 
