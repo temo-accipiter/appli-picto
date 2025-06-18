@@ -165,7 +165,7 @@ export default function Edition() {
                 ? '🎉 Confettis activés'
                 : '🎊 Confettis désactivés'
             }
-            checked={parametres.confettis}
+            checked={parametres?.confettis}
             onChange={(e) => updateParametres({ confettis: e.target.checked })}
           />
         )}
