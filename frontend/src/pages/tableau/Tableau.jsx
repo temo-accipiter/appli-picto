@@ -30,11 +30,7 @@
 import { useState } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
-import {
-  TrainProgressBar,
-  ChecklistTachesDnd,
-  SelectedRecompense,
-} from '@/components'
+import { TrainProgressBar, TachesDnd, SelectedRecompense } from '@/components'
 
 import { useTachesDnd, useRecompenses, useParametres } from '@/hooks'
 import './Tableau.scss'
@@ -69,7 +65,7 @@ export default function TableauGrille() {
         onReset={resetAll}
       />
 
-      <ChecklistTachesDnd
+      <TachesDnd
         items={taches}
         onReorder={handleReorder}
         onToggle={toggleDone}

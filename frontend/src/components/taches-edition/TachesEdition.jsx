@@ -1,8 +1,3 @@
-// src/components/checklist/taches-edition/ChecklistTachesEdition.jsx
-import PropTypes from 'prop-types'
-import { Checkbox } from '@/components'
-import './ChecklistTachesEdition.scss'
-
 /**
  * Composant : ChecklistTachesEdition
  *
@@ -26,6 +21,9 @@ import './ChecklistTachesEdition.scss'
  *   - onUpdateCategorie(id, newCat): fn
  *   - onDelete(item): fn
  */
+import PropTypes from 'prop-types'
+import { Checkbox } from '@/components'
+import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
   items,

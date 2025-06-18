@@ -13,9 +13,9 @@
  */
 
 import PropTypes from 'prop-types'
-import './ChecklistRecompensesEdition.scss'
+import './RecompensesEdition.scss'
 
-export default function ChecklistRecompensesEdition({
+export default function RecompensesEdition({
   items,
   onDelete,
   onToggleSelect,
@@ -57,7 +57,7 @@ export default function ChecklistRecompensesEdition({
   )
 }
 
-ChecklistRecompensesEdition.propTypes = {
+RecompensesEdition.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,

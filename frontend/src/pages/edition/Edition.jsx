@@ -23,8 +23,8 @@ import {
   Modal,
   Input,
   ItemForm,
-  ChecklistTachesEdition,
-  ChecklistRecompensesEdition,
+  TachesEdition,
+  RecompensesEdition,
 } from '@/components'
 import { addRecompense } from '@/utils'
 import './Edition.scss'
@@ -181,7 +181,7 @@ export default function Edition() {
         />
       </div>
 
-      <ChecklistTachesEdition
+      <TachesEdition
         items={visibleTaches}
         categories={categories}
         onToggleAujourdhui={toggleAujourdhui}
@@ -190,7 +190,7 @@ export default function Edition() {
         onDelete={(t) => setTacheASupprimer(t)}
       />
 
-      <ChecklistRecompensesEdition
+      <RecompensesEdition
         items={recompenses}
         onDelete={(r) => setRecompenseASupprimer(r)}
         onToggleSelect={toggleSelectRecompense}

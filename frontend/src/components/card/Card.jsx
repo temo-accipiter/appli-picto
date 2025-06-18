@@ -1,7 +1,7 @@
 // src/components/card/Card.jsx
 import PropTypes from 'prop-types'
 import { Button, Select, Input, Checkbox } from '@/components'
-import './Card.scss'
+//import './Card.scss'
 
 export default function Card({
   id,
