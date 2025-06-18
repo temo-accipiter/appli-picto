@@ -8,7 +8,7 @@
 .yarnrc.yml
 .install-state.gz
 
-# ✅ Log files
+# ✅ Logs
 *.log
 
 # ✅ OS junk
@@ -31,14 +31,15 @@ Thumbs.db
 *.db
 *.db-journal
 backend/database.db
+uploads/
 
 # ✅ Build output
-/dist
-/frontend/dist
-/backend/dist
+dist/
+frontend/dist/
+backend/dist/
 *.tsbuildinfo
 
-# ✅ Dependency folders (if ever used)
+# ✅ Dependency folders
 node_modules/
 
 # ✅ Others
