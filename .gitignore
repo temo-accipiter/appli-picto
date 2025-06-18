@@ -1,5 +1,48 @@
-node_modules/
-.yarn/
+# ✅ Node / Yarn PnP
+.yarn/*
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 .pnp.*
+.yarnrc.yml
+.install-state.gz
+
+# ✅ Log files
+*.log
+
+# ✅ OS junk
+.DS_Store
+Thumbs.db
+
+# ✅ IDE / Editor
+.vscode/
+.idea/
+*.swp
+
+# ✅ Environment files
 .env
-dist/
+.env.local
+.env.*.local
+
+# ✅ SQLite / DB
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+backend/database.db
+
+# ✅ Build output
+/dist
+/frontend/dist
+/backend/dist
+*.tsbuildinfo
+
+# ✅ Dependency folders (if ever used)
+node_modules/
+
+# ✅ Others
+coverage/
+.cache/
+.next/
+out/
