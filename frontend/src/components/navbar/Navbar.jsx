@@ -1,6 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import NavbarEdition from './navbar-edition/NavbarEdition'
-import NavbarTableau from './navbar-tableau/NavbarTableau'
+import { NavbarEdition, NavbarTableau } from '@/components'
 import './Navbar.scss'
 
 export default function Navbar() {

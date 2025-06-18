@@ -2,8 +2,7 @@
 import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-
-import Layout from '@/components/layout/Layout'
+import { Layout } from '@/components'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
 

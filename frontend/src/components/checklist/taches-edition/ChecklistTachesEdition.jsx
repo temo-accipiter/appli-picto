@@ -1,6 +1,6 @@
 // src/components/checklist/taches-edition/ChecklistTachesEdition.jsx
 import PropTypes from 'prop-types'
-import Checkbox from '@/components/fields/checkbox/Checkbox'
+import { Checkbox } from '@/components'
 import './ChecklistTachesEdition.scss'
 
 /**

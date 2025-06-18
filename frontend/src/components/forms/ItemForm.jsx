@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import Input from '@/components/fields/input/Input'
-import Select from '@/components/fields/select/Select'
+import { Input, Select } from '@/components'
 import './ItemForm.scss'
 
 const MAX_SIZE = 500 * 1024

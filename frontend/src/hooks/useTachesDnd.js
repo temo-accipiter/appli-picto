@@ -29,7 +29,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { fetchTaches, patchTache, patchResetFait } from '@/utils/api'
+import { fetchTaches, patchTache, patchResetFait } from '@/utils'
 
 export default function useTachesDnd(onChange) {
   const [taches, setTaches] = useState([])

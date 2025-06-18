@@ -14,8 +14,7 @@
  *   (aucune)
  */
 
-import Navbar from '@/components/navbar/Navbar'
-import PageTransition from '@/components/pageTransition/PageTransition'
+import { PageTransition, Navbar } from '@/components'
 import './Layout.scss'
 
 export default function Layout() {

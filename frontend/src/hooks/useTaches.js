@@ -32,9 +32,9 @@
  */
 
 import { useEffect, useState } from 'react'
-import { fetchTaches, patchTache, patchResetFait } from '@/utils/api'
+import { fetchTaches, patchTache, patchResetFait } from '@/utils'
 
-export function useTaches(reload = 0) {
+export default function useTaches(reload = 0) {
   const [taches, setTaches] = useState([])
 
   // Charge à l’ouverture et à chaque reload

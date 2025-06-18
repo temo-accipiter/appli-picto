@@ -10,19 +10,23 @@
 
 // src/components/Edition.jsx
 import { useState } from 'react'
-import ChecklistTachesEdition from '@/components/checklist/taches-edition/ChecklistTachesEdition'
-import ChecklistRecompensesEdition from '@/components/checklist/recompenses-edition/ChecklistRecompensesEdition'
-import useTachesEdition from '@/hooks/useTachesEdition'
-import useRecompenses from '@/hooks/useRecompenses'
-import useParametres from '@/hooks/useParametres'
-import useCategories from '@/hooks/useCategories'
-import Button from '@/components/button/Button'
-import Select from '@/components/fields/select/Select'
-import Checkbox from '@/components/fields/checkbox/Checkbox'
-import Modal from '@/components/modal/Modal'
-import Input from '@/components/fields/input/Input'
-import ItemForm from '@/components/forms/ItemForm'
-import { addRecompense } from '@/utils/api'
+import {
+  useTachesEdition,
+  useRecompenses,
+  useParametres,
+  useCategories,
+} from '@/hooks'
+import {
+  Button,
+  Select,
+  Checkbox,
+  Modal,
+  Input,
+  ItemForm,
+  ChecklistTachesEdition,
+  ChecklistRecompensesEdition,
+} from '@/components'
+import { addRecompense } from '@/utils'
 import './Edition.scss'
 
 export default function Edition() {

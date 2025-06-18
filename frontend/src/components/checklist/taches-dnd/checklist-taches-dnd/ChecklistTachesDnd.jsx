@@ -27,9 +27,8 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'
-import Button from '@/components/button/Button'
+import { Button, DraggableCard } from '@/components'
 import './ChecklistTachesDnd.scss'
-import DraggableCard from '../draggableCard/DraggableCard'
 
 export default function ChecklistTachesDnd({
   items,

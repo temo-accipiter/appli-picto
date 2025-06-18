@@ -26,9 +26,9 @@ import { useState, useEffect } from 'react'
 import {
   fetchTaches,
   patchTache,
-  deleteTache as apiDeleteTache,
   patchResetEdition,
-} from '@/utils/api'
+  deleteTache as apiDeleteTache,
+} from '@/utils'
 
 export default function useTachesEdition(reload = 0) {
   const [taches, setTaches] = useState([])

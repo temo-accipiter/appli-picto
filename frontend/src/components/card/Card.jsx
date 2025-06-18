@@ -1,9 +1,6 @@
 // src/components/card/Card.jsx
 import PropTypes from 'prop-types'
-import Checkbox from '@/components/fields/checkbox/Checkbox'
-import Input from '@/components/fields/input/Input'
-import Select from '@/components/fields/select/Select'
-import Button from '@/components/button/Button'
+import { Button, Select, Input, Checkbox } from '@/components'
 import './Card.scss'
 
 export default function Card({

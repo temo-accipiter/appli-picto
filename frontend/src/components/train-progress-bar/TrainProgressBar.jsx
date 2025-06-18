@@ -2,9 +2,9 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
-import Modal from '@/components/modal/Modal'
+import { Modal } from '@/components'
 import './TrainProgressBar.scss'
-import useStations from '@/hooks/useStations'
+import { useStations } from '@/hooks'
 
 export default function TrainProgressBar({ total, done, onReset }) {
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')

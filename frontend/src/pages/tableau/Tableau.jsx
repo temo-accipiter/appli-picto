@@ -30,13 +30,13 @@
 import { useState } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
+import {
+  TrainProgressBar,
+  ChecklistTachesDnd,
+  SelectedRecompense,
+} from '@/components'
 
-import TrainProgressBar from '@/components/train-progress-bar/TrainProgressBar'
-import ChecklistTachesDnd from '@/components/checklist/taches-dnd/checklistTachesDnd/ChecklistTachesDnd'
-import SelectedRecompense from '@/components/selected-recompense/SelectedRecompense'
-import useTachesDnd from '@/hooks/useTachesDnd'
-import useRecompenses from '@/hooks/useRecompenses'
-import useParametres from '@/hooks/useParametres'
+import { useTachesDnd, useRecompenses, useParametres } from '@/hooks'
 import './Tableau.scss'
 
 export default function TableauGrille() {

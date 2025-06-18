@@ -33,7 +33,7 @@ import {
   deleteRecompense as apiDelete,
   selectRecompense as apiSelect,
   deselectAllRecompenses as apiDeselectAll,
-} from '@/utils/api'
+} from '@/utils'
 
 export default function useRecompenses(reload = 0) {
   const [recompenses, setRecompenses] = useState([])

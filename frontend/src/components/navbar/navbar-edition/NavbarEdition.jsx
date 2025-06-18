@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import ThemeToggle from '@/components/theme-toggle/ThemeToggle'
-import LangSelector from '@/components/lang-selector/LangSelector'
+import { ThemeToggle, LangSelector } from '@/components'
 
 export default function NavbarEdition() {
   return (
