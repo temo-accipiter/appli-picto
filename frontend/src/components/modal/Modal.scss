@@ -28,6 +28,13 @@
   animation: scaleIn $transition-fast ease-out;
 }
 
+.modal__message {
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  margin-top: $spacing-md;
+}
+
 .modal__title {
   margin: 0 0 $spacing-md;
   font-size: $font-size-xl;

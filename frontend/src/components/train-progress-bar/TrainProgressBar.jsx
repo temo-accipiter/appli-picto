@@ -119,7 +119,7 @@ export default function TrainProgressBar({ total, done, onReset }) {
           <ModalConfirm
             isOpen={showConfirm}
             onClose={() => setShowConfirm(false)}
-            confirmLabel="Réinitialiser"
+            confirmLabel="Confirmer"
             onConfirm={() => {
               setShowConfirm(false)
               onReset()

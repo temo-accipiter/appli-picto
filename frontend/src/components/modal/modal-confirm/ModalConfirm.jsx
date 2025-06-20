@@ -1,5 +1,6 @@
+// src/components/modal/modal-confirm/ModalConfirm.jsx
 import PropTypes from 'prop-types'
-import Modal from '../Modal'
+import { Modal } from '@/components'
 
 export default function ModalConfirm({
   isOpen,
@@ -15,10 +16,20 @@ export default function ModalConfirm({
       onClose={onClose}
       actions={[
         { label: cancelLabel, onClick: onClose },
-        { label: confirmLabel, onClick: onConfirm, variant: 'primary' },
+        {
+          label: confirmLabel,
+          onClick: () => {
+            onClose()
+            onConfirm()
+          },
+          variant: 'primary',
+          autoFocus: true,
+        },
       ]}
     >
-      {typeof children === 'string' ? <p>{children}</p> : children}
+      <div className="modal__message">
+        {typeof children === 'string' ? <p>{children}</p> : children}
+      </div>
     </Modal>
   )
 }

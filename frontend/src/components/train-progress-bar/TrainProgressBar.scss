@@ -35,7 +35,7 @@
         box-shadow: $box-shadow;
       }
     }
-    /*
+
     .progression {
       font-size: $font-size-lg;
       font-weight: $font-weight-bold;
@@ -48,18 +48,7 @@
       box-shadow: $box-shadow;
       margin: 0;
     }
-*/
-    .progression {
-      font-size: $font-size-lg;
-      font-weight: $font-weight-bold;
-      color: #ffffff;
-      text-align: center;
-      background-color: #0a0082;
-      padding: 0.75rem 1.5rem;
-      display: inline-block;
-      box-shadow: $box-shadow;
-      margin: 0;
-    }
+
     .reset-button {
       background-color: $color-secondary;
       color: $color-text-invert;
@@ -181,13 +170,6 @@
         }
       }
     }
-  }
-
-  p {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    margin-top: $spacing-md;
-    color: var(--color-text);
   }
 }
 

@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
-import Modal from '../Modal'
-import { Input, Button } from '@/components'
+import { Modal, Button, Input } from '@/components'
 
 export default function ModalCategory({
   isOpen,

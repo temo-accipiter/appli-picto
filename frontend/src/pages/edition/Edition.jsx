@@ -1,14 +1,3 @@
-/**
- * Page : Édition
- *
- * Rôle :
- *   Gère l’édition des tâches et des récompenses.
- *   • Affiche deux listes contrôlées : tâches et récompenses.
- *   • Ouvre les modals d’ajout.
- *
- */
-
-// src/components/Edition.jsx
 import { useState } from 'react'
 import {
   useTachesEdition,
@@ -23,7 +12,6 @@ import {
   ModalConfirm,
   ModalCategory,
   ModalAjout,
-  Input,
   TachesEdition,
   RecompensesEdition,
 } from '@/components'
@@ -127,8 +115,6 @@ export default function Edition() {
 
   return (
     <div className="page-edition">
-      <h1>🛠️ Édition</h1>
-
       <div className="edition-buttons">
         <Button
           label="➕ Ajouter une tâche"
