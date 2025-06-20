@@ -20,9 +20,10 @@ import {
   Button,
   Select,
   Checkbox,
-  Modal,
+  ModalConfirm,
+  ModalCategory,
+  ModalAjout,
   Input,
-  ItemForm,
   TachesEdition,
   RecompensesEdition,
 } from '@/components'
@@ -197,132 +198,79 @@ export default function Edition() {
       />
 
       {/* Modals */}
-      <Modal
+      <ModalConfirm
         isOpen={showConfirmReset}
         onClose={() => setShowConfirmReset(false)}
-        actions={[
-          { label: 'Annuler', onClick: () => setShowConfirmReset(false) },
-          {
-            label: 'Confirmer',
-            variant: 'primary',
-            onClick: () => {
-              resetEdition()
-              setShowConfirmReset(false)
-            },
-          },
-        ]}
+        onConfirm={() => {
+          resetEdition()
+          setShowConfirmReset(false)
+        }}
       >
-        <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
-      </Modal>
+        ❗ Es-tu sûr de vouloir tout réinitialiser ?
+      </ModalConfirm>
 
-      <Modal
+      <ModalConfirm
         isOpen={!!recompenseASupprimer}
         onClose={() => setRecompenseASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setRecompenseASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => {
-              deleteRecompense(recompenseASupprimer.id)
-              setRecompenseASupprimer(null)
-            },
-          },
-        ]}
+        confirmLabel="Supprimer"
+        onConfirm={() => {
+          deleteRecompense(recompenseASupprimer.id)
+          setRecompenseASupprimer(null)
+        }}
       >
-        <p>❗ Supprimer la récompense “{recompenseASupprimer?.label}” ?</p>
-      </Modal>
+        ❗ Supprimer la récompense “{recompenseASupprimer?.label}” ?
+      </ModalConfirm>
 
-      <Modal
+      <ModalConfirm
         isOpen={!!tacheASupprimer}
         onClose={() => setTacheASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setTacheASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => {
-              deleteTache(tacheASupprimer.id)
-              setTacheASupprimer(null)
-            },
-          },
-        ]}
+        confirmLabel="Supprimer"
+        onConfirm={() => {
+          deleteTache(tacheASupprimer.id)
+          setTacheASupprimer(null)
+        }}
       >
-        <p>❗ Supprimer la tâche “{tacheASupprimer?.label}” ?</p>
-      </Modal>
+        ❗ Supprimer la tâche “{tacheASupprimer?.label}” ?
+      </ModalConfirm>
 
-      <Modal
+      <ModalAjout
         isOpen={modalTacheOpen}
         onClose={() => setModalTacheOpen(false)}
-        actions={[]}
-      >
-        <ItemForm
-          includeCategory
-          categories={categories}
-          onSubmit={handleSubmitTask}
-        />
-      </Modal>
+        includeCategory
+        categories={categories}
+        onSubmit={handleSubmitTask}
+      />
 
-      <Modal
+      <ModalAjout
         isOpen={modalRecompenseOpen}
         onClose={() => setModalRecompenseOpen(false)}
-        actions={[]}
-      >
-        <ItemForm includeCategory={false} onSubmit={handleSubmitReward} />
-      </Modal>
+        includeCategory={false}
+        onSubmit={handleSubmitReward}
+      />
 
-      <Modal
+      <ModalCategory
         isOpen={manageCatOpen}
         onClose={() => setManageCatOpen(false)}
-        title="Gérer les catégories"
-        actions={[]}
-      >
-        <ul className="category-list">
-          {categories
-            .filter((c) => c.value !== 'none')
-            .map((cat) => (
-              <li key={cat.value} className="category-list__item">
-                {cat.label}
-                <button
-                  className="category-list__delete-btn"
-                  onClick={() => setCatASupprimer(cat.value)}
-                  aria-label={`Supprimer la catégorie ${cat.label}`}
-                >
-                  🗑️
-                </button>
-              </li>
-            ))}
-        </ul>
-        <form className="category-form" onSubmit={handleAddCategory}>
-          <Input
-            id="new-category"
-            label="Nouvelle catégorie"
-            value={newCatLabel}
-            onChange={(e) => setNewCatLabel(e.target.value)}
-          />
-          <Button variant="primary" label="Ajouter" type="submit" />
-        </form>
-      </Modal>
+        categories={categories}
+        onDeleteCategory={(value) => setCatASupprimer(value)}
+        onAddCategory={handleAddCategory}
+        newCategory={newCatLabel}
+        onChangeNewCategory={setNewCatLabel}
+      />
 
-      <Modal
+      <ModalConfirm
         isOpen={!!catASupprimer}
         onClose={() => setCatASupprimer(null)}
-        actions={[
-          { label: 'Annuler', onClick: () => setCatASupprimer(null) },
-          {
-            label: 'Supprimer',
-            variant: 'primary',
-            onClick: () => handleRemoveCategory(catASupprimer),
-          },
-        ]}
+        confirmLabel="Supprimer"
+        onConfirm={() => handleRemoveCategory(catASupprimer)}
       >
-        <p>
+        <>
           ❗ Supprimer la catégorie “
           {categories.find((c) => c.value === catASupprimer)?.label}” ?
           <br />
           Les tâches associées seront réattribuées à “Pas de catégorie”.
-        </p>
-      </Modal>
+        </>
+      </ModalConfirm>
     </div>
   )
 }

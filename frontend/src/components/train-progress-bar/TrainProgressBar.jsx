@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
-import { Modal } from '@/components'
+import { ModalConfirm } from '@/components'
 import './TrainProgressBar.scss'
 import { useStations } from '@/hooks'
 
@@ -116,24 +116,17 @@ export default function TrainProgressBar({ total, done, onReset }) {
             Réinitialiser
           </button>
 
-          <Modal
+          <ModalConfirm
             isOpen={showConfirm}
             onClose={() => setShowConfirm(false)}
-            actions={[
-              { label: 'Annuler', onClick: () => setShowConfirm(false) },
-              {
-                label: 'Réinitialiser',
-                onClick: () => {
-                  setShowConfirm(false)
-                  onReset()
-                },
-                variant: 'primary',
-                autoFocus: true,
-              },
-            ]}
+            confirmLabel="Réinitialiser"
+            onConfirm={() => {
+              setShowConfirm(false)
+              onReset()
+            }}
           >
-            <p>❗ Es-tu sûr de vouloir tout réinitialiser ?</p>
-          </Modal>
+            ❗ Es-tu sûr de vouloir tout réinitialiser ?
+          </ModalConfirm>
         </>
       </div>
     </div>
