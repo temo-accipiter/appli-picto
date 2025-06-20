@@ -27,7 +27,11 @@
         font-weight: $font-weight-medium;
       }
 
-      select {
+      .select-field {
+        margin-bottom: 0;
+      }
+
+      .select-field__select {
         font-size: $font-size-base;
         padding: $spacing-xs $spacing-sm;
         border-radius: $radius-sm;

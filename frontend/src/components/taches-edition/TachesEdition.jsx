@@ -22,7 +22,7 @@
  *   - onDelete(item): fn
  */
 import PropTypes from 'prop-types'
-import { Checkbox } from '@/components'
+import { Checkbox, Select } from '@/components'
 import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
@@ -59,18 +59,13 @@ export default function ChecklistTachesEdition({
               className="editable-label"
             />
 
-            <select
+            <Select
+              id={`categorie-${t.id}`}
               name="categorie"
               value={t.categorie}
               onChange={(e) => onUpdateCategorie(t.id, e.target.value)}
-              className="editable-categorie"
-            >
-              {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+              options={categories}
+            />
 
             <Checkbox
               id={`aujourdhui-${t.id}`}

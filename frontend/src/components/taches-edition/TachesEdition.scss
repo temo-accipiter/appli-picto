@@ -61,8 +61,12 @@
 
       span,
       .editable-label,
-      .editable-categorie {
+      .select-field__select {
         width: 100%;
+      }
+
+      .select-field {
+        margin-bottom: $spacing-sm;
       }
 
       input[type='checkbox'] {
@@ -109,7 +113,7 @@
 }
 
 .editable-label,
-.editable-categorie {
+.select-field__select {
   width: 100%;
   padding: $spacing-xs;
   margin-bottom: $spacing-sm;

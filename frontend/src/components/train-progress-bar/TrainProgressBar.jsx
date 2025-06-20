@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
-import { ModalConfirm } from '@/components'
+import { ModalConfirm, Select } from '@/components'
 import './TrainProgressBar.scss'
 import { useStations } from '@/hooks'
 
@@ -92,7 +92,7 @@ export default function TrainProgressBar({ total, done, onReset }) {
       <div className="toolbar">
         <div className="ligne-select">
           <label htmlFor="ligne">Ligne :</label>
-          <select
+          <Select
             id="ligne"
             value={ligne}
             onChange={(e) => {
@@ -100,11 +100,12 @@ export default function TrainProgressBar({ total, done, onReset }) {
               setLigne(nouvelleLigne)
               localStorage.setItem('ligne', nouvelleLigne)
             }}
-          >
-            <option value="1">Ligne 1</option>
-            <option value="6">Ligne 6</option>
-            <option value="12">Ligne 12</option>
-          </select>
+            options={[
+              { value: '1', label: 'Ligne 1' },
+              { value: '6', label: 'Ligne 6' },
+              { value: '12', label: 'Ligne 12' },
+            ]}
+          />
         </div>
 
         <p className="progression">
