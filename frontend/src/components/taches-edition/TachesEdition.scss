@@ -2,28 +2,22 @@
 @use 'sass:color';
 
 .checklist-edition {
-  padding: $spacing-xl;
-  border: 1px solid purple;
-
   .liste-taches-edition {
     display: flex;
     flex-wrap: wrap;
     gap: $spacing-md;
-    border: 1px solid red;
+    justify-content: flex-start;
   }
 
   .tache-edition {
-    background: var(--pastel-color, #f0f8ff);
-    border-radius: $radius-lg;
-    padding: $spacing-xxs;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: $spacing-sm;
+    align-items: stretch;
+    padding: $spacing-sm;
+    border-radius: $radius-lg;
+    background: var(--pastel-color, #f0f8ff);
     box-shadow: $box-shadow;
-    min-width: rem(200);
-    max-width: rem(550);
-    flex: 1 1 auto;
     @include transition-smooth;
 
     &.active {
@@ -33,6 +27,7 @@
 
     // 📱 Responsive : stack verticalement les éléments
     @include respond-to(xs) {
+      display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: $spacing-sm;
@@ -46,22 +41,51 @@
   }
 }
 
-.delete-btn {
-  background: none;
-  border: none;
-  color: $color-error;
-  font-size: $font-size-lg;
-  cursor: pointer;
+.tache-edition__col {
+  &.image {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
 
-  @include transition-smooth;
-
-  &:hover {
-    color: color.adjust($color-error, $lightness: -10%);
+    .ImagePreview {
+      max-width: rem(100);
+      max-height: rem(100);
+      object-fit: contain; // ← garantit que l’image n’est pas déformée
+      display: block;
+    }
   }
 }
+
 .tache-edition__col {
-  display: flex;
-  flex-direction: column;
-  //align-items: center;
-  justify-content: space-between;
+  &.actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.1rem 0;
+
+    .delete-btn {
+      font-size: rem(20);
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  }
+}
+
+.tache-edition__col {
+  &.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    Input {
+      border-radius: $radius-md;
+    }
+    Select {
+      width: 100%;
+      border-radius: $radius-md;
+    }
+  }
 }

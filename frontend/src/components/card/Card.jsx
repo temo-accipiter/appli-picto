@@ -1,7 +1,13 @@
 // src/components/card/Card.jsx
 import PropTypes from 'prop-types'
-import { Button, Select, Input, Checkbox } from '@/components'
-//import './Card.scss'
+import {
+  DeleteButton,
+  Select,
+  Input,
+  Checkbox,
+  ImagePreview,
+} from '@/components'
+import './Card.scss'
 
 export default function Card({
   id,
@@ -18,24 +24,29 @@ export default function Card({
   onCheckboxChange,
   showDelete = false,
   onDelete,
+  orientation = 'horizontal',
   className = '',
   ...rest
 }) {
   return (
     <div
-      className={`card ${className}`}
+      className={`card card--${orientation} ${className}`}
       role="group"
       aria-labelledby={`card-label-${id}`}
       {...rest}
     >
-      {imageSrc && <img src={imageSrc} alt="" className="card__image" />}
-
-      <div className="card__body">
+      {imageSrc && (
+        <div className="card__col card__col--image">
+          <ImagePreview url={imageSrc} alt={label} size="md" />
+        </div>
+      )}
+      <div className="card__col card__col--info">
         {editableLabel ? (
           <Input
             id={`card-label-${id}`}
             value={label}
             onChange={(e) => onLabelChange(id, e.target.value)}
+            className="editable-label"
           />
         ) : (
           <span id={`card-label-${id}`} className="card__label">
@@ -49,29 +60,25 @@ export default function Card({
             options={categories}
             value={selectedCategory}
             onChange={(e) => onCategoryChange(id, e.target.value)}
-          />
-        )}
-
-        {showCheckbox && (
-          <Checkbox
-            id={`card-checkbox-${id}`}
-            checked={checked}
-            onChange={() => onCheckboxChange(id, !checked)}
-            label=""
-            aria-label="Toggle"
-          />
-        )}
-
-        {showDelete && (
-          <Button
-            variant="reset"
-            label="✖"
-            onClick={() => onDelete(id)}
-            aria-label="Supprimer"
-            className="card__delete-btn"
+            className="editable-categorie"
           />
         )}
       </div>
+
+      {(showCheckbox || showDelete) && (
+        <div className="card__col card__col--actions">
+          {showDelete && <DeleteButton onClick={() => onDelete(id)} />}
+          {showCheckbox && (
+            <Checkbox
+              id={`card-checkbox-${id}`}
+              checked={checked}
+              onChange={() => onCheckboxChange(id, !checked)}
+              label=""
+              aria-label="Toggle"
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -96,5 +103,6 @@ Card.propTypes = {
   onCheckboxChange: PropTypes.func,
   showDelete: PropTypes.bool,
   onDelete: PropTypes.func,
+  orientation: PropTypes.oneOf(['horizontal', 'vertical']),
   className: PropTypes.string,
 }
