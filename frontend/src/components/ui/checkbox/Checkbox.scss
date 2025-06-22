@@ -15,6 +15,7 @@
     border: rem(2) solid $color-primary;
     background-color: $color-bg;
     border-radius: $radius-sm;
+    align-self: center;
     cursor: pointer;
     position: relative;
     transition:
@@ -44,7 +45,7 @@
   &__label {
     margin-left: $spacing-sm;
     font-size: $font-size-base;
-    color: $color-text;
+    color: $color-text-invert;
     cursor: pointer;
   }
 
@@ -55,7 +56,27 @@
     color: $color-error;
   }
 
-  // Responsive (optionnel)
+  // ✅ Variante sm
+  &--sm &__input {
+    width: rem(16);
+    height: rem(16);
+
+    &:checked::after {
+      font-size: rem(12);
+    }
+  }
+
+  // ✅ Variante md (valeur par défaut, redondante ici mais explicite)
+  &--md &__input {
+    width: rem(20);
+    height: rem(20);
+
+    &:checked::after {
+      font-size: rem(14);
+    }
+  }
+
+  // ✅ Responsive (optionnel pour xs)
   @include respond-to(xs) {
     &__input {
       width: rem(16);

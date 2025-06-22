@@ -20,3 +20,5 @@ export { default as RecompensesEdition } from './recompenses-edition/Recompenses
 export { default as TachesEdition } from './taches-edition/TachesEdition'
 export { default as DraggableCard } from './card/draggable-card/DraggableCard'
 export { default as TachesDnd } from './taches-dnd/TachesDnd'
+export { default as ImagePreview } from './ui/image-preview/ImagePreview'
+export { default as DeleteButton } from './ui/button/delete-button/DeleteButton'

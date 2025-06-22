@@ -8,10 +8,11 @@ export default function Checkbox({
   onChange,
   error = '',
   className = '',
+  size = 'md',
   ...rest
 }) {
   return (
-    <div className={`checkbox-field ${className}`}>
+    <div className={`checkbox-field checkbox-field--${size} ${className}`}>
       <input
         type="checkbox"
         id={id}
@@ -43,4 +44,5 @@ Checkbox.propTypes = {
   onChange: PropTypes.func.isRequired,
   error: PropTypes.string,
   className: PropTypes.string,
+  size: PropTypes.oneOf(['sm', 'md']),
 }

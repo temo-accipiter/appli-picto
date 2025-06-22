@@ -118,17 +118,14 @@ export default function Edition() {
       <div className="edition-buttons">
         <Button
           label="➕ Ajouter une tâche"
-          variant="primary"
           onClick={() => setModalTacheOpen(true)}
         />
         <Button
           label="🏱 Ajouter une récompense"
-          variant="primary"
           onClick={() => setModalRecompenseOpen(true)}
         />
         <Button
           label="⚙️ Gérer catégories"
-          variant="secondary"
           onClick={() => setManageCatOpen(true)}
         />
 
@@ -142,9 +139,11 @@ export default function Edition() {
 
         <Checkbox
           id="filter-done"
+          className="filtre-checkbox"
           label="Tâches cochées seulement"
           checked={filterDone}
           onChange={(e) => setFilterDone(e.target.checked)}
+          size="md"
         />
 
         {!loadingParam && (
@@ -162,8 +161,7 @@ export default function Edition() {
         )}
 
         <Button
-          label="♻️ Réinitialiser"
-          variant="reset"
+          label="Réinitialiser"
           onClick={() => setShowConfirmReset(true)}
         />
       </div>

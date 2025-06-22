@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Modal, Button, Input } from '@/components'
 
@@ -10,6 +11,19 @@ export default function ModalCategory({
   newCategory,
   onChangeNewCategory,
 }) {
+  const [error, setError] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const trimmed = newCategory.trim()
+    if (!trimmed) {
+      setError('Le nom de la catégorie ne peut pas être vide.')
+      return
+    }
+    setError('')
+    onAddCategory(e)
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -33,14 +47,19 @@ export default function ModalCategory({
             </li>
           ))}
       </ul>
-      <form className="category-form" onSubmit={onAddCategory}>
+
+      <form className="category-form" onSubmit={handleSubmit}>
         <Input
           id="new-category"
           label="Nouvelle catégorie"
           value={newCategory}
-          onChange={(e) => onChangeNewCategory(e.target.value)}
+          onChange={(e) => {
+            onChangeNewCategory(e.target.value)
+            if (error) setError('')
+          }}
+          error={error}
         />
-        <Button variant="primary" label="Ajouter" type="submit" />
+        <Button label="Ajouter" type="submit" />
       </form>
     </Modal>
   )

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Input, Select } from '@/components'
+import { Input, Select, Button, ImagePreview } from '@/components'
 import './ItemForm.scss'
 
 const MAX_SIZE = 500 * 1024
@@ -96,15 +96,9 @@ export default function ItemForm({
         error={!image ? error : ''}
       />
 
-      {previewUrl && (
-        <div className="item-form__image-preview">
-          <img src={previewUrl} alt="Aperçu de l’élément" />
-        </div>
-      )}
+      <ImagePreview url={previewUrl} alt="Aperçu de l’image" size="lg" />
 
-      <button ref={confirmRef} type="submit" className="btn btn--primary">
-        Ajouter
-      </button>
+      <Button ref={confirmRef} type="submit" label="Ajouter"></Button>
     </form>
   )
 }

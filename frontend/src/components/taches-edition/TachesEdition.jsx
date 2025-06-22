@@ -1,28 +1,5 @@
-/**
- * Composant : ChecklistTachesEdition
- *
- * Rôle :
- *   Affiche une liste de tâches modifiables :
- *   – éditer le label
- *   – changer la catégorie
- *   – basculer « aujourd’hui »
- *   – supprimer
- *
- * Props :
- *   - items: Array<{
- *       id: string|number,
- *       label: string,
- *       categorie: string,
- *       aujourdhui: boolean|number,
- *       imagePath?: string
- *     }>
- *   - onToggleAujourdhui(id, current): fn
- *   - onUpdateLabel(id, newLabel): fn
- *   - onUpdateCategorie(id, newCat): fn
- *   - onDelete(item): fn
- */
 import PropTypes from 'prop-types'
-import { Checkbox } from '@/components'
+import { Checkbox, Input, Select, ImagePreview } from '@/components'
 import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
@@ -43,50 +20,49 @@ export default function ChecklistTachesEdition({
             key={t.id}
             className={`tache-edition ${t.aujourdhui ? 'active' : ''}`}
           >
-            {t.imagePath && (
-              <img
-                src={`http://localhost:3001${t.imagePath}`}
+            <div className="tache-edition__col image">
+              <ImagePreview
+                url={`http://localhost:3001${t.imagePath}`}
                 alt={t.label}
-                className="tache-icon"
+                size="md"
               />
-            )}
+            </div>
 
-            <input
-              type="text"
-              name="label"
-              value={t.label}
-              onChange={(e) => onUpdateLabel(t.id, e.target.value)}
-              className="editable-label"
-            />
+            <div className="tache-edition__col info">
+              <Input
+                id={`label-${t.id}`}
+                value={t.label}
+                onChange={(e) => onUpdateLabel(t.id, e.target.value)}
+                aria-label="Nom de la tâche"
+                error=""
+              />
+              <Select
+                id={`categorie-${t.id}`}
+                value={t.categorie}
+                onChange={(e) => onUpdateCategorie(t.id, e.target.value)}
+                options={categories}
+                aria-label="Catégorie de la tâche"
+                error=""
+              />
+            </div>
 
-            <select
-              name="categorie"
-              value={t.categorie}
-              onChange={(e) => onUpdateCategorie(t.id, e.target.value)}
-              className="editable-categorie"
-            >
-              {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
-
-            <Checkbox
-              id={`aujourdhui-${t.id}`}
-              checked={!!t.aujourdhui}
-              onChange={() => onToggleAujourdhui(t.id, t.aujourdhui)}
-              label="" // pas de label visuel dans la liste
-              aria-label="Marquer la tâche comme faite aujourd’hui"
-            />
-
-            <button
-              className="delete-btn"
-              onClick={() => onDelete(t)}
-              title="Supprimer la tâche"
-            >
-              🗑️
-            </button>
+            <div className="tache-edition__col actions">
+              <button
+                className="delete-btn"
+                onClick={() => onDelete(t)}
+                title="Supprimer la tâche"
+              >
+                🗑️
+              </button>
+              <Checkbox
+                id={`aujourdhui-${t.id}`}
+                checked={!!t.aujourdhui}
+                onChange={() => onToggleAujourdhui(t.id, t.aujourdhui)}
+                label=""
+                aria-label="À faire"
+                size="md"
+              />
+            </div>
           </div>
         ))}
       </div>

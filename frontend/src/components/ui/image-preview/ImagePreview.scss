@@ -1,0 +1,32 @@
+@use '@styles/abstracts' as *;
+
+.image-preview {
+  margin-top: $spacing-sm;
+  display: flex;
+  justify-content: center;
+  border-radius: $radius-sm;
+  background-color: var(--color-bg-soft);
+
+  img {
+    object-fit: contain;
+    border-radius: $radius-sm;
+    box-shadow: $box-shadow;
+    border: 1px solid gray(300);
+    background-color: white;
+  }
+
+  &--sm img {
+    max-width: rem(64);
+    max-height: rem(64);
+  }
+
+  &--md img {
+    max-width: rem(100);
+    max-height: rem(100);
+  }
+
+  &--lg img {
+    max-width: rem(160);
+    max-height: rem(160);
+  }
+}

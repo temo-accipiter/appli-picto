@@ -4,7 +4,7 @@ import './Button.scss'
 export default function Button({
   onClick,
   label,
-  variant = 'primary',
+  variant = 'primary', // ou 'secondary' ou 'default'
   disabled = false,
   type = 'button',
 }) {
@@ -24,7 +24,7 @@ export default function Button({
 Button.propTypes = {
   onClick: PropTypes.func.isRequired,
   label: PropTypes.string.isRequired,
-  variant: PropTypes.oneOf(['primary', 'secondary', 'reset']),
+  variant: PropTypes.oneOf(['primary', 'secondary', 'default']),
   disabled: PropTypes.bool,
   type: PropTypes.oneOf(['button', 'submit', 'reset']),
 }

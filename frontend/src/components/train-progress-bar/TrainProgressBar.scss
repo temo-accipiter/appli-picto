@@ -18,7 +18,7 @@
     padding: 0 $spacing-lg;
     z-index: 10;
 
-    .ligne-select {
+    /*.ligne-select {
       display: flex;
       align-items: center;
       gap: $spacing-xs;
@@ -27,14 +27,18 @@
         font-weight: $font-weight-medium;
       }
 
-      select {
+      .select-field {
+        margin-bottom: 0;
+      }
+
+      .select-field__select {
         font-size: $font-size-base;
         padding: $spacing-xs $spacing-sm;
         border-radius: $radius-sm;
         border: rem(1) solid $color-primary;
         box-shadow: $box-shadow;
       }
-    }
+    }*/
 
     .progression {
       font-size: $font-size-lg;
@@ -47,23 +51,6 @@
       display: inline-block;
       box-shadow: $box-shadow;
       margin: 0;
-    }
-
-    .reset-button {
-      background-color: $color-secondary;
-      color: $color-text-invert;
-      border: none;
-      padding: $spacing-xs $spacing-sm;
-      border-radius: $radius-sm;
-      font-weight: $font-weight-semibold;
-      box-shadow: $box-shadow;
-      cursor: pointer;
-
-      @include transition-smooth;
-
-      @include on-event {
-        background-color: color.adjust($color-secondary, $lightness: -6%);
-      }
     }
   }
 

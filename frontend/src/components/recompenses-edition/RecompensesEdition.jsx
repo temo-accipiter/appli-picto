@@ -1,18 +1,12 @@
 /**
- * Composant : ChecklistRecompensesEdition
- *
- * Rôle :
  *   Affiche et gère la liste des récompenses pour l’édition dans une version contrôlée :
  *     - suppression d’une récompense
  *     - sélection/désélection de la récompense du jour
- *
- * Props :
- *   - items: Array<{ id: string|number, label: string, imagePath?: string, selected: boolean|number }>
- *   - onDelete(id: string|number): void                // callback pour supprimer une récompense
- *   - onToggleSelect(id: string|number, currentlySelected: boolean|number): void  // callback pour changer la sélection
  */
 
 import PropTypes from 'prop-types'
+import { Checkbox, ImagePreview, DeleteButton } from '@/components'
+
 import './RecompensesEdition.scss'
 
 export default function RecompensesEdition({
@@ -22,34 +16,33 @@ export default function RecompensesEdition({
 }) {
   return (
     <div className="checklist-recompenses">
-      <h2>🎁 Choisir la récompense du jour</h2>
+      <h2>🎁 Choisir la récompense</h2>
       <div className="liste-recompenses">
         {items.map((r) => (
           <div
             key={r.id}
             className={`recompense-item ${r.selected ? 'active' : ''}`}
           >
-            <button
-              className="recompense-delete-btn"
-              onClick={() => onDelete(r)}
-              title="Supprimer"
-            >
-              ✖
-            </button>
             <span className="recompense-label">{r.label}</span>
             {r.imagePath && (
-              <img
-                src={`http://localhost:3001${r.imagePath}`}
+              <ImagePreview
+                url={`http://localhost:3001${r.imagePath}`}
                 alt={r.label}
+                size="sm"
                 className="recompense-icon"
               />
             )}
-            <input
-              type="checkbox"
-              name="selectedRecompense"
-              checked={r.selected === 1}
-              onChange={() => onToggleSelect(r.id, r.selected === 1)}
-            />
+            <div className="card-footer">
+              <Checkbox
+                id={`recompense-${r.id}`}
+                checked={r.selected === 1}
+                onChange={() => onToggleSelect(r.id, r.selected === 1)}
+                label=""
+                aria-label={`Récompense sélectionnée : ${r.label}`}
+                size="sm"
+              />
+              <DeleteButton onClick={() => onDelete(r)} />
+            </div>
           </div>
         ))}
       </div>

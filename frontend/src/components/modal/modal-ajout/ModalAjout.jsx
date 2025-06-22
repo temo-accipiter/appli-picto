@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
-import { Modal } from '@/components'
-import ItemForm from '@/components/forms/ItemForm'
+import { Modal, ItemForm } from '@/components'
 
 export default function ModalAjout({
   isOpen,

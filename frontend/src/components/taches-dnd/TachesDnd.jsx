@@ -1,19 +1,6 @@
 /**
- * Composant : ChecklistTachesDnd
- *
- * Rôle :
  *   Affiche une liste de tâches réordonnables par glisser-déposer
  *   avec possibilité de cocher/décocher chaque tâche et bouton de reset.
- *
- * Props :
- *   - items: Array<{
- *       id: string|number,
- *       label: string,
- *       fait: boolean|number
- *     }>
- *   - onReorder(newOrderIds: Array<string|number>): void
- *   - onToggle(id: string|number, wasDone: boolean): void
- *   - onReset(): void
  */
 
 import { useState, useCallback } from 'react'
