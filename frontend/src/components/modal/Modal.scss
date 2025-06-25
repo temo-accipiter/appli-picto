@@ -25,6 +25,7 @@
   box-shadow: $box-shadow;
   display: flex;
   flex-direction: column;
+  position: relative;
   animation: scaleIn $transition-fast ease-out;
 }
 
@@ -71,8 +72,8 @@
 
 .modal__close {
   position: absolute;
-  top: $spacing-sm;
-  right: $spacing-sm;
+  top: 0;
+  right: 0;
   width: 2rem;
   height: 2rem;
   background: transparent;
@@ -83,6 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
   cursor: pointer;
   transition:
     background $transition-fast,

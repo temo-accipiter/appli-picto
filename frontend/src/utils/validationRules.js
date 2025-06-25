@@ -6,3 +6,6 @@ export const noEdgeSpaces = (label) =>
 
 export const noDoubleSpaces = (label) =>
   /\s{2,}/.test(label) ? 'Pas de doubles espaces' : ''
+
+export const validateImagePresence = (file) =>
+  !file ? 'Choisis une image (PNG, JPG, SVG ≤ 500 Ko)' : ''

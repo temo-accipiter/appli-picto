@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import PropTypes from 'prop-types'
-import { Modal, Button, Input } from '@/components'
+import { Modal, Button, InputWithValidation } from '@/components'
+import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
 
 export default function ModalCategory({
   isOpen,
@@ -11,19 +11,17 @@ export default function ModalCategory({
   newCategory,
   onChangeNewCategory,
 }) {
-  const [error, setError] = useState('')
-
+  const validationRules = [validateNotEmpty, noEdgeSpaces, noDoubleSpaces]
   const handleSubmit = (e) => {
     e.preventDefault()
-    const trimmed = newCategory.trim()
-    if (!trimmed) {
-      setError('Le nom de la catégorie ne peut pas être vide.')
+    const invalid = validationRules.some((rule) => rule(newCategory))
+    if (invalid) {
+      const input = document.getElementById('new-category')
+      input?.blur()
       return
     }
-    setError('')
     onAddCategory(e)
   }
-
   return (
     <Modal
       isOpen={isOpen}
@@ -49,15 +47,13 @@ export default function ModalCategory({
       </ul>
 
       <form className="category-form" onSubmit={handleSubmit}>
-        <Input
+        <InputWithValidation
           id="new-category"
-          label="Nouvelle catégorie"
           value={newCategory}
-          onChange={(e) => {
-            onChangeNewCategory(e.target.value)
-            if (error) setError('')
-          }}
-          error={error}
+          onChange={onChangeNewCategory}
+          onValid={(val) => onChangeNewCategory(val)}
+          rules={[validateNotEmpty, noEdgeSpaces, noDoubleSpaces]}
+          ariaLabel="Nouvelle catégorie"
         />
         <Button label="Ajouter" type="submit" />
       </form>

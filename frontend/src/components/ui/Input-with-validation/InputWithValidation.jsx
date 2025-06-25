@@ -9,6 +9,7 @@ export default function InputWithValidation({
   rules,
   ariaLabel = 'Champ',
   successDuration = 600,
+  onChange,
 }) {
   const [draft, setDraft] = useState(value)
   const [error, setError] = useState('')
@@ -39,8 +40,10 @@ export default function InputWithValidation({
       id={id} // ✅ id passé en prop
       value={draft}
       onChange={(e) => {
-        setDraft(e.target.value)
+        const val = e.target.value
+        setDraft(val)
         setError('')
+        if (onChange) onChange(val)
       }}
       onBlur={handleBlur}
       error={error}
@@ -63,4 +66,5 @@ InputWithValidation.propTypes = {
   rules: PropTypes.arrayOf(PropTypes.func).isRequired,
   ariaLabel: PropTypes.string,
   successDuration: PropTypes.number,
+  onChange: PropTypes.func,
 }

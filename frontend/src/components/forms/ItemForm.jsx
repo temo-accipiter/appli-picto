@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { Input, Select, Button, ImagePreview } from '@/components'
+import { InputWithValidation, Select, Button, ImagePreview } from '@/components'
+import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
+
 import './ItemForm.scss'
 
 const MAX_SIZE = 500 * 1024
@@ -15,11 +17,7 @@ export default function ItemForm({
   const [categorie, setCategorie] = useState('none')
   const [image, setImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
-
-  const [labelError, setLabelError] = useState('')
   const [imageError, setImageError] = useState('')
-  const [labelSuccess, setLabelSuccess] = useState(false)
-
   const confirmRef = useRef(null)
 
   useEffect(() => {
@@ -27,14 +25,6 @@ export default function ItemForm({
   }, [])
 
   const cleanLabel = label.trim().replace(/\s+/g, ' ')
-
-  const validateLabel = (str) => {
-    const trimmed = str.trim()
-    if (!trimmed || trimmed !== str || /\s{2,}/.test(str)) {
-      return 'Le nom ne peut pas être vide, commencer/terminer par un espace, ou contenir des doubles espaces.'
-    }
-    return ''
-  }
 
   const handleImage = (e) => {
     const file = e.target.files[0]
@@ -59,46 +49,24 @@ export default function ItemForm({
 
   const handleSubmit = (e) => {
     e.preventDefault()
-
-    const labelValidation = validateLabel(label)
-    const validLabel = labelValidation === ''
     const validImage = image !== null
-
-    if (!validLabel) {
-      setLabelError(labelValidation)
-    } else {
-      setLabelError('')
-      setLabelSuccess(true)
-      setTimeout(() => setLabelSuccess(false), 600)
-    }
-
     if (!validImage) {
       setImageError('Choisis une image PNG, JPG ou SVG, légère (max. 500 Ko).')
     }
 
-    if (validLabel && validImage) {
+    if (label && validImage) {
       onSubmit({ label: cleanLabel, categorie, image })
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="item-form">
-      <Input
+      <InputWithValidation
         id="item-form-label"
-        label="Nom"
         value={label}
-        onChange={(e) => {
-          setLabel(e.target.value)
-          if (labelError) setLabelError('')
-        }}
-        error={labelError}
-        className={
-          labelError
-            ? 'input-field__input--error'
-            : labelSuccess
-              ? 'input-field__input--success'
-              : ''
-        }
+        onValid={(val) => setLabel(val)}
+        rules={[validateNotEmpty, noEdgeSpaces, noDoubleSpaces]}
+        ariaLabel="Nom"
       />
 
       {includeCategory && (
@@ -114,17 +82,18 @@ export default function ItemForm({
         />
       )}
 
-      <Input
+      <input
         id="item-form-image"
-        label="Image (PNG, JPG, SVG ≤ 500 Ko)"
         type="file"
+        className={`input-field__input ${imageError ? 'input-field__input--error' : ''}`}
         onChange={handleImage}
-        error={imageError}
-        className={imageError ? 'input-field__input--error' : ''}
+        aria-label="Image"
       />
+      {imageError && (
+        <div className="input-field__error-message">{imageError}</div>
+      )}
 
       <ImagePreview url={previewUrl} alt="Aperçu de l’image" size="lg" />
-
       <Button ref={confirmRef} type="submit" label="Ajouter" />
     </form>
   )
