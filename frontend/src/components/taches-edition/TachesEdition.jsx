@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
-import { Checkbox, Input, Select, ImagePreview } from '@/components'
+import CardEdition from '@/components/card-edition/CardEdition'
+import { useState } from 'react'
 import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
@@ -10,60 +11,84 @@ export default function ChecklistTachesEdition({
   onUpdateCategorie,
   onDelete,
 }) {
+  const [errors, setErrors] = useState({})
+  const [drafts, setDrafts] = useState({})
+  const [successIds, setSuccessIds] = useState(new Set())
+
+  const validateLabel = (label) => {
+    const trimmed = label.trim()
+    if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
+      return 'Nom invalide'
+    }
+    return ''
+  }
+
+  const handleChange = (id, value) => {
+    setDrafts((prev) => ({ ...prev, [id]: value }))
+    setErrors((prev) => ({ ...prev, [id]: '' }))
+  }
+
+  const handleBlur = (id) => {
+    const value = drafts[id]
+    const error = validateLabel(value)
+
+    if (error) {
+      setErrors((prev) => ({ ...prev, [id]: error }))
+      return
+    }
+
+    onUpdateLabel(id, value)
+
+    setDrafts((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+
+    setSuccessIds((prev) => new Set([...prev, id]))
+    setTimeout(() => {
+      setSuccessIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    }, 600)
+  }
+
   return (
     <div className="checklist-edition">
       {items.length === 0 && <p>Aucune tâche pour le moment.</p>}
 
       <div className="liste-taches-edition">
         {items.map((t) => (
-          <div
+          <CardEdition
             key={t.id}
-            className={`tache-edition ${t.aujourdhui ? 'active' : ''}`}
-          >
-            <div className="tache-edition__col image">
-              <ImagePreview
-                url={`http://localhost:3001${t.imagePath}`}
-                alt={t.label}
-                size="md"
-              />
-            </div>
-
-            <div className="tache-edition__col info">
-              <Input
-                id={`label-${t.id}`}
-                value={t.label}
-                onChange={(e) => onUpdateLabel(t.id, e.target.value)}
-                aria-label="Nom de la tâche"
-                error=""
-              />
-              <Select
-                id={`categorie-${t.id}`}
-                value={t.categorie}
-                onChange={(e) => onUpdateCategorie(t.id, e.target.value)}
-                options={categories}
-                aria-label="Catégorie de la tâche"
-                error=""
-              />
-            </div>
-
-            <div className="tache-edition__col actions">
-              <button
-                className="delete-btn"
-                onClick={() => onDelete(t)}
-                title="Supprimer la tâche"
-              >
-                🗑️
-              </button>
-              <Checkbox
-                id={`aujourdhui-${t.id}`}
-                checked={!!t.aujourdhui}
-                onChange={() => onToggleAujourdhui(t.id, t.aujourdhui)}
-                label=""
-                aria-label="À faire"
-                size="md"
-              />
-            </div>
-          </div>
+            imageUrl={`http://localhost:3001${t.imagePath}`}
+            labelId={t.id}
+            label={drafts[t.id] ?? t.label}
+            onLabelChange={(val) => handleChange(t.id, val)}
+            onBlur={() => handleBlur(t.id)}
+            error={errors[t.id]}
+            onDelete={() => onDelete(t)}
+            checked={!!t.aujourdhui}
+            onToggle={() => onToggleAujourdhui(t.id, t.aujourdhui)}
+            showCategorieSelect={true}
+            categorie={t.categorie}
+            onCategorieChange={(val) => onUpdateCategorie(t.id, val)}
+            categorieOptions={categories}
+            className={[
+              t.aujourdhui ? 'active' : '',
+              errors[t.id] ? 'input-field__input--error' : '',
+              successIds.has(t.id) ? 'input-field__input--success' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          />
         ))}
       </div>
     </div>

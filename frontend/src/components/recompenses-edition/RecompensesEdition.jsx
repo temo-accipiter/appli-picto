@@ -2,8 +2,8 @@
  *   Affiche et gère la liste des récompenses pour l’édition dans une version contrôlée :
  *     - suppression d’une récompense
  *     - sélection/désélection de la récompense du jour
+ *
  */
-
 import PropTypes from 'prop-types'
 import { Checkbox, ImagePreview, DeleteButton } from '@/components'
 

@@ -1,91 +1,12 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
-.checklist-edition {
-  .liste-taches-edition {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-md;
-    justify-content: flex-start;
-  }
-
-  .tache-edition {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: $spacing-sm;
-    align-items: stretch;
-    padding: $spacing-sm;
-    border-radius: $radius-lg;
-    background: var(--pastel-color, #f0f8ff);
-    box-shadow: $box-shadow;
-    @include transition-smooth;
-
-    &.active {
-      border: rem(2) solid $color-success;
-      background-color: color.adjust($color-success, $lightness: 40%);
-    }
-
-    // 📱 Responsive : stack verticalement les éléments
-    @include respond-to(xs) {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: $spacing-sm;
-
-      span,
-      .editable-label,
-      .editable-categorie {
-        width: 100%;
-      }
-    }
-  }
-}
-
-.tache-edition__col {
-  &.image {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-
-    .ImagePreview {
-      max-width: rem(100);
-      max-height: rem(100);
-      object-fit: contain; // ← garantit que l’image n’est pas déformée
-      display: block;
-    }
-  }
-}
-
-.tache-edition__col {
-  &.actions {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0.1rem 0;
-
-    .delete-btn {
-      font-size: rem(20);
-      margin: 0;
-      padding: 0;
-      line-height: 1;
-      display: inline-block;
-      vertical-align: middle;
-    }
-  }
-}
-
-.tache-edition__col {
-  &.info {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    Input {
-      border-radius: $radius-md;
-    }
-    Select {
-      width: 100%;
-      border-radius: $radius-md;
-    }
-  }
+.liste-taches-edition {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  justify-content: flex-start;
+  background-color: var(--color-bg-soft);
+  box-shadow: $box-shadow;
+  border-radius: $radius-md;
+  padding: $spacing-xs;
 }

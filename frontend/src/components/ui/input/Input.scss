@@ -1,43 +1,75 @@
-@use '@styles/abstracts' as *;
-
 .input-field {
   display: flex;
   flex-direction: column;
-  margin-bottom: $spacing-md;
+  gap: 0.25rem;
+  position: relative;
+}
 
-  &__label {
-    margin-bottom: $spacing-xs;
-    font-size: $font-size-base;
-    font-weight: $font-weight-medium;
-    color: $color-text;
+.input-field__input {
+  height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  box-sizing: border-box;
+  transition:
+    border 0.2s ease,
+    outline 0.2s ease;
+  background-color: #fff;
+}
+
+.input-field__input:focus {
+  outline: 2px solid #4f9da6;
+  border-color: transparent;
+}
+
+.input-field__input--error {
+  outline: 2px solid #e63946;
+  animation: error-glow 0.2s ease-in-out;
+}
+
+.input-field__input--success {
+  outline: 2px solid #2a9d8f;
+  animation: success-glow 0.2s ease-in-out;
+}
+
+.input-field__error {
+  min-height: 1rem;
+  font-size: 0.75rem;
+  color: #e63946;
+  line-height: 1.2;
+  margin: 0;
+  overflow: hidden;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  transition: opacity 0.2s ease;
+
+  &:empty {
+    opacity: 0;
   }
+}
 
-  &__input {
-    padding: $spacing-sm $spacing-md;
-    font-size: $font-size-base;
-    border: 1px solid gray(400);
-    border-radius: $radius-sm;
-    transition:
-      border-color $transition-fast,
-      box-shadow $transition-fast;
-
-    &:focus {
-      outline: none;
-      border-color: $color-primary;
-      box-shadow: 0 0 0 3px rgba($color-primary, 0.2);
-    }
-
-    &--error {
-      border-color: $color-error;
-    }
-    &:invalid {
-      box-shadow: none;
-    }
+@keyframes error-glow {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
   }
+  50% {
+    box-shadow: 0 0 6px 2px rgba(230, 57, 70, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
 
-  &__error {
-    margin-top: $spacing-xs;
-    font-size: $font-size-sm;
-    color: $color-error;
+@keyframes success-glow {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: 0 0 6px 2px rgba(42, 157, 143, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
   }
 }

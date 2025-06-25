@@ -9,8 +9,17 @@ export default function Input({
   placeholder = '',
   type = 'text',
   error = '',
+  className = '',
   ...rest
 }) {
+  const inputClass = [
+    'input-field__input',
+    error && 'input-field__input--error',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div className="input-field">
       {label && (
@@ -20,20 +29,19 @@ export default function Input({
       )}
       <input
         id={id}
+        name={id}
         type={type}
-        className={`input-field__input${error ? ' input-field__input--error' : ''}`}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}
+        className={inputClass}
         {...rest}
       />
-      {error && (
-        <p id={`${id}-error`} className="input-field__error">
-          {error}
-        </p>
-      )}
+      <p id={`${id}-error`} className="input-field__error">
+        {error}
+      </p>
     </div>
   )
 }
@@ -46,4 +54,5 @@ Input.propTypes = {
   placeholder: PropTypes.string,
   type: PropTypes.string,
   error: PropTypes.string,
+  className: PropTypes.string,
 }

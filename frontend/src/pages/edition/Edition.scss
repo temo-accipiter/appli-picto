@@ -124,3 +124,14 @@
     }
   }
 }
+.recompenses-edition__message {
+  padding: $spacing-md;
+  font-size: $font-size-base;
+  text-align: center;
+  color: $color-primary;
+  font-style: italic;
+}
+
+.recompenses-edition {
+  animation: fadeIn 200ms ease;
+}

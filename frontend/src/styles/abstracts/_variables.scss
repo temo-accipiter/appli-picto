@@ -101,3 +101,6 @@ $z-tooltip: 1200;
 $transition-fast: 0.2s;
 $transition-base: 0.3s;
 $transition-slow: 0.5s;
+
+$base-font-size: 16; // si ce n'est pas déjà fait
+$control-height: rem(44, $base-font-size); // ou 40 si tu préfères

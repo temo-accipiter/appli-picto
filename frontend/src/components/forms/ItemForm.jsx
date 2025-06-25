@@ -12,56 +12,73 @@ export default function ItemForm({
   onSubmit,
 }) {
   const [label, setLabel] = useState('')
-  // Initialisation sur 'none' pour la catégorie par défaut
   const [categorie, setCategorie] = useState('none')
   const [image, setImage] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
-  const [error, setError] = useState('')
+
+  const [labelError, setLabelError] = useState('')
+  const [imageError, setImageError] = useState('')
+  const [labelSuccess, setLabelSuccess] = useState(false)
+
   const confirmRef = useRef(null)
 
-  // Autofocus sur "Ajouter"
   useEffect(() => {
     confirmRef.current?.focus()
   }, [])
 
   const cleanLabel = label.trim().replace(/\s+/g, ' ')
-  const isLabelValid = cleanLabel.length > 0 && cleanLabel === label
+
+  const validateLabel = (str) => {
+    const trimmed = str.trim()
+    if (!trimmed || trimmed !== str || /\s{2,}/.test(str)) {
+      return 'Le nom ne peut pas être vide, commencer/terminer par un espace, ou contenir des doubles espaces.'
+    }
+    return ''
+  }
 
   const handleImage = (e) => {
     const file = e.target.files[0]
     if (!file) {
       setImage(null)
       setPreviewUrl(null)
-      setError('')
+      setImageError('')
       return
     }
     if (!VALID_TYPES.includes(file.type)) {
-      setError('Format non supporté (PNG, JPG ou SVG).')
+      setImageError('Format non supporté. (PNG, JPG ou SVG)')
       return
     }
     if (file.size > MAX_SIZE) {
-      setError('Image trop lourde (max 500 Ko).')
+      setImageError('Image trop lourde (max. 500 Ko).')
       return
     }
-    setError('')
     setImage(file)
     setPreviewUrl(URL.createObjectURL(file))
+    setImageError('')
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if (!isLabelValid) {
-      setError(
-        'Le nom doit être non vide,\nsans espaces en début/fin ni doubles espaces.'
-      )
-      return
+
+    const labelValidation = validateLabel(label)
+    const validLabel = labelValidation === ''
+    const validImage = image !== null
+
+    if (!validLabel) {
+      setLabelError(labelValidation)
+    } else {
+      setLabelError('')
+      setLabelSuccess(true)
+      setTimeout(() => setLabelSuccess(false), 600)
     }
-    if (!image) {
-      setError('Merci de choisir une image valide (≤ 500 Ko).')
-      return
+
+    if (!validImage) {
+      setImageError('Choisis une image PNG, JPG ou SVG, légère (max. 500 Ko).')
     }
-    setError('')
-    onSubmit({ label: cleanLabel, categorie, image })
+
+    if (validLabel && validImage) {
+      onSubmit({ label: cleanLabel, categorie, image })
+    }
   }
 
   return (
@@ -70,8 +87,18 @@ export default function ItemForm({
         id="item-form-label"
         label="Nom"
         value={label}
-        onChange={(e) => setLabel(e.target.value)}
-        error={!isLabelValid ? error : ''}
+        onChange={(e) => {
+          setLabel(e.target.value)
+          if (labelError) setLabelError('')
+        }}
+        error={labelError}
+        className={
+          labelError
+            ? 'input-field__input--error'
+            : labelSuccess
+              ? 'input-field__input--success'
+              : ''
+        }
       />
 
       {includeCategory && (
@@ -84,7 +111,6 @@ export default function ItemForm({
           ]}
           value={categorie}
           onChange={(e) => setCategorie(e.target.value)}
-          error="" // plus de champ requis
         />
       )}
 
@@ -93,12 +119,13 @@ export default function ItemForm({
         label="Image (PNG, JPG, SVG ≤ 500 Ko)"
         type="file"
         onChange={handleImage}
-        error={!image ? error : ''}
+        error={imageError}
+        className={imageError ? 'input-field__input--error' : ''}
       />
 
       <ImagePreview url={previewUrl} alt="Aperçu de l’image" size="lg" />
 
-      <Button ref={confirmRef} type="submit" label="Ajouter"></Button>
+      <Button ref={confirmRef} type="submit" label="Ajouter" />
     </form>
   )
 }

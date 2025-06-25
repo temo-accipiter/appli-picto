@@ -113,6 +113,9 @@ export default function Edition() {
     return catMatch && doneMatch
   })
 
+  const [showTaches, setShowTaches] = useState(false)
+  const [showRecompenses, setShowRecompenses] = useState(false)
+
   return (
     <div className="page-edition">
       <div className="edition-buttons">
@@ -165,21 +168,51 @@ export default function Edition() {
           onClick={() => setShowConfirmReset(true)}
         />
       </div>
-
-      <TachesEdition
-        items={visibleTaches}
-        categories={categories}
-        onToggleAujourdhui={toggleAujourdhui}
-        onUpdateLabel={updateLabel}
-        onUpdateCategorie={updateCategorie}
-        onDelete={(t) => setTacheASupprimer(t)}
+      <Button
+        label={showTaches ? '🧺 Masquer les tâches' : '🧺 Afficher les tâches'}
+        onClick={() => setShowTaches((prev) => !prev)}
+      />
+      <Button
+        label={
+          showRecompenses
+            ? '🎁 Masquer les récompenses'
+            : '🎁 Afficher les récompenses'
+        }
+        onClick={() => setShowRecompenses((prev) => !prev)}
       />
 
-      <RecompensesEdition
-        items={recompenses}
-        onDelete={(r) => setRecompenseASupprimer(r)}
-        onToggleSelect={toggleSelectRecompense}
-      />
+      {showTaches && (
+        <div className="taches-edition">
+          {visibleTaches.length === 0 ? (
+            <p className="taches-edition__message">Aucune tâche à afficher.</p>
+          ) : (
+            <TachesEdition
+              items={visibleTaches}
+              categories={categories}
+              onToggleAujourdhui={toggleAujourdhui}
+              onUpdateLabel={updateLabel}
+              onUpdateCategorie={updateCategorie}
+              onDelete={(t) => setTacheASupprimer(t)}
+            />
+          )}
+        </div>
+      )}
+
+      {showRecompenses && (
+        <div className="recompenses-edition">
+          {recompenses.length === 0 ? (
+            <p className="recompenses-edition__message">
+              Aucune récompense à afficher.
+            </p>
+          ) : (
+            <RecompensesEdition
+              items={recompenses}
+              onDelete={(r) => setRecompenseASupprimer(r)}
+              onToggleSelect={toggleSelectRecompense}
+            />
+          )}
+        </div>
+      )}
 
       {/* Modals */}
       <ModalConfirm
