@@ -22,6 +22,7 @@ export default function CardEdition({
   categorieOptions = [],
   labelId,
   className = '',
+  onBlur,
 }) {
   return (
     <div className={`card-edition ${className}`}>
@@ -44,6 +45,7 @@ export default function CardEdition({
           onValid={(val) => onLabelChange(val)}
           rules={[validateNotEmpty, noEdgeSpaces, noDoubleSpaces]}
           ariaLabel="Nom"
+          onBlur={onBlur}
         />
 
         <div className="card-edition__row">
@@ -76,4 +78,5 @@ CardEdition.propTypes = {
   categorieOptions: PropTypes.array,
   labelId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   className: PropTypes.string,
+  onBlur: PropTypes.func,
 }

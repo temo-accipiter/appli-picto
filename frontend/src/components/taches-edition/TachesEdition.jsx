@@ -28,8 +28,7 @@ export default function ChecklistTachesEdition({
     setErrors((prev) => ({ ...prev, [id]: '' }))
   }
 
-  const handleBlur = (id) => {
-    const value = drafts[id]
+  const handleBlur = (id, value) => {
     const error = validateLabel(value)
 
     if (error) {
@@ -72,7 +71,7 @@ export default function ChecklistTachesEdition({
             labelId={t.id}
             label={drafts[t.id] ?? t.label}
             onLabelChange={(val) => handleChange(t.id, val)}
-            onBlur={() => handleBlur(t.id)}
+            onBlur={(val) => handleBlur(t.id, val)}
             error={errors[t.id]}
             onDelete={() => onDelete(t)}
             checked={!!t.aujourdhui}

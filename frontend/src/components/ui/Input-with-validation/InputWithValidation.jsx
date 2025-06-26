@@ -10,6 +10,7 @@ export default function InputWithValidation({
   ariaLabel = 'Champ',
   successDuration = 600,
   onChange,
+  onBlur,
 }) {
   const [draft, setDraft] = useState(value)
   const [error, setError] = useState('')
@@ -38,6 +39,7 @@ export default function InputWithValidation({
       setSuccess(true)
       setTimeout(() => setSuccess(false), successDuration)
     }
+    if (onBlur) onBlur(draft)
   }
 
   return (
@@ -72,4 +74,5 @@ InputWithValidation.propTypes = {
   ariaLabel: PropTypes.string,
   successDuration: PropTypes.number,
   onChange: PropTypes.func,
+  onBlur: PropTypes.func,
 }
