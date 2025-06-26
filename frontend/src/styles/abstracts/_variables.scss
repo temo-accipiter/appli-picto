@@ -104,3 +104,13 @@ $transition-slow: 0.5s;
 
 $base-font-size: 16; // si ce n'est pas déjà fait
 $control-height: rem(44, $base-font-size); // ou 40 si tu préfères
+
+:root {
+  --c-scroll-thumb: #bbb; // clair
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-scroll-thumb: #555; // sombre
+  }
+}

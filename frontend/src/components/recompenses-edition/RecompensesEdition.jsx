@@ -5,7 +5,7 @@
  *
  */
 import PropTypes from 'prop-types'
-import { Checkbox, ImagePreview, DeleteButton } from '@/components'
+import { Checkbox, ImagePreview, ButtonClose } from '@/components'
 
 import './RecompensesEdition.scss'
 
@@ -41,7 +41,7 @@ export default function RecompensesEdition({
                 aria-label={`Récompense sélectionnée : ${r.label}`}
                 size="sm"
               />
-              <DeleteButton onClick={() => onDelete(r)} />
+              <ButtonClose onClick={() => onDelete(r)} />
             </div>
           </div>
         ))}

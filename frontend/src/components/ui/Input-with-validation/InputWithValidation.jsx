@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components'
 
 export default function InputWithValidation({
@@ -14,6 +14,11 @@ export default function InputWithValidation({
   const [draft, setDraft] = useState(value)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+
+  // 🔄 Sync valeur externe → interne
+  useEffect(() => {
+    setDraft(value)
+  }, [value])
 
   const validate = (text) => {
     for (const rule of rules) {
@@ -37,7 +42,7 @@ export default function InputWithValidation({
 
   return (
     <Input
-      id={id} // ✅ id passé en prop
+      id={id}
       value={draft}
       onChange={(e) => {
         const val = e.target.value

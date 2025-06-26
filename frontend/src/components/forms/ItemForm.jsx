@@ -1,12 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { InputWithValidation, Select, Button, ImagePreview } from '@/components'
-import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
+import {
+  validateNotEmpty,
+  noEdgeSpaces,
+  noDoubleSpaces,
+  validateImagePresence,
+  validateImageType,
+  validateImageSize,
+} from '@/utils'
 
 import './ItemForm.scss'
-
-const MAX_SIZE = 500 * 1024
-const VALID_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml']
 
 export default function ItemForm({
   includeCategory = false,
@@ -34,14 +38,19 @@ export default function ItemForm({
       setImageError('')
       return
     }
-    if (!VALID_TYPES.includes(file.type)) {
-      setImageError('Format non supporté. (PNG, JPG ou SVG)')
+
+    const errorType = validateImageType(file)
+    const errorSize = validateImageSize(file)
+
+    if (errorType) {
+      setImageError(errorType)
       return
     }
-    if (file.size > MAX_SIZE) {
-      setImageError('Image trop lourde (max. 500 Ko).')
+    if (errorSize) {
+      setImageError(errorSize)
       return
     }
+
     setImage(file)
     setPreviewUrl(URL.createObjectURL(file))
     setImageError('')
@@ -51,7 +60,7 @@ export default function ItemForm({
     e.preventDefault()
     const validImage = image !== null
     if (!validImage) {
-      setImageError('Choisis une image PNG, JPG ou SVG, légère (max. 500 Ko).')
+      setImageError(validateImagePresence(image))
     }
 
     if (label && validImage) {

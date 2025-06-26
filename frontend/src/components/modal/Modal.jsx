@@ -1,7 +1,7 @@
 // src/components/modal/Modal.jsx
 import { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { Button } from '@/components'
+import { Button, ButtonClose } from '@/components'
 import './Modal.scss'
 
 export default function Modal({
@@ -108,9 +108,7 @@ export default function Modal({
             ))}
           </footer>
         )}
-        <button className="modal__close" aria-label="Fermer" onClick={onClose}>
-          ×
-        </button>
+        <ButtonClose onClick={onClose} />
       </div>
     </div>
   )

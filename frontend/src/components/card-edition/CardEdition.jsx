@@ -4,6 +4,7 @@ import {
   Select,
   Checkbox,
   ImagePreview,
+  ButtonDelete,
 } from '@/components'
 import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
 import './CardEdition.scss'
@@ -55,14 +56,7 @@ export default function CardEdition({
               aria-label="Catégorie"
             />
           )}
-
-          <button
-            className="card-edition__delete-btn"
-            onClick={onDelete}
-            title="Supprimer"
-          >
-            🗑️
-          </button>
+          <ButtonDelete onClick={onDelete} />
         </div>
       </div>
     </div>
