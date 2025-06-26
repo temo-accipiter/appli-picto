@@ -16,37 +16,30 @@ import {
   RecompensesEdition,
 } from '@/components'
 import { addRecompense } from '@/utils'
+import { useToast } from '@/contexts/ToastContext'
 import './Edition.scss'
 
 export default function Edition() {
-  // États modals & reload
+  const { show } = useToast()
+
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [modalRecompenseOpen, setModalRecompenseOpen] = useState(false)
   const [showConfirmReset, setShowConfirmReset] = useState(false)
-
-  // Gestion catégories
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState(null)
   const [newCatLabel, setNewCatLabel] = useState('')
-
-  // Suppression/sélection tâches & récompenses
   const [recompenseASupprimer, setRecompenseASupprimer] = useState(null)
   const [tacheASupprimer, setTacheASupprimer] = useState(null)
-
   const [reload, setReload] = useState(0)
-  const triggerReload = () => setReload((r) => r + 1)
-
-  // Filtres
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterDone, setFilterDone] = useState(false)
+  const [showTaches, setShowTaches] = useState(false)
+  const [showRecompenses, setShowRecompenses] = useState(false)
 
-  // Hooks métier
-  const { categories, addCategory, deleteCategory } = useCategories(reload) // removed loadingCat
-  const {
-    parametres,
-    updateParametres,
-    loading: loadingParam,
-  } = useParametres()
+  const triggerReload = () => setReload((r) => r + 1)
+
+  const { categories, addCategory, deleteCategory } = useCategories(reload)
+  const { parametres, updateParametres } = useParametres()
   const {
     taches,
     toggleAujourdhui,
@@ -58,7 +51,6 @@ export default function Edition() {
   const { recompenses, selectRecompense, deselectAll, deleteRecompense } =
     useRecompenses(reload)
 
-  // Actions
   const handleTacheAjoutee = () => triggerReload()
   const handleRecompenseAjoutee = () => triggerReload()
 
@@ -74,6 +66,7 @@ export default function Edition() {
     if (!res.ok) throw new Error('Échec ajout tâche')
     await res.json()
     handleTacheAjoutee()
+    show('Tâche ajoutée', 'success') // ✅
     setModalTacheOpen(false)
   }
 
@@ -83,6 +76,7 @@ export default function Edition() {
     form.append('image', image)
     await addRecompense(form)
     handleRecompenseAjoutee()
+    show('Récompense ajoutée', 'success') // ✅
     setModalRecompenseOpen(false)
   }
 
@@ -94,27 +88,25 @@ export default function Edition() {
     await addCategory({ value: slug, label: clean })
     setNewCatLabel('')
     triggerReload()
+    show('Catégorie ajoutée', 'success') // ✅
   }
 
   const handleRemoveCategory = async (value) => {
     await deleteCategory(value)
     triggerReload()
     setCatASupprimer(null)
+    show('Catégorie supprimée', 'error') // ✅
   }
 
   const toggleSelectRecompense = (id, sel) =>
     sel ? deselectAll() : selectRecompense(id)
 
-  // Filtrer les tâches
   const visibleTaches = taches.filter((t) => {
     const catMatch =
       filterCategory === 'all' || (t.categorie || 'none') === filterCategory
     const doneMatch = !filterDone || !!t.aujourdhui
     return catMatch && doneMatch
   })
-
-  const [showTaches, setShowTaches] = useState(false)
-  const [showRecompenses, setShowRecompenses] = useState(false)
 
   return (
     <div className="page-edition">
@@ -149,7 +141,7 @@ export default function Edition() {
           size="md"
         />
 
-        {!loadingParam && (
+        {parametres && (
           <Checkbox
             id="confettis"
             className="confettis-checkbox"
@@ -158,7 +150,7 @@ export default function Edition() {
                 ? '🎉 Confettis activés'
                 : '🎊 Confettis désactivés'
             }
-            checked={parametres?.confettis}
+            checked={!!parametres.confettis}
             onChange={(e) => updateParametres({ confettis: e.target.checked })}
           />
         )}
@@ -168,10 +160,12 @@ export default function Edition() {
           onClick={() => setShowConfirmReset(true)}
         />
       </div>
+
       <Button
         label={showTaches ? '🧺 Masquer les tâches' : '🧺 Afficher les tâches'}
         onClick={() => setShowTaches((prev) => !prev)}
       />
+
       <Button
         label={
           showRecompenses
@@ -190,7 +184,10 @@ export default function Edition() {
               items={visibleTaches}
               categories={categories}
               onToggleAujourdhui={toggleAujourdhui}
-              onUpdateLabel={updateLabel}
+              onUpdateLabel={(id, label) => {
+                updateLabel(id, label)
+                show('Tâche renommée', 'success') // ✅
+              }}
               onUpdateCategorie={updateCategorie}
               onDelete={(t) => setTacheASupprimer(t)}
             />
@@ -232,6 +229,7 @@ export default function Edition() {
         confirmLabel="Supprimer"
         onConfirm={() => {
           deleteRecompense(recompenseASupprimer.id)
+          show('Récompense supprimée', 'error') // ✅
           setRecompenseASupprimer(null)
         }}
       >
@@ -244,6 +242,7 @@ export default function Edition() {
         confirmLabel="Supprimer"
         onConfirm={() => {
           deleteTache(tacheASupprimer.id)
+          show('Tâche supprimée', 'error') // ✅
           setTacheASupprimer(null)
         }}
       >

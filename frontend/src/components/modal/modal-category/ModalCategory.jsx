@@ -1,13 +1,7 @@
 import PropTypes from 'prop-types'
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import {
-  Modal,
-  Button,
-  InputWithValidation,
-  ButtonDelete,
-  Toast,
-} from '@/components'
+import { Modal, Button, InputWithValidation, ButtonDelete } from '@/components'
 import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
 import './ModalCategory.scss'
 
@@ -22,11 +16,6 @@ export default function ModalCategory({
 }) {
   const inputRef = useRef(null)
   const [visibleCats, setVisibleCats] = useState([])
-  const [toast, setToast] = useState({
-    visible: false,
-    message: '',
-    type: 'info',
-  })
 
   useEffect(() => {
     const filtered = categories.filter((c) => c.value !== 'none')
@@ -55,19 +44,10 @@ export default function ModalCategory({
     }
     onAddCategory(e)
     onChangeNewCategory('')
-    showToast('Catégorie ajoutée', 'success')
   }
 
   const handleDelete = (value) => {
     onDeleteCategory(value)
-    showToast('Catégorie supprimée', 'success')
-  }
-
-  const showToast = (message, type = 'info') => {
-    setToast({ visible: true, message, type })
-    setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }))
-    }, 2000)
   }
 
   useEffect(() => {
@@ -118,12 +98,6 @@ export default function ModalCategory({
           <Button label="Ajouter" type="submit" />
         </form>
       </Modal>
-
-      <Toast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-      />
     </>
   )
 }

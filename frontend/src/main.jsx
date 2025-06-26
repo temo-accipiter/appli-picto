@@ -3,6 +3,7 @@ import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { Layout } from '@/components'
+import { ToastProvider } from '@/contexts'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
 
@@ -27,8 +28,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <Suspense fallback={<div>Chargement…</div>}>
-      <RouterProvider router={router} />
-    </Suspense>
+    <ToastProvider>
+      <Suspense fallback={<div>Chargement…</div>}>
+        <RouterProvider router={router} />
+      </Suspense>
+    </ToastProvider>
   </React.StrictMode>
 )
