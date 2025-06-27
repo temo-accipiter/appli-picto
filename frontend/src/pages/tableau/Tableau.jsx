@@ -11,7 +11,7 @@ import { useState } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
 import { TrainProgressBar, TachesDnd, SelectedRecompense } from '@/components'
-
+import { useDisplay } from '@/contexts'
 import { useTachesDnd, useRecompenses, useParametres } from '@/hooks'
 import './Tableau.scss'
 
@@ -36,10 +36,11 @@ export default function TableauGrille() {
 
   const { recompenses, selectRecompense } = useRecompenses()
   const selected = recompenses.find((r) => r.selected === 1)
+  const { showTrain } = useDisplay()
 
   return (
     <div className="tableau-magique">
-      <TrainProgressBar total={totalTaches} done={doneCount} />
+      {showTrain && <TrainProgressBar total={totalTaches} done={doneCount} />}
 
       <TachesDnd
         items={taches}

@@ -14,7 +14,7 @@ import {
   RecompensesEdition,
 } from '@/components'
 import { addRecompense } from '@/utils'
-import { useToast } from '@/contexts/ToastContext'
+import { useDisplay, useToast } from '@/contexts'
 import { ChevronDown, ListChecks, Gift } from 'lucide-react'
 import './Edition.scss'
 
@@ -113,6 +113,7 @@ export default function Edition() {
     const doneMatch = !filterDone || !!t.aujourdhui
     return catMatch && doneMatch
   })
+  const { showTrain, setShowTrain } = useDisplay()
 
   return (
     <div className="page-edition">
@@ -130,6 +131,12 @@ export default function Edition() {
             onChange={(e) => updateParametres({ confettis: e.target.checked })}
           />
         )}
+        <Checkbox
+          id="train-toggle"
+          label="🚆 Afficher le train"
+          checked={showTrain}
+          onChange={(e) => setShowTrain(e.target.checked)}
+        />
       </div>
       <div className="edition-sections">
         <Button
