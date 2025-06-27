@@ -7,24 +7,20 @@ import {
 } from '@/hooks'
 import {
   Button,
-  Select,
   Checkbox,
   ModalConfirm,
   ModalCategory,
-  ModalAjout,
   TachesEdition,
   RecompensesEdition,
 } from '@/components'
 import { addRecompense } from '@/utils'
 import { useToast } from '@/contexts/ToastContext'
+import { ChevronDown, ListChecks, Gift } from 'lucide-react'
 import './Edition.scss'
 
 export default function Edition() {
   const { show } = useToast()
 
-  const [modalTacheOpen, setModalTacheOpen] = useState(false)
-  const [modalRecompenseOpen, setModalRecompenseOpen] = useState(false)
-  const [showConfirmReset, setShowConfirmReset] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState(null)
   const [newCatLabel, setNewCatLabel] = useState('')
@@ -67,7 +63,6 @@ export default function Edition() {
     await res.json()
     handleTacheAjoutee()
     show('Tâche ajoutée', 'success') // ✅
-    setModalTacheOpen(false)
   }
 
   const handleSubmitReward = async ({ label, image }) => {
@@ -77,7 +72,6 @@ export default function Edition() {
     await addRecompense(form)
     handleRecompenseAjoutee()
     show('Récompense ajoutée', 'success') // ✅
-    setModalRecompenseOpen(false)
   }
 
   const handleAddCategory = async (e) => {
@@ -111,36 +105,6 @@ export default function Edition() {
   return (
     <div className="page-edition">
       <div className="edition-buttons">
-        <Button
-          label="➕ Ajouter une tâche"
-          onClick={() => setModalTacheOpen(true)}
-        />
-        <Button
-          label="🏱 Ajouter une récompense"
-          onClick={() => setModalRecompenseOpen(true)}
-        />
-        <Button
-          label="⚙️ Gérer catégories"
-          onClick={() => setManageCatOpen(true)}
-        />
-
-        <Select
-          id="filter-category"
-          label="Filtrer par catégorie"
-          options={[{ value: 'all', label: 'Toutes' }, ...categories]}
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-        />
-
-        <Checkbox
-          id="filter-done"
-          className="filtre-checkbox"
-          label="Tâches cochées seulement"
-          checked={filterDone}
-          onChange={(e) => setFilterDone(e.target.checked)}
-          size="md"
-        />
-
         {parametres && (
           <Checkbox
             id="confettis"
@@ -154,74 +118,82 @@ export default function Edition() {
             onChange={(e) => updateParametres({ confettis: e.target.checked })}
           />
         )}
+      </div>
+      <div className="edition-sections">
+        <Button
+          label={
+            <span className="button-label">
+              <ListChecks className="button-icon" size={18} />
+              Tâches
+              <ChevronDown
+                className={`chevron ${showTaches ? 'open' : ''}`}
+                size={16}
+              />
+            </span>
+          }
+          onClick={() => setShowTaches((prev) => !prev)}
+        />
+
+        {showTaches && (
+          <div className="taches-edition">
+            {visibleTaches.length === 0 ? (
+              <p className="taches-edition__message">
+                Aucune tâche à afficher.
+              </p>
+            ) : (
+              <TachesEdition
+                items={visibleTaches}
+                categories={categories}
+                onToggleAujourdhui={toggleAujourdhui}
+                resetEdition={resetEdition}
+                onSubmitTask={handleSubmitTask}
+                onAddCategory={addCategory}
+                onDeleteCategory={deleteCategory}
+                filterCategory={filterCategory}
+                onChangeFilterCategory={setFilterCategory}
+                filterDone={filterDone}
+                onChangeFilterDone={setFilterDone}
+                onUpdateLabel={(id, label) => {
+                  updateLabel(id, label)
+                  show('Tâche renommée', 'success') // ✅
+                }}
+                onUpdateCategorie={updateCategorie}
+                onDelete={(t) => setTacheASupprimer(t)}
+              />
+            )}
+          </div>
+        )}
 
         <Button
-          label="Réinitialiser"
-          onClick={() => setShowConfirmReset(true)}
+          label={
+            <span className="button-label">
+              <Gift className="button-icon" size={18} />
+              Récompenses
+              <ChevronDown
+                className={`chevron ${showRecompenses ? 'open' : ''}`}
+                size={16}
+              />
+            </span>
+          }
+          onClick={() => setShowRecompenses((prev) => !prev)}
         />
+        {showRecompenses && (
+          <div className="recompenses-edition">
+            {recompenses.length === 0 ? (
+              <p className="recompenses-edition__message">
+                Aucune récompense à afficher.
+              </p>
+            ) : (
+              <RecompensesEdition
+                items={recompenses}
+                onDelete={(r) => setRecompenseASupprimer(r)}
+                onToggleSelect={toggleSelectRecompense}
+                onSubmitReward={handleSubmitReward}
+              />
+            )}
+          </div>
+        )}
       </div>
-
-      <Button
-        label={showTaches ? '🧺 Masquer les tâches' : '🧺 Afficher les tâches'}
-        onClick={() => setShowTaches((prev) => !prev)}
-      />
-
-      <Button
-        label={
-          showRecompenses
-            ? '🎁 Masquer les récompenses'
-            : '🎁 Afficher les récompenses'
-        }
-        onClick={() => setShowRecompenses((prev) => !prev)}
-      />
-
-      {showTaches && (
-        <div className="taches-edition">
-          {visibleTaches.length === 0 ? (
-            <p className="taches-edition__message">Aucune tâche à afficher.</p>
-          ) : (
-            <TachesEdition
-              items={visibleTaches}
-              categories={categories}
-              onToggleAujourdhui={toggleAujourdhui}
-              onUpdateLabel={(id, label) => {
-                updateLabel(id, label)
-                show('Tâche renommée', 'success') // ✅
-              }}
-              onUpdateCategorie={updateCategorie}
-              onDelete={(t) => setTacheASupprimer(t)}
-            />
-          )}
-        </div>
-      )}
-
-      {showRecompenses && (
-        <div className="recompenses-edition">
-          {recompenses.length === 0 ? (
-            <p className="recompenses-edition__message">
-              Aucune récompense à afficher.
-            </p>
-          ) : (
-            <RecompensesEdition
-              items={recompenses}
-              onDelete={(r) => setRecompenseASupprimer(r)}
-              onToggleSelect={toggleSelectRecompense}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Modals */}
-      <ModalConfirm
-        isOpen={showConfirmReset}
-        onClose={() => setShowConfirmReset(false)}
-        onConfirm={() => {
-          resetEdition()
-          setShowConfirmReset(false)
-        }}
-      >
-        ❗ Es-tu sûr de vouloir tout réinitialiser ?
-      </ModalConfirm>
 
       <ModalConfirm
         isOpen={!!recompenseASupprimer}
@@ -248,21 +220,6 @@ export default function Edition() {
       >
         ❗ Supprimer la tâche “{tacheASupprimer?.label}” ?
       </ModalConfirm>
-
-      <ModalAjout
-        isOpen={modalTacheOpen}
-        onClose={() => setModalTacheOpen(false)}
-        includeCategory
-        categories={categories}
-        onSubmit={handleSubmitTask}
-      />
-
-      <ModalAjout
-        isOpen={modalRecompenseOpen}
-        onClose={() => setModalRecompenseOpen(false)}
-        includeCategory={false}
-        onSubmit={handleSubmitReward}
-      />
 
       <ModalCategory
         isOpen={manageCatOpen}

@@ -6,16 +6,19 @@
 }
 
 .page-edition {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 3rem;
+  gap: $spacing-lg;
+
   .edition-buttons {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: $spacing-sm $spacing-md;
-    margin-bottom: $spacing-xl;
-    margin-top: 5rem;
-    padding: 0 $spacing-sm;
-
+    background-color: var(--pastel-color);
     > * {
       @include respond-to(xs) {
         width: 100%;
@@ -134,4 +137,29 @@
 
 .recompenses-edition {
   animation: fadeIn 200ms ease;
+}
+
+.edition-sections {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+//----- Button styles -----//
+.button-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .button-icon {
+    margin-right: 0.2rem;
+  }
+
+  .chevron {
+    transition: transform 0.2s ease;
+    margin-left: auto;
+  }
+
+  .chevron.open {
+    transform: rotate(180deg);
+  }
 }

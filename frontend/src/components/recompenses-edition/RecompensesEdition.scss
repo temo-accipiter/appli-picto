@@ -1,3 +1,4 @@
+/*
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
@@ -86,4 +87,34 @@
   align-items: center;
   margin-top: $spacing-sm;
   padding-top: $spacing-xs;
+}
+*/
+@use '@styles/abstracts' as *;
+
+.checklist-recompenses {
+  padding: 1rem;
+
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: var(--c-text);
+  }
+
+  .liste-recompenses {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+}
+.recompenses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+  }
 }

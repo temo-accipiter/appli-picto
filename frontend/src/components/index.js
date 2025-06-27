@@ -26,3 +26,5 @@ export { default as InputWithValidation } from './ui/input-with-validation/Input
 export { default as ButtonClose } from './ui/button/button-close/ButtonClose'
 export { default as ButtonDelete } from './ui/button/button-delete/ButtonDelete'
 export { default as Toast } from './ui/toast/Toast'
+export { default as BaseCard } from './card/base-card/BaseCard'
+export { default as CardRecompense } from './card-recompense/CardRecompense'

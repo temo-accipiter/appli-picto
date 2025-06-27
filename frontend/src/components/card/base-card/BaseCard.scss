@@ -1,0 +1,50 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+.base-card {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+  background: var(--pastel-color, #f0f8ff);
+  border-radius: $radius-md;
+  padding: $spacing-xs;
+  box-shadow: $box-shadow;
+  @include transition-smooth;
+
+  &.active {
+    border: rem(2) solid $color-success;
+    background-color: color.adjust($color-success, $lightness: 40%);
+  }
+
+  @include respond-to(xs) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-sm;
+  }
+
+  &__col.image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__col.info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__label {
+    font-weight: bold;
+  }
+}

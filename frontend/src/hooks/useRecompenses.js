@@ -1,6 +1,4 @@
 /**
- * Hook : useRecompenses
- *
  * Rôle :
  *   Gère la liste des récompenses côté client :
  *     - Chargement initial et rechargement via un indicateur `reload`
@@ -8,22 +6,6 @@
  *     - Suppression d’une récompense existante
  *     - Sélection d’une récompense du jour (désélectionne les autres)
  *     - Désélection de toutes les récompenses
- *
- * Arguments :
- *   - reload: number = 0    // incrémenter pour forcer le rechargement des données
- *
- * Retourne un objet :
- *   {
- *     recompenses: Array<{ id: number, label: string, imagePath?: string, selected: 0|1 }>,
- *     createRecompense(formData: FormData): Promise<Object>,
- *     deleteRecompense(id: number): Promise<void>,
- *     selectRecompense(id: number): Promise<void>,
- *     deselectAll(): Promise<void>
- *   }
- *
- * Utilisation :
- *   const { recompenses, createRecompense, deleteRecompense,
- *           selectRecompense, deselectAll } = useRecompenses(reload)
  */
 
 import { useState, useEffect } from 'react'
