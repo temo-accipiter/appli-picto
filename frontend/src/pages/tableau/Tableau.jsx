@@ -1,30 +1,10 @@
 /**
- * Page : TableauGrille
- *
  * Rôle :
  *   • Affiche le tableau en grille des tâches du jour
  *   • Permet de réordonner les tâches (glisser-déposer)
  *   • Permet de cocher / décocher chaque tâche individuellement
  *   • Propose un bouton “Réinitialiser” pour décocher toutes les tâches
  *   • Affiche la barre de progression et la récompense du jour
- *
- * Hooks & composants utilisés :
- *   • useTachesDnd(onProgressChange) → {
- *       taches,
- *       toggleDone,
- *       saveOrder,
- *       resetAll
- *     }
- *   • useRecompenses() → {
- *       recompenses,
- *       selectRecompense
- *     }
- *   • ChecklistTachesDnd     – composant “dumb” pour l’affichage et DnD
- *   • TrainProgressBar       – barre de progression
- *   • SelectedRecompense     – affichage + sélection de la récompense
- *
- * Props :
- *   (aucune – page ‘Tableau’ gère tout en interne via hooks)
  */
 
 import { useState } from 'react'
@@ -59,18 +39,13 @@ export default function TableauGrille() {
 
   return (
     <div className="tableau-magique">
-      <TrainProgressBar
-        total={totalTaches}
-        done={doneCount}
-        onReset={resetAll}
-      />
+      <TrainProgressBar total={totalTaches} done={doneCount} />
 
       <TachesDnd
         items={taches}
         onReorder={handleReorder}
         onToggle={toggleDone}
         onReset={resetAll}
-        showResetButton={false}
       />
 
       <h1 className="titre-recompense">🎁 Récompense</h1>

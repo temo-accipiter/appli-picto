@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'
-import { Button, DraggableCard } from '@/components'
+import { Button, DraggableCard, ModalConfirm } from '@/components'
 import './TachesDnd.scss'
 
 export default function ChecklistTachesDnd({
@@ -25,6 +25,7 @@ export default function ChecklistTachesDnd({
   showResetButton = true,
 }) {
   const [activeId, setActiveId] = useState(null)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -49,10 +50,6 @@ export default function ChecklistTachesDnd({
     },
     [items, onReorder]
   )
-
-  const handleReset = useCallback(() => {
-    onReset()
-  }, [onReset])
 
   return (
     <DndContext
@@ -92,7 +89,23 @@ export default function ChecklistTachesDnd({
 
       {showResetButton && (
         <div className="reset-all-zone">
-          <Button onClick={handleReset} label="Réinitialiser" variant="reset" />
+          <>
+            <Button
+              label="Réinitialiser"
+              onClick={() => setShowConfirm(true)}
+            />
+            <ModalConfirm
+              isOpen={showConfirm}
+              onClose={() => setShowConfirm(false)}
+              confirmLabel="Confirmer"
+              onConfirm={() => {
+                setShowConfirm(false)
+                onReset()
+              }}
+            >
+              ❗ Es-tu sûr de vouloir tout réinitialiser ?
+            </ModalConfirm>
+          </>{' '}
         </div>
       )}
     </DndContext>

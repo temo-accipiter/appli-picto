@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   useTachesEdition,
   useRecompenses,
@@ -29,8 +29,20 @@ export default function Edition() {
   const [reload, setReload] = useState(0)
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterDone, setFilterDone] = useState(false)
-  const [showTaches, setShowTaches] = useState(false)
-  const [showRecompenses, setShowRecompenses] = useState(false)
+  const [showTaches, setShowTaches] = useState(() => {
+    return sessionStorage.getItem('showTaches') === 'true'
+  })
+  const [showRecompenses, setShowRecompenses] = useState(() => {
+    return sessionStorage.getItem('showRecompenses') === 'true'
+  })
+  // ⏱️ Sauvegarde dans la session (mémoire navigation)
+  useEffect(() => {
+    sessionStorage.setItem('showTaches', showTaches)
+  }, [showTaches])
+
+  useEffect(() => {
+    sessionStorage.setItem('showRecompenses', showRecompenses)
+  }, [showRecompenses])
 
   const triggerReload = () => setReload((r) => r + 1)
 

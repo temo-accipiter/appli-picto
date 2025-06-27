@@ -1,19 +1,17 @@
-// src/components/train-progress-bar/TrainProgressBar.jsx
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { COULEURS_LIGNES } from '@/data/colors'
-import { ModalConfirm, Select, Button } from '@/components'
+import { Select } from '@/components'
 import './TrainProgressBar.scss'
 import { useStations } from '@/hooks'
 
-export default function TrainProgressBar({ total, done, onReset }) {
+export default function TrainProgressBar({ total, done }) {
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur = COULEURS_LIGNES[ligne] || '#999'
   const stationCount = total + 1
 
   const { stations: ligneStations, loading, error } = useStations(ligne)
   const [currentStations, setCurrentStations] = useState([])
-  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)
@@ -109,22 +107,6 @@ export default function TrainProgressBar({ total, done, onReset }) {
         <p className="progression">
           Progression : {done} / {total} tâches
         </p>
-
-        <>
-          <Button label="Réinitialiser" onClick={() => setShowConfirm(true)} />
-
-          <ModalConfirm
-            isOpen={showConfirm}
-            onClose={() => setShowConfirm(false)}
-            confirmLabel="Confirmer"
-            onConfirm={() => {
-              setShowConfirm(false)
-              onReset()
-            }}
-          >
-            ❗ Es-tu sûr de vouloir tout réinitialiser ?
-          </ModalConfirm>
-        </>
       </div>
     </div>
   )
@@ -133,5 +115,4 @@ export default function TrainProgressBar({ total, done, onReset }) {
 TrainProgressBar.propTypes = {
   total: PropTypes.number.isRequired,
   done: PropTypes.number.isRequired,
-  onReset: PropTypes.func.isRequired,
 }

@@ -7,6 +7,7 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: $spacing-md;
   padding: $spacing-md;
+  border: 1px solid red;
 
   @include respond-to(xs) {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -139,19 +140,4 @@
 .reset-all-zone {
   text-align: center;
   margin-top: $spacing-md;
-
-  .reset-btn {
-    background-color: $color-secondary;
-    color: $color-text-invert;
-    border: none;
-    padding: $spacing-sm $spacing-lg;
-    border-radius: $radius-md;
-    cursor: pointer;
-
-    @include transition-smooth;
-
-    @include on-event {
-      background-color: color.adjust($color-secondary, $lightness: -10%);
-    }
-  }
 }
