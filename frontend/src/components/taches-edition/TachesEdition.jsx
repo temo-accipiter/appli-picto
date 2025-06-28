@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
-import CardEdition from '@/components/card-edition/CardEdition'
 import {
   Button,
   ModalConfirm,
@@ -8,6 +7,7 @@ import {
   ModalCategory,
   Select,
   Checkbox,
+  EditionTacheCard,
 } from '@/components'
 import { useToast } from '@/contexts/ToastContext'
 import './TachesEdition.scss'
@@ -110,7 +110,7 @@ export default function ChecklistTachesEdition({
           onClick={() => setManageCatOpen(true)}
         />
         <Button
-          label="♻️ Réinitialiser"
+          label="Réinitialiser"
           onClick={() => setShowConfirmReset(true)}
         />
         <Select
@@ -141,7 +141,7 @@ export default function ChecklistTachesEdition({
           </div>
         ) : (
           items.map((t) => (
-            <CardEdition
+            <EditionTacheCard
               key={t.id}
               image={`http://localhost:3001${t.imagePath}`}
               labelId={t.id}
