@@ -133,6 +133,7 @@ export default function Edition() {
         )}
         <Checkbox
           id="train-toggle"
+          className="train-checkbox"
           label="🚆 Afficher le train"
           checked={showTrain}
           onChange={(e) => setShowTrain(e.target.checked)}
@@ -155,31 +156,25 @@ export default function Edition() {
 
         {showTaches && (
           <div className="taches-edition">
-            {visibleTaches.length === 0 ? (
-              <p className="taches-edition__message">
-                Aucune tâche à afficher.
-              </p>
-            ) : (
-              <TachesEdition
-                items={visibleTaches}
-                categories={categories}
-                onToggleAujourdhui={toggleAujourdhui}
-                resetEdition={resetEdition}
-                onSubmitTask={handleSubmitTask}
-                onAddCategory={addCategory}
-                onDeleteCategory={deleteCategory}
-                filterCategory={filterCategory}
-                onChangeFilterCategory={setFilterCategory}
-                filterDone={filterDone}
-                onChangeFilterDone={setFilterDone}
-                onUpdateLabel={(id, label) => {
-                  updateLabel(id, label)
-                  show('Tâche renommée', 'success') // ✅
-                }}
-                onUpdateCategorie={updateCategorie}
-                onDelete={(t) => setTacheASupprimer(t)}
-              />
-            )}
+            <TachesEdition
+              items={visibleTaches}
+              categories={categories}
+              onToggleAujourdhui={toggleAujourdhui}
+              resetEdition={resetEdition}
+              onSubmitTask={handleSubmitTask}
+              onAddCategory={addCategory}
+              onDeleteCategory={deleteCategory}
+              filterCategory={filterCategory}
+              onChangeFilterCategory={setFilterCategory}
+              filterDone={filterDone}
+              onChangeFilterDone={setFilterDone}
+              onUpdateLabel={(id, label) => {
+                updateLabel(id, label)
+                show('Tâche renommée', 'success') // ✅
+              }}
+              onUpdateCategorie={updateCategorie}
+              onDelete={(t) => setTacheASupprimer(t)}
+            />
           </div>
         )}
 

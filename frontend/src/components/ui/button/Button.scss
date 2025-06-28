@@ -46,8 +46,10 @@
   }
 
   &--primary {
-    background-color: $color-primary;
-    color: $color-text-invert;
+    //background-color: $color-primary;
+    //color: $color-text-invert;
+    background-color: #fff8dc;
+    color: var(--color-primary, #0077c2);
 
     @include on-event {
       background-color: color.adjust($color-primary, $lightness: -6%);

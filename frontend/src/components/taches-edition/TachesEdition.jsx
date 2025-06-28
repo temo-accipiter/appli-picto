@@ -113,9 +113,6 @@ export default function ChecklistTachesEdition({
           label="♻️ Réinitialiser"
           onClick={() => setShowConfirmReset(true)}
         />
-      </div>
-
-      <div className="filters">
         <Select
           id="filter-category"
           label="Filtrer par catégorie"
@@ -134,32 +131,39 @@ export default function ChecklistTachesEdition({
         />
       </div>
 
-      {items.length === 0 && <p>Aucune tâche pour le moment.</p>}
-
       <div className="liste-taches-edition">
-        {items.map((t) => (
-          <CardEdition
-            key={t.id}
-            image={`http://localhost:3001${t.imagePath}`}
-            labelId={t.id}
-            label={drafts[t.id] ?? t.label}
-            onLabelChange={(val) => handleChange(t.id, val)}
-            onBlur={(val) => handleBlur(t.id, val)}
-            onDelete={() => onDelete(t)}
-            checked={!!t.aujourdhui}
-            onToggleCheck={() => onToggleAujourdhui(t.id, t.aujourdhui)}
-            categorie={t.categorie}
-            onCategorieChange={(val) => onUpdateCategorie(t.id, val)}
-            categorieOptions={categories}
-            className={[
-              t.aujourdhui ? 'active' : '',
-              errors[t.id] ? 'input-field__input--error' : '',
-              successIds.has(t.id) ? 'input-field__input--success' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          />
-        ))}
+        {items.length === 0 ? (
+          <div className="liste-taches-edition__empty">
+            <span role="img" aria-label="Rien à faire">
+              💤
+            </span>{' '}
+            Aucune tâche à afficher
+          </div>
+        ) : (
+          items.map((t) => (
+            <CardEdition
+              key={t.id}
+              image={`http://localhost:3001${t.imagePath}`}
+              labelId={t.id}
+              label={drafts[t.id] ?? t.label}
+              onLabelChange={(val) => handleChange(t.id, val)}
+              onBlur={(val) => handleBlur(t.id, val)}
+              onDelete={() => onDelete(t)}
+              checked={!!t.aujourdhui}
+              onToggleCheck={() => onToggleAujourdhui(t.id, t.aujourdhui)}
+              categorie={t.categorie}
+              onCategorieChange={(val) => onUpdateCategorie(t.id, val)}
+              categorieOptions={categories}
+              className={[
+                t.aujourdhui ? 'active' : '',
+                errors[t.id] ? 'input-field__input--error' : '',
+                successIds.has(t.id) ? 'input-field__input--success' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            />
+          ))
+        )}
       </div>
 
       <ModalAjout
