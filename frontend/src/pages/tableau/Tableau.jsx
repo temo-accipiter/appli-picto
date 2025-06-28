@@ -10,6 +10,9 @@
 import { useState } from 'react'
 import { useWindowSize } from 'react-use'
 import Confetti from 'react-confetti'
+import { NavLink } from 'react-router-dom'
+import { Pencil } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { TrainProgressBar, TachesDnd, SelectedRecompense } from '@/components'
 import { useDisplay } from '@/contexts'
 import { useTachesDnd, useRecompenses, useParametres } from '@/hooks'
@@ -40,6 +43,17 @@ export default function TableauGrille() {
 
   return (
     <div className="tableau-magique">
+      <motion.div
+        className="floating-pencil"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      >
+        <NavLink to="/edition" aria-label="édition" title="édition">
+          <Pencil size={20} strokeWidth={2} />
+        </NavLink>
+      </motion.div>
+
       {showTrain && <TrainProgressBar total={totalTaches} done={doneCount} />}
 
       <TachesDnd

@@ -4,7 +4,6 @@
 
 .train-progress-bar {
   text-align: center;
-  margin-top: $spacing-lg;
   min-width: rem(600);
 
   .toolbar {
@@ -17,28 +16,6 @@
     margin: $spacing-md;
     padding: 0 $spacing-lg;
     z-index: 10;
-
-    /*.ligne-select {
-      display: flex;
-      align-items: center;
-      gap: $spacing-xs;
-
-      label {
-        font-weight: $font-weight-medium;
-      }
-
-      .select-field {
-        margin-bottom: 0;
-      }
-
-      .select-field__select {
-        font-size: $font-size-base;
-        padding: $spacing-xs $spacing-sm;
-        border-radius: $radius-sm;
-        border: rem(1) solid $color-primary;
-        box-shadow: $box-shadow;
-      }
-    }*/
 
     .progression {
       font-size: $font-size-lg;
