@@ -1,22 +1,9 @@
 /**
- * Composant : SelectedRecompense
- *
  * Rôle :
  *   Affiche la récompense actuellement sélectionnée.
  *   • Affichée uniquement si une récompense existe.
  *   • Indique si la récompense est débloquée (toutes les tâches terminées).
  *   • Permet de confirmer la sélection en cliquant lorsque déverrouillée.
- *
- * Props :
- *   - recompense: {
- *       id: number,
- *       label: string,
- *       imagePath?: string,
- *       selected?: number
- *     }              // objet récompense à afficher
- *   - done: number   // nombre de tâches accomplies
- *   - total: number  // nombre total de tâches
- *   - onSelect(id: number): void  // callback déclenché au clic si déverrouillé
  */
 
 import PropTypes from 'prop-types'

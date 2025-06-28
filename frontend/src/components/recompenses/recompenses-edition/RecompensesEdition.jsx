@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { useState } from 'react'
-import CardRecompense from '@/components/card-recompense/CardRecompense'
+import { CardRecompense } from '@/components'
 import { Button, ModalAjout } from '@/components'
 import './RecompensesEdition.scss'
 
