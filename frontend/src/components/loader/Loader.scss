@@ -1,0 +1,45 @@
+@use '@styles/abstracts' as *;
+
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: #fff; // ou var(--background-color)
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-bounce {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--accent-color, #007bff);
+  border-radius: 50%;
+  animation: bounce 0.6s infinite ease-in-out;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}

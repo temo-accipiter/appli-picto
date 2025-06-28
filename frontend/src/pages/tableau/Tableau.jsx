@@ -39,7 +39,7 @@ export default function TableauGrille() {
 
   const { recompenses, selectRecompense } = useRecompenses()
   const selected = recompenses.find((r) => r.selected === 1)
-  const { showTrain } = useDisplay()
+  const { showTrain, showRecompense } = useDisplay()
 
   return (
     <div className="tableau-magique">
@@ -63,14 +63,17 @@ export default function TableauGrille() {
         onReset={resetAll}
       />
 
-      <h1 className="titre-recompense">🎁 Récompense</h1>
-
-      <SelectedRecompense
-        recompense={selected}
-        done={doneCount}
-        total={totalTaches}
-        onSelect={selectRecompense}
-      />
+      {showRecompense && (
+        <>
+          <h1 className="titre-recompense">🎁 Récompense</h1>
+          <SelectedRecompense
+            recompense={selected}
+            done={doneCount}
+            total={totalTaches}
+            onSelect={selectRecompense}
+          />
+        </>
+      )}
 
       {selected &&
         totalTaches > 0 &&

@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
-import { Layout } from '@/components'
+import { Layout, Loader } from '@/components'
 import { ToastProvider, DisplayProvider } from '@/contexts'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ToastProvider>
-      <Suspense fallback={<div>Chargement…</div>}>
+      <Suspense fallback={<Loader />}>
         <DisplayProvider>
           <RouterProvider router={router} />
         </DisplayProvider>

@@ -114,6 +114,7 @@ export default function Edition() {
     return catMatch && doneMatch
   })
   const { showTrain, setShowTrain } = useDisplay()
+  const { showRecompense, setShowRecompense } = useDisplay()
 
   return (
     <div className="page-edition">
@@ -137,6 +138,13 @@ export default function Edition() {
           label="🚆 Afficher le train"
           checked={showTrain}
           onChange={(e) => setShowTrain(e.target.checked)}
+        />
+        <Checkbox
+          id="recompense-toggle"
+          className="recompense-checkbox"
+          label="🎁 Afficher la récompense"
+          checked={showRecompense}
+          onChange={(e) => setShowRecompense(e.target.checked)}
         />
       </div>
       <div className="edition-sections">
