@@ -1,0 +1,32 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+.edition-list {
+  &__title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  &__empty {
+    font-size: 1.1rem;
+    color: var(--c-text-secondary);
+    padding: 1rem;
+    border: 2px dashed var(--c-border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+  }
+}

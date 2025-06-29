@@ -1,6 +1,4 @@
 /**
- * Composant : DraggableCard
- *
  * Rôle :
  *   Affiche une carte représentant une tâche avec :
  *     - son titre (tache.label)
@@ -8,18 +6,6 @@
  *     - une case à cocher custom pour marquer "fait"
  *   Permet de drag & drop via dnd-kit (useSortable).
  *   Joue un bip sonore lors de la coche si la tâche n'était pas faite (configurable).
- *
- * Props :
- *   - tache: { id: string|number, label: string, imagePath?: string, fait: boolean|number }
- *   - done: boolean            // indique si la tâche est cochée
- *   - toggleDone(id, wasDone): // callback pour inverser l'état "fait"
- *   - className: string        // classes CSS additionnelles
- *   - onClick(event): void     // callback sur le clic de la carte
- *   - audioFeedback: boolean|AudioContext // active/désactive le bip ou passe un contexte audio
- *
- * Utilisation du hook @dnd-kit/sortable :
- *   const { attributes, listeners, setNodeRef, transform, transition } =
- *     useSortable({ id: tache.id.toString() })
  */
 
 import React, { useRef, useEffect, useMemo, useCallback } from 'react'

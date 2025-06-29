@@ -1,5 +1,3 @@
-// routes/recompenses.js
-
 import express from "express";
 const router = express.Router();
 
@@ -51,6 +49,27 @@ export default function recompensesRoutes(db, upload) {
     } catch (err) {
       console.error("Erreur sélection récompense :", err);
       res.status(500).json({ error: "Erreur sélection récompense" });
+    }
+  });
+
+  // ✅ PATCH /recompenses/:id — modifie uniquement le label
+  router.patch("/:id", async (req, res) => {
+    const { id } = req.params;
+    const { label } = req.body;
+
+    if (!label || typeof label !== "string") {
+      return res.status(400).json({ error: "Label requis" });
+    }
+
+    try {
+      await db.run("UPDATE recompenses SET label = ? WHERE id = ?", [
+        label.trim(),
+        id,
+      ]);
+      res.json({ message: `Récompense ${id} mise à jour.` });
+    } catch (err) {
+      console.error("Erreur mise à jour récompense :", err);
+      res.status(500).json({ error: "Erreur mise à jour récompense" });
     }
   });
 

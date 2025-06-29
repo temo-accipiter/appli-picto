@@ -18,7 +18,7 @@
     align-items: center;
     justify-content: center;
     gap: $spacing-sm $spacing-md;
-    background-color: var(--pastel-color);
+    //background-color: var(--pastel-color);
     > * {
       @include respond-to(xs) {
         width: 100%;

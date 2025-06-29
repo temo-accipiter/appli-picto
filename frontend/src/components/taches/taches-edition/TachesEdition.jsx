@@ -7,9 +7,10 @@ import {
   ModalCategory,
   Select,
   Checkbox,
-  EditionTacheCard,
+  EditionCard,
+  EditionList,
 } from '@/components'
-import { useToast } from '@/contexts/ToastContext'
+import { useToast } from '@/contexts'
 import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
@@ -100,7 +101,34 @@ export default function ChecklistTachesEdition({
 
   return (
     <div className="checklist-edition">
-      <div className="header-actions">
+      <EditionList
+        title="🗒️ Tâches à éditer"
+        items={items}
+        emptyLabel="Aucune tâche à afficher"
+        renderCard={(t) => (
+          <EditionCard
+            key={t.id}
+            image={`http://localhost:3001${t.imagePath}`}
+            labelId={t.id}
+            label={drafts[t.id] ?? t.label}
+            onLabelChange={(val) => handleChange(t.id, val)}
+            onBlur={(val) => handleBlur(t.id, val)}
+            onDelete={() => onDelete(t)}
+            checked={!!t.aujourdhui}
+            onToggleCheck={() => onToggleAujourdhui(t.id, t.aujourdhui)}
+            categorie={t.categorie}
+            onCategorieChange={(val) => onUpdateCategorie(t.id, val)}
+            categorieOptions={categories}
+            className={[
+              t.aujourdhui ? 'active' : '',
+              errors[t.id] ? 'input-field__input--error' : '',
+              successIds.has(t.id) ? 'input-field__input--success' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          />
+        )}
+      >
         <Button
           label="➕ Ajouter une tâche"
           onClick={() => setModalTacheOpen(true)}
@@ -120,7 +148,6 @@ export default function ChecklistTachesEdition({
           value={filterCategory}
           onChange={(e) => onChangeFilterCategory(e.target.value)}
         />
-
         <Checkbox
           id="filter-done"
           className="filtre-checkbox"
@@ -129,42 +156,7 @@ export default function ChecklistTachesEdition({
           onChange={(e) => onChangeFilterDone(e.target.checked)}
           size="md"
         />
-      </div>
-
-      <div className="liste-taches-edition">
-        {items.length === 0 ? (
-          <div className="liste-taches-edition__empty">
-            <span role="img" aria-label="Rien à faire">
-              💤
-            </span>{' '}
-            Aucune tâche à afficher
-          </div>
-        ) : (
-          items.map((t) => (
-            <EditionTacheCard
-              key={t.id}
-              image={`http://localhost:3001${t.imagePath}`}
-              labelId={t.id}
-              label={drafts[t.id] ?? t.label}
-              onLabelChange={(val) => handleChange(t.id, val)}
-              onBlur={(val) => handleBlur(t.id, val)}
-              onDelete={() => onDelete(t)}
-              checked={!!t.aujourdhui}
-              onToggleCheck={() => onToggleAujourdhui(t.id, t.aujourdhui)}
-              categorie={t.categorie}
-              onCategorieChange={(val) => onUpdateCategorie(t.id, val)}
-              categorieOptions={categories}
-              className={[
-                t.aujourdhui ? 'active' : '',
-                errors[t.id] ? 'input-field__input--error' : '',
-                successIds.has(t.id) ? 'input-field__input--success' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-            />
-          ))
-        )}
-      </div>
+      </EditionList>
 
       <ModalAjout
         isOpen={modalTacheOpen}
@@ -216,21 +208,8 @@ export default function ChecklistTachesEdition({
 }
 
 ChecklistTachesEdition.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      label: PropTypes.string.isRequired,
-      categorie: PropTypes.string,
-      aujourdhui: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]),
-      imagePath: PropTypes.string,
-    })
-  ).isRequired,
-  categories: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  items: PropTypes.array.isRequired,
+  categories: PropTypes.array.isRequired,
   onToggleAujourdhui: PropTypes.func.isRequired,
   onUpdateLabel: PropTypes.func.isRequired,
   onUpdateCategorie: PropTypes.func.isRequired,

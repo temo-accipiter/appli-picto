@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import { BaseCard } from '@/components'
-import './EditionTacheCard.scss'
+import './EditionCard.scss'
 
 export default function CardEdition(props) {
   return (

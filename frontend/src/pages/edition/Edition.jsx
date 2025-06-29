@@ -12,6 +12,7 @@ import {
   ModalCategory,
   TachesEdition,
   RecompensesEdition,
+  Separator,
 } from '@/components'
 import { addRecompense } from '@/utils'
 import { useDisplay, useToast } from '@/contexts'
@@ -186,6 +187,8 @@ export default function Edition() {
           </div>
         )}
 
+        <Separator />
+
         <Button
           label={
             <span className="button-label">
@@ -211,6 +214,10 @@ export default function Edition() {
                 onDelete={(r) => setRecompenseASupprimer(r)}
                 onToggleSelect={toggleSelectRecompense}
                 onSubmitReward={handleSubmitReward}
+                onLabelChange={(id, label) => {
+                  updateLabel(id, label)
+                  show('Récompense modifiée', 'success')
+                }}
               />
             )}
           </div>

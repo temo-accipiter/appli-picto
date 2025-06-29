@@ -7,7 +7,6 @@
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: $spacing-md;
   padding: $spacing-md;
-  border: 1px solid red;
 
   @include respond-to(xs) {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));

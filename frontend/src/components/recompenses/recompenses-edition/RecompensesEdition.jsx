@@ -1,7 +1,8 @@
+// src/pages/edition/RecompensesEdition.jsx
 import PropTypes from 'prop-types'
 import { useState } from 'react'
-import { CardRecompense } from '@/components'
-import { Button, ModalAjout } from '@/components'
+import { Button, ModalAjout, EditionCard, EditionList } from '@/components'
+import { useToast } from '@/contexts'
 import './RecompensesEdition.scss'
 
 export default function RecompensesEdition({
@@ -12,32 +13,91 @@ export default function RecompensesEdition({
   onSubmitReward,
 }) {
   const [modalOpen, setModalOpen] = useState(false)
+  const [drafts, setDrafts] = useState({})
+  const [errors, setErrors] = useState({})
+  const [successIds, setSuccessIds] = useState(new Set())
+
+  const { show } = useToast()
+
+  const validateLabel = (label) => {
+    const trimmed = label.trim()
+    if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
+      return 'Nom invalide'
+    }
+    return ''
+  }
+
+  const handleChange = (id, value) => {
+    setDrafts((prev) => ({ ...prev, [id]: value }))
+    setErrors((prev) => ({ ...prev, [id]: '' }))
+  }
+
+  const handleBlur = (id, value) => {
+    const error = validateLabel(value)
+    if (error) {
+      setErrors((prev) => ({ ...prev, [id]: error }))
+      return
+    }
+
+    onLabelChange(id, value)
+    show('Récompense modifiée', 'success')
+
+    setDrafts((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+
+    setSuccessIds((prev) => new Set([...prev, id]))
+    setTimeout(() => {
+      setSuccessIds((prev) => {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      })
+    }, 600)
+  }
 
   return (
     <div className="checklist-recompenses">
-      <div className="recompenses-header">
-        <h2>🎁 Choisir la récompense</h2>
+      <EditionList
+        title="🎁 Choisir la récompense"
+        items={items}
+        emptyLabel="Aucune récompense"
+        renderCard={(r) => (
+          <EditionCard
+            key={r.id}
+            image={`http://localhost:3001${r.imagePath}`}
+            label={drafts[r.id] ?? r.label}
+            labelId={r.id}
+            onLabelChange={(val) => handleChange(r.id, val)}
+            onBlur={(val) => handleBlur(r.id, val)}
+            onDelete={() => onDelete(r)}
+            checked={r.selected === 1}
+            onToggleCheck={() => onToggleSelect(r.id, r.selected === 1)}
+            categorieOptions={[]} // masque le <Select />
+            className={[
+              r.selected === 1 ? 'active' : '',
+              'card-reward',
+              errors[r.id] ? 'input-field__input--error' : '',
+              successIds.has(r.id) ? 'input-field__input--success' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+          />
+        )}
+      >
         <Button
           label="🏱 Ajouter une récompense"
           onClick={() => setModalOpen(true)}
         />
-      </div>
-
-      <div className="liste-recompenses">
-        {items.map((r) => (
-          <CardRecompense
-            key={r.id}
-            image={`http://localhost:3001${r.imagePath}`}
-            label={r.label}
-            labelId={r.id}
-            onLabelChange={(val) => onLabelChange(r.id, val)}
-            onBlur={(val) => onLabelChange(r.id, val)}
-            onDelete={() => onDelete(r)}
-            checked={r.selected === 1}
-            onToggleCheck={() => onToggleSelect(r.id, r.selected === 1)}
-          />
-        ))}
-      </div>
+      </EditionList>
 
       <ModalAjout
         isOpen={modalOpen}

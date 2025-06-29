@@ -92,11 +92,13 @@
 @use '@styles/abstracts' as *;
 
 .checklist-recompenses {
-  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 
   h2 {
     font-size: 1.4rem;
-    margin-bottom: 1rem;
+    margin: 0;
     text-align: center;
     color: var(--c-text);
   }
@@ -106,15 +108,5 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
     align-items: start;
-  }
-}
-.recompenses-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-
-  h2 {
-    margin: 0;
   }
 }

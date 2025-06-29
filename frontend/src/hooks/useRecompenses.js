@@ -20,7 +20,7 @@ import {
 export default function useRecompenses(reload = 0) {
   const [recompenses, setRecompenses] = useState([])
 
-  // 🔄 Rechargement à l’ouverture et à chaque "reload"
+  // 🔄 Chargement à l’ouverture et à chaque "reload"
   useEffect(() => {
     getRecompenses().then(setRecompenses).catch(console.error)
   }, [reload])
@@ -38,7 +38,7 @@ export default function useRecompenses(reload = 0) {
     setRecompenses((prev) => prev.filter((r) => r.id !== id))
   }
 
-  // ✅ Sélection (on désélectionne tout puis on sélectionne)
+  // ✅ Sélection unique
   const selectRecompense = async (id) => {
     await apiDeselectAll()
     await apiSelect(id)
@@ -47,10 +47,24 @@ export default function useRecompenses(reload = 0) {
     )
   }
 
-  // ❎ Tout désélectionner
+  // ❎ Désélection totale
   const deselectAll = async () => {
     await apiDeselectAll()
     setRecompenses((prev) => prev.map((r) => ({ ...r, selected: 0 })))
+  }
+
+  // ✏️ Modification du label (PATCH + update local)
+  const updateLabel = async (id, label) => {
+    const res = await fetch(`http://localhost:3001/recompenses/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label }),
+    })
+    if (!res.ok) throw new Error('Échec updateRecompenseLabel')
+
+    setRecompenses((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, label } : r))
+    )
   }
 
   return {
@@ -59,5 +73,6 @@ export default function useRecompenses(reload = 0) {
     deleteRecompense,
     selectRecompense,
     deselectAll,
+    updateLabel, // ✅ essentiel pour la sauvegarde
   }
 }
