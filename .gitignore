@@ -31,7 +31,10 @@ Thumbs.db
 *.db
 *.db-journal
 backend/database.db
-uploads/
+
+# ✅ Uploads : ignorer les fichiers, garder le dossier
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # ✅ Build output
 dist/

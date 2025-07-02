@@ -52,13 +52,18 @@ export default function Edition() {
   const {
     taches,
     toggleAujourdhui,
-    updateLabel,
+    updateLabel: updateTaskLabel,
     updateCategorie,
     deleteTache,
     resetEdition,
   } = useTachesEdition(reload)
-  const { recompenses, selectRecompense, deselectAll, deleteRecompense } =
-    useRecompenses(reload)
+  const {
+    recompenses,
+    selectRecompense,
+    deselectAll,
+    deleteRecompense,
+    updateLabel: updateRewardLabel,
+  } = useRecompenses(reload)
 
   const handleTacheAjoutee = () => triggerReload()
   const handleRecompenseAjoutee = () => triggerReload()
@@ -178,7 +183,7 @@ export default function Edition() {
               filterDone={filterDone}
               onChangeFilterDone={setFilterDone}
               onUpdateLabel={(id, label) => {
-                updateLabel(id, label)
+                updateTaskLabel(id, label)
                 show('Tâche renommée', 'success') // ✅
               }}
               onUpdateCategorie={updateCategorie}
@@ -215,7 +220,7 @@ export default function Edition() {
                 onToggleSelect={toggleSelectRecompense}
                 onSubmitReward={handleSubmitReward}
                 onLabelChange={(id, label) => {
-                  updateLabel(id, label)
+                  updateRewardLabel(id, label)
                   show('Récompense modifiée', 'success')
                 }}
               />
