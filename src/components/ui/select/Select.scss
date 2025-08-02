@@ -1,0 +1,47 @@
+@use '@styles/abstracts' as *;
+
+.select-field {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  &__label {
+    font-weight: 600;
+    font-size: rem(18);
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+
+  &__select {
+    padding: rem(8);
+    font-size: rem(16);
+    border: 2px solid var(--color-border);
+    border-radius: $radius-md;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    width: 100%;
+    transition:
+      border-color $transition-base,
+      box-shadow $transition-base;
+
+    box-shadow: 0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow:
+        0 0 0 rem(2) rgba(var(--color-primary-rgb), 0.3),
+        0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
+    }
+
+    &--error {
+      border-color: $color-error;
+    }
+  }
+
+  &__error {
+    color: $color-error;
+    font-size: rem(14);
+    margin-left: $spacing-md;
+  }
+}

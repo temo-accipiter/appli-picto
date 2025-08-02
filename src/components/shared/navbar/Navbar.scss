@@ -1,0 +1,113 @@
+@use '@styles/abstracts' as *;
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: rem(64);
+  z-index: $z-modal;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 $spacing-lg;
+  background-color: var(--color-bg);
+  box-shadow: $box-shadow;
+
+  @include respond-to(xs) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-xs;
+    height: auto;
+    padding: $spacing-sm $spacing-md;
+  }
+}
+
+.navbar-left {
+  display: flex;
+  gap: $spacing-lg;
+
+  @include respond-to(xs) {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+
+  @include respond-to(xs) {
+    width: 100%;
+    justify-content: center;
+    gap: $spacing-sm;
+  }
+}
+
+.nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-decoration: none;
+  color: var(--color-text);
+  padding: $spacing-xs 0;
+
+  @include transition-smooth;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: rem(2);
+    background-color: var(--color-primary);
+    transition: width $transition-base ease;
+  }
+
+  @include on-event {
+    color: var(--color-primary);
+
+    &::after {
+      width: 100%;
+    }
+  }
+
+  &.active {
+    color: var(--color-primary);
+
+    &::after {
+      width: 100%;
+    }
+  }
+}
+
+.nav-icon-link {
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-button {
+  background: #4c89ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+
+  &:hover {
+    background: #3469dd;
+  }
+}

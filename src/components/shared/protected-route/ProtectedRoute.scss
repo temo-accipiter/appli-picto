@@ -1,0 +1,40 @@
+
+.protected-route {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  font-size: 1.2rem;
+  color: #555;
+  animation: fadeIn 0.3s ease-in-out;
+  text-align: center;
+  padding: 2rem;
+}
+
+.protected-route .spinner {
+  margin-top: 1rem;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #bbb;
+  border-top: 3px solid #4c89ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

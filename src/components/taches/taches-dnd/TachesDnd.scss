@@ -1,0 +1,142 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+.grid-taches {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-md;
+  padding: $spacing-md;
+
+  @include respond-to(xs) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+  }
+}
+
+.slot {
+  min-height: rem(160);
+  border: rem(2) dashed transparent;
+  border-radius: $radius-md;
+
+  @include transition-smooth;
+
+  &:hover {
+    border-color: rgba($color-primary, 0.3);
+  }
+}
+
+.card-tache {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--pastel-color, #eaf6ff);
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+  text-align: center;
+  box-shadow: $box-shadow;
+  gap: $spacing-xs;
+  height: rem(300);
+  min-height: rem(260); // pour éviter les sauts si image très petite
+  transform: scale(1);
+
+  // ✅ Transition fluide personnalisée
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+
+  // ✅ Hover uniquement
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: $box-shadow-hover;
+    z-index: 2;
+  }
+
+  // ✅ Supprimer focus persistant
+  &:focus {
+    outline: none;
+  }
+
+  span {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-lg;
+    flex-grow: 0;
+  }
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    flex-shrink: 1;
+  }
+
+  input[type='checkbox'] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: rem(20);
+    height: rem(20);
+    border: rem(2) solid $color-primary;
+    background-color: white;
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+    cursor: pointer;
+    position: relative;
+    transition: background $transition-fast;
+
+    &:checked {
+      background-color: $color-primary;
+    }
+
+    &:checked::after {
+      content: '✔️';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      font-size: rem(14);
+      color: white;
+    }
+  }
+
+  &.done {
+    opacity: 0.6;
+    filter: grayscale(80%);
+    text-decoration: line-through;
+  }
+
+  &.dragging {
+    box-shadow: 0 0 0 rem(3) $color-primary;
+    opacity: 0.8;
+  }
+
+  @include respond-to(xs) {
+    height: auto;
+    padding: $spacing-xs;
+
+    img {
+      width: rem(32);
+      height: rem(32);
+    }
+
+    input[type='checkbox'] {
+      width: rem(16);
+      height: rem(16);
+
+      &:checked::after {
+        font-size: rem(12);
+      }
+    }
+
+    span {
+      font-size: $font-size-xs;
+    }
+  }
+}
+
+.reset-all-zone {
+  text-align: center;
+  margin-top: $spacing-md;
+}
