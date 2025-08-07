@@ -64,9 +64,9 @@ function TableauCard({ tache, done, toggleDone }) {
       {tache.imagepath && (
         <SignedImage
           filePath={tache.imagepath}
+          bucket="images"
           alt={tache.label}
-          size={150}
-          className="tableau-card__image"
+          className="tableau-card__image img-size-lg"
         />
       )}
 

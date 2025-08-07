@@ -9,10 +9,11 @@ export default function ModalRecompense({ isOpen, onClose, reward }) {
     <Modal isOpen={isOpen} onClose={onClose} title="🎉 Bravo !">
       <div className="modal-recompense">
         <SignedImage
-          filePath={reward.imagepath}
+          path={reward.imagepath}
           alt={reward.label}
-          size={120}
+          className="img-size-md"
         />
+
         <h2 className="modal-recompense__label">{reward.label}</h2>
         <p className="modal-recompense__text">Tu as gagné cette récompense !</p>
       </div>

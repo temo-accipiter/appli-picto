@@ -79,7 +79,12 @@ export default function RecompensesEdition({
           <EditionCard
             key={r.id}
             imageComponent={
-              <SignedImage filePath={r.imagepath} alt={r.label} size={80} />
+              <SignedImage
+                filePath={r.imagepath}
+                bucket="images"
+                alt={r.label}
+                className="img-size-sm"
+              />
             }
             label={drafts[r.id] ?? r.label}
             labelId={r.id}

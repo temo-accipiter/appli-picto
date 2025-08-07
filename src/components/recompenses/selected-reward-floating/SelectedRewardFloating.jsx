@@ -11,8 +11,9 @@ export default function SelectedRewardFloating({ reward }) {
         imageComponent={
           <SignedImage
             filePath={reward.imagepath}
+            bucket="images"
             alt={reward.label}
-            size={50}
+            className="img-size-xs"
           />
         }
         label={reward.label}

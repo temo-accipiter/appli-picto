@@ -110,7 +110,12 @@ export default function ChecklistTachesEdition({
           <EditionCard
             key={t.id}
             imageComponent={
-              <SignedImage filePath={t.imagepath} alt={t.label} size={80} />
+              <SignedImage
+                filePath={t.imagepath}
+                bucket="images"
+                alt={t.label}
+                className="img-size-sm"
+              />
             }
             labelId={t.id}
             label={drafts[t.id] ?? t.label}

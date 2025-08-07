@@ -36,3 +36,5 @@ export { default as Button } from './ui/button/Button'
 export { default as ButtonClose } from './ui/button/button-close/ButtonClose'
 export { default as ButtonDelete } from './ui/button/button-delete/ButtonDelete'
 export { default as FloatingPencil } from './ui/floating-pencil/FloatingPencil'
+
+export { default as SubscribeButton } from './subscribeButton/SubscribeButton'

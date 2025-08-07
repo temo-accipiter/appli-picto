@@ -1,17 +1,19 @@
 import { Pencil } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useAuth } from '@/hooks'
 import PropTypes from 'prop-types'
 import './FloatingPencil.scss'
 
 export default function FloatingPencil({ className = '' }) {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const location = useLocation()
 
   const handleClick = () => {
-    navigate(user ? '/edition' : '/login')
+    navigate('/edition')
   }
+
+  const isTableau = location.pathname === '/tableau'
+  if (!isTableau) return null
 
   return (
     <motion.button
@@ -27,6 +29,7 @@ export default function FloatingPencil({ className = '' }) {
     </motion.button>
   )
 }
+
 FloatingPencil.propTypes = {
   className: PropTypes.string,
 }

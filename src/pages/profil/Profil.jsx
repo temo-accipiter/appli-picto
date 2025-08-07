@@ -9,8 +9,13 @@ import {
   FloatingPencil,
   ModalConfirm,
   AvatarProfil,
+  SubscribeButton,
 } from '@/components'
 import './Profil.scss'
+
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 
 export default function Profil() {
   const { user, signOut } = useAuth()
@@ -114,9 +119,27 @@ export default function Profil() {
       showToast('Profil mis à jour', 'success')
     }
   }
-
   const handleAvatarUpload = async file => {
+    if (!user) return
+
+    const previousAvatar = user.user_metadata?.avatar
     const fileName = `${user.id}/${Date.now()}-${file.name}`
+
+    // 1. Supprimer l’ancien avatar s’il existe
+    if (previousAvatar) {
+      const { error: deleteError } = await supabase.storage
+        .from('avatars')
+        .remove([previousAvatar])
+
+      if (deleteError) {
+        console.warn('⚠️ Échec suppression ancien avatar :', deleteError)
+      }
+
+      // 🕒 Petite pause pour laisser le backend prendre en compte la suppression
+      await wait(200) // délai de 200 ms
+    }
+
+    // 2. Uploader le nouveau fichier
     const { data, error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, file)
@@ -127,6 +150,7 @@ export default function Profil() {
       return
     }
 
+    // 3. Mise à jour metadata + table `profiles`
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
     })
@@ -253,6 +277,7 @@ export default function Profil() {
         />
 
         <p>Email : {user.email}</p>
+        <SubscribeButton />
 
         <div className="profil-buttons">
           <Button type="submit" label="Enregistrer" variant="primary" />
@@ -270,7 +295,6 @@ export default function Profil() {
           />
         </div>
       </form>
-
       <ModalConfirm
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

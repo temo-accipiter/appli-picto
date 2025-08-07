@@ -30,7 +30,9 @@
   font-size: 1rem;
   line-height: 1;
   z-index: 2;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .avatar-upload-btn {
@@ -50,4 +52,7 @@
   transform: scale(1.15);
   box-shadow: 0 0 5px rgba(120, 120, 255, 0.4);
   outline: none;
+}
+.message-erreur {
+  white-space: pre-line;
 }

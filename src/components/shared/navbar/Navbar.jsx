@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ThemeToggle, LangSelector, Toast, Button } from '@/components'
+import {
+  ThemeToggle,
+  LangSelector,
+  Toast,
+  Button,
+  SignedImage,
+} from '@/components'
 import { Pencil, LayoutDashboard } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks'
@@ -11,7 +17,10 @@ export default function Navbar() {
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
   const [toastVisible, setToastVisible] = useState(false)
-  const isTableau = location.pathname.startsWith('/tableau')
+
+  const isTableau = location.pathname === '/tableau'
+  const isEdition = location.pathname === '/edition'
+  const isProfil = location.pathname === '/profil'
 
   const handleSignOut = async () => {
     await signOut()
@@ -24,7 +33,7 @@ export default function Navbar() {
     <>
       <nav className="navbar">
         <div className="navbar-left">
-          {isTableau ? (
+          {isTableau && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -39,7 +48,30 @@ export default function Navbar() {
                 <Pencil size={20} strokeWidth={2} />
               </NavLink>
             </motion.div>
-          ) : (
+          )}
+
+          {isProfil && (
+            <>
+              <NavLink
+                to="/tableau"
+                className="nav-icon-link"
+                aria-label="Accéder au tableau"
+                title="Tableau"
+              >
+                <LayoutDashboard size={20} strokeWidth={2} />
+              </NavLink>
+              <NavLink
+                to="/edition"
+                className="nav-icon-link"
+                aria-label="Accéder à l’édition"
+                title="Édition"
+              >
+                <Pencil size={20} strokeWidth={2} />
+              </NavLink>
+            </>
+          )}
+
+          {isEdition && (
             <NavLink
               to="/tableau"
               className="nav-icon-link"
@@ -51,7 +83,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {!isTableau && user && (
+        {user && (
           <motion.div
             className="navbar-actions"
             initial={{ opacity: 0, x: 10 }}
@@ -60,9 +92,26 @@ export default function Navbar() {
           >
             <LangSelector />
             <ThemeToggle />
-            <NavLink to="/profil" className="nav-button">
-              Mon profil
-            </NavLink>
+            {isEdition && (
+              <NavLink
+                to="/profil"
+                className="nav-avatar-link"
+                title="Mon profil"
+              >
+                {user?.user_metadata?.avatar ? (
+                  <SignedImage
+                    filePath={user.user_metadata.avatar}
+                    bucket="avatars"
+                    alt="Mon avatar"
+                    className="navbar-avatar"
+                  />
+                ) : (
+                  <div className="navbar-avatar-fallback">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
+              </NavLink>
+            )}
             <Button
               onClick={handleSignOut}
               label="Se déconnecter"

@@ -4,6 +4,7 @@ import { supabase, validatePseudo } from '@/utils'
 import { useAuth } from '@/hooks'
 import { useToast } from '@/contexts'
 import { Input, Button } from '@/components'
+import Turnstile from 'react-turnstile'
 import '../login/Login.scss'
 
 export default function Signup() {
@@ -14,6 +15,7 @@ export default function Signup() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [captchaToken, setCaptchaToken] = useState(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -31,6 +33,11 @@ export default function Signup() {
 
     if (password !== confirmPassword) {
       setError('Les mots de passe ne correspondent pas.')
+      return
+    }
+
+    if (!captchaToken) {
+      setError('Veuillez valider le CAPTCHA.')
       return
     }
 
@@ -62,6 +69,7 @@ export default function Signup() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
+        captchaToken, // ✅ jeton Turnstile
         data: {
           pseudo,
         },
@@ -118,9 +126,17 @@ export default function Signup() {
           onChange={e => setConfirmPassword(e.target.value)}
           required
         />
+
+        <Turnstile
+          sitekey="0x4AAAAAABoCZA_HK1b5uPRH"
+          onSuccess={token => setCaptchaToken(token)}
+          onExpire={() => setCaptchaToken(null)}
+          theme="light"
+        />
+
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || !captchaToken}
           label={loading ? 'Création...' : 'Créer un compte'}
         />
         {error && <p className="error">{error}</p>}

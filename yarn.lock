@@ -965,6 +965,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stripe/stripe-js@npm:^7.8.0":
+  version: 7.8.0
+  resolution: "@stripe/stripe-js@npm:7.8.0"
+  checksum: 10c0/23265b831900ca8bcfb88980070107a17b8d83636d84dc503a6b80e0c6f383f9144fae7e6f549fd31c79ac8ca78ea79f87c3f06d939ef31a47d354037824acf9
+  languageName: node
+  linkType: hard
+
 "@supabase/auth-js@npm:2.71.0":
   version: 2.71.0
   resolution: "@supabase/auth-js@npm:2.71.0"
@@ -1606,6 +1613,7 @@ __metadata:
     "@dnd-kit/sortable": "npm:^10.0.0"
     "@dnd-kit/utilities": "npm:^3.2.2"
     "@eslint/js": "npm:^9.24.0"
+    "@stripe/stripe-js": "npm:^7.8.0"
     "@supabase/supabase-js": "npm:^2.50.3"
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"
@@ -1628,6 +1636,7 @@ __metadata:
     react-dom: "npm:^19.0.0"
     react-i18next: "npm:^15.4.1"
     react-router-dom: "npm:^7.5.0"
+    react-turnstile: "npm:^1.1.4"
     react-use: "npm:^17.6.0"
     rollup-plugin-visualizer: "npm:^5.14.0"
     sass: "npm:^1.86.3"
@@ -3855,6 +3864,16 @@ __metadata:
     react-dom:
       optional: true
   checksum: 10c0/04b02b473a743978ec7b5292484706b87c74d3e8d407dba886204586ba2d7a224a5413f0a7969fb28899b8804f0e6b0fde1c2a4f957901eb8a9a6541a25630f2
+  languageName: node
+  linkType: hard
+
+"react-turnstile@npm:^1.1.4":
+  version: 1.1.4
+  resolution: "react-turnstile@npm:1.1.4"
+  peerDependencies:
+    react: ">= 16.13.1"
+    react-dom: ">= 16.13.1"
+  checksum: 10c0/2a03226eede070e56be597b1456d870eb7180b90ed46a256970374fa545151474a08cb00acfe65292e353f8a2d082e1b2f851696b714f164251928f3330d2dad
   languageName: node
   linkType: hard
 

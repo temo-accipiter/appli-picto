@@ -19,7 +19,7 @@ export default function useRecompenses(reload = 0) {
         else setRecompenses(data)
       })
   }, [reload, userId])
-
+  /*
   const createRecompense = async ({ label, image }) => {
     let imagepath = ''
 
@@ -27,6 +27,48 @@ export default function useRecompenses(reload = 0) {
       const cleanName = image.name
         .replace(/\s+/g, '-')
         .replace(/[^a-zA-Z0-9_.-]/g, '')
+      const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(fileName, image)
+
+      if (uploadError) {
+        console.error('❌ Erreur upload image:', uploadError)
+        throw new Error('Erreur upload image')
+      }
+
+      imagepath = data.path
+    }
+
+    const { data, error } = await supabase
+      .from('recompenses')
+      .insert({
+        label,
+        imagepath,
+        selected: false,
+        user_id: userId,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('❌ Erreur ajout récompense:', error)
+      throw new Error('Erreur ajout récompense')
+    }
+
+    setRecompenses(prev => [...prev, data])
+    return data
+  }
+*/
+  const createRecompense = async ({ label, image }) => {
+    let imagepath = ''
+
+    if (image) {
+      const cleanName = image.name
+        ? image.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
+        : `${Date.now()}` // valeur de secours si name non défini
+
       const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
 
       const { data, error: uploadError } = await supabase.storage
