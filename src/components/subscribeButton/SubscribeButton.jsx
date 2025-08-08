@@ -1,45 +1,51 @@
+// src/components/SubscribeButton.jsx
+import { useState } from 'react'
 import { supabase } from '@/utils'
 import { useToast } from '@/contexts'
 import { Button } from '@/components'
 
 export default function SubscribeButton() {
   const { show } = useToast()
+  const [loading, setLoading] = useState(false)
 
   const handleSubscribe = async () => {
-    const session = await supabase.auth.getSession()
-    const token = session.data?.session?.access_token
+    if (loading) return
+    setLoading(true)
 
-    const res = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          price_id: import.meta.env.VITE_STRIPE_PRICE_ID,
-          success_url: `${window.location.origin}/profil`,
-          cancel_url: `${window.location.origin}/profil`,
-        }),
+    try {
+      // Appel direct à l’Edge Function (auth auto + bons headers)
+      const { data, error } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            price_id: import.meta.env.VITE_STRIPE_PRICE_ID,
+            success_url: `${window.location.origin}/profil`,
+            cancel_url: `${window.location.origin}/profil`,
+          },
+        }
+      )
+
+      if (error) throw error
+
+      if (data?.url) {
+        window.location.href = data.url
+      } else {
+        show('Réponse Stripe inattendue.', 'error')
       }
-    )
-
-    const data = await res.json()
-
-    if (data?.url) {
-      window.location.href = data.url
-    } else {
-      console.error('Erreur réponse Stripe :', data)
+    } catch (e) {
+      console.error(e)
       show('Erreur lors de la redirection vers Stripe.', 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <Button
-      label="S'abonner (5 € / mois)"
+      label={loading ? 'Redirection…' : "S'abonner (5 € / mois)"}
       variant="primary"
       onClick={handleSubscribe}
+      disabled={loading}
     />
   )
 }

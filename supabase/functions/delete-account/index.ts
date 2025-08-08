@@ -1,104 +1,116 @@
-import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7'
+// supabase/functions/stripe-webhook/index.ts
+import { serve } from 'https://deno.land/std@0.223.0/http/server.ts'
+import Stripe from 'https://esm.sh/stripe@12.18.0?target=deno'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+
+const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
+  apiVersion: '2023-10-16',
+})
+
+const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
 
 serve(async req => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*', // ← ici autorise toutes les origines (localhost inclus)
-        'Access-Control-Allow-Headers':
-          'authorization, x-client-info, apikey, content-type',
-        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      },
-    })
+  if (req.method !== 'POST')
+    return new Response('Method Not Allowed', { status: 405 })
+
+  const body = await req.text()
+  const sig = req.headers.get('Stripe-Signature') ?? ''
+
+  let event: Stripe.Event
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
+  } catch (err) {
+    console.error('❌ Invalid signature', err)
+    return new Response('Invalid signature', { status: 400 })
   }
 
+  // Admin client (service_role) pour bypasser RLS
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        const user_id = (session.metadata?.user_id as string) ?? null
+        const subscriptionId = session.subscription as string | null
+        const customerId = session.customer as string | null
+        const priceId =
+          (session.line_items?.data?.[0]?.price?.id as string) ||
+          (session.metadata?.price_id as string) ||
+          null
 
-    const authHeader = req.headers.get('Authorization')
-    const token = authHeader?.replace('Bearer ', '')
+        if (!user_id) break
 
-    if (!token) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabaseAdmin.auth.getUser(token)
-
-    if (userError || !user) {
-      return new Response('Unauthorized', { status: 401 })
-    }
-
-    const userId = user.id
-
-    // 💥 Supprime fichiers dans Storage/images/...
-    const cleanup = async (folder: string) => {
-      const { data } = await supabaseAdmin.storage
-        .from('images')
-        .list(`${userId}/${folder}`, { limit: 100 })
-      if (data && data.length > 0) {
-        const paths = data.map(f => `${userId}/${folder}/${f.name}`)
-        await supabaseAdmin.storage.from('images').remove(paths)
+        await supabase.from('abonnements').upsert(
+          {
+            user_id,
+            stripe_customer: customerId ?? undefined,
+            stripe_subscription: subscriptionId ?? undefined,
+            status: 'active', // sera sur-écrit par l’event subscription.created/updated
+            price_id: priceId ?? undefined,
+            raw_data: session as unknown as Record<string, unknown>,
+          },
+          { onConflict: 'user_id' }
+        )
+        break
       }
-    }
 
-    await cleanup('taches')
-    await cleanup('recompenses')
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object as Stripe.Subscription
+        const user_id = (sub.metadata?.user_id as string) ?? null
 
-    // 💥 Supprime avatar (si utilisé)
-    // 🔥 Supprimer les fichiers avatars du dossier [userId]/
-    try {
-      const { data: avatars } = await supabaseAdmin.storage
-        .from('avatars')
-        .list(`${user.id}/`)
-
-      if (avatars && avatars.length > 0) {
-        const paths = avatars.map(file => `${user.id}/${file.name}`)
-        const { error: avatarError } = await supabaseAdmin.storage
-          .from('avatars')
-          .remove(paths)
-
-        if (avatarError) {
-          console.error('⚠️ Erreur suppression avatars :', avatarError)
-        } else {
-          console.log('🗑️ Avatar(s) supprimé(s)')
+        // Si pas de metadata (cas d’un sub modifié dans Stripe), on tente via le customer mapping
+        let resolvedUserId = user_id
+        if (!resolvedUserId && typeof sub.customer === 'string') {
+          const { data } = await supabase
+            .from('abonnements')
+            .select('user_id')
+            .eq('stripe_customer', sub.customer)
+            .maybeSingle()
+          resolvedUserId = data?.user_id ?? null
         }
+        if (!resolvedUserId) break
+
+        await supabase.from('abonnements').upsert(
+          {
+            user_id: resolvedUserId,
+            stripe_customer:
+              typeof sub.customer === 'string' ? sub.customer : undefined,
+            stripe_subscription: sub.id,
+            status: sub.status,
+            plan: sub.items.data[0]?.price?.nickname ?? null,
+            price_id: sub.items.data[0]?.price?.id ?? null,
+            start_date: new Date(sub.start_date * 1000).toISOString(),
+            current_period_start: new Date(
+              sub.current_period_start * 1000
+            ).toISOString(),
+            current_period_end: new Date(
+              sub.current_period_end * 1000
+            ).toISOString(),
+            cancel_at: sub.cancel_at
+              ? new Date(sub.cancel_at * 1000).toISOString()
+              : null,
+            cancel_at_period_end: sub.cancel_at_period_end ?? false,
+            raw_data: sub as unknown as Record<string, unknown>,
+          },
+          { onConflict: 'user_id' }
+        )
+        break
       }
-    } catch (e) {
-      console.warn('⚠️ Problème suppression avatar :', e)
+
+      default:
+        // ignore
+        break
     }
 
-    // 🗑️ Supprime toutes les lignes liées
-    await supabaseAdmin.from('taches').delete().eq('user_id', userId)
-    await supabaseAdmin.from('categories').delete().eq('user_id', userId)
-    await supabaseAdmin.from('parametres').delete().eq('user_id', userId)
-    await supabaseAdmin.from('recompenses').delete().eq('user_id', userId)
-    await supabaseAdmin.from('profiles').delete().eq('id', userId)
-
-    // 💥 Supprime l'utilisateur auth
-    await supabaseAdmin.auth.admin.deleteUser(userId)
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*', // ✅ important pour éviter CORS
-      },
-      status: 200,
-    })
-  } catch (error) {
-    console.error('❌ Erreur delete-account :', error)
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*', // ✅ pour CORS aussi en cas d’erreur
-      },
-      status: 500,
-    })
+    return new Response('ok', { status: 200 })
+  } catch (e) {
+    console.error('Webhook handler error:', e)
+    return new Response('Server error', { status: 500 })
   }
 })
