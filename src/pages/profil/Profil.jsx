@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/hooks'
+import { useAuth, useSubscriptionStatus } from '@/hooks'
 import { useToast } from '@/contexts'
 import { supabase } from '@/utils'
 import {
@@ -18,6 +18,8 @@ function wait(ms) {
 }
 
 export default function Profil() {
+  const { isActive, status, loading } = useSubscriptionStatus()
+
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
   const navigate = useNavigate()
@@ -277,7 +279,19 @@ export default function Profil() {
         />
 
         <p>Email : {user.email}</p>
-        <SubscribeButton />
+        {/* Statut d'abonnement */}
+        {loading ? (
+          <p>Chargement de l’abonnement...</p>
+        ) : isActive ? (
+          <p className="abonnement-statut actif">
+            ✅ Abonnement actif ({status})
+          </p>
+        ) : (
+          <p className="abonnement-statut inactif">❌ Aucun abonnement actif</p>
+        )}
+
+        {/* Bouton s'abonner affiché seulement si pas actif */}
+        {!loading && !isActive && <SubscribeButton />}
 
         <div className="profil-buttons">
           <Button type="submit" label="Enregistrer" variant="primary" />

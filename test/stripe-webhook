@@ -12,13 +12,6 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  })
-}
-
 function toIso(sec?: number | null) {
   return sec ? new Date(sec * 1000).toISOString() : null
 }
@@ -50,32 +43,14 @@ function extractFieldsFromSub(sub: Stripe.Subscription) {
       typeof sub.latest_invoice === 'string'
         ? sub.latest_invoice
         : ((sub.latest_invoice as any)?.id ?? null),
-    raw_data: sub as unknown as Record<string, unknown>,
-  }
-}
-
-// 🔹 petit helper de log (fire-and-forget pour ne pas bloquer le webhook)
-async function logSubscriptionEvent(
-  admin: ReturnType<typeof createClient>,
-  eventType: string,
-  userId: string | null,
-  details: Record<string, unknown>
-) {
-  try {
-    await admin.from('subscription_logs').insert({
-      user_id: userId,
-      event_type: eventType,
-      details,
-      timestamp: new Date().toISOString(),
-    })
-  } catch (e) {
-    console.warn('logSubscriptionEvent failed:', e)
+    raw_data: sub as unknown as Record<string, unknown>, // JSON brut complet
   }
 }
 
 serve(async req => {
-  if (req.method === 'OPTIONS')
+  if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
 
   const sig = req.headers.get('stripe-signature') ?? ''
   const body = await req.text()
@@ -88,16 +63,13 @@ serve(async req => {
       Deno.env.get('STRIPE_WEBHOOK_SECRET')!
     )
   } catch (err: any) {
-    console.error('❌ Signature Stripe invalide :', err?.message)
-    return json(
-      { error: 'invalid signature', timestamp: new Date().toISOString() },
-      400
-    )
+    console.error('❌ Signature Stripe invalide :', err.message)
+    return new Response('Invalid signature', { status: 400 })
   }
 
   const admin = createClient(
     Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')! // Service Role → bypass RLS
   )
 
   try {
@@ -115,20 +87,6 @@ serve(async req => {
             ? session.subscription
             : (session.subscription as any)?.id
 
-        // log réception
-        queueMicrotask(() =>
-          logSubscriptionEvent(
-            admin,
-            'webhook.checkout.session.completed',
-            user_id,
-            {
-              stripe_event_id: event.id,
-              session_id: session.id,
-              subscription_id: subscriptionId ?? null,
-            }
-          )
-        )
-
         if (user_id && subscriptionId) {
           let sub: Stripe.Subscription | null = null
           try {
@@ -139,23 +97,13 @@ serve(async req => {
 
           if (sub) {
             const fields = extractFieldsFromSub(sub)
-            const { error } = await admin.from('abonnements').upsert(
+            await admin.from('abonnements').upsert(
               {
                 user_id,
                 ...fields,
                 last_event_id: event.id,
               },
               { onConflict: 'stripe_subscription_id' }
-            )
-            if (error) throw error
-
-            // log succès upsert
-            queueMicrotask(() =>
-              logSubscriptionEvent(admin, 'subscription.upserted', user_id, {
-                stripe_event_id: event.id,
-                stripe_subscription_id: sub.id,
-                status: sub.status,
-              })
             )
           }
         }
@@ -168,17 +116,9 @@ serve(async req => {
         const sub = event.data.object as Stripe.Subscription
         const user_id = (sub.metadata as any)?.supabase_user_id ?? null
 
-        queueMicrotask(() =>
-          logSubscriptionEvent(admin, `webhook.${event.type}`, user_id, {
-            stripe_event_id: event.id,
-            stripe_subscription_id: sub.id,
-            status: sub.status,
-          })
-        )
-
         if (user_id) {
           const fields = extractFieldsFromSub(sub)
-          const { error } = await admin.from('abonnements').upsert(
+          await admin.from('abonnements').upsert(
             {
               user_id,
               ...fields,
@@ -186,7 +126,6 @@ serve(async req => {
             },
             { onConflict: 'stripe_subscription_id' }
           )
-          if (error) throw error
         }
         break
       }
@@ -195,31 +134,15 @@ serve(async req => {
         console.log('ℹ️ Événement Stripe ignoré :', event.type)
     }
 
-    return json({ received: true, event_id: event.id }, 200)
-  } catch (err: any) {
-    console.error('⚠️ Erreur webhook Stripe :', {
-      message: err?.message,
-      event_id: event.id,
-      type: event.type,
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
-
-    // log erreur
-    queueMicrotask(() =>
-      logSubscriptionEvent(admin, 'webhook.error', null, {
-        stripe_event_id: event.id,
-        type: event.type,
-        error: String(err),
-      })
-    )
-
-    return json(
-      {
-        error: 'handler failure',
-        timestamp: new Date().toISOString(),
-        event_id: event.id,
-        type: event.type,
-      },
-      500
-    )
+  } catch (err) {
+    console.error('⚠️ Erreur webhook Stripe :', err)
+    return new Response(JSON.stringify({ error: 'handler failure' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   }
 })

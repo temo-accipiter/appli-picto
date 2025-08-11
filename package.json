@@ -12,7 +12,16 @@
     "check": "yarn lint:fix && yarn format",
     "lint": "eslint . --ext .js,.jsx",
     "lint:fix": "eslint . --ext .js,.jsx --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:link": "dotenv -e .env -- sh -lc 'supabase link --project-ref \"$SUPABASE_PROJECT_REF\"'",
+    "db:dump": "dotenv -e .env -- sh -lc 'PGPASSWORD=\"$SUPABASE_DB_PASSWORD\" PGSSLMODE=require pg_dump -h \"$SUPABASE_DB_HOST\" -p \"$SUPABASE_DB_PORT\" -U \"$SUPABASE_DB_USER\" -d \"$SUPABASE_DB_NAME\" --schema-only --schema=public --schema=storage -f supabase/schema.sql'",
+    "db:types": "dotenv -e .env -- sh -lc 'mkdir -p src/types && supabase gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" > src/types/supabase.ts'",
+    "context:update": "yarn db:dump && yarn db:types",
+    "supabase:serve": "dotenv -e .env -- sh -lc 'supabase functions serve --env-file ./supabase/.env.local'",
+    "deploy:checkout": "dotenv -e .env -- sh -lc 'supabase functions deploy create-checkout-session --project-ref \"$SUPABASE_PROJECT_REF\"'",
+    "deploy:webhook": "dotenv -e .env -- sh -lc 'supabase functions deploy stripe-webhook --no-verify-jwt --project-ref \"$SUPABASE_PROJECT_REF\"'",
+    "logs:checkout": "dotenv -e .env -- sh -lc 'supabase functions logs create-checkout-session --project-ref \"$SUPABASE_PROJECT_REF\" --follow'",
+    "logs:webhook": "dotenv -e .env -- sh -lc 'supabase functions logs stripe-webhook --project-ref \"$SUPABASE_PROJECT_REF\" --follow'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -32,13 +41,18 @@
     "react-router-dom": "^7.5.0",
     "react-turnstile": "^1.1.4",
     "react-use": "^17.6.0",
-    "sass": "^1.86.3"
+    "sass": "^1.86.3",
+    "stripe": "^18.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
+    "@types/stripe": "^8.0.417",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.2.0",
+    "dotenv": "^17.2.1",
+    "dotenv-cli": "^10.0.0",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-prettier": "^5.2.6",

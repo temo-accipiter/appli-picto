@@ -10,6 +10,7 @@
 
 # ✅ Logs
 *.log
+stripe-logs/
 
 # ✅ OS junk
 .DS_Store
@@ -20,11 +21,13 @@ Thumbs.db
 .idea/
 *.swp
 
-# ✅ Environment files
+# ✅ Environment files (sécurité)
 .env
 .env.local
 .env.*.local
-.env.keys
+supabase/.env
+supabase/.env.local
+supabase/.env.*.local
 
 # ✅ SQLite / DB
 *.sqlite
@@ -46,12 +49,23 @@ backend/dist/
 # ✅ Dependency folders
 node_modules/
 
-# ✅ Others
-coverage/
-.cache/
+# ✅ Next.js / cache
 .next/
 out/
+.cache/
 
-# ✅ Supabase
-supabase/.branches
+# ✅ Tests / coverage
+coverage/
+
+# ✅ Temp / fichiers inutiles pour l'IA
+tmp/
+temp/
+
+# ✅ Supabase cache temporaire
 supabase/.temp
+supabase/.cache
+
+# ⚠️ NE PAS ignorer : on laisse ces fichiers pour Cursor
+!supabase/schema.sql
+!src/types/supabase.ts
+!supabase/functions/**

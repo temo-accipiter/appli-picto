@@ -38,3 +38,4 @@ export { default as ButtonDelete } from './ui/button/button-delete/ButtonDelete'
 export { default as FloatingPencil } from './ui/floating-pencil/FloatingPencil'
 
 export { default as SubscribeButton } from './subscribeButton/SubscribeButton'
+export { default as UserMenu } from './user-menu/UserMenu'

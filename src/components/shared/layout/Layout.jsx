@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { PageTransition, Navbar } from '@/components'
+import { PageTransition, Navbar, UserMenu } from '@/components'
 import './Layout.scss'
 
 export default function Layout() {
@@ -15,6 +15,7 @@ export default function Layout() {
         <main>
           <PageTransition />
         </main>
+        <UserMenu />
       </div>
     </div>
   )
