@@ -1,13 +1,10 @@
-/* src/components/user-menu/UserMenu.scss */
 .user-menu-trigger {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  z-index: 1100;
   border: none;
   background: transparent;
   cursor: pointer;
   outline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .avatar-circle {
@@ -61,6 +58,16 @@
   color: #64748b;
 }
 
+/* Préférences (langue + thème) */
+.user-menu-preferences {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
 .user-menu-list {
   display: grid;
   padding: 6px;
@@ -77,19 +84,15 @@
   cursor: pointer;
   text-align: left;
   font-size: 15px;
-  line-height: 1.2;
-
   &:hover,
   &:focus-visible {
     background: #f3f6ff;
     outline: none;
   }
-
   &.danger:hover,
   &.danger:focus-visible {
     background: #fff5f5;
   }
-
   .icon {
     width: 18px;
     height: 18px;

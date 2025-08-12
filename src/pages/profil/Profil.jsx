@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
 import { useToast } from '@/contexts'
-import { supabase } from '@/utils'
+import {
+  supabase,
+  getDisplayPseudo,
+  noEdgeSpaces,
+  noDoubleSpaces,
+  normalizeSpaces,
+} from '@/utils'
 import {
   Input,
   Button,
@@ -10,6 +16,7 @@ import {
   ModalConfirm,
   AvatarProfil,
   SubscribeButton,
+  InputWithValidation,
 } from '@/components'
 import './Profil.scss'
 
@@ -29,7 +36,7 @@ export default function Profil() {
   const [ville, setVille] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
-
+  const displayPseudo = getDisplayPseudo(user, pseudo)
   useEffect(() => {
     console.log('📌 Profil monté')
 
@@ -103,10 +110,23 @@ export default function Profil() {
   const handleSave = async e => {
     e.preventDefault()
 
+    const pseudoClean = normalizeSpaces(pseudo || '')
+    const villeClean = normalizeSpaces(ville || '')
+
     const payload = {
-      pseudo: pseudo.trim(),
-      ville: ville.trim(),
-      date_naissance: dateNaissance.trim() === '' ? null : dateNaissance,
+      // ✅ si vide → NULL en base
+      pseudo: pseudoClean === '' ? null : pseudoClean,
+      ville: villeClean === '' ? null : villeClean,
+      date_naissance:
+        (dateNaissance || '').trim() === '' ? null : dateNaissance,
+    }
+
+    // ✅ aussi synchroniser la metadata auth (pour UserMenu, etc.)
+    const { error: metaError } = await supabase.auth.updateUser({
+      data: { pseudo: payload.pseudo },
+    })
+    if (metaError) {
+      console.warn('⚠️ Mise à jour metadata échouée (non bloquant):', metaError)
     }
 
     const { error } = await supabase
@@ -121,13 +141,13 @@ export default function Profil() {
       showToast('Profil mis à jour', 'success')
     }
   }
+
   const handleAvatarUpload = async file => {
     if (!user) return
 
     const previousAvatar = user.user_metadata?.avatar
     const fileName = `${user.id}/${Date.now()}-${file.name}`
 
-    // 1. Supprimer l’ancien avatar s’il existe
     if (previousAvatar) {
       const { error: deleteError } = await supabase.storage
         .from('avatars')
@@ -136,12 +156,9 @@ export default function Profil() {
       if (deleteError) {
         console.warn('⚠️ Échec suppression ancien avatar :', deleteError)
       }
-
-      // 🕒 Petite pause pour laisser le backend prendre en compte la suppression
-      await wait(200) // délai de 200 ms
+      await wait(200)
     }
 
-    // 2. Uploader le nouveau fichier
     const { data, error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, file)
@@ -152,7 +169,6 @@ export default function Profil() {
       return
     }
 
-    // 3. Mise à jour metadata + table `profiles`
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
     })
@@ -251,18 +267,21 @@ export default function Profil() {
 
       <AvatarProfil
         avatarPath={user.user_metadata?.avatar || null}
-        pseudo={pseudo}
+        pseudo={displayPseudo}
         onUpload={handleAvatarUpload}
         onDelete={() => setConfirmDeleteAvatar(true)}
       />
 
       <form onSubmit={handleSave}>
-        <Input
+        <InputWithValidation
           id="pseudo"
           label="Pseudo"
           value={pseudo}
-          onChange={e => setPseudo(e.target.value)}
-          required
+          rules={[noEdgeSpaces, noDoubleSpaces]}
+          onChange={val => setPseudo(val)}
+          onValid={val => setPseudo(normalizeSpaces(val))}
+          ariaLabel="Pseudo"
+          placeholder="ex. Alex"
         />
         <Input
           id="date-naissance"
@@ -271,15 +290,18 @@ export default function Profil() {
           value={dateNaissance}
           onChange={e => setDateNaissance(e.target.value)}
         />
-        <Input
+        <InputWithValidation
           id="ville"
           label="Ville"
           value={ville}
-          onChange={e => setVille(e.target.value)}
+          rules={[noEdgeSpaces, noDoubleSpaces]}
+          onChange={val => setVille(val)}
+          onValid={val => setVille(normalizeSpaces(val))}
+          ariaLabel="Ville"
+          placeholder="ex. Paris"
         />
 
         <p>Email : {user.email}</p>
-        {/* Statut d'abonnement */}
         {loading ? (
           <p>Chargement de l’abonnement...</p>
         ) : isActive ? (
@@ -290,7 +312,6 @@ export default function Profil() {
           <p className="abonnement-statut inactif">❌ Aucun abonnement actif</p>
         )}
 
-        {/* Bouton s'abonner affiché seulement si pas actif */}
         {!loading && !isActive && <SubscribeButton />}
 
         <div className="profil-buttons">
@@ -309,6 +330,7 @@ export default function Profil() {
           />
         </div>
       </form>
+
       <ModalConfirm
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

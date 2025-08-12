@@ -1,131 +1,61 @@
-import { useState } from 'react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import {
-  ThemeToggle,
-  LangSelector,
-  Toast,
-  Button,
-  SignedImage,
-} from '@/components'
+import { NavLink, useLocation } from 'react-router-dom'
 import { Pencil, LayoutDashboard } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/hooks'
+import { UserMenu } from '@/components'
 import './Navbar.scss'
 
 export default function Navbar() {
   const location = useLocation()
-  const navigate = useNavigate()
-  const { user, signOut } = useAuth()
-  const [toastVisible, setToastVisible] = useState(false)
+  const { user } = useAuth()
 
   const isTableau = location.pathname === '/tableau'
   const isEdition = location.pathname === '/edition'
-  const isProfil = location.pathname === '/profil'
-
-  const handleSignOut = async () => {
-    await signOut()
-    navigate('/tableau')
-    setToastVisible(true)
-    setTimeout(() => setToastVisible(false), 3000)
-  }
+  const isProfil = location.pathname === '/profil' // ✅ nouveau
 
   return (
-    <>
-      <nav className="navbar">
-        <div className="navbar-left">
-          {isTableau && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <NavLink
-                to="/edition"
-                className="nav-icon-link"
-                aria-label="Accéder à l’édition"
-                title="Édition"
-              >
-                <Pencil size={20} strokeWidth={2} />
-              </NavLink>
-            </motion.div>
-          )}
-
-          {isProfil && (
-            <>
-              <NavLink
-                to="/tableau"
-                className="nav-icon-link"
-                aria-label="Accéder au tableau"
-                title="Tableau"
-              >
-                <LayoutDashboard size={20} strokeWidth={2} />
-              </NavLink>
-              <NavLink
-                to="/edition"
-                className="nav-icon-link"
-                aria-label="Accéder à l’édition"
-                title="Édition"
-              >
-                <Pencil size={20} strokeWidth={2} />
-              </NavLink>
-            </>
-          )}
-
-          {isEdition && (
-            <NavLink
-              to="/tableau"
-              className="nav-icon-link"
-              aria-label="Accéder au tableau"
-              title="Tableau"
-            >
-              <LayoutDashboard size={20} strokeWidth={2} />
-            </NavLink>
-          )}
-        </div>
-
-        {user && (
+    <nav className="navbar">
+      <div className="navbar-left">
+        {(isTableau || isProfil) /* ✅ aussi sur /profil */ && (
           <motion.div
-            className="navbar-actions"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <LangSelector />
-            <ThemeToggle />
-            {isEdition && (
-              <NavLink
-                to="/profil"
-                className="nav-avatar-link"
-                title="Mon profil"
-              >
-                {user?.user_metadata?.avatar ? (
-                  <SignedImage
-                    filePath={user.user_metadata.avatar}
-                    bucket="avatars"
-                    alt="Mon avatar"
-                    className="navbar-avatar"
-                  />
-                ) : (
-                  <div className="navbar-avatar-fallback">
-                    {user?.email?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                )}
-              </NavLink>
-            )}
-            <Button
-              onClick={handleSignOut}
-              label="Se déconnecter"
-              variant="secondary"
-            />
+            <NavLink
+              to="/edition"
+              className="nav-icon-link"
+              aria-label="Accéder à l’édition"
+              title="Édition"
+            >
+              <Pencil size={20} strokeWidth={2} />
+            </NavLink>
           </motion.div>
         )}
-      </nav>
 
-      <Toast
-        message="Déconnexion réussie !"
-        type="success"
-        visible={toastVisible}
-      />
-    </>
+        {(isEdition || isProfil) /* ✅ aussi sur /profil */ && (
+          <NavLink
+            to="/tableau"
+            className="nav-icon-link"
+            aria-label="Accéder au tableau"
+            title="Tableau"
+          >
+            <LayoutDashboard size={20} strokeWidth={2} />
+          </NavLink>
+        )}
+      </div>
+
+      {/* Actions à droite : seulement le UserMenu */}
+      {user && (
+        <motion.div
+          className="navbar-actions"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          <UserMenu />
+        </motion.div>
+      )}
+    </nav>
   )
 }

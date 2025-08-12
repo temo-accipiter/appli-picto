@@ -4,45 +4,49 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { LogOut, User, Crown } from 'lucide-react'
 import { supabase } from '@/utils'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
+import { ThemeToggle, LangSelector, SignedImage } from '@/components'
+import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import './UserMenu.scss'
 
 export default function UserMenu() {
   const { user, signOut } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
   const [open, setOpen] = useState(false)
+  const [dbPseudo, setDbPseudo] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
   const dialogRef = useRef(null)
   const btnRef = useRef(null)
 
-  // Fermer si on change de page
-  useEffect(() => {
-    setOpen(false)
-  }, [location.pathname])
+  // Ferme le menu sur changement de route
+  useEffect(() => setOpen(false), [location.pathname])
 
-  // Échapper/Click extérieur (a11y)
+  // Récupère pseudo DB (pour que Profil et UserMenu aient la même logique)
   useEffect(() => {
-    const onKey = e => e.key === 'Escape' && setOpen(false)
-    const onClick = e => {
-      if (!open) return
-      if (
-        dialogRef.current &&
-        !dialogRef.current.contains(e.target) &&
-        !btnRef.current?.contains(e.target)
-      ) {
-        setOpen(false)
-      }
+    let cancelled = false
+    const fetchDbPseudo = async () => {
+      if (!user?.id) return
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('pseudo')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (!cancelled) setDbPseudo(data?.pseudo ?? '')
+      if (error) console.warn('profiles.pseudo fetch:', error?.message)
     }
-    document.addEventListener('keydown', onKey)
-    document.addEventListener('mousedown', onClick)
+    fetchDbPseudo()
     return () => {
-      document.removeEventListener('keydown', onKey)
-      document.removeEventListener('mousedown', onClick)
+      cancelled = true
     }
-  }, [open])
+  }, [user?.id])
+
+  if (!user) return null
+
+  const displayPseudo = getDisplayPseudo(user, dbPseudo)
+  const initials = displayPseudo?.[0]?.toUpperCase() || '🙂'
+  const avatarPath = user?.user_metadata?.avatar || null
 
   const handleCheckout = async () => {
-    // Même logique que SubscribeButton, inline pour éviter un composant en plus
     const { data, error } = await supabase.functions.invoke(
       'create-checkout-session',
       {
@@ -53,22 +57,17 @@ export default function UserMenu() {
         },
       }
     )
-    if (error) {
-      console.error(error)
-      return
-    }
-    if (data?.url) window.location.href = data.url
+    if (!error && data?.url) window.location.href = data.url
   }
 
-  const initials =
-    user?.user_metadata?.pseudo?.[0]?.toUpperCase() ??
-    user?.email?.[0]?.toUpperCase() ??
-    '🙂'
-
-  if (!user) return null
+  // ✅ Fermer si clic exactement sur le backdrop (extérieur)
+  const handleBackdropMouseDown = e => {
+    if (e.target === e.currentTarget) setOpen(false)
+  }
 
   return (
     <>
+      {/* Bouton avatar dans la navbar */}
       <button
         ref={btnRef}
         className="user-menu-trigger"
@@ -78,14 +77,27 @@ export default function UserMenu() {
         onClick={() => setOpen(o => !o)}
         title="Mon compte"
       >
-        <span className="avatar-circle" aria-hidden>
-          {initials}
-        </span>
+        {avatarPath ? (
+          <SignedImage
+            filePath={avatarPath}
+            bucket="avatars"
+            alt="Mon avatar"
+            size={36}
+          />
+        ) : (
+          <span className="avatar-circle" aria-hidden>
+            {initials}
+          </span>
+        )}
         <span className="sr-only">Ouvrir le menu compte</span>
       </button>
 
       {open && (
-        <div className="user-menu-backdrop" role="presentation">
+        <div
+          className="user-menu-backdrop"
+          role="presentation"
+          onMouseDown={handleBackdropMouseDown} // ⬅️ ferme au clic extérieur
+        >
           <div
             id="user-menu-dialog"
             ref={dialogRef}
@@ -93,16 +105,33 @@ export default function UserMenu() {
             aria-modal="true"
             aria-label="Menu du compte"
             className="user-menu-dialog"
+            onMouseDown={e => e.stopPropagation()} // ⬅️ ne pas fermer si on clique dans la boîte
           >
             <header className="user-menu-header">
-              <span className="avatar-circle header" aria-hidden>
-                {initials}
-              </span>
+              {avatarPath ? (
+                <SignedImage
+                  filePath={avatarPath}
+                  bucket="avatars"
+                  alt=""
+                  size={44}
+                />
+              ) : (
+                <span className="avatar-circle header" aria-hidden>
+                  {initials}
+                </span>
+              )}
+
               <div className="user-infos">
-                <strong>{user.user_metadata?.pseudo || 'Mon profil'}</strong>
+                <strong>{displayPseudo}</strong>
                 <small>{user.email}</small>
               </div>
             </header>
+
+            {/* Préférences */}
+            <div className="user-menu-preferences" aria-label="Préférences">
+              <LangSelector />
+              <ThemeToggle />
+            </div>
 
             <nav className="user-menu-list" aria-label="Liens du compte">
               <button

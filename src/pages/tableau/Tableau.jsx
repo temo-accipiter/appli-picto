@@ -6,7 +6,6 @@ import {
   TachesDnd,
   SelectedRewardFloating,
   ModalRecompense,
-  FloatingPencil,
 } from '@/components'
 import { useDisplay } from '@/contexts'
 import { useTachesDnd, useRecompenses } from '@/hooks'
@@ -77,8 +76,6 @@ export default function TableauGrille() {
 
   return (
     <div className="tableau-magique">
-      <FloatingPencil />
-
       {showTrain && <TrainProgressBar total={totalTaches} done={doneCount} />}
 
       <TachesDnd
