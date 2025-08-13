@@ -1,116 +1,203 @@
-// supabase/functions/stripe-webhook/index.ts
-import { serve } from 'https://deno.land/std@0.223.0/http/server.ts'
-import Stripe from 'https://esm.sh/stripe@12.18.0?target=deno'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
+// supabase/functions/delete-account/index.ts
+// ✅ Suppression de compte robuste : vérif Turnstile serveur, auth JWT, purge Storage & DB, annulation Stripe (optionnelle)
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-  apiVersion: '2023-10-16',
-})
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.1'
 
-const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!
+// --- Utils CORS -------------------------------------------------------------
+function getAllowedOrigin(req: Request) {
+  const origin = req.headers.get('origin') || ''
+  const allowed = (Deno.env.get('ALLOWED_RETURN_HOSTS') || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+  if (allowed.length === 0) return '*'
+  return allowed.includes(origin) ? origin : allowed[0]
+}
 
-serve(async req => {
-  if (req.method !== 'POST')
-    return new Response('Method Not Allowed', { status: 405 })
+function corsHeaders(req: Request) {
+  return {
+    'Access-Control-Allow-Origin': getAllowedOrigin(req),
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    Vary: 'Origin',
+    'Content-Type': 'application/json',
+  }
+}
 
-  const body = await req.text()
-  const sig = req.headers.get('Stripe-Signature') ?? ''
+// --- Turnstile server-side check -------------------------------------------
+async function verifyTurnstile(req: Request, token?: string) {
+  const secret = Deno.env.get('TURNSTILE_SECRET_KEY') || ''
+  if (!secret) return { ok: true, detail: { reason: 'no_secret_dev_bypass' } }
+  if (!token) return { ok: false, detail: { reason: 'missing_token' } }
 
-  let event: Stripe.Event
-  try {
-    event = stripe.webhooks.constructEvent(body, sig, webhookSecret)
-  } catch (err) {
-    console.error('❌ Invalid signature', err)
-    return new Response('Invalid signature', { status: 400 })
+  const remoteip =
+    req.headers.get('CF-Connecting-IP') ||
+    req.headers.get('X-Forwarded-For') ||
+    ''
+
+  const form = new URLSearchParams()
+  form.append('secret', secret)
+  form.append('response', token)
+  if (remoteip) form.append('remoteip', remoteip)
+
+  const r = await fetch(
+    'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+    {
+      method: 'POST',
+      body: form,
+    }
+  )
+  const data = await r.json().catch(() => ({}))
+  const ok = !!data?.success
+  // 👇 log utile côté Dashboard
+  console.log('turnstile_verify', { ok, 'error-codes': data['error-codes'] })
+  return { ok, detail: data }
+}
+// --- Storage helpers --------------------------------------------------------
+async function removeAllInPrefix(
+  admin: ReturnType<typeof createClient>,
+  bucket: string,
+  prefix: string
+) {
+  const { data, error } = await admin.storage
+    .from(bucket)
+    .list(prefix, { limit: 1000 })
+  if (error) {
+    console.warn(`storage list error ${bucket}/${prefix}`, error.message)
+    return
+  }
+  if (!data || data.length === 0) return
+  const paths = data.map((f: any) => `${prefix}/${f.name}`)
+  const { error: remErr } = await admin.storage.from(bucket).remove(paths)
+  if (remErr)
+    console.warn(`storage remove error ${bucket}/${prefix}`, remErr.message)
+}
+
+// --- Stripe (optionnel) -----------------------------------------------------
+async function cancelStripeIfAny(
+  admin: ReturnType<typeof createClient>,
+  userId: string
+) {
+  const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || ''
+  if (!STRIPE_SECRET_KEY) return
+
+  // On tente de récupérer un éventuel id d’abonnement
+  const { data: sub } = await admin
+    .from('abonnements')
+    .select('stripe_subscription_id, stripe_customer_id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const subscriptionId = sub?.stripe_subscription_id
+  if (!subscriptionId) {
+    // Pas d’ID → on fait rien (évite de lister côté Stripe pour garder le code simple & sûr)
+    return
   }
 
-  // Admin client (service_role) pour bypasser RLS
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+  try {
+    const resp = await fetch(
+      `https://api.stripe.com/v1/subscriptions/${subscriptionId}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ cancel_at_period_end: 'true' }),
+      }
+    )
+    if (!resp.ok) {
+      const t = await resp.text()
+      console.warn('Stripe cancel failed:', t)
+    }
+  } catch (e) {
+    console.warn('Stripe cancel exception:', e)
+  }
+}
+
+// --- Main handler -----------------------------------------------------------
+Deno.serve(async (req: Request) => {
+  // Preflight CORS
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders(req) })
+  }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: corsHeaders(req),
+    })
+  }
+
+  const headers = corsHeaders(req)
 
   try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
-        const user_id = (session.metadata?.user_id as string) ?? null
-        const subscriptionId = session.subscription as string | null
-        const customerId = session.customer as string | null
-        const priceId =
-          (session.line_items?.data?.[0]?.price?.id as string) ||
-          (session.metadata?.price_id as string) ||
-          null
-
-        if (!user_id) break
-
-        await supabase.from('abonnements').upsert(
-          {
-            user_id,
-            stripe_customer: customerId ?? undefined,
-            stripe_subscription: subscriptionId ?? undefined,
-            status: 'active', // sera sur-écrit par l’event subscription.created/updated
-            price_id: priceId ?? undefined,
-            raw_data: session as unknown as Record<string, unknown>,
-          },
-          { onConflict: 'user_id' }
-        )
-        break
-      }
-
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const sub = event.data.object as Stripe.Subscription
-        const user_id = (sub.metadata?.user_id as string) ?? null
-
-        // Si pas de metadata (cas d’un sub modifié dans Stripe), on tente via le customer mapping
-        let resolvedUserId = user_id
-        if (!resolvedUserId && typeof sub.customer === 'string') {
-          const { data } = await supabase
-            .from('abonnements')
-            .select('user_id')
-            .eq('stripe_customer', sub.customer)
-            .maybeSingle()
-          resolvedUserId = data?.user_id ?? null
-        }
-        if (!resolvedUserId) break
-
-        await supabase.from('abonnements').upsert(
-          {
-            user_id: resolvedUserId,
-            stripe_customer:
-              typeof sub.customer === 'string' ? sub.customer : undefined,
-            stripe_subscription: sub.id,
-            status: sub.status,
-            plan: sub.items.data[0]?.price?.nickname ?? null,
-            price_id: sub.items.data[0]?.price?.id ?? null,
-            start_date: new Date(sub.start_date * 1000).toISOString(),
-            current_period_start: new Date(
-              sub.current_period_start * 1000
-            ).toISOString(),
-            current_period_end: new Date(
-              sub.current_period_end * 1000
-            ).toISOString(),
-            cancel_at: sub.cancel_at
-              ? new Date(sub.cancel_at * 1000).toISOString()
-              : null,
-            cancel_at_period_end: sub.cancel_at_period_end ?? false,
-            raw_data: sub as unknown as Record<string, unknown>,
-          },
-          { onConflict: 'user_id' }
-        )
-        break
-      }
-
-      default:
-        // ignore
-        break
+    // 1) Vérif Turnstile
+    const body = await req.json().catch(() => ({}))
+    const turnstileToken: string | undefined = body?.turnstile
+    const { ok: captchaOk, detail } = await verifyTurnstile(req, turnstileToken)
+    if (!captchaOk) {
+      return new Response(JSON.stringify({ error: 'captcha_failed', detail }), {
+        status: 400,
+        headers,
+      })
     }
 
-    return new Response('ok', { status: 200 })
+    // 2) Vérif JWT utilisateur (⚠️ laisse "Verify JWT with legacy secret" sur OFF dans l’UI)
+    const url = Deno.env.get('SUPABASE_URL') ?? ''
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const admin = createClient(url, serviceKey)
+
+    const token = req.headers.get('Authorization')?.replace('Bearer ', '')
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'no_token' }), {
+        status: 401,
+        headers,
+      })
+    }
+    const { data: userRes, error: userErr } = await admin.auth.getUser(token)
+    if (userErr || !userRes?.user) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401,
+        headers,
+      })
+    }
+    const userId = userRes.user.id
+
+    // 3) (Optionnel) Annulation Stripe
+    await cancelStripeIfAny(admin, userId)
+
+    // 4) Purge Storage (idempotent)
+    await Promise.allSettled([
+      removeAllInPrefix(admin, 'images', `${userId}/taches`),
+      removeAllInPrefix(admin, 'images', `${userId}/recompenses`),
+      removeAllInPrefix(admin, 'avatars', `${userId}`),
+    ])
+
+    // 5) Purge DB (idempotent) – tes tables
+    await Promise.allSettled([
+      admin.from('taches').delete().eq('user_id', userId),
+      admin.from('categories').delete().eq('user_id', userId),
+      admin.from('parametres').delete().eq('user_id', userId),
+      admin.from('recompenses').delete().eq('user_id', userId),
+      admin.from('abonnements').delete().eq('user_id', userId),
+      admin.from('profiles').delete().eq('id', userId),
+    ])
+
+    // 6) Suppression de l’utilisateur Auth (service role = bypass RLS)
+    await admin.auth.admin.deleteUser(userId)
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers,
+    })
   } catch (e) {
-    console.error('Webhook handler error:', e)
-    return new Response('Server error', { status: 500 })
+    console.error('delete-account error', e)
+    return new Response(JSON.stringify({ error: 'server_error' }), {
+      status: 500,
+      headers: corsHeaders(req),
+    })
   }
 })

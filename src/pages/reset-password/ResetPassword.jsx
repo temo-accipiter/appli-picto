@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
-import { supabase } from '@/utils'
 import { useAuth } from '@/hooks'
-import { Input, Button } from '@/components'
+import { InputWithValidation, Button, PasswordChecklist } from '@/components'
+import { supabase, validatePasswordStrength, makeMatchRule } from '@/utils'
 import './ResetPassword.scss'
 
 export default function ResetPassword() {
@@ -14,6 +14,9 @@ export default function ResetPassword() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [recoveryHandled, setRecoveryHandled] = useState(false)
+
+  const pwRef = useRef(null)
+  const confirmRef = useRef(null)
 
   const fromEmailLink =
     typeof window !== 'undefined' &&
@@ -68,20 +71,24 @@ export default function ResetPassword() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 6) {
-      setError('Le mot de passe doit contenir au moins 6 caractères.')
-      return
-    }
+    pwRef.current?.validateNow?.()
+    confirmRef.current?.validateNow?.()
 
-    if (password !== confirm) {
-      setError('Les mots de passe ne correspondent pas.')
+    const e1 = validatePasswordStrength(password)
+    const e2 =
+      confirm === password ? '' : 'Les mots de passe ne correspondent pas.'
+    if (e1 || e2) {
+      setError(e1 || e2)
       return
     }
 
     const { error } = await supabase.auth.updateUser({ password })
 
     if (error) {
-      setError(error.message)
+      const msg = /Password should|weak password/i.test(error.message)
+        ? 'Ton mot de passe ne respecte pas les exigences de sécurité.'
+        : error.message
+      setError(msg)
     } else {
       setSuccess(true)
       setTimeout(() => navigate('/login'), 3000)
@@ -98,22 +105,37 @@ export default function ResetPassword() {
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="reset-form">
-          <Input
+          <InputWithValidation
+            ref={pwRef}
             id="new-password"
             label="Nouveau mot de passe"
             type="password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
+            onValid={val => setPassword(val)}
+            onChange={val => setPassword(val)}
+            rules={[validatePasswordStrength]}
           />
 
-          <Input
+          {/* ✅ Checklist repliable (fermée par défaut) */}
+          <PasswordChecklist
+            password={password}
+            collapsible
+            defaultOpen={false}
+          />
+
+          <InputWithValidation
+            ref={confirmRef}
             id="confirm-password"
             label="Confirmer le mot de passe"
             type="password"
             value={confirm}
-            onChange={e => setConfirm(e.target.value)}
-            required
+            onValid={val => setConfirm(val)}
+            rules={[
+              makeMatchRule(
+                () => password,
+                'Les mots de passe ne correspondent pas.'
+              ),
+            ]}
           />
 
           <Button type="submit" label="Valider" variant="primary" />

@@ -71,3 +71,184 @@
     }
   }
 }
+//-------- signup -------
+/* ===========================
+   Password checklist (Signup)
+   =========================== */
+.password-checklist {
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: var(--pc-bg, #f8fafc); /* gris très clair apaisant */
+  border: 1px solid var(--pc-border, #e5e7eb); /* gris doux */
+}
+
+.password-checklist__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155; /* slate-700 : bon contraste */
+}
+
+.password-checklist__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 520px) {
+  .password-checklist__list {
+    grid-template-columns: 1fr 1fr; /* 2 colonnes sur écrans moyens+ */
+  }
+}
+
+.password-checklist__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 10px;
+  border: 1px dashed transparent;
+  outline: none;
+}
+
+.password-checklist__item:focus-visible {
+  outline: 2px solid #2563eb; /* bleu accessible */
+  outline-offset: 2px;
+  background: #eff6ff; /* bleu très clair */
+}
+
+.password-checklist__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.95rem;
+  flex: 0 0 1.25rem;
+}
+
+/* ✅ Critère rempli */
+.password-checklist__item.is-ok {
+  background: #ecfdf5; /* green-50 pastel */
+  border-color: #a7f3d0; /* green-200 pastel */
+}
+.password-checklist__item.is-ok .password-checklist__text {
+  color: #065f46; /* green-800 : contraste AA */
+  font-weight: 600;
+}
+.password-checklist__item.is-ok .password-checklist__icon {
+  background: rgba(16, 185, 129, 0.12); /* vert translucide */
+  border-radius: 50%;
+}
+
+/* ⏳ Critère non rempli (doucement, pas “alarme rouge”) */
+.password-checklist__item.is-ko {
+  background: #fff7ed; /* orange-50 pastel (plus doux que rouge) */
+  border-color: #fed7aa; /* orange-200 */
+}
+.password-checklist__item.is-ko .password-checklist__text {
+  color: #7c2d12; /* orange-900 : lisible/AA */
+}
+.password-checklist__item.is-ko .password-checklist__icon {
+  background: rgba(251, 146, 60, 0.12); /* orange translucide */
+  border-radius: 50%;
+}
+
+/* ♿ Réduction des animations si l’utilisateur le souhaite */
+@media (prefers-reduced-motion: no-preference) {
+  .password-checklist__item {
+    transition:
+      background-color 220ms ease,
+      border-color 220ms ease,
+      transform 180ms ease;
+  }
+  .password-checklist__item.is-ok {
+    transform: translateX(2px); /* micro-feedback agréable */
+  }
+}
+
+/* 🌙 Optionnel dark mode (si thème sombre) */
+@media (prefers-color-scheme: dark) {
+  .password-checklist {
+    background: #0b1220;
+    border-color: #1e293b;
+  }
+  .password-checklist__title {
+    color: #e2e8f0;
+  }
+  .password-checklist__item.is-ok {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.28);
+  }
+  .password-checklist__item.is-ko {
+    background: rgba(251, 146, 60, 0.12);
+    border-color: rgba(251, 146, 60, 0.28);
+  }
+}
+/* ===========================
+   Password checklist: toggle
+   =========================== */
+.password-checklist__toggle {
+  margin: 0.5rem 0 0;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #334155; /* slate-700 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+.password-checklist__toggle:hover {
+  background: #f8fafc; /* gris très clair */
+}
+.password-checklist__toggle:focus-visible {
+  outline: 2px solid #2563eb; /* accessible */
+  outline-offset: 2px;
+}
+
+.password-checklist__chev {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+.password-checklist__chev.is-open {
+  transform: rotate(180deg);
+}
+
+/* Panneau repliable */
+.password-checklist__collapse {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    max-height 260ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+.password-checklist__collapse.is-open {
+  max-height: 520px; /* suffisant pour le contenu */
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 0.25rem;
+}
+
+/* (réutilise les styles de la checklist déjà fournis plus haut) */
+
+/* Respect du confort utilisateur */
+@media (prefers-reduced-motion: reduce) {
+  .password-checklist__chev {
+    transition: none;
+  }
+  .password-checklist__collapse {
+    transition: none;
+  }
+}
