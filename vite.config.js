@@ -1,3 +1,4 @@
+// vite.config.js
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
@@ -25,7 +26,8 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['i18next-http-backend'],
+    // ⬇️ on pré-bundle aussi 'marked' (utile avec Yarn PnP)
+    include: ['i18next-http-backend', 'marked'],
   },
   build: {
     rollupOptions: {
@@ -46,4 +48,6 @@ export default defineConfig({
       },
     },
   },
+  // (Optionnel, seulement si tu fais du SSR plus tard)
+  // ssr: { noExternal: ['marked'] },
 })

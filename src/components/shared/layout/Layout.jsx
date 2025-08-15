@@ -1,11 +1,15 @@
 import { useLocation } from 'react-router-dom'
-import { PageTransition, Navbar } from '@/components'
+import {
+  PageTransition,
+  Navbar,
+  CookieBanner,
+  CookiePreferences,
+  Footer,
+} from '@/components'
 import './Layout.scss'
 
 export default function Layout() {
   const location = useLocation()
-
-  // ✅ Navbar visible sur profil + édition + tableau
   const showNavbarRoutes = ['/profil', '/edition', '/tableau']
   const showNavbar = showNavbarRoutes.includes(location.pathname)
 
@@ -16,6 +20,9 @@ export default function Layout() {
         <main>
           <PageTransition />
         </main>
+        <Footer />
+        <CookieBanner />
+        <CookiePreferences />
       </div>
     </div>
   )

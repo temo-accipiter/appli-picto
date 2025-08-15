@@ -26,7 +26,7 @@ function wait(ms) {
 }
 
 export default function Profil() {
-  const { isActive, status, loading } = useSubscriptionStatus()
+  const { isActive, status, loading, daysUntilExpiry } = useSubscriptionStatus()
 
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
@@ -39,8 +39,9 @@ export default function Profil() {
   const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
   const [captchaTokenReset, setCaptchaTokenReset] = useState(null)
   const [captchaKey, setCaptchaKey] = useState(0)
+  const [isAdmin, setIsAdmin] = useState(false)
 
-  // même logique d’affichage que le UserMenu (DB > metadata > email)
+  // même logique d'affichage que le UserMenu (DB > metadata > email)
   const displayPseudo = getDisplayPseudo(user, pseudo)
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export default function Profil() {
     const checkAndInsertProfile = async () => {
       const { data, error, status } = await supabase
         .from('profiles')
-        .select('pseudo, date_naissance, ville')
+        .select('pseudo, date_naissance, ville, is_admin')
         .eq('id', user.id)
         .maybeSingle()
 
@@ -76,6 +77,7 @@ export default function Profil() {
         setPseudo(data.pseudo || '')
         setDateNaissance(data.date_naissance || '')
         setVille(data.ville || '')
+        setIsAdmin(data.is_admin || false)
       }
     }
 
@@ -267,11 +269,23 @@ export default function Profil() {
         <p>Email : {user.email}</p>
 
         {loading ? (
-          <p>Chargement de l’abonnement...</p>
+          <p>Chargement de l'abonnement...</p>
         ) : isActive ? (
-          <p className="abonnement-statut actif">
-            ✅ Abonnement actif ({status})
-          </p>
+          <div className="abonnement-section">
+            <p className="abonnement-statut actif">
+              ✅ Abonnement actif ({status}
+              {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0
+                ? ` · ${daysUntilExpiry} jour${daysUntilExpiry > 1 ? 's' : ''} restants`
+                : ''}
+              ){' '}
+            </p>
+            <Button
+              type="button"
+              label="🔧 Gérer mon abonnement"
+              onClick={() => navigate('/abonnement')}
+              variant="primary"
+            />
+          </div>
         ) : (
           <p className="abonnement-statut inactif">❌ Aucun abonnement actif</p>
         )}
@@ -298,6 +312,16 @@ export default function Profil() {
             variant="secondary"
             // disabled={!captchaTokenReset}
           />
+
+          {/* Bouton admin pour les logs */}
+          {isAdmin && (
+            <Button
+              type="button"
+              label="📊 Logs d'abonnement"
+              onClick={() => navigate('/admin/logs')}
+              variant="info"
+            />
+          )}
 
           <Button
             type="button"

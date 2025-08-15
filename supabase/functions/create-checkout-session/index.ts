@@ -1,3 +1,4 @@
+// supabase/functions/create-checkout-session/index.ts
 // deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.25.0?target=deno'
@@ -28,21 +29,36 @@ function isValidUrl(url: string) {
 
 function isAllowedHost(url: string) {
   const allow = Deno.env.get('ALLOWED_RETURN_HOSTS')
-  if (!allow) return true
+  
+  // Autoriser localhost en développement
+  try {
+    const host = new URL(url).host.toLowerCase()
+    if (host === 'localhost' || host.includes('localhost')) {
+      return true
+    }
+  } catch (e) {
+    console.error('❌ Error parsing URL in isAllowedHost:', e)
+    return false
+  }
+  
+  if (!allow) {
+    return true
+  }
+  
   const hosts = allow
     .split(',')
     .map(h => h.trim().toLowerCase())
     .filter(Boolean)
+  
   try {
     const host = new URL(url).host.toLowerCase()
     return hosts.includes(host)
-  } catch {
+  } catch (e) {
+    console.error('❌ Error parsing URL in isAllowedHost:', e)
     return false
   }
 }
 
-// 🔹 helper log (côté front on utilise le client public + RLS,
-// ici on log côté serveur avec service role bypass RLS)
 async function logSubscriptionEvent(
   admin: ReturnType<typeof createClient>,
   eventType: string,
@@ -64,17 +80,19 @@ async function logSubscriptionEvent(
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS')
     return new Response('ok', { headers: corsHeaders })
-  if (req.method !== 'POST') {
+  if (req.method !== 'POST')
     return new Response('Method Not Allowed', {
       status: 405,
       headers: { ...corsHeaders, Allow: 'POST, OPTIONS' },
     })
-  }
 
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
   const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
   if (!STRIPE_SECRET_KEY || !SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.error('❌ Missing env vars')
     return json({ error: 'Missing env vars' }, 500)
   }
 
@@ -82,22 +100,36 @@ serve(async (req: Request) => {
   try {
     payload = await req.json()
   } catch {
+    console.error('❌ Invalid JSON body')
     return json({ error: 'Invalid JSON body' }, 400)
   }
 
   const { price_id, success_url, cancel_url, portal_return_url } = payload || {}
-  if (!price_id || !success_url || !cancel_url)
+
+  if (!price_id || !success_url || !cancel_url) {
+    console.error('❌ Missing required parameters')
     return json({ error: 'Missing required parameters' }, 400)
+  }
+  
   const PRICE_RE = /^price_[a-zA-Z0-9]+$/
-  if (typeof price_id !== 'string' || !PRICE_RE.test(price_id))
+  if (typeof price_id !== 'string' || !PRICE_RE.test(price_id)) {
+    console.error('❌ Invalid price_id:', price_id)
     return json({ error: 'Invalid price_id' }, 400)
-  if (!isValidUrl(success_url) || !isValidUrl(cancel_url))
+  }
+  
+  if (!isValidUrl(success_url) || !isValidUrl(cancel_url)) {
+    console.error('❌ Invalid URLs')
     return json({ error: 'Invalid URLs' }, 400)
-  if (!isAllowedHost(success_url) || !isAllowedHost(cancel_url))
+  }
+  
+  if (!isAllowedHost(success_url) || !isAllowedHost(cancel_url)) {
+    console.error('❌ Unallowed return URL host')
     return json({ error: 'Unallowed return URL host' }, 400)
+  }
 
   const billingReturnUrl = portal_return_url || success_url
   if (!isValidUrl(billingReturnUrl) || !isAllowedHost(billingReturnUrl)) {
+    console.error('❌ Invalid or unallowed portal_return_url')
     return json({ error: 'Invalid or unallowed portal_return_url' }, 400)
   }
 
@@ -105,20 +137,29 @@ serve(async (req: Request) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: req.headers.get('Authorization')! } },
     })
+    
     const {
       data: { user },
       error: authErr,
     } = await supabase.auth.getUser()
-    if (authErr || !user) return json({ error: 'Unauthorized' }, 401)
+    
+    if (authErr || !user) {
+      console.error('❌ Unauthorized:', authErr)
+      return json({ error: 'Unauthorized' }, 401)
+    }
+
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY')
+      return json({ error: 'Service configuration error' }, 500)
+    }
 
     const admin = createClient(
       SUPABASE_URL,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      SUPABASE_SERVICE_ROLE_KEY
     )
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-08-16' })
 
-    // Déjà abonné ? → portail
     const { data: existing } = await supabase
       .from('abonnements')
       .select('status, stripe_customer')
@@ -144,13 +185,15 @@ serve(async (req: Request) => {
                 { onConflict: 'user_id' }
               )
           }
-        } catch {
-          /* ignore */
+        } catch (e) {
+          console.error('❌ Error searching customer in Stripe:', e)
         }
       }
 
-      if (!customerId)
+      if (!customerId) {
+        console.error('❌ No Stripe customer found for this user')
         return json({ error: 'No Stripe customer found for this user' }, 404)
+      }
 
       const portal = await stripe.billingPortal.sessions.create({
         customer: customerId,
@@ -167,7 +210,6 @@ serve(async (req: Request) => {
       return json({ url: portal.url, portal: true })
     }
 
-    // Sinon → Checkout
     let customerId: string | undefined
     const { data: abo } = await supabase
       .from('abonnements')
@@ -200,7 +242,7 @@ serve(async (req: Request) => {
 
     return json({ url: session.url, portal: false })
   } catch (e: any) {
-    console.error('create-checkout-session error:', e)
+    console.error('❌ create-checkout-session error:', e)
     return json({ error: e?.message || String(e) }, 500)
   }
 })

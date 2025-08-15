@@ -1,0 +1,77 @@
+.rgpd-portal {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 20px;
+
+  &__header {
+    margin-bottom: 10px;
+
+    h1 {
+      font-size: 28px;
+      margin: 0 0 6px;
+    }
+  }
+
+  &__subtitle {
+    color: #555;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+}
+
+.rgpd-card {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+
+  h2 {
+    font-size: 18px;
+    margin: 0 0 8px;
+  }
+
+  p {
+    margin: 0 0 12px;
+    color: #404040;
+  }
+
+  .btn {
+    appearance: none;
+    border: none;
+    background: #e6f0ff;
+    color: #174ea6;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      filter: brightness(0.95);
+      outline: none;
+    }
+
+    &[disabled] {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+
+  .btn-danger {
+    background: #ffe7e7;
+    color: #a61717;
+
+    &:hover,
+    &:focus-visible {
+      filter: brightness(0.98);
+    }
+  }
+}

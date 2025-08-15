@@ -1,0 +1,5 @@
+export { default as MENTIONS_LEGALES_MD } from './legal/mentions-legales.md?raw'
+export { default as CGU_MD } from './legal/cgu.md?raw'
+export { default as CGV_MD } from './legal/cgv.md?raw'
+export { default as POLITIQUE_CONFIDENTIALITE_MD } from './legal/politique-confidentialite.md?raw'
+export { default as POLITIQUE_COOKIES_MD } from './legal/politique-cookies.md?raw'

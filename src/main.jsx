@@ -38,9 +38,18 @@ import {
   Login,
   Signup,
   Profil,
+  Abonnement,
+  Logs,
   ResetPassword,
   ForgotPassword,
   NotFound,
+  MentionsLegales,
+  CGU,
+  CGV,
+  PolitiqueConfidentialite,
+  PolitiqueCookies,
+  Accessibilite,
+  PortailRGPD,
 } from '@/pages'
 
 // Définition des routes
@@ -62,9 +71,35 @@ const router = createBrowserRouter([
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
       { path: 'profil', element: <Profil /> },
+      {
+        path: 'abonnement',
+        element: (
+          <ProtectedRoute>
+            <Abonnement />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/logs',
+        element: (
+          <ProtectedRoute>
+            <Logs />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: '*', element: <NotFound /> },
+      { path: 'mentions-legales', element: <MentionsLegales /> },
+      { path: 'cgu', element: <CGU /> },
+      { path: 'cgv', element: <CGV /> },
+      {
+        path: 'politique-confidentialite',
+        element: <PolitiqueConfidentialite />,
+      },
+      { path: 'politique-cookies', element: <PolitiqueCookies /> },
+      { path: 'accessibilite', element: <Accessibilite /> },
+      { path: 'rgpd', element: <PortailRGPD /> },
     ],
   },
 ])

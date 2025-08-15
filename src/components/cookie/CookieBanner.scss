@@ -1,0 +1,51 @@
+.cookie-banner {
+  position: fixed;
+  inset: auto 12px 12px 12px;
+  z-index: 9999;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+
+  &__text {
+    color: #333;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .btn {
+    appearance: none;
+    border: none;
+    background: #e6f0ff;
+    color: #174ea6;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+
+    &:hover,
+    &:focus-visible {
+      filter: brightness(0.95);
+      outline: none;
+    }
+  }
+
+  .btn-outline {
+    background: #f8f8f8;
+    color: #174ea6;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .btn-secondary {
+    background: #f2f2f2;
+    color: #333;
+  }
+}

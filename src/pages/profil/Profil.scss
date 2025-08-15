@@ -79,7 +79,7 @@
       border: 2px solid $color-primary;
     }
 
-    input[type="file"] {
+    input[type='file'] {
       font-size: 0.9rem;
     }
   }
@@ -94,5 +94,48 @@
   .btn {
     width: 100%;
     max-width: 300px;
+  }
+}
+
+// Section abonnement
+.abonnement-section {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+
+  .abonnement-statut {
+    margin-bottom: 1rem;
+
+    &.actif {
+      color: var(--success-color);
+      font-weight: 500;
+    }
+
+    &.inactif {
+      color: var(--error-color);
+      font-weight: 500;
+    }
+  }
+
+  button {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .profil {
+    padding: 1rem;
+  }
+
+  .abonnement-section {
+    padding: 1rem;
+
+    button {
+      max-width: 100%;
+    }
   }
 }

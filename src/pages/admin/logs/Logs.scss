@@ -1,0 +1,263 @@
+// src/pages/admin/logs/Logs.scss
+.logs-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+
+  h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: var(--text-primary);
+  }
+
+  .floating-pencil--logs {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 100;
+  }
+}
+
+// Filtres
+.logs-filters {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+  }
+
+  .filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+
+    button {
+      min-width: 100px;
+    }
+  }
+
+  .filter-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  }
+}
+
+// Liste des logs
+.logs-list {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+
+  h3 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+  }
+
+  .no-logs {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 2rem;
+  }
+}
+
+// Table des logs
+.logs-table {
+  .logs-header {
+    display: grid;
+    grid-template-columns: 180px 120px 1fr 2fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .log-row {
+    display: grid;
+    grid-template-columns: 180px 120px 1fr 2fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+    align-items: start;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--bg-primary);
+    }
+
+    .log-timestamp {
+      font-family: monospace;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .log-user {
+      font-family: monospace;
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .log-event {
+      font-weight: 500;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .log-details {
+      pre {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        background: var(--bg-primary);
+        padding: 0.5rem;
+        border-radius: 4px;
+        max-height: 100px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    }
+  }
+}
+
+// Bouton charger plus
+.load-more {
+  text-align: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 1rem;
+}
+
+// Footer
+.logs-footer {
+  text-align: center;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 2rem;
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .logs-table {
+    .logs-header,
+    .log-row {
+      grid-template-columns: 140px 100px 1fr 1.5fr;
+      gap: 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .logs-page {
+    padding: 1rem 0.5rem;
+
+    .floating-pencil--logs {
+      bottom: 1rem;
+      right: 1rem;
+    }
+  }
+
+  .logs-filters {
+    .filter-buttons {
+      flex-direction: column;
+
+      button {
+        min-width: auto;
+        width: 100%;
+      }
+    }
+
+    .filter-info {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+  }
+
+  .logs-table {
+    .logs-header,
+    .log-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding: 1rem;
+    }
+
+    .logs-header {
+      display: none; // Cache l'en-tête sur mobile
+    }
+
+    .log-row {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+
+      .log-timestamp,
+      .log-user,
+      .log-event {
+        &::before {
+          content: attr(data-label) ': ';
+          font-weight: 600;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+}
+
+// Animations
+.logs-page {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// États de chargement
+.logs-page {
+  .loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}

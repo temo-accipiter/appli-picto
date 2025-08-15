@@ -1,11 +1,11 @@
 // src/components/user-menu/UserMenu.jsx
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { LogOut, User, Crown } from 'lucide-react'
-import { supabase } from '@/utils'
+import { LangSelector, SignedImage, ThemeToggle } from '@/components'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
-import { ThemeToggle, LangSelector, SignedImage } from '@/components'
+import { supabase } from '@/utils'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
+import { Crown, LogOut, User } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './UserMenu.scss'
 
 export default function UserMenu() {
@@ -21,7 +21,7 @@ export default function UserMenu() {
   // Ferme le menu sur changement de route
   useEffect(() => setOpen(false), [location.pathname])
 
-  // Récupère pseudo DB (pour que Profil et UserMenu aient la même logique)
+  // Récupère pseudo DB
   useEffect(() => {
     let cancelled = false
     const fetchDbPseudo = async () => {
@@ -47,32 +47,87 @@ export default function UserMenu() {
   const avatarPath = user?.user_metadata?.avatar || null
 
   const handleCheckout = async () => {
-    const { data, error } = await supabase.functions.invoke(
-      'create-checkout-session',
-      {
-        body: {
-          price_id: import.meta.env.VITE_STRIPE_PRICE_ID,
-          success_url: `${window.location.origin}/profil`,
-          cancel_url: `${window.location.origin}/profil`,
-        },
+    const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
+
+    if (!priceId || !/^price_[a-zA-Z0-9]+$/.test(priceId)) {
+      alert('⚠️ VITE_STRIPE_PRICE_ID est vide ou invalide (attendu: price_...)')
+      return
+    }
+
+    try {
+      // Appel direct via Supabase Functions (JWT auto)
+      const { data, error } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            price_id: priceId,
+            success_url: `${window.location.origin}/profil`,
+            cancel_url: `${window.location.origin}/profil`,
+          },
+        }
+      )
+
+      if (error) {
+        alert(`❌ Erreur Stripe : ${error.message || 'Inconnue'}`)
+        return
       }
-    )
-    if (!error && data?.url) window.location.href = data.url
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+
+      // Fallback via fetch brut pour lire toute la réponse
+      const { data: session } = await supabase.auth.getSession()
+      const token = session?.session?.access_token
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            price_id: priceId,
+            success_url: `${window.location.origin}/profil`,
+            cancel_url: `${window.location.origin}/profil`,
+          }),
+        }
+      )
+
+      const payload = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        console.warn('❌ create-checkout-session error:', payload)
+        alert(
+          `❌ Impossible d'ouvrir Stripe : ${payload?.error || `status ${res.status}`}`
+        )
+        return
+      }
+
+      if (payload?.url) {
+        window.location.href = payload.url
+      } else {
+        alert('⚠️ Réponse inattendue du serveur (pas de URL).')
+      }
+    } catch (e) {
+      console.error('❌ Erreur réseau/serveur:', e)
+      alert(`❌ Erreur réseau/serveur : ${e.message || e}`)
+    }
   }
 
-  // ✅ Fermer si clic exactement sur le backdrop (extérieur)
   const handleBackdropMouseDown = e => {
     if (e.target === e.currentTarget) setOpen(false)
   }
 
   return (
     <>
-      {/* Bouton avatar dans la navbar */}
       <button
         ref={btnRef}
         className="user-menu-trigger"
         aria-haspopup="dialog"
-        aria-expanded={open ? 'true' : 'false'}
+        aria-expanded={open}
         aria-controls="user-menu-dialog"
         onClick={() => setOpen(o => !o)}
         title="Mon compte"
@@ -96,7 +151,7 @@ export default function UserMenu() {
         <div
           className="user-menu-backdrop"
           role="presentation"
-          onMouseDown={handleBackdropMouseDown} // ⬅️ ferme au clic extérieur
+          onMouseDown={handleBackdropMouseDown}
         >
           <div
             id="user-menu-dialog"
@@ -105,7 +160,7 @@ export default function UserMenu() {
             aria-modal="true"
             aria-label="Menu du compte"
             className="user-menu-dialog"
-            onMouseDown={e => e.stopPropagation()} // ⬅️ ne pas fermer si on clique dans la boîte
+            onMouseDown={e => e.stopPropagation()}
           >
             <header className="user-menu-header">
               {avatarPath ? (
@@ -120,14 +175,12 @@ export default function UserMenu() {
                   {initials}
                 </span>
               )}
-
               <div className="user-infos">
                 <strong>{displayPseudo}</strong>
                 <small>{user.email}</small>
               </div>
             </header>
 
-            {/* Préférences */}
             <div className="user-menu-preferences" aria-label="Préférences">
               <LangSelector />
               <ThemeToggle />
@@ -148,8 +201,8 @@ export default function UserMenu() {
                   loading
                     ? undefined
                     : isActive
-                      ? () => navigate('/profil')
-                      : handleCheckout
+                      ? () => navigate('/abonnement')  // Page dédiée à l'abonnement
+                      : handleCheckout                  // Stripe Checkout
                 }
                 disabled={loading}
               >
@@ -158,8 +211,8 @@ export default function UserMenu() {
                   {loading
                     ? 'Vérification…'
                     : isActive
-                      ? 'Gérer mon abonnement'
-                      : 'S’abonner'}
+                      ? 'Gérer mon abonnement'  // Redirige vers page dédiée
+                      : 'S\'abonner'}           // Ouvre Stripe Checkout
                 </span>
               </button>
 

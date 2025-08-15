@@ -1,3 +1,5 @@
 export * from './validationRules'
 export * from './supabaseClient'
 export * from './getDisplayPseudo'
+export * from './rgpdExport'
+export * from './consent'
