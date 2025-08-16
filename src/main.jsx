@@ -7,6 +7,14 @@ import { supabase } from '@/utils'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
 
+// ⬇️ Pont consentement ↔︎ trackers (GA4/…)
+import { setupConsentBridges } from '@/analytics'
+
+// ✅ Initialisation des ponts consentement (bloque/charge les scripts selon le choix)
+if (typeof window !== 'undefined') {
+  setupConsentBridges()
+}
+
 // ✅ Redirection automatique vers reset-password si lien reçu par mail
 if (
   typeof window !== 'undefined' &&
@@ -17,14 +25,13 @@ if (
   window.history.replaceState({}, '', redirectTo)
 }
 
-// ✅ Déconnexion forcée après confirmation e-mail
+// ✅ Déconnexion forcée après confirmation e-mail (évite session sale)
 if (
   typeof window !== 'undefined' &&
   window.location.pathname === '/login' &&
   window.location.hash.includes('access_token')
 ) {
   console.warn('🔐 Suppression session automatique après confirmation email')
-
   supabase.auth.signOut().then(() => {
     const cleanUrl = `${window.location.origin}/login`
     window.location.replace(cleanUrl)
@@ -89,7 +96,6 @@ const router = createBrowserRouter([
       },
       { path: 'reset-password', element: <ResetPassword /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
-      { path: '*', element: <NotFound /> },
       { path: 'mentions-legales', element: <MentionsLegales /> },
       { path: 'cgu', element: <CGU /> },
       { path: 'cgv', element: <CGV /> },
@@ -100,11 +106,12 @@ const router = createBrowserRouter([
       { path: 'politique-cookies', element: <PolitiqueCookies /> },
       { path: 'accessibilite', element: <Accessibilite /> },
       { path: 'rgpd', element: <PortailRGPD /> },
+      { path: '*', element: <NotFound /> },
     ],
   },
 ])
 
-// 💡 Initialisation React
+// Boot React
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>

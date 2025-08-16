@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -98,6 +98,54 @@ export type Database = {
         }
         Relationships: []
       }
+      consentements: {
+        Row: {
+          action: string | null
+          app_version: string | null
+          choices: Json
+          created_at: string
+          id: number
+          ip_hash: string | null
+          locale: string | null
+          mode: string
+          origin: string | null
+          ts_client: string | null
+          ua: string | null
+          user_id: string | null
+          version: string
+        }
+        Insert: {
+          action?: string | null
+          app_version?: string | null
+          choices: Json
+          created_at?: string
+          id?: number
+          ip_hash?: string | null
+          locale?: string | null
+          mode: string
+          origin?: string | null
+          ts_client?: string | null
+          ua?: string | null
+          user_id?: string | null
+          version: string
+        }
+        Update: {
+          action?: string | null
+          app_version?: string | null
+          choices?: Json
+          created_at?: string
+          id?: number
+          ip_hash?: string | null
+          locale?: string | null
+          mode?: string
+          origin?: string | null
+          ts_client?: string | null
+          ua?: string | null
+          user_id?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
       parametres: {
         Row: {
           confettis: boolean | null
@@ -173,18 +221,45 @@ export type Database = {
           label: string | null
           ligne: string | null
           ordre: number | null
+          type: Database["public"]["Enums"]["transport_type"]
         }
         Insert: {
           id?: number
           label?: string | null
           ligne?: string | null
           ordre?: number | null
+          type?: Database["public"]["Enums"]["transport_type"]
         }
         Update: {
           id?: number
           label?: string | null
           ligne?: string | null
           ordre?: number | null
+          type?: Database["public"]["Enums"]["transport_type"]
+        }
+        Relationships: []
+      }
+      subscription_logs: {
+        Row: {
+          details: Json | null
+          event_type: string
+          id: string
+          timestamp: string
+          user_id: string | null
+        }
+        Insert: {
+          details?: Json | null
+          event_type: string
+          id?: string
+          timestamp?: string
+          user_id?: string | null
+        }
+        Update: {
+          details?: Json | null
+          event_type?: string
+          id?: string
+          timestamp?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -223,12 +298,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      consentements_dernier: {
+        Row: {
+          action: string | null
+          app_version: string | null
+          choices: Json | null
+          created_at: string | null
+          id: number | null
+          locale: string | null
+          mode: string | null
+          origin: string | null
+          ts_client: string | null
+          ua: string | null
+          user_id: string | null
+          version: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       email_exists: {
         Args: { email_to_check: string }
         Returns: boolean
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      purge_old_consentements: {
+        Args: { retention_months?: number }
+        Returns: undefined
       }
       user_can_upload_avatar: {
         Args: { uid: string }
@@ -236,7 +335,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      transport_type: "metro" | "tram" | "rer" | "bus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -363,6 +462,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      transport_type: ["metro", "tram", "rer", "bus"],
+    },
   },
 } as const

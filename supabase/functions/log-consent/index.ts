@@ -1,82 +1,143 @@
-// Edge Function Deno (Supabase) — journaliser un consentement avec IP réelle
-// Déploie avec: supabase functions deploy log-consent
-// Variables requises (dashboard > functions > log-consent > secrets):
-//  - SUPABASE_URL
-//  - SUPABASE_SERVICE_ROLE_KEY
+// supabase/functions/log-consent/index.ts
+// 🔒 Edge Function pour journaliser les consentements CNIL
 
-// @deno-types="npm:@types/uuid"
-import { v4 as uuidv4 } from 'npm:uuid'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.3'
 
-type ConsentPayload = {
-  v: number
-  mode: 'accept_all' | 'refuse_all' | 'custom'
-  choices: Record<string, unknown> // ex: { necessary:true, analytics:false, marketing:false }
-  action: string // redondance lecture rapide (accept_all/refuse_all/custom)
-  user_id?: string | null // peut être null si anonyme
-  ua?: string | null
-  locale?: string | null
-  app_version?: string | null
-  extra?: Record<string, unknown> | null
+// --- Utils ------------------------------------------------------------------
+function getAllowedOrigin(req: Request) {
+  const origin = req.headers.get('origin') || ''
+  const allowed = (Deno.env.get('ALLOWED_RETURN_HOSTS') || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+
+  if (allowed.length === 0) return '*'
+  return allowed.includes(origin) ? origin : allowed[0]
 }
 
-function getIpFromHeaders(req: Request): string | null {
-  const h = req.headers
-  // Hébergeurs courants: Vercel/Netlify/Cloudflare/Nginx
-  return (
-    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    h.get('cf-connecting-ip') ||
-    h.get('x-real-ip') ||
-    null
-  )
+function corsHeaders(req: Request) {
+  return {
+    'Access-Control-Allow-Origin': getAllowedOrigin(req),
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  }
 }
 
-Deno.serve(async (req: Request) => {
-  if (req.method !== 'POST') {
-    return new Response('Method Not Allowed', { status: 405 })
+// Hash SHA-256 (IP + salt)
+async function sha256Hex(input: string) {
+  const data = new TextEncoder().encode(input)
+  const digest = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(digest))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+// --- Handler ----------------------------------------------------------------
+serve(async req => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders(req) })
   }
 
   try {
-    const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = Deno.env.toObject()
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response('Missing env', { status: 500 })
-    }
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    const body = await req.json().catch(() => {})
 
-    // CORS preflight handled by framework; add a minimal CORS here if needed
-    const ip = getIpFromHeaders(req)
+    const {
+      version,
+      mode,
+      choices,
+      action,
+      ts,
+      user_id,
+      ua,
+      locale,
+      app_version,
+      origin: bodyOrigin,
+    } = body || {}
 
-    const payload = (await req.json()) as ConsentPayload
-    // HARDEN: clamp values
-    const record = {
-      id: uuidv4(),
-      user_id: payload.user_id ?? null,
-      ts: new Date().toISOString(),
-      v: Number(payload.v ?? 1),
-      mode: (['accept_all', 'refuse_all', 'custom'].includes(payload.mode)
-        ? payload.mode
-        : 'custom') as ConsentPayload['mode'],
-      choices: payload.choices ?? {},
-      action: payload.action ?? payload.mode ?? 'custom',
-      ua: payload.ua ?? null,
-      ip,
-      locale: payload.locale ?? null,
-      app_version: payload.app_version ?? null,
-      extra: payload.extra ?? null,
+    // Validation des données obligatoires
+    if (!version || !mode || !choices) {
+      return new Response('Missing required fields', {
+        status: 400,
+        headers: corsHeaders(req),
+      })
     }
 
-    const { error } = await supabase.from('consentements').insert(record as any)
+    // Validation du mode
+    const validModes = ['accept_all', 'refuse_all', 'custom']
+    if (!validModes.includes(mode)) {
+      return new Response('Invalid mode', {
+        status: 400,
+        headers: corsHeaders(req),
+      })
+    }
+
+    // Init Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
+
+    // Collecte infos IP
+    const ip =
+      req.headers.get('cf-connecting-ip') ||
+      req.headers.get('x-forwarded-for') ||
+      ''
+    const salt = Deno.env.get('CONSENT_IP_SALT') || 'default-salt'
+    const ip_hash = ip ? await sha256Hex(ip + ':' + salt) : null
+
+    const country = req.headers.get('cf-ipcountry') || null
+    const origin = bodyOrigin || req.headers.get('origin') || null
+
+    // Préparation des données pour insertion
+    const consentData = {
+      version: version,
+      mode: mode,
+      choices: choices,
+      action: action || null,
+      ts_client: ts ? new Date(ts).toISOString() : new Date().toISOString(),
+      user_id: user_id || null,
+      ua: ua || null,
+      locale: locale || null,
+      app_version: app_version || null,
+      ip_hash,
+      origin,
+    }
+
+    // Insert en base dans la table consentements
+    const { error } = await supabase.from('consentements').insert(consentData)
+
     if (error) {
-      console.error('Insert error', error)
-      return new Response('Insert failed', { status: 500 })
+      console.error('❌ Insert error:', error)
+      return new Response('Insert failed', {
+        status: 500,
+        headers: corsHeaders(req),
+      })
     }
 
-    return new Response(JSON.stringify({ ok: true, id: record.id }), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
+    console.log('✅ Consentement enregistré:', {
+      mode,
+      user_id: user_id || 'anonymous',
+      timestamp: new Date().toISOString(),
     })
-  } catch (e) {
-    console.error(e)
-    return new Response('Bad Request', { status: 400 })
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        message: 'Consentement enregistré avec succès',
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders(req), 'Content-Type': 'application/json' },
+      }
+    )
+  } catch (err) {
+    console.error('❌ Unhandled error:', err)
+    return new Response('Bad Request', {
+      status: 400,
+      headers: corsHeaders(req),
+    })
   }
 })

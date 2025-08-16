@@ -43,6 +43,20 @@ CREATE SCHEMA storage;
 ALTER SCHEMA storage OWNER TO supabase_admin;
 
 --
+-- Name: transport_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.transport_type AS ENUM (
+    'metro',
+    'tram',
+    'rer',
+    'bus'
+);
+
+
+ALTER TYPE public.transport_type OWNER TO postgres;
+
+--
 -- Name: email_exists(text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -58,6 +72,62 @@ $$;
 
 
 ALTER FUNCTION public.email_exists(email_to_check text) OWNER TO postgres;
+
+--
+-- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.handle_new_user() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+begin
+  insert into public.profiles (id, pseudo)
+  values (
+    new.id,
+    split_part(new.email, '@', 1)  -- pseudo par défaut
+  )
+  on conflict (id) do nothing;
+
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.handle_new_user() OWNER TO postgres;
+
+--
+-- Name: is_admin(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.is_admin() RETURNS boolean
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select coalesce(
+    (select p.is_admin from public.profiles p where p.id = auth.uid()),
+    false
+  );
+$$;
+
+
+ALTER FUNCTION public.is_admin() OWNER TO postgres;
+
+--
+-- Name: purge_old_consentements(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.purge_old_consentements(retention_months integer DEFAULT 25) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+begin
+  delete from public.consentements
+  where ts < (now() - make_interval(months => retention_months));
+end;
+$$;
+
+
+ALTER FUNCTION public.purge_old_consentements(retention_months integer) OWNER TO postgres;
 
 --
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -428,6 +498,75 @@ CREATE TABLE public.categories (
 ALTER TABLE public.categories OWNER TO postgres;
 
 --
+-- Name: consentements; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.consentements (
+    id bigint NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    ts_client timestamp with time zone,
+    user_id uuid,
+    version text NOT NULL,
+    mode text NOT NULL,
+    choices jsonb NOT NULL,
+    action text,
+    ua text,
+    locale text,
+    app_version text,
+    ip_hash text,
+    origin text,
+    CONSTRAINT consentements_mode_check CHECK ((mode = ANY (ARRAY['accept_all'::text, 'refuse_all'::text, 'custom'::text])))
+);
+
+
+ALTER TABLE public.consentements OWNER TO postgres;
+
+--
+-- Name: consentements_dernier; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.consentements_dernier WITH (security_invoker='true') AS
+ SELECT DISTINCT ON (user_id) id,
+    user_id,
+    created_at,
+    ts_client,
+    version,
+    mode,
+    choices,
+    action,
+    ua,
+    locale,
+    app_version,
+    origin
+   FROM public.consentements
+  WHERE (user_id IS NOT NULL)
+  ORDER BY user_id, created_at DESC;
+
+
+ALTER VIEW public.consentements_dernier OWNER TO postgres;
+
+--
+-- Name: consentements_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE public.consentements_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.consentements_id_seq OWNER TO postgres;
+
+--
+-- Name: consentements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE public.consentements_id_seq OWNED BY public.consentements.id;
+
+
+--
 -- Name: parametres; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -523,7 +662,8 @@ CREATE TABLE public.stations (
     id integer NOT NULL,
     label text,
     ligne text,
-    ordre integer
+    ordre integer,
+    type public.transport_type DEFAULT 'metro'::public.transport_type NOT NULL
 );
 
 
@@ -550,6 +690,21 @@ ALTER SEQUENCE public.stations_id_seq OWNER TO postgres;
 
 ALTER SEQUENCE public.stations_id_seq OWNED BY public.stations.id;
 
+
+--
+-- Name: subscription_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.subscription_logs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid,
+    event_type text NOT NULL,
+    details jsonb,
+    "timestamp" timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.subscription_logs OWNER TO postgres;
 
 --
 -- Name: taches; Type: TABLE; Schema: public; Owner: postgres
@@ -679,6 +834,13 @@ CREATE TABLE storage.s3_multipart_uploads_parts (
 ALTER TABLE storage.s3_multipart_uploads_parts OWNER TO supabase_storage_admin;
 
 --
+-- Name: consentements id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.consentements ALTER COLUMN id SET DEFAULT nextval('public.consentements_id_seq'::regclass);
+
+
+--
 -- Name: parametres id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -724,6 +886,14 @@ ALTER TABLE ONLY public.categories
 
 
 --
+-- Name: consentements consentements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.consentements
+    ADD CONSTRAINT consentements_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: parametres parametres_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -756,11 +926,35 @@ ALTER TABLE ONLY public.stations
 
 
 --
+-- Name: subscription_logs subscription_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription_logs
+    ADD CONSTRAINT subscription_logs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: taches taches_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.taches
     ADD CONSTRAINT taches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: stations uniq_stations_type_ligne_label; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stations
+    ADD CONSTRAINT uniq_stations_type_ligne_label UNIQUE (type, ligne, label);
+
+
+--
+-- Name: stations uniq_stations_type_ligne_ordre; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.stations
+    ADD CONSTRAINT uniq_stations_type_ligne_ordre UNIQUE (type, ligne, ordre);
 
 
 --
@@ -826,6 +1020,41 @@ CREATE INDEX abonnements_user_id_idx ON public.abonnements USING btree (user_id)
 
 
 --
+-- Name: consentements_user_ts_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX consentements_user_ts_idx ON public.consentements USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: idx_stations_ligne; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_stations_ligne ON public.stations USING btree (ligne);
+
+
+--
+-- Name: idx_stations_type_ligne; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_stations_type_ligne ON public.stations USING btree (type, ligne);
+
+
+--
+-- Name: idx_stations_type_ligne_ordre; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_stations_type_ligne_ordre ON public.stations USING btree (type, ligne, ordre);
+
+
+--
+-- Name: subscription_logs_user_time_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX subscription_logs_user_time_idx ON public.subscription_logs USING btree (user_id, "timestamp" DESC);
+
+
+--
 -- Name: bname; Type: INDEX; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -888,6 +1117,14 @@ ALTER TABLE ONLY public.abonnements
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: subscription_logs subscription_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.subscription_logs
+    ADD CONSTRAINT subscription_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -972,13 +1209,6 @@ CREATE POLICY "Insert stations" ON public.stations FOR INSERT TO authenticated W
 
 
 --
--- Name: profiles Manage own profile; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Manage own profile" ON public.profiles TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
-
-
---
 -- Name: recompenses Select all recompenses; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -1054,6 +1284,54 @@ CREATE POLICY abonnements_select_own ON public.abonnements FOR SELECT USING ((au
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: consentements; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.consentements ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: consentements consentements_delete; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY consentements_delete ON public.consentements FOR DELETE TO authenticated USING (false);
+
+
+--
+-- Name: consentements consentements_insert; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY consentements_insert ON public.consentements FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: consentements consentements_select; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY consentements_select ON public.consentements FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: consentements consentements_update; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authenticated USING (false) WITH CHECK (false);
+
+
+--
+-- Name: profiles insert-own-profile; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "insert-own-profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK ((auth.uid() = id));
+
+
+--
+-- Name: subscription_logs logs_select_user_or_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY logs_select_user_or_admin ON public.subscription_logs FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
+
+
+--
 -- Name: parametres; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -1064,6 +1342,13 @@ ALTER TABLE public.parametres ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: profiles read-own-profile; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "read-own-profile" ON public.profiles FOR SELECT TO authenticated USING ((auth.uid() = id));
+
 
 --
 -- Name: recompenses; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -1078,10 +1363,30 @@ ALTER TABLE public.recompenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.stations ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: stations stations select public; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "stations select public" ON public.stations FOR SELECT USING (true);
+
+
+--
+-- Name: subscription_logs; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.subscription_logs ENABLE ROW LEVEL SECURITY;
+
+--
 -- Name: taches; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.taches ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: profiles update-own-profile; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "update-own-profile" ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
+
 
 --
 -- Name: objects Allow upload to images; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
@@ -1166,6 +1471,33 @@ GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO service_role;
 
 
 --
+-- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.handle_new_user() TO anon;
+GRANT ALL ON FUNCTION public.handle_new_user() TO authenticated;
+GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
+
+
+--
+-- Name: FUNCTION is_admin(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.is_admin() TO anon;
+GRANT ALL ON FUNCTION public.is_admin() TO authenticated;
+GRANT ALL ON FUNCTION public.is_admin() TO service_role;
+
+
+--
+-- Name: FUNCTION purge_old_consentements(retention_months integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO anon;
+GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO authenticated;
+GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO service_role;
+
+
+--
 -- Name: FUNCTION set_updated_at(); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -1199,6 +1531,33 @@ GRANT ALL ON TABLE public.abonnements TO service_role;
 GRANT ALL ON TABLE public.categories TO anon;
 GRANT ALL ON TABLE public.categories TO authenticated;
 GRANT ALL ON TABLE public.categories TO service_role;
+
+
+--
+-- Name: TABLE consentements; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.consentements TO anon;
+GRANT ALL ON TABLE public.consentements TO authenticated;
+GRANT ALL ON TABLE public.consentements TO service_role;
+
+
+--
+-- Name: TABLE consentements_dernier; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.consentements_dernier TO anon;
+GRANT ALL ON TABLE public.consentements_dernier TO authenticated;
+GRANT ALL ON TABLE public.consentements_dernier TO service_role;
+
+
+--
+-- Name: SEQUENCE consentements_id_seq; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON SEQUENCE public.consentements_id_seq TO anon;
+GRANT ALL ON SEQUENCE public.consentements_id_seq TO authenticated;
+GRANT ALL ON SEQUENCE public.consentements_id_seq TO service_role;
 
 
 --
@@ -1262,6 +1621,14 @@ GRANT ALL ON TABLE public.stations TO service_role;
 GRANT ALL ON SEQUENCE public.stations_id_seq TO anon;
 GRANT ALL ON SEQUENCE public.stations_id_seq TO authenticated;
 GRANT ALL ON SEQUENCE public.stations_id_seq TO service_role;
+
+
+--
+-- Name: TABLE subscription_logs; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.subscription_logs TO service_role;
+GRANT SELECT ON TABLE public.subscription_logs TO authenticated;
 
 
 --

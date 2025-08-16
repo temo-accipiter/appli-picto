@@ -1,7 +1,16 @@
 import { Link } from 'react-router-dom'
+import { revokeConsent } from '@/utils/consent'
 import './Footer.scss'
 
 export default function Footer() {
+  const handleRetractConsent = () => {
+    // Retirer le consentement aux cookies
+    if (revokeConsent()) {
+      // Recharger la page pour appliquer les changements
+      window.location.reload()
+    }
+  }
+
   return (
     <footer className="app-footer" role="contentinfo" aria-label="Pied de page">
       <nav className="app-footer__nav" aria-label="Liens légaux et RGPD">
@@ -19,10 +28,9 @@ export default function Footer() {
             <Link to="/politique-confidentialite">Confidentialité</Link>
           </li>
           <li>
-            <Link to="/politique-cookies">Cookies</Link>
+            <Link to="/politique-cookies">Politique de cookies</Link>
           </li>
           <li>
-            {/* Le module préférences sera branché ensuite */}
             <button
               type="button"
               className="linklike"
@@ -32,6 +40,16 @@ export default function Footer() {
               }
             >
               Préférences cookies
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className="linklike"
+              onClick={handleRetractConsent}
+              aria-label="Retirer mon consentement aux cookies"
+            >
+              Retirer mon consentement
             </button>
           </li>
           <li>
