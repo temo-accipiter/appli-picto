@@ -1,8 +1,8 @@
 // src/components/SubscribeButton.jsx
-import { useState } from 'react'
-import { supabase } from '@/utils'
-import { useToast } from '@/contexts'
 import { Button } from '@/components'
+import { useToast } from '@/contexts'
+import { supabase } from '@/utils'
+import { useState } from 'react'
 
 export default function SubscribeButton() {
   const { show } = useToast()
@@ -13,7 +13,7 @@ export default function SubscribeButton() {
     setLoading(true)
 
     try {
-      // Appel direct à l’Edge Function (auth auto + bons headers)
+      // Appel direct à l'Edge Function (auth auto + bons headers)
       const { data, error } = await supabase.functions.invoke(
         'create-checkout-session',
         {
@@ -48,4 +48,9 @@ export default function SubscribeButton() {
       disabled={loading}
     />
   )
+}
+
+// PropTypes pour le composant SubscribeButton
+SubscribeButton.propTypes = {
+  // Aucune prop pour ce composant
 }

@@ -198,6 +198,7 @@ export type Database = {
           label: string | null
           selected: boolean | null
           user_id: string | null
+          visible_en_demo: boolean | null
         }
         Insert: {
           id?: number
@@ -205,6 +206,7 @@ export type Database = {
           label?: string | null
           selected?: boolean | null
           user_id?: string | null
+          visible_en_demo?: boolean | null
         }
         Update: {
           id?: number
@@ -212,6 +214,7 @@ export type Database = {
           label?: string | null
           selected?: boolean | null
           user_id?: string | null
+          visible_en_demo?: boolean | null
         }
         Relationships: []
       }
@@ -273,6 +276,7 @@ export type Database = {
           label: string
           position: number | null
           user_id: string | null
+          visible_en_demo: boolean | null
         }
         Insert: {
           aujourdhui?: boolean | null
@@ -283,6 +287,7 @@ export type Database = {
           label: string
           position?: number | null
           user_id?: string | null
+          visible_en_demo?: boolean | null
         }
         Update: {
           aujourdhui?: boolean | null
@@ -293,6 +298,7 @@ export type Database = {
           label?: string
           position?: number | null
           user_id?: string | null
+          visible_en_demo?: boolean | null
         }
         Relationships: []
       }

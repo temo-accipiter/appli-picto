@@ -48,6 +48,7 @@ yarn dev
 ## 🔐 Supabase
 
 **Tables utilisées :**
+
 - `taches` : tâches quotidiennes (label, fait, aujourdhui, imagePath, etc.)
 - `recompenses` : récompenses (label, imagePath, selected)
 - `parametres` : paramètre global `confettis`
@@ -55,6 +56,7 @@ yarn dev
 - `stations` : noms de stations de métro par ligne
 
 **Stockage utilisé :**
+
 - Bucket `images` pour les pictos / récompenses uploadées
 
 ---

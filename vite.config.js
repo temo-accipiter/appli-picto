@@ -1,9 +1,10 @@
 // vite.config.js
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { fileURLToPath } from 'url'
+import { defineConfig } from 'vite'
+import { imagetools } from 'vite-imagetools'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -11,6 +12,14 @@ const __dirname = path.dirname(__filename)
 export default defineConfig({
   plugins: [
     react(),
+    imagetools({
+      defaultDirectives: new URLSearchParams({
+        format: 'webp',
+        quality: '80',
+        w: '800',
+        as: 'picture',
+      }),
+    }),
     visualizer({
       filename: './dist/stats.html',
       template: 'treemap',
@@ -44,9 +53,19 @@ export default defineConfig({
             '@dnd-kit/sortable',
             '@dnd-kit/utilities',
           ],
+          'ui-components': [
+            'framer-motion',
+            'lucide-react',
+            'react-confetti',
+            'react-turnstile',
+          ],
+          utils: ['marked', 'file-saver', 'jszip', 'react-use'],
+          stripe: ['@stripe/stripe-js', 'stripe'],
         },
       },
     },
+    // Augmenter la limite d'avertissement pour éviter les faux positifs
+    chunkSizeWarningLimit: 1000,
   },
   // (Optionnel, seulement si tu fais du SSR plus tard)
   // ssr: { noExternal: ['marked'] },

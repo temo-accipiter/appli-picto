@@ -1,24 +1,24 @@
+import {
+  AvatarProfil,
+  Button,
+  DeleteAccountModal,
+  FloatingPencil,
+  Input,
+  InputWithValidation,
+  ModalConfirm,
+} from '@/components'
+import { useToast } from '@/contexts'
+import { useAuth, useSubscriptionStatus } from '@/hooks'
+import {
+  getDisplayPseudo,
+  noDoubleSpaces,
+  noEdgeSpaces,
+  normalizeSpaces,
+  supabase,
+} from '@/utils'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, useSubscriptionStatus } from '@/hooks'
-import { useToast } from '@/contexts'
 import Turnstile from 'react-turnstile'
-import {
-  supabase,
-  getDisplayPseudo,
-  noEdgeSpaces,
-  noDoubleSpaces,
-  normalizeSpaces,
-} from '@/utils'
-import {
-  Input,
-  Button,
-  FloatingPencil,
-  ModalConfirm,
-  AvatarProfil,
-  DeleteAccountModal,
-  InputWithValidation,
-} from '@/components'
 import './Profil.scss'
 
 function wait(ms) {
@@ -269,7 +269,7 @@ export default function Profil() {
         <p>Email : {user.email}</p>
 
         {loading ? (
-          <p>Chargement de l'abonnement...</p>
+          <p>Chargement de l&apos;abonnement...</p>
         ) : isActive ? (
           <div className="abonnement-section">
             <p className="abonnement-statut actif">

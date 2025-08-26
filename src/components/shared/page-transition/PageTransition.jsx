@@ -1,5 +1,5 @@
-import { useLocation, useOutlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useLocation, useOutlet } from 'react-router-dom'
 
 export default function PageTransition() {
   const location = useLocation()
@@ -18,4 +18,9 @@ export default function PageTransition() {
       </motion.div>
     </AnimatePresence>
   )
+}
+
+// PropTypes pour le composant PageTransition
+PageTransition.propTypes = {
+  // Aucune prop pour ce composant
 }

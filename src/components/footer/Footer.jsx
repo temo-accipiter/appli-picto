@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
 import { revokeConsent } from '@/utils/consent'
+import { Link } from 'react-router-dom'
 import './Footer.scss'
 
 export default function Footer() {
@@ -70,4 +70,9 @@ export default function Footer() {
       </p>
     </footer>
   )
+}
+
+// PropTypes pour le composant Footer
+Footer.propTypes = {
+  // Aucune prop pour ce composant
 }

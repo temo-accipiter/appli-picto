@@ -332,27 +332,26 @@ export default function Edition() {
   )
 }
 */
-import { useState, useEffect } from 'react'
-import { supabase } from '@/utils'
-import { compressImageIfNeeded } from '@/utils'
-import {
-  useTachesEdition,
-  useRecompenses,
-  useParametres,
-  useCategories,
-  useAuth,
-} from '@/hooks'
 import {
   Button,
   Checkbox,
-  ModalConfirm,
   ModalCategory,
-  TachesEdition,
+  ModalConfirm,
   RecompensesEdition,
   Separator,
+  TachesEdition,
 } from '@/components'
 import { useDisplay, useToast } from '@/contexts'
-import { ChevronDown, ListChecks, Gift } from 'lucide-react'
+import {
+  useAuth,
+  useCategories,
+  useParametres,
+  useRecompenses,
+  useTachesEdition,
+} from '@/hooks'
+import { compressImageIfNeeded, supabase } from '@/utils'
+import { ChevronDown, Gift, ListChecks } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import './Edition.scss'
 
 export default function Edition() {
@@ -454,7 +453,6 @@ export default function Edition() {
   }
 
   const handleSubmitReward = async ({ label, image }) => {
-    let imagePath = ''
     if (image) {
       const compressed = await compressImageIfNeeded(image)
 

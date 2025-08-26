@@ -11,3 +11,8 @@ export default function Loader() {
     </div>
   )
 }
+
+// PropTypes pour le composant Loader
+Loader.propTypes = {
+  // Aucune prop pour ce composant
+}

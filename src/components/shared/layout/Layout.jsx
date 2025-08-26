@@ -1,11 +1,11 @@
-import { useLocation } from 'react-router-dom'
 import {
-  PageTransition,
-  Navbar,
-  CookieBanner,
-  CookiePreferences,
-  Footer,
+    CookieBanner,
+    CookiePreferences,
+    Footer,
+    Navbar,
+    PageTransition,
 } from '@/components'
+import { useLocation } from 'react-router-dom'
 import './Layout.scss'
 
 export default function Layout() {
@@ -26,4 +26,9 @@ export default function Layout() {
       </div>
     </div>
   )
+}
+
+// PropTypes pour le composant Layout
+Layout.propTypes = {
+  // Aucune prop pour ce composant
 }

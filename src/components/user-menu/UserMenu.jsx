@@ -6,6 +6,7 @@ import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import { Crown, LogOut, User } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+
 import './UserMenu.scss'
 
 export default function UserMenu() {
@@ -97,23 +98,15 @@ export default function UserMenu() {
       )
 
       const payload = await res.json().catch(() => ({}))
-
-      if (!res.ok) {
-        console.warn('❌ create-checkout-session error:', payload)
-        alert(
-          `❌ Impossible d'ouvrir Stripe : ${payload?.error || `status ${res.status}`}`
-        )
+      if (payload?.url) {
+        window.location.href = payload.url
         return
       }
 
-      if (payload?.url) {
-        window.location.href = payload.url
-      } else {
-        alert('⚠️ Réponse inattendue du serveur (pas de URL).')
-      }
+      alert('❌ Réponse Stripe inattendue')
     } catch (e) {
-      console.error('❌ Erreur réseau/serveur:', e)
-      alert(`❌ Erreur réseau/serveur : ${e.message || e}`)
+      console.error('Erreur checkout:', e)
+      alert('❌ Erreur lors de la redirection vers Stripe')
     }
   }
 
@@ -126,11 +119,10 @@ export default function UserMenu() {
       <button
         ref={btnRef}
         className="user-menu-trigger"
-        aria-haspopup="dialog"
+        onClick={() => setOpen(!open)}
         aria-expanded={open}
-        aria-controls="user-menu-dialog"
-        onClick={() => setOpen(o => !o)}
-        title="Mon compte"
+        aria-haspopup="true"
+        aria-label="Ouvrir le menu du compte"
       >
         {avatarPath ? (
           <SignedImage
@@ -201,8 +193,8 @@ export default function UserMenu() {
                   loading
                     ? undefined
                     : isActive
-                      ? () => navigate('/abonnement')  // Page dédiée à l'abonnement
-                      : handleCheckout                  // Stripe Checkout
+                      ? () => navigate('/abonnement') // Page dédiée à l'abonnement
+                      : handleCheckout // Stripe Checkout
                 }
                 disabled={loading}
               >
@@ -211,8 +203,9 @@ export default function UserMenu() {
                   {loading
                     ? 'Vérification…'
                     : isActive
-                      ? 'Gérer mon abonnement'  // Redirige vers page dédiée
-                      : 'S\'abonner'}           // Ouvre Stripe Checkout
+                      ? 'Gérer mon abonnement' // Redirige vers page dédiée
+                      : "S'abonner"}{' '}
+                  {/* Ouvre Stripe Checkout */}
                 </span>
               </button>
 

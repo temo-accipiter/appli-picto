@@ -626,11 +626,19 @@ CREATE TABLE public.recompenses (
     label text,
     imagepath text,
     selected boolean DEFAULT false,
-    user_id uuid
+    user_id uuid,
+    visible_en_demo boolean DEFAULT false
 );
 
 
 ALTER TABLE public.recompenses OWNER TO postgres;
+
+--
+-- Name: COLUMN recompenses.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.visible_en_demo IS 'Si true, cette récompense sera visible en mode démo pour tous les visiteurs';
+
 
 --
 -- Name: recompenses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
@@ -718,11 +726,19 @@ CREATE TABLE public.taches (
     "position" integer DEFAULT 0,
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid,
-    imagepath text
+    imagepath text,
+    visible_en_demo boolean DEFAULT false
 );
 
 
 ALTER TABLE public.taches OWNER TO postgres;
+
+--
+-- Name: COLUMN taches.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.visible_en_demo IS 'Si true, cette tâche sera visible en mode démo pour tous les visiteurs';
+
 
 --
 -- Name: buckets; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
@@ -1027,6 +1043,13 @@ CREATE INDEX consentements_user_ts_idx ON public.consentements USING btree (user
 
 
 --
+-- Name: idx_recompenses_visible_en_demo; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_recompenses_visible_en_demo ON public.recompenses USING btree (visible_en_demo);
+
+
+--
 -- Name: idx_stations_ligne; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1045,6 +1068,13 @@ CREATE INDEX idx_stations_type_ligne ON public.stations USING btree (type, ligne
 --
 
 CREATE INDEX idx_stations_type_ligne_ordre ON public.stations USING btree (type, ligne, ordre);
+
+
+--
+-- Name: idx_taches_visible_en_demo; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_taches_visible_en_demo ON public.taches USING btree (visible_en_demo);
 
 
 --

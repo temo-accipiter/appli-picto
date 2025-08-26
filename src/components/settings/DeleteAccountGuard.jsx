@@ -1,11 +1,10 @@
 // src/components/settings/DeleteAccountGuard.jsx
-import { useEffect, useMemo, useRef, useState } from 'react'
-import PropTypes from 'prop-types'
-import { supabase } from '@/utils'
-import useAuth from '@/hooks/useAuth'
+import { Button, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
-import { InputWithValidation, Button } from '@/components'
-import { validatePasswordNotEmpty } from '@/utils'
+import useAuth from '@/hooks/useAuth'
+import { supabase, validatePasswordNotEmpty } from '@/utils'
+import PropTypes from 'prop-types'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Turnstile from 'react-turnstile'
 import './DeleteAccountGuard.scss'
 
@@ -45,7 +44,9 @@ export default function DeleteAccountGuard({
           f => f.status === 'verified'
         )
         if (!ignore) setNeedsTotp(!!totpEnabled)
-      } catch {}
+      } catch {
+        // Gestion silencieuse des erreurs MFA
+      }
     }
     checkMfa()
     return () => {

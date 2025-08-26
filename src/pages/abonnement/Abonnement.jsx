@@ -1,18 +1,19 @@
 // src/pages/abonnement/Abonnement.jsx
+import { Button, FloatingPencil } from '@/components'
+import { useToast } from '@/contexts'
+import { useAuth, useSubscriptionStatus } from '@/hooks'
+import { supabase } from '@/utils'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth, useSubscriptionStatus } from '@/hooks'
-import { useToast } from '@/contexts'
-import { supabase } from '@/utils'
-import { Button, FloatingPencil } from '@/components'
 import './Abonnement.scss'
 
 export default function Abonnement() {
   const { user } = useAuth()
-  const { isActive, status, subscription, loading, daysUntilExpiry, statusDisplay } = useSubscriptionStatus()
+  const { isActive, subscription, loading, daysUntilExpiry, statusDisplay } =
+    useSubscriptionStatus()
   const { show: showToast } = useToast()
   const navigate = useNavigate()
-  
+
   const [portalLoading, setPortalLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
   const [userLogs, setUserLogs] = useState([])
@@ -21,7 +22,7 @@ export default function Abonnement() {
   // Rediriger si pas d'abonnement actif
   useEffect(() => {
     if (!loading && !isActive) {
-      showToast('Vous n\'avez pas d\'abonnement actif', 'info')
+      showToast("Vous n'avez pas d'abonnement actif", 'info')
       navigate('/profil')
     }
   }, [isActive, loading, navigate, showToast])
@@ -29,7 +30,7 @@ export default function Abonnement() {
   // Charger l'historique des logs de l'utilisateur
   useEffect(() => {
     if (!user?.id) return
-    
+
     const loadUserLogs = async () => {
       setLogsLoading(true)
       try {
@@ -39,7 +40,7 @@ export default function Abonnement() {
           .eq('user_id', user.id)
           .order('timestamp', { ascending: false })
           .limit(20)
-        
+
         if (error) throw error
         setUserLogs(data || [])
       } catch (error) {
@@ -49,7 +50,7 @@ export default function Abonnement() {
         setLogsLoading(false)
       }
     }
-    
+
     loadUserLogs()
   }, [user?.id])
 
@@ -66,7 +67,7 @@ export default function Abonnement() {
     return (
       <div className="abonnement-page">
         <h1>Mon abonnement</h1>
-        <p>Chargement de l'abonnement...</p>
+        <p>Chargement de l&apos;abonnement...</p>
       </div>
     )
   }
@@ -84,7 +85,7 @@ export default function Abonnement() {
     setPortalLoading(true)
     try {
       const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
-      
+
       const { data, error } = await supabase.functions.invoke(
         'create-checkout-session',
         {
@@ -104,18 +105,25 @@ export default function Abonnement() {
       if (data?.portal && data?.url) {
         window.location.href = data.url
       } else {
-        showToast('Erreur lors de l\'ouverture du portail de facturation', 'error')
+        showToast(
+          'Erreur lors de l&apos;ouverture du portail de facturation',
+          'error'
+        )
       }
     } catch (e) {
       console.error('Erreur portail facturation :', e)
-      showToast('Erreur lors de l\'ouverture du portail', 'error')
+      showToast("Erreur lors de l'ouverture du portail", 'error')
     } finally {
       setPortalLoading(false)
     }
   }
 
   const handleCancelSubscription = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler votre abonnement ? Il sera actif jusqu\'à la fin de la période en cours.')) {
+    if (
+      !confirm(
+        'Êtes-vous sûr de vouloir annuler votre abonnement ? Il sera actif jusqu&apos;à la fin de la période en cours.'
+      )
+    ) {
       return
     }
 
@@ -123,36 +131,39 @@ export default function Abonnement() {
     try {
       // Ici tu pourrais appeler une Edge Function pour annuler l'abonnement
       // Ou rediriger vers le portail Stripe avec une action spécifique
-      showToast('Pour annuler votre abonnement, veuillez utiliser le portail de facturation', 'info')
+      showToast(
+        'Pour annuler votre abonnement, veuillez utiliser le portail de facturation',
+        'info'
+      )
       handleBillingPortal()
     } catch (e) {
       console.error('Erreur annulation :', e)
-      showToast('Erreur lors de l\'annulation', 'error')
+      showToast("Erreur lors de l'annulation", 'error')
     } finally {
       setCancelLoading(false)
     }
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     if (!dateString) return 'Non défini'
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     })
   }
 
-  const formatTimestamp = (timestamp) => {
+  const formatTimestamp = timestamp => {
     return new Date(timestamp).toLocaleString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   }
 
-  const formatEventType = (eventType) => {
+  const formatEventType = eventType => {
     return eventType
       .replace(/\./g, ' → ')
       .replace(/_/g, ' ')
@@ -162,7 +173,7 @@ export default function Abonnement() {
   return (
     <div className="abonnement-page">
       <h1>Mon abonnement</h1>
-      
+
       <FloatingPencil className="floating-pencil--abonnement" />
 
       {/* Statut de l'abonnement */}
@@ -177,7 +188,8 @@ export default function Abonnement() {
               {subscription?.plan && `Plan : ${subscription.plan}`}
               {daysUntilExpiry !== null && daysUntilExpiry >= 0 && (
                 <span className="expiry-warning">
-                  · Expire dans {daysUntilExpiry} jour{daysUntilExpiry > 1 ? 's' : ''}
+                  · Expire dans {daysUntilExpiry} jour
+                  {daysUntilExpiry > 1 ? 's' : ''}
                 </span>
               )}
             </p>
@@ -188,7 +200,7 @@ export default function Abonnement() {
       {/* Détails de l'abonnement */}
       {subscription && (
         <div className="abonnement-details">
-          <h3>Détails de l'abonnement</h3>
+          <h3>Détails de l&apos;abonnement</h3>
           <div className="details-grid">
             <div className="detail-item">
               <label>Date de début :</label>
@@ -197,7 +209,7 @@ export default function Abonnement() {
             <div className="detail-item">
               <label>Période actuelle :</label>
               <span>
-                Du {formatDate(subscription.current_period_start)} 
+                Du {formatDate(subscription.current_period_start)}
                 au {formatDate(subscription.current_period_end)}
               </span>
             </div>
@@ -220,7 +232,7 @@ export default function Abonnement() {
       {/* Actions */}
       <div className="abonnement-actions">
         <h3>Gérer mon abonnement</h3>
-        
+
         <div className="action-buttons">
           <Button
             onClick={handleBillingPortal}
@@ -228,10 +240,12 @@ export default function Abonnement() {
             variant="primary"
             disabled={portalLoading}
           />
-          
+
           <Button
             onClick={handleCancelSubscription}
-            label={cancelLoading ? 'Traitement...' : '❌ Annuler l\'abonnement'}
+            label={
+              cancelLoading ? 'Traitement...' : '❌ Annuler l&apos;abonnement'
+            }
             variant="danger"
             disabled={cancelLoading}
           />
@@ -239,12 +253,12 @@ export default function Abonnement() {
 
         <div className="action-info">
           <p>
-            <strong>Portail de facturation :</strong> Gérez vos informations de paiement, 
-            consultez vos factures et modifiez votre abonnement.
+            <strong>Portail de facturation :</strong> Gérez vos informations de
+            paiement, consultez vos factures et modifiez votre abonnement.
           </p>
           <p>
-            <strong>Annulation :</strong> Votre abonnement restera actif jusqu'à la fin 
-            de la période en cours.
+            <strong>Annulation :</strong> Votre abonnement restera actif
+            jusqu&apos;à la fin de la période en cours.
           </p>
         </div>
       </div>
@@ -252,12 +266,12 @@ export default function Abonnement() {
       {/* Historique des événements */}
       <div className="abonnement-history">
         <h3>Historique des événements</h3>
-        
+
         {logsLoading ? (
-          <p className="history-loading">Chargement de l'historique...</p>
+          <p className="history-loading">Chargement de l&apos;historique...</p>
         ) : userLogs.length > 0 ? (
           <div className="history-list">
-            {userLogs.map((log) => (
+            {userLogs.map(log => (
               <div key={log.id} className="history-item">
                 <div className="history-header">
                   <span className="history-event">

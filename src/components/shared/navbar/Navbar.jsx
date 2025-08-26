@@ -1,8 +1,8 @@
-import { NavLink, useLocation } from 'react-router-dom'
-import { Pencil, LayoutDashboard } from 'lucide-react'
-import { motion } from 'framer-motion'
-import { useAuth } from '@/hooks'
 import { UserMenu } from '@/components'
+import { useAuth } from '@/hooks'
+import { motion } from 'framer-motion'
+import { LayoutDashboard, Pencil } from 'lucide-react'
+import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.scss'
 
 export default function Navbar() {
@@ -25,7 +25,7 @@ export default function Navbar() {
             <NavLink
               to="/edition"
               className="nav-icon-link"
-              aria-label="Accéder à l’édition"
+              aria-label="Accéder à l'édition"
               title="Édition"
             >
               <Pencil size={20} strokeWidth={2} />
@@ -58,4 +58,9 @@ export default function Navbar() {
       )}
     </nav>
   )
+}
+
+// PropTypes pour le composant Navbar
+Navbar.propTypes = {
+  // Aucune prop pour ce composant
 }

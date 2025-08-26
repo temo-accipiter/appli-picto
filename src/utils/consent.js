@@ -44,10 +44,10 @@ export function getConsent() {
 export function hasConsent(category) {
   const current = getConsent()
   if (!current) return false
-  
+
   // Les cookies nécessaires sont toujours autorisés
   if (category === 'necessary') return true
-  
+
   return !!current.choices?.[category]
 }
 
@@ -63,13 +63,13 @@ export function saveConsent(choices, mode = 'custom', extra = {}) {
     },
     ...extra,
   }
-  
+
   localStorage.setItem(CONSENT_KEY, JSON.stringify(payload))
   window.__consent = payload
-  
+
   // Déclencher l'événement de changement de consentement
   window.dispatchEvent(new CustomEvent('consent:changed', { detail: payload }))
-  
+
   return payload
 }
 
@@ -77,15 +77,19 @@ export function onConsent(category, cb) {
   if (hasConsent(category)) {
     try {
       cb()
-    } catch {}
+    } catch {
+      // Gestion silencieuse des erreurs de callback
+    }
     return () => {}
   }
-  
+
   const handler = e => {
     if (e?.detail?.choices?.[category]) {
       try {
         cb()
-      } catch {}
+      } catch {
+        // Gestion silencieuse des erreurs de callback
+      }
       window.removeEventListener('consent:changed', handler)
     }
   }
@@ -100,21 +104,20 @@ export async function tryLogServerConsent(record) {
       console.warn('❌ URL Supabase Functions non configurée')
       return
     }
-    
+
     const url = `${base}/log-consent`
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(record),
     })
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
-    
+
     const result = await response.json()
     console.log('✅ Consentement loggé côté serveur:', result)
-    
   } catch (err) {
     console.warn('❌ Échec log consentement côté serveur:', err)
     // Ne pas bloquer l'utilisateur si le logging échoue
@@ -124,17 +127,27 @@ export async function tryLogServerConsent(record) {
 // Fonction pour retirer le consentement
 export function revokeConsent() {
   try {
+    const previous = getConsent()
     localStorage.removeItem(CONSENT_KEY)
     delete window.__consent
-    
-    // Déclencher l'événement de retrait
+
+    // Déclencher les événements
     window.dispatchEvent(new CustomEvent('consent:revoked'))
-    
-    // Désactiver tous les trackers
-    window.dispatchEvent(new CustomEvent('consent:changed', { 
-      detail: { choices: { necessary: true, analytics: false, marketing: false } } 
-    }))
-    
+    window.dispatchEvent(
+      new CustomEvent('consent:changed', {
+        detail: {
+          choices: { necessary: true, analytics: false, marketing: false },
+        },
+      })
+    )
+
+    // Journal côté serveur (si l’URL Functions est configurée)
+    tryLogServerConsent({
+      ...(previous || {}),
+      action: 'revoke',
+      ts: nowIso(),
+    })
+
     return true
   } catch (err) {
     console.error('❌ Erreur lors du retrait du consentement:', err)
@@ -162,11 +175,14 @@ export function getConsentStatus() {
       timestamp: null,
     }
   }
-  
+
   const now = new Date()
   const consentDate = new Date(consent.ts)
-  const daysUntilExpiry = Math.ceil((EXPIRY_DAYS * 24 * 60 * 60 * 1000 - (now - consentDate)) / (24 * 60 * 60 * 1000))
-  
+  const daysUntilExpiry = Math.ceil(
+    (EXPIRY_DAYS * 24 * 60 * 60 * 1000 - (now - consentDate)) /
+      (24 * 60 * 60 * 1000)
+  )
+
   return {
     hasConsent: true,
     isExpired: isExpired(consent.ts),

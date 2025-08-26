@@ -2,12 +2,12 @@
  * Composant : LangSelector
  *
  * Rôle :
- *   Permet de basculer entre le français et l’anglais via i18next.
+ *   Permet de basculer entre le français et l'anglais via i18next.
  *   • Affiche deux boutons 🇫🇷 et 🇬🇧
  *   • Met à jour la langue actuelle et la stocke en localStorage
  *
  * Hooks & bibliothèques utilisés :
- *   • useTranslation (react-i18next) – accès à l’objet i18n
+ *   • useTranslation (react-i18next) – accès à l'objet i18n
  *
  * Props :
  *   (aucune)
@@ -51,4 +51,9 @@ export default function LangSelector() {
       </button>
     </div>
   )
+}
+
+// PropTypes pour le composant LangSelector
+LangSelector.propTypes = {
+  // Aucune prop pour ce composant
 }

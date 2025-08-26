@@ -29,6 +29,10 @@ supabase/.env
 supabase/.env.local
 supabase/.env.*.local
 
+# ✅ Garder les fichiers d'exemple d'environnement
+!.env.example
+!supabase/.env.example
+
 # ✅ SQLite / DB
 *.sqlite
 *.sqlite3

@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react'
-import './CookiePreferences.scss'
+import { useAuth } from '@/hooks'
 import {
   defaultChoices,
   getConsent,
   saveConsent,
   tryLogServerConsent,
 } from '@/utils/consent'
-import { supabase } from '@/utils'
-import { useAuth } from '@/hooks'
+import { useEffect, useState } from 'react'
+import './CookiePreferences.scss'
 
 export default function CookiePreferences() {
   const [open, setOpen] = useState(false)
@@ -64,13 +63,18 @@ export default function CookiePreferences() {
   if (!open) return null
 
   return (
-    <div className="cookie-prefs" role="dialog" aria-modal="true" aria-labelledby="cookie-prefs-title">
+    <div
+      className="cookie-prefs"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cookie-prefs-title"
+    >
       <div className="cookie-prefs__dialog" role="document">
         <header className="cookie-prefs__header">
           <h2 id="cookie-prefs-title">Préférences de cookies et traceurs</h2>
-          <button 
-            className="icon" 
-            onClick={close} 
+          <button
+            className="icon"
+            onClick={close}
             aria-label="Fermer les préférences de cookies"
           >
             ✕
@@ -80,8 +84,9 @@ export default function CookiePreferences() {
         <div className="cookie-prefs__body">
           <div className="cookie-prefs__intro">
             <p>
-              Vous pouvez gérer vos préférences pour chaque catégorie de cookies et traceurs. 
-              Seuls les cookies strictement nécessaires sont activés par défaut.
+              Vous pouvez gérer vos préférences pour chaque catégorie de cookies
+              et traceurs. Seuls les cookies strictement nécessaires sont
+              activés par défaut.
             </p>
           </div>
 
@@ -93,37 +98,40 @@ export default function CookiePreferences() {
             </legend>
             <div className="cookie-prefs__description">
               <p>
-                Ces cookies sont indispensables au fonctionnement du site. Ils ne peuvent pas être désactivés 
-                et ne collectent aucune information personnelle identifiable.
+                Ces cookies sont essentiels au bon fonctionnement du site et ne
+                peuvent pas être désactivés. Ils ne collectent aucune
+                information personnelle.
               </p>
               <ul>
                 <li>Authentification et sécurité</li>
-                <li>Préférences de base (langue, thème)</li>
-                <li>Protection anti-bots</li>
+                <li>Préférences utilisateur</li>
+                <li>Fonctionnalités de base</li>
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
-              <input 
-                type="checkbox" 
-                checked 
-                readOnly 
-                disabled 
+              <input
+                type="checkbox"
                 id="necessary-cookies"
+                checked={true}
+                disabled
               />
-              <label htmlFor="necessary-cookies">Toujours actifs</label>
+              <label htmlFor="necessary-cookies">
+                Toujours actifs (obligatoires)
+              </label>
             </div>
           </fieldset>
 
           <fieldset className="cookie-prefs__fieldset">
             <legend className="cookie-prefs__legend">
               <span className="cookie-prefs__category cookie-prefs__category--analytics">
-                Mesure d'audience et statistiques
+                Mesure d&apos;audience et statistiques
               </span>
             </legend>
             <div className="cookie-prefs__description">
               <p>
-                Ces cookies nous permettent de mesurer le nombre de visiteurs et d'analyser 
-                l'utilisation du site pour l'améliorer. Ils ne collectent pas d'informations 
+                Ces cookies nous permettent de mesurer le nombre de visiteurs et
+                d&apos;analyser l&apos;utilisation du site pour
+                l&apos;améliorer. Ils ne collectent pas d&apos;informations
                 personnelles identifiables.
               </p>
               <ul>
@@ -141,7 +149,7 @@ export default function CookiePreferences() {
                 onChange={() => toggle('analytics')}
               />
               <label htmlFor="analytics-cookies">
-                Activer la mesure d'audience
+                Activer la mesure d&apos;audience
               </label>
             </div>
           </fieldset>
@@ -154,8 +162,9 @@ export default function CookiePreferences() {
             </legend>
             <div className="cookie-prefs__description">
               <p>
-                Ces cookies permettent de vous proposer des contenus et publicités 
-                personnalisés selon vos centres d'intérêt et votre utilisation du site.
+                Ces cookies permettent de vous proposer des contenus et
+                publicités personnalisés selon vos centres d&apos;intérêt et
+                votre utilisation du site.
               </p>
               <ul>
                 <li>Publicités ciblées</li>
@@ -178,11 +187,12 @@ export default function CookiePreferences() {
 
           <div className="cookie-prefs__info">
             <p>
-              <strong>Durée de conservation :</strong> Vos choix sont conservés 6 mois. 
-              Vous pourrez les modifier à tout moment via le lien en pied de page.
+              <strong>Durée de conservation :</strong> Vos choix sont conservés
+              6 mois. Vous pourrez les modifier à tout moment via le lien en
+              pied de page.
             </p>
             <p>
-              <strong>Plus d'informations :</strong>{' '}
+              <strong>Plus d&apos;informations :</strong>{' '}
               <a href="/politique-cookies" target="_blank" rel="noopener">
                 Consultez notre politique de cookies complète
               </a>
@@ -192,22 +202,22 @@ export default function CookiePreferences() {
 
         <footer className="cookie-prefs__footer">
           <div className="cookie-prefs__actions">
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               onClick={refuseAll}
               aria-describedby="cookie-prefs-title"
             >
               Tout refuser
             </button>
-            <button 
-              className="btn btn-outline" 
+            <button
+              className="btn btn-outline"
               onClick={save}
               aria-describedby="cookie-prefs-title"
             >
               Enregistrer mes choix
             </button>
-            <button 
-              className="btn" 
+            <button
+              className="btn"
               onClick={acceptAll}
               aria-describedby="cookie-prefs-title"
             >
@@ -218,4 +228,9 @@ export default function CookiePreferences() {
       </div>
     </div>
   )
+}
+
+// PropTypes pour le composant CookiePreferences
+CookiePreferences.propTypes = {
+  // Aucune prop pour ce composant
 }

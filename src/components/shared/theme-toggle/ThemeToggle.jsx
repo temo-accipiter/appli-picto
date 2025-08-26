@@ -2,10 +2,10 @@
  * Composant : ThemeToggle
  *
  * Rôle :
- *   Permet de basculer entre les thèmes clair et sombre pour l’application.
+ *   Permet de basculer entre les thèmes clair et sombre pour l'application.
  *   • Récupère le thème enregistré en localStorage ou utilise la préférence système.
- *   • Applique le thème en ajoutant l’attribut `data-theme` à la balise `<html>`.
- *   • Propose un bouton affichant l’icône correspondante (🌙 ou ☀️).
+ *   • Applique le thème en ajoutant l'attribut `data-theme` à la balise `<html>`.
+ *   • Propose un bouton affichant l'icône correspondante (🌙 ou ☀️).
  *
  * Hooks & bibliothèques utilisés :
  *   • useState, useEffect (React)
@@ -14,12 +14,12 @@
  * Props :
  *   (aucune)
  *
- * Exemple d’utilisation :
+ * Exemple d'utilisation :
  *   <ThemeToggle />
  */
 
+import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Sun, Moon } from 'lucide-react'
 import './ThemeToggle.scss'
 
 export default function ThemeToggle() {
@@ -58,4 +58,9 @@ export default function ThemeToggle() {
       {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
     </button>
   )
+}
+
+// PropTypes pour le composant ThemeToggle
+ThemeToggle.propTypes = {
+  // Aucune prop pour ce composant
 }

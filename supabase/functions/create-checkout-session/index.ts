@@ -29,7 +29,7 @@ function isValidUrl(url: string) {
 
 function isAllowedHost(url: string) {
   const allow = Deno.env.get('ALLOWED_RETURN_HOSTS')
-  
+
   // Autoriser localhost en développement
   try {
     const host = new URL(url).host.toLowerCase()
@@ -40,16 +40,16 @@ function isAllowedHost(url: string) {
     console.error('❌ Error parsing URL in isAllowedHost:', e)
     return false
   }
-  
+
   if (!allow) {
     return true
   }
-  
+
   const hosts = allow
     .split(',')
     .map(h => h.trim().toLowerCase())
     .filter(Boolean)
-  
+
   try {
     const host = new URL(url).host.toLowerCase()
     return hosts.includes(host)
@@ -110,18 +110,18 @@ serve(async (req: Request) => {
     console.error('❌ Missing required parameters')
     return json({ error: 'Missing required parameters' }, 400)
   }
-  
+
   const PRICE_RE = /^price_[a-zA-Z0-9]+$/
   if (typeof price_id !== 'string' || !PRICE_RE.test(price_id)) {
     console.error('❌ Invalid price_id:', price_id)
     return json({ error: 'Invalid price_id' }, 400)
   }
-  
+
   if (!isValidUrl(success_url) || !isValidUrl(cancel_url)) {
     console.error('❌ Invalid URLs')
     return json({ error: 'Invalid URLs' }, 400)
   }
-  
+
   if (!isAllowedHost(success_url) || !isAllowedHost(cancel_url)) {
     console.error('❌ Unallowed return URL host')
     return json({ error: 'Unallowed return URL host' }, 400)
@@ -137,12 +137,12 @@ serve(async (req: Request) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       global: { headers: { Authorization: req.headers.get('Authorization')! } },
     })
-    
+
     const {
       data: { user },
       error: authErr,
     } = await supabase.auth.getUser()
-    
+
     if (authErr || !user) {
       console.error('❌ Unauthorized:', authErr)
       return json({ error: 'Unauthorized' }, 401)
@@ -153,10 +153,7 @@ serve(async (req: Request) => {
       return json({ error: 'Service configuration error' }, 500)
     }
 
-    const admin = createClient(
-      SUPABASE_URL,
-      SUPABASE_SERVICE_ROLE_KEY
-    )
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-08-16' })
 

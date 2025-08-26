@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import { supabase } from '@/utils'
-import useAuth from './useAuth'
 import { useToast } from '@/contexts'
+import { supabase } from '@/utils'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import useAuth from './useAuth'
 
 /**
  * Retourne l'état d'abonnement courant de l'utilisateur.
@@ -116,7 +116,7 @@ export default function useSubscriptionStatus() {
   const isActive = parseIsActive(subscription)
 
   // --- (1) Affichage convivial des statuts
-  const getStatusDisplay = useCallback((st, sub) => {
+  const getStatusDisplay = useCallback((st, _sub) => {
     switch ((st || '').toLowerCase()) {
       case 'active':
         return { label: 'Actif', color: 'success', icon: '✅' }
