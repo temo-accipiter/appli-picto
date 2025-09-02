@@ -18,7 +18,7 @@ export default function SupabaseTest() {
         .from('profiles')
         .select('count')
         .limit(1)
-      
+
       if (profilesError) {
         results.tables = `❌ Erreur tables: ${profilesError.message}`
       } else {
@@ -26,7 +26,8 @@ export default function SupabaseTest() {
       }
 
       // Test 3: Vérifier l'authentification
-      const { data: authData, error: authError } = await supabase.auth.getSession()
+      const { data: authData, error: authError } =
+        await supabase.auth.getSession()
       if (authError) {
         results.auth = `❌ Erreur auth: ${authError.message}`
       } else {
@@ -34,7 +35,8 @@ export default function SupabaseTest() {
       }
 
       // Test 4: Vérifier le storage
-      const { data: buckets, error: storageError } = await supabase.storage.listBuckets()
+      const { data: buckets, error: storageError } =
+        await supabase.storage.listBuckets()
       if (storageError) {
         results.storage = `❌ Erreur storage: ${storageError.message}`
       } else {
@@ -43,18 +45,19 @@ export default function SupabaseTest() {
 
       // Test 5: Vérifier les fonctions Edge
       try {
-        const { data: functions, error: functionsError } = await supabase.functions.invoke('test-connection', {
-          body: { message: 'test' }
-        })
+        const { data: functions, error: functionsError } =
+          await supabase.functions.invoke('test-connection', {
+            body: { message: 'test' },
+          })
         if (functionsError) {
           results.functions = `⚠️ Fonctions Edge: ${functionsError.message}`
         } else {
           results.functions = '✅ Fonctions Edge accessibles'
         }
       } catch (e) {
-        results.functions = '⚠️ Fonctions Edge non testées (fonction test-connection inexistante)'
+        results.functions =
+          '⚠️ Fonctions Edge non testées (fonction test-connection inexistante)'
       }
-
     } catch (error) {
       results.general = `❌ Erreur générale: ${error.message}`
     }
@@ -64,19 +67,27 @@ export default function SupabaseTest() {
   }
 
   return (
-    <div className="supabase-test" style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', margin: '20px' }}>
+    <div
+      className="supabase-test"
+      style={{
+        padding: '20px',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        margin: '20px',
+      }}
+    >
       <h3>🧪 Test d'intégration Supabase</h3>
-      
-      <button 
-        onClick={runTests} 
+
+      <button
+        onClick={runTests}
         disabled={loading}
-        style={{ 
-          padding: '10px 20px', 
-          backgroundColor: '#3ecf8e', 
-          color: 'white', 
-          border: 'none', 
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#3ecf8e',
+          color: 'white',
+          border: 'none',
           borderRadius: '4px',
-          cursor: loading ? 'not-allowed' : 'pointer'
+          cursor: loading ? 'not-allowed' : 'pointer',
         }}
       >
         {loading ? 'Tests en cours...' : 'Lancer les tests'}
@@ -86,7 +97,15 @@ export default function SupabaseTest() {
         <div style={{ marginTop: '20px' }}>
           <h4>Résultats des tests :</h4>
           {Object.entries(testResults).map(([test, result]) => (
-            <div key={test} style={{ margin: '10px 0', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+            <div
+              key={test}
+              style={{
+                margin: '10px 0',
+                padding: '10px',
+                backgroundColor: '#f5f5f5',
+                borderRadius: '4px',
+              }}
+            >
               <strong>{test}:</strong> {result}
             </div>
           ))}
@@ -94,7 +113,10 @@ export default function SupabaseTest() {
       )}
 
       <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
-        <p><strong>Note :</strong> Ce composant teste la connectivité de base avec Supabase.</p>
+        <p>
+          <strong>Note :</strong> Ce composant teste la connectivité de base
+          avec Supabase.
+        </p>
         <p>Pour des tests complets, vérifiez aussi :</p>
         <ul>
           <li>L'authentification utilisateur</li>

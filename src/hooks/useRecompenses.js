@@ -1,6 +1,19 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/utils'
 import { useAuth } from '@/hooks'
+import { withAbortSafe, isAbortLike } from '@/hooks'
+
+// Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
+const formatErr = (e) => {
+  const m = String(e?.message ?? e)
+  const parts = [
+    m,
+    e?.code ? `[${e.code}]` : '',
+    e?.details ? `— ${e.details}` : '',
+    e?.hint ? `(hint: ${e.hint})` : '',
+  ].filter(Boolean)
+  return parts.join(' ')
+}
 
 export default function useRecompenses(reload = 0) {
   const [recompenses, setRecompenses] = useState([])
@@ -10,174 +23,130 @@ export default function useRecompenses(reload = 0) {
   useEffect(() => {
     if (!userId) return
 
-    supabase
-      .from('recompenses')
-      .select('*')
-      .eq('user_id', userId)
-      .then(({ data, error }) => {
-        if (error) console.error('❌ Erreur chargement récompenses:', error)
-        else setRecompenses(data)
-      })
-  }, [reload, userId])
-  /*
-  const createRecompense = async ({ label, image }) => {
-    let imagepath = ''
-
-    if (image) {
-      const cleanName = image.name
-        .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9_.-]/g, '')
-      const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
-
-      const { data, error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(fileName, image)
-
-      if (uploadError) {
-        console.error('❌ Erreur upload image:', uploadError)
-        throw new Error('Erreur upload image')
+    ;(async () => {
+      const { data, error, aborted } = await withAbortSafe(
+        supabase.from('recompenses').select('*').eq('user_id', userId)
+      )
+      if (aborted || (error && isAbortLike(error))) return
+      if (error) {
+        console.error(`❌ Erreur chargement récompenses: ${formatErr(error)}`)
+        return
       }
+      setRecompenses(Array.isArray(data) ? data : [])
+    })()
+  }, [reload, userId])
 
-      imagepath = data.path
-    }
-
-    const { data, error } = await supabase
-      .from('recompenses')
-      .insert({
-        label,
-        imagepath,
-        selected: false,
-        user_id: userId,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      console.error('❌ Erreur ajout récompense:', error)
-      throw new Error('Erreur ajout récompense')
-    }
-
-    setRecompenses(prev => [...prev, data])
-    return data
-  }
-*/
   const createRecompense = async ({ label, image }) => {
     let imagepath = ''
 
+    // 1) Upload éventuel (silencieux si abort)
     if (image) {
       const cleanName = image.name
         ? image.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
-        : `${Date.now()}` // valeur de secours si name non défini
-
+        : `${Date.now()}`
       const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
 
-      const { data, error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(fileName, image)
-
+      const { data, error: uploadError, aborted: uploadAborted } = await withAbortSafe(
+        supabase.storage.from('images').upload(fileName, image)
+      )
+      if (uploadAborted) return
       if (uploadError) {
-        console.error('❌ Erreur upload image:', uploadError)
+        console.error(`❌ Erreur upload image: ${formatErr(uploadError)}`)
         throw new Error('Erreur upload image')
       }
-
       imagepath = data.path
     }
 
-    const { data, error } = await supabase
-      .from('recompenses')
-      .insert({
-        label,
-        imagepath,
-        selected: false,
-        user_id: userId,
-      })
-      .select()
-      .single()
-
+    // 2) Insertion de la récompense
+    const { data, error, aborted } = await withAbortSafe(
+      supabase
+        .from('recompenses')
+        .insert({
+          label,
+          imagepath,
+          selected: false,
+          user_id: userId,
+        })
+        .select()
+        .single()
+    )
+    if (aborted) return
     if (error) {
-      console.error('❌ Erreur ajout récompense:', error)
+      console.error(`❌ Erreur ajout récompense: ${formatErr(error)}`)
       throw new Error('Erreur ajout récompense')
     }
 
-    setRecompenses(prev => [...prev, data])
+    setRecompenses((prev) => [...prev, data])
     return data
   }
 
-  const deleteRecompense = async id => {
-    const rec = recompenses.find(r => r.id === id)
+  const deleteRecompense = async (id) => {
+    const rec = recompenses.find((r) => r.id === id)
 
+    // 1) Supprimer l’image associée si présente
     if (rec?.imagepath) {
-      const { error: storageError } = await supabase.storage
-        .from('images')
-        .remove([rec.imagepath])
-      if (storageError) {
-        console.warn('⚠️ Erreur suppression image:', storageError)
-      } else {
-        console.log('🗑️ Image de récompense supprimée')
+      const { error: storageError, aborted: storageAborted } = await withAbortSafe(
+        supabase.storage.from('images').remove([rec.imagepath])
+      )
+      if (!storageAborted && storageError) {
+        console.warn(`⚠️ Erreur suppression image: ${formatErr(storageError)}`)
       }
     }
 
-    const { error } = await supabase
-      .from('recompenses')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', userId)
-
+    // 2) Supprimer la ligne
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('recompenses').delete().eq('id', id).eq('user_id', userId)
+    )
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('❌ Erreur suppression récompense:', error)
+      console.error(`❌ Erreur suppression récompense: ${formatErr(error)}`)
       throw new Error('Erreur suppression récompense')
     }
 
-    setRecompenses(prev => prev.filter(r => r.id !== id))
+    setRecompenses((prev) => prev.filter((r) => r.id !== id))
   }
 
-  const selectRecompense = async id => {
-    const updates = recompenses.map(r =>
+  const selectRecompense = async (id) => {
+    const updates = recompenses.map((r) =>
       r.id === id
         ? { id: r.id, selected: true, user_id: userId }
         : { id: r.id, selected: false, user_id: userId }
     )
 
-    const { error } = await supabase
-      .from('recompenses')
-      .upsert(updates, { onConflict: 'id' })
-
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('recompenses').upsert(updates, { onConflict: 'id' })
+    )
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('❌ Erreur sélection récompense:', error)
+      console.error(`❌ Erreur sélection récompense: ${formatErr(error)}`)
       throw new Error('Erreur sélection récompense')
     }
 
-    setRecompenses(prev => prev.map(r => ({ ...r, selected: r.id === id })))
+    setRecompenses((prev) => prev.map((r) => ({ ...r, selected: r.id === id })))
   }
 
   const deselectAll = async () => {
-    const { error } = await supabase
-      .from('recompenses')
-      .update({ selected: false })
-      .eq('user_id', userId)
-      .neq('selected', false)
-
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('recompenses').update({ selected: false }).eq('user_id', userId).neq('selected', false)
+    )
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('❌ Erreur désélection récompenses:', error)
+      console.error(`❌ Erreur désélection récompenses: ${formatErr(error)}`)
       throw new Error('Erreur désélection')
     }
-
-    setRecompenses(prev => prev.map(r => ({ ...r, selected: false })))
+    setRecompenses((prev) => prev.map((r) => ({ ...r, selected: false })))
   }
 
   const updateLabel = async (id, label) => {
-    const { error } = await supabase
-      .from('recompenses')
-      .update({ label })
-      .eq('id', id)
-      .eq('user_id', userId)
-
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('recompenses').update({ label }).eq('id', id).eq('user_id', userId)
+    )
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('❌ Erreur mise à jour label récompense:', error)
+      console.error(`❌ Erreur mise à jour label récompense: ${formatErr(error)}`)
       throw new Error('Erreur mise à jour label')
     }
-
-    setRecompenses(prev => prev.map(r => (r.id === id ? { ...r, label } : r)))
+    setRecompenses((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)))
   }
 
   return {

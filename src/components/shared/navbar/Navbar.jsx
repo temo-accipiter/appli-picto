@@ -1,22 +1,26 @@
-import { UserMenu } from '@/components'
+import { LangSelector, ThemeToggle, UserMenu } from '@/components'
+import { usePermissions } from '@/contexts'
 import { useAuth } from '@/hooks'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Pencil } from 'lucide-react'
+import { LayoutDashboard, Pencil, Settings, UserPlus } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.scss'
 
 export default function Navbar() {
   const location = useLocation()
   const { user } = useAuth()
+  const { can, isVisitor } = usePermissions()
 
   const isTableau = location.pathname === '/tableau'
   const isEdition = location.pathname === '/edition'
-  const isProfil = location.pathname === '/profil' // ✅ nouveau
+  const isProfil = location.pathname === '/profil'
+  const isTableauDemo = location.pathname === '/tableau-demo'
+  const isAdminPermissions = location.pathname === '/admin/permissions'
 
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        {(isTableau || isProfil) /* ✅ aussi sur /profil */ && (
+        {(isTableau || isProfil || isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -33,7 +37,7 @@ export default function Navbar() {
           </motion.div>
         )}
 
-        {(isEdition || isProfil) /* ✅ aussi sur /profil */ && (
+        {(isEdition || isProfil || isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
           <NavLink
             to="/tableau"
             className="nav-icon-link"
@@ -45,8 +49,8 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Actions à droite : seulement le UserMenu */}
-      {user && (
+      {/* Actions à droite : UserMenu pour les utilisateurs connectés, actions pour les visiteurs */}
+      {user ? (
         <motion.div
           className="navbar-actions"
           initial={{ opacity: 0, x: 10 }}
@@ -54,6 +58,85 @@ export default function Navbar() {
           transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           <UserMenu />
+        </motion.div>
+      ) : (
+        <motion.div
+          className="navbar-actions visitor-actions"
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+        >
+          {/* Thème et langue pour tous */}
+          <div className="visitor-controls">
+            <ThemeToggle />
+            <LangSelector />
+          </div>
+
+          {/* Boutons de conversion pour les visiteurs */}
+          <div className="visitor-buttons">
+            {isTableauDemo ? (
+              // Boutons spécifiques à tableau-demo
+              <>
+                <button
+                  className="nav-button personalize-button"
+                  aria-label="Personnaliser"
+                  title="Personnaliser"
+                  onClick={() => {
+                    // Ouvrir la modal de personnalisation
+                    window.dispatchEvent(
+                      new CustomEvent('openPersonalizeModal')
+                    )
+                  }}
+                >
+                  <Settings size={18} />
+                  <span>Personnaliser</span>
+                </button>
+
+                <NavLink
+                  to="/signup"
+                  className="nav-button signup-button"
+                  aria-label="Créer un compte"
+                  title="Créer un compte"
+                >
+                  <UserPlus size={18} />
+                  <span>Créer un compte</span>
+                </NavLink>
+
+                <NavLink
+                  to="/login"
+                  className="nav-button login-button"
+                  aria-label="Se connecter"
+                  title="Se connecter"
+                >
+                  <Settings size={18} />
+                  <span>Se connecter</span>
+                </NavLink>
+              </>
+            ) : (
+              // Boutons normaux pour les autres pages
+              <>
+                <NavLink
+                  to="/signup"
+                  className="nav-button signup-button"
+                  aria-label="Créer un compte"
+                  title="Créer un compte"
+                >
+                  <UserPlus size={18} />
+                  <span>S'inscrire</span>
+                </NavLink>
+
+                <NavLink
+                  to="/login"
+                  className="nav-button login-button"
+                  aria-label="Se connecter"
+                  title="Se connecter"
+                >
+                  <Settings size={18} />
+                  <span>Se connecter</span>
+                </NavLink>
+              </>
+            )}
+          </div>
         </motion.div>
       )}
     </nav>

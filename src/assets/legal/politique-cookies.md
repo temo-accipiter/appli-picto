@@ -28,8 +28,8 @@ Les **cookies non essentiels** (mesure d'audience, personnalisation, publicité,
 | Finalité                    | Exemples                                                                                        | Base légale                            |
 | --------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- |
 | **Strictement nécessaires** | Authentification Supabase, sécurité (anti-bots), équilibrage, conservation du panier/abonnement | Intérêt légitime & nécessité technique |
-| **Mesure d'audience**       | Google Analytics 4 (configuré en mode respectueux de la vie privée)                            | Consentement                           |
-| **Personnalisation**        | Préférences d'interface (thème, langue), historique des actions                                | Consentement                           |
+| **Mesure d'audience**       | Google Analytics 4 (configuré en mode respectueux de la vie privée)                             | Consentement                           |
+| **Personnalisation**        | Préférences d'interface (thème, langue), historique des actions                                 | Consentement                           |
 | **Marketing**               | Publicités ciblées, recommandations personnalisées                                              | Consentement                           |
 
 ## 6) Cookies/traceurs utilisés
@@ -38,7 +38,7 @@ Les **cookies non essentiels** (mesure d'audience, personnalisation, publicité,
 
 - **supabase-auth-token** (localStorage) — session d'authentification — durée : jusqu'à déconnexion — Supabase (hébergement UE).
 - **cookie_consent_v2** (localStorage) — preuve de consentement — durée : 6 mois — Appli Picto.
-- **cf_clearance / __cf_bm** — protection anti-bots (Cloudflare Turnstile) — durée : 30 min à 1 an — Cloudflare (hébergement UE).
+- **cf_clearance / \_\_cf_bm** — protection anti-bots (Cloudflare Turnstile) — durée : 30 min à 1 an — Cloudflare (hébergement UE).
 
 ### b) Mesure d'audience (soumis à consentement)
 
@@ -62,6 +62,7 @@ Les **cookies non essentiels** (mesure d'audience, personnalisation, publicité,
 ## 8) Transferts hors UE
 
 **Google Analytics 4** peut impliquer des transferts vers les États-Unis. Google s'engage à respecter le RGPD via :
+
 - Les clauses contractuelles types de l'UE
 - Les garanties appropriées
 - Les mécanismes de transfert approuvés
@@ -69,6 +70,7 @@ Les **cookies non essentiels** (mesure d'audience, personnalisation, publicité,
 ## 9) Vos droits
 
 Conformément au RGPD, vous disposez des droits suivants :
+
 - **Droit d'accès** : connaître les données collectées
 - **Droit de rectification** : corriger des données inexactes
 - **Droit d'effacement** : demander la suppression de vos données
@@ -85,6 +87,7 @@ Conformément au RGPD, vous disposez des droits suivants :
 ## 11) Mise à jour de cette politique
 
 Cette politique peut être mise à jour pour refléter :
+
 - L'évolution de nos pratiques
 - Les nouvelles exigences légales
 - L'ajout de nouveaux services
@@ -94,8 +97,9 @@ Les modifications importantes vous seront notifiées via le site ou par email.
 ---
 
 **Historique des versions :**
+
 - 1.0 (Décembre 2024) - Première version conforme RGPD/CNIL
 
 ---
 
-*Dernière mise à jour : Décembre 2024*
+_Dernière mise à jour : Décembre 2024_

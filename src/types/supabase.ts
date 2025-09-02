@@ -146,6 +146,39 @@ export type Database = {
         }
         Relationships: []
       }
+      features: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       parametres: {
         Row: {
           confettis: boolean | null
@@ -158,6 +191,42 @@ export type Database = {
         Update: {
           confettis?: boolean | null
           id?: number
+        }
+        Relationships: []
+      }
+      permission_changes: {
+        Row: {
+          change_reason: string | null
+          change_type: string
+          changed_by: string
+          created_at: string | null
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string
+          table_name: string
+        }
+        Insert: {
+          change_reason?: string | null
+          change_type: string
+          changed_by: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id: string
+          table_name: string
+        }
+        Update: {
+          change_reason?: string | null
+          change_type?: string
+          changed_by?: string
+          created_at?: string | null
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string
+          table_name?: string
         }
         Relationships: []
       }
@@ -215,6 +284,90 @@ export type Database = {
           selected?: boolean | null
           user_id?: string | null
           visible_en_demo?: boolean | null
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          can_access: boolean
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_read: boolean | null
+          can_update: boolean | null
+          created_at: string | null
+          feature_id: string
+          id: string
+          role_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          can_access?: boolean
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string | null
+          feature_id: string
+          id?: string
+          role_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          can_access?: boolean
+          can_create?: boolean | null
+          can_delete?: boolean | null
+          can_read?: boolean | null
+          can_update?: boolean | null
+          created_at?: string | null
+          feature_id?: string
+          id?: string
+          role_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          name: string
+          priority: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          name: string
+          priority?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          name?: string
+          priority?: number | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -302,6 +455,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       consentements_dernier: {
@@ -321,11 +512,57 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions_admin_view: {
+        Row: {
+          can_access: boolean | null
+          can_create: boolean | null
+          can_delete: boolean | null
+          can_read: boolean | null
+          can_update: boolean | null
+          category: string | null
+          created_at: string | null
+          feature_display_name: string | null
+          feature_id: string | null
+          feature_name: string | null
+          id: string | null
+          role_display_name: string | null
+          role_id: string | null
+          role_name: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_feature_id_fkey"
+            columns: ["feature_id"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       email_exists: {
         Args: { email_to_check: string }
         Returns: boolean
+      }
+      get_user_permissions: {
+        Args: { user_uuid: string }
+        Returns: {
+          can_access: boolean
+          can_create: boolean
+          can_delete: boolean
+          can_read: boolean
+          can_update: boolean
+          feature_name: string
+        }[]
       }
       is_admin: {
         Args: Record<PropertyKey, never>
@@ -337,6 +574,14 @@ export type Database = {
       }
       user_can_upload_avatar: {
         Args: { uid: string }
+        Returns: boolean
+      }
+      user_has_permission: {
+        Args: {
+          feature_name: string
+          permission_type?: string
+          user_uuid: string
+        }
         Returns: boolean
       }
     }

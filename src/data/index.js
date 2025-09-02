@@ -3,7 +3,9 @@
 
 export { default as colors } from './colors'
 export {
-    LEGAL_CONFIG, checkTransfersCompliance,
-    generateComplianceReport, getTransfersInfo, replaceLegalPlaceholders
+  LEGAL_CONFIG,
+  checkTransfersCompliance,
+  generateComplianceReport,
+  getTransfersInfo,
+  replaceLegalPlaceholders,
 } from './legalConfig'
-

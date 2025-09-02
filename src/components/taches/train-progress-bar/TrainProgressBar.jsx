@@ -1,11 +1,16 @@
-import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
-import { COULEURS_LIGNES } from '@/data/colors'
 import { Select } from '@/components'
-import './TrainProgressBar.scss'
+import { COULEURS_LIGNES } from '@/data/colors'
 import { useStations } from '@/hooks'
+import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
+import './TrainProgressBar.scss'
 
-export default function TrainProgressBar({ total, done }) {
+export default function TrainProgressBar({
+  total,
+  done,
+  isDemo = false,
+  onLineChange,
+}) {
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur = COULEURS_LIGNES[ligne] || '#999'
   const stationCount = total + 1
@@ -94,6 +99,18 @@ export default function TrainProgressBar({ total, done }) {
           value={ligne}
           onChange={e => {
             const nouvelleLigne = e.target.value
+
+            // En mode démo, empêcher le changement de ligne et ouvrir la modal
+            if (isDemo && nouvelleLigne !== '1') {
+              e.preventDefault()
+              e.target.value = '1' // Remettre la ligne 1
+              if (onLineChange) {
+                onLineChange('line_change')
+              }
+              return
+            }
+
+            // Mode normal : changer la ligne
             setLigne(nouvelleLigne)
             localStorage.setItem('ligne', nouvelleLigne)
           }}
@@ -115,4 +132,6 @@ export default function TrainProgressBar({ total, done }) {
 TrainProgressBar.propTypes = {
   total: PropTypes.number.isRequired,
   done: PropTypes.number.isRequired,
+  isDemo: PropTypes.bool,
+  onLineChange: PropTypes.func,
 }

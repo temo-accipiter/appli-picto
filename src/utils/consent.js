@@ -117,7 +117,9 @@ export async function tryLogServerConsent(record) {
     }
 
     const result = await response.json()
-    console.log('✅ Consentement loggé côté serveur:', result)
+    if (import.meta.env.DEV) {
+      console.log('✅ Consentement loggé côté serveur:', result)
+    }
   } catch (err) {
     console.warn('❌ Échec log consentement côté serveur:', err)
     // Ne pas bloquer l'utilisateur si le logging échoue

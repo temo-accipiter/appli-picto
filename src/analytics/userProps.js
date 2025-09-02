@@ -6,25 +6,33 @@ import { hasConsent } from '@/utils/consent'
 const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()
 const GA_SALT = (import.meta.env.VITE_GA_SALT || 'dev-salt-change-me').trim()
 const isValidGA = id => /^G-[A-Z0-9]{6,}$/.test(id)
-const isReady = () => isValidGA(GA_ID) && hasConsent('analytics') && typeof window.gtag === 'function'
+const isReady = () =>
+  isValidGA(GA_ID) &&
+  hasConsent('analytics') &&
+  typeof window.gtag === 'function'
 
 // Map Price → plan (garde en phase avec routePageViews.js)
 const PRICE_MAP = {
   [(import.meta.env.VITE_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
   // 'price_ABCDEF...': 'monthly_pro',
 }
-const priceIdToPlanName = (priceId) => {
+const priceIdToPlanName = priceId => {
   const k = (priceId || '').trim()
-  return PRICE_MAP[k] || (k ? `price:${k.slice(0,6)}…` : undefined)
+  return PRICE_MAP[k] || (k ? `price:${k.slice(0, 6)}…` : undefined)
 }
 
 async function sha256Hex(input) {
   try {
     const enc = new TextEncoder().encode(`${input}:${GA_SALT}`)
     const hash = await crypto.subtle.digest('SHA-256', enc)
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
+    return Array.from(new Uint8Array(hash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
   } catch {
-    return btoa(unescape(encodeURIComponent(`${input}:${GA_SALT}`))).replace(/=+$/,'')
+    return btoa(unescape(encodeURIComponent(`${input}:${GA_SALT}`))).replace(
+      /=+$/,
+      ''
+    )
   }
 }
 
@@ -57,17 +65,22 @@ export async function refreshGAUserProperties() {
 
     const user = await getSessionUser()
     if (!user) {
-      await setUserProperties({ uid_hash: undefined, customer_tier: 'anon', plan_name: undefined })
+      await setUserProperties({
+        uid_hash: undefined,
+        customer_tier: 'anon',
+        plan_name: undefined,
+      })
       return true
     }
 
     const uidHash = await sha256Hex(user.id) // jamais de PII brut
     const planInfo = await getUserPlan(user.id)
-    const tier = planInfo?.status === 'active' ? 'paid' : (planInfo?.status || 'free')
+    const tier =
+      planInfo?.status === 'active' ? 'paid' : planInfo?.status || 'free'
 
     await setUserProperties({
       uid_hash: uidHash,
-      customer_tier: tier,     // free | trialing | paid | canceled…
+      customer_tier: tier, // free | trialing | paid | canceled…
       plan_name: planInfo?.plan,
     })
     return true

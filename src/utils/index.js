@@ -12,6 +12,5 @@ export {
   generateDetailedReport,
   testDocumentPlaceholders,
   testLegalConfiguration,
-  testRGPDCompliance
+  testRGPDCompliance,
 } from './testLegalConfig'
-

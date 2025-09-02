@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 export const Tableau = lazy(() => import('./tableau/Tableau'))
+export const TableauDemo = lazy(() => import('./tableau-demo/TableauDemo'))
 export const Edition = lazy(() => import('./edition/Edition'))
 export const Login = lazy(() => import('./login/Login'))
 export const Signup = lazy(() => import('./signup/Signup'))
@@ -14,6 +15,10 @@ export const ForgotPassword = lazy(
   () => import('./forgot-password/ForgotPassword')
 )
 export const NotFound = lazy(() => import('./not-found/NotFound'))
+export const HomeRedirect = lazy(() => import('./HomeRedirect'))
+export const AdminPermissions = lazy(
+  () => import('./admin-permissions/AdminPermissions')
+)
 // Pages légales
 export const MentionsLegales = lazy(() => import('./legal/MentionsLegales'))
 export const CGU = lazy(() => import('./legal/CGU'))

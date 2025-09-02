@@ -21,6 +21,38 @@
     animation: skeleton-loading 1.2s ease-in-out infinite;
     filter: blur(2px);
   }
+
+  &__error {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #ffe6e6 30%, #ffcccc 50%, #ffe6e6 70%);
+    border: 2px dashed #ff6b6b;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #d63031;
+    font-size: 1.2em;
+
+    &:hover {
+      background: linear-gradient(135deg, #ffcccc 30%, #ffb3b3 50%, #ffcccc 70%);
+      border-color: #e74c3c;
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    small {
+      font-size: 0.7em;
+      margin-top: 0.2em;
+      opacity: 0.8;
+    }
+  }
 }
 
 @keyframes skeleton-loading {

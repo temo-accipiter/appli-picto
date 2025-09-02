@@ -8,21 +8,51 @@
  *   Joue un bip sonore lors de la coche si la tâche n'était pas faite (configurable).
  */
 
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
-import PropTypes from 'prop-types'
+import { Checkbox, SignedImage } from '@/components'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { SignedImage, Checkbox } from '@/components'
+import PropTypes from 'prop-types'
+import React, { useCallback, useMemo, useRef } from 'react'
 import './TableauCard.scss'
 
 // 🔊 Bip sonore quand une tâche est cochée
 function playBeep(audioCtx) {
-  const osc = audioCtx.createOscillator()
-  osc.type = 'sine'
-  osc.frequency.setValueAtTime(440, audioCtx.currentTime)
-  osc.connect(audioCtx.destination)
-  osc.start()
-  osc.stop(audioCtx.currentTime + 0.1)
+  try {
+    // Vérifier que l'AudioContext est dans un état valide
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume()
+    }
+    
+    if (audioCtx.state !== 'running') {
+      return // Ne pas jouer si le contexte n'est pas prêt
+    }
+    
+    const osc = audioCtx.createOscillator()
+    const gainNode = audioCtx.createGain()
+    
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(440, audioCtx.currentTime)
+    
+    // Contrôler le volume pour éviter les sons trop forts
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1)
+    
+    osc.connect(gainNode)
+    gainNode.connect(audioCtx.destination)
+    
+    osc.start(audioCtx.currentTime)
+    osc.stop(audioCtx.currentTime + 0.1)
+    
+    // Nettoyer les nœuds après utilisation
+    osc.onended = () => {
+      osc.disconnect()
+      gainNode.disconnect()
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.warn('⚠️ Erreur lors de la création du son:', error.message)
+    }
+  }
 }
 
 function TableauCard({ tache, done, toggleDone }) {
@@ -37,20 +67,44 @@ function TableauCard({ tache, done, toggleDone }) {
     }),
     [transform, transition]
   )
-  // — créer le contexte audio une seule fois
+  // — créer le contexte audio seulement quand nécessaire (après interaction utilisateur)
   const audioCtxRef = useRef(null)
-  useEffect(() => {
-    audioCtxRef.current = new (window.AudioContext ||
-      window.webkitAudioContext)()
+  
+  const getAudioContext = useCallback(() => {
+    if (!audioCtxRef.current) {
+      try {
+        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
+        // Si le contexte est suspendu, on le reprend
+        if (audioCtxRef.current.state === 'suspended') {
+          audioCtxRef.current.resume()
+        }
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ Impossible de créer AudioContext:', error.message)
+        }
+        return null
+      }
+    }
+    return audioCtxRef.current
   }, [])
 
   // — mémoriser le handler pour éviter de le recréer inutilement
   const handleCheck = useCallback(() => {
-    if (!done && audioCtxRef.current) {
-      playBeep(audioCtxRef.current)
+    // Créer l'AudioContext seulement lors de la première interaction
+    const audioCtx = getAudioContext()
+    
+    if (!done && audioCtx) {
+      try {
+        playBeep(audioCtx)
+      } catch (error) {
+        if (import.meta.env.DEV) {
+          console.warn('⚠️ Erreur lors de la lecture audio:', error.message)
+        }
+      }
     }
+    
     toggleDone(tache.id, done)
-  }, [done, tache.id, toggleDone])
+  }, [done, tache.id, toggleDone, getAudioContext])
 
   return (
     <div

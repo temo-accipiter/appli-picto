@@ -1,22 +1,10 @@
+// src/hooks/useSubscriptionStatus.js
 import { useToast } from '@/contexts'
 import { supabase } from '@/utils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useAuth from './useAuth'
+import { withAbortSafe, isAbortLike } from '@/hooks'
 
-/**
- * Retourne l'état d'abonnement courant de l'utilisateur.
- * - isActive: boolean (active/trialing/past_due et encore dans la période)
- * - status: string (ex: 'active' | 'trialing' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid' | 'none')
- * - subscription: dernière ligne `abonnements` (ou null)
- * - loading: boolean
- * - daysUntilExpiry: nombre de jours restants avant fin de période (ou null si inconnu)
- * - statusDisplay: { label, color, icon } pour l'affichage UI
- * - refresh(): re-fetch manuel
- *
- * Hypothèses légères sur la table `abonnements` :
- * - colonnes : user_id (uuid), status (text), current_period_end (timestamp), created_at (timestamp)
- * - une ligne par abonnement Stripe (on prend la + récente)
- */
 export default function useSubscriptionStatus() {
   const { user } = useAuth()
   const { show: showToast } = useToast()
@@ -27,9 +15,9 @@ export default function useSubscriptionStatus() {
   const [daysUntilExpiry, setDaysUntilExpiry] = useState(null)
 
   const channelRef = useRef(null)
-  const notifiedKeyRef = useRef(null) // évite les toasts répétés pour le même jour/période
+  const notifiedKeyRef = useRef(null)
 
-  const parseIsActive = useCallback(sub => {
+  const parseIsActive = useCallback((sub) => {
     if (!sub) return false
     const ACTIVE_STATUSES = ['active', 'trialing', 'past_due']
     const inActiveStatus = ACTIVE_STATUSES.includes(
@@ -53,13 +41,21 @@ export default function useSubscriptionStatus() {
     }
 
     setLoading(true)
-    const { data, error } = await supabase
-      .from('abonnements')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    const { data, error } = await withAbortSafe(
+      supabase
+        .from('abonnements')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    )
+
+    if (error && isAbortLike(error)) {
+      if (import.meta.env.DEV) console.debug('useSubscriptionStatus: abort ignoré')
+      setLoading(false)
+      return
+    }
 
     if (error) {
       console.warn('useSubscriptionStatus: erreur fetch abonnements', error)
@@ -115,8 +111,7 @@ export default function useSubscriptionStatus() {
 
   const isActive = parseIsActive(subscription)
 
-  // --- (1) Affichage convivial des statuts
-  const getStatusDisplay = useCallback((st, _sub) => {
+  const getStatusDisplay = useCallback((st) => {
     switch ((st || '').toLowerCase()) {
       case 'active':
         return { label: 'Actif', color: 'success', icon: '✅' }
@@ -138,11 +133,11 @@ export default function useSubscriptionStatus() {
   }, [])
 
   const statusDisplay = useMemo(
-    () => getStatusDisplay(status, subscription),
-    [getStatusDisplay, status, subscription]
+    () => getStatusDisplay(status),
+    [getStatusDisplay, status]
   )
 
-  // --- (2) Notification d’expiration (≤ 7 jours, 1 toast max par jour/période)
+  // --- Notification d’expiration (≤ 7 jours)
   useEffect(() => {
     if (!subscription?.current_period_end) {
       setDaysUntilExpiry(null)
@@ -160,7 +155,6 @@ export default function useSubscriptionStatus() {
     if (daysLeft <= 0) return
     if (daysLeft > 7) return
 
-    // clé unique par (date de fin + jours restants) pour éviter le spam
     const key = `${endDate.toISOString().slice(0, 10)}-${daysLeft}`
     if (notifiedKeyRef.current === key) return
 
@@ -178,6 +172,6 @@ export default function useSubscriptionStatus() {
     loading,
     refresh,
     daysUntilExpiry,
-    statusDisplay, // { label, color, icon }
+    statusDisplay,
   }
 }

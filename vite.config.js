@@ -38,6 +38,14 @@ export default defineConfig({
     // ⬇️ on pré-bundle aussi 'marked' (utile avec Yarn PnP)
     include: ['i18next-http-backend', 'marked'],
   },
+  // 🚫 Désactiver les source maps en développement pour éviter les warnings
+  esbuild: {
+    sourcemap: false,
+  },
+  // 🚫 Désactiver les source maps Vite en développement
+  css: {
+    devSourcemap: false,
+  },
   build: {
     rollupOptions: {
       output: {

@@ -1,0 +1,117 @@
+.tableau-demo-page {
+  min-height: 100vh;
+  background: var(--background);
+  display: flex;
+  flex-direction: column;
+
+  // Contenu principal avec restrictions
+  .demo-content {
+    flex: 1;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+
+    // Limiter à 3 cartes visibles pour les visiteurs
+    .tableau-magique {
+      .taches-container {
+        .tache-card {
+          &:nth-child(n + 4) {
+            display: none !important;
+          }
+        }
+      }
+
+      // Masquer les confettis pour les visiteurs
+      .confetti-container {
+        display: none !important;
+      }
+
+      // Limiter les récompenses à 1
+      .recompense-container {
+        .recompense-card {
+          &:nth-child(n + 2) {
+            display: none !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .tableau-demo-page {
+    .demo-header {
+      padding: 30px 16px;
+
+      .demo-header-content {
+        .demo-title {
+          font-size: 2rem;
+        }
+
+        .demo-subtitle {
+          font-size: 1rem;
+        }
+
+        .demo-actions {
+          flex-direction: column;
+          align-items: center;
+
+          .demo-button {
+            width: 100%;
+            max-width: 280px;
+          }
+        }
+      }
+    }
+
+    .demo-content {
+      padding: 16px;
+    }
+  }
+}
+
+// Dark mode adjustments
+@media (prefers-color-scheme: dark) {
+  .tableau-demo-page {
+    .demo-header {
+      background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        var(--primary-foreground) 100%
+      );
+    }
+  }
+}
+
+// Animations d'entrée
+.demo-header,
+.demo-content,
+.demo-footer {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Styles pour les restrictions visuelles
+.demo-limit-3 {
+  .tache-card:nth-child(n + 4) {
+    display: none !important;
+  }
+}
+
+.demo-limit-1 {
+  .recompense-card:nth-child(n + 2) {
+    display: none !important;
+  }
+}

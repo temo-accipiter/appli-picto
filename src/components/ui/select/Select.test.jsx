@@ -24,29 +24,19 @@ describe('Select', () => {
 
   it('renders without label when not provided', () => {
     render(
-      <Select
-        id="test"
-        options={mockOptions}
-        value=""
-        onChange={() => {}}
-      />
+      <Select id="test" options={mockOptions} value="" onChange={() => {}} />
     )
     expect(screen.queryByText('Test Select')).not.toBeInTheDocument()
   })
 
   it('displays all options when opened', () => {
     render(
-      <Select
-        id="test"
-        options={mockOptions}
-        value=""
-        onChange={() => {}}
-      />
+      <Select id="test" options={mockOptions} value="" onChange={() => {}} />
     )
-    
+
     const select = screen.getByRole('combobox')
     fireEvent.click(select)
-    
+
     expect(screen.getByText('Option 1')).toBeInTheDocument()
     expect(screen.getByText('Option 2')).toBeInTheDocument()
     expect(screen.getByText('Option 3')).toBeInTheDocument()
@@ -62,13 +52,13 @@ describe('Select', () => {
         onChange={handleChange}
       />
     )
-    
+
     const select = screen.getByRole('combobox')
     fireEvent.click(select)
-    
+
     const option = screen.getByText('Option 2')
     fireEvent.click(option)
-    
+
     expect(handleChange).toHaveBeenCalledWith('option2')
   })
 

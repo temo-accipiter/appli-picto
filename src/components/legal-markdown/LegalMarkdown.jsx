@@ -11,7 +11,7 @@ marked.setOptions({
 export default function LegalMarkdown({ title, content }) {
   // Remplacement automatique de tous les placeholders
   const processedContent = replaceLegalPlaceholders(content)
-  
+
   return (
     <article className="legal-content">
       <header className="legal-content__header">
@@ -19,7 +19,9 @@ export default function LegalMarkdown({ title, content }) {
       </header>
       <div
         className="legal-content__body"
-        dangerouslySetInnerHTML={{ __html: marked.parse(processedContent || '') }}
+        dangerouslySetInnerHTML={{
+          __html: marked.parse(processedContent || ''),
+        }}
       />
     </article>
   )

@@ -14,13 +14,15 @@ const PRICE_MAP = {
   [(import.meta.env.VITE_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
   // 'price_ABCDEF...': 'monthly_pro',
 }
-const priceIdToPlanName = (priceId) => {
+const priceIdToPlanName = priceId => {
   const k = (priceId || '').trim()
-  return PRICE_MAP[k] || (k ? `price:${k.slice(0,6)}…` : undefined)
+  return PRICE_MAP[k] || (k ? `price:${k.slice(0, 6)}…` : undefined)
 }
 
 const isReady = () =>
-  isValidGA(GA_ID) && hasConsent('analytics') && typeof window.gtag === 'function'
+  isValidGA(GA_ID) &&
+  hasConsent('analytics') &&
+  typeof window.gtag === 'function'
 
 function sendPageView() {
   if (!isReady()) return
@@ -78,8 +80,14 @@ function patchHistory() {
 
   const _push = history.pushState
   const _replace = history.replaceState
-  history.pushState = function (...args) { _push.apply(this, args); onRouteChange() }
-  history.replaceState = function (...args) { _replace.apply(this, args); onRouteChange() }
+  history.pushState = function (...args) {
+    _push.apply(this, args)
+    onRouteChange()
+  }
+  history.replaceState = function (...args) {
+    _replace.apply(this, args)
+    onRouteChange()
+  }
   addEventListener('popstate', onRouteChange)
   addEventListener('hashchange', onRouteChange)
 }
@@ -96,14 +104,22 @@ function patchFetchForCheckout() {
 
     try {
       // Détecte POST → create-checkout-session (Edge Function)
-      if (method === 'POST' && /create-checkout-session/i.test(url) && res?.ok && isReady()) {
+      if (
+        method === 'POST' &&
+        /create-checkout-session/i.test(url) &&
+        res?.ok &&
+        isReady()
+      ) {
         let priceId
         try {
           if (typeof init?.body === 'string') {
             const j = JSON.parse(init.body)
             priceId = j.priceId || j.price_id || j.price
           } else if (init?.body instanceof FormData) {
-            priceId = init.body.get('priceId') || init.body.get('price_id') || init.body.get('price')
+            priceId =
+              init.body.get('priceId') ||
+              init.body.get('price_id') ||
+              init.body.get('price')
           }
         } catch {}
         const planName = priceIdToPlanName(priceId)
@@ -116,7 +132,9 @@ function patchFetchForCheckout() {
           ...(planName ? { plan_name: planName } : null),
         })
       }
-    } catch { /* silencieux */ }
+    } catch {
+      /* silencieux */
+    }
 
     return res
   }
@@ -129,7 +147,10 @@ function boot() {
   sendAutoEvents()
   addEventListener('consent:changed', e => {
     if (e?.detail?.choices?.analytics) {
-      setTimeout(() => { sendPageView(); sendAutoEvents() }, 120)
+      setTimeout(() => {
+        sendPageView()
+        sendAutoEvents()
+      }, 120)
     }
   })
 }

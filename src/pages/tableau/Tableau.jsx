@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
-import { useWindowSize } from 'react-use'
-import Confetti from 'react-confetti'
 import {
-  TrainProgressBar,
-  TachesDnd,
-  SelectedRewardFloating,
   ModalRecompense,
+  SelectedRewardFloating,
+  TachesDnd,
+  TrainProgressBar,
 } from '@/components'
+import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
+
 import { useDisplay } from '@/contexts'
-import { useTachesDnd, useRecompenses } from '@/hooks'
-import { supabase } from '@/utils'
+import { useRecompenses, useTachesDnd } from '@/hooks'
+import { useEffect, useRef, useState } from 'react'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 import './Tableau.scss'
 
-export default function TableauGrille() {
+export default function TableauGrille({ isDemo = false, onLineChange }) {
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
   const [showConfettis, setShowConfettis] = useState(false)
@@ -41,27 +42,20 @@ export default function TableauGrille() {
     }
 
     if (totalTaches > 0 && doneCount === totalTaches) {
-      supabase
-        .from('parametres')
-        .select('confettis')
-        .eq('id', 1)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (error) {
-            console.error('❌ Erreur fetch confettis :', error)
-          } else {
-            if (data?.confettis) {
-              setShowConfettis(true)
-              setTimeout(() => setShowConfettis(false), 10000)
-            }
+      // Note: Les confettis sont maintenant contrôlés par FeatureGate
+      // Le paramètre confettis de la base n'est plus utilisé pour le contrôle
+      // FeatureGate décide si les confettis peuvent s'afficher
 
-            setShowModalRecompense(true)
+      // Déclencher les confettis (FeatureGate contrôlera l'affichage)
+      setShowConfettis(true)
+      setTimeout(() => setShowConfettis(false), 10000)
 
-            modalTimeoutRef.current = setTimeout(() => {
-              setShowModalRecompense(false)
-            }, 13000) // ✅ reste 13 secondes
-          }
-        })
+      // Toujours afficher la modal de récompense
+      setShowModalRecompense(true)
+
+      modalTimeoutRef.current = setTimeout(() => {
+        setShowModalRecompense(false)
+      }, 13000) // ✅ reste 13 secondes
     } else {
       setShowConfettis(false)
       setShowModalRecompense(false) // ✅ cache modal si une tâche décochée
@@ -76,7 +70,16 @@ export default function TableauGrille() {
 
   return (
     <div className="tableau-magique">
-      {showTrain && <TrainProgressBar total={totalTaches} done={doneCount} />}
+      {showTrain && (
+        <FeatureGate feature="trainprogressbar">
+        <TrainProgressBar
+          total={totalTaches}
+          done={doneCount}
+          isDemo={isDemo}
+          onLineChange={onLineChange}
+        />
+        </FeatureGate>
+      )}
 
       <TachesDnd
         items={taches}

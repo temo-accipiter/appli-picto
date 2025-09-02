@@ -120,3 +120,124 @@ export const compressImageIfNeeded = async (file, maxSizeKo = 100) => {
     reader.readAsDataURL(file)
   })
 }
+
+// --- Validation des rôles ---
+export const validateRoleName = (name = '') => {
+  const trimmed = name.trim()
+  if (!trimmed) return 'Le nom du rôle est requis.'
+  if (trimmed.length < 2) return 'Le nom doit faire au moins 2 caractères.'
+  if (trimmed.length > 20) return 'Le nom ne peut pas dépasser 20 caractères.'
+  if (!/^[a-z0-9_-]+$/.test(trimmed)) {
+    return 'Utilisez seulement des lettres minuscules, chiffres, tirets et underscores.'
+  }
+  return ''
+}
+
+export const validateRoleDisplayName = (displayName = '') => {
+  const trimmed = displayName.trim()
+  if (!trimmed) return 'Le nom d\'affichage est requis.'
+  if (trimmed.length < 3) return 'Le nom d\'affichage doit faire au moins 3 caractères.'
+  if (trimmed.length > 50) return 'Le nom d\'affichage ne peut pas dépasser 50 caractères.'
+  return ''
+}
+
+export const validateRoleDescription = (description = '') => {
+  if (description && description.length > 200) {
+    return 'La description ne peut pas dépasser 200 caractères.'
+  }
+  return ''
+}
+
+// Vérification de l'unicité du nom de rôle
+export const validateRoleNameUniqueness = (name, existingRoles, currentRoleId = null) => {
+  const trimmed = name.trim()
+  if (!trimmed) return ''
+  
+  const isDuplicate = existingRoles.some(role => 
+    role.name === trimmed && role.id !== currentRoleId
+  )
+  
+  return isDuplicate ? 'Ce nom de rôle existe déjà.' : ''
+}
+
+// Règles combinées pour la création d'un rôle
+export const createRoleValidationRules = {
+  name: (value, existingRoles) => [
+    validateRoleName(value),
+    validateRoleNameUniqueness(value, existingRoles)
+  ].filter(Boolean),
+  
+  displayName: (value) => [
+    validateRoleDisplayName(value)
+  ].filter(Boolean),
+  
+  description: (value) => [
+    validateRoleDescription(value)
+  ].filter(Boolean)
+}
+
+// Règles combinées pour la modification d'un rôle
+export const updateRoleValidationRules = {
+  displayName: (value) => [
+    validateRoleDisplayName(value)
+  ].filter(Boolean),
+  
+  description: (value) => [
+    validateRoleDescription(value)
+  ].filter(Boolean)
+}
+
+// --- Validation des fonctionnalités ---
+export const validateFeatureName = (name = '') => {
+  const trimmed = name.trim()
+  if (!trimmed) return 'Le nom technique est requis.'
+  if (trimmed.length < 3) return 'Le nom doit faire au moins 3 caractères.'
+  if (trimmed.length > 50) return 'Le nom ne peut pas dépasser 50 caractères.'
+  if (!/^[a-z0-9_-]+$/.test(trimmed)) {
+    return 'Utilisez seulement des lettres minuscules, chiffres, tirets et underscores.'
+  }
+  return ''
+}
+
+export const validateFeatureDisplayName = (displayName = '') => {
+  const trimmed = displayName.trim()
+  if (!trimmed) return 'Le nom d\'affichage est requis.'
+  if (trimmed.length < 3) return 'Le nom d\'affichage doit faire au moins 3 caractères.'
+  if (trimmed.length > 100) return 'Le nom d\'affichage ne peut pas dépasser 100 caractères.'
+  return ''
+}
+
+export const validateFeatureDescription = (description = '') => {
+  if (description && description.length > 500) {
+    return 'La description ne peut pas dépasser 500 caractères.'
+  }
+  return ''
+}
+
+// Vérification de l'unicité du nom de fonctionnalité
+export const validateFeatureNameUniqueness = (name, existingFeatures, currentFeatureId = null) => {
+  const trimmed = name.trim()
+  if (!trimmed) return ''
+  
+  const isDuplicate = existingFeatures.some(feature => 
+    feature.name === trimmed && feature.id !== currentFeatureId
+  )
+  
+  return isDuplicate ? 'Ce nom de fonctionnalité existe déjà.' : ''
+}
+
+// Règles combinées pour la création d'une fonctionnalité
+export const createFeatureValidationRules = {
+  name: (value, existingFeatures) => [
+    validateFeatureName(value),
+    validateFeatureNameUniqueness(value, existingFeatures)
+  ].filter(Boolean),
+  
+  displayName: (value) => [
+    validateFeatureDisplayName(value)
+  ].filter(Boolean),
+  
+  description: (value) => [
+    validateFeatureDescription(value)
+  ].filter(Boolean)
+}

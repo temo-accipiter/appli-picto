@@ -1,6 +1,19 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/utils'
 import { useAuth } from '@/hooks'
+import { withAbortSafe, isAbortLike } from '@/hooks'
+
+// Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
+const formatErr = (e) => {
+  const m = String(e?.message ?? e)
+  const parts = [
+    m,
+    e?.code ? `[${e.code}]` : '',
+    e?.details ? `— ${e.details}` : '',
+    e?.hint ? `(hint: ${e.hint})` : '',
+  ].filter(Boolean)
+  return parts.join(' ')
+}
 
 export default function useCategories() {
   const [categories, setCategories] = useState([])
@@ -11,18 +24,26 @@ export default function useCategories() {
     if (!user?.id) return
 
     setLoading(true)
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('label', { ascending: true })
+    const { data, error, aborted } = await withAbortSafe(
+      supabase
+        .from('categories')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('label', { ascending: true })
+    )
 
-    if (error) {
-      console.error('Erreur chargement catégories :', error)
-    } else {
-      setCategories(data)
+    if (aborted || (error && isAbortLike(error))) {
+      setLoading(false)
+      return
     }
 
+    if (error) {
+      console.error(`Erreur chargement catégories : ${formatErr(error)}`)
+      setLoading(false)
+      return
+    }
+
+    setCategories(Array.isArray(data) ? data : [])
     setLoading(false)
   }, [user?.id])
 
@@ -30,48 +51,57 @@ export default function useCategories() {
     fetchCategories()
   }, [fetchCategories])
 
-  const addCategory = async cat => {
-    const { error } = await supabase.from('categories').insert([
-      {
-        label: cat.label,
-        value: cat.value,
-        user_id: user.id,
-      },
-    ])
+  const addCategory = async (cat) => {
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('categories').insert([
+        {
+          label: cat.label,
+          value: cat.value,
+          user_id: user.id,
+        },
+      ])
+    )
 
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('Erreur ajout catégorie :', error)
-    } else {
-      fetchCategories()
+      console.error(`Erreur ajout catégorie : ${formatErr(error)}`)
+      return
     }
+    fetchCategories()
   }
 
   const updateCategory = async (id, newLabel) => {
-    const { error } = await supabase
-      .from('categories')
-      .update({ label: newLabel })
-      .eq('id', id)
-      .eq('user_id', user.id)
+    const { error, aborted } = await withAbortSafe(
+      supabase
+        .from('categories')
+        .update({ label: newLabel })
+        .eq('id', id)
+        .eq('user_id', user.id)
+    )
 
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('Erreur modification catégorie :', error)
-    } else {
-      fetchCategories()
+      console.error(`Erreur modification catégorie : ${formatErr(error)}`)
+      return
     }
+    fetchCategories()
   }
 
-  const deleteCategory = async id => {
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
+  const deleteCategory = async (id) => {
+    const { error, aborted } = await withAbortSafe(
+      supabase
+        .from('categories')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+    )
 
+    if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error('Erreur suppression catégorie :', error)
-    } else {
-      fetchCategories()
+      console.error(`Erreur suppression catégorie : ${formatErr(error)}`)
+      return
     }
+    fetchCategories()
   }
 
   return {

@@ -1,0 +1,165 @@
+.permissions-test {
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px;
+  max-width: 800px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  &.loading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted-foreground);
+    font-style: italic;
+  }
+
+  h3 {
+    margin: 0 0 24px 0;
+    color: var(--foreground);
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 12px;
+  }
+
+  .test-section {
+    margin-bottom: 24px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    h4 {
+      margin: 0 0 16px 0;
+      color: var(--foreground);
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    // Grille de statut
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+
+      .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: var(--muted);
+        border-radius: 8px;
+        border-left: 4px solid transparent;
+
+        .label {
+          color: var(--muted-foreground);
+          font-weight: 500;
+        }
+
+        .value {
+          font-weight: 600;
+          font-size: 1.1rem;
+
+          &.role-visitor {
+            color: #f59e0b;
+          }
+
+          &.role-subscriber {
+            color: #10b981;
+          }
+
+          &.role-admin {
+            color: #ef4444;
+          }
+        }
+      }
+    }
+
+    // Test des fonctionnalités
+    .features-test {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .feature-test {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--muted);
+        border-radius: 8px;
+        border-left: 4px solid var(--border);
+
+        span:first-child {
+          min-width: 120px;
+          font-weight: 500;
+          color: var(--foreground);
+        }
+
+        .success {
+          color: #10b981;
+        }
+
+        .error {
+          color: #ef4444;
+        }
+      }
+    }
+
+    // Instructions de test
+    .test-instructions {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted-foreground);
+
+      li {
+        margin-bottom: 8px;
+        line-height: 1.5;
+
+        code {
+          background: var(--muted);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Monaco', 'Menlo', monospace;
+          font-size: 0.9em;
+        }
+
+        strong {
+          color: var(--foreground);
+        }
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .permissions-test {
+    margin: 16px;
+    padding: 20px;
+
+    .test-section {
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .features-test {
+        .feature-test {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+
+          span:first-child {
+            min-width: auto;
+          }
+        }
+      }
+    }
+  }
+}

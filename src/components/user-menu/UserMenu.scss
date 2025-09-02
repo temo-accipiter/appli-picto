@@ -93,6 +93,11 @@
   &.danger:focus-visible {
     background: #fff5f5;
   }
+  &.admin:hover,
+  &.admin:focus-visible {
+    background: #fef3c7;
+    color: #92400e;
+  }
   .icon {
     width: 18px;
     height: 18px;

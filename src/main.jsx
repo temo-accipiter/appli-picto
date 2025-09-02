@@ -1,12 +1,17 @@
 // src/main.jsx
-import React, { Suspense } from 'react'
-import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { Layout, Loader, ProtectedRoute } from '@/components'
-import { ToastProvider, DisplayProvider, AuthProvider } from '@/contexts'
-import { supabase } from '@/utils'
+import {
+    AuthProvider,
+    DisplayProvider,
+    PermissionsProvider,
+    ToastProvider,
+} from '@/contexts'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
+import { supabase } from '@/utils'
+import React, { Suspense } from 'react'
+import ReactDOM from 'react-dom/client'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 // ⬇️ Pont consentement ↔ trackers (charge GA4 uniquement si analytics=true)
 import { setupConsentBridges } from '@/analytics'
@@ -31,7 +36,9 @@ if (typeof window !== 'undefined') {
       return getGA4ComplianceStatus()
     },
     testDocuments: async () => {
-      const { testDocumentPlaceholders } = await import('@/utils/testLegalConfig')
+      const { testDocumentPlaceholders } = await import(
+        '@/utils/testLegalConfig'
+      )
       const {
         MENTIONS_LEGALES_MD,
         CGU_MD,
@@ -43,15 +50,22 @@ if (typeof window !== 'undefined') {
         { name: 'Mentions légales', content: MENTIONS_LEGALES_MD },
         { name: 'CGU', content: CGU_MD },
         { name: 'CGV', content: CGV_MD },
-        { name: 'Politique de confidentialité', content: POLITIQUE_CONFIDENTIALITE_MD },
+        {
+          name: 'Politique de confidentialité',
+          content: POLITIQUE_CONFIDENTIALITE_MD,
+        },
         { name: 'Politique de cookies', content: POLITIQUE_COOKIES_MD },
       ]
-      return docs.map(d => ({ name: d.name, result: testDocumentPlaceholders(d.content, d.name) }))
+      return docs.map(d => ({
+        name: d.name,
+        result: testDocumentPlaceholders(d.content, d.name),
+      }))
     },
     help: () => {
       console.log(`
 🧪 FONCTIONS : testLegalCompliance.testConfig() / testRGPD() / checkGA4() / testDocuments()
-`)},
+`)
+    },
   }
   window.env = {
     GA4_ID: import.meta.env.VITE_GA4_ID,
@@ -59,11 +73,16 @@ if (typeof window !== 'undefined') {
     APP_ENV: import.meta.env.VITE_APP_ENV,
     APP_URL: import.meta.env.VITE_APP_URL,
   }
-  console.log('🧪 testLegalCompliance.help() • 🌍 env')
+  if (import.meta.env.DEV) {
+    console.log('🧪 testLegalCompliance.help() • 🌍 env')
+  }
 }
 
 // Redirections/cleanups auth
-if (typeof window !== 'undefined' && window.location.hash.includes('type=recovery')) {
+if (
+  typeof window !== 'undefined' &&
+  window.location.hash.includes('type=recovery')
+) {
   const hash = window.location.hash
   const redirectTo = '/reset-password' + hash
   window.history.replaceState({}, '', redirectTo)
@@ -82,23 +101,26 @@ if (
 
 // Pages lazy-loaded
 import {
-  Tableau,
-  Edition,
-  Login,
-  Signup,
-  Profil,
-  Abonnement,
-  Logs,
-  ResetPassword,
-  ForgotPassword,
-  NotFound,
-  MentionsLegales,
-  CGU,
-  CGV,
-  PolitiqueConfidentialite,
-  PolitiqueCookies,
-  Accessibilite,
-  PortailRGPD,
+    Abonnement,
+    Accessibilite,
+    AdminPermissions,
+    CGU,
+    CGV,
+    Edition,
+    ForgotPassword,
+    HomeRedirect,
+    Login,
+    Logs,
+    MentionsLegales,
+    NotFound,
+    PolitiqueConfidentialite,
+    PolitiqueCookies,
+    PortailRGPD,
+    Profil,
+    ResetPassword,
+    Signup,
+    Tableau,
+    TableauDemo,
 } from '@/pages'
 
 // ✅ Routes : on place aussi login/signup/forgot/reset SOUS Layout
@@ -107,8 +129,9 @@ const router = createBrowserRouter([
     path: '/',
     element: <Layout />, // Layout rend Footer + CookieBanner + CookiePreferences
     children: [
-      { index: true, element: <Navigate to="/tableau" replace /> },
+      { index: true, element: <HomeRedirect /> },
       { path: 'tableau', element: <Tableau /> },
+      { path: 'tableau-demo', element: <TableauDemo /> },
       {
         path: 'edition',
         element: (
@@ -117,21 +140,35 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      { path: 'profil', element: (
+      {
+        path: 'profil',
+        element: (
           <ProtectedRoute>
             <Profil />
           </ProtectedRoute>
         ),
       },
-      { path: 'abonnement', element: (
+      {
+        path: 'abonnement',
+        element: (
           <ProtectedRoute>
             <Abonnement />
           </ProtectedRoute>
         ),
       },
-      { path: 'admin/logs', element: (
+      {
+        path: 'admin/logs',
+        element: (
           <ProtectedRoute>
             <Logs />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'admin/permissions',
+        element: (
+          <ProtectedRoute>
+            <AdminPermissions />
           </ProtectedRoute>
         ),
       },
@@ -146,7 +183,10 @@ const router = createBrowserRouter([
       { path: 'mentions-legales', element: <MentionsLegales /> },
       { path: 'cgu', element: <CGU /> },
       { path: 'cgv', element: <CGV /> },
-      { path: 'politique-confidentialite', element: <PolitiqueConfidentialite /> },
+      {
+        path: 'politique-confidentialite',
+        element: <PolitiqueConfidentialite />,
+      },
       { path: 'politique-cookies', element: <PolitiqueCookies /> },
       { path: 'accessibilite', element: <Accessibilite /> },
       { path: 'rgpd', element: <PortailRGPD /> },
@@ -159,13 +199,15 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
-      <DisplayProvider>
-        <ToastProvider>
-          <Suspense fallback={<Loader />}>
-            <RouterProvider router={router} />
-          </Suspense>
-        </ToastProvider>
-      </DisplayProvider>
+      <PermissionsProvider>
+        <DisplayProvider>
+          <ToastProvider>
+            <Suspense fallback={<Loader />}>
+              <RouterProvider router={router} />
+            </Suspense>
+          </ToastProvider>
+        </DisplayProvider>
+      </PermissionsProvider>
     </AuthProvider>
   </React.StrictMode>
 )

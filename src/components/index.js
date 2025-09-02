@@ -20,11 +20,18 @@ export { default as ModalCategory } from './shared/modal/modal-category/ModalCat
 export { default as ModalConfirm } from './shared/modal/modal-confirm/ModalConfirm'
 export { default as Navbar } from './shared/navbar/Navbar'
 export { default as PageTransition } from './shared/page-transition/PageTransition'
+export { PermissionsDebug } from './shared/permissions-debug/PermissionsDebug'
+export { PermissionsTest } from './shared/permissions-test/PermissionsTest'
 export { default as ProtectedRoute } from './shared/protected-route/ProtectedRoute'
 export { default as Separator } from './shared/separator/Separator'
 export { default as SignedImage } from './shared/signed-image/SignedImage'
 export { default as ThemeToggle } from './shared/theme-toggle/ThemeToggle'
 
+export { SignupPromptModal } from './modals/SignupPromptModal'
+export {
+    FeatureGate,
+    PremiumFeatureGate
+} from './shared/feature-gate/FeatureGate'
 export { default as ModalRecompense } from './shared/modal/modal-recompense/ModalRecompense'
 
 export { default as Button } from './ui/button/Button'
