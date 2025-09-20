@@ -1,4 +1,5 @@
 export { default as HistoryTab } from './HistoryTab'
+export { default as LogsTab } from './LogsTab'
 export { default as PermissionsTab } from './PermissionsTab'
 export { default as PermissionsTable } from './PermissionsTable'
 export { getPermissionDescription } from './permissionUtils'

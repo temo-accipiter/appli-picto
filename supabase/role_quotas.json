@@ -1,0 +1,163 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "role_quotas"
+      },
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "role_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "quota_type",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "quota_limit",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "quota_period",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": "'monthly'::text"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "YES",
+          "default": "now()"
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": false
+      },
+      "policies": [
+        {
+          "policyname": "role_quotas_select_public",
+          "command": "SELECT",
+          "roles": [
+            "public"
+          ],
+          "using": "true",
+          "with_check": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_role_quotas_role_type",
+          "def": "CREATE INDEX idx_role_quotas_role_type ON public.role_quotas USING btree (role_id, quota_type)"
+        },
+        {
+          "name": "role_quotas_pkey",
+          "def": "CREATE UNIQUE INDEX role_quotas_pkey ON public.role_quotas USING btree (id)"
+        },
+        {
+          "name": "role_quotas_role_id_quota_type_quota_period_key",
+          "def": "CREATE UNIQUE INDEX role_quotas_role_id_quota_type_quota_period_key ON public.role_quotas USING btree (role_id, quota_type, quota_period)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "role_quotas_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "role_quotas_quota_period_check",
+          "type": "c",
+          "definition": "CHECK ((quota_period = ANY (ARRAY['monthly'::text, 'total'::text, 'daily'::text])))"
+        },
+        {
+          "name": "role_quotas_role_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "role_quotas_role_id_quota_type_quota_period_key",
+          "type": "u",
+          "definition": "UNIQUE (role_id, quota_type, quota_period)"
+        }
+      ],
+      "triggers": [],
+      "data_preview": [
+        {
+          "id": "d7868cc0-e3a3-42c0-a607-3e17908f4fd7",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "quota_type": "max_tasks",
+          "quota_limit": 5,
+          "quota_period": "total",
+          "created_at": "2025-09-11T21:31:22.665449+00:00",
+          "updated_at": "2025-09-11T21:31:22.665449+00:00"
+        },
+        {
+          "id": "dd803cf5-bf85-406f-a98b-42d3b7bc6dc5",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "quota_type": "max_rewards",
+          "quota_limit": 2,
+          "quota_period": "total",
+          "created_at": "2025-09-11T21:31:22.665449+00:00",
+          "updated_at": "2025-09-11T21:31:22.665449+00:00"
+        },
+        {
+          "id": "01afd4f5-688d-4d1a-9d74-e18c4a1b4491",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "quota_type": "monthly_tasks",
+          "quota_limit": 5,
+          "quota_period": "monthly",
+          "created_at": "2025-09-11T21:31:22.665449+00:00",
+          "updated_at": "2025-09-11T21:31:22.665449+00:00"
+        },
+        {
+          "id": "48773754-3d1f-40db-a6e2-bbdc669e10ab",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "quota_type": "monthly_rewards",
+          "quota_limit": 2,
+          "quota_period": "monthly",
+          "created_at": "2025-09-11T21:31:22.665449+00:00",
+          "updated_at": "2025-09-11T21:31:22.665449+00:00"
+        },
+        {
+          "id": "71bd6c14-4efb-44b1-9001-86343e88da4e",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "quota_type": "max_categories",
+          "quota_limit": 2,
+          "quota_period": "total",
+          "created_at": "2025-09-18T12:53:45.591712+00:00",
+          "updated_at": "2025-09-19T19:49:18.743003+00:00"
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

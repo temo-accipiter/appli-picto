@@ -1,6 +1,7 @@
-import { createContext, useState, useEffect } from 'react'
+import { saveUserTimezoneOnce } from '@/services/saveUserTimezone'
 import { supabase } from '@/utils'
 import PropTypes from 'prop-types'
+import { createContext, useEffect, useState } from 'react'
 
 export const AuthContext = createContext()
 
@@ -22,6 +23,11 @@ export const AuthProvider = ({ children }) => {
       async (_event, session) => {
         const currentUser = session?.user ?? null
         setUser(currentUser)
+        
+        // Sauvegarder le timezone de l'utilisateur quand il se connecte
+        if (currentUser) {
+          await saveUserTimezoneOnce()
+        }
       }
     )
 

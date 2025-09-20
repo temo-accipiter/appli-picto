@@ -1,7 +1,7 @@
+import { isAbortLike, withAbortSafe } from '@/hooks'
 import * as permissionsAPI from '@/utils/permissions-api'
 import { useCallback, useEffect, useState } from 'react'
 import useAuth from './useAuth'
-import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // Log "safe" (évite les soucis d’inspection Safari)
 const formatErr = (e) => {
@@ -49,7 +49,6 @@ export const usePermissionsAPI = () => {
    * Charge tous les rôles
    */
   const loadRoles = useCallback(async () => {
-    if (import.meta.env.DEV) console.log('🔄 Chargement des rôles…')
     setLoading(prev => ({ ...prev, roles: true }))
     setErrors(prev => ({ ...prev, roles: null }))
     try {
@@ -57,11 +56,12 @@ export const usePermissionsAPI = () => {
       const { data, error, aborted } = await withAbortSafe(permissionsAPI.getRoles())
       if (aborted || (error && isAbortLike(error))) return
       if (error) throw error
-      if (import.meta.env.DEV) console.log('✅ Rôles chargés:', data?.length || 0)
       setRoles(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error(`❌ Erreur lors du chargement des rôles: ${formatErr(error)}`)
       setErrors(prev => ({ ...prev, roles: String(error?.message ?? error) }))
+      // En cas d'erreur, initialiser avec un tableau vide pour éviter les blocages
+      setRoles([])
     } finally {
       setLoading(prev => ({ ...prev, roles: false }))
     }
@@ -71,18 +71,18 @@ export const usePermissionsAPI = () => {
    * Charge toutes les fonctionnalités
    */
   const loadFeatures = useCallback(async () => {
-    if (import.meta.env.DEV) console.log('🔄 Chargement des fonctionnalités…')
     setLoading(prev => ({ ...prev, features: true }))
     setErrors(prev => ({ ...prev, features: null }))
     try {
       const { data, error, aborted } = await withAbortSafe(permissionsAPI.getFeatures())
       if (aborted || (error && isAbortLike(error))) return
       if (error) throw error
-      if (import.meta.env.DEV) console.log('✅ Fonctionnalités chargées:', data?.length || 0)
       setFeatures(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error(`❌ Erreur lors du chargement des fonctionnalités: ${formatErr(error)}`)
       setErrors(prev => ({ ...prev, features: String(error?.message ?? error) }))
+      // En cas d'erreur, initialiser avec un tableau vide pour éviter les blocages
+      setFeatures([])
     } finally {
       setLoading(prev => ({ ...prev, features: false }))
     }
@@ -92,18 +92,18 @@ export const usePermissionsAPI = () => {
    * Charge toutes les permissions
    */
   const loadPermissions = useCallback(async () => {
-    if (import.meta.env.DEV) console.log('🔄 Chargement des permissions…')
     setLoading(prev => ({ ...prev, permissions: true }))
     setErrors(prev => ({ ...prev, permissions: null }))
     try {
       const { data, error, aborted } = await withAbortSafe(permissionsAPI.getAllPermissions())
       if (aborted || (error && isAbortLike(error))) return
       if (error) throw error
-      if (import.meta.env.DEV) console.log('✅ Permissions chargées:', data?.length || 0)
       setPermissions(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error(`❌ Erreur lors du chargement des permissions: ${formatErr(error)}`)
       setErrors(prev => ({ ...prev, permissions: String(error?.message ?? error) }))
+      // En cas d'erreur, initialiser avec un tableau vide pour éviter les blocages
+      setPermissions([])
     } finally {
       setLoading(prev => ({ ...prev, permissions: false }))
     }

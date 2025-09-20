@@ -1,5 +1,5 @@
 // src/components/selectedRewardFloating/SelectedRewardFloating.jsx
-import { EditionCard, SignedImage } from '@/components'
+import { DemoSignedImage, EditionCard, SignedImage } from '@/components'
 import './SelectedRewardFloating.scss'
 
 import PropTypes from 'prop-types'
@@ -11,12 +11,20 @@ export default function SelectedRewardFloating({ reward }) {
     <div className="selected-reward-floating" aria-hidden="true">
       <EditionCard
         imageComponent={
-          <SignedImage
-            filePath={reward.imagepath}
-            bucket="images"
-            alt={reward.label}
-            className="img-size-xs"
-          />
+          reward.isDemo ? (
+            <DemoSignedImage
+              filePath={reward.imagepath}
+              alt={reward.label}
+              className="img-size-xs"
+            />
+          ) : (
+            <SignedImage
+              filePath={reward.imagepath}
+              bucket="images"
+              alt={reward.label}
+              className="img-size-xs"
+            />
+          )
         }
         label={reward.label}
         labelId={reward.id}

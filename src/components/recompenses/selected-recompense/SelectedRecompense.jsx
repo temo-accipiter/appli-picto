@@ -6,6 +6,7 @@
  *   • Permet de confirmer la sélection en cliquant lorsque déverrouillée.
  */
 
+import { SignedImage } from '@/components'
 import PropTypes from 'prop-types'
 import './SelectedRecompense.scss'
 
@@ -25,11 +26,12 @@ export default function SelectedRecompense({
       onClick={() => isUnlocked && onSelect(recompense.id)}
     >
       <span className="label">{recompense.label}</span>
-      {recompense.imagePath && (
-        <img
-          className="icon"
-          src={`http://localhost:3001${recompense.imagePath}`}
+      {recompense.imagepath && (
+        <SignedImage
+          filePath={recompense.imagepath}
+          bucket="images"
           alt={recompense.label}
+          size={40}
         />
       )}
     </div>
@@ -38,10 +40,10 @@ export default function SelectedRecompense({
 
 SelectedRecompense.propTypes = {
   recompense: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
-    imagePath: PropTypes.string,
-    selected: PropTypes.number,
+    imagepath: PropTypes.string,
+    selected: PropTypes.bool,
   }),
   done: PropTypes.number.isRequired,
   total: PropTypes.number.isRequired,

@@ -1,17 +1,17 @@
-import PropTypes from 'prop-types'
-import { useState } from 'react'
 import {
-  Button,
-  ModalConfirm,
-  ModalAjout,
-  ModalCategory,
-  Select,
-  Checkbox,
-  EditionCard,
-  EditionList,
-  SignedImage,
+    Button,
+    Checkbox,
+    EditionCard,
+    EditionList,
+    ModalAjout,
+    ModalCategory,
+    ModalConfirm,
+    Select,
+    SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
+import PropTypes from 'prop-types'
+import { useState } from 'react'
 import './TachesEdition.scss'
 
 export default function ChecklistTachesEdition({
@@ -29,6 +29,7 @@ export default function ChecklistTachesEdition({
   onChangeFilterCategory,
   filterDone,
   onChangeFilterDone,
+  onShowQuotaModal,
 }) {
   const [errors, setErrors] = useState({})
   const [drafts, setDrafts] = useState({})
@@ -139,7 +140,16 @@ export default function ChecklistTachesEdition({
       >
         <Button
           label="➕ Ajouter une tâche"
-          onClick={() => setModalTacheOpen(true)}
+          onClick={async () => {
+            if (onShowQuotaModal) {
+              const canOpen = await onShowQuotaModal('task')
+              if (canOpen) {
+                setModalTacheOpen(true)
+              }
+            } else {
+              setModalTacheOpen(true)
+            }
+          }}
         />
         <Button
           label="⚙️ Gérer catégories"
@@ -230,4 +240,5 @@ ChecklistTachesEdition.propTypes = {
   onChangeFilterCategory: PropTypes.func.isRequired,
   filterDone: PropTypes.bool.isRequired,
   onChangeFilterDone: PropTypes.func.isRequired,
+  onShowQuotaModal: PropTypes.func,
 }

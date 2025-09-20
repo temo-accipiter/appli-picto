@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react'
+import { isAbortLike, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function useParametres(reload = 0) {
   const [parametres, setParametres] = useState(null)
@@ -87,11 +87,39 @@ export default function useParametres(reload = 0) {
     fetchParametres()
   }, [reload, fetchParametres])
 
+  // Fonction pour mettre à jour les paramètres
+  const updateParametres = useCallback(async (updates) => {
+    if (!parametres) {
+      // Si pas de paramètres, créer avec les valeurs par défaut
+      const defaults = { confettis: true, ...updates }
+      return await insertDefaults(defaults)
+    }
+
+    const payload = { ...parametres, ...updates }
+
+    const { error, aborted } = await withAbortSafe(
+      supabase.from('parametres').upsert(payload, { onConflict: 'id' })
+    )
+
+    if (aborted || (error && isAbortLike(error))) return { ok: false, error: null }
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error('Erreur mise à jour paramètres :', String(error?.message ?? error))
+      }
+      return { ok: false, error }
+    }
+
+    // Mettre à jour l'état local
+    setParametres(payload)
+    return { ok: true, error: null }
+  }, [parametres, insertDefaults])
+
   return {
     parametres,
     error,
     loading,
     refresh: fetchParametres,
     insertDefaults,
+    updateParametres,
   }
 }

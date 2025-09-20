@@ -1,0 +1,103 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "user_prefs"
+      },
+      "columns": [
+        {
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "timezone",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": "'Europe/Paris'::text"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": false
+      },
+      "policies": [
+        {
+          "policyname": "user_prefs_select_self",
+          "command": "SELECT",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(auth.uid() = user_id)",
+          "with_check": null
+        },
+        {
+          "policyname": "user_prefs_update_self",
+          "command": "UPDATE",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(auth.uid() = user_id)",
+          "with_check": "(auth.uid() = user_id)"
+        },
+        {
+          "policyname": "user_prefs_upsert_self",
+          "command": "INSERT",
+          "roles": [
+            "authenticated"
+          ],
+          "using": null,
+          "with_check": "(auth.uid() = user_id)"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_user_prefs_tz",
+          "def": "CREATE INDEX idx_user_prefs_tz ON public.user_prefs USING btree (timezone)"
+        },
+        {
+          "name": "user_prefs_pkey",
+          "def": "CREATE UNIQUE INDEX user_prefs_pkey ON public.user_prefs USING btree (user_id)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "user_prefs_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (user_id)"
+        },
+        {
+          "name": "user_prefs_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        }
+      ],
+      "triggers": [],
+      "data_preview": [
+        {
+          "user_id": "67c8ac92-dbe9-4c0e-b7cd-11ea8f076c6f",
+          "timezone": "Europe/Paris",
+          "updated_at": "2025-09-20T12:40:17.038+00:00"
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

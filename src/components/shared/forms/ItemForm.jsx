@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import { InputWithValidation, Select, Button, ImagePreview } from '@/components'
+import { Button, ImagePreview, InputWithValidation, Select } from '@/components'
 import {
-  validateNotEmpty,
-  noEdgeSpaces,
-  noDoubleSpaces,
-  validateImagePresence,
-  validateImageType,
-  compressImageIfNeeded,
-  compressionErrorMessage,
+    compressImageIfNeeded,
+    compressionErrorMessage,
+    noDoubleSpaces,
+    noEdgeSpaces,
+    validateImageHeader,
+    validateImagePresence,
+    validateImageType,
+    validateNotEmpty,
 } from '@/utils'
+import PropTypes from 'prop-types'
+import { useEffect, useRef, useState } from 'react'
 import './ItemForm.scss'
 
 export default function ItemForm({
@@ -40,6 +41,7 @@ export default function ItemForm({
       return
     }
 
+    // 🛡️ Validation du type de fichier
     const typeError = validateImageType(file)
     if (typeError) {
       setImage(null)
@@ -48,20 +50,31 @@ export default function ItemForm({
       return
     }
 
+    // 🛡️ Validation sécurisée de l'en-tête (protection contre les faux fichiers)
+    const headerError = await validateImageHeader(file)
+    if (headerError) {
+      setImage(null)
+      setPreviewUrl(null)
+      setImageError(headerError)
+      return
+    }
+
+    // 🎯 Compression et optimisation automatique (50 Ko max, 256x256px, PNG)
     const compressed = await compressImageIfNeeded(file)
-    if (!compressed || compressed.size > 2 * 1024 * 1024) {
+    if (!compressed) {
       setImage(null)
       setPreviewUrl(null)
       setImageError(compressionErrorMessage)
       return
     }
 
-    const ext = file.type.split('/')[1] || 'png'
+    // Le fichier compressé peut être JPEG ou PNG selon l'optimisation
     const timestamp = Date.now()
-    const cleanName = `tache_${timestamp}.${ext}`
+    const extension = compressed.type === 'image/jpeg' ? 'jpg' : 'png'
+    const cleanName = `tache_${timestamp}.${extension}`
 
     const finalFile = new File([compressed], cleanName, {
-      type: compressed.type,
+      type: compressed.type, // 'image/jpeg' ou 'image/png'
       lastModified: compressed.lastModified,
     })
 

@@ -1,12 +1,7 @@
-import { useRef, useState } from 'react'
-import PropTypes from 'prop-types'
-import { supabase } from '@/utils'
-import {
-  compressImageIfNeeded,
-  validateImageType,
-  compressionErrorMessage,
-} from '@/utils'
 import { Button, ButtonDelete, SignedImage } from '@/components'
+import { compressImageIfNeeded, compressionErrorMessage, supabase, validateImageHeader, validateImageType } from '@/utils'
+import PropTypes from 'prop-types'
+import { useRef, useState } from 'react'
 import './AvatarProfil.scss'
 
 export default function AvatarProfil({
@@ -22,19 +17,28 @@ export default function AvatarProfil({
     const file = e.target.files?.[0]
     if (!file) return
 
+    // 🛡️ Validation du type de fichier
     const typeError = validateImageType(file)
     if (typeError) {
       setImageError(typeError)
       return
     }
 
+    // 🛡️ Validation sécurisée de l'en-tête
+    const headerError = await validateImageHeader(file)
+    if (headerError) {
+      setImageError(headerError)
+      return
+    }
+
+    // 🎯 Compression et optimisation automatique (50 Ko max, 256x256px, PNG)
     const compressed = await compressImageIfNeeded(file)
-    if (!compressed || compressed.size > 2 * 1024 * 1024) {
+    if (!compressed) {
       setImageError(compressionErrorMessage)
       return
     }
 
-    const ext = file.type.split('/')[1] || 'png'
+    // Le fichier compressé peut être JPEG ou PNG selon l'optimisation
     const timestamp = Date.now()
 
     const {
@@ -42,7 +46,8 @@ export default function AvatarProfil({
     } = await supabase.auth.getUser()
     const userId = user?.id || 'anonymous'
 
-    const cleanName = `avatar_${userId}_${timestamp}.${ext}`
+    const extension = compressed.type === 'image/jpeg' ? 'jpg' : 'png'
+    const cleanName = `avatar_${userId}_${timestamp}.${extension}`
 
     const finalFile = new File([compressed], cleanName, {
       type: compressed.type,

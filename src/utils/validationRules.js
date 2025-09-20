@@ -20,7 +20,7 @@ export const normalizeSpaces = s => (s ?? '').replace(/\s{2,}/g, ' ').trim()
 
 // --- Validation images (inchangé) ---
 export const validateImagePresence = file =>
-  !file ? 'Choisis une image (PNG, JPEG, JPG, SVG, WEBP ≤ 2 Mo)' : ''
+  !file ? 'Choisis une image (PNG, JPEG, JPG, SVG, WEBP ≤ 50 Ko)' : ''
 
 export const validateImageType = file =>
   file &&
@@ -31,11 +31,44 @@ export const validateImageType = file =>
     'image/webp',
     'image/svg+xml',
   ].includes(file.type)
-    ? 'Format non supporté.\nChoisis une image (PNG, JPG, SVG, WEBP ≤ 2 Mo)'
+    ? 'Format non supporté.\nChoisis une image (PNG, JPG, SVG, WEBP ≤ 50 Ko)'
     : ''
 
+// 🛡️ Validation sécurisée de l'en-tête du fichier (protection contre les faux fichiers)
+export const validateImageHeader = async (file) => {
+  if (!file) return ''
+  
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const arr = new Uint8Array(e.target.result)
+      let header = ''
+      for (let i = 0; i < Math.min(4, arr.length); i++) {
+        header += arr[i].toString(16).padStart(2, '0')
+      }
+      
+      // Vérification des signatures de fichiers (magic bytes)
+      const validHeaders = {
+        '89504e47': 'PNG',
+        'ffd8ffe0': 'JPEG',
+        'ffd8ffe1': 'JPEG',
+        'ffd8ffe2': 'JPEG',
+        'ffd8ffe3': 'JPEG',
+        '52494646': 'WEBP', // RIFF (début WEBP)
+        '3c3f786d': 'SVG',  // <?xml
+        '3c737667': 'SVG'   // <svg
+      }
+      
+      const isValid = Object.keys(validHeaders).some(h => header.startsWith(h))
+      resolve(isValid ? '' : 'Fichier image corrompu ou invalide.')
+    }
+    reader.onerror = () => resolve('Erreur lors de la lecture du fichier.')
+    reader.readAsArrayBuffer(file.slice(0, 4))
+  })
+}
+
 export const compressionErrorMessage =
-  'Image trop lourde même après compression (max 2 Mo).'
+  'Impossible de compresser cette image sous 50 Ko.\nEssayez une image plus simple ou de meilleure qualité.'
 
 // --- Email ---
 export const validateEmail = (email = '') => {
@@ -73,50 +106,95 @@ export const makeMatchRule =
   value =>
     value === getOther() ? '' : message
 
-// ✅ Compression automatique si image > 500 Ko (inchangé)
-export const compressImageIfNeeded = async (file, maxSizeKo = 100) => {
+// ✅ Compression progressive pour pictos (50 Ko max, dimensions adaptatives)
+export const compressImageIfNeeded = async (file, maxSizeKo = 50) => {
   if (!file || file.type === 'image/svg+xml' || file.size <= maxSizeKo * 1024) {
     return file
   }
+
   return new Promise(resolve => {
     const img = new Image()
-    const canvas = document.createElement('canvas')
     const reader = new FileReader()
     reader.onload = e => {
       img.src = e.target.result
     }
+    
     img.onload = () => {
-      const maxWidth = 512,
-        maxHeight = 512
-      let { width, height } = img
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height)
-        width = Math.round(width * ratio)
-        height = Math.round(height * ratio)
+      // 🔄 Stratégie de compression progressive
+      const compressionStrategies = [
+        // Étape 1: Dimensions normales, qualité élevée
+        { maxWidth: 256, maxHeight: 256, quality: 0.9, useJPEG: true },
+        // Étape 2: Dimensions normales, qualité moyenne
+        { maxWidth: 256, maxHeight: 256, quality: 0.7, useJPEG: true },
+        // Étape 3: Dimensions normales, qualité basse
+        { maxWidth: 256, maxHeight: 256, quality: 0.5, useJPEG: true },
+        // Étape 4: Dimensions réduites, qualité moyenne
+        { maxWidth: 192, maxHeight: 192, quality: 0.7, useJPEG: true },
+        // Étape 5: Dimensions réduites, qualité basse
+        { maxWidth: 192, maxHeight: 192, quality: 0.5, useJPEG: true },
+        // Étape 6: Très petites dimensions, qualité basse
+        { maxWidth: 128, maxHeight: 128, quality: 0.4, useJPEG: true },
+        // Étape 7: PNG en dernier recours (plus gros mais meilleure qualité)
+        { maxWidth: 128, maxHeight: 128, quality: 1, useJPEG: false }
+      ]
+
+      const tryCompression = async (strategyIndex = 0) => {
+        if (strategyIndex >= compressionStrategies.length) {
+          // Toutes les stratégies épuisées, on rejette
+          resolve(null)
+          return
+        }
+
+        const strategy = compressionStrategies[strategyIndex]
+        const canvas = document.createElement('canvas')
+        
+        // Calcul des dimensions avec la stratégie actuelle
+        let { width, height } = img
+        if (width > strategy.maxWidth || height > strategy.maxHeight) {
+          const ratio = Math.min(strategy.maxWidth / width, strategy.maxHeight / height)
+          width = Math.round(width * ratio)
+          height = Math.round(height * ratio)
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        
+        // 🛡️ Sécurité CNIL : Suppression automatique des métadonnées
+        ctx.clearRect(0, 0, width, height)
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Format et qualité selon la stratégie
+        const outputType = strategy.useJPEG ? 'image/jpeg' : 'image/png'
+        const quality = strategy.useJPEG ? strategy.quality : 1
+
+        canvas.toBlob(
+          blob => {
+            const extension = strategy.useJPEG ? 'jpg' : 'png'
+            const fileName = file.name.replace(/\.\w+$/, `.${extension}`)
+            const compressedFile = new File([blob], fileName, {
+              type: outputType,
+              lastModified: Date.now(),
+            })
+
+            // ✅ Vérifier si on a atteint la taille cible
+            if (compressedFile.size <= maxSizeKo * 1024) {
+              // 🎉 Succès ! On retourne le fichier compressé
+              resolve(compressedFile)
+            } else {
+              // 🔄 Pas encore assez petit, essayer la stratégie suivante
+              tryCompression(strategyIndex + 1)
+            }
+          },
+          outputType,
+          quality
+        )
       }
-      canvas.width = width
-      canvas.height = height
-      const ctx = canvas.getContext('2d')
-      ctx.clearRect(0, 0, width, height)
-      ctx.drawImage(img, 0, 0, width, height)
-      const hasAlpha = file.type === 'image/png' || file.type === 'image/webp'
-      const outputType = hasAlpha ? 'image/png' : 'image/jpeg'
-      const quality = outputType === 'image/jpeg' ? 0.6 : 1
-      canvas.toBlob(
-        blob => {
-          const extension = outputType === 'image/png' ? 'png' : 'jpg'
-          const fileName = file.name.replace(/\.\w+$/, `.${extension}`)
-          const compressedFile = new File([blob], fileName, {
-            type: outputType,
-            lastModified: Date.now(),
-          })
-          if (compressedFile.size > 2 * 1024 * 1024) resolve(null)
-          else resolve(compressedFile)
-        },
-        outputType,
-        quality
-      )
+
+      // Démarrer la compression progressive
+      tryCompression(0)
     }
+    
     reader.readAsDataURL(file)
   })
 }

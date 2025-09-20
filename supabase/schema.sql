@@ -48,9 +48,9 @@ ALTER SCHEMA storage OWNER TO supabase_admin;
 
 CREATE TYPE public.transport_type AS ENUM (
     'metro',
+    'bus',
     'tram',
-    'rer',
-    'bus'
+    'rer'
 );
 
 
@@ -69,38 +69,563 @@ CREATE TYPE storage.buckettype AS ENUM (
 ALTER TYPE storage.buckettype OWNER TO supabase_storage_admin;
 
 --
+-- Name: change_account_status(uuid, text, uuid, text, jsonb); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid DEFAULT NULL::uuid, reason text DEFAULT NULL::text, metadata jsonb DEFAULT NULL::jsonb) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    old_status text;
+    old_role text;
+    new_role text;
+BEGIN
+    -- Récupérer l'état actuel
+    SELECT p.account_status, r.name INTO old_status, old_role
+    FROM public.profiles p
+    LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
+    LEFT JOIN public.roles r ON r.id = ur.role_id
+    WHERE p.id = target_user_id;
+    
+    -- Mettre à jour l'état
+    UPDATE public.profiles 
+    SET account_status = new_status,
+        deletion_scheduled_at = CASE 
+            WHEN new_status = 'deletion_scheduled' THEN now() + interval '30 days'
+            ELSE NULL
+        END
+    WHERE id = target_user_id;
+    
+    -- Déterminer le nouveau rôle basé sur l'état
+    IF new_status = 'active' THEN
+        -- Rôle basé sur l'abonnement
+        SELECT CASE 
+            WHEN EXISTS (
+                SELECT 1 FROM public.abonnements 
+                WHERE user_id = target_user_id 
+                AND status IN ('active', 'trialing', 'past_due')
+            ) THEN 'abonne'
+            ELSE 'free'
+        END INTO new_role;
+    ELSIF new_status = 'suspended' THEN
+        new_role := 'visitor';
+    ELSIF new_status = 'deletion_scheduled' THEN
+        new_role := 'visitor';
+    ELSIF new_status = 'pending_verification' THEN
+        new_role := 'visitor';
+    END IF;
+    
+    -- Mettre à jour le rôle si nécessaire
+    IF new_role IS NOT NULL AND new_role != old_role THEN
+        -- Désactiver tous les rôles actuels
+        UPDATE public.user_roles 
+        SET is_active = false 
+        WHERE user_id = target_user_id;
+        
+        -- Ajouter le nouveau rôle
+        INSERT INTO public.user_roles (user_id, role_id, assigned_by)
+        SELECT target_user_id, r.id, changed_by_user_id
+        FROM public.roles r
+        WHERE r.name = new_role;
+    END IF;
+    
+    -- Logger le changement
+    INSERT INTO public.account_audit_logs (
+        user_id, action, old_status, new_status, 
+        old_role, new_role, changed_by, reason, metadata
+    ) VALUES (
+        target_user_id, 'status_change', old_status, new_status,
+        old_role, new_role, changed_by_user_id, reason, metadata
+    );
+    
+    RETURN true;
+END;
+$$;
+
+
+ALTER FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) OWNER TO postgres;
+
+--
+-- Name: check_user_quota(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text DEFAULT 'monthly'::text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    user_role text;
+    quota_limit integer;
+    current_usage integer;
+BEGIN
+    -- Récupérer le rôle de l'utilisateur
+    SELECT r.name INTO user_role
+    FROM public.user_roles ur
+    JOIN public.roles r ON r.id = ur.role_id
+    WHERE ur.user_id = user_uuid AND ur.is_active = true
+    LIMIT 1;
+    
+    -- Si pas de rôle ou admin, pas de limite
+    IF user_role IS NULL OR user_role = 'admin' THEN
+        RETURN true;
+    END IF;
+    
+    -- Récupérer la limite de quota
+    SELECT rq.quota_limit INTO quota_limit
+    FROM public.role_quotas rq
+    JOIN public.roles r ON r.id = rq.role_id
+    WHERE r.name = user_role 
+    AND rq.quota_type = quota_type 
+    AND rq.quota_period = quota_period;
+    
+    -- Si pas de quota défini, autoriser
+    IF quota_limit IS NULL THEN
+        RETURN true;
+    END IF;
+    
+    -- Calculer l'usage actuel
+    IF quota_period = 'total' THEN
+        -- Usage total
+        IF quota_type = 'max_tasks' THEN
+            SELECT COUNT(*) INTO current_usage
+            FROM public.taches 
+            WHERE user_id = user_uuid;
+        ELSIF quota_type = 'max_rewards' THEN
+            SELECT COUNT(*) INTO current_usage
+            FROM public.recompenses 
+            WHERE user_id = user_uuid;
+        END IF;
+    ELSIF quota_period = 'monthly' THEN
+        -- Usage mensuel
+        IF quota_type = 'monthly_tasks' THEN
+            SELECT COUNT(*) INTO current_usage
+            FROM public.taches 
+            WHERE user_id = user_uuid 
+            AND created_at >= date_trunc('month', CURRENT_DATE);
+        ELSIF quota_type = 'monthly_rewards' THEN
+            SELECT COUNT(*) INTO current_usage
+            FROM public.recompenses 
+            WHERE user_id = user_uuid 
+            AND created_at >= date_trunc('month', CURRENT_DATE);
+        END IF;
+    END IF;
+    
+    -- Vérifier si la limite est respectée
+    RETURN current_usage < quota_limit;
+END;
+$$;
+
+
+ALTER FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) OWNER TO postgres;
+
+--
+-- Name: check_user_quota_free_only(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) RETURNS boolean
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_is_free boolean;
+  v_limite int;
+  v_count int;
+  v_start timestamptz;
+  v_end   timestamptz;
+begin
+  if p_user_id is null then
+    return false;
+  end if;
+
+  -- rôle FREE actif ?
+  select exists (
+    select 1
+    from user_roles ur
+    join roles r on r.id = ur.role_id
+    where ur.user_id = p_user_id
+      and ur.is_active = true
+      and r.name = 'free'
+  ) into v_is_free;
+
+  if not v_is_free then
+    return true; -- on ne bloque que FREE ici
+  end if;
+
+  -- Limite configurée
+  select rq.quota_limit
+  into v_limite
+  from role_quotas rq
+  join roles r on r.id = rq.role_id
+  where r.name = 'free'
+    and rq.quota_type = p_quota_type
+    and rq.quota_period = case when p_period='monthly' then 'monthly' else 'total' end
+  limit 1;
+
+  if v_limite is null then
+    return true; -- pas de limite => permissif
+  end if;
+
+  if p_period = 'monthly' then
+    select start_utc, end_utc into v_start, v_end from get_user_month_bounds_utc(p_user_id);
+
+    if p_quota_type = 'task' then
+      select count(*) into v_count
+      from taches
+      where user_id = p_user_id
+        and created_at >= v_start
+        and created_at <  v_end;
+
+    elsif p_quota_type = 'reward' then
+      -- mensuel désactivé par défaut (ajoute la ligne role_quotas si tu veux l'activer)
+      select count(*) into v_count
+      from recompenses
+      where user_id = p_user_id
+        and created_at >= v_start
+        and created_at <  v_end;
+
+    elsif p_quota_type = 'category' then
+      select count(*) into v_count
+      from categories
+      where user_id = p_user_id
+        and created_at >= v_start
+        and created_at <  v_end;
+
+    else
+      return true;
+    end if;
+
+  else
+    -- total "en stock"
+    if p_quota_type = 'task' then
+      select count(*) into v_count from taches where user_id = p_user_id;
+    elsif p_quota_type = 'reward' then
+      select count(*) into v_count from recompenses where user_id = p_user_id;
+    elsif p_quota_type = 'category' then
+      select count(*) into v_count from categories where user_id = p_user_id;
+    else
+      return true;
+    end if;
+  end if;
+
+  return v_count < v_limite;
+end;
+$$;
+
+
+ALTER FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) OWNER TO postgres;
+
+--
+-- Name: cleanup_old_audit_logs(integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.cleanup_old_audit_logs(retention_days integer DEFAULT 365) RETURNS integer
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    deleted_count integer;
+BEGIN
+    DELETE FROM public.account_audit_logs 
+    WHERE created_at < (now() - make_interval(days => retention_days));
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    RETURN deleted_count;
+END;
+$$;
+
+
+ALTER FUNCTION public.cleanup_old_audit_logs(retention_days integer) OWNER TO postgres;
+
+--
 -- Name: email_exists(text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.email_exists(email_to_check text) RETURNS boolean
-    LANGUAGE sql SECURITY DEFINER
-    SET search_path TO 'public'
+    LANGUAGE plpgsql SECURITY DEFINER
     AS $$
-  select exists (
-    select 1 from auth.users
-    where lower(email) = lower(email_to_check)
-  );
+BEGIN
+    -- Vérifier si l'email existe dans la table auth.users
+    RETURN EXISTS (
+        SELECT 1 
+        FROM auth.users 
+        WHERE email = email_to_check
+    );
+END;
 $$;
 
 
 ALTER FUNCTION public.email_exists(email_to_check text) OWNER TO postgres;
 
 --
+-- Name: get_account_history(uuid, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_account_history(user_uuid uuid, limit_count integer DEFAULT 50) RETURNS TABLE(id uuid, action text, old_status text, new_status text, old_role text, new_role text, reason text, changed_by_pseudo text, created_at timestamp with time zone)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        aal.id,
+        aal.action,
+        aal.old_status,
+        aal.new_status,
+        aal.old_role,
+        aal.new_role,
+        aal.reason,
+        p.pseudo as changed_by_pseudo,
+        aal.created_at
+    FROM public.account_audit_logs aal
+    LEFT JOIN public.profiles p ON p.id = aal.changed_by
+    WHERE aal.user_id = user_uuid
+    ORDER BY aal.created_at DESC
+    LIMIT limit_count;
+$$;
+
+
+ALTER FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) OWNER TO postgres;
+
+--
+-- Name: get_account_status(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_account_status(user_uuid uuid) RETURNS TABLE(user_id uuid, account_status text, role_name text, is_suspended boolean, is_pending_verification boolean, is_scheduled_for_deletion boolean, deletion_date timestamp with time zone)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        p.id as user_id,
+        p.account_status,
+        r.name as role_name,
+        (p.account_status = 'suspended') as is_suspended,
+        (p.account_status = 'pending_verification') as is_pending_verification,
+        (p.account_status = 'deletion_scheduled') as is_scheduled_for_deletion,
+        p.deletion_scheduled_at as deletion_date
+    FROM public.profiles p
+    LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
+    LEFT JOIN public.roles r ON r.id = ur.role_id
+    WHERE p.id = user_uuid;
+$$;
+
+
+ALTER FUNCTION public.get_account_status(user_uuid uuid) OWNER TO postgres;
+
+--
+-- Name: get_confettis(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_confettis() RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'pg_catalog', 'public'
+    AS $$
+  select confettis from public.parametres where id = 1
+$$;
+
+
+ALTER FUNCTION public.get_confettis() OWNER TO postgres;
+
+--
+-- Name: FUNCTION get_confettis(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.get_confettis() IS 'Lecture simple du paramètre confettis (singleton id=1).';
+
+
+--
+-- Name: get_demo_cards(text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_demo_cards(card_type_filter text DEFAULT NULL::text) RETURNS TABLE(id uuid, card_type text, label text, imagepath text, "position" integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        dc.id,
+        dc.card_type,
+        dc.label,
+        dc.imagepath,
+        dc."position"
+    FROM public.demo_cards dc
+    WHERE dc.is_active = true
+    AND (card_type_filter IS NULL OR dc.card_type = card_type_filter)
+    ORDER BY dc."position", dc.created_at;
+$$;
+
+
+ALTER FUNCTION public.get_demo_cards(card_type_filter text) OWNER TO postgres;
+
+--
+-- Name: get_demo_rewards(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_demo_rewards() RETURNS TABLE(id uuid, label text, imagepath text, "position" integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        dc.id,
+        dc.label,
+        dc.imagepath,
+        dc."position"
+    FROM public.demo_cards dc
+    WHERE dc.is_active = true
+    AND dc.card_type = 'reward'
+    ORDER BY dc."position", dc.created_at;
+$$;
+
+
+ALTER FUNCTION public.get_demo_rewards() OWNER TO postgres;
+
+--
+-- Name: get_demo_tasks(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_demo_tasks() RETURNS TABLE(id uuid, label text, imagepath text, "position" integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        dc.id,
+        dc.label,
+        dc.imagepath,
+        dc."position"
+    FROM public.demo_cards dc
+    WHERE dc.is_active = true
+    AND dc.card_type = 'task'
+    ORDER BY dc."position", dc.created_at;
+$$;
+
+
+ALTER FUNCTION public.get_demo_tasks() OWNER TO postgres;
+
+--
+-- Name: get_migration_report(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_migration_report() RETURNS TABLE(total_users integer, active_users integer, suspended_users integer, pending_users integer, deletion_scheduled_users integer, admin_users integer, abonne_users integer, free_users integer, visitor_users integer, staff_users integer)
+    LANGUAGE sql STABLE SECURITY DEFINER
+    AS $$
+    SELECT 
+        (SELECT COUNT(*) FROM public.profiles) as total_users,
+        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'active') as active_users,
+        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'suspended') as suspended_users,
+        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'pending_verification') as pending_users,
+        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'deletion_scheduled') as deletion_scheduled_users,
+        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'admin' AND ur.is_active = true) as admin_users,
+        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'abonne' AND ur.is_active = true) as abonne_users,
+        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'free' AND ur.is_active = true) as free_users,
+        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'visitor' AND ur.is_active = true) as visitor_users,
+        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'staff' AND ur.is_active = true) as staff_users;
+$$;
+
+
+ALTER FUNCTION public.get_migration_report() OWNER TO postgres;
+
+--
+-- Name: get_user_emails(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_emails() RETURNS TABLE(user_id uuid, email text)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  SELECT 
+    au.id as user_id,
+    au.email
+  FROM auth.users au
+  INNER JOIN public.profiles p ON p.id = au.id
+  WHERE au.email IS NOT NULL
+  ORDER BY p.created_at DESC;
+$$;
+
+
+ALTER FUNCTION public.get_user_emails() OWNER TO postgres;
+
+--
+-- Name: FUNCTION get_user_emails(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.get_user_emails() IS 'Récupère les emails des utilisateurs pour la gestion admin. Accessible aux admins seulement.';
+
+
+--
+-- Name: get_user_last_logins(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_last_logins() RETURNS TABLE(user_id uuid, last_login timestamp with time zone, is_online boolean)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+BEGIN
+  -- Vérifier si l'utilisateur est un administrateur
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: User is not an administrator.';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    u.id AS user_id,
+    u.last_sign_in_at AS last_login,
+    CASE 
+      WHEN u.last_sign_in_at > (NOW() - INTERVAL '15 minutes') THEN true
+      ELSE false
+    END AS is_online
+  FROM
+    auth.users u
+  WHERE
+    u.email_confirmed_at IS NOT NULL;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_user_last_logins() OWNER TO postgres;
+
+--
+-- Name: get_user_month_bounds_utc(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) RETURNS TABLE(start_utc timestamp with time zone, end_utc timestamp with time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_tz text;
+  v_now_local timestamp; -- local "naive" dans le TZ de l'user
+  v_month_start_local timestamp;
+  v_month_end_local   timestamp;
+begin
+  if p_user_id is null then
+    -- default Paris si pas d'ID
+    v_tz := 'Europe/Paris';
+  else
+    select coalesce(up.timezone, 'Europe/Paris') into v_tz
+    from user_prefs up
+    where up.user_id = p_user_id;
+    if v_tz is null then
+      v_tz := 'Europe/Paris';
+    end if;
+  end if;
+
+  -- now() at time zone v_tz => timestamp local (sans tz)
+  v_now_local := now() at time zone v_tz;
+  v_month_start_local := date_trunc('month', v_now_local);
+  v_month_end_local   := v_month_start_local + interval '1 month';
+
+  -- Re-projeter en timestamptz (UTC) avec AT TIME ZONE v_tz
+  start_utc := v_month_start_local at time zone v_tz;
+  end_utc   := v_month_end_local   at time zone v_tz;
+  return next;
+end;
+$$;
+
+
+ALTER FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) OWNER TO postgres;
+
+--
 -- Name: get_user_permissions(uuid); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION public.get_user_permissions(user_uuid uuid) RETURNS TABLE(feature_name text, can_access boolean, can_create boolean, can_read boolean, can_update boolean, can_delete boolean)
+CREATE FUNCTION public.get_user_permissions(user_uuid uuid) RETURNS TABLE(feature_name text, can_access boolean)
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 BEGIN
     RETURN QUERY
     SELECT 
-        f.name,
-        rp.can_access,
-        rp.can_create,
-        rp.can_read,
-        rp.can_update,
-        rp.can_delete
+        f.name as feature_name,
+        COALESCE(rp.can_access, false) as can_access
     FROM features f
     LEFT JOIN role_permissions rp ON f.id = rp.feature_id
     LEFT JOIN user_roles ur ON rp.role_id = ur.role_id
@@ -115,6 +640,79 @@ $$;
 ALTER FUNCTION public.get_user_permissions(user_uuid uuid) OWNER TO postgres;
 
 --
+-- Name: get_user_quota_info(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text DEFAULT 'monthly'::text) RETURNS TABLE(quota_limit integer, current_usage integer, remaining integer, is_limited boolean)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    user_role text;
+    quota_limit integer;
+    current_usage integer;
+BEGIN
+    -- Récupérer le rôle de l'utilisateur
+    SELECT r.name INTO user_role
+    FROM public.user_roles ur
+    JOIN public.roles r ON r.id = ur.role_id
+    WHERE ur.user_id = user_uuid AND ur.is_active = true
+    LIMIT 1;
+    
+    -- Si pas de rôle ou admin, pas de limite
+    IF user_role IS NULL OR user_role = 'admin' THEN
+        RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
+        RETURN;
+    END IF;
+    
+    -- Récupérer la limite de quota
+    SELECT rq.quota_limit INTO quota_limit
+    FROM public.role_quotas rq
+    JOIN public.roles r ON r.id = rq.role_id
+    WHERE r.name = user_role 
+    AND rq.quota_type = quota_type 
+    AND rq.quota_period = quota_period;
+    
+    -- Si pas de quota défini, pas de limite
+    IF quota_limit IS NULL THEN
+        RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
+        RETURN;
+    END IF;
+    
+    -- Calculer l'usage actuel
+    current_usage := 0;
+    IF quota_period = 'total' THEN
+        IF quota_type = 'max_tasks' THEN
+            SELECT COUNT(*) INTO current_usage FROM public.taches WHERE user_id = user_uuid;
+        ELSIF quota_type = 'max_rewards' THEN
+            SELECT COUNT(*) INTO current_usage FROM public.recompenses WHERE user_id = user_uuid;
+        END IF;
+    ELSIF quota_period = 'monthly' THEN
+        IF quota_type = 'monthly_tasks' THEN
+            SELECT COUNT(*) INTO current_usage 
+            FROM public.taches 
+            WHERE user_id = user_uuid 
+            AND created_at >= date_trunc('month', CURRENT_DATE);
+        ELSIF quota_type = 'monthly_rewards' THEN
+            SELECT COUNT(*) INTO current_usage 
+            FROM public.recompenses 
+            WHERE user_id = user_uuid 
+            AND created_at >= date_trunc('month', CURRENT_DATE);
+        END IF;
+    END IF;
+    
+    -- Retourner les informations
+    RETURN QUERY SELECT 
+        quota_limit,
+        current_usage,
+        GREATEST(0, quota_limit - current_usage),
+        true;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) OWNER TO postgres;
+
+--
 -- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -122,37 +720,159 @@ CREATE FUNCTION public.handle_new_user() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-begin
-  insert into public.profiles (id, pseudo)
-  values (
-    new.id,
-    split_part(new.email, '@', 1)  -- pseudo par défaut
-  )
-  on conflict (id) do nothing;
+DECLARE
+    free_role_id uuid;
+BEGIN
+    -- Créer le profil
+    INSERT INTO public.profiles (id, pseudo)
+    VALUES (NEW.id, split_part(NEW.email, '@', 1))
+    ON CONFLICT (id) DO NOTHING;
 
-  return new;
-end;
+    -- Attribuer automatiquement le rôle 'free'
+    SELECT id INTO free_role_id FROM public.roles WHERE name = 'free' AND is_active = true;
+    
+    IF free_role_id IS NOT NULL THEN
+        INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_by, assigned_at)
+        VALUES (NEW.id, free_role_id, true, NEW.id, now())
+        ON CONFLICT (user_id, role_id) 
+        DO UPDATE SET is_active = true, assigned_by = NEW.id, assigned_at = now(), updated_at = now();
+    END IF;
+
+    RETURN NEW;
+END;
 $$;
 
 
 ALTER FUNCTION public.handle_new_user() OWNER TO postgres;
 
 --
+-- Name: handle_subscription_role_change(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.handle_subscription_role_change() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+  free_role_id uuid;
+  abonne_role_id uuid;
+BEGIN
+  -- Récupérer les IDs des rôles
+  SELECT id INTO free_role_id FROM public.roles WHERE name = 'free' AND is_active = true;
+  SELECT id INTO abonne_role_id FROM public.roles WHERE name = 'abonne' AND is_active = true;
+  
+  -- Si abonnement devient actif
+  IF NEW.status IN ('active', 'trialing') AND (OLD.status IS NULL OR OLD.status NOT IN ('active', 'trialing')) THEN
+    -- Désactiver le rôle free
+    UPDATE public.user_roles 
+    SET is_active = false, updated_at = now()
+    WHERE user_id = NEW.user_id AND role_id = free_role_id;
+    
+    -- Activer le rôle abonne
+    INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
+    VALUES (NEW.user_id, abonne_role_id, true, now())
+    ON CONFLICT (user_id, role_id) 
+    DO UPDATE SET is_active = true, updated_at = now();
+    
+  -- Si abonnement devient inactif
+  ELSIF NEW.status NOT IN ('active', 'trialing') AND OLD.status IN ('active', 'trialing') THEN
+    -- Désactiver le rôle abonne
+    UPDATE public.user_roles 
+    SET is_active = false, updated_at = now()
+    WHERE user_id = NEW.user_id AND role_id = abonne_role_id;
+    
+    -- Activer le rôle free
+    INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
+    VALUES (NEW.user_id, free_role_id, true, now())
+    ON CONFLICT (user_id, role_id) 
+    DO UPDATE SET is_active = true, updated_at = now();
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.handle_subscription_role_change() OWNER TO postgres;
+
+--
+-- Name: FUNCTION handle_subscription_role_change(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.handle_subscription_role_change() IS 'Gère les transitions de rôles lors des changements d''abonnement (free ↔ abonne)';
+
+
+--
 -- Name: is_admin(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.is_admin() RETURNS boolean
-    LANGUAGE sql SECURITY DEFINER
+    LANGUAGE sql STABLE SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-  select coalesce(
-    (select p.is_admin from public.profiles p where p.id = auth.uid()),
-    false
-  );
+  select exists (
+    select 1 from public.user_roles ur
+    join public.roles r on r.id = ur.role_id
+    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'
+  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);
 $$;
 
 
 ALTER FUNCTION public.is_admin() OWNER TO postgres;
+
+--
+-- Name: FUNCTION is_admin(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.is_admin() IS 'Retourne true si auth.uid() possède le rôle admin.';
+
+
+--
+-- Name: is_system_role(text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.is_system_role(role_name text) RETURNS boolean
+    LANGUAGE sql STABLE
+    AS $$
+  SELECT role_name = ANY (ARRAY['admin', 'visitor', 'free', 'abonne', 'staff'])
+$$;
+
+
+ALTER FUNCTION public.is_system_role(role_name text) OWNER TO postgres;
+
+--
+-- Name: FUNCTION is_system_role(role_name text); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.is_system_role(role_name text) IS 'Vérifie si un rôle est un rôle système protégé';
+
+
+--
+-- Name: prevent_system_role_deletion(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.prevent_system_role_deletion() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF OLD.is_active = false AND public.is_system_role(OLD.name) THEN
+    -- Permettre la désactivation des rôles système
+    RETURN NEW;
+  END IF;
+  
+  -- Pour les autres cas, laisser passer
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.prevent_system_role_deletion() OWNER TO postgres;
+
+--
+-- Name: FUNCTION prevent_system_role_deletion(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.prevent_system_role_deletion() IS 'Empêche la suppression accidentelle des rôles système';
+
 
 --
 -- Name: purge_old_consentements(integer); Type: FUNCTION; Schema: public; Owner: postgres
@@ -160,6 +880,7 @@ ALTER FUNCTION public.is_admin() OWNER TO postgres;
 
 CREATE FUNCTION public.purge_old_consentements(retention_months integer DEFAULT 25) RETURNS void
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 begin
   delete from public.consentements
@@ -176,14 +897,175 @@ ALTER FUNCTION public.purge_old_consentements(retention_months integer) OWNER TO
 
 CREATE FUNCTION public.set_updated_at() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public'
     AS $$
 begin
-  new.updated_at = now();
+  new.updated_at := now();
   return new;
-end; $$;
+end$$;
 
 
 ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
+
+--
+-- Name: tg_audit_permission_change(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_audit_permission_change() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_old jsonb;
+  v_new jsonb;
+  v_rec_id uuid;
+begin
+  if tg_op = 'INSERT' then
+    v_new := to_jsonb(new);
+    v_old := null;
+    v_rec_id := coalesce(new.id, gen_random_uuid());
+    insert into public.permission_changes
+      (change_type, table_name, record_id, old_values, new_values, changed_by, created_at, changed_at)
+    values
+      ('INSERT', tg_table_name, v_rec_id, v_old, v_new, auth.uid(), now(), now());
+    return new;
+
+  elsif tg_op = 'UPDATE' then
+    v_new := to_jsonb(new);
+    v_old := to_jsonb(old);
+    v_rec_id := coalesce(new.id, old.id, gen_random_uuid());
+    insert into public.permission_changes
+      (change_type, table_name, record_id, old_values, new_values, changed_by, created_at, changed_at)
+    values
+      ('UPDATE', tg_table_name, v_rec_id, v_old, v_new, auth.uid(), now(), now());
+    return new;
+
+  elsif tg_op = 'DELETE' then
+    v_new := null;
+    v_old := to_jsonb(old);
+    v_rec_id := coalesce(old.id, gen_random_uuid());
+    insert into public.permission_changes
+      (change_type, table_name, record_id, old_values, new_values, changed_by, created_at, changed_at)
+    values
+      ('DELETE', tg_table_name, v_rec_id, v_old, v_new, auth.uid(), now(), now());
+    return old;
+  end if;
+
+  return null;
+end
+$$;
+
+
+ALTER FUNCTION public.tg_audit_permission_change() OWNER TO postgres;
+
+--
+-- Name: tg_categories_normalize_value(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_categories_normalize_value() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if new.value is not null then
+    new.value := lower(regexp_replace(btrim(new.value), '\s+', '-', 'g'));
+  end if;
+  return new;
+end$$;
+
+
+ALTER FUNCTION public.tg_categories_normalize_value() OWNER TO postgres;
+
+--
+-- Name: tg_parametres_lock_id(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_parametres_lock_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  if new.id is distinct from old.id then
+    raise exception 'Column "id" is immutable on table "parametres"';
+  end if;
+  return new;
+end$$;
+
+
+ALTER FUNCTION public.tg_parametres_lock_id() OWNER TO postgres;
+
+--
+-- Name: tg_permission_changes_validate_json(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_permission_changes_validate_json() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public'
+    AS $$
+begin
+  if new.old_values is not null and jsonb_typeof(new.old_values) <> 'object' then
+    raise exception 'old_values must be a JSON object';
+  end if;
+  if new.new_values is not null and jsonb_typeof(new.new_values) <> 'object' then
+    raise exception 'new_values must be a JSON object';
+  end if;
+  if new.change_type not in ('INSERT','UPDATE','DELETE') then
+    raise exception 'Invalid change_type: %', new.change_type;
+  end if;
+  return new;
+end
+$$;
+
+
+ALTER FUNCTION public.tg_permission_changes_validate_json() OWNER TO postgres;
+
+--
+-- Name: tg_recompenses_normalize(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_recompenses_normalize() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public'
+    AS $$
+begin
+  if new.label is not null then
+    new.label := nullif(btrim(new.label), '');
+  end if;
+  if new.description is not null then
+    new.description := nullif(btrim(new.description), '');
+  end if;
+  return new;
+end$$;
+
+
+ALTER FUNCTION public.tg_recompenses_normalize() OWNER TO postgres;
+
+--
+-- Name: tg_taches_sync_categorie(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_taches_sync_categorie() RETURNS trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'pg_catalog', 'public'
+    AS $$
+begin
+  -- Si categorie_id est fourni, récupérer le value de la catégorie
+  if new.categorie_id is not null and (new.categorie is null or new.categorie = '') then
+    select value into new.categorie
+    from public.categories
+    where id = new.categorie_id;
+  end if;
+  
+  -- Si categorie est fourni, récupérer l'id de la catégorie
+  if new.categorie is not null and new.categorie != '' and new.categorie_id is null then
+    select id into new.categorie_id
+    from public.categories
+    where value = new.categorie and user_id = new.user_id;
+  end if;
+  
+  return new;
+end$$;
+
+
+ALTER FUNCTION public.tg_taches_sync_categorie() OWNER TO postgres;
 
 --
 -- Name: user_can_upload_avatar(uuid); Type: FUNCTION; Schema: public; Owner: postgres
@@ -191,6 +1073,7 @@ ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
 
 CREATE FUNCTION public.user_can_upload_avatar(uid uuid) RETURNS boolean
     LANGUAGE sql STABLE
+    SET search_path TO 'public'
     AS $$
   select count(*) <= 1
   from storage.objects
@@ -200,41 +1083,6 @@ $$;
 
 
 ALTER FUNCTION public.user_can_upload_avatar(uid uuid) OWNER TO postgres;
-
---
--- Name: user_has_permission(uuid, character varying, character varying); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION public.user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying DEFAULT 'access'::character varying) RETURNS boolean
-    LANGUAGE plpgsql SECURITY DEFINER
-    AS $$
-DECLARE
-    has_perm BOOLEAN := false;
-BEGIN
-    SELECT 
-        CASE 
-            WHEN permission_type = 'create' THEN rp.can_create
-            WHEN permission_type = 'read' THEN rp.can_read
-            WHEN permission_type = 'update' THEN rp.can_update
-            WHEN permission_type = 'delete' THEN rp.can_delete
-            ELSE rp.can_access
-        END INTO has_perm
-    FROM features f
-    JOIN role_permissions rp ON f.id = rp.feature_id
-    JOIN user_roles ur ON rp.role_id = ur.role_id
-    WHERE ur.user_id = user_uuid 
-    AND f.name = feature_name
-    AND ur.is_active = true
-    AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
-    AND f.is_active = true
-    LIMIT 1;
-    
-    RETURN COALESCE(has_perm, false);
-END;
-$$;
-
-
-ALTER FUNCTION public.user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying) OWNER TO postgres;
 
 --
 -- Name: add_prefixes(text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
@@ -922,22 +1770,23 @@ SET default_table_access_method = heap;
 CREATE TABLE public.abonnements (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
-    stripe_customer text,
     stripe_subscription_id text,
-    status text,
+    status text NOT NULL,
+    current_period_start timestamp with time zone,
+    current_period_end timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    raw_data jsonb,
+    last_event_id text,
+    stripe_customer text,
     plan text,
     price_id text,
     start_date timestamp with time zone,
     end_date timestamp with time zone,
-    current_period_start timestamp with time zone,
-    current_period_end timestamp with time zone,
     cancel_at timestamp with time zone,
     cancel_at_period_end boolean DEFAULT false,
     latest_invoice text,
-    raw_data jsonb,
-    last_event_id text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT abonnements_period_chk CHECK (((current_period_start IS NULL) OR (current_period_end IS NULL) OR (current_period_end >= current_period_start))),
     CONSTRAINT abonnements_status_check CHECK ((status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'incomplete_expired'::text, 'unpaid'::text, 'paused'::text])))
 );
 
@@ -945,37 +1794,134 @@ CREATE TABLE public.abonnements (
 ALTER TABLE public.abonnements OWNER TO postgres;
 
 --
+-- Name: TABLE abonnements; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.abonnements IS 'Abonnements Stripe synchronisés';
+
+
+--
+-- Name: COLUMN abonnements.status; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.abonnements.status IS 'Statut de l''abonnement Stripe';
+
+
+--
+-- Name: COLUMN abonnements.raw_data; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.abonnements.raw_data IS 'Données brutes Stripe (webhooks)';
+
+
+--
+-- Name: account_audit_logs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.account_audit_logs (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    action text NOT NULL,
+    old_status text,
+    new_status text,
+    old_role text,
+    new_role text,
+    changed_by uuid,
+    reason text,
+    metadata jsonb,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.account_audit_logs OWNER TO postgres;
+
+--
+-- Name: TABLE account_audit_logs; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.account_audit_logs IS 'Logs d''audit pour tracer les changements d''état et de rôle des comptes';
+
+
+--
+-- Name: COLUMN account_audit_logs.action; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.account_audit_logs.action IS 'Type d''action: status_change, role_change, quota_change, etc.';
+
+
+--
+-- Name: COLUMN account_audit_logs.metadata; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.account_audit_logs.metadata IS 'Données supplémentaires au format JSON';
+
+
+--
 -- Name: categories; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.categories (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     value text NOT NULL,
     label text NOT NULL,
     user_id uuid,
-    id uuid DEFAULT gen_random_uuid() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT categories_label_length_check CHECK ((length(label) <= 64)),
+    CONSTRAINT categories_value_length_check CHECK ((length(value) <= 64)),
+    CONSTRAINT categories_value_slug_check CHECK ((value ~ '^[a-z0-9_-]+$'::text))
 );
+
+ALTER TABLE ONLY public.categories FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.categories OWNER TO postgres;
+
+--
+-- Name: TABLE categories; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.categories IS 'Catégories personnalisées (NULL=globales).';
+
+
+--
+-- Name: COLUMN categories.value; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.categories.value IS 'Slug (a-z0-9_-).';
+
+
+--
+-- Name: COLUMN categories.label; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.categories.label IS 'Libellé affiché.';
+
 
 --
 -- Name: consentements; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.consentements (
-    id bigint NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    ts_client timestamp with time zone,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid,
-    version text NOT NULL,
-    mode text NOT NULL,
-    choices jsonb NOT NULL,
+    type_consentement text NOT NULL,
+    donnees text,
+    ts timestamp with time zone DEFAULT now() NOT NULL,
+    mode text DEFAULT 'refuse_all'::text NOT NULL,
+    choices jsonb DEFAULT '{}'::jsonb NOT NULL,
     action text,
     ua text,
     locale text,
     app_version text,
     ip_hash text,
     origin text,
+    ts_client timestamp with time zone,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    version text DEFAULT '1.0.0'::text NOT NULL,
+    CONSTRAINT consentements_action_check CHECK (((action IS NULL) OR (action = ANY (ARRAY['first_load'::text, 'update'::text, 'withdraw'::text, 'restore'::text])))),
+    CONSTRAINT consentements_choices_is_object CHECK ((jsonb_typeof(choices) = 'object'::text)),
+    CONSTRAINT consentements_ip_hash_len CHECK (((ip_hash IS NULL) OR ((length(ip_hash) >= 32) AND (length(ip_hash) <= 128)))),
     CONSTRAINT consentements_mode_check CHECK ((mode = ANY (ARRAY['accept_all'::text, 'refuse_all'::text, 'custom'::text])))
 );
 
@@ -983,14 +1929,38 @@ CREATE TABLE public.consentements (
 ALTER TABLE public.consentements OWNER TO postgres;
 
 --
--- Name: consentements_dernier; Type: VIEW; Schema: public; Owner: postgres
+-- Name: TABLE consentements; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.consentements_dernier WITH (security_invoker='true') AS
+COMMENT ON TABLE public.consentements IS 'Journal immuable des consentements (RGPD). user_id NULL pour visiteurs.';
+
+
+--
+-- Name: consentements_latest; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.consentements_latest AS
+ WITH base AS (
+         SELECT consentements.id,
+            consentements.user_id,
+            consentements.version,
+            consentements.mode,
+            consentements.choices,
+            consentements.action,
+            consentements.ua,
+            consentements.locale,
+            consentements.app_version,
+            consentements.ip_hash,
+            consentements.origin,
+            consentements.ts_client,
+            consentements.created_at,
+            consentements.ts,
+            COALESCE(consentements.ts, consentements.ts_client, consentements.created_at) AS effective_ts
+           FROM public.consentements
+          WHERE (consentements.user_id IS NOT NULL)
+        )
  SELECT DISTINCT ON (user_id) id,
     user_id,
-    created_at,
-    ts_client,
     version,
     mode,
     choices,
@@ -998,33 +1968,70 @@ CREATE VIEW public.consentements_dernier WITH (security_invoker='true') AS
     ua,
     locale,
     app_version,
-    origin
-   FROM public.consentements
-  WHERE (user_id IS NOT NULL)
-  ORDER BY user_id, created_at DESC;
+    ip_hash,
+    origin,
+    ts_client,
+    created_at,
+    ts,
+    effective_ts
+   FROM base
+  ORDER BY user_id, effective_ts DESC;
 
 
-ALTER VIEW public.consentements_dernier OWNER TO postgres;
-
---
--- Name: consentements_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.consentements_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.consentements_id_seq OWNER TO postgres;
+ALTER VIEW public.consentements_latest OWNER TO postgres;
 
 --
--- Name: consentements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: VIEW consentements_latest; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.consentements_id_seq OWNED BY public.consentements.id;
+COMMENT ON VIEW public.consentements_latest IS 'Dernier consentement par utilisateur (ts > ts_client > created_at).';
+
+
+--
+-- Name: demo_cards; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.demo_cards (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    card_type text NOT NULL,
+    label text NOT NULL,
+    imagepath text,
+    "position" integer DEFAULT 0,
+    is_active boolean DEFAULT true,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT demo_cards_card_type_check CHECK ((card_type = ANY (ARRAY['task'::text, 'reward'::text])))
+);
+
+
+ALTER TABLE public.demo_cards OWNER TO postgres;
+
+--
+-- Name: TABLE demo_cards; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.demo_cards IS 'Cartes prédéfinies pour la démonstration aux visiteurs non connectés';
+
+
+--
+-- Name: COLUMN demo_cards.card_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.demo_cards.card_type IS 'Type de carte: task (tâche) ou reward (récompense)';
+
+
+--
+-- Name: COLUMN demo_cards."position"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.demo_cards."position" IS 'Ordre d''affichage des cartes';
+
+
+--
+-- Name: COLUMN demo_cards.is_active; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.demo_cards.is_active IS 'Si true, la carte est visible pour les visiteurs';
 
 
 --
@@ -1034,12 +2041,13 @@ ALTER SEQUENCE public.consentements_id_seq OWNED BY public.consentements.id;
 CREATE TABLE public.features (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
-    display_name text NOT NULL,
     description text,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    display_name text NOT NULL,
     category text,
-    is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    CONSTRAINT features_category_chk CHECK ((category = ANY (ARRAY['affichage'::text, 'gestion'::text, 'systeme'::text, 'securite'::text])))
 );
 
 
@@ -1050,33 +2058,51 @@ ALTER TABLE public.features OWNER TO postgres;
 --
 
 CREATE TABLE public.parametres (
-    id integer NOT NULL,
-    confettis boolean DEFAULT true
+    id integer DEFAULT 1 NOT NULL,
+    confettis boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT parametres_id_is_one CHECK ((id = 1))
 );
+
+ALTER TABLE ONLY public.parametres FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.parametres OWNER TO postgres;
 
 --
--- Name: parametres_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: TABLE parametres; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.parametres_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+COMMENT ON TABLE public.parametres IS 'Paramètres globaux de l''application';
 
-
-ALTER SEQUENCE public.parametres_id_seq OWNER TO postgres;
 
 --
--- Name: parametres_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: COLUMN parametres.id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.parametres_id_seq OWNED BY public.parametres.id;
+COMMENT ON COLUMN public.parametres.id IS 'ID unique (toujours 1 pour les paramètres globaux)';
+
+
+--
+-- Name: COLUMN parametres.confettis; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.parametres.confettis IS 'Contrôle l''affichage des confettis lors de la complétion des tâches';
+
+
+--
+-- Name: COLUMN parametres.created_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.parametres.created_at IS 'Date de création du paramètre';
+
+
+--
+-- Name: COLUMN parametres.updated_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.parametres.updated_at IS 'Date de dernière modification du paramètre';
 
 
 --
@@ -1085,18 +2111,81 @@ ALTER SEQUENCE public.parametres_id_seq OWNED BY public.parametres.id;
 
 CREATE TABLE public.permission_changes (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    changed_by uuid NOT NULL,
+    changed_by uuid,
     change_type text NOT NULL,
     table_name text NOT NULL,
     record_id uuid NOT NULL,
     old_values jsonb,
     new_values jsonb,
     change_reason text,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    changed_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT permission_changes_change_reason_length_check CHECK (((change_reason IS NULL) OR (length(change_reason) <= 500))),
+    CONSTRAINT permission_changes_change_type_check CHECK ((change_type = ANY (ARRAY['INSERT'::text, 'UPDATE'::text, 'DELETE'::text]))),
+    CONSTRAINT permission_changes_record_id_not_null CHECK ((record_id IS NOT NULL)),
+    CONSTRAINT permission_changes_table_name_not_blank CHECK (((table_name IS NOT NULL) AND (btrim(table_name) <> ''::text)))
 );
+
+ALTER TABLE ONLY public.permission_changes FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.permission_changes OWNER TO postgres;
+
+--
+-- Name: TABLE permission_changes; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.permission_changes IS 'Audit trail des modifications de permissions et rôles';
+
+
+--
+-- Name: COLUMN permission_changes.changed_by; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.changed_by IS 'Utilisateur qui a effectué le changement (peut être NULL pour les actions système)';
+
+
+--
+-- Name: COLUMN permission_changes.change_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.change_type IS 'Type de changement: INSERT, UPDATE, DELETE';
+
+
+--
+-- Name: COLUMN permission_changes.table_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.table_name IS 'Nom de la table modifiée';
+
+
+--
+-- Name: COLUMN permission_changes.record_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.record_id IS 'ID de l''enregistrement modifié';
+
+
+--
+-- Name: COLUMN permission_changes.old_values; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.old_values IS 'Anciennes valeurs (JSON)';
+
+
+--
+-- Name: COLUMN permission_changes.new_values; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.new_values IS 'Nouvelles valeurs (JSON)';
+
+
+--
+-- Name: COLUMN permission_changes.change_reason; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.permission_changes.change_reason IS 'Raison du changement (optionnel)';
+
 
 --
 -- Name: profiles; Type: TABLE; Schema: public; Owner: postgres
@@ -1105,31 +2194,119 @@ ALTER TABLE public.permission_changes OWNER TO postgres;
 CREATE TABLE public.profiles (
     id uuid NOT NULL,
     pseudo text,
+    avatar_url text,
+    is_admin boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     date_naissance date,
     ville text,
-    avatar_url text,
-    is_admin boolean DEFAULT false,
-    created_at timestamp without time zone DEFAULT now()
+    account_status text DEFAULT 'active'::text NOT NULL,
+    deletion_scheduled_at timestamp with time zone,
+    CONSTRAINT profiles_account_status_check CHECK ((account_status = ANY (ARRAY['active'::text, 'suspended'::text, 'deletion_scheduled'::text, 'pending_verification'::text]))),
+    CONSTRAINT profiles_birthdate_chk CHECK (((date_naissance IS NULL) OR (date_naissance <= CURRENT_DATE)))
 );
 
 
 ALTER TABLE public.profiles OWNER TO postgres;
 
 --
+-- Name: COLUMN profiles.account_status; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.profiles.account_status IS 'État du compte utilisateur: active, suspended, deletion_scheduled, pending_verification';
+
+
+--
+-- Name: COLUMN profiles.deletion_scheduled_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.profiles.deletion_scheduled_at IS 'Date de suppression programmée pour les comptes en état deletion_scheduled (30 jours après la demande)';
+
+
+--
 -- Name: recompenses; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.recompenses (
-    id integer NOT NULL,
-    label text,
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    label text NOT NULL,
+    description text,
+    points_requis integer DEFAULT 0 NOT NULL,
+    icone text,
+    couleur text,
     imagepath text,
-    selected boolean DEFAULT false,
+    selected boolean DEFAULT false NOT NULL,
+    visible_en_demo boolean DEFAULT false NOT NULL,
     user_id uuid,
-    visible_en_demo boolean DEFAULT false
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT recompenses_description_length_check CHECK (((description IS NULL) OR (length(description) <= 1000))),
+    CONSTRAINT recompenses_imagepath_length_check CHECK (((imagepath IS NULL) OR (length(imagepath) <= 2048))),
+    CONSTRAINT recompenses_label_length_check CHECK ((length(label) <= 200)),
+    CONSTRAINT recompenses_label_not_blank CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text))),
+    CONSTRAINT recompenses_points_requis_positive CHECK ((points_requis >= 0))
 );
+
+ALTER TABLE ONLY public.recompenses FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.recompenses OWNER TO postgres;
+
+--
+-- Name: TABLE recompenses; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.recompenses IS 'Récompenses des utilisateurs avec système de points';
+
+
+--
+-- Name: COLUMN recompenses.label; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.label IS 'Nom de la récompense affiché';
+
+
+--
+-- Name: COLUMN recompenses.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.description IS 'Description détaillée de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.points_requis; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.points_requis IS 'Points nécessaires pour débloquer cette récompense';
+
+
+--
+-- Name: COLUMN recompenses.icone; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.icone IS 'Icône de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.couleur; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.couleur IS 'Couleur de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.imagepath; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.imagepath IS 'Chemin de l''image associée';
+
+
+--
+-- Name: COLUMN recompenses.selected; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.selected IS 'Récompense sélectionnée par l''utilisateur';
+
 
 --
 -- Name: COLUMN recompenses.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
@@ -1139,25 +2316,10 @@ COMMENT ON COLUMN public.recompenses.visible_en_demo IS 'Si true, cette récompe
 
 
 --
--- Name: recompenses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: COLUMN recompenses.user_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.recompenses_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER SEQUENCE public.recompenses_id_seq OWNER TO postgres;
-
---
--- Name: recompenses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.recompenses_id_seq OWNED BY public.recompenses.id;
+COMMENT ON COLUMN public.recompenses.user_id IS 'Propriétaire de la récompense';
 
 
 --
@@ -1168,13 +2330,9 @@ CREATE TABLE public.role_permissions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     role_id uuid NOT NULL,
     feature_id uuid NOT NULL,
-    can_access boolean DEFAULT false NOT NULL,
-    can_create boolean DEFAULT false,
-    can_read boolean DEFAULT false,
-    can_update boolean DEFAULT false,
-    can_delete boolean DEFAULT false,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    can_access boolean DEFAULT false NOT NULL
 );
 
 
@@ -1187,15 +2345,23 @@ ALTER TABLE public.role_permissions OWNER TO postgres;
 CREATE TABLE public.roles (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
-    display_name text NOT NULL,
     description text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    display_name text NOT NULL,
     priority integer DEFAULT 0,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
+    is_active boolean DEFAULT true NOT NULL
 );
 
 
 ALTER TABLE public.roles OWNER TO postgres;
+
+--
+-- Name: COLUMN roles.is_active; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.roles.is_active IS 'Indique si le rôle est actif et disponible pour attribution';
+
 
 --
 -- Name: role_permissions_admin_view; Type: VIEW; Schema: public; Owner: postgres
@@ -1204,62 +2370,99 @@ ALTER TABLE public.roles OWNER TO postgres;
 CREATE VIEW public.role_permissions_admin_view AS
  SELECT rp.id,
     rp.role_id,
+    rp.feature_id,
+    rp.can_access,
+    rp.created_at,
+    rp.updated_at,
     r.name AS role_name,
     r.display_name AS role_display_name,
-    rp.feature_id,
     f.name AS feature_name,
     f.display_name AS feature_display_name,
-    f.category,
-    rp.can_access,
-    rp.can_create,
-    rp.can_read,
-    rp.can_update,
-    rp.can_delete,
-    rp.created_at,
-    rp.updated_at
+    f.category
    FROM ((public.role_permissions rp
-     JOIN public.roles r ON ((rp.role_id = r.id)))
-     JOIN public.features f ON ((rp.feature_id = f.id)))
-  ORDER BY r.name, f.name;
+     JOIN public.roles r ON ((r.id = rp.role_id)))
+     JOIN public.features f ON ((f.id = rp.feature_id)));
 
 
 ALTER VIEW public.role_permissions_admin_view OWNER TO postgres;
+
+--
+-- Name: role_quotas; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.role_quotas (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    role_id uuid NOT NULL,
+    quota_type text NOT NULL,
+    quota_limit integer NOT NULL,
+    quota_period text DEFAULT 'monthly'::text,
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT role_quotas_quota_period_check CHECK ((quota_period = ANY (ARRAY['monthly'::text, 'total'::text, 'daily'::text])))
+);
+
+
+ALTER TABLE public.role_quotas OWNER TO postgres;
 
 --
 -- Name: stations; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.stations (
-    id integer NOT NULL,
-    label text,
-    ligne text,
-    ordre integer,
-    type public.transport_type DEFAULT 'metro'::public.transport_type NOT NULL
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    label text NOT NULL,
+    ligne text NOT NULL,
+    ordre integer NOT NULL,
+    type public.transport_type DEFAULT 'metro'::public.transport_type NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT stations_label_length_check CHECK ((length(label) <= 150)),
+    CONSTRAINT stations_label_not_blank CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text))),
+    CONSTRAINT stations_ligne_format_check CHECK ((ligne ~ '^[0-9]+(\s+(bis|ter))?$'::text)),
+    CONSTRAINT stations_ligne_length_check CHECK ((length(ligne) <= 20)),
+    CONSTRAINT stations_ligne_not_blank CHECK (((ligne IS NOT NULL) AND (btrim(ligne) <> ''::text))),
+    CONSTRAINT stations_ordre_max_check CHECK ((ordre <= 50)),
+    CONSTRAINT stations_ordre_positive CHECK ((ordre > 0))
 );
+
+ALTER TABLE ONLY public.stations FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.stations OWNER TO postgres;
 
 --
--- Name: stations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+-- Name: TABLE stations; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-CREATE SEQUENCE public.stations_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
+COMMENT ON TABLE public.stations IS 'Stations de transport public (métro, tram, RER, bus)';
 
-
-ALTER SEQUENCE public.stations_id_seq OWNER TO postgres;
 
 --
--- Name: stations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+-- Name: COLUMN stations.label; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE public.stations_id_seq OWNED BY public.stations.id;
+COMMENT ON COLUMN public.stations.label IS 'Nom de la station affiché';
+
+
+--
+-- Name: COLUMN stations.ligne; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.stations.ligne IS 'Ligne de transport (ex: "1", "A", "T1")';
+
+
+--
+-- Name: COLUMN stations.ordre; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.stations.ordre IS 'Ordre de la station sur la ligne (pour tri)';
+
+
+--
+-- Name: COLUMN stations.type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.stations.type IS 'Type de transport (metro, tram, rer, bus)';
 
 
 --
@@ -1282,19 +2485,117 @@ ALTER TABLE public.subscription_logs OWNER TO postgres;
 --
 
 CREATE TABLE public.taches (
-    label text NOT NULL,
-    categorie text,
-    aujourdhui boolean DEFAULT false,
-    fait boolean DEFAULT false,
-    "position" integer DEFAULT 0,
     id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid,
+    label text NOT NULL,
+    description text,
+    categorie text,
+    categorie_id uuid,
+    points integer DEFAULT 0 NOT NULL,
+    icone text,
+    couleur text,
+    aujourdhui boolean DEFAULT false NOT NULL,
+    fait boolean DEFAULT false NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
     imagepath text,
-    visible_en_demo boolean DEFAULT false
+    visible_en_demo boolean DEFAULT false NOT NULL,
+    user_id uuid,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT taches_description_length_check CHECK ((length(description) <= 1000)),
+    CONSTRAINT taches_label_length_check CHECK ((length(label) <= 200)),
+    CONSTRAINT taches_label_not_blank CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text))),
+    CONSTRAINT taches_points_positive CHECK ((points >= 0)),
+    CONSTRAINT taches_position_positive CHECK (("position" >= 0))
 );
+
+ALTER TABLE ONLY public.taches FORCE ROW LEVEL SECURITY;
 
 
 ALTER TABLE public.taches OWNER TO postgres;
+
+--
+-- Name: TABLE taches; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.taches IS 'Tâches des utilisateurs avec système de récompenses';
+
+
+--
+-- Name: COLUMN taches.label; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.label IS 'Nom de la tâche affiché';
+
+
+--
+-- Name: COLUMN taches.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.description IS 'Description détaillée de la tâche';
+
+
+--
+-- Name: COLUMN taches.categorie; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.categorie IS 'Catégorie de la tâche (compatible avec l''ancien code)';
+
+
+--
+-- Name: COLUMN taches.categorie_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.categorie_id IS 'FK vers la table categories (nouveau système)';
+
+
+--
+-- Name: COLUMN taches.points; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.points IS 'Points de récompense pour cette tâche';
+
+
+--
+-- Name: COLUMN taches.icone; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.icone IS 'Icône de la tâche';
+
+
+--
+-- Name: COLUMN taches.couleur; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.couleur IS 'Couleur de la tâche';
+
+
+--
+-- Name: COLUMN taches.aujourdhui; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.aujourdhui IS 'Tâche du jour (filtrage useTachesDnd)';
+
+
+--
+-- Name: COLUMN taches.fait; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.fait IS 'Tâche terminée (toggle dans useTaches)';
+
+
+--
+-- Name: COLUMN taches."position"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches."position" IS 'Ordre d''affichage (tri dans useTaches)';
+
+
+--
+-- Name: COLUMN taches.imagepath; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.imagepath IS 'Chemin de l''image associée';
+
 
 --
 -- Name: COLUMN taches.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
@@ -1304,6 +2605,26 @@ COMMENT ON COLUMN public.taches.visible_en_demo IS 'Si true, cette tâche sera v
 
 
 --
+-- Name: COLUMN taches.user_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taches.user_id IS 'Propriétaire de la tâche';
+
+
+--
+-- Name: user_prefs; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_prefs (
+    user_id uuid NOT NULL,
+    timezone text DEFAULT 'Europe/Paris'::text NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.user_prefs OWNER TO postgres;
+
+--
 -- Name: user_roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1311,10 +2632,12 @@ CREATE TABLE public.user_roles (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     role_id uuid NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     assigned_by uuid,
     assigned_at timestamp with time zone DEFAULT now(),
-    expires_at timestamp with time zone,
-    is_active boolean DEFAULT true
+    expires_at timestamp with time zone
 );
 
 
@@ -1462,34 +2785,6 @@ CREATE TABLE storage.s3_multipart_uploads_parts (
 ALTER TABLE storage.s3_multipart_uploads_parts OWNER TO supabase_storage_admin;
 
 --
--- Name: consentements id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.consentements ALTER COLUMN id SET DEFAULT nextval('public.consentements_id_seq'::regclass);
-
-
---
--- Name: parametres id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.parametres ALTER COLUMN id SET DEFAULT nextval('public.parametres_id_seq'::regclass);
-
-
---
--- Name: recompenses id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.recompenses ALTER COLUMN id SET DEFAULT nextval('public.recompenses_id_seq'::regclass);
-
-
---
--- Name: stations id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.stations ALTER COLUMN id SET DEFAULT nextval('public.stations_id_seq'::regclass);
-
-
---
 -- Name: abonnements abonnements_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1506,6 +2801,14 @@ ALTER TABLE ONLY public.abonnements
 
 
 --
+-- Name: account_audit_logs account_audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.account_audit_logs
+    ADD CONSTRAINT account_audit_logs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1519,6 +2822,14 @@ ALTER TABLE ONLY public.categories
 
 ALTER TABLE ONLY public.consentements
     ADD CONSTRAINT consentements_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: demo_cards demo_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.demo_cards
+    ADD CONSTRAINT demo_cards_pkey PRIMARY KEY (id);
 
 
 --
@@ -1562,6 +2873,14 @@ ALTER TABLE ONLY public.profiles
 
 
 --
+-- Name: profiles profiles_pseudo_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profiles
+    ADD CONSTRAINT profiles_pseudo_unique UNIQUE (pseudo);
+
+
+--
 -- Name: recompenses recompenses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1583,6 +2902,22 @@ ALTER TABLE ONLY public.role_permissions
 
 ALTER TABLE ONLY public.role_permissions
     ADD CONSTRAINT role_permissions_role_id_feature_id_key UNIQUE (role_id, feature_id);
+
+
+--
+-- Name: role_quotas role_quotas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_quotas
+    ADD CONSTRAINT role_quotas_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: role_quotas role_quotas_role_id_quota_type_quota_period_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_quotas
+    ADD CONSTRAINT role_quotas_role_id_quota_type_quota_period_key UNIQUE (role_id, quota_type, quota_period);
 
 
 --
@@ -1626,19 +2961,11 @@ ALTER TABLE ONLY public.taches
 
 
 --
--- Name: stations uniq_stations_type_ligne_label; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: user_prefs user_prefs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY public.stations
-    ADD CONSTRAINT uniq_stations_type_ligne_label UNIQUE (type, ligne, label);
-
-
---
--- Name: stations uniq_stations_type_ligne_ordre; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.stations
-    ADD CONSTRAINT uniq_stations_type_ligne_ordre UNIQUE (type, ligne, ordre);
+ALTER TABLE ONLY public.user_prefs
+    ADD CONSTRAINT user_prefs_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -1722,10 +3049,38 @@ ALTER TABLE ONLY storage.s3_multipart_uploads
 
 
 --
+-- Name: abonnements_active_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX abonnements_active_idx ON public.abonnements USING btree (user_id) WHERE (status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'paused'::text]));
+
+
+--
+-- Name: abonnements_status_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX abonnements_status_idx ON public.abonnements USING btree (status);
+
+
+--
 -- Name: abonnements_stripe_subscription_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX abonnements_stripe_subscription_id_idx ON public.abonnements USING btree (stripe_subscription_id);
+
+
+--
+-- Name: abonnements_unique_active_per_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX abonnements_unique_active_per_user ON public.abonnements USING btree (user_id) WHERE (status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'paused'::text]));
+
+
+--
+-- Name: abonnements_user_created_desc_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX abonnements_user_created_desc_idx ON public.abonnements USING btree (user_id, created_at DESC);
 
 
 --
@@ -1736,31 +3091,164 @@ CREATE INDEX abonnements_user_id_idx ON public.abonnements USING btree (user_id)
 
 
 --
--- Name: consentements_user_ts_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: categories_global_value_unique; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX consentements_user_ts_idx ON public.consentements USING btree (user_id, created_at DESC);
-
-
---
--- Name: idx_permission_changes_changed_by; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_permission_changes_changed_by ON public.permission_changes USING btree (changed_by);
+CREATE UNIQUE INDEX categories_global_value_unique ON public.categories USING btree (value) WHERE (user_id IS NULL);
 
 
 --
--- Name: idx_permission_changes_created_at; Type: INDEX; Schema: public; Owner: postgres
+-- Name: categories_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_permission_changes_created_at ON public.permission_changes USING btree (created_at);
+CREATE INDEX categories_user_id_idx ON public.categories USING btree (user_id);
 
 
 --
--- Name: idx_recompenses_visible_en_demo; Type: INDEX; Schema: public; Owner: postgres
+-- Name: categories_user_value_unique; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_recompenses_visible_en_demo ON public.recompenses USING btree (visible_en_demo);
+CREATE UNIQUE INDEX categories_user_value_unique ON public.categories USING btree (user_id, value) WHERE (user_id IS NOT NULL);
+
+
+--
+-- Name: categories_value_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX categories_value_idx ON public.categories USING btree (value);
+
+
+--
+-- Name: consentements_origin_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX consentements_origin_created_idx ON public.consentements USING btree (origin, created_at DESC);
+
+
+--
+-- Name: consentements_user_created_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX consentements_user_created_idx ON public.consentements USING btree (user_id, created_at DESC);
+
+
+--
+-- Name: idx_account_audit_logs_action; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_account_audit_logs_action ON public.account_audit_logs USING btree (action);
+
+
+--
+-- Name: idx_account_audit_logs_changed_by; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_account_audit_logs_changed_by ON public.account_audit_logs USING btree (changed_by);
+
+
+--
+-- Name: idx_account_audit_logs_created_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_account_audit_logs_created_at ON public.account_audit_logs USING btree (created_at DESC);
+
+
+--
+-- Name: idx_account_audit_logs_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_account_audit_logs_user_id ON public.account_audit_logs USING btree (user_id);
+
+
+--
+-- Name: idx_categories_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_categories_user ON public.categories USING btree (user_id);
+
+
+--
+-- Name: idx_categories_user_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_categories_user_created ON public.categories USING btree (user_id, created_at);
+
+
+--
+-- Name: idx_consentements_user_ts; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_consentements_user_ts ON public.consentements USING btree (user_id, ts);
+
+
+--
+-- Name: idx_demo_cards_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_demo_cards_active ON public.demo_cards USING btree (is_active);
+
+
+--
+-- Name: idx_demo_cards_position; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_demo_cards_position ON public.demo_cards USING btree ("position");
+
+
+--
+-- Name: idx_demo_cards_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_demo_cards_type ON public.demo_cards USING btree (card_type);
+
+
+--
+-- Name: idx_features_active_category; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_features_active_category ON public.features USING btree (is_active, category);
+
+
+--
+-- Name: idx_profiles_account_status; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profiles_account_status ON public.profiles USING btree (account_status);
+
+
+--
+-- Name: idx_profiles_deletion_scheduled; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profiles_deletion_scheduled ON public.profiles USING btree (deletion_scheduled_at) WHERE (account_status = 'deletion_scheduled'::text);
+
+
+--
+-- Name: idx_profiles_is_admin; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profiles_is_admin ON public.profiles USING btree (is_admin);
+
+
+--
+-- Name: idx_profiles_updated_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profiles_updated_at ON public.profiles USING btree (updated_at DESC);
+
+
+--
+-- Name: idx_recompenses_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_recompenses_user ON public.recompenses USING btree (user_id);
+
+
+--
+-- Name: idx_recompenses_user_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_recompenses_user_created ON public.recompenses USING btree (user_id, created_at);
 
 
 --
@@ -1771,38 +3259,80 @@ CREATE INDEX idx_role_permissions_feature_id ON public.role_permissions USING bt
 
 
 --
--- Name: idx_role_permissions_role_id; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_role_permissions_role_access; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_role_permissions_role_id ON public.role_permissions USING btree (role_id);
-
-
---
--- Name: idx_stations_ligne; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_stations_ligne ON public.stations USING btree (ligne);
+CREATE INDEX idx_role_permissions_role_access ON public.role_permissions USING btree (role_id, can_access);
 
 
 --
--- Name: idx_stations_type_ligne; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_role_quotas_role_type; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_stations_type_ligne ON public.stations USING btree (type, ligne);
-
-
---
--- Name: idx_stations_type_ligne_ordre; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_stations_type_ligne_ordre ON public.stations USING btree (type, ligne, ordre);
+CREATE INDEX idx_role_quotas_role_type ON public.role_quotas USING btree (role_id, quota_type);
 
 
 --
--- Name: idx_taches_visible_en_demo; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_roles_is_active; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_taches_visible_en_demo ON public.taches USING btree (visible_en_demo);
+CREATE INDEX idx_roles_is_active ON public.roles USING btree (is_active) WHERE (is_active = true);
+
+
+--
+-- Name: idx_roles_priority_name; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_roles_priority_name ON public.roles USING btree (priority DESC, name);
+
+
+--
+-- Name: idx_taches_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_taches_user ON public.taches USING btree (user_id);
+
+
+--
+-- Name: idx_taches_user_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_taches_user_created ON public.taches USING btree (user_id, created_at);
+
+
+--
+-- Name: idx_user_prefs_tz; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_prefs_tz ON public.user_prefs USING btree (timezone);
+
+
+--
+-- Name: idx_user_roles_expires_at; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_expires_at ON public.user_roles USING btree (expires_at);
+
+
+--
+-- Name: idx_user_roles_expiring_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_expiring_active ON public.user_roles USING btree (expires_at) WHERE (is_active = true);
+
+
+--
+-- Name: idx_user_roles_is_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_is_active ON public.user_roles USING btree (is_active);
+
+
+--
+-- Name: idx_user_roles_role_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_role_active ON public.user_roles USING btree (role_id, is_active);
 
 
 --
@@ -1813,6 +3343,13 @@ CREATE INDEX idx_user_roles_role_id ON public.user_roles USING btree (role_id);
 
 
 --
+-- Name: idx_user_roles_user_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_user_active ON public.user_roles USING btree (user_id, is_active);
+
+
+--
 -- Name: idx_user_roles_user_id; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1820,10 +3357,185 @@ CREATE INDEX idx_user_roles_user_id ON public.user_roles USING btree (user_id);
 
 
 --
+-- Name: permission_changes_change_type_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_change_type_idx ON public.permission_changes USING btree (change_type);
+
+
+--
+-- Name: permission_changes_changed_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_changed_at_idx ON public.permission_changes USING btree (changed_at DESC);
+
+
+--
+-- Name: permission_changes_changed_by_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_changed_by_idx ON public.permission_changes USING btree (changed_by);
+
+
+--
+-- Name: permission_changes_created_at_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_created_at_idx ON public.permission_changes USING btree (created_at DESC);
+
+
+--
+-- Name: permission_changes_record_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_record_id_idx ON public.permission_changes USING btree (record_id);
+
+
+--
+-- Name: permission_changes_table_name_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_table_name_idx ON public.permission_changes USING btree (table_name);
+
+
+--
+-- Name: permission_changes_table_type_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX permission_changes_table_type_idx ON public.permission_changes USING btree (table_name, change_type);
+
+
+--
+-- Name: recompenses_one_selected_per_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX recompenses_one_selected_per_user ON public.recompenses USING btree (user_id) WHERE ((selected IS TRUE) AND (user_id IS NOT NULL));
+
+
+--
+-- Name: recompenses_points_requis_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX recompenses_points_requis_idx ON public.recompenses USING btree (points_requis);
+
+
+--
+-- Name: recompenses_selected_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX recompenses_selected_idx ON public.recompenses USING btree (selected);
+
+
+--
+-- Name: recompenses_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX recompenses_user_id_idx ON public.recompenses USING btree (user_id);
+
+
+--
+-- Name: recompenses_user_selected_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX recompenses_user_selected_idx ON public.recompenses USING btree (user_id, selected);
+
+
+--
+-- Name: recompenses_visible_en_demo_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX recompenses_visible_en_demo_idx ON public.recompenses USING btree (visible_en_demo);
+
+
+--
+-- Name: stations_label_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX stations_label_idx ON public.stations USING btree (label);
+
+
+--
+-- Name: stations_ligne_type_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX stations_ligne_type_idx ON public.stations USING btree (ligne, type);
+
+
+--
+-- Name: stations_type_ligne_label_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX stations_type_ligne_label_unique ON public.stations USING btree (type, ligne, label);
+
+
+--
+-- Name: stations_type_ligne_ordre_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX stations_type_ligne_ordre_idx ON public.stations USING btree (type, ligne, ordre);
+
+
+--
+-- Name: stations_type_ligne_ordre_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX stations_type_ligne_ordre_unique ON public.stations USING btree (type, ligne, ordre);
+
+
+--
+-- Name: subscription_logs_user_event_time_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX subscription_logs_user_event_time_idx ON public.subscription_logs USING btree (user_id, event_type, "timestamp" DESC);
+
+
+--
 -- Name: subscription_logs_user_time_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX subscription_logs_user_time_idx ON public.subscription_logs USING btree (user_id, "timestamp" DESC);
+
+
+--
+-- Name: taches_categorie_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_categorie_idx ON public.taches USING btree (categorie);
+
+
+--
+-- Name: taches_fait_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_fait_idx ON public.taches USING btree (fait);
+
+
+--
+-- Name: taches_user_aujourdhui_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_user_aujourdhui_idx ON public.taches USING btree (user_id, aujourdhui);
+
+
+--
+-- Name: taches_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_user_id_idx ON public.taches USING btree (user_id);
+
+
+--
+-- Name: taches_user_position_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_user_position_idx ON public.taches USING btree (user_id, "position");
+
+
+--
+-- Name: taches_visible_en_demo_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_visible_en_demo_idx ON public.taches USING btree (visible_en_demo);
 
 
 --
@@ -1890,10 +3602,157 @@ CREATE UNIQUE INDEX objects_bucket_id_level_idx ON storage.objects USING btree (
 
 
 --
+-- Name: features audit_features_changes; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER audit_features_changes AFTER INSERT OR DELETE OR UPDATE ON public.features FOR EACH ROW EXECUTE FUNCTION public.tg_audit_permission_change();
+
+
+--
+-- Name: role_permissions audit_role_permissions_changes; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER audit_role_permissions_changes AFTER INSERT OR DELETE OR UPDATE ON public.role_permissions FOR EACH ROW EXECUTE FUNCTION public.tg_audit_permission_change();
+
+
+--
+-- Name: roles audit_roles_changes; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER audit_roles_changes AFTER INSERT OR DELETE OR UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.tg_audit_permission_change();
+
+
+--
+-- Name: user_roles audit_user_roles_changes; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER audit_user_roles_changes AFTER INSERT OR DELETE OR UPDATE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION public.tg_audit_permission_change();
+
+
+--
+-- Name: categories categories_normalize_value; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER categories_normalize_value BEFORE INSERT OR UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.tg_categories_normalize_value();
+
+
+--
+-- Name: categories categories_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER categories_set_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: abonnements on_subscription_change; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER on_subscription_change AFTER INSERT OR UPDATE ON public.abonnements FOR EACH ROW EXECUTE FUNCTION public.handle_subscription_role_change();
+
+
+--
+-- Name: parametres parametres_lock_id; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER parametres_lock_id BEFORE UPDATE ON public.parametres FOR EACH ROW EXECUTE FUNCTION public.tg_parametres_lock_id();
+
+
+--
+-- Name: permission_changes permission_changes_validate_json; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER permission_changes_validate_json BEFORE INSERT OR UPDATE ON public.permission_changes FOR EACH ROW EXECUTE FUNCTION public.tg_permission_changes_validate_json();
+
+
+--
+-- Name: roles prevent_system_role_deletion_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER prevent_system_role_deletion_trigger BEFORE UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.prevent_system_role_deletion();
+
+
+--
+-- Name: recompenses recompenses_normalize; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER recompenses_normalize BEFORE INSERT OR UPDATE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.tg_recompenses_normalize();
+
+
+--
+-- Name: recompenses recompenses_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER recompenses_set_updated_at BEFORE UPDATE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
 -- Name: abonnements set_abonnements_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER set_abonnements_updated_at BEFORE UPDATE ON public.abonnements FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+CREATE TRIGGER set_abonnements_updated_at BEFORE INSERT OR UPDATE ON public.abonnements FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: features set_features_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_features_updated_at BEFORE UPDATE ON public.features FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: parametres set_parametres_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_parametres_updated_at BEFORE UPDATE ON public.parametres FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: profiles set_profiles_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_profiles_updated_at BEFORE INSERT OR UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: role_permissions set_role_permissions_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_role_permissions_updated_at BEFORE INSERT OR UPDATE ON public.role_permissions FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: roles set_roles_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_roles_updated_at BEFORE UPDATE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: user_roles set_user_roles_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER set_user_roles_updated_at BEFORE UPDATE ON public.user_roles FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: stations stations_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER stations_set_updated_at BEFORE UPDATE ON public.stations FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: taches taches_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER taches_set_updated_at BEFORE UPDATE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: taches taches_sync_categorie; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER taches_sync_categorie BEFORE INSERT OR UPDATE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.tg_taches_sync_categorie();
 
 
 --
@@ -1954,11 +3813,43 @@ ALTER TABLE ONLY public.abonnements
 
 
 --
+-- Name: account_audit_logs account_audit_logs_changed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.account_audit_logs
+    ADD CONSTRAINT account_audit_logs_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES auth.users(id);
+
+
+--
+-- Name: account_audit_logs account_audit_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.account_audit_logs
+    ADD CONSTRAINT account_audit_logs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: categories categories_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.categories
+    ADD CONSTRAINT categories_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: consentements consentements_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.consentements
+    ADD CONSTRAINT consentements_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+
+--
 -- Name: permission_changes permission_changes_changed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.permission_changes
-    ADD CONSTRAINT permission_changes_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES auth.users(id);
+    ADD CONSTRAINT permission_changes_changed_by_fkey FOREIGN KEY (changed_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -1967,6 +3858,14 @@ ALTER TABLE ONLY public.permission_changes
 
 ALTER TABLE ONLY public.profiles
     ADD CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: recompenses recompenses_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.recompenses
+    ADD CONSTRAINT recompenses_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -1986,6 +3885,14 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
+-- Name: role_quotas role_quotas_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_quotas
+    ADD CONSTRAINT role_quotas_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE CASCADE;
+
+
+--
 -- Name: subscription_logs subscription_logs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1994,11 +3901,35 @@ ALTER TABLE ONLY public.subscription_logs
 
 
 --
+-- Name: taches taches_categorie_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.taches
+    ADD CONSTRAINT taches_categorie_id_fkey FOREIGN KEY (categorie_id) REFERENCES public.categories(id) ON DELETE SET NULL;
+
+
+--
+-- Name: taches taches_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.taches
+    ADD CONSTRAINT taches_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_prefs user_prefs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_prefs
+    ADD CONSTRAINT user_prefs_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_roles user_roles_assigned_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.user_roles
-    ADD CONSTRAINT user_roles_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES auth.users(id);
+    ADD CONSTRAINT user_roles_assigned_by_fkey FOREIGN KEY (assigned_by) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 
 --
@@ -2058,108 +3989,10 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- Name: categories Chaque utilisateur peut accéder à ses catégories; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles Users can view own user_roles; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "Chaque utilisateur peut accéder à ses catégories" ON public.categories TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
-
-
---
--- Name: taches Delete own taches; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Delete own taches" ON public.taches FOR DELETE TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: recompenses Delete recompenses; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Delete recompenses" ON public.recompenses FOR DELETE TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: stations Delete stations; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Delete stations" ON public.stations FOR DELETE TO authenticated USING (true);
-
-
---
--- Name: taches Insert own taches; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Insert own taches" ON public.taches FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
-
-
---
--- Name: recompenses Insert recompenses; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Insert recompenses" ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
-
-
---
--- Name: stations Insert stations; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Insert stations" ON public.stations FOR INSERT TO authenticated WITH CHECK (true);
-
-
---
--- Name: recompenses Select all recompenses; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Select all recompenses" ON public.recompenses FOR SELECT TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: stations Select all stations; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Select all stations" ON public.stations FOR SELECT TO authenticated USING (true);
-
-
---
--- Name: parametres Select confettis; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Select confettis" ON public.parametres FOR SELECT TO authenticated USING (true);
-
-
---
--- Name: taches Select own taches; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Select own taches" ON public.taches FOR SELECT TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: parametres Update confettis; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Update confettis" ON public.parametres FOR UPDATE TO authenticated USING ((id = 1));
-
-
---
--- Name: taches Update own taches; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Update own taches" ON public.taches FOR UPDATE TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: recompenses Update recompenses; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Update recompenses" ON public.recompenses FOR UPDATE TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: stations Update stations; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Update stations" ON public.stations FOR UPDATE TO authenticated USING (true);
+CREATE POLICY "Users can view own user_roles" ON public.user_roles FOR SELECT TO authenticated USING ((auth.uid() = user_id));
 
 
 --
@@ -2169,10 +4002,44 @@ CREATE POLICY "Update stations" ON public.stations FOR UPDATE TO authenticated U
 ALTER TABLE public.abonnements ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: abonnements abonnements_admin_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY abonnements_admin_all ON public.abonnements TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
 -- Name: abonnements abonnements_select_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY abonnements_select_own ON public.abonnements FOR SELECT USING ((auth.uid() = user_id));
+CREATE POLICY abonnements_select_own ON public.abonnements FOR SELECT TO authenticated USING (((auth.uid() = user_id) OR public.is_admin()));
+
+
+--
+-- Name: account_audit_logs; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.account_audit_logs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: account_audit_logs account_audit_logs_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY account_audit_logs_insert_admin ON public.account_audit_logs FOR INSERT WITH CHECK ((public.is_admin() OR (changed_by = auth.uid())));
+
+
+--
+-- Name: account_audit_logs account_audit_logs_select_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY account_audit_logs_select_admin ON public.account_audit_logs FOR SELECT USING (public.is_admin());
+
+
+--
+-- Name: account_audit_logs account_audit_logs_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY account_audit_logs_select_own ON public.account_audit_logs FOR SELECT USING ((user_id = auth.uid()));
 
 
 --
@@ -2180,6 +4047,27 @@ CREATE POLICY abonnements_select_own ON public.abonnements FOR SELECT USING ((au
 --
 
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: categories categories_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY categories_insert_quota_free ON public.categories FOR INSERT TO authenticated WITH CHECK (public.check_user_quota_free_only(auth.uid(), 'category'::text, 'total'::text));
+
+
+--
+-- Name: categories categories_mutate_auth; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY categories_mutate_auth ON public.categories TO authenticated USING (((user_id = auth.uid()) OR public.is_admin())) WITH CHECK (((user_id = auth.uid()) OR public.is_admin()));
+
+
+--
+-- Name: categories categories_select_auth; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY categories_select_auth ON public.categories FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR (user_id IS NULL) OR public.is_admin()));
+
 
 --
 -- Name: consentements; Type: ROW SECURITY; Schema: public; Owner: postgres
@@ -2191,28 +4079,55 @@ ALTER TABLE public.consentements ENABLE ROW LEVEL SECURITY;
 -- Name: consentements consentements_delete; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_delete ON public.consentements FOR DELETE TO authenticated USING (false);
+CREATE POLICY consentements_delete ON public.consentements FOR DELETE TO authenticated, anon USING (false);
 
 
 --
--- Name: consentements consentements_insert; Type: POLICY; Schema: public; Owner: postgres
+-- Name: consentements consentements_insert_anon; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_insert ON public.consentements FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY consentements_insert_anon ON public.consentements FOR INSERT TO anon WITH CHECK ((user_id IS NULL));
+
+
+--
+-- Name: consentements consentements_insert_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY consentements_insert_self ON public.consentements FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
 
 
 --
 -- Name: consentements consentements_select; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_select ON public.consentements FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY consentements_select ON public.consentements FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
 
 
 --
 -- Name: consentements consentements_update; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authenticated USING (false) WITH CHECK (false);
+CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authenticated, anon USING (false) WITH CHECK (false);
+
+
+--
+-- Name: demo_cards; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.demo_cards ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: demo_cards demo_cards_admin_all; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY demo_cards_admin_all ON public.demo_cards USING (public.is_admin());
+
+
+--
+-- Name: demo_cards demo_cards_select_public; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY demo_cards_select_public ON public.demo_cards FOR SELECT USING ((is_active = true));
 
 
 --
@@ -2222,45 +4137,17 @@ CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authent
 ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: features features_delete_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: features features_admin_all; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY features_delete_admin_only ON public.features FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: features features_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY features_insert_admin_only ON public.features FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY features_admin_all ON public.features TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
--- Name: features features_select_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: features features_read_active; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY features_select_admin_only ON public.features FOR SELECT TO authenticated USING (public.is_admin());
-
-
---
--- Name: features features_select_public_readonly; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY features_select_public_readonly ON public.features FOR SELECT TO authenticated USING (((is_active = true) OR public.is_admin()));
-
-
---
--- Name: features features_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY features_update_admin_only ON public.features FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: profiles insert-own-profile; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "insert-own-profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK ((auth.uid() = id));
+CREATE POLICY features_read_active ON public.features FOR SELECT USING (((is_active = true) OR public.is_admin()));
 
 
 --
@@ -2277,23 +4164,65 @@ CREATE POLICY logs_select_user_or_admin ON public.subscription_logs FOR SELECT T
 ALTER TABLE public.parametres ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: parametres parametres_delete_admin_only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY parametres_delete_admin_only ON public.parametres FOR DELETE TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: parametres parametres_insert_all_users; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY parametres_insert_all_users ON public.parametres FOR INSERT TO authenticated WITH CHECK (true);
+
+
+--
+-- Name: parametres parametres_select_all_users; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY parametres_select_all_users ON public.parametres FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: parametres parametres_update_all_users; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY parametres_update_all_users ON public.parametres FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+
+
+--
 -- Name: permission_changes; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.permission_changes ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: permission_changes permission_changes_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: permission_changes permission_changes_delete_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY permission_changes_insert_admin_only ON public.permission_changes FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY permission_changes_delete_admin ON public.permission_changes FOR DELETE TO authenticated USING (public.is_admin());
 
 
 --
--- Name: permission_changes permission_changes_select_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: permission_changes permission_changes_insert_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY permission_changes_select_admin_only ON public.permission_changes FOR SELECT TO authenticated USING (public.is_admin());
+CREATE POLICY permission_changes_insert_admin ON public.permission_changes FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+
+--
+-- Name: permission_changes permission_changes_select_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY permission_changes_select_admin ON public.permission_changes FOR SELECT TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: permission_changes permission_changes_update_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY permission_changes_update_admin ON public.permission_changes FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
@@ -2303,10 +4232,31 @@ CREATE POLICY permission_changes_select_admin_only ON public.permission_changes 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: profiles read-own-profile; Type: POLICY; Schema: public; Owner: postgres
+-- Name: profiles profiles_admin_all; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "read-own-profile" ON public.profiles FOR SELECT TO authenticated USING ((auth.uid() = id));
+CREATE POLICY profiles_admin_all ON public.profiles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
+-- Name: profiles profiles_insert_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_insert_own ON public.profiles FOR INSERT TO authenticated WITH CHECK ((auth.uid() = id));
+
+
+--
+-- Name: profiles profiles_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_select_own ON public.profiles FOR SELECT TO authenticated USING ((auth.uid() = id));
+
+
+--
+-- Name: profiles profiles_update_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_update_own ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
 
 
 --
@@ -2316,23 +4266,79 @@ CREATE POLICY "read-own-profile" ON public.profiles FOR SELECT TO authenticated 
 ALTER TABLE public.recompenses ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: recompenses recompenses_delete_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_delete_admin ON public.recompenses FOR DELETE TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: recompenses recompenses_delete_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_delete_own ON public.recompenses FOR DELETE TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: recompenses recompenses_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_insert_admin ON public.recompenses FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+
+--
+-- Name: recompenses recompenses_insert_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_insert_own ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: recompenses recompenses_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_insert_quota_free ON public.recompenses FOR INSERT TO authenticated WITH CHECK (public.check_user_quota_free_only(auth.uid(), 'reward'::text, 'total'::text));
+
+
+--
+-- Name: recompenses recompenses_select_demo; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_select_demo ON public.recompenses FOR SELECT TO anon USING ((visible_en_demo = true));
+
+
+--
+-- Name: recompenses recompenses_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_select_own ON public.recompenses FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((user_id IS NULL) AND (visible_en_demo = true))));
+
+
+--
+-- Name: recompenses recompenses_update_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_update_admin ON public.recompenses FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
+-- Name: recompenses recompenses_update_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_update_own ON public.recompenses FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
 -- Name: role_permissions; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
 ALTER TABLE public.role_permissions ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: role_permissions role_permissions_delete_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_admin_all; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY role_permissions_delete_admin_only ON public.role_permissions FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: role_permissions role_permissions_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY role_permissions_insert_admin_only ON public.role_permissions FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY role_permissions_admin_all ON public.role_permissions TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
@@ -2345,10 +4351,16 @@ CREATE POLICY role_permissions_select_own_or_admin ON public.role_permissions FO
 
 
 --
--- Name: role_permissions role_permissions_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: role_quotas; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY role_permissions_update_admin_only ON public.role_permissions FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+ALTER TABLE public.role_quotas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: role_quotas role_quotas_select_public; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY role_quotas_select_public ON public.role_quotas FOR SELECT USING (true);
 
 
 --
@@ -2358,38 +4370,17 @@ CREATE POLICY role_permissions_update_admin_only ON public.role_permissions FOR 
 ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: roles roles_delete_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: roles roles_admin_all; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY roles_delete_admin_only ON public.roles FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: roles roles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY roles_insert_admin_only ON public.roles FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY roles_admin_all ON public.roles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
--- Name: roles roles_select_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: roles roles_select_public; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY roles_select_admin_only ON public.roles FOR SELECT TO authenticated USING (public.is_admin());
-
-
---
--- Name: roles roles_select_public_readonly; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY roles_select_public_readonly ON public.roles FOR SELECT TO authenticated USING (((name = ANY (ARRAY['visitor'::text, 'abonne'::text])) OR public.is_admin()));
-
-
---
--- Name: roles roles_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY roles_update_admin_only ON public.roles FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY roles_select_public ON public.roles FOR SELECT USING ((((is_active = true) AND (name = ANY (ARRAY['visitor'::text, 'abonne'::text, 'free'::text, 'staff'::text]))) OR public.is_admin()));
 
 
 --
@@ -2399,10 +4390,24 @@ CREATE POLICY roles_update_admin_only ON public.roles FOR UPDATE TO authenticate
 ALTER TABLE public.stations ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: stations stations select public; Type: POLICY; Schema: public; Owner: postgres
+-- Name: stations stations_mutate_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "stations select public" ON public.stations FOR SELECT USING (true);
+CREATE POLICY stations_mutate_admin ON public.stations TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
+-- Name: stations stations_select_anon; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY stations_select_anon ON public.stations FOR SELECT TO anon USING (true);
+
+
+--
+-- Name: stations stations_select_auth; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY stations_select_auth ON public.stations FOR SELECT TO authenticated USING (true);
 
 
 --
@@ -2418,10 +4423,93 @@ ALTER TABLE public.subscription_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.taches ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: profiles update-own-profile; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_delete_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "update-own-profile" ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
+CREATE POLICY taches_delete_admin ON public.taches FOR DELETE TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: taches taches_delete_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_delete_own ON public.taches FOR DELETE TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: taches taches_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_insert_admin ON public.taches FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+
+--
+-- Name: taches taches_insert_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_insert_own ON public.taches FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: taches taches_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_insert_quota_free ON public.taches FOR INSERT TO authenticated WITH CHECK ((public.check_user_quota_free_only(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'monthly'::text)));
+
+
+--
+-- Name: taches taches_select_demo; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_select_demo ON public.taches FOR SELECT TO anon USING ((visible_en_demo = true));
+
+
+--
+-- Name: taches taches_select_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_select_own ON public.taches FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((user_id IS NULL) AND (visible_en_demo = true))));
+
+
+--
+-- Name: taches taches_update_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_update_admin ON public.taches FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
+-- Name: taches taches_update_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY taches_update_own ON public.taches FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: user_prefs; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.user_prefs ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_prefs user_prefs_select_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_prefs_select_self ON public.user_prefs FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+
+
+--
+-- Name: user_prefs user_prefs_update_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_prefs_update_self ON public.user_prefs FOR UPDATE TO authenticated USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: user_prefs user_prefs_upsert_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_prefs_upsert_self ON public.user_prefs FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
 
 
 --
@@ -2431,52 +4519,91 @@ CREATE POLICY "update-own-profile" ON public.profiles FOR UPDATE TO authenticate
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: user_roles user_roles_delete_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles user_roles_admin_all; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_roles_delete_admin_only ON public.user_roles FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: user_roles user_roles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_roles_insert_admin_only ON public.user_roles FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY user_roles_admin_all ON public.user_roles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
--- Name: user_roles user_roles_select_own_or_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles user_roles_select_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_roles_select_own_or_admin ON public.user_roles FOR SELECT TO authenticated USING ((public.is_admin() OR (user_id = auth.uid())));
-
-
---
--- Name: user_roles user_roles_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_roles_update_admin_only ON public.user_roles FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY user_roles_select_own ON public.user_roles FOR SELECT TO authenticated USING ((user_id = auth.uid()));
 
 
 --
--- Name: objects Allow upload to images; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+-- Name: user_roles users_can_self_assign_basic_roles; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "Allow upload to images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
-
-
---
--- Name: objects User can access own files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
---
-
-CREATE POLICY "User can access own files" ON storage.objects TO authenticated USING ((split_part(name, '/'::text, 1) = (auth.uid())::text)) WITH CHECK (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text) AND public.user_can_upload_avatar(auth.uid())));
+CREATE POLICY users_can_self_assign_basic_roles ON public.user_roles FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
+   FROM public.roles
+  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true))))));
 
 
 --
--- Name: objects User can insert own files 1oj01fe_0; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+-- Name: user_roles users_can_update_own_basic_roles; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "User can insert own files 1oj01fe_0" ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+CREATE POLICY users_can_update_own_basic_roles ON public.user_roles FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
+   FROM public.roles
+  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true))))));
+
+
+--
+-- Name: objects avatars_delete_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_delete_admin ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'avatars'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects avatars_delete_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_delete_own_files ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects avatars_select_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_select_admin ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'avatars'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects avatars_select_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_select_own_files ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects avatars_update_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_update_admin ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'avatars'::text) AND public.is_admin())) WITH CHECK (((bucket_id = 'avatars'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects avatars_update_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_update_own_files ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text))) WITH CHECK (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects avatars_upload_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_upload_admin ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'avatars'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects avatars_upload_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY avatars_upload_own_files ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'avatars'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
 
 
 --
@@ -2486,10 +4613,108 @@ CREATE POLICY "User can insert own files 1oj01fe_0" ON storage.objects FOR INSER
 ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
 
 --
+-- Name: buckets buckets_admin_all; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY buckets_admin_all ON storage.buckets TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
 -- Name: buckets_analytics; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
 --
 
 ALTER TABLE storage.buckets_analytics ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: buckets buckets_select_authenticated; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY buckets_select_authenticated ON storage.buckets FOR SELECT TO authenticated USING (true);
+
+
+--
+-- Name: objects demo_images_delete_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY demo_images_delete_admin ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'demo-images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects demo_images_insert_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY demo_images_insert_admin ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'demo-images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects demo_images_select_public; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY demo_images_select_public ON storage.objects FOR SELECT USING ((bucket_id = 'demo-images'::text));
+
+
+--
+-- Name: objects demo_images_update_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY demo_images_update_admin ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'demo-images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects images_delete_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_delete_admin ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects images_delete_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_delete_own_files ON storage.objects FOR DELETE TO authenticated USING (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects images_select_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_select_admin ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects images_select_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_select_own_files ON storage.objects FOR SELECT TO authenticated USING (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects images_update_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_update_admin ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'images'::text) AND public.is_admin())) WITH CHECK (((bucket_id = 'images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects images_update_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_update_own_files ON storage.objects FOR UPDATE TO authenticated USING (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text))) WITH CHECK (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
+
+--
+-- Name: objects images_upload_admin; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_upload_admin ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'images'::text) AND public.is_admin()));
+
+
+--
+-- Name: objects images_upload_own_files; Type: POLICY; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE POLICY images_upload_own_files ON storage.objects FOR INSERT TO authenticated WITH CHECK (((bucket_id = 'images'::text) AND (split_part(name, '/'::text, 1) = (auth.uid())::text)));
+
 
 --
 -- Name: migrations; Type: ROW SECURITY; Schema: storage; Owner: supabase_storage_admin
@@ -2544,12 +4769,139 @@ GRANT ALL ON SCHEMA storage TO dashboard_user;
 
 
 --
+-- Name: FUNCTION change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO anon;
+GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO authenticated;
+GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO service_role;
+
+
+--
+-- Name: FUNCTION check_user_quota(user_uuid uuid, quota_type text, quota_period text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO anon;
+GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO authenticated;
+GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO service_role;
+
+
+--
+-- Name: FUNCTION check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO anon;
+GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO authenticated;
+GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO service_role;
+
+
+--
+-- Name: FUNCTION cleanup_old_audit_logs(retention_days integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO anon;
+GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO authenticated;
+GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO service_role;
+
+
+--
 -- Name: FUNCTION email_exists(email_to_check text); Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO anon;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO authenticated;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO service_role;
+
+
+--
+-- Name: FUNCTION get_account_history(user_uuid uuid, limit_count integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO anon;
+GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO authenticated;
+GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO service_role;
+
+
+--
+-- Name: FUNCTION get_account_status(user_uuid uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO anon;
+GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION get_confettis(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.get_confettis() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_confettis() TO anon;
+GRANT ALL ON FUNCTION public.get_confettis() TO authenticated;
+GRANT ALL ON FUNCTION public.get_confettis() TO service_role;
+
+
+--
+-- Name: FUNCTION get_demo_cards(card_type_filter text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO anon;
+GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO authenticated;
+GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO service_role;
+
+
+--
+-- Name: FUNCTION get_demo_rewards(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_demo_rewards() TO anon;
+GRANT ALL ON FUNCTION public.get_demo_rewards() TO authenticated;
+GRANT ALL ON FUNCTION public.get_demo_rewards() TO service_role;
+
+
+--
+-- Name: FUNCTION get_demo_tasks(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_demo_tasks() TO anon;
+GRANT ALL ON FUNCTION public.get_demo_tasks() TO authenticated;
+GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
+
+
+--
+-- Name: FUNCTION get_migration_report(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_migration_report() TO anon;
+GRANT ALL ON FUNCTION public.get_migration_report() TO authenticated;
+GRANT ALL ON FUNCTION public.get_migration_report() TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_emails(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_user_emails() TO anon;
+GRANT ALL ON FUNCTION public.get_user_emails() TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_emails() TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_last_logins(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_user_last_logins() TO anon;
+GRANT ALL ON FUNCTION public.get_user_last_logins() TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_last_logins() TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_month_bounds_utc(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO service_role;
 
 
 --
@@ -2562,6 +4914,15 @@ GRANT ALL ON FUNCTION public.get_user_permissions(user_uuid uuid) TO service_rol
 
 
 --
+-- Name: FUNCTION get_user_quota_info(user_uuid uuid, quota_type text, quota_period text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO anon;
+GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO service_role;
+
+
+--
 -- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -2571,12 +4932,40 @@ GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
 
 
 --
+-- Name: FUNCTION handle_subscription_role_change(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO anon;
+GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO authenticated;
+GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO service_role;
+
+
+--
 -- Name: FUNCTION is_admin(); Type: ACL; Schema: public; Owner: postgres
 --
 
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.is_admin() TO anon;
 GRANT ALL ON FUNCTION public.is_admin() TO authenticated;
 GRANT ALL ON FUNCTION public.is_admin() TO service_role;
+
+
+--
+-- Name: FUNCTION is_system_role(role_name text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO anon;
+GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO authenticated;
+GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO service_role;
+
+
+--
+-- Name: FUNCTION prevent_system_role_deletion(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO anon;
+GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO authenticated;
+GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO service_role;
 
 
 --
@@ -2598,6 +4987,60 @@ GRANT ALL ON FUNCTION public.set_updated_at() TO service_role;
 
 
 --
+-- Name: FUNCTION tg_audit_permission_change(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO anon;
+GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_categories_normalize_value(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO anon;
+GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_parametres_lock_id(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO anon;
+GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_permission_changes_validate_json(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO anon;
+GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_recompenses_normalize(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO anon;
+GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_taches_sync_categorie(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO anon;
+GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO service_role;
+
+
+--
 -- Name: FUNCTION user_can_upload_avatar(uid uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -2607,21 +5050,21 @@ GRANT ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) TO service_role;
 
 
 --
--- Name: FUNCTION user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying); Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON FUNCTION public.user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying) TO anon;
-GRANT ALL ON FUNCTION public.user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying) TO authenticated;
-GRANT ALL ON FUNCTION public.user_has_permission(user_uuid uuid, feature_name character varying, permission_type character varying) TO service_role;
-
-
---
 -- Name: TABLE abonnements; Type: ACL; Schema: public; Owner: postgres
 --
 
 GRANT ALL ON TABLE public.abonnements TO anon;
 GRANT ALL ON TABLE public.abonnements TO authenticated;
 GRANT ALL ON TABLE public.abonnements TO service_role;
+
+
+--
+-- Name: TABLE account_audit_logs; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.account_audit_logs TO anon;
+GRANT ALL ON TABLE public.account_audit_logs TO authenticated;
+GRANT ALL ON TABLE public.account_audit_logs TO service_role;
 
 
 --
@@ -2643,21 +5086,21 @@ GRANT ALL ON TABLE public.consentements TO service_role;
 
 
 --
--- Name: TABLE consentements_dernier; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE consentements_latest; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.consentements_dernier TO anon;
-GRANT ALL ON TABLE public.consentements_dernier TO authenticated;
-GRANT ALL ON TABLE public.consentements_dernier TO service_role;
+GRANT ALL ON TABLE public.consentements_latest TO anon;
+GRANT ALL ON TABLE public.consentements_latest TO authenticated;
+GRANT ALL ON TABLE public.consentements_latest TO service_role;
 
 
 --
--- Name: SEQUENCE consentements_id_seq; Type: ACL; Schema: public; Owner: postgres
+-- Name: TABLE demo_cards; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON SEQUENCE public.consentements_id_seq TO anon;
-GRANT ALL ON SEQUENCE public.consentements_id_seq TO authenticated;
-GRANT ALL ON SEQUENCE public.consentements_id_seq TO service_role;
+GRANT ALL ON TABLE public.demo_cards TO anon;
+GRANT ALL ON TABLE public.demo_cards TO authenticated;
+GRANT ALL ON TABLE public.demo_cards TO service_role;
 
 
 --
@@ -2673,27 +5116,16 @@ GRANT ALL ON TABLE public.features TO service_role;
 -- Name: TABLE parametres; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.parametres TO anon;
-GRANT ALL ON TABLE public.parametres TO authenticated;
 GRANT ALL ON TABLE public.parametres TO service_role;
-
-
---
--- Name: SEQUENCE parametres_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.parametres_id_seq TO anon;
-GRANT ALL ON SEQUENCE public.parametres_id_seq TO authenticated;
-GRANT ALL ON SEQUENCE public.parametres_id_seq TO service_role;
+GRANT SELECT,INSERT,UPDATE ON TABLE public.parametres TO authenticated;
 
 
 --
 -- Name: TABLE permission_changes; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.permission_changes TO anon;
-GRANT ALL ON TABLE public.permission_changes TO authenticated;
 GRANT ALL ON TABLE public.permission_changes TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.permission_changes TO authenticated;
 
 
 --
@@ -2709,18 +5141,9 @@ GRANT ALL ON TABLE public.profiles TO service_role;
 -- Name: TABLE recompenses; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.recompenses TO anon;
-GRANT ALL ON TABLE public.recompenses TO authenticated;
 GRANT ALL ON TABLE public.recompenses TO service_role;
-
-
---
--- Name: SEQUENCE recompenses_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.recompenses_id_seq TO anon;
-GRANT ALL ON SEQUENCE public.recompenses_id_seq TO authenticated;
-GRANT ALL ON SEQUENCE public.recompenses_id_seq TO service_role;
+GRANT SELECT ON TABLE public.recompenses TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.recompenses TO authenticated;
 
 
 --
@@ -2751,38 +5174,48 @@ GRANT ALL ON TABLE public.role_permissions_admin_view TO service_role;
 
 
 --
+-- Name: TABLE role_quotas; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.role_quotas TO anon;
+GRANT ALL ON TABLE public.role_quotas TO authenticated;
+GRANT ALL ON TABLE public.role_quotas TO service_role;
+
+
+--
 -- Name: TABLE stations; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.stations TO anon;
-GRANT ALL ON TABLE public.stations TO authenticated;
 GRANT ALL ON TABLE public.stations TO service_role;
-
-
---
--- Name: SEQUENCE stations_id_seq; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON SEQUENCE public.stations_id_seq TO anon;
-GRANT ALL ON SEQUENCE public.stations_id_seq TO authenticated;
-GRANT ALL ON SEQUENCE public.stations_id_seq TO service_role;
+GRANT SELECT ON TABLE public.stations TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.stations TO authenticated;
 
 
 --
 -- Name: TABLE subscription_logs; Type: ACL; Schema: public; Owner: postgres
 --
 
+GRANT ALL ON TABLE public.subscription_logs TO anon;
+GRANT ALL ON TABLE public.subscription_logs TO authenticated;
 GRANT ALL ON TABLE public.subscription_logs TO service_role;
-GRANT SELECT ON TABLE public.subscription_logs TO authenticated;
 
 
 --
 -- Name: TABLE taches; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.taches TO anon;
-GRANT ALL ON TABLE public.taches TO authenticated;
 GRANT ALL ON TABLE public.taches TO service_role;
+GRANT SELECT ON TABLE public.taches TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.taches TO authenticated;
+
+
+--
+-- Name: TABLE user_prefs; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.user_prefs TO anon;
+GRANT ALL ON TABLE public.user_prefs TO authenticated;
+GRANT ALL ON TABLE public.user_prefs TO service_role;
 
 
 --

@@ -1,0 +1,151 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "features"
+      },
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "is_active",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "true"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "display_name",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "category",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": false
+      },
+      "policies": [
+        {
+          "policyname": "features_admin_all",
+          "command": "ALL",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "is_admin()",
+          "with_check": "is_admin()"
+        },
+        {
+          "policyname": "features_read_active",
+          "command": "SELECT",
+          "roles": [
+            "public"
+          ],
+          "using": "((is_active = true) OR is_admin())",
+          "with_check": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "features_name_key",
+          "def": "CREATE UNIQUE INDEX features_name_key ON public.features USING btree (name)"
+        },
+        {
+          "name": "features_pkey",
+          "def": "CREATE UNIQUE INDEX features_pkey ON public.features USING btree (id)"
+        },
+        {
+          "name": "idx_features_active_category",
+          "def": "CREATE INDEX idx_features_active_category ON public.features USING btree (is_active, category)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "features_category_chk",
+          "type": "c",
+          "definition": "CHECK ((category = ANY (ARRAY['affichage'::text, 'gestion'::text, 'systeme'::text, 'securite'::text])))"
+        },
+        {
+          "name": "features_name_key",
+          "type": "u",
+          "definition": "UNIQUE (name)"
+        },
+        {
+          "name": "features_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "audit_features_changes",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER audit_features_changes AFTER INSERT OR DELETE OR UPDATE ON features FOR EACH ROW EXECUTE FUNCTION tg_audit_permission_change()",
+          "function_name": "tg_audit_permission_change"
+        },
+        {
+          "name": "set_features_updated_at",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER set_features_updated_at BEFORE UPDATE ON features FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+          "function_name": "set_updated_at"
+        }
+      ],
+      "data_preview": [
+        {
+          "id": "5cf7d9bf-5b50-4c88-b54a-7ddd4ce4fc36",
+          "name": "trainprogressbar",
+          "description": "Afficher/masquer la barre de progression du train",
+          "is_active": true,
+          "created_at": "2025-09-14T15:07:35.445055+00:00",
+          "updated_at": "2025-09-14T15:08:25.667296+00:00",
+          "display_name": "trainprogressbar",
+          "category": "affichage"
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

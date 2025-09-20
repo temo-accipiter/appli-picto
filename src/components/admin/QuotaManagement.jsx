@@ -1,0 +1,280 @@
+// src/components/admin/QuotaManagement.jsx
+import { usePermissions } from '@/contexts'
+import { useQuotas } from '@/hooks'
+import { supabase } from '@/utils'
+import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
+import './QuotaManagement.scss'
+
+/**
+ * Composant de gestion des quotas pour les administrateurs
+ * Permet de visualiser et modifier les quotas des rôles
+ */
+export default function QuotaManagement({ className = '' }) {
+  const { can } = usePermissions()
+  const { isFreeAccount } = useQuotas()
+
+  const [loading, setLoading] = useState(true)
+  const [roles, setRoles] = useState([])
+  const [quotas, setQuotas] = useState([])
+  const [editingQuota, setEditingQuota] = useState(null)
+  const [formData, setFormData] = useState({
+    quota_type: '',
+    quota_limit: '',
+    quota_period: 'monthly'
+  })
+
+  // Vérifier les permissions
+  if (!can('manage_quotas')) {
+    return (
+      <div className={`quota-management no-permission ${className}`}>
+        <p>Vous n'avez pas les permissions pour gérer les quotas.</p>
+      </div>
+    )
+  }
+
+  // Charger les rôles et quotas
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true)
+      try {
+        // Récupérer les rôles
+        const { data: rolesData, error: rolesError } = await supabase
+          .from('roles')
+          .select('*')
+          .order('priority', { ascending: false })
+
+        if (rolesError) throw rolesError
+
+        // Récupérer les quotas
+        const { data: quotasData, error: quotasError } = await supabase
+          .from('role_quotas')
+          .select(`
+            *,
+            roles!inner(name, display_name)
+          `)
+          .order('role_id, quota_type')
+
+        if (quotasError) throw quotasError
+
+        setRoles(rolesData || [])
+        setQuotas(quotasData || [])
+      } catch (error) {
+        console.error('Erreur chargement quotas:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Grouper les quotas par rôle
+  const quotasByRole = quotas.reduce((acc, quota) => {
+    const roleName = quota.roles.name
+    if (!acc[roleName]) {
+      acc[roleName] = []
+    }
+    acc[roleName].push(quota)
+    return acc
+  }, {})
+
+  // Gérer l'édition d'un quota
+  const handleEditQuota = (quota) => {
+    setEditingQuota(quota)
+    setFormData({
+      quota_type: quota.quota_type,
+      quota_limit: quota.quota_limit.toString(),
+      quota_period: quota.quota_period
+    })
+  }
+
+  // Sauvegarder les modifications
+  const handleSaveQuota = async () => {
+    if (!editingQuota) return
+
+    try {
+      const { error } = await supabase
+        .from('role_quotas')
+        .update({
+          quota_limit: parseInt(formData.quota_limit),
+          quota_period: formData.quota_period
+        })
+        .eq('id', editingQuota.id)
+
+      if (error) throw error
+
+      // Rafraîchir les données
+      const { data: quotasData, error: quotasError } = await supabase
+        .from('role_quotas')
+        .select(`
+          *,
+          roles!inner(name, display_name)
+        `)
+        .order('role_id, quota_type')
+
+      if (quotasError) throw quotasError
+
+      setQuotas(quotasData || [])
+      setEditingQuota(null)
+    } catch (error) {
+      console.error('Erreur sauvegarde quota:', error)
+    }
+  }
+
+  // Annuler l'édition
+  const handleCancelEdit = () => {
+    setEditingQuota(null)
+    setFormData({
+      quota_type: '',
+      quota_limit: '',
+      quota_period: 'monthly'
+    })
+  }
+
+  // Créer un nouveau quota
+  const handleCreateQuota = async () => {
+    if (!formData.quota_type || !formData.quota_limit) return
+
+    try {
+      const { error } = await supabase
+        .from('role_quotas')
+        .insert([{
+          role_id: editingQuota.role_id,
+          quota_type: formData.quota_type,
+          quota_limit: parseInt(formData.quota_limit),
+          quota_period: formData.quota_period
+        }])
+
+      if (error) throw error
+
+      // Rafraîchir les données
+      const { data: quotasData, error: quotasError } = await supabase
+        .from('role_quotas')
+        .select(`
+          *,
+          roles!inner(name, display_name)
+        `)
+        .order('role_id, quota_type')
+
+      if (quotasError) throw quotasError
+
+      setQuotas(quotasData || [])
+      setEditingQuota(null)
+    } catch (error) {
+      console.error('Erreur création quota:', error)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className={`quota-management loading ${className}`}>
+        <div className="loading-spinner">⏳</div>
+        <p>Chargement des quotas...</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`quota-management ${className}`}>
+      <div className="quota-header">
+        <h2>Gestion des Quotas</h2>
+        <p>Configurez les limites pour chaque rôle d'utilisateur</p>
+      </div>
+
+      <div className="quota-content">
+        {roles.map(role => (
+          <div key={role.id} className="role-section">
+            <h3 className="role-title">
+              {role.display_name}
+              <span className="role-name">({role.name})</span>
+            </h3>
+            
+            <div className="quotas-list">
+              {quotasByRole[role.name]?.map(quota => (
+                <div key={quota.id} className="quota-item">
+                  <div className="quota-info">
+                    <span className="quota-type">{quota.quota_type}</span>
+                    <span className="quota-limit">{quota.quota_limit}</span>
+                    <span className="quota-period">({quota.quota_period})</span>
+                  </div>
+                  <button 
+                    className="edit-button"
+                    onClick={() => handleEditQuota(quota)}
+                  >
+                    Modifier
+                  </button>
+                </div>
+              )) || (
+                <p className="no-quotas">Aucun quota défini</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal d'édition */}
+      {editingQuota && (
+        <div className="quota-modal">
+          <div className="modal-content">
+            <h3>Modifier le quota</h3>
+            
+            <div className="form-group">
+              <label>Type de quota</label>
+              <select
+                value={formData.quota_type}
+                onChange={(e) => setFormData({...formData, quota_type: e.target.value})}
+              >
+                <option value="max_tasks">Tâches max (total)</option>
+                <option value="max_rewards">Récompenses max (total)</option>
+                <option value="monthly_tasks">Tâches mensuelles</option>
+                <option value="monthly_rewards">Récompenses mensuelles</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Limite</label>
+              <input
+                type="number"
+                value={formData.quota_limit}
+                onChange={(e) => setFormData({...formData, quota_limit: e.target.value})}
+                min="0"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Période</label>
+              <select
+                value={formData.quota_period}
+                onChange={(e) => setFormData({...formData, quota_period: e.target.value})}
+              >
+                <option value="monthly">Mensuel</option>
+                <option value="total">Total</option>
+                <option value="daily">Quotidien</option>
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button 
+                className="save-button"
+                onClick={handleSaveQuota}
+              >
+                Sauvegarder
+              </button>
+              <button 
+                className="cancel-button"
+                onClick={handleCancelEdit}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+QuotaManagement.propTypes = {
+  className: PropTypes.string,
+}

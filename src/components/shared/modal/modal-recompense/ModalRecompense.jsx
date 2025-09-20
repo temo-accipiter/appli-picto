@@ -1,5 +1,5 @@
+import { DemoSignedImage, Modal, SignedImage } from '@/components'
 import PropTypes from 'prop-types'
-import { Modal, SignedImage } from '@/components'
 import './ModalRecompense.scss'
 
 export default function ModalRecompense({ isOpen, onClose, reward }) {
@@ -8,11 +8,20 @@ export default function ModalRecompense({ isOpen, onClose, reward }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="🎉 Bravo !">
       <div className="modal-recompense">
-        <SignedImage
-          path={reward.imagepath}
-          alt={reward.label}
-          className="img-size-md"
-        />
+        {reward.isDemo ? (
+          <DemoSignedImage
+            filePath={reward.imagepath}
+            alt={reward.label}
+            className="img-size-md"
+          />
+        ) : (
+          <SignedImage
+            filePath={reward.imagepath}
+            bucket="images"
+            alt={reward.label}
+            className="img-size-md"
+          />
+        )}
 
         <h2 className="modal-recompense__label">{reward.label}</h2>
         <p className="modal-recompense__text">Tu as gagné cette récompense !</p>

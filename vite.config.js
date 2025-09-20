@@ -46,6 +46,11 @@ export default defineConfig({
   css: {
     devSourcemap: false,
   },
+  // Configuration du serveur de développement
+  server: {
+    port: 5173, // Forcer le port 5173 pour éviter les erreurs CORS
+    host: true,
+  },
   build: {
     rollupOptions: {
       output: {

@@ -4,8 +4,8 @@ import { Navigate } from 'react-router-dom'
 
 /**
  * Page de redirection intelligente qui décide automatiquement où envoyer l'utilisateur
- * - Visiteurs → /tableau-demo
- * - Utilisateurs connectés → /tableau
+ * - Visiteurs → /tableau (avec cartes prédéfinies)
+ * - Utilisateurs connectés → /tableau (avec cartes personnelles)
  */
 export default function HomeRedirect() {
   const { role, loading } = usePermissions()
@@ -20,10 +20,6 @@ export default function HomeRedirect() {
     )
   }
 
-  // Redirection selon le rôle
-  if (role === 'visitor') {
-    return <Navigate to="/tableau-demo" replace />
-  } else {
-    return <Navigate to="/tableau" replace />
-  }
+  // Redirection selon le rôle - tous vers /tableau
+  return <Navigate to="/tableau" replace />
 }

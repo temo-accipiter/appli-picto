@@ -1,8 +1,9 @@
-import { LangSelector, ThemeToggle, UserMenu } from '@/components'
+import { LangSelector, PersonalizationModal, ThemeToggle, UserMenu } from '@/components'
 import { usePermissions } from '@/contexts'
 import { useAuth } from '@/hooks'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Pencil, Settings, UserPlus } from 'lucide-react'
+import { LayoutDashboard, Palette, Pencil, Settings, UserPlus } from 'lucide-react'
+import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.scss'
 
@@ -10,6 +11,7 @@ export default function Navbar() {
   const location = useLocation()
   const { user } = useAuth()
   const { can, isVisitor } = usePermissions()
+  const [showPersonalizationModal, setShowPersonalizationModal] = useState(false)
 
   const isTableau = location.pathname === '/tableau'
   const isEdition = location.pathname === '/edition'
@@ -20,7 +22,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        {(isTableau || isProfil || isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
+        {(isTableau || isProfil || isAdminPermissions) && !isVisitor && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -74,22 +76,17 @@ export default function Navbar() {
 
           {/* Boutons de conversion pour les visiteurs */}
           <div className="visitor-buttons">
-            {isTableauDemo ? (
-              // Boutons spécifiques à tableau-demo
+            {isVisitor ? (
+              // Boutons pour tous les visiteurs (tableau, tableau-demo, etc.)
               <>
                 <button
                   className="nav-button personalize-button"
                   aria-label="Personnaliser"
-                  title="Personnaliser"
-                  onClick={() => {
-                    // Ouvrir la modal de personnalisation
-                    window.dispatchEvent(
-                      new CustomEvent('openPersonalizeModal')
-                    )
-                  }}
+                  title="Personnaliser votre expérience"
+                  onClick={() => setShowPersonalizationModal(true)}
                 >
-                  <Settings size={18} />
-                  <span>Personnaliser</span>
+                  <Palette size={18} />
+                  <span>Personnalisation</span>
                 </button>
 
                 <NavLink
@@ -139,6 +136,12 @@ export default function Navbar() {
           </div>
         </motion.div>
       )}
+      
+      {/* Modal de personnalisation pour les visiteurs */}
+      <PersonalizationModal
+        isOpen={showPersonalizationModal}
+        onClose={() => setShowPersonalizationModal(false)}
+      />
     </nav>
   )
 }

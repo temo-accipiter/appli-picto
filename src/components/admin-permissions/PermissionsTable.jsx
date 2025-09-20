@@ -13,6 +13,7 @@ export default function PermissionsTable({
   handleSavePermissions,
   handleDeleteFeature,
   handleEditFeature,
+  initializeTempPermissions,
 }) {
   return (
     <div className="permissions-table-container">
@@ -137,7 +138,10 @@ export default function PermissionsTable({
                 ) : (
                   <button
                     className="btn btn-primary"
-                    onClick={() => setEditingPermissions(role.id)}
+                    onClick={() => {
+                      initializeTempPermissions(role.id)
+                      setEditingPermissions(role.id)
+                    }}
                     disabled={role.name === 'admin'}
                   >
                     <Edit size={16} />

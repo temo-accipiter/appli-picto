@@ -35,14 +35,7 @@ export const PermissionsProvider = ({ children }) => {
         return true // Admin a accès à tout
       }
 
-      // Debug logging
-      console.log('🔍 Vérification permission:', {
-        featureName,
-        userRole: entitlements.role,
-        featuresCount: features.length,
-        permissionsCount: permissions.length,
-        rolesCount: roles.length,
-      })
+      // Debug logging supprimé pour réduire le spam
 
       // Trouver la fonctionnalité
       const feature = features.find(f => f.name === featureName)
@@ -63,11 +56,7 @@ export const PermissionsProvider = ({ children }) => {
         p => p.feature_id === feature.id && p.role_id === userRole.id
       )
 
-      console.log('🔍 Permission trouvée:', {
-        feature: feature.name,
-        role: userRole.name,
-        permission: permission ? { can_access: permission.can_access } : null,
-      })
+      // Log de permission supprimé pour réduire le spam
 
       return permission?.can_access || false
     }
@@ -170,15 +159,16 @@ export const usePermissions = () => {
   return context
 }
 */
-import { useEntitlements } from '@/hooks/useEntitlements'
-import { usePermissionsAPI } from '@/hooks/usePermissionsAPI'
-import { createContext, useContext, useMemo } from 'react'
+import { useAccountStatus, useEntitlements, usePermissionsAPI, useQuotas } from '@/hooks'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 import { AuthContext } from './AuthContext'
 
 const PermissionsContext = createContext()
 
 export const PermissionsProvider = ({ children }) => {
   const entitlements = useEntitlements()
+  const accountStatus = useAccountStatus()
+  const quotas = useQuotas()
   const {
     permissions,
     features,
@@ -195,22 +185,24 @@ export const PermissionsProvider = ({ children }) => {
     loadAllData,
   } = usePermissionsAPI()
 
+  // Charger automatiquement les permissions au démarrage
+  useEffect(() => {
+    loadAllData()
+  }, [loadAllData])
+
   // Vérifie si l'utilisateur a accès à une fonctionnalité
   const can = useMemo(() => {
     return (featureName) => {
+      // Vérifier d'abord l'état du compte
+      if (!accountStatus.canUseApp) {
+        return false // Compte suspendu ou en suppression
+      }
+
       if (!entitlements.role || entitlements.role === 'admin') {
         return true // Admin = accès total
       }
 
-      if (import.meta.env.DEV) {
-        console.log('🔍 Vérification permission:', {
-          featureName,
-          userRole: entitlements.role,
-          featuresCount: features.length,
-          permissionsCount: permissions.length,
-          rolesCount: roles.length,
-        })
-      }
+      // Debug logging supprimé pour réduire le spam
 
       const feature = features.find((f) => f.name === featureName)
       if (!feature) {
@@ -228,17 +220,11 @@ export const PermissionsProvider = ({ children }) => {
         (p) => p.feature_id === feature.id && p.role_id === userRole.id
       )
 
-      if (import.meta.env.DEV) {
-        console.log('🔍 Permission trouvée:', {
-          feature: feature.name,
-          role: userRole.name,
-          permission: permission ? { can_access: permission.can_access } : null,
-        })
-      }
+      // Debug désactivé - approche hybride implémentée
 
       return !!permission?.can_access
     }
-  }, [entitlements.role, permissions, features, roles])
+  }, [entitlements.role, permissions, features, roles, accountStatus.canUseApp])
 
   const canAll = useMemo(() => {
     return (featureNames) => featureNames.every((f) => can(f))
@@ -248,40 +234,26 @@ export const PermissionsProvider = ({ children }) => {
     return (featureNames) => featureNames.some((f) => can(f))
   }, [can])
 
-  // Debug (DEV seulement)
-  if (import.meta.env.DEV) {
-    console.log('🔍 PermissionsContext Debug:', {
-      entitlements: {
+  // Debug (DEV seulement) - Log unique au chargement initial
+  if (import.meta.env.DEV && !entitlements.loading && !isLoading && entitlements.userId) {
+    // Log seulement une fois quand l'utilisateur est connecté et les données chargées
+    const shouldLog = !window._permissionsContextLogged
+    if (shouldLog) {
+      console.log('🔍 PermissionsContext initialisé:', {
         role: entitlements.role,
-        loading: entitlements.loading,
         userId: entitlements.userId,
-      },
-      permissions: {
-        count: permissions.length,
-        data: permissions.slice(0, 3),
-      },
-      features: {
-        count: features.length,
-        data: features.slice(0, 3),
-      },
-      roles: {
-        count: roles.length,
-        data: roles.slice(0, 3),
-      },
-      loading: {
-        entitlements: entitlements.loading,
-        // ⚠️ ici on n'accède plus à "permissionsLoading.isLoading" (n’existe pas)
-        // on affiche l'objet de flags + le bool global "isLoading"
-        permissionsFlags: permissionsLoading,
-        apiGlobal: isLoading,
-      },
-    })
+        permissionsCount: permissions.length,
+        featuresCount: features.length,
+        rolesCount: roles.length,
+      })
+      window._permissionsContextLogged = true
+    }
   }
 
-  // Alerte UX si non connecté une fois les chargements terminés
+  // Alerte UX si non connecté une fois les chargements terminés (réduit)
   const { loading: authLoading } = useContext(AuthContext)
-  if (!entitlements.loading && !authLoading && !entitlements.userId) {
-    console.warn('⚠️ Utilisateur non connecté - userId undefined')
+  if (!entitlements.loading && !authLoading && !entitlements.userId && import.meta.env.DEV) {
+    console.debug('⚠️ Utilisateur non connecté - mode visitor')
   }
 
   // Global loading = entitlements OU chargement global du hook API
@@ -296,6 +268,9 @@ export const PermissionsProvider = ({ children }) => {
     features,
     roles,
     loading: globalLoading,
+    // Nouveaux hooks
+    accountStatus,
+    quotas,
     // Actions
     createRole,
     updateRole,

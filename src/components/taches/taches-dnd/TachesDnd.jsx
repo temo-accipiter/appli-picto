@@ -3,18 +3,18 @@
  *   avec possibilité de cocher/décocher chaque tâche et bouton de reset.
  */
 
-import { useState, useCallback } from 'react'
+import { Button, ModalConfirm, TableauCard } from '@/components'
 import {
-  DndContext,
-  closestCenter,
-  useSensor,
-  useSensors,
-  PointerSensor,
-  DragOverlay,
+    DndContext,
+    DragOverlay,
+    PointerSensor,
+    closestCenter,
+    useSensor,
+    useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'
-import { Button, TableauCard, ModalConfirm } from '@/components'
+import { useCallback, useState } from 'react'
 import './TachesDnd.scss'
 
 export default function ChecklistTachesDnd({
@@ -23,6 +23,7 @@ export default function ChecklistTachesDnd({
   onToggle,
   onReset,
   showResetButton = true,
+  doneMap = {},
 }) {
   const [activeId, setActiveId] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -67,7 +68,7 @@ export default function ChecklistTachesDnd({
             <TableauCard
               key={t.id}
               tache={t}
-              done={Boolean(t.fait)}
+              done={doneMap[t.id] || false}
               toggleDone={onToggle}
             />
           ))}
@@ -78,7 +79,7 @@ export default function ChecklistTachesDnd({
         {activeId && (
           <TableauCard
             tache={items.find(t => t.id.toString() === activeId)}
-            done={Boolean(items.find(t => t.id.toString() === activeId)?.fait)}
+            done={doneMap[activeId] || false}
             toggleDone={onToggle}
           />
         )}
@@ -121,4 +122,5 @@ ChecklistTachesDnd.propTypes = {
   onReorder: PropTypes.func.isRequired,
   onToggle: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
+  doneMap: PropTypes.object,
 }

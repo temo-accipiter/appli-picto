@@ -8,7 +8,7 @@
  *   Joue un bip sonore lors de la coche si la tâche n'était pas faite (configurable).
  */
 
-import { Checkbox, SignedImage } from '@/components'
+import { Checkbox, DemoSignedImage, SignedImage } from '@/components'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import PropTypes from 'prop-types'
@@ -56,6 +56,11 @@ function playBeep(audioCtx) {
 }
 
 function TableauCard({ tache, done, toggleDone }) {
+  // Debug logs désactivés pour réduire le bruit dans la console
+  // if (import.meta.env.DEV) {
+  //   console.log('🔍 TableauCard reçoit:', { id: tache.id, label: tache.label, done })
+  // }
+  
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: tache.id.toString() })
 
@@ -103,7 +108,8 @@ function TableauCard({ tache, done, toggleDone }) {
       }
     }
     
-    toggleDone(tache.id, done)
+    // Inverser l'état : si c'est fait, on le défait, et vice versa
+    toggleDone(tache.id, !done)
   }, [done, tache.id, toggleDone, getAudioContext])
 
   return (
@@ -116,12 +122,20 @@ function TableauCard({ tache, done, toggleDone }) {
     >
       <span>{tache.label}</span>
       {tache.imagepath && (
-        <SignedImage
-          filePath={tache.imagepath}
-          bucket="images"
-          alt={tache.label}
-          className="tableau-card__image img-size-lg"
-        />
+        tache.isDemo ? (
+          <DemoSignedImage
+            filePath={tache.imagepath}
+            alt={tache.label}
+            className="tableau-card__image img-size-lg"
+          />
+        ) : (
+          <SignedImage
+            filePath={tache.imagepath}
+            bucket="images"
+            alt={tache.label}
+            className="tableau-card__image img-size-lg"
+          />
+        )
       )}
 
       <Checkbox

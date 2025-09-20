@@ -1,13 +1,13 @@
-import PropTypes from 'prop-types'
-import { useState } from 'react'
 import {
-  Button,
-  ModalAjout,
-  EditionCard,
-  EditionList,
-  SignedImage,
+    Button,
+    EditionCard,
+    EditionList,
+    ModalAjout,
+    SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
+import PropTypes from 'prop-types'
+import { useState } from 'react'
 import './RecompensesEdition.scss'
 
 export default function RecompensesEdition({
@@ -16,6 +16,7 @@ export default function RecompensesEdition({
   onToggleSelect,
   onLabelChange,
   onSubmitReward,
+  onShowQuotaModal,
 }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [drafts, setDrafts] = useState({})
@@ -109,7 +110,16 @@ export default function RecompensesEdition({
       >
         <Button
           label="🏱 Ajouter une récompense"
-          onClick={() => setModalOpen(true)}
+          onClick={async () => {
+            if (onShowQuotaModal) {
+              const canOpen = await onShowQuotaModal('reward')
+              if (canOpen) {
+                setModalOpen(true)
+              }
+            } else {
+              setModalOpen(true)
+            }
+          }}
         />
       </EditionList>
 
@@ -132,4 +142,5 @@ RecompensesEdition.propTypes = {
   onToggleSelect: PropTypes.func.isRequired,
   onLabelChange: PropTypes.func.isRequired,
   onSubmitReward: PropTypes.func.isRequired,
+  onShowQuotaModal: PropTypes.func,
 }

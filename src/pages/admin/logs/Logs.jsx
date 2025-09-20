@@ -1,20 +1,18 @@
 // src/pages/admin/logs/Logs.jsx
 import { Button, FloatingPencil } from '@/components'
-import { useToast } from '@/contexts'
-import { useAuth } from '@/hooks'
+import { usePermissions, useToast } from '@/contexts'
 import { supabase } from '@/utils'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Logs.scss'
 
 export default function Logs() {
-  const { user } = useAuth()
+  const { role, isAdmin, loading: permissionsLoading } = usePermissions()
   const { show: showToast } = useToast()
   const navigate = useNavigate()
 
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
@@ -24,42 +22,26 @@ export default function Logs() {
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) return
+    if (permissionsLoading) return
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (error) {
-        console.error('Erreur vérification admin:', error)
-        return
-      }
-
-      if (!data?.is_admin) {
-        showToast('Accès non autorisé', 'error')
-        navigate('/profil')
-        return
-      }
-
-      setIsAdmin(true)
+    if (!isAdmin) {
+      showToast('Accès non autorisé', 'error')
+      navigate('/profil')
+      return
     }
-
-    checkAdminStatus()
-  }, [user, navigate, showToast])
+  }, [isAdmin, permissionsLoading, navigate, showToast])
 
   // Charger les logs
   const loadLogs = useCallback(
     async (reset = false) => {
-      if (!isAdmin) return
+      if (!isAdmin || permissionsLoading) return
 
       try {
         setLoading(true)
         const currentPage = reset ? 0 : page
 
-        let query = supabase
+        // Utiliser la fonction is_admin() de Supabase pour les permissions RLS
+        const { data, error, count } = await supabase
           .from('subscription_logs')
           .select('*', { count: 'exact' })
           .order('timestamp', { ascending: false })
@@ -68,21 +50,11 @@ export default function Logs() {
             (currentPage + 1) * ITEMS_PER_PAGE - 1
           )
 
-        // Appliquer les filtres
-        if (filter !== 'all') {
-          if (filter === 'user') {
-            query = query.not('user_id', 'is', null)
-          } else if (filter === 'system') {
-            query = query.is('user_id', null)
-          } else if (filter.startsWith('event:')) {
-            const eventType = filter.replace('event:', '')
-            query = query.ilike('event_type', `%${eventType}%`)
-          }
+        if (error) {
+          console.error('Erreur chargement logs:', error)
+          showToast(`Erreur lors du chargement des logs: ${error.message}`, 'error')
+          return
         }
-
-        const { data, error, count } = await query
-
-        if (error) throw error
 
         if (reset) {
           setLogs(data || [])
@@ -100,7 +72,7 @@ export default function Logs() {
         setLoading(false)
       }
     },
-    [isAdmin, page, filter, showToast]
+    [isAdmin, permissionsLoading, page, showToast]
   )
 
   useEffect(() => {
@@ -119,6 +91,7 @@ export default function Logs() {
     setPage(prev => prev + 1)
     loadLogs()
   }
+
 
   const formatTimestamp = timestamp => {
     return new Date(timestamp).toLocaleString('fr-FR', {
@@ -143,11 +116,11 @@ export default function Logs() {
     return userId.slice(0, 8) + '...'
   }
 
-  if (!user) {
+  if (permissionsLoading) {
     return (
       <div className="logs-page">
         <h1>Logs d&apos;abonnement</h1>
-        <p>Chargement en cours...</p>
+        <p>Chargement des permissions...</p>
       </div>
     )
   }
@@ -156,7 +129,7 @@ export default function Logs() {
     return (
       <div className="logs-page">
         <h1>Logs d&apos;abonnement</h1>
-        <p>Vérification des permissions...</p>
+        <p>Accès non autorisé. Redirection en cours...</p>
       </div>
     )
   }

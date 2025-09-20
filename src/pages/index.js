@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 
 export const Tableau = lazy(() => import('./tableau/Tableau'))
-export const TableauDemo = lazy(() => import('./tableau-demo/TableauDemo'))
 export const Edition = lazy(() => import('./edition/Edition'))
 export const Login = lazy(() => import('./login/Login'))
 export const Signup = lazy(() => import('./signup/Signup'))

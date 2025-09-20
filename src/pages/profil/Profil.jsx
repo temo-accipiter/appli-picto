@@ -1,20 +1,20 @@
 import {
-  AvatarProfil,
-  Button,
-  DeleteAccountModal,
-  FloatingPencil,
-  Input,
-  InputWithValidation,
-  ModalConfirm,
+    AvatarProfil,
+    Button,
+    DeleteAccountModal,
+    FloatingPencil,
+    Input,
+    InputWithValidation,
+    ModalConfirm,
 } from '@/components'
 import { useToast } from '@/contexts'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
 import {
-  getDisplayPseudo,
-  noDoubleSpaces,
-  noEdgeSpaces,
-  normalizeSpaces,
-  supabase,
+    getDisplayPseudo,
+    noDoubleSpaces,
+    noEdgeSpaces,
+    normalizeSpaces,
+    supabase,
 } from '@/utils'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -313,15 +313,6 @@ export default function Profil() {
             // disabled={!captchaTokenReset}
           />
 
-          {/* Bouton admin pour les logs */}
-          {isAdmin && (
-            <Button
-              type="button"
-              label="📊 Logs d'abonnement"
-              onClick={() => navigate('/admin/logs')}
-              variant="info"
-            />
-          )}
 
           <Button
             type="button"

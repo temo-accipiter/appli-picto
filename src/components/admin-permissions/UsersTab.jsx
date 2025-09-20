@@ -10,16 +10,30 @@ export default function UsersTab() {
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // États pour la pagination et les filtres
+  const [currentPage, setCurrentPage] = useState(1)
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [pagination, setPagination] = useState(null)
+  const [stats, setStats] = useState(null)
 
-  // Charger les utilisateurs au montage
+  // Charger les utilisateurs au montage et quand les filtres changent
   useEffect(() => {
     loadUsers()
-  }, [])
+  }, [currentPage, roleFilter, statusFilter])
 
   const loadUsers = async () => {
     try {
       setLoading(true)
-      const { data, error } = await getUsersWithRoles()
+      const options = {
+        page: currentPage,
+        limit: 20,
+        roleFilter,
+        statusFilter
+      }
+      
+      const { data, error, pagination: paginationData } = await getUsersWithRoles(options)
       
       if (error) {
         console.error('Erreur lors du chargement des utilisateurs:', error)
@@ -27,6 +41,18 @@ export default function UsersTab() {
       }
 
       setUsers(data || [])
+      setPagination(paginationData)
+      
+      // Calculer les statistiques
+      if (data) {
+        const userStats = {
+          total: paginationData?.total || 0,
+          admins: data.filter(u => u.is_admin).length,
+          withRoles: data.filter(u => u.user_roles && u.user_roles.length > 0).length,
+          online: data.filter(u => u.is_online).length
+        }
+        setStats(userStats)
+      }
     } catch (error) {
       console.error('Erreur lors du chargement des utilisateurs:', error)
     } finally {
@@ -120,18 +146,80 @@ export default function UsersTab() {
       <h2>Gestion des Utilisateurs</h2>
       <p>Assignez et gérez les rôles des utilisateurs.</p>
 
-      {/* Barre de recherche */}
-      <div className="search-container">
-        <InputWithValidation
-          id="user-search"
-          label="Rechercher un utilisateur"
-          placeholder="Pseudo ou email..."
-          value={searchTerm}
-          onChange={setSearchTerm}
-          onValid={setSearchTerm}
-          rules={[]}
-          ariaLabel="Rechercher un utilisateur"
-        />
+      {/* Statistiques */}
+      {stats && (
+        <div className="users-stats">
+          <div className="stat-item">
+            <span className="stat-number">{stats.total}</span>
+            <span className="stat-label">Total</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{stats.admins}</span>
+            <span className="stat-label">Admins</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{stats.online}</span>
+            <span className="stat-label">En ligne</span>
+          </div>
+        </div>
+      )}
+
+      {/* Filtres et recherche */}
+      <div className="filters-container">
+        <div className="filters-row">
+          <div className="filter-group">
+            <label htmlFor="role-filter">Filtrer par rôle :</label>
+            <select 
+              id="role-filter"
+              value={roleFilter} 
+              onChange={(e) => {
+                setRoleFilter(e.target.value)
+                setCurrentPage(1) // Reset à la première page
+              }}
+              className="filter-select"
+            >
+              <option value="all">Tous les rôles</option>
+              <option value="admin">Administrateurs</option>
+              <option value="abonne">Abonnés</option>
+              <option value="staff">Staff</option>
+              <option value="free">Comptes gratuits</option>
+              <option value="visitor">Visiteurs</option>
+              <option value="no_roles">Sans rôles</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="status-filter">Statut du compte :</label>
+            <select 
+              id="status-filter"
+              value={statusFilter} 
+              onChange={(e) => {
+                setStatusFilter(e.target.value)
+                setCurrentPage(1) // Reset à la première page
+              }}
+              className="filter-select"
+            >
+              <option value="all">Tous les statuts</option>
+              <option value="active">Actifs</option>
+              <option value="suspended">Suspendus</option>
+              <option value="pending_verification">En attente</option>
+              <option value="deletion_scheduled">Suppression programmée</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="search-container">
+          <InputWithValidation
+            id="user-search"
+            label="Rechercher un utilisateur"
+            placeholder="Pseudo ou email..."
+            value={searchTerm}
+            onChange={setSearchTerm}
+            onValid={setSearchTerm}
+            rules={[]}
+            ariaLabel="Rechercher un utilisateur"
+          />
+        </div>
       </div>
 
       {/* Liste des utilisateurs */}
@@ -144,69 +232,170 @@ export default function UsersTab() {
           </div>
         ) : (
           filteredUsers.map(user => (
-            <div key={user.id} className="user-card">
+            <div 
+              key={user.id} 
+              className={`user-card ${user.is_admin ? 'admin-user' : 'regular-user'}`}
+            >
               <div className="user-info">
                 <div className="user-header">
-                  <h4>{user.pseudo || 'Sans pseudo'}</h4>
-                  {user.is_admin && (
-                    <span className="admin-badge">
-                      <Shield size={14} />
-                      Admin
-                    </span>
-                  )}
-                </div>
-                <p className="user-email">{user.email}</p>
-                <p className="user-created">
-                  Membre depuis le {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                </p>
-              </div>
-
-              <div className="user-roles">
-                <h5>Rôles assignés :</h5>
-                {user.user_roles && user.user_roles.length > 0 ? (
-                  <div className="roles-list">
-                    {user.user_roles.map(userRole => (
-                      <div key={userRole.id} className="role-item">
-                        <span className="role-icon">
-                          {getRoleIcon(userRole.roles?.name)}
+                  <div className="user-title">
+                    <h4>{user.pseudo || 'Sans pseudo'}</h4>
+                    <div className="status-indicators">
+                      {user.is_online && (
+                        <span className="status-indicator online">
+                          ● En ligne
                         </span>
-                        <span className="role-name">
-                          {getRoleDisplayName(userRole.roles)}
+                      )}
+                      {user.account_status !== 'active' && (
+                        <span className={`account-status status-${user.account_status}`}>
+                          {user.account_status === 'suspended' && '⚠️ Suspendu'}
+                          {user.account_status === 'deletion_scheduled' && '🗑️ Suppression programmée'}
+                          {user.account_status === 'pending_verification' && '⏳ En attente'}
                         </span>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => {
-                            setSelectedUser({ id: user.id, roleId: userRole.roles.id, userName: user.pseudo })
-                            setShowRemoveModal(true)
-                          }}
-                          disabled={user.is_admin}
-                        >
-                          <UserMinus size={14} />
-                          Retirer
-                        </button>
-                      </div>
-                    ))}
+                      )}
+                    </div>
                   </div>
-                ) : (
-                  <p className="no-roles">Aucun rôle assigné</p>
-                )}
+                  <div className="role-header">
+                    <h5>Rôle :</h5>
+                    {user.user_roles && user.user_roles.length > 0 ? (
+                      <div className="roles-list">
+                        {user.user_roles.map(userRole => (
+                          <div
+                            key={userRole.id}
+                            className="role-item"
+                            data-role={userRole.roles?.name}
+                          >
+                            <span className="role-icon">
+                              {getRoleIcon(userRole.roles?.name)}
+                            </span>
+                            <span className="role-name">
+                              {getRoleDisplayName(userRole.roles)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-roles">Aucun rôle assigné</p>
+                    )}
+                  </div>
+                </div>
 
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => {
-                    setSelectedUser({ id: user.id, userName: user.pseudo })
-                    setShowAssignModal(true)
-                  }}
-                  disabled={user.is_admin}
-                >
-                  <UserPlus size={14} />
-                  Assigner un rôle
-                </button>
+                <div className="user-content">
+                  <div className="user-details">
+                    <p className="user-email">
+                      {user.email ? (
+                        <>
+                          <span className="email-label">Email :</span> {user.email}
+                        </>
+                      ) : (
+                        <span className="no-email">Email non disponible</span>
+                      )}
+                    </p>
+                    <p className="user-created">
+                      Membre depuis le {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                    </p>
+                    <p className="user-last-login">
+                      {user.last_login ? (
+                        <>
+                          <span className="login-label">Dernière connexion :</span>
+                          <span className={`login-time ${user.is_online ? 'online' : 'offline'}`}>
+                            {new Date(user.last_login).toLocaleDateString('fr-FR')} à {new Date(user.last_login).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="no-login">Jamais connecté</span>
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Boutons d'action positionnés à droite */}
+                  <div className="user-actions">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => {
+                        setSelectedUser({ id: user.id, userName: user.pseudo })
+                        setShowAssignModal(true)
+                      }}
+                      disabled={user.is_admin}
+                      title={user.is_admin ? "Un administrateur a déjà tous les droits" : "Assigner un rôle"}
+                    >
+                      <UserPlus size={14} />
+                      Assigner un rôle
+                    </button>
+                    
+                    {user.user_roles && user.user_roles.length > 0 && (
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => {
+                          // Pour l'instant, on retire le premier rôle trouvé
+                          const firstRole = user.user_roles[0]
+                          setSelectedUser({ 
+                            id: user.id, 
+                            roleId: firstRole.roles.id, 
+                            userName: user.pseudo 
+                          })
+                          setShowRemoveModal(true)
+                        }}
+                        disabled={user.is_admin}
+                        title={user.is_admin ? "Un administrateur ne peut pas retirer son propre rôle admin" : "Retirer un rôle"}
+                      >
+                        <UserMinus size={14} />
+                        Retirer un rôle
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
+
             </div>
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="pagination-container">
+          <div className="pagination-info">
+            Page {pagination.page} sur {pagination.totalPages} 
+            ({pagination.total} utilisateurs au total)
+          </div>
+          
+          <div className="pagination-controls">
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              ← Précédent
+            </button>
+            
+            <div className="pagination-pages">
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, currentPage - 2)) + i
+                if (pageNum > pagination.totalPages) return null
+                
+                return (
+                  <button
+                    key={pageNum}
+                    className={`pagination-page ${pageNum === currentPage ? 'active' : ''}`}
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                )
+              })}
+            </div>
+            
+            <button
+              className="pagination-btn"
+              onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+              disabled={currentPage === pagination.totalPages}
+            >
+              Suivant →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal d'assignation de rôle */}
       {showAssignModal && selectedUser && (

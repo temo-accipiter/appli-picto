@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { isAbortLike, useAuth, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils'
-import { useAuth } from '@/hooks'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import { useEffect, useState } from 'react'
 
 // Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
 const formatErr = (e) => {
@@ -109,8 +108,22 @@ export default function useRecompenses(reload = 0) {
   const selectRecompense = async (id) => {
     const updates = recompenses.map((r) =>
       r.id === id
-        ? { id: r.id, selected: true, user_id: userId }
-        : { id: r.id, selected: false, user_id: userId }
+        ? { 
+            id: r.id, 
+            selected: true, 
+            user_id: userId,
+            label: r.label, // Inclure le label obligatoire
+            points_requis: r.points_requis,
+            visible_en_demo: r.visible_en_demo
+          }
+        : { 
+            id: r.id, 
+            selected: false, 
+            user_id: userId,
+            label: r.label, // Inclure le label obligatoire
+            points_requis: r.points_requis,
+            visible_en_demo: r.visible_en_demo
+          }
     )
 
     const { error, aborted } = await withAbortSafe(

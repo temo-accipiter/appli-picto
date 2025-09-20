@@ -1,7 +1,7 @@
 import { AuthContext } from '@/contexts/AuthContext'
+import { isAbortLike, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils'
 import { useContext, useEffect, useState } from 'react'
-import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // Log "safe" pour Safari/Firefox
 const formatErr = (e) => {
@@ -46,6 +46,7 @@ export const useEntitlements = () => {
             .from('user_roles')
             .select(`
               role_id,
+              is_active,
               roles (
                 name,
                 display_name,
@@ -53,6 +54,7 @@ export const useEntitlements = () => {
               )
             `)
             .eq('user_id', user.id)
+            .eq('is_active', true) // Seulement les rôles actifs
         )
 
       if (!mounted) return
@@ -68,6 +70,8 @@ export const useEntitlements = () => {
       }
 
       if (Array.isArray(userRoles) && userRoles.length > 0) {
+        console.log('🔍 useEntitlements: rôles trouvés:', userRoles)
+        
         // Trier par priorité décroissante côté client
         const sortedUserRoles = [...userRoles].sort((a, b) => {
           const priorityA = a.roles?.priority ?? 0
@@ -75,13 +79,18 @@ export const useEntitlements = () => {
           return priorityB - priorityA
         })
 
+        console.log('🔍 useEntitlements: rôles triés:', sortedUserRoles)
+
         // Prendre le rôle avec la priorité la plus haute
         const highest = sortedUserRoles[0]
         if (highest?.roles?.name) {
+          console.log('🔍 useEntitlements: rôle sélectionné:', highest.roles.name)
           setRole(highest.roles.name)
           setLoading(false)
           return
         }
+      } else {
+        console.log('🔍 useEntitlements: aucun rôle trouvé, userRoles:', userRoles)
       }
 
       // 2) FALLBACK : abonnement actif (active/trialing) le plus récent
@@ -155,6 +164,8 @@ export const useEntitlements = () => {
     isVisitor: role === 'visitor',
     isSubscriber: role === 'abonne',
     isAdmin: role === 'admin',
+    isFree: role === 'free',
+    isStaff: role === 'staff',
     userId: user?.id,
   }
 }

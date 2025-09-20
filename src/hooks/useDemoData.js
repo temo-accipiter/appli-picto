@@ -17,12 +17,13 @@ export const useDemoData = () => {
         setLoading(true)
         setError(null)
 
-        // Récupérer les tâches de démo (limitées à 3)
+        // Récupérer les tâches de démo depuis demo_cards
         const { data: taches, error: tachesError } = await supabase
-          .from('taches')
+          .from('demo_cards')
           .select('*')
-          .eq('visible_en_demo', true)
-          .order('position', { ascending: true })
+          .eq('card_type', 'task')
+          .eq('is_active', true)
+          .order('"position"', { ascending: true })
           .limit(3)
 
         if (tachesError) {
@@ -32,14 +33,26 @@ export const useDemoData = () => {
           )
           setError('Impossible de charger les tâches de démo')
         } else {
-          setDemoTaches(taches || [])
+          // Convertir le format des cartes de démo vers le format des tâches
+          const formattedTaches = (taches || []).map(card => ({
+            id: card.id,
+            label: card.label,
+            imagepath: card.imagepath,
+            position: card.position,
+            done: false,
+            visible_en_demo: true, // Pour compatibilité
+            isDemo: true, // Marquer comme carte de démonstration
+          }))
+          setDemoTaches(formattedTaches)
         }
 
-        // Récupérer les récompenses de démo (limitées à 1)
+        // Récupérer les récompenses de démo depuis demo_cards
         const { data: recompenses, error: recompensesError } = await supabase
-          .from('recompenses')
+          .from('demo_cards')
           .select('*')
-          .eq('visible_en_demo', true)
+          .eq('card_type', 'reward')
+          .eq('is_active', true)
+          .order('"position"', { ascending: true })
           .limit(1)
 
         if (recompensesError) {
@@ -49,7 +62,17 @@ export const useDemoData = () => {
           )
           setError('Impossible de charger les récompenses de démo')
         } else {
-          setDemoRecompenses(recompenses || [])
+          // Convertir le format des cartes de démo vers le format des récompenses
+          const formattedRecompenses = (recompenses || []).map(card => ({
+            id: card.id,
+            label: card.label,
+            imagepath: card.imagepath,
+            position: card.position,
+            selected: false,
+            visible_en_demo: true, // Pour compatibilité
+            isDemo: true, // Marquer comme carte de démonstration
+          }))
+          setDemoRecompenses(formattedRecompenses)
         }
       } catch (err) {
         console.error(

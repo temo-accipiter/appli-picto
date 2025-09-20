@@ -1,0 +1,304 @@
+// src/components/shared/QuotaIndicator.scss
+.quota-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &.clickable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  // Tailles
+  &.small {
+    padding: 8px;
+    gap: 6px;
+
+    .quota-label {
+      font-size: 0.75rem;
+    }
+
+    .quota-bar {
+      height: 6px;
+    }
+
+    .quota-details {
+      font-size: 0.75rem;
+    }
+  }
+
+  &.medium {
+    padding: 12px;
+    gap: 8px;
+
+    .quota-label {
+      font-size: 0.875rem;
+    }
+
+    .quota-bar {
+      height: 8px;
+    }
+
+    .quota-details {
+      font-size: 0.875rem;
+    }
+  }
+
+  &.large {
+    padding: 16px;
+    gap: 10px;
+
+    .quota-label {
+      font-size: 1rem;
+    }
+
+    .quota-bar {
+      height: 10px;
+    }
+
+    .quota-details {
+      font-size: 1rem;
+    }
+  }
+
+  // États
+  &.near-limit {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.05);
+  }
+
+  &.at-limit {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.05);
+  }
+
+  // État de chargement
+  &.loading {
+    .quota-fill {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+  }
+
+  // Éléments internes
+  .quota-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--foreground);
+
+    .content-type {
+      text-transform: capitalize;
+    }
+
+    .monthly-info {
+      font-size: 0.75em;
+      color: var(--muted-foreground);
+      font-weight: 400;
+    }
+  }
+
+  .quota-bar {
+    position: relative;
+    width: 100%;
+    background: var(--muted);
+    border-radius: 4px;
+    overflow: hidden;
+
+    .quota-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+
+      &.near-limit {
+        background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%);
+      }
+
+      &.at-limit {
+        background: linear-gradient(90deg, var(--error) 0%, #f87171 100%);
+      }
+    }
+
+    .quota-percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.75em;
+      font-weight: 600;
+      color: var(--background);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  .quota-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    color: var(--foreground);
+
+    .quota-current {
+      font-weight: 600;
+    }
+
+    .quota-separator {
+      color: var(--muted-foreground);
+    }
+
+    .quota-limit {
+      color: var(--muted-foreground);
+    }
+
+    .quota-remaining {
+      font-size: 0.75em;
+      color: var(--muted-foreground);
+      margin-left: 8px;
+    }
+  }
+
+  .quota-warning {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--error-light);
+    color: var(--error-dark);
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+
+    .warning-icon {
+      font-size: 0.875em;
+    }
+  }
+
+  .quota-upgrade {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+
+    .upgrade-text {
+      font-style: italic;
+    }
+  }
+}
+
+// Animation de pulsation
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .quota-indicator {
+    &.large {
+      padding: 12px;
+      gap: 8px;
+
+      .quota-label {
+        font-size: 0.875rem;
+      }
+
+      .quota-details {
+        font-size: 0.875rem;
+      }
+    }
+
+    .quota-label {
+      .monthly-info {
+        display: none; // Masquer les infos mensuelles sur mobile
+      }
+    }
+
+    .quota-details {
+      .quota-remaining {
+        display: none; // Masquer les restantes sur mobile
+      }
+    }
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .quota-indicator {
+    &.near-limit {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: #f59e0b;
+    }
+
+    &.at-limit {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #ef4444;
+    }
+
+    .quota-warning {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+    }
+
+    .quota-upgrade {
+      background: rgba(59, 130, 246, 0.2);
+      color: #60a5fa;
+    }
+  }
+}
+
+// Variantes de style
+.quota-indicator {
+  &.compact {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+
+    .quota-label {
+      min-width: 80px;
+    }
+
+    .quota-bar {
+      flex: 1;
+    }
+
+    .quota-details {
+      min-width: 60px;
+      justify-content: flex-end;
+    }
+  }
+
+  &.minimal {
+    padding: 8px;
+    gap: 6px;
+    border: none;
+    background: transparent;
+
+    .quota-label {
+      display: none;
+    }
+
+    .quota-details {
+      font-size: 0.75em;
+    }
+  }
+}

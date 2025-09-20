@@ -1,13 +1,14 @@
 import { InputWithValidation, Loader, ModalConfirm, Navbar } from '@/components'
 import {
-  HistoryTab,
-  PermissionsTab,
-  RolesTab,
-  UsersTab,
+    HistoryTab,
+    LogsTab,
+    PermissionsTab,
+    RolesTab,
+    UsersTab,
 } from '@/components/admin-permissions'
 import { usePermissions } from '@/contexts'
 import { createFeatureValidationRules } from '@/utils/validationRules'
-import { History, Plus, Save, Settings, Shield, Users, X } from 'lucide-react'
+import { BarChart3, History, Plus, Save, Settings, Shield, Users, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
@@ -119,8 +120,8 @@ export default function AdminPermissions() {
     )
   }
 
-  // Filtrer les rôles pour exclure admin (qui a tous les droits)
-  const manageableRoles = roles.filter(role => role.name !== 'admin')
+  // Filtrer les rôles actifs pour la gestion des permissions (exclure admin qui a tous les droits)
+  const manageableRoles = roles.filter(role => role.name !== 'admin' && role.is_active)
 
   // Gérer la création d'un nouveau rôle
   const handleCreateRole = async () => {
@@ -158,6 +159,23 @@ export default function AdminPermissions() {
     }
   }
 
+  // Gérer l'activation/désactivation d'un rôle
+  const handleToggleRole = async (roleId, isActive) => {
+    try {
+      const result = await updateRole(roleId, { is_active: isActive })
+      if (!result.error) {
+        // Recharger les données pour s'assurer de la cohérence
+        await loadAllData()
+      } else {
+        console.error('❌ Erreur lors de la mise à jour du rôle:', result.error)
+        alert(`❌ Erreur lors de la mise à jour: ${result.error.message}`)
+      }
+    } catch (error) {
+      console.error('❌ Erreur lors de la mise à jour du rôle:', error)
+      alert('❌ Erreur lors de la mise à jour du rôle')
+    }
+  }
+
   // Confirmer la suppression d'un rôle
   const confirmDeleteRole = async () => {
     if (confirmDelete.roleId) {
@@ -167,6 +185,12 @@ export default function AdminPermissions() {
     }
   }
 
+  // Initialiser les permissions temporaires avec les permissions existantes
+  const initializeTempPermissions = (roleId) => {
+    const existingPermissions = permissions.filter(p => p.role_id === roleId)
+    setTempPermissions(existingPermissions.map(p => ({ ...p })))
+  }
+
   // Gérer le changement d'une permission (approche unifiée)
   const handlePermissionChange = (
     roleId,
@@ -174,12 +198,7 @@ export default function AdminPermissions() {
     permissionType,
     checked
   ) => {
-    console.log('🔄 Changement de permission:', {
-      roleId,
-      featureId,
-      permissionType,
-      checked,
-    })
+    // Log de debug supprimé pour réduire le spam
 
     // Trouver la permission existante ou en créer une nouvelle
     let permission = tempPermissions.find(
@@ -187,13 +206,12 @@ export default function AdminPermissions() {
     )
 
     if (!permission) {
-      // Créer une nouvelle permission (approche unifiée)
+      // Créer une nouvelle permission avec seulement can_access
       permission = {
         role_id: roleId,
         feature_id: featureId,
-        can_access: false, // Seul droit nécessaire
+        can_access: false,
       }
-      console.log('➕ Nouvelle permission créée (unifiée):', permission)
       // Ajouter à la liste des permissions temporaires
       setTempPermissions(prev => [...prev, permission])
     }
@@ -203,7 +221,7 @@ export default function AdminPermissions() {
       ...permission,
       [permissionType]: checked,
     }
-    console.log('✏️ Permission mise à jour (unifiée):', updatedPermission)
+    // Log de debug supprimé
 
     // Mettre à jour la liste des permissions temporaires
     setTempPermissions(prev =>
@@ -214,7 +232,7 @@ export default function AdminPermissions() {
       )
     )
 
-    console.log('📋 tempPermissions après modification:', tempPermissions)
+    // Log de debug supprimé
   }
 
   // Gérer la sauvegarde des permissions d'un rôle
@@ -230,7 +248,7 @@ export default function AdminPermissions() {
         setEditingPermissions(null)
         // Recharger les données pour s'assurer de la cohérence
         await loadAllData()
-        console.log('✅ Permissions sauvegardées avec succès')
+        // Sauvegarde réussie
       } else {
         console.error('❌ Erreur lors de la sauvegarde:', result.error)
         alert('Erreur lors de la sauvegarde des permissions')
@@ -268,7 +286,7 @@ export default function AdminPermissions() {
         // Recharger les données
         await loadAllData()
 
-        console.log('✅ Fonctionnalité créée avec succès:', result.data)
+        // Fonctionnalité créée avec succès
       } else {
         console.error('❌ Erreur lors de la création:', result.error)
         alert(`❌ Erreur lors de la création: ${result.error.message}`)
@@ -281,7 +299,7 @@ export default function AdminPermissions() {
 
   // Gérer la suppression d'une fonctionnalité (nouvelle approche directe)
   const handleDeleteFeature = feature => {
-    console.log('🗑️ handleDeleteFeature appelé avec:', feature)
+    // Gestion de la suppression de fonctionnalité
 
     // Ouvrir directement la modal de confirmation
     setConfirmDeleteFeature({
@@ -290,16 +308,12 @@ export default function AdminPermissions() {
       featureName: feature.display_name,
     })
 
-    console.log('🔍 État confirmDeleteFeature après setState:', {
-      isOpen: true,
-      featureId: feature.id,
-      featureName: feature.display_name,
-    })
+    // Log supprimé - debug inutile
   }
 
   // Gérer la modification d'une fonctionnalité
   const handleEditFeature = feature => {
-    console.log('✏️ handleEditFeature appelé avec:', feature)
+    // Gestion de l'édition de fonctionnalité
 
     // Ouvrir le formulaire d'édition
     setEditingFeature(feature)
@@ -318,7 +332,7 @@ export default function AdminPermissions() {
     }
 
     try {
-      console.log('💾 Sauvegarde des modifications:', editingFeature)
+      // Sauvegarde des modifications
 
       // Utiliser l'API pour mettre à jour la fonctionnalité
       const result = await updateFeature(editingFeature.id, {
@@ -336,7 +350,7 @@ export default function AdminPermissions() {
         // Recharger les données
         await loadAllData()
 
-        console.log('✅ Fonctionnalité modifiée avec succès')
+        // Fonctionnalité modifiée avec succès
       } else {
         console.error('❌ Erreur lors de la modification:', result.error)
         alert(`❌ Erreur lors de la modification: ${result.error.message}`)
@@ -366,7 +380,7 @@ export default function AdminPermissions() {
         // Recharger les données (la fonctionnalité disparaîtra de la liste)
         await loadAllData()
 
-        console.log('✅ Fonctionnalité supprimée avec succès')
+        // Fonctionnalité supprimée avec succès
       } else {
         console.error('❌ Erreur lors de la suppression:', result.error)
         alert(`❌ Erreur lors de la suppression: ${result.error.message}`)
@@ -419,6 +433,13 @@ export default function AdminPermissions() {
         >
           <History className="icon" aria-hidden />
           Historique
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'logs' ? 'active' : ''}`}
+          onClick={() => setActiveTab('logs')}
+        >
+          <BarChart3 className="icon" aria-hidden />
+          Logs
         </button>
       </div>
 
@@ -638,6 +659,7 @@ export default function AdminPermissions() {
               handleSavePermissions={handleSavePermissions}
               handleDeleteFeature={handleDeleteFeature}
               handleEditFeature={handleEditFeature}
+              initializeTempPermissions={initializeTempPermissions}
             />
           </div>
         )}
@@ -645,7 +667,7 @@ export default function AdminPermissions() {
         {/* Onglet Rôles */}
         {activeTab === 'roles' && (
           <RolesTab
-            manageableRoles={manageableRoles}
+            roles={roles}
             newRole={newRole}
             setNewRole={setNewRole}
             editingRole={editingRole}
@@ -653,6 +675,7 @@ export default function AdminPermissions() {
             handleCreateRole={handleCreateRole}
             handleUpdateRole={handleUpdateRole}
             handleDeleteRole={handleDeleteRole}
+            handleToggleRole={handleToggleRole}
           />
         )}
 
@@ -661,6 +684,9 @@ export default function AdminPermissions() {
 
         {/* Onglet Historique */}
         {activeTab === 'history' && <HistoryTab />}
+
+        {/* Onglet Logs */}
+        {activeTab === 'logs' && <LogsTab />}
       </div>
 
       {/* Debug info */}
@@ -704,10 +730,6 @@ export default function AdminPermissions() {
       </ModalConfirm>
 
       {/* Modal de confirmation de suppression de fonctionnalité */}
-      {console.log(
-        '🔍 Rendu ModalConfirm avec confirmDeleteFeature:',
-        confirmDeleteFeature
-      )}
       <ModalConfirm
         isOpen={confirmDeleteFeature.isOpen}
         onClose={() =>

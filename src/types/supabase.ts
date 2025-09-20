@@ -29,7 +29,7 @@ export type Database = {
           price_id: string | null
           raw_data: Json | null
           start_date: string | null
-          status: string | null
+          status: string
           stripe_customer: string | null
           stripe_subscription_id: string | null
           updated_at: string
@@ -49,7 +49,7 @@ export type Database = {
           price_id?: string | null
           raw_data?: Json | null
           start_date?: string | null
-          status?: string | null
+          status: string
           stripe_customer?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -69,7 +69,7 @@ export type Database = {
           price_id?: string | null
           raw_data?: Json | null
           start_date?: string | null
-          status?: string | null
+          status?: string
           stripe_customer?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string
@@ -77,22 +77,70 @@ export type Database = {
         }
         Relationships: []
       }
+      account_audit_logs: {
+        Row: {
+          action: string
+          changed_by: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          new_role: string | null
+          new_status: string | null
+          old_role: string | null
+          old_status: string | null
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_role?: string | null
+          new_status?: string | null
+          old_role?: string | null
+          old_status?: string | null
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          changed_by?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          new_role?: string | null
+          new_status?: string | null
+          old_role?: string | null
+          old_status?: string | null
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
+          created_at: string
           id: string
           label: string
+          updated_at: string
           user_id: string | null
           value: string
         }
         Insert: {
+          created_at?: string
           id?: string
           label: string
+          updated_at?: string
           user_id?: string | null
           value: string
         }
         Update: {
+          created_at?: string
           id?: string
           label?: string
+          updated_at?: string
           user_id?: string | null
           value?: string
         }
@@ -104,12 +152,15 @@ export type Database = {
           app_version: string | null
           choices: Json
           created_at: string
-          id: number
+          donnees: string | null
+          id: string
           ip_hash: string | null
           locale: string | null
           mode: string
           origin: string | null
+          ts: string
           ts_client: string | null
+          type_consentement: string
           ua: string | null
           user_id: string | null
           version: string
@@ -117,80 +168,125 @@ export type Database = {
         Insert: {
           action?: string | null
           app_version?: string | null
-          choices: Json
+          choices?: Json
           created_at?: string
-          id?: number
+          donnees?: string | null
+          id?: string
           ip_hash?: string | null
           locale?: string | null
-          mode: string
+          mode?: string
           origin?: string | null
+          ts?: string
           ts_client?: string | null
+          type_consentement: string
           ua?: string | null
           user_id?: string | null
-          version: string
+          version?: string
         }
         Update: {
           action?: string | null
           app_version?: string | null
           choices?: Json
           created_at?: string
-          id?: number
+          donnees?: string | null
+          id?: string
           ip_hash?: string | null
           locale?: string | null
           mode?: string
           origin?: string | null
+          ts?: string
           ts_client?: string | null
+          type_consentement?: string
           ua?: string | null
           user_id?: string | null
           version?: string
         }
         Relationships: []
       }
-      features: {
+      demo_cards: {
         Row: {
-          category: string | null
+          card_type: string
           created_at: string | null
-          description: string | null
-          display_name: string
           id: string
+          imagepath: string | null
           is_active: boolean | null
-          name: string
+          label: string
+          position: number | null
           updated_at: string | null
         }
         Insert: {
-          category?: string | null
+          card_type: string
           created_at?: string | null
-          description?: string | null
-          display_name: string
           id?: string
+          imagepath?: string | null
           is_active?: boolean | null
-          name: string
+          label: string
+          position?: number | null
           updated_at?: string | null
         }
         Update: {
-          category?: string | null
+          card_type?: string
           created_at?: string | null
+          id?: string
+          imagepath?: string | null
+          is_active?: boolean | null
+          label?: string
+          position?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      features: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
           description?: string | null
           display_name?: string
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           name?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       parametres: {
         Row: {
-          confettis: boolean | null
+          confettis: boolean
+          created_at: string
           id: number
+          updated_at: string
         }
         Insert: {
-          confettis?: boolean | null
+          confettis?: boolean
+          created_at?: string
           id?: number
+          updated_at?: string
         }
         Update: {
-          confettis?: boolean | null
+          confettis?: boolean
+          created_at?: string
           id?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -198,8 +294,9 @@ export type Database = {
         Row: {
           change_reason: string | null
           change_type: string
-          changed_by: string
-          created_at: string | null
+          changed_at: string
+          changed_by: string | null
+          created_at: string
           id: string
           new_values: Json | null
           old_values: Json | null
@@ -209,8 +306,9 @@ export type Database = {
         Insert: {
           change_reason?: string | null
           change_type: string
-          changed_by: string
-          created_at?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
           id?: string
           new_values?: Json | null
           old_values?: Json | null
@@ -220,8 +318,9 @@ export type Database = {
         Update: {
           change_reason?: string | null
           change_type?: string
-          changed_by?: string
-          created_at?: string | null
+          changed_at?: string
+          changed_by?: string | null
+          created_at?: string
           id?: string
           new_values?: Json | null
           old_values?: Json | null
@@ -232,97 +331,112 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           avatar_url: string | null
-          created_at: string | null
+          created_at: string
           date_naissance: string | null
+          deletion_scheduled_at: string | null
           id: string
-          is_admin: boolean | null
+          is_admin: boolean
           pseudo: string | null
+          updated_at: string
           ville: string | null
         }
         Insert: {
+          account_status?: string
           avatar_url?: string | null
-          created_at?: string | null
+          created_at?: string
           date_naissance?: string | null
+          deletion_scheduled_at?: string | null
           id: string
-          is_admin?: boolean | null
+          is_admin?: boolean
           pseudo?: string | null
+          updated_at?: string
           ville?: string | null
         }
         Update: {
+          account_status?: string
           avatar_url?: string | null
-          created_at?: string | null
+          created_at?: string
           date_naissance?: string | null
+          deletion_scheduled_at?: string | null
           id?: string
-          is_admin?: boolean | null
+          is_admin?: boolean
           pseudo?: string | null
+          updated_at?: string
           ville?: string | null
         }
         Relationships: []
       }
       recompenses: {
         Row: {
-          id: number
+          couleur: string | null
+          created_at: string
+          description: string | null
+          icone: string | null
+          id: string
           imagepath: string | null
-          label: string | null
-          selected: boolean | null
+          label: string
+          points_requis: number
+          selected: boolean
+          updated_at: string
           user_id: string | null
-          visible_en_demo: boolean | null
+          visible_en_demo: boolean
         }
         Insert: {
-          id?: number
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          icone?: string | null
+          id?: string
           imagepath?: string | null
-          label?: string | null
-          selected?: boolean | null
+          label: string
+          points_requis?: number
+          selected?: boolean
+          updated_at?: string
           user_id?: string | null
-          visible_en_demo?: boolean | null
+          visible_en_demo?: boolean
         }
         Update: {
-          id?: number
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          icone?: string | null
+          id?: string
           imagepath?: string | null
-          label?: string | null
-          selected?: boolean | null
+          label?: string
+          points_requis?: number
+          selected?: boolean
+          updated_at?: string
           user_id?: string | null
-          visible_en_demo?: boolean | null
+          visible_en_demo?: boolean
         }
         Relationships: []
       }
       role_permissions: {
         Row: {
           can_access: boolean
-          can_create: boolean | null
-          can_delete: boolean | null
-          can_read: boolean | null
-          can_update: boolean | null
-          created_at: string | null
+          created_at: string
           feature_id: string
           id: string
           role_id: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           can_access?: boolean
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
-          created_at?: string | null
+          created_at?: string
           feature_id: string
           id?: string
           role_id: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           can_access?: boolean
-          can_create?: boolean | null
-          can_delete?: boolean | null
-          can_read?: boolean | null
-          can_update?: boolean | null
-          created_at?: string | null
+          created_at?: string
           feature_id?: string
           id?: string
           role_id?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -341,57 +455,104 @@ export type Database = {
           },
         ]
       }
-      roles: {
+      role_quotas: {
         Row: {
           created_at: string | null
-          description: string | null
-          display_name: string
           id: string
-          name: string
-          priority: number | null
+          quota_limit: number
+          quota_period: string | null
+          quota_type: string
+          role_id: string
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
-          description?: string | null
-          display_name: string
           id?: string
-          name: string
-          priority?: number | null
+          quota_limit: number
+          quota_period?: string | null
+          quota_type: string
+          role_id: string
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          id?: string
+          quota_limit?: number
+          quota_period?: string | null
+          quota_type?: string
+          role_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_quotas_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean
+          name: string
+          priority: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
           description?: string | null
           display_name?: string
           id?: string
+          is_active?: boolean
           name?: string
           priority?: number | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
       stations: {
         Row: {
-          id: number
-          label: string | null
-          ligne: string | null
-          ordre: number | null
+          created_at: string
+          id: string
+          label: string
+          ligne: string
+          ordre: number
           type: Database["public"]["Enums"]["transport_type"]
+          updated_at: string
         }
         Insert: {
-          id?: number
-          label?: string | null
-          ligne?: string | null
-          ordre?: number | null
+          created_at?: string
+          id?: string
+          label: string
+          ligne: string
+          ordre: number
           type?: Database["public"]["Enums"]["transport_type"]
+          updated_at?: string
         }
         Update: {
-          id?: number
-          label?: string | null
-          ligne?: string | null
-          ordre?: number | null
+          created_at?: string
+          id?: string
+          label?: string
+          ligne?: string
+          ordre?: number
           type?: Database["public"]["Enums"]["transport_type"]
+          updated_at?: string
         }
         Relationships: []
       }
@@ -421,37 +582,84 @@ export type Database = {
       }
       taches: {
         Row: {
-          aujourdhui: boolean | null
+          aujourdhui: boolean
           categorie: string | null
-          fait: boolean | null
+          categorie_id: string | null
+          couleur: string | null
+          created_at: string
+          description: string | null
+          fait: boolean
+          icone: string | null
           id: string
           imagepath: string | null
           label: string
-          position: number | null
+          points: number
+          position: number
+          updated_at: string
           user_id: string | null
-          visible_en_demo: boolean | null
+          visible_en_demo: boolean
         }
         Insert: {
-          aujourdhui?: boolean | null
+          aujourdhui?: boolean
           categorie?: string | null
-          fait?: boolean | null
+          categorie_id?: string | null
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          fait?: boolean
+          icone?: string | null
           id?: string
           imagepath?: string | null
           label: string
-          position?: number | null
+          points?: number
+          position?: number
+          updated_at?: string
           user_id?: string | null
-          visible_en_demo?: boolean | null
+          visible_en_demo?: boolean
         }
         Update: {
-          aujourdhui?: boolean | null
+          aujourdhui?: boolean
           categorie?: string | null
-          fait?: boolean | null
+          categorie_id?: string | null
+          couleur?: string | null
+          created_at?: string
+          description?: string | null
+          fait?: boolean
+          icone?: string | null
           id?: string
           imagepath?: string | null
           label?: string
-          position?: number | null
+          points?: number
+          position?: number
+          updated_at?: string
           user_id?: string | null
-          visible_en_demo?: boolean | null
+          visible_en_demo?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "taches_categorie_id_fkey"
+            columns: ["categorie_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_prefs: {
+        Row: {
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          timezone?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -459,28 +667,34 @@ export type Database = {
         Row: {
           assigned_at: string | null
           assigned_by: string | null
+          created_at: string
           expires_at: string | null
           id: string
-          is_active: boolean | null
+          is_active: boolean
           role_id: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           assigned_at?: string | null
           assigned_by?: string | null
+          created_at?: string
           expires_at?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           role_id: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           assigned_at?: string | null
           assigned_by?: string | null
+          created_at?: string
           expires_at?: string | null
           id?: string
-          is_active?: boolean | null
+          is_active?: boolean
           role_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -495,16 +709,19 @@ export type Database = {
       }
     }
     Views: {
-      consentements_dernier: {
+      consentements_latest: {
         Row: {
           action: string | null
           app_version: string | null
           choices: Json | null
           created_at: string | null
-          id: number | null
+          effective_ts: string | null
+          id: string | null
+          ip_hash: string | null
           locale: string | null
           mode: string | null
           origin: string | null
+          ts: string | null
           ts_client: string | null
           ua: string | null
           user_id: string | null
@@ -515,10 +732,6 @@ export type Database = {
       role_permissions_admin_view: {
         Row: {
           can_access: boolean | null
-          can_create: boolean | null
-          can_delete: boolean | null
-          can_read: boolean | null
-          can_update: boolean | null
           category: string | null
           created_at: string | null
           feature_display_name: string | null
@@ -549,23 +762,149 @@ export type Database = {
       }
     }
     Functions: {
+      change_account_status: {
+        Args: {
+          changed_by_user_id?: string
+          metadata?: Json
+          new_status: string
+          reason?: string
+          target_user_id: string
+        }
+        Returns: boolean
+      }
+      check_user_quota: {
+        Args: { quota_period?: string; quota_type: string; user_uuid: string }
+        Returns: boolean
+      }
+      check_user_quota_free_only: {
+        Args: { p_period: string; p_quota_type: string; p_user_id: string }
+        Returns: boolean
+      }
+      cleanup_old_audit_logs: {
+        Args: { retention_days?: number }
+        Returns: number
+      }
       email_exists: {
         Args: { email_to_check: string }
         Returns: boolean
+      }
+      get_account_history: {
+        Args: { limit_count?: number; user_uuid: string }
+        Returns: {
+          action: string
+          changed_by_pseudo: string
+          created_at: string
+          id: string
+          new_role: string
+          new_status: string
+          old_role: string
+          old_status: string
+          reason: string
+        }[]
+      }
+      get_account_status: {
+        Args: { user_uuid: string }
+        Returns: {
+          account_status: string
+          deletion_date: string
+          is_pending_verification: boolean
+          is_scheduled_for_deletion: boolean
+          is_suspended: boolean
+          role_name: string
+          user_id: string
+        }[]
+      }
+      get_confettis: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      get_demo_cards: {
+        Args: { card_type_filter?: string }
+        Returns: {
+          card_type: string
+          id: string
+          imagepath: string
+          label: string
+          position: number
+        }[]
+      }
+      get_demo_rewards: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          imagepath: string
+          label: string
+          position: number
+        }[]
+      }
+      get_demo_tasks: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          imagepath: string
+          label: string
+          position: number
+        }[]
+      }
+      get_migration_report: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          abonne_users: number
+          active_users: number
+          admin_users: number
+          deletion_scheduled_users: number
+          free_users: number
+          pending_users: number
+          staff_users: number
+          suspended_users: number
+          total_users: number
+          visitor_users: number
+        }[]
+      }
+      get_user_emails: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
+      get_user_last_logins: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          is_online: boolean
+          last_login: string
+          user_id: string
+        }[]
+      }
+      get_user_month_bounds_utc: {
+        Args: { p_user_id: string }
+        Returns: {
+          end_utc: string
+          start_utc: string
+        }[]
       }
       get_user_permissions: {
         Args: { user_uuid: string }
         Returns: {
           can_access: boolean
-          can_create: boolean
-          can_delete: boolean
-          can_read: boolean
-          can_update: boolean
           feature_name: string
+        }[]
+      }
+      get_user_quota_info: {
+        Args: { quota_period?: string; quota_type: string; user_uuid: string }
+        Returns: {
+          current_usage: number
+          is_limited: boolean
+          quota_limit: number
+          remaining: number
         }[]
       }
       is_admin: {
         Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_system_role: {
+        Args: { role_name: string }
         Returns: boolean
       }
       purge_old_consentements: {
@@ -576,17 +915,9 @@ export type Database = {
         Args: { uid: string }
         Returns: boolean
       }
-      user_has_permission: {
-        Args: {
-          feature_name: string
-          permission_type?: string
-          user_uuid: string
-        }
-        Returns: boolean
-      }
     }
     Enums: {
-      transport_type: "metro" | "tram" | "rer" | "bus"
+      transport_type: "metro" | "bus" | "tram" | "rer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -714,7 +1045,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      transport_type: ["metro", "tram", "rer", "bus"],
+      transport_type: ["metro", "bus", "tram", "rer"],
     },
   },
 } as const

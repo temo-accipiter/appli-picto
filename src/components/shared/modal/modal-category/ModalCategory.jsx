@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types'
-import { useState, useEffect, useRef } from 'react'
+import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
+import { noDoubleSpaces, noEdgeSpaces, validateNotEmpty } from '@/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Modal, Button, InputWithValidation, ButtonDelete } from '@/components'
-import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
+import PropTypes from 'prop-types'
+import { useEffect, useRef, useState } from 'react'
 import './ModalCategory.scss'
 
 export default function ModalCategory({
@@ -37,12 +37,17 @@ export default function ModalCategory({
 
   const handleSubmit = e => {
     e.preventDefault()
+    
     const hasError = validationRules.some(rule => rule(newCategory))
     if (hasError) {
       inputRef.current?.blur()
       return
     }
-    onAddCategory(e)
+    
+    if (typeof onAddCategory === 'function') {
+      // Passer la valeur de la catégorie en paramètre
+      onAddCategory(e, newCategory)
+    }
     onChangeNewCategory('')
   }
 

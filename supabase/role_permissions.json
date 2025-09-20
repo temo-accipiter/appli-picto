@@ -1,0 +1,154 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "role_permissions"
+      },
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "role_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "feature_id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "can_access",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": false
+      },
+      "policies": [
+        {
+          "policyname": "role_permissions_admin_all",
+          "command": "ALL",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "is_admin()",
+          "with_check": "is_admin()"
+        },
+        {
+          "policyname": "role_permissions_select_own_or_admin",
+          "command": "SELECT",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(is_admin() OR (EXISTS ( SELECT 1\n   FROM user_roles ur\n  WHERE ((ur.user_id = auth.uid()) AND (ur.role_id = role_permissions.role_id) AND (ur.is_active = true)))))",
+          "with_check": null
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_role_permissions_feature_id",
+          "def": "CREATE INDEX idx_role_permissions_feature_id ON public.role_permissions USING btree (feature_id)"
+        },
+        {
+          "name": "idx_role_permissions_role_access",
+          "def": "CREATE INDEX idx_role_permissions_role_access ON public.role_permissions USING btree (role_id, can_access)"
+        },
+        {
+          "name": "role_permissions_pkey",
+          "def": "CREATE UNIQUE INDEX role_permissions_pkey ON public.role_permissions USING btree (id)"
+        },
+        {
+          "name": "role_permissions_role_id_feature_id_key",
+          "def": "CREATE UNIQUE INDEX role_permissions_role_id_feature_id_key ON public.role_permissions USING btree (role_id, feature_id)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "role_permissions_feature_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (feature_id) REFERENCES features(id) ON DELETE CASCADE"
+        },
+        {
+          "name": "role_permissions_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "role_permissions_role_id_feature_id_key",
+          "type": "u",
+          "definition": "UNIQUE (role_id, feature_id)"
+        },
+        {
+          "name": "role_permissions_role_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "audit_role_permissions_changes",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER audit_role_permissions_changes AFTER INSERT OR DELETE OR UPDATE ON role_permissions FOR EACH ROW EXECUTE FUNCTION tg_audit_permission_change()",
+          "function_name": "tg_audit_permission_change"
+        },
+        {
+          "name": "set_role_permissions_updated_at",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER set_role_permissions_updated_at BEFORE INSERT OR UPDATE ON role_permissions FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+          "function_name": "set_updated_at"
+        }
+      ],
+      "data_preview": [
+        {
+          "id": "422b66a3-a5ab-47f3-a1d7-36644d10d422",
+          "role_id": "ccaf8c2c-b694-4b93-a906-d37a2bc1a97f",
+          "feature_id": "5cf7d9bf-5b50-4c88-b54a-7ddd4ce4fc36",
+          "created_at": "2025-09-14T20:26:49.840102+00:00",
+          "updated_at": "2025-09-14T20:26:49.840102+00:00",
+          "can_access": true
+        },
+        {
+          "id": "fa16bdb1-31f9-4e30-9152-894ff3008f05",
+          "role_id": "9cc5563e-761f-4f6e-82a9-b9d534059ad0",
+          "feature_id": "5cf7d9bf-5b50-4c88-b54a-7ddd4ce4fc36",
+          "created_at": "2025-09-14T21:08:10.603134+00:00",
+          "updated_at": "2025-09-14T21:08:10.603134+00:00",
+          "can_access": true
+        }
+      ],
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

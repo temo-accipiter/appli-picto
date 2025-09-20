@@ -5,10 +5,12 @@ export { default as TrainProgressBar } from './taches/train-progress-bar/TrainPr
 export { default as RecompensesEdition } from './recompenses/recompenses-edition/RecompensesEdition'
 export { default as SelectedRewardFloating } from './recompenses/selected-reward-floating/SelectedRewardFloating'
 
+export { default as AccountStatusBadge } from './shared/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'
 export { default as BaseCard } from './shared/card/base-card/BaseCard'
 export { default as EditionCard } from './shared/card/edition-card/EditionCard'
 export { default as TableauCard } from './shared/card/tableau-card/TableauCard'
+export { default as DemoSignedImage } from './shared/demo-signed-image/DemoSignedImage'
 export { default as EditionList } from './shared/edition-list/EditionList'
 export { default as ItemForm } from './shared/forms/ItemForm'
 export { default as InputWithValidation } from './shared/input-with-validation/InputWithValidation'
@@ -18,15 +20,18 @@ export { default as Modal } from './shared/modal/Modal'
 export { default as ModalAjout } from './shared/modal/modal-ajout/ModalAjout'
 export { default as ModalCategory } from './shared/modal/modal-category/ModalCategory'
 export { default as ModalConfirm } from './shared/modal/modal-confirm/ModalConfirm'
+export { default as ModalQuota } from './shared/modal/modal-quota/ModalQuota'
 export { default as Navbar } from './shared/navbar/Navbar'
 export { default as PageTransition } from './shared/page-transition/PageTransition'
 export { PermissionsDebug } from './shared/permissions-debug/PermissionsDebug'
 export { PermissionsTest } from './shared/permissions-test/PermissionsTest'
 export { default as ProtectedRoute } from './shared/protected-route/ProtectedRoute'
+export { default as QuotaIndicator } from './shared/QuotaIndicator'
 export { default as Separator } from './shared/separator/Separator'
 export { default as SignedImage } from './shared/signed-image/SignedImage'
 export { default as ThemeToggle } from './shared/theme-toggle/ThemeToggle'
 
+export { default as PersonalizationModal } from './modals/PersonalizationModal'
 export { SignupPromptModal } from './modals/SignupPromptModal'
 export {
     FeatureGate,
@@ -54,4 +59,8 @@ export { default as DeleteAccountGuard } from './settings/DeleteAccountGuard'
 export { default as DeleteAccountModal } from './settings/DeleteAccountModal'
 export { default as SubscribeButton } from './subscribe-button/SubscribeButton'
 export { default as UserMenu } from './user-menu/UserMenu'
+
+// Composants d'administration
+export { default as AccountManagement } from './admin/AccountManagement'
+export { default as QuotaManagement } from './admin/QuotaManagement'
 

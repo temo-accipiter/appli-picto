@@ -1,20 +1,23 @@
+// src/pages/edition/Edition.jsx
 import {
-  Button,
-  Checkbox,
-  ModalCategory,
-  ModalConfirm,
-  RecompensesEdition,
-  Separator,
-  TachesEdition,
+    Button,
+    Checkbox,
+    ModalCategory,
+    ModalConfirm,
+    ModalQuota,
+    RecompensesEdition,
+    Separator,
+    TachesEdition,
 } from '@/components'
 import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
 import { useDisplay, useToast } from '@/contexts'
 import {
-  useAuth,
-  useCategories,
-  useParametres,
-  useRecompenses,
-  useTachesEdition,
+    useAuth,
+    useCategories,
+    useParametres,
+    useQuotas,
+    useRecompenses,
+    useTachesEdition,
 } from '@/hooks'
 import { compressImageIfNeeded, supabase } from '@/utils'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
@@ -24,6 +27,60 @@ import './Edition.scss'
 export default function Edition() {
   const { show } = useToast()
   const { user } = useAuth()
+
+  // 👉 On s'appuie sur le hook (pas de re-requêtage « direct DB » ici)
+  const {
+    canCreateTask,
+    canCreateReward,
+    canCreateCategory,
+    getQuotaInfo,
+    getMonthlyQuotaInfo,
+    refreshQuotas,
+  } = useQuotas()
+
+  // États modaux quotas
+  const [quotaModalOpen, setQuotaModalOpen] = useState(false)
+  const [quotaModalContent, setQuotaModalContent] = useState({
+    contentType: 'task',
+    currentUsage: 0,
+    limit: 0,
+    period: 'total',
+  })
+
+  // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
+  const handleQuotaCheck = async (contentType) => {
+    const allowed =
+      contentType === 'task' ? canCreateTask() :
+      contentType === 'reward' ? canCreateReward() :
+      contentType === 'category' ? canCreateCategory() : true
+
+    if (allowed) return true
+
+    const total = getQuotaInfo(contentType)
+    const monthly = getMonthlyQuotaInfo(contentType)
+
+    if (total && total.current >= total.limit) {
+      setQuotaModalContent({
+        contentType,
+        currentUsage: total.current,
+        limit: total.limit,
+        period: 'total',
+      })
+      setQuotaModalOpen(true)
+      return false
+    }
+    if (monthly && monthly.current >= monthly.limit) {
+      setQuotaModalContent({
+        contentType,
+        currentUsage: monthly.current,
+        limit: monthly.limit,
+        period: 'monthly',
+      })
+      setQuotaModalOpen(true)
+      return false
+    }
+    return false
+  }
 
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState(null)
@@ -78,12 +135,11 @@ export default function Edition() {
       return
     }
 
+    // Vérif quota côté bouton via handleQuotaCheck dans TachesEdition
     let imagePath = ''
     if (image) {
       const compressed = await compressImageIfNeeded(image)
-      const cleanName = image.name
-        .replace(/\s+/g, '-')
-        .replace(/[^a-zA-Z0-9_.-]/g, '')
+      const cleanName = image.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
       const fileName = `${user.id}/taches/${Date.now()}-${cleanName}`
 
       const { error: uploadError } = await supabase.storage
@@ -91,24 +147,21 @@ export default function Edition() {
         .upload(fileName, compressed)
 
       if (uploadError) {
-        show('Erreur lors de l’envoi de l’image.', 'error')
+        show('Erreur lors de l\'envoi de l\'image.', 'error')
         return
       }
-
       imagePath = fileName
     }
 
-    const { error: insertError } = await supabase.from('taches').insert([
-      {
-        label,
-        categorie,
-        aujourdhui: false,
-        fait: false,
-        position: 0,
-        imagepath: imagePath,
-        user_id: user.id,
-      },
-    ])
+    const { error: insertError } = await supabase.from('taches').insert([{
+      label,
+      categorie,
+      aujourdhui: false,
+      fait: false,
+      position: 0,
+      imagepath: imagePath,
+      user_id: user.id,
+    }])
 
     if (insertError) {
       show('Erreur lors de la création de la tâche.', 'error')
@@ -117,49 +170,56 @@ export default function Edition() {
 
     handleTacheAjoutee()
     show('Tâche ajoutée ✅', 'success')
+
+    // Rafraîchir les quotas sans dépendre de window
+    setTimeout(() => { refreshQuotas() }, 100)
   }
 
   const handleSubmitReward = async ({ label, image }) => {
-    if (image) {
-      const compressed = await compressImageIfNeeded(image)
-
-      if (!compressed) {
-        show('Image trop lourde même après compression.', 'error')
-        return
-      }
-
-      await createRecompense({ label, image: compressed })
-      handleRecompenseAjoutee()
-      show('Récompense ajoutée', 'success')
-    } else {
+    if (!image) {
       show('Image manquante.', 'error')
+      return
     }
+    const compressed = await compressImageIfNeeded(image)
+    if (!compressed) {
+      show('Image trop lourde même après compression.', 'error')
+      return
+    }
+
+    await createRecompense({ label, image: compressed })
+    handleRecompenseAjoutee()
+    show('Récompense ajoutée', 'success')
+    setTimeout(() => { refreshQuotas() }, 100)
   }
 
-  const handleAddCategory = async e => {
-    e.preventDefault()
-    const clean = newCatLabel.trim().replace(/\s+/g, ' ')
-    if (!clean) return
-    const slug = clean.toLowerCase().replace(/ /g, '-')
-    await addCategory({ value: slug, label: clean })
+  // Ajouter une catégorie avec vérif quota (sans re-requête DB)
+  const handleAddCategoryWithQuota = async (_e, categoryLabel = null) => {
+    const allowed = canCreateCategory()
+    if (!allowed) {
+      await handleQuotaCheck('category')
+      return
+    }
+
+    const labelToUse = (categoryLabel ?? newCatLabel ?? '').trim().replace(/\s+/g, ' ')
+    if (!labelToUse) return
+
+    const slug = labelToUse.toLowerCase().replace(/ /g, '-')
+    await addCategory({ value: slug, label: labelToUse })
     setNewCatLabel('')
     triggerReload()
-    show('Catégorie ajoutée', 'success')
+    setTimeout(() => { refreshQuotas() }, 100)
   }
 
-  const handleRemoveCategory = async value => {
+  const handleRemoveCategory = async (value) => {
     await deleteCategory(value)
     triggerReload()
-    setCatASupprimer(null)
-    show('Catégorie supprimée', 'error')
+    setTimeout(() => { refreshQuotas() }, 300)
   }
 
-  const toggleSelectRecompense = (id, sel) =>
-    sel ? deselectAll() : selectRecompense(id)
+  const toggleSelectRecompense = (id, sel) => (sel ? deselectAll() : selectRecompense(id))
 
   const visibleTaches = taches.filter(t => {
-    const catMatch =
-      filterCategory === 'all' || (t.categorie || 'none') === filterCategory
+    const catMatch = filterCategory === 'all' || (t.categorie || 'none') === filterCategory
     const doneMatch = !filterDone || !!t.aujourdhui
     return catMatch && doneMatch
   })
@@ -174,11 +234,7 @@ export default function Edition() {
           <Checkbox
             id="confettis"
             className="confettis-checkbox"
-            label={
-              parametres.confettis
-                ? '🎉 Confettis activés'
-                : '🎊 Confettis désactivés'
-            }
+            label={parametres.confettis ? '🎉 Confettis activés' : '🎊 Confettis désactivés'}
             checked={!!parametres.confettis}
             onChange={e => updateParametres({ confettis: e.target.checked })}
           />
@@ -198,7 +254,7 @@ export default function Edition() {
           label="🎁 Afficher la récompense"
           checked={showRecompense}
           onChange={e => setShowRecompense(e.target.checked)}
-        />
+          />
       </div>
 
       <div className="edition-sections">
@@ -207,10 +263,7 @@ export default function Edition() {
             <span className="button-label">
               <ListChecks className="button-icon" size={18} />
               Tâches
-              <ChevronDown
-                className={`chevron ${showTaches ? 'open' : ''}`}
-                size={16}
-              />
+              <ChevronDown className={`chevron ${showTaches ? 'open' : ''}`} size={16} />
             </span>
           }
           onClick={() => setShowTaches(prev => !prev)}
@@ -223,12 +276,13 @@ export default function Edition() {
               onToggleAujourdhui={toggleAujourdhui}
               resetEdition={resetEdition}
               onSubmitTask={handleSubmitTask}
-              onAddCategory={addCategory}
+              onAddCategory={handleAddCategoryWithQuota}
               onDeleteCategory={deleteCategory}
               filterCategory={filterCategory}
               onChangeFilterCategory={setFilterCategory}
               filterDone={filterDone}
               onChangeFilterDone={setFilterDone}
+              onShowQuotaModal={handleQuotaCheck}
               onUpdateLabel={(id, label) => {
                 updateTaskLabel(id, label)
                 show('Tâche renommée', 'success')
@@ -246,10 +300,7 @@ export default function Edition() {
             <span className="button-label">
               <Gift className="button-icon" size={18} />
               Récompenses
-              <ChevronDown
-                className={`chevron ${showRecompenses ? 'open' : ''}`}
-                size={16}
-              />
+              <ChevronDown className={`chevron ${showRecompenses ? 'open' : ''}`} size={16} />
             </span>
           }
           onClick={() => setShowRecompenses(prev => !prev)}
@@ -261,6 +312,7 @@ export default function Edition() {
               onDelete={r => setRecompenseASupprimer(r)}
               onToggleSelect={toggleSelectRecompense}
               onSubmitReward={handleSubmitReward}
+              onShowQuotaModal={handleQuotaCheck}
               onLabelChange={(id, label) => {
                 updateRewardLabel(id, label)
                 show('Récompense modifiée', 'success')
@@ -278,9 +330,10 @@ export default function Edition() {
           deleteRecompense(recompenseASupprimer.id)
           show('Récompense supprimée', 'error')
           setRecompenseASupprimer(null)
+          setTimeout(() => { refreshQuotas() }, 300)
         }}
       >
-        ❗ Supprimer la récompense “{recompenseASupprimer?.label}” ?
+        ❗ Supprimer la récompense "{recompenseASupprimer?.label}" ?
       </ModalConfirm>
 
       <ModalConfirm
@@ -291,9 +344,10 @@ export default function Edition() {
           deleteTache(tacheASupprimer)
           show('Tâche supprimée', 'error')
           setTacheASupprimer(null)
+          setTimeout(() => { refreshQuotas() }, 300)
         }}
       >
-        ❗ Supprimer la tâche “{tacheASupprimer?.label}” ?
+        ❗ Supprimer la tâche "{tacheASupprimer?.label}" ?
       </ModalConfirm>
 
       <ModalCategory
@@ -301,7 +355,7 @@ export default function Edition() {
         onClose={() => setManageCatOpen(false)}
         categories={categories}
         onDeleteCategory={value => setCatASupprimer(value)}
-        onAddCategory={handleAddCategory}
+        onAddCategory={handleAddCategoryWithQuota}
         newCategory={newCatLabel}
         onChangeNewCategory={setNewCatLabel}
       />
@@ -313,12 +367,21 @@ export default function Edition() {
         onConfirm={() => handleRemoveCategory(catASupprimer)}
       >
         <>
-          ❗ Supprimer la catégorie “
-          {categories.find(c => c.value === catASupprimer)?.label}” ?
+          ❗ Supprimer la catégorie "
+          {categories.find(c => c.value === catASupprimer)?.label}" ?
           <br />
-          Les tâches associées seront réattribuées à “Pas de catégorie”.
+          Les tâches associées seront réattribuées à "Pas de catégorie".
         </>
       </ModalConfirm>
+
+      <ModalQuota
+        isOpen={quotaModalOpen}
+        onClose={() => setQuotaModalOpen(false)}
+        contentType={quotaModalContent.contentType}
+        currentUsage={quotaModalContent.currentUsage}
+        limit={quotaModalContent.limit}
+        period={quotaModalContent.period}
+      />
     </div>
   )
 }

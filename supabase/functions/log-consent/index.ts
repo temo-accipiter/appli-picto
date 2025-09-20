@@ -64,6 +64,18 @@ serve(async req => {
       })
     }
 
+    // S'assurer que version n'est jamais null
+    const safeVersion = version || '1.0.0'
+    
+    // Validation stricte des colonnes obligatoires
+    if (!mode || !choices || !safeVersion) {
+      console.error('❌ Validation failed:', { mode, choices, version: safeVersion })
+      return new Response('Invalid data: missing required fields', {
+        status: 400,
+        headers: corsHeaders(req),
+      })
+    }
+
     // Validation du mode
     const validModes = ['accept_all', 'refuse_all', 'custom']
     if (!validModes.includes(mode)) {
@@ -72,6 +84,10 @@ serve(async req => {
         headers: corsHeaders(req),
       })
     }
+
+    // Validation de l'action selon la contrainte CHECK
+    const validActions = ['first_load', 'update', 'withdraw', 'restore', 'revoke']
+    const safeAction = action && validActions.includes(action) ? action : null
 
     // Init Supabase client
     const supabase = createClient(
@@ -86,24 +102,34 @@ serve(async req => {
       ''
     const salt = Deno.env.get('CONSENT_IP_SALT') || 'default-salt'
     const ip_hash = ip ? await sha256Hex(ip + ':' + salt) : null
+    
+    // Validation de ip_hash selon la contrainte CHECK (32-128 caractères)
+    const safeIpHash = ip_hash && ip_hash.length >= 32 && ip_hash.length <= 128 ? ip_hash : null
 
     const country = req.headers.get('cf-ipcountry') || null
     const origin = bodyOrigin || req.headers.get('origin') || null
 
-    // Préparation des données pour insertion
+    // Préparation des données pour insertion (seulement les colonnes nécessaires)
     const consentData = {
-      version: version,
+      // Colonnes obligatoires
+      type_consentement: 'cookie_banner',
       mode: mode,
       choices: choices,
-      action: action || null,
-      ts_client: ts ? new Date(ts).toISOString() : new Date().toISOString(),
+      version: safeVersion,
+      // Colonnes optionnelles - action doit respecter la contrainte CHECK
+      action: safeAction, // Action validée
+      ts_client: ts ? new Date(ts).toISOString() : null,
       user_id: user_id || null,
       ua: ua || null,
       locale: locale || null,
       app_version: app_version || null,
-      ip_hash,
-      origin,
+      ip_hash: safeIpHash,
+      origin: origin || null,
+      donnees: JSON.stringify(choices),
     }
+
+    // Debug: log des données avant insertion
+    console.log('🔍 Données à insérer:', JSON.stringify(consentData, null, 2))
 
     // Insert en base dans la table consentements
     const { error } = await supabase.from('consentements').insert(consentData)

@@ -7,6 +7,11 @@ export { default as Input } from './Input'
 export { default as Modal } from './modal/Modal'
 export { default as Separator } from './separator/Separator'
 
+// Modals
+export { default as ModalAjout } from './modal/modal-ajout/ModalAjout'
+export { default as ModalConfirm } from './modal/modal-confirm/ModalConfirm'
+export { default as ModalQuota } from './modal/modal-quota/ModalQuota'
+
 // Composants de navigation
 export { default as Layout } from './layout/Layout'
 export { default as Navbar } from './navbar/Navbar'

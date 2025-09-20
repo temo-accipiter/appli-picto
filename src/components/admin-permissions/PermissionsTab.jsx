@@ -12,6 +12,7 @@ export default function PermissionsTab({
   handleSavePermissions,
   handleDeleteFeature,
   handleEditFeature,
+  initializeTempPermissions,
 }) {
   return (
     <div className="permissions-tab">
@@ -36,6 +37,7 @@ export default function PermissionsTab({
         handleSavePermissions={handleSavePermissions}
         handleDeleteFeature={handleDeleteFeature}
         handleEditFeature={handleEditFeature}
+        initializeTempPermissions={initializeTempPermissions}
       />
 
       {/* Informations de debug */}

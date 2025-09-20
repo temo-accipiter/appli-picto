@@ -476,25 +476,7 @@ export const removeRoleFromUser = async (userId, roleId) => {
   }
 }
 
-/**
- * Récupère toutes les permissions d'un utilisateur
- *
-export const getUserPermissions = async userId => {
-  try {
-    const { data, error } = await supabase.rpc('get_user_permissions', {
-      user_uuid: userId,
-    })
-
-    if (error) throw error
-    return { data, error: null }
-  } catch (error) {
-    console.error(
-      'Erreur lors de la récupération des permissions utilisateur:',
-      error
-    )
-    return { data: null, error }
-  }
-}
+// Fonction getUserPermissions supprimée - elle est définie dans usePermissionsAPI.js
 
 // =====================================================
 // HISTORIQUE DES CHANGEMENTS
@@ -555,8 +537,8 @@ export const logPermissionChange = async changeData => {
   }
 }
 */
+import { isAbortLike, withAbortSafe } from '@/hooks'
 import { supabase } from './supabaseClient'
-import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // Log d'erreur "safe"
 const formatErr = (e) => {
@@ -574,6 +556,7 @@ const formatErr = (e) => {
 // GESTION DES RÔLES
 // =====================================================
 
+// Fonction pour récupérer tous les rôles (admin uniquement)
 export const getRoles = async () => {
   const { data, error, aborted } = await withAbortSafe(
     supabase.from('roles').select('*').order('priority', { ascending: true })
@@ -581,6 +564,19 @@ export const getRoles = async () => {
   if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
   if (error) {
     console.error(`Erreur lors de la récupération des rôles: ${formatErr(error)}`)
+    return { data: null, error }
+  }
+  return { data, error: null }
+}
+
+// Fonction pour récupérer seulement les rôles actifs (pour les sélections utilisateur)
+export const getActiveRoles = async () => {
+  const { data, error, aborted } = await withAbortSafe(
+    supabase.from('roles').select('*').eq('is_active', true).order('priority', { ascending: true })
+  )
+  if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
+  if (error) {
+    console.error(`Erreur lors de la récupération des rôles actifs: ${formatErr(error)}`)
     return { data: null, error }
   }
   return { data, error: null }
@@ -786,16 +782,47 @@ export const updateRolePermissions = async (roleId, permissions) => {
 // GESTION DES UTILISATEURS
 // =====================================================
 
-export const getUsersWithRoles = async () => {
-  // profils
-  const { data: profiles, error: profilesError, aborted: profAborted } = await withAbortSafe(
-    supabase.from('profiles').select('id, pseudo, is_admin, created_at').order('created_at', { ascending: false })
-  )
+export const getUsersWithRoles = async (options = {}) => {
+  const { page = 1, limit = 20, roleFilter = 'all', statusFilter = 'all' } = options
+  
+  // Calculer l'offset pour la pagination
+  const offset = (page - 1) * limit
+  
+  // Construire la requête de base
+  let query = supabase
+    .from('profiles')
+    .select('id, pseudo, is_admin, created_at, account_status')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+  
+  // Appliquer le filtre de statut si nécessaire
+  if (statusFilter !== 'all') {
+    query = query.eq('account_status', statusFilter)
+  }
+  
+  const { data: profiles, error: profilesError, aborted: profAborted } = await withAbortSafe(query)
   if (profAborted || (profilesError && isAbortLike(profilesError))) return { data: [], error: null }
   if (profilesError) {
     console.error(`Erreur lors de la récupération des utilisateurs: ${formatErr(profilesError)}`)
     return { data: null, error: profilesError }
   }
+
+  // Récupérer les emails via RPC
+  const { data: emails, error: emailsError } = await supabase.rpc('get_user_emails')
+  const emailMap = emails?.reduce((acc, item) => {
+    acc[item.user_id] = item.email
+    return acc
+  }, {}) || {}
+
+  // Récupérer les dernières connexions via RPC
+  const { data: lastLogins, error: lastLoginsError } = await supabase.rpc('get_user_last_logins')
+  const loginMap = lastLogins?.reduce((acc, item) => {
+    acc[item.user_id] = {
+      last_login: item.last_login,
+      is_online: item.is_online
+    }
+    return acc
+  }, {}) || {}
 
   // rôles par user
   const usersWithRoles = await Promise.all(
@@ -807,23 +834,73 @@ export const getUsersWithRoles = async () => {
             id,
             is_active,
             assigned_at,
-            roles ( id, name, display_name, description )
+            roles!inner ( id, name, display_name, description, is_active )
           `)
           .eq('user_id', profile.id)
           .eq('is_active', true)
+          .eq('roles.is_active', true)
       )
       if (urAborted || (userRolesError && isAbortLike(userRolesError))) {
-        return { ...profile, user_roles: [] }
-      }
-      if (userRolesError) {
-        console.warn(`Erreur rôles pour ${profile.id}: ${formatErr(userRolesError)}`)
-        return { ...profile, user_roles: [] }
-      }
-      return { ...profile, user_roles: userRoles || [] }
+             return { 
+               ...profile, 
+               user_roles: [], 
+               email: emailMap[profile.id] || null,
+               last_login: loginMap[profile.id]?.last_login || null,
+               is_online: loginMap[profile.id]?.is_online || false
+             }
+           }
+           if (userRolesError) {
+             console.warn(`Erreur rôles pour ${profile.id}: ${formatErr(userRolesError)}`)
+             return { 
+               ...profile, 
+               user_roles: [], 
+               email: emailMap[profile.id] || null,
+               last_login: loginMap[profile.id]?.last_login || null,
+               is_online: loginMap[profile.id]?.is_online || false
+             }
+           }
+           return {
+             ...profile,
+             user_roles: userRoles || [],
+             email: emailMap[profile.id] || null,
+             last_login: loginMap[profile.id]?.last_login || null,
+             is_online: loginMap[profile.id]?.is_online || false
+           }
     })
   )
 
-  return { data: usersWithRoles, error: null }
+  // Récupérer le nombre total d'utilisateurs pour la pagination
+  let countQuery = supabase.from('profiles').select('*', { count: 'exact', head: true })
+  if (statusFilter !== 'all') {
+    countQuery = countQuery.eq('account_status', statusFilter)
+  }
+  const { count: totalUsers } = await countQuery
+
+  // Appliquer le filtre par rôle côté client (après récupération des rôles)
+  let filteredUsers = usersWithRoles
+  if (roleFilter !== 'all') {
+    filteredUsers = usersWithRoles.filter(user => {
+      if (roleFilter === 'admin') {
+        return user.is_admin
+      }
+      if (roleFilter === 'no_roles') {
+        return !user.user_roles || user.user_roles.length === 0
+      }
+      // Filtre par nom de rôle
+      return user.user_roles?.some(userRole => userRole.roles?.name === roleFilter)
+    })
+  }
+
+  return { 
+    data: filteredUsers, 
+    error: null,
+    pagination: {
+      page,
+      limit,
+      total: totalUsers || 0,
+      totalPages: Math.ceil((totalUsers || 0) / limit)
+    }
+  }
 }
 
 export const getUserRoles = async (userId) => {
@@ -875,18 +952,6 @@ export const removeRoleFromUser = async (userId, roleId) => {
   return { error: null }
 }
 
-export const getUserPermissions = async (userId) => {
-  const { data, error, aborted } = await withAbortSafe(
-    supabase.rpc('get_user_permissions', { user_uuid: userId })
-  )
-  if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
-  if (error) {
-    console.error(`Erreur permissions utilisateur: ${formatErr(error)}`)
-    return { data: null, error }
-  }
-  return { data, error: null }
-}
-
 // =====================================================
 // HISTORIQUE DES CHANGEMENTS
 // =====================================================
@@ -895,8 +960,18 @@ export const getPermissionHistory = async (limit = 50) => {
   const { data, error, aborted } = await withAbortSafe(
     supabase
       .from('permission_changes')
-      .select('id, change_type, table_name, record_id, old_values, new_values, changed_by')
-      .order('id', { ascending: false })
+      .select(`
+        id, 
+        change_type, 
+        table_name, 
+        record_id, 
+        old_values, 
+        new_values, 
+        changed_by,
+        changed_at,
+        created_at
+      `)
+      .order('created_at', { ascending: false })
       .limit(limit)
   )
   if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
@@ -904,7 +979,30 @@ export const getPermissionHistory = async (limit = 50) => {
     console.error(`Erreur lors de la récupération de l'historique: ${formatErr(error)}`)
     return { data: null, error }
   }
-  return { data, error: null }
+  
+  // Récupérer les pseudos des utilisateurs séparément si needed
+  const userIds = [...new Set(data?.map(item => item.changed_by).filter(Boolean))] || []
+  let userProfiles = {}
+  
+  if (userIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, pseudo')
+      .in('id', userIds)
+    
+    userProfiles = profiles?.reduce((acc, profile) => {
+      acc[profile.id] = profile.pseudo
+      return acc
+    }, {}) || {}
+  }
+  
+  // Enrichir les données avec les pseudos
+  const enrichedData = data?.map(item => ({
+    ...item,
+    user_pseudo: userProfiles[item.changed_by] || 'Utilisateur inconnu'
+  }))
+  
+  return { data: enrichedData, error: null }
 }
 
 export const logPermissionChange = async (changeData) => {
@@ -919,6 +1017,21 @@ export const logPermissionChange = async (changeData) => {
   if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
   if (error) {
     console.error(`Erreur lors de l'enregistrement du changement: ${formatErr(error)}`)
+    return { data: null, error }
+  }
+  return { data, error: null }
+}
+
+/**
+ * Récupère toutes les permissions d'un utilisateur via RPC
+ */
+export const getUserPermissions = async (userId) => {
+  const { data, error, aborted } = await withAbortSafe(
+    supabase.rpc('get_user_permissions', { user_uuid: userId })
+  )
+  if (aborted || (error && isAbortLike(error))) return { data: null, error: null }
+  if (error) {
+    console.error(`Erreur permissions utilisateur: ${formatErr(error)}`)
     return { data: null, error }
   }
   return { data, error: null }

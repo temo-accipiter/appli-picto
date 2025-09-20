@@ -120,7 +120,6 @@ import {
     ResetPassword,
     Signup,
     Tableau,
-    TableauDemo,
 } from '@/pages'
 
 // ✅ Routes : on place aussi login/signup/forgot/reset SOUS Layout
@@ -131,7 +130,6 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomeRedirect /> },
       { path: 'tableau', element: <Tableau /> },
-      { path: 'tableau-demo', element: <TableauDemo /> },
       {
         path: 'edition',
         element: (
