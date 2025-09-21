@@ -10,6 +10,7 @@ import {
     TachesEdition,
 } from '@/components'
 import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
+import ImageQuotaIndicator from '@/components/shared/ImageQuotaIndicator'
 import { useDisplay, useToast } from '@/contexts'
 import {
     useAuth,
@@ -19,7 +20,8 @@ import {
     useRecompenses,
     useTachesEdition,
 } from '@/hooks'
-import { compressImageIfNeeded, supabase } from '@/utils'
+import { checkImageQuota, uploadImageWithQuota } from '@/services/imageUploadService'
+import { supabase } from '@/utils'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import './Edition.scss'
@@ -46,6 +48,40 @@ export default function Edition() {
     limit: 0,
     period: 'total',
   })
+
+  // États pour les quotas d'images
+  const [imageQuotaModalOpen, setImageQuotaModalOpen] = useState(false)
+  const [imageQuotaContent, setImageQuotaContent] = useState({
+    assetType: 'task_image',
+    currentUsage: 0,
+    limit: 0,
+    reason: ''
+  })
+
+  // Vérification des quotas d'images
+  const handleImageQuotaCheck = async (assetType) => {
+    if (!user?.id) return true
+
+    try {
+      const quotaResult = await checkImageQuota(user.id, assetType)
+      
+      if (!quotaResult.canUpload) {
+        setImageQuotaContent({
+          assetType,
+          currentUsage: quotaResult.stats?.[assetType === 'task_image' ? 'task_images' : 'reward_images'] || 0,
+          limit: quotaResult.quotas?.[`max_${assetType.replace('_image', '_images')}`] || 0,
+          reason: quotaResult.reason
+        })
+        setImageQuotaModalOpen(true)
+        return false
+      }
+      return true
+    } catch (error) {
+      console.error('Erreur vérification quota image:', error)
+      show('Erreur lors de la vérification des quotas d\'images', 'error')
+      return false
+    }
+  }
 
   // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
   const handleQuotaCheck = async (contentType) => {
@@ -138,19 +174,17 @@ export default function Edition() {
     // Vérif quota côté bouton via handleQuotaCheck dans TachesEdition
     let imagePath = ''
     if (image) {
-      const compressed = await compressImageIfNeeded(image)
-      const cleanName = image.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
-      const fileName = `${user.id}/taches/${Date.now()}-${cleanName}`
+      // Vérifier les quotas d'images avant upload
+      const canUploadImage = await handleImageQuotaCheck('task_image')
+      if (!canUploadImage) return
 
-      const { error: uploadError } = await supabase.storage
-        .from('images')
-        .upload(fileName, compressed)
-
-      if (uploadError) {
-        show('Erreur lors de l\'envoi de l\'image.', 'error')
+      try {
+        const uploadResult = await uploadImageWithQuota(image, 'task_image', user.id)
+        imagePath = uploadResult.filePath
+      } catch (error) {
+        show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
         return
       }
-      imagePath = fileName
     }
 
     const { error: insertError } = await supabase.from('taches').insert([{
@@ -180,16 +214,27 @@ export default function Edition() {
       show('Image manquante.', 'error')
       return
     }
-    const compressed = await compressImageIfNeeded(image)
-    if (!compressed) {
-      show('Image trop lourde même après compression.', 'error')
+
+    if (!user?.id) {
+      show('Erreur utilisateur : veuillez vous reconnecter.', 'error')
       return
     }
 
-    await createRecompense({ label, image: compressed })
-    handleRecompenseAjoutee()
-    show('Récompense ajoutée', 'success')
-    setTimeout(() => { refreshQuotas() }, 100)
+    // Vérifier les quotas d'images avant upload
+    const canUploadImage = await handleImageQuotaCheck('reward_image')
+    if (!canUploadImage) return
+
+    try {
+      const uploadResult = await uploadImageWithQuota(image, 'reward_image', user.id)
+      
+      // Utiliser l'ancien système pour créer la récompense mais avec le nouveau chemin d'image
+      await createRecompense({ label, image: uploadResult.filePath })
+      handleRecompenseAjoutee()
+      show('Récompense ajoutée', 'success')
+      setTimeout(() => { refreshQuotas() }, 100)
+    } catch (error) {
+      show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
+    }
   }
 
   // Ajouter une catégorie avec vérif quota (sans re-requête DB)
@@ -270,6 +315,9 @@ export default function Edition() {
         />
         {showTaches && (
           <div className="taches-edition">
+            <div className="quota-indicators">
+              <ImageQuotaIndicator assetType="task_image" size="small" />
+            </div>
             <TachesEdition
               items={visibleTaches}
               categories={categories}
@@ -307,6 +355,9 @@ export default function Edition() {
         />
         {showRecompenses && (
           <div className="recompenses-edition">
+            <div className="quota-indicators">
+              <ImageQuotaIndicator assetType="reward_image" size="small" />
+            </div>
             <RecompensesEdition
               items={recompenses}
               onDelete={r => setRecompenseASupprimer(r)}
@@ -381,6 +432,16 @@ export default function Edition() {
         currentUsage={quotaModalContent.currentUsage}
         limit={quotaModalContent.limit}
         period={quotaModalContent.period}
+      />
+
+      {/* Modal pour quotas d'images */}
+      <ModalQuota
+        isOpen={imageQuotaModalOpen}
+        onClose={() => setImageQuotaModalOpen(false)}
+        contentType={imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'}
+        currentUsage={imageQuotaContent.currentUsage}
+        limit={imageQuotaContent.limit}
+        period="total"
       />
     </div>
   )

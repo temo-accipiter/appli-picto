@@ -645,6 +645,42 @@ export type Database = {
           },
         ]
       }
+      user_assets: {
+        Row: {
+          asset_type: string
+          created_at: string
+          dimensions: string | null
+          file_path: string
+          file_size: number
+          id: string
+          mime_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_type: string
+          created_at?: string
+          dimensions?: string | null
+          file_path: string
+          file_size: number
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          dimensions?: string | null
+          file_path?: string
+          file_size?: number
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_prefs: {
         Row: {
           timezone: string
@@ -707,6 +743,30 @@ export type Database = {
           },
         ]
       }
+      user_usage_counters: {
+        Row: {
+          categories: number
+          rewards: number
+          tasks: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categories?: number
+          rewards?: number
+          tasks?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categories?: number
+          rewards?: number
+          tasks?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       consentements_latest: {
@@ -762,6 +822,14 @@ export type Database = {
       }
     }
     Functions: {
+      assert_self_or_admin: {
+        Args: { p_target: string }
+        Returns: undefined
+      }
+      bump_usage_counter: {
+        Args: { p_col: string; p_delta: number; p_user: string }
+        Returns: undefined
+      }
       change_account_status: {
         Args: {
           changed_by_user_id?: string
@@ -771,6 +839,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      check_image_quota: {
+        Args: { p_asset_type: string; p_file_size?: number; p_user_id: string }
+        Returns: Json
       }
       check_user_quota: {
         Args: { quota_period?: string; quota_type: string; user_uuid: string }
@@ -861,6 +933,14 @@ export type Database = {
           visitor_users: number
         }[]
       }
+      get_usage_fast: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
+      get_user_assets_stats: {
+        Args: { p_user_id: string }
+        Returns: Json
+      }
       get_user_emails: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -890,6 +970,14 @@ export type Database = {
           feature_name: string
         }[]
       }
+      get_user_primary_role: {
+        Args: { p_user_id: string }
+        Returns: {
+          priority: number
+          role_id: string
+          role_name: string
+        }[]
+      }
       get_user_quota_info: {
         Args: { quota_period?: string; quota_type: string; user_uuid: string }
         Returns: {
@@ -897,6 +985,15 @@ export type Database = {
           is_limited: boolean
           quota_limit: number
           remaining: number
+        }[]
+      }
+      get_user_roles: {
+        Args: { p_user_id: string }
+        Returns: {
+          is_active: boolean
+          priority: number
+          role_id: string
+          role_name: string
         }[]
       }
       is_admin: {

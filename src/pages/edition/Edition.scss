@@ -145,6 +145,15 @@
   flex-direction: column;
   gap: $spacing-lg;
 }
+
+// Indicateurs de quotas d'images
+.quota-indicators {
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--bg-secondary, #f8f9fa);
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e9ecef);
+}
 //----- Button styles -----//
 .button-label {
   display: inline-flex;

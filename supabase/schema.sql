@@ -69,76 +69,157 @@ CREATE TYPE storage.buckettype AS ENUM (
 ALTER TYPE storage.buckettype OWNER TO supabase_storage_admin;
 
 --
+-- Name: assert_self_or_admin(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.assert_self_or_admin(p_target uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  IF p_target IS NULL THEN
+    RAISE EXCEPTION 'Forbidden (target is null)' USING ERRCODE = '42501';
+  END IF;
+
+  IF auth.uid() IS DISTINCT FROM p_target AND NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Forbidden (not self nor admin)' USING ERRCODE = '42501';
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.assert_self_or_admin(p_target uuid) OWNER TO postgres;
+
+--
+-- Name: FUNCTION assert_self_or_admin(p_target uuid); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.assert_self_or_admin(p_target uuid) IS 'Raise if the caller is neither the target user nor an admin.';
+
+
+--
+-- Name: bump_usage_counter(uuid, text, integer); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+begin
+  update public.user_usage_counters
+     set updated_at = now(),
+         -- sécurité pour éviter valeurs négatives
+         tasks      = case when p_col='tasks'      then greatest(0, tasks + p_delta)      else tasks      end,
+         rewards    = case when p_col='rewards'    then greatest(0, rewards + p_delta)    else rewards    end,
+         categories = case when p_col='categories' then greatest(0, categories + p_delta) else categories end
+   where user_id = p_user;
+
+  if not found then
+    insert into public.user_usage_counters(user_id, tasks, rewards, categories)
+    values (p_user,
+      case when p_col='tasks' then greatest(0, p_delta) else 0 end,
+      case when p_col='rewards' then greatest(0, p_delta) else 0 end,
+      case when p_col='categories' then greatest(0, p_delta) else 0 end
+    );
+  end if;
+end $$;
+
+
+ALTER FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) OWNER TO postgres;
+
+--
+-- Name: categories_counter_del(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.categories_counter_del() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(old.user_id, 'categories', -1);
+  return old;
+end $$;
+
+
+ALTER FUNCTION public.categories_counter_del() OWNER TO postgres;
+
+--
+-- Name: categories_counter_ins(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.categories_counter_ins() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(new.user_id, 'categories', 1);
+  return new;
+end $$;
+
+
+ALTER FUNCTION public.categories_counter_ins() OWNER TO postgres;
+
+--
 -- Name: change_account_status(uuid, text, uuid, text, jsonb); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid DEFAULT NULL::uuid, reason text DEFAULT NULL::text, metadata jsonb DEFAULT NULL::jsonb) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 DECLARE
-    old_status text;
-    old_role text;
-    new_role text;
+  old_status text;
+  old_role text;
+  new_role text;
 BEGIN
-    -- Récupérer l'état actuel
-    SELECT p.account_status, r.name INTO old_status, old_role
-    FROM public.profiles p
-    LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
-    LEFT JOIN public.roles r ON r.id = ur.role_id
-    WHERE p.id = target_user_id;
-    
-    -- Mettre à jour l'état
-    UPDATE public.profiles 
-    SET account_status = new_status,
-        deletion_scheduled_at = CASE 
-            WHEN new_status = 'deletion_scheduled' THEN now() + interval '30 days'
-            ELSE NULL
-        END
-    WHERE id = target_user_id;
-    
-    -- Déterminer le nouveau rôle basé sur l'état
-    IF new_status = 'active' THEN
-        -- Rôle basé sur l'abonnement
-        SELECT CASE 
-            WHEN EXISTS (
-                SELECT 1 FROM public.abonnements 
-                WHERE user_id = target_user_id 
-                AND status IN ('active', 'trialing', 'past_due')
-            ) THEN 'abonne'
-            ELSE 'free'
-        END INTO new_role;
-    ELSIF new_status = 'suspended' THEN
-        new_role := 'visitor';
-    ELSIF new_status = 'deletion_scheduled' THEN
-        new_role := 'visitor';
-    ELSIF new_status = 'pending_verification' THEN
-        new_role := 'visitor';
-    END IF;
-    
-    -- Mettre à jour le rôle si nécessaire
-    IF new_role IS NOT NULL AND new_role != old_role THEN
-        -- Désactiver tous les rôles actuels
-        UPDATE public.user_roles 
-        SET is_active = false 
-        WHERE user_id = target_user_id;
-        
-        -- Ajouter le nouveau rôle
-        INSERT INTO public.user_roles (user_id, role_id, assigned_by)
-        SELECT target_user_id, r.id, changed_by_user_id
-        FROM public.roles r
-        WHERE r.name = new_role;
-    END IF;
-    
-    -- Logger le changement
-    INSERT INTO public.account_audit_logs (
-        user_id, action, old_status, new_status, 
-        old_role, new_role, changed_by, reason, metadata
-    ) VALUES (
-        target_user_id, 'status_change', old_status, new_status,
-        old_role, new_role, changed_by_user_id, reason, metadata
-    );
-    
-    RETURN true;
+  -- Admin only
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
+  END IF;
+
+  SELECT p.account_status, r.name INTO old_status, old_role
+  FROM public.profiles p
+  LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
+  LEFT JOIN public.roles r ON r.id = ur.role_id
+  WHERE p.id = target_user_id;
+
+  UPDATE public.profiles
+  SET account_status = new_status,
+      deletion_scheduled_at = CASE
+        WHEN new_status = 'deletion_scheduled' THEN now() + interval '30 days'
+        ELSE NULL
+      END
+  WHERE id = target_user_id;
+
+  IF new_status = 'active' THEN
+    SELECT CASE
+      WHEN EXISTS (
+        SELECT 1 FROM public.abonnements
+        WHERE user_id = target_user_id
+        AND status IN ('active', 'trialing', 'past_due')
+      ) THEN 'abonne'
+      ELSE 'free'
+    END INTO new_role;
+
+  ELSIF new_status IN ('suspended','deletion_scheduled','pending_verification') THEN
+    new_role := 'visitor';
+  END IF;
+
+  IF new_role IS NOT NULL AND new_role <> old_role THEN
+    UPDATE public.user_roles SET is_active = false WHERE user_id = target_user_id;
+
+    INSERT INTO public.user_roles (user_id, role_id, assigned_by)
+    SELECT target_user_id, r.id, changed_by_user_id
+    FROM public.roles r
+    WHERE r.name = new_role;
+  END IF;
+
+  INSERT INTO public.account_audit_logs (
+    user_id, action, old_status, new_status,
+    old_role, new_role, changed_by, reason, metadata
+  ) VALUES (
+    target_user_id, 'status_change', old_status, new_status,
+    old_role, new_role, changed_by_user_id, reason, metadata
+  );
+
+  RETURN true;
 END;
 $$;
 
@@ -146,72 +227,136 @@ $$;
 ALTER FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) OWNER TO postgres;
 
 --
+-- Name: check_image_quota(uuid, text, bigint); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint DEFAULT 0) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_role record;
+  v_quotas jsonb := '{}'::jsonb;
+  v_stats jsonb;
+  v_can_upload boolean := true;
+  v_reason text;
+  v_max_image_size bigint;
+  v_max_total_size bigint;
+  v_sub record;
+BEGIN
+  -- Garde self/admin
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  -- Rôle prioritaire
+  SELECT r.id, r.name, r.priority
+    INTO v_role
+  FROM public.user_roles ur
+  JOIN public.roles r ON r.id = ur.role_id
+  WHERE ur.user_id = p_user_id AND ur.is_active = true
+  ORDER BY r.priority DESC
+  LIMIT 1;
+
+  -- 🔧 Fallback si aucun rôle encore actif
+  IF v_role.id IS NULL THEN
+    SELECT * INTO v_sub
+    FROM public.abonnements
+    WHERE user_id = p_user_id AND status IN ('active','trialing','past_due','paused')
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF v_sub.id IS NOT NULL THEN
+      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'abonne' LIMIT 1;
+    ELSE
+      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'free' LIMIT 1;
+    END IF;
+  END IF;
+
+  -- Admin/Staff : pas de limite
+  IF v_role.name IN ('admin','staff') THEN
+    RETURN jsonb_build_object('can_upload', true, 'reason', 'admin_unlimited');
+  END IF;
+
+  -- Quotas image du rôle
+  SELECT COALESCE(jsonb_object_agg(quota_type, quota_limit), '{}'::jsonb)
+    INTO v_quotas
+  FROM public.role_quotas
+  WHERE role_id = v_role.id
+    AND quota_type LIKE '%image%';
+
+  -- Stats actuelles
+  SELECT public.get_user_assets_stats(p_user_id) INTO v_stats;
+
+  -- Tailles facultatives
+  v_max_image_size := NULLIF((v_quotas->>'max_image_size')::bigint, 0);
+  v_max_total_size := NULLIF((v_quotas->>'max_total_images_size')::bigint, 0);
+
+  IF p_asset_type NOT IN ('task_image','reward_image') THEN
+    RETURN jsonb_build_object('can_upload', false, 'reason', 'invalid_asset_type');
+  END IF;
+
+  IF v_max_image_size IS NOT NULL AND p_file_size > v_max_image_size THEN
+    v_can_upload := false; v_reason := 'image_too_large';
+  END IF;
+
+  IF v_can_upload AND p_asset_type = 'task_image' THEN
+    IF (v_stats->>'task_images')::int >= COALESCE((v_quotas->>'max_task_images')::int, 2147483647) THEN
+      v_can_upload := false; v_reason := 'task_image_limit_reached';
+    END IF;
+  ELSIF v_can_upload AND p_asset_type = 'reward_image' THEN
+    IF (v_stats->>'reward_images')::int >= COALESCE((v_quotas->>'max_reward_images')::int, 2147483647) THEN
+      v_can_upload := false; v_reason := 'reward_image_limit_reached';
+    END IF;
+  END IF;
+
+  IF v_can_upload AND (v_stats->>'total_images')::int >= COALESCE((v_quotas->>'max_total_images')::int, 2147483647) THEN
+    v_can_upload := false; v_reason := 'total_image_limit_reached';
+  END IF;
+
+  IF v_can_upload AND v_max_total_size IS NOT NULL THEN
+    IF COALESCE((v_stats->>'total_size')::bigint, 0) + GREATEST(p_file_size,0) > v_max_total_size THEN
+      v_can_upload := false; v_reason := 'total_image_size_limit_reached';
+    END IF;
+  END IF;
+
+  RETURN jsonb_build_object(
+    'can_upload', v_can_upload,
+    'reason', COALESCE(v_reason, 'ok'),
+    'role', v_role.name,
+    'quotas', v_quotas,
+    'stats', v_stats
+  );
+END
+$$;
+
+
+ALTER FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) OWNER TO postgres;
+
+--
 -- Name: check_user_quota(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text DEFAULT 'monthly'::text) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 DECLARE
-    user_role text;
-    quota_limit integer;
-    current_usage integer;
+  v_limit integer;
+  v_usage integer;
+  v_dummy1 integer; v_dummy2 integer; v_is_limited boolean;
 BEGIN
-    -- Récupérer le rôle de l'utilisateur
-    SELECT r.name INTO user_role
-    FROM public.user_roles ur
-    JOIN public.roles r ON r.id = ur.role_id
-    WHERE ur.user_id = user_uuid AND ur.is_active = true
-    LIMIT 1;
-    
-    -- Si pas de rôle ou admin, pas de limite
-    IF user_role IS NULL OR user_role = 'admin' THEN
-        RETURN true;
-    END IF;
-    
-    -- Récupérer la limite de quota
-    SELECT rq.quota_limit INTO quota_limit
-    FROM public.role_quotas rq
-    JOIN public.roles r ON r.id = rq.role_id
-    WHERE r.name = user_role 
-    AND rq.quota_type = quota_type 
-    AND rq.quota_period = quota_period;
-    
-    -- Si pas de quota défini, autoriser
-    IF quota_limit IS NULL THEN
-        RETURN true;
-    END IF;
-    
-    -- Calculer l'usage actuel
-    IF quota_period = 'total' THEN
-        -- Usage total
-        IF quota_type = 'max_tasks' THEN
-            SELECT COUNT(*) INTO current_usage
-            FROM public.taches 
-            WHERE user_id = user_uuid;
-        ELSIF quota_type = 'max_rewards' THEN
-            SELECT COUNT(*) INTO current_usage
-            FROM public.recompenses 
-            WHERE user_id = user_uuid;
-        END IF;
-    ELSIF quota_period = 'monthly' THEN
-        -- Usage mensuel
-        IF quota_type = 'monthly_tasks' THEN
-            SELECT COUNT(*) INTO current_usage
-            FROM public.taches 
-            WHERE user_id = user_uuid 
-            AND created_at >= date_trunc('month', CURRENT_DATE);
-        ELSIF quota_type = 'monthly_rewards' THEN
-            SELECT COUNT(*) INTO current_usage
-            FROM public.recompenses 
-            WHERE user_id = user_uuid 
-            AND created_at >= date_trunc('month', CURRENT_DATE);
-        END IF;
-    END IF;
-    
-    -- Vérifier si la limite est respectée
-    RETURN current_usage < quota_limit;
-END;
+  PERFORM public.assert_self_or_admin(user_uuid);
+
+  -- Réutilise la logique ci-dessus
+  SELECT quota_limit, current_usage, remaining, is_limited
+  INTO v_limit, v_usage, v_dummy1, v_is_limited
+  FROM public.get_user_quota_info(user_uuid, quota_type, quota_period);
+
+  IF v_limit IS NULL THEN
+    RETURN true; -- pas de limite => autorisé
+  END IF;
+
+  RETURN v_usage < v_limit;
+END
 $$;
 
 
@@ -225,89 +370,73 @@ CREATE FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type t
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-declare
+DECLARE
   v_is_free boolean;
   v_limite int;
   v_count int;
   v_start timestamptz;
   v_end   timestamptz;
-begin
-  if p_user_id is null then
-    return false;
-  end if;
+BEGIN
+  PERFORM public.assert_self_or_admin(p_user_id);
+  IF p_user_id IS NULL THEN RETURN false; END IF;
 
-  -- rôle FREE actif ?
-  select exists (
-    select 1
-    from user_roles ur
-    join roles r on r.id = ur.role_id
-    where ur.user_id = p_user_id
-      and ur.is_active = true
-      and r.name = 'free'
-  ) into v_is_free;
+  SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = p_user_id AND ur.is_active = true AND r.name = 'free'
+  ) INTO v_is_free;
 
-  if not v_is_free then
-    return true; -- on ne bloque que FREE ici
-  end if;
+  IF NOT v_is_free THEN
+    RETURN true; -- on ne bloque que FREE ici
+  END IF;
 
-  -- Limite configurée
-  select rq.quota_limit
-  into v_limite
-  from role_quotas rq
-  join roles r on r.id = rq.role_id
-  where r.name = 'free'
-    and rq.quota_type = p_quota_type
-    and rq.quota_period = case when p_period='monthly' then 'monthly' else 'total' end
-  limit 1;
+  SELECT rq.quota_limit
+  INTO v_limite
+  FROM role_quotas rq
+  JOIN roles r ON r.id = rq.role_id
+  WHERE r.name = 'free'
+    AND rq.quota_type = p_quota_type
+    AND rq.quota_period = CASE WHEN p_period='monthly' THEN 'monthly' ELSE 'total' END
+  LIMIT 1;
 
-  if v_limite is null then
-    return true; -- pas de limite => permissif
-  end if;
+  IF v_limite IS NULL THEN
+    RETURN true;
+  END IF;
 
-  if p_period = 'monthly' then
-    select start_utc, end_utc into v_start, v_end from get_user_month_bounds_utc(p_user_id);
+  IF p_period = 'monthly' THEN
+    SELECT start_utc, end_utc INTO v_start, v_end FROM get_user_month_bounds_utc(p_user_id);
 
-    if p_quota_type = 'task' then
-      select count(*) into v_count
-      from taches
-      where user_id = p_user_id
-        and created_at >= v_start
-        and created_at <  v_end;
+    IF p_quota_type = 'task' THEN
+      SELECT COUNT(*) INTO v_count FROM taches
+      WHERE user_id = p_user_id AND created_at >= v_start AND created_at < v_end;
 
-    elsif p_quota_type = 'reward' then
-      -- mensuel désactivé par défaut (ajoute la ligne role_quotas si tu veux l'activer)
-      select count(*) into v_count
-      from recompenses
-      where user_id = p_user_id
-        and created_at >= v_start
-        and created_at <  v_end;
+    ELSIF p_quota_type = 'reward' THEN
+      SELECT COUNT(*) INTO v_count FROM recompenses
+      WHERE user_id = p_user_id AND created_at >= v_start AND created_at < v_end;
 
-    elsif p_quota_type = 'category' then
-      select count(*) into v_count
-      from categories
-      where user_id = p_user_id
-        and created_at >= v_start
-        and created_at <  v_end;
+    ELSIF p_quota_type = 'category' THEN
+      SELECT COUNT(*) INTO v_count FROM categories
+      WHERE user_id = p_user_id AND created_at >= v_start AND created_at < v_end;
 
-    else
-      return true;
-    end if;
+    ELSE
+      RETURN true;
+    END IF;
 
-  else
-    -- total "en stock"
-    if p_quota_type = 'task' then
-      select count(*) into v_count from taches where user_id = p_user_id;
-    elsif p_quota_type = 'reward' then
-      select count(*) into v_count from recompenses where user_id = p_user_id;
-    elsif p_quota_type = 'category' then
-      select count(*) into v_count from categories where user_id = p_user_id;
-    else
-      return true;
-    end if;
-  end if;
+  ELSE
+    IF p_quota_type = 'task' THEN
+      SELECT COUNT(*) INTO v_count FROM taches WHERE user_id = p_user_id;
+    ELSIF p_quota_type = 'reward' THEN
+      SELECT COUNT(*) INTO v_count FROM recompenses WHERE user_id = p_user_id;
+    ELSIF p_quota_type = 'category' THEN
+      SELECT COUNT(*) INTO v_count FROM categories WHERE user_id = p_user_id;
+    ELSE
+      RETURN true;
+    END IF;
+  END IF;
 
-  return v_count < v_limite;
-end;
+  RETURN v_count < v_limite;
+END;
 $$;
 
 
@@ -319,17 +448,21 @@ ALTER FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type te
 
 CREATE FUNCTION public.cleanup_old_audit_logs(retention_days integer DEFAULT 365) RETURNS integer
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 DECLARE
-    deleted_count integer;
+  deleted_count integer;
 BEGIN
-    DELETE FROM public.account_audit_logs 
-    WHERE created_at < (now() - make_interval(days => retention_days));
-    
-    GET DIAGNOSTICS deleted_count = ROW_COUNT;
-    
-    RETURN deleted_count;
-END;
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
+  END IF;
+
+  DELETE FROM public.account_audit_logs
+  WHERE created_at < (now() - make_interval(days => retention_days));
+
+  GET DIAGNOSTICS deleted_count = ROW_COUNT;
+  RETURN deleted_count;
+END
 $$;
 
 
@@ -360,23 +493,29 @@ ALTER FUNCTION public.email_exists(email_to_check text) OWNER TO postgres;
 --
 
 CREATE FUNCTION public.get_account_history(user_uuid uuid, limit_count integer DEFAULT 50) RETURNS TABLE(id uuid, action text, old_status text, new_status text, old_role text, new_role text, reason text, changed_by_pseudo text, created_at timestamp with time zone)
-    LANGUAGE sql STABLE SECURITY DEFINER
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
-    SELECT 
-        aal.id,
-        aal.action,
-        aal.old_status,
-        aal.new_status,
-        aal.old_role,
-        aal.new_role,
-        aal.reason,
-        p.pseudo as changed_by_pseudo,
-        aal.created_at
-    FROM public.account_audit_logs aal
-    LEFT JOIN public.profiles p ON p.id = aal.changed_by
-    WHERE aal.user_id = user_uuid
-    ORDER BY aal.created_at DESC
-    LIMIT limit_count;
+BEGIN
+  PERFORM public.assert_self_or_admin(user_uuid);
+
+  RETURN QUERY
+  SELECT
+    aal.id,
+    aal.action,
+    aal.old_status,
+    aal.new_status,
+    aal.old_role,
+    aal.new_role,
+    aal.reason,
+    p.pseudo AS changed_by_pseudo,
+    aal.created_at
+  FROM public.account_audit_logs aal
+  LEFT JOIN public.profiles p ON p.id = aal.changed_by
+  WHERE aal.user_id = user_uuid
+  ORDER BY aal.created_at DESC
+  LIMIT limit_count;
+END
 $$;
 
 
@@ -387,20 +526,26 @@ ALTER FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) O
 --
 
 CREATE FUNCTION public.get_account_status(user_uuid uuid) RETURNS TABLE(user_id uuid, account_status text, role_name text, is_suspended boolean, is_pending_verification boolean, is_scheduled_for_deletion boolean, deletion_date timestamp with time zone)
-    LANGUAGE sql STABLE SECURITY DEFINER
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
-    SELECT 
-        p.id as user_id,
-        p.account_status,
-        r.name as role_name,
-        (p.account_status = 'suspended') as is_suspended,
-        (p.account_status = 'pending_verification') as is_pending_verification,
-        (p.account_status = 'deletion_scheduled') as is_scheduled_for_deletion,
-        p.deletion_scheduled_at as deletion_date
-    FROM public.profiles p
-    LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
-    LEFT JOIN public.roles r ON r.id = ur.role_id
-    WHERE p.id = user_uuid;
+BEGIN
+  PERFORM public.assert_self_or_admin(user_uuid);
+
+  RETURN QUERY
+  SELECT
+    p.id as user_id,
+    p.account_status,
+    r.name as role_name,
+    (p.account_status = 'suspended') as is_suspended,
+    (p.account_status = 'pending_verification') as is_pending_verification,
+    (p.account_status = 'deletion_scheduled') as is_scheduled_for_deletion,
+    p.deletion_scheduled_at as deletion_date
+  FROM public.profiles p
+  LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
+  LEFT JOIN public.roles r ON r.id = ur.role_id
+  WHERE p.id = user_uuid;
+END
 $$;
 
 
@@ -496,39 +641,160 @@ ALTER FUNCTION public.get_demo_tasks() OWNER TO postgres;
 --
 
 CREATE FUNCTION public.get_migration_report() RETURNS TABLE(total_users integer, active_users integer, suspended_users integer, pending_users integer, deletion_scheduled_users integer, admin_users integer, abonne_users integer, free_users integer, visitor_users integer, staff_users integer)
-    LANGUAGE sql STABLE SECURITY DEFINER
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
-    SELECT 
-        (SELECT COUNT(*) FROM public.profiles) as total_users,
-        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'active') as active_users,
-        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'suspended') as suspended_users,
-        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'pending_verification') as pending_users,
-        (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'deletion_scheduled') as deletion_scheduled_users,
-        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'admin' AND ur.is_active = true) as admin_users,
-        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'abonne' AND ur.is_active = true) as abonne_users,
-        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'free' AND ur.is_active = true) as free_users,
-        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'visitor' AND ur.is_active = true) as visitor_users,
-        (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'staff' AND ur.is_active = true) as staff_users;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    (SELECT COUNT(*) FROM public.profiles) as total_users,
+    (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'active') as active_users,
+    (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'suspended') as suspended_users,
+    (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'pending_verification') as pending_users,
+    (SELECT COUNT(*) FROM public.profiles WHERE account_status = 'deletion_scheduled') as deletion_scheduled_users,
+    (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'admin' AND ur.is_active = true) as admin_users,
+    (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'abonne' AND ur.is_active = true) as abonne_users,
+    (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'free' AND ur.is_active = true) as free_users,
+    (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'visitor' AND ur.is_active = true) as visitor_users,
+    (SELECT COUNT(*) FROM public.user_roles ur JOIN public.roles r ON r.id = ur.role_id WHERE r.name = 'staff' AND ur.is_active = true) as staff_users;
+END
 $$;
 
 
 ALTER FUNCTION public.get_migration_report() OWNER TO postgres;
 
 --
+-- Name: get_usage_fast(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_usage_fast(p_user_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_role record;
+  v_quotas jsonb := '[]'::jsonb;
+  v_cnt record;
+  v_subscription record;
+BEGIN
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  SELECT r.id, r.name, r.priority
+    INTO v_role
+  FROM public.user_roles ur
+  JOIN public.roles r ON r.id = ur.role_id
+  WHERE ur.user_id = p_user_id AND ur.is_active = true
+  ORDER BY r.priority DESC
+  LIMIT 1;
+
+  IF v_role.id IS NULL THEN
+    SELECT *
+      INTO v_subscription
+    FROM public.abonnements
+    WHERE user_id = p_user_id
+      AND status IN ('active','trialing')
+    ORDER BY created_at DESC
+    LIMIT 1;
+
+    IF v_subscription.id IS NOT NULL THEN
+      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'abonne' LIMIT 1;
+    ELSE
+      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'visitor' LIMIT 1;
+    END IF;
+  END IF;
+
+  IF v_role.id IS NOT NULL THEN
+    SELECT COALESCE(jsonb_agg(jsonb_build_object(
+             'quota_type', rq.quota_type,
+             'quota_limit', rq.quota_limit,
+             'quota_period', rq.quota_period
+           )), '[]'::jsonb)
+      INTO v_quotas
+    FROM public.role_quotas rq
+    WHERE rq.role_id = v_role.id;
+  END IF;
+
+  SELECT tasks, rewards, categories
+    INTO v_cnt
+  FROM public.user_usage_counters
+  WHERE user_id = p_user_id;
+
+  RETURN jsonb_build_object(
+    'role', jsonb_build_object(
+      'id', v_role.id,
+      'name', COALESCE(v_role.name, 'visitor'),
+      'priority', COALESCE(v_role.priority, 0)
+    ),
+    'quotas', v_quotas,
+    'usage', jsonb_build_object(
+      'tasks', COALESCE(v_cnt.tasks, 0),
+      'rewards', COALESCE(v_cnt.rewards, 0),
+      'categories', COALESCE(v_cnt.categories, 0)
+    )
+  );
+END
+$$;
+
+
+ALTER FUNCTION public.get_usage_fast(p_user_id uuid) OWNER TO postgres;
+
+--
+-- Name: get_user_assets_stats(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_assets_stats(p_user_id uuid) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_stats jsonb;
+BEGIN
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  SELECT jsonb_build_object(
+    'total_images', COUNT(*),
+    'total_size', COALESCE(SUM(file_size), 0),
+    'task_images', COUNT(*) FILTER (WHERE asset_type = 'task_image'),
+    'reward_images', COUNT(*) FILTER (WHERE asset_type = 'reward_image'),
+    'task_images_size', COALESCE(SUM(file_size) FILTER (WHERE asset_type = 'task_image'), 0),
+    'reward_images_size', COALESCE(SUM(file_size) FILTER (WHERE asset_type = 'reward_image'), 0)
+  ) INTO v_stats
+  FROM public.user_assets
+  WHERE user_id = p_user_id;
+
+  RETURN COALESCE(v_stats,
+    '{"total_images":0,"total_size":0,"task_images":0,"reward_images":0,"task_images_size":0,"reward_images_size":0}'::jsonb
+  );
+END
+$$;
+
+
+ALTER FUNCTION public.get_user_assets_stats(p_user_id uuid) OWNER TO postgres;
+
+--
 -- Name: get_user_emails(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.get_user_emails() RETURNS TABLE(user_id uuid, email text)
-    LANGUAGE sql SECURITY DEFINER
+    LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-  SELECT 
-    au.id as user_id,
-    au.email
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
+  END IF;
+
+  RETURN QUERY
+  SELECT au.id AS user_id, au.email
   FROM auth.users au
   INNER JOIN public.profiles p ON p.id = au.id
   WHERE au.email IS NOT NULL
   ORDER BY p.created_at DESC;
+END
 $$;
 
 
@@ -547,9 +813,9 @@ COMMENT ON FUNCTION public.get_user_emails() IS 'Récupère les emails des utili
 
 CREATE FUNCTION public.get_user_last_logins() RETURNS TABLE(user_id uuid, last_login timestamp with time zone, is_online boolean)
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 BEGIN
-  -- Vérifier si l'utilisateur est un administrateur
   IF NOT public.is_admin() THEN
     RAISE EXCEPTION 'Permission denied: User is not an administrator.';
   END IF;
@@ -558,15 +824,10 @@ BEGIN
   SELECT
     u.id AS user_id,
     u.last_sign_in_at AS last_login,
-    CASE 
-      WHEN u.last_sign_in_at > (NOW() - INTERVAL '15 minutes') THEN true
-      ELSE false
-    END AS is_online
-  FROM
-    auth.users u
-  WHERE
-    u.email_confirmed_at IS NOT NULL;
-END;
+    CASE WHEN u.last_sign_in_at > (NOW() - INTERVAL '15 minutes') THEN true ELSE false END AS is_online
+  FROM auth.users u
+  WHERE u.email_confirmed_at IS NOT NULL;
+END
 $$;
 
 
@@ -580,34 +841,34 @@ CREATE FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) RETURNS TABLE(s
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-declare
+DECLARE
   v_tz text;
-  v_now_local timestamp; -- local "naive" dans le TZ de l'user
+  v_now_local timestamp;
   v_month_start_local timestamp;
   v_month_end_local   timestamp;
-begin
-  if p_user_id is null then
-    -- default Paris si pas d'ID
-    v_tz := 'Europe/Paris';
-  else
-    select coalesce(up.timezone, 'Europe/Paris') into v_tz
-    from user_prefs up
-    where up.user_id = p_user_id;
-    if v_tz is null then
-      v_tz := 'Europe/Paris';
-    end if;
-  end if;
+BEGIN
+  -- lecture innocente mais on garde la même sémantique (self/admin)
+  IF p_user_id IS NOT NULL THEN
+    PERFORM public.assert_self_or_admin(p_user_id);
+  END IF;
 
-  -- now() at time zone v_tz => timestamp local (sans tz)
-  v_now_local := now() at time zone v_tz;
+  IF p_user_id IS NULL THEN
+    v_tz := 'Europe/Paris';
+  ELSE
+    SELECT COALESCE(up.timezone, 'Europe/Paris') INTO v_tz
+    FROM user_prefs up
+    WHERE up.user_id = p_user_id;
+    IF v_tz IS NULL THEN v_tz := 'Europe/Paris'; END IF;
+  END IF;
+
+  v_now_local := now() AT TIME ZONE v_tz;
   v_month_start_local := date_trunc('month', v_now_local);
   v_month_end_local   := v_month_start_local + interval '1 month';
 
-  -- Re-projeter en timestamptz (UTC) avec AT TIME ZONE v_tz
-  start_utc := v_month_start_local at time zone v_tz;
-  end_utc   := v_month_end_local   at time zone v_tz;
-  return next;
-end;
+  start_utc := v_month_start_local AT TIME ZONE v_tz;
+  end_utc   := v_month_end_local   AT TIME ZONE v_tz;
+  RETURN NEXT;
+END
 $$;
 
 
@@ -622,22 +883,50 @@ CREATE FUNCTION public.get_user_permissions(user_uuid uuid) RETURNS TABLE(featur
     SET search_path TO 'public'
     AS $$
 BEGIN
-    RETURN QUERY
-    SELECT 
-        f.name as feature_name,
-        COALESCE(rp.can_access, false) as can_access
-    FROM features f
-    LEFT JOIN role_permissions rp ON f.id = rp.feature_id
-    LEFT JOIN user_roles ur ON rp.role_id = ur.role_id
-    WHERE ur.user_id = user_uuid 
+  PERFORM public.assert_self_or_admin(user_uuid);
+
+  RETURN QUERY
+  SELECT
+    f.name AS feature_name,
+    BOOL_OR(COALESCE(rp.can_access, false)) AS can_access
+  FROM features f
+  LEFT JOIN role_permissions rp ON f.id = rp.feature_id
+  LEFT JOIN user_roles ur ON rp.role_id = ur.role_id
+  WHERE ur.user_id = user_uuid
     AND ur.is_active = true
     AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
-    AND f.is_active = true;
-END;
+    AND f.is_active = true
+  GROUP BY f.name
+  ORDER BY f.name;
+END
 $$;
 
 
 ALTER FUNCTION public.get_user_permissions(user_uuid uuid) OWNER TO postgres;
+
+--
+-- Name: get_user_primary_role(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_primary_role(p_user_id uuid) RETURNS TABLE(role_id uuid, role_name text, priority integer)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  RETURN QUERY
+  SELECT r.id, r.name, r.priority
+  FROM public.user_roles ur
+  JOIN public.roles r ON r.id = ur.role_id
+  WHERE ur.user_id = p_user_id AND ur.is_active = true
+  ORDER BY r.priority DESC
+  LIMIT 1;
+END
+$$;
+
+
+ALTER FUNCTION public.get_user_primary_role(p_user_id uuid) OWNER TO postgres;
 
 --
 -- Name: get_user_quota_info(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
@@ -645,72 +934,97 @@ ALTER FUNCTION public.get_user_permissions(user_uuid uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text DEFAULT 'monthly'::text) RETURNS TABLE(quota_limit integer, current_usage integer, remaining integer, is_limited boolean)
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 DECLARE
-    user_role text;
-    quota_limit integer;
-    current_usage integer;
+  user_role text;
+  v_limit integer;
+  v_usage integer;
+  v_start timestamptz;
+  v_end   timestamptz;
 BEGIN
-    -- Récupérer le rôle de l'utilisateur
-    SELECT r.name INTO user_role
-    FROM public.user_roles ur
-    JOIN public.roles r ON r.id = ur.role_id
-    WHERE ur.user_id = user_uuid AND ur.is_active = true
-    LIMIT 1;
-    
-    -- Si pas de rôle ou admin, pas de limite
-    IF user_role IS NULL OR user_role = 'admin' THEN
-        RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
-        RETURN;
-    END IF;
-    
-    -- Récupérer la limite de quota
-    SELECT rq.quota_limit INTO quota_limit
-    FROM public.role_quotas rq
-    JOIN public.roles r ON r.id = rq.role_id
-    WHERE r.name = user_role 
-    AND rq.quota_type = quota_type 
+  PERFORM public.assert_self_or_admin(user_uuid);
+
+  SELECT r.name INTO user_role
+  FROM public.user_roles ur
+  JOIN public.roles r ON r.id = ur.role_id
+  WHERE ur.user_id = user_uuid AND ur.is_active = true
+  LIMIT 1;
+
+  IF user_role IS NULL OR user_role = 'admin' THEN
+    RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
+    RETURN;
+  END IF;
+
+  SELECT rq.quota_limit INTO v_limit
+  FROM public.role_quotas rq
+  JOIN public.roles r ON r.id = rq.role_id
+  WHERE r.name = user_role
+    AND rq.quota_type = quota_type
     AND rq.quota_period = quota_period;
-    
-    -- Si pas de quota défini, pas de limite
-    IF quota_limit IS NULL THEN
-        RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
-        RETURN;
+
+  IF v_limit IS NULL THEN
+    RETURN QUERY SELECT NULL::integer, 0::integer, NULL::integer, false;
+    RETURN;
+  END IF;
+
+  v_usage := 0;
+
+  IF quota_period = 'monthly' THEN
+    SELECT start_utc, end_utc INTO v_start, v_end FROM public.get_user_month_bounds_utc(user_uuid);
+
+    IF quota_type = 'monthly_tasks' THEN
+      SELECT COUNT(*) INTO v_usage
+      FROM public.taches
+      WHERE user_id = user_uuid AND created_at >= v_start AND created_at < v_end;
+
+    ELSIF quota_type = 'monthly_rewards' THEN
+      SELECT COUNT(*) INTO v_usage
+      FROM public.recompenses
+      WHERE user_id = user_uuid AND created_at >= v_start AND created_at < v_end;
     END IF;
-    
-    -- Calculer l'usage actuel
-    current_usage := 0;
-    IF quota_period = 'total' THEN
-        IF quota_type = 'max_tasks' THEN
-            SELECT COUNT(*) INTO current_usage FROM public.taches WHERE user_id = user_uuid;
-        ELSIF quota_type = 'max_rewards' THEN
-            SELECT COUNT(*) INTO current_usage FROM public.recompenses WHERE user_id = user_uuid;
-        END IF;
-    ELSIF quota_period = 'monthly' THEN
-        IF quota_type = 'monthly_tasks' THEN
-            SELECT COUNT(*) INTO current_usage 
-            FROM public.taches 
-            WHERE user_id = user_uuid 
-            AND created_at >= date_trunc('month', CURRENT_DATE);
-        ELSIF quota_type = 'monthly_rewards' THEN
-            SELECT COUNT(*) INTO current_usage 
-            FROM public.recompenses 
-            WHERE user_id = user_uuid 
-            AND created_at >= date_trunc('month', CURRENT_DATE);
-        END IF;
+
+  ELSE
+    IF quota_type = 'max_tasks' THEN
+      SELECT COUNT(*) INTO v_usage FROM public.taches WHERE user_id = user_uuid;
+    ELSIF quota_type = 'max_rewards' THEN
+      SELECT COUNT(*) INTO v_usage FROM public.recompenses WHERE user_id = user_uuid;
     END IF;
-    
-    -- Retourner les informations
-    RETURN QUERY SELECT 
-        quota_limit,
-        current_usage,
-        GREATEST(0, quota_limit - current_usage),
-        true;
-END;
+  END IF;
+
+  RETURN QUERY SELECT
+    v_limit,
+    v_usage,
+    GREATEST(0, v_limit - v_usage),
+    true;
+END
 $$;
 
 
 ALTER FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) OWNER TO postgres;
+
+--
+-- Name: get_user_roles(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_user_roles(p_user_id uuid) RETURNS TABLE(role_id uuid, role_name text, priority integer, is_active boolean)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  RETURN QUERY
+  SELECT r.id, r.name, r.priority, ur.is_active
+  FROM public.user_roles ur
+  JOIN public.roles r ON r.id = ur.role_id
+  WHERE ur.user_id = p_user_id AND ur.is_active = true
+  ORDER BY r.priority DESC;
+END
+$$;
+
+
+ALTER FUNCTION public.get_user_roles(p_user_id uuid) OWNER TO postgres;
 
 --
 -- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -751,44 +1065,35 @@ ALTER FUNCTION public.handle_new_user() OWNER TO postgres;
 
 CREATE FUNCTION public.handle_subscription_role_change() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
     AS $$
 DECLARE
   free_role_id uuid;
   abonne_role_id uuid;
 BEGIN
-  -- Récupérer les IDs des rôles
-  SELECT id INTO free_role_id FROM public.roles WHERE name = 'free' AND is_active = true;
+  SELECT id INTO free_role_id   FROM public.roles WHERE name = 'free'   AND is_active = true;
   SELECT id INTO abonne_role_id FROM public.roles WHERE name = 'abonne' AND is_active = true;
-  
-  -- Si abonnement devient actif
-  IF NEW.status IN ('active', 'trialing') AND (OLD.status IS NULL OR OLD.status NOT IN ('active', 'trialing')) THEN
-    -- Désactiver le rôle free
-    UPDATE public.user_roles 
-    SET is_active = false, updated_at = now()
+
+  -- "Actif" = active, trialing, past_due (cohérent avec change_account_status)
+  IF NEW.status IN ('active','trialing','past_due') AND COALESCE(OLD.status,'') NOT IN ('active','trialing','past_due') THEN
+    UPDATE public.user_roles SET is_active = false, updated_at = now()
     WHERE user_id = NEW.user_id AND role_id = free_role_id;
-    
-    -- Activer le rôle abonne
+
     INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
     VALUES (NEW.user_id, abonne_role_id, true, now())
-    ON CONFLICT (user_id, role_id) 
-    DO UPDATE SET is_active = true, updated_at = now();
-    
-  -- Si abonnement devient inactif
-  ELSIF NEW.status NOT IN ('active', 'trialing') AND OLD.status IN ('active', 'trialing') THEN
-    -- Désactiver le rôle abonne
-    UPDATE public.user_roles 
-    SET is_active = false, updated_at = now()
+    ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true, updated_at = now();
+
+  ELSIF NEW.status NOT IN ('active','trialing','past_due') AND COALESCE(OLD.status,'') IN ('active','trialing','past_due') THEN
+    UPDATE public.user_roles SET is_active = false, updated_at = now()
     WHERE user_id = NEW.user_id AND role_id = abonne_role_id;
-    
-    -- Activer le rôle free
+
     INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
     VALUES (NEW.user_id, free_role_id, true, now())
-    ON CONFLICT (user_id, role_id) 
-    DO UPDATE SET is_active = true, updated_at = now();
+    ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true, updated_at = now();
   END IF;
-  
+
   RETURN NEW;
-END;
+END
 $$;
 
 
@@ -882,14 +1187,48 @@ CREATE FUNCTION public.purge_old_consentements(retention_months integer DEFAULT 
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-begin
-  delete from public.consentements
-  where ts < (now() - make_interval(months => retention_months));
-end;
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
+  END IF;
+
+  DELETE FROM public.consentements
+  WHERE ts < (now() - make_interval(months => retention_months));
+END
 $$;
 
 
 ALTER FUNCTION public.purge_old_consentements(retention_months integer) OWNER TO postgres;
+
+--
+-- Name: rewards_counter_del(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.rewards_counter_del() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(old.user_id, 'rewards', -1);
+  return old;
+end $$;
+
+
+ALTER FUNCTION public.rewards_counter_del() OWNER TO postgres;
+
+--
+-- Name: rewards_counter_ins(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.rewards_counter_ins() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(new.user_id, 'rewards', 1);
+  return new;
+end $$;
+
+
+ALTER FUNCTION public.rewards_counter_ins() OWNER TO postgres;
 
 --
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -908,11 +1247,41 @@ end$$;
 ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
 
 --
+-- Name: taches_counter_del(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.taches_counter_del() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(old.user_id, 'tasks', -1);
+  return old;
+end $$;
+
+
+ALTER FUNCTION public.taches_counter_del() OWNER TO postgres;
+
+--
+-- Name: taches_counter_ins(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.taches_counter_ins() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+begin
+  perform public.bump_usage_counter(new.user_id, 'tasks', 1);
+  return new;
+end $$;
+
+
+ALTER FUNCTION public.taches_counter_ins() OWNER TO postgres;
+
+--
 -- Name: tg_audit_permission_change(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.tg_audit_permission_change() RETURNS trigger
-    LANGUAGE plpgsql SECURITY DEFINER
+    LANGUAGE plpgsql
     SET search_path TO 'public'
     AS $$
 declare
@@ -1044,25 +1413,31 @@ ALTER FUNCTION public.tg_recompenses_normalize() OWNER TO postgres;
 
 CREATE FUNCTION public.tg_taches_sync_categorie() RETURNS trigger
     LANGUAGE plpgsql
-    SET search_path TO 'pg_catalog', 'public'
+    SET search_path TO 'public'
     AS $$
-begin
+DECLARE
+  v_norm text;
+BEGIN
   -- Si categorie_id est fourni, récupérer le value de la catégorie
-  if new.categorie_id is not null and (new.categorie is null or new.categorie = '') then
-    select value into new.categorie
-    from public.categories
-    where id = new.categorie_id;
-  end if;
-  
-  -- Si categorie est fourni, récupérer l'id de la catégorie
-  if new.categorie is not null and new.categorie != '' and new.categorie_id is null then
-    select id into new.categorie_id
-    from public.categories
-    where value = new.categorie and user_id = new.user_id;
-  end if;
-  
-  return new;
-end$$;
+  IF NEW.categorie_id IS NOT NULL AND (NEW.categorie IS NULL OR NEW.categorie = '') THEN
+    SELECT value INTO NEW.categorie
+    FROM public.categories
+    WHERE id = NEW.categorie_id;
+  END IF;
+
+  -- Si categorie (texte) est fourni, normaliser puis retrouver l'id
+  IF NEW.categorie IS NOT NULL AND NEW.categorie <> '' AND NEW.categorie_id IS NULL THEN
+    v_norm := lower(regexp_replace(btrim(NEW.categorie), '\s+', '-', 'g'));
+    SELECT id INTO NEW.categorie_id
+    FROM public.categories
+    WHERE value = v_norm AND user_id = NEW.user_id;
+    -- On force aussi la valeur normalisée pour rester cohérent
+    NEW.categorie := v_norm;
+  END IF;
+
+  RETURN NEW;
+END
+$$;
 
 
 ALTER FUNCTION public.tg_taches_sync_categorie() OWNER TO postgres;
@@ -2612,6 +2987,26 @@ COMMENT ON COLUMN public.taches.user_id IS 'Propriétaire de la tâche';
 
 
 --
+-- Name: user_assets; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_assets (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    asset_type text NOT NULL,
+    file_path text NOT NULL,
+    file_size bigint NOT NULL,
+    mime_type text,
+    dimensions text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT user_assets_asset_type_check CHECK ((asset_type = ANY (ARRAY['task_image'::text, 'reward_image'::text])))
+);
+
+
+ALTER TABLE public.user_assets OWNER TO postgres;
+
+--
 -- Name: user_prefs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2642,6 +3037,21 @@ CREATE TABLE public.user_roles (
 
 
 ALTER TABLE public.user_roles OWNER TO postgres;
+
+--
+-- Name: user_usage_counters; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.user_usage_counters (
+    user_id uuid NOT NULL,
+    tasks integer DEFAULT 0 NOT NULL,
+    rewards integer DEFAULT 0 NOT NULL,
+    categories integer DEFAULT 0 NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.user_usage_counters OWNER TO postgres;
 
 --
 -- Name: buckets; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
@@ -2961,6 +3371,22 @@ ALTER TABLE ONLY public.taches
 
 
 --
+-- Name: user_assets unique_user_file_path; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_assets
+    ADD CONSTRAINT unique_user_file_path UNIQUE (user_id, file_path);
+
+
+--
+-- Name: user_assets user_assets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_assets
+    ADD CONSTRAINT user_assets_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: user_prefs user_prefs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2982,6 +3408,14 @@ ALTER TABLE ONLY public.user_roles
 
 ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT user_roles_user_id_role_id_key UNIQUE (user_id, role_id);
+
+
+--
+-- Name: user_usage_counters user_usage_counters_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_usage_counters
+    ADD CONSTRAINT user_usage_counters_pkey PRIMARY KEY (user_id);
 
 
 --
@@ -3056,6 +3490,13 @@ CREATE INDEX abonnements_active_idx ON public.abonnements USING btree (user_id) 
 
 
 --
+-- Name: abonnements_active_user_created_desc_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX abonnements_active_user_created_desc_idx ON public.abonnements USING btree (user_id, created_at DESC) WHERE (status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'paused'::text]));
+
+
+--
 -- Name: abonnements_status_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3084,10 +3525,10 @@ CREATE INDEX abonnements_user_created_desc_idx ON public.abonnements USING btree
 
 
 --
--- Name: abonnements_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
+-- Name: account_audit_logs_user_created_desc_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX abonnements_user_id_idx ON public.abonnements USING btree (user_id);
+CREATE INDEX account_audit_logs_user_created_desc_idx ON public.account_audit_logs USING btree (user_id, created_at DESC);
 
 
 --
@@ -3126,6 +3567,13 @@ CREATE INDEX consentements_origin_created_idx ON public.consentements USING btre
 
 
 --
+-- Name: consentements_ts_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX consentements_ts_idx ON public.consentements USING btree (ts);
+
+
+--
 -- Name: consentements_user_created_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3158,13 +3606,6 @@ CREATE INDEX idx_account_audit_logs_created_at ON public.account_audit_logs USIN
 --
 
 CREATE INDEX idx_account_audit_logs_user_id ON public.account_audit_logs USING btree (user_id);
-
-
---
--- Name: idx_categories_user; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_categories_user ON public.categories USING btree (user_id);
 
 
 --
@@ -3238,13 +3679,6 @@ CREATE INDEX idx_profiles_updated_at ON public.profiles USING btree (updated_at 
 
 
 --
--- Name: idx_recompenses_user; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_recompenses_user ON public.recompenses USING btree (user_id);
-
-
---
 -- Name: idx_recompenses_user_created; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3287,17 +3721,31 @@ CREATE INDEX idx_roles_priority_name ON public.roles USING btree (priority DESC,
 
 
 --
--- Name: idx_taches_user; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_taches_user ON public.taches USING btree (user_id);
-
-
---
 -- Name: idx_taches_user_created; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX idx_taches_user_created ON public.taches USING btree (user_id, created_at);
+
+
+--
+-- Name: idx_user_assets_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_created ON public.user_assets USING btree (created_at);
+
+
+--
+-- Name: idx_user_assets_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_type ON public.user_assets USING btree (user_id, asset_type);
+
+
+--
+-- Name: idx_user_assets_user_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_user_id ON public.user_assets USING btree (user_id);
 
 
 --
@@ -3343,10 +3791,10 @@ CREATE INDEX idx_user_roles_role_id ON public.user_roles USING btree (role_id);
 
 
 --
--- Name: idx_user_roles_user_active; Type: INDEX; Schema: public; Owner: postgres
+-- Name: idx_user_roles_user_active_inc; Type: INDEX; Schema: public; Owner: postgres
 --
 
-CREATE INDEX idx_user_roles_user_active ON public.user_roles USING btree (user_id, is_active);
+CREATE INDEX idx_user_roles_user_active_inc ON public.user_roles USING btree (user_id, is_active) INCLUDE (role_id);
 
 
 --
@@ -3494,6 +3942,13 @@ CREATE INDEX subscription_logs_user_event_time_idx ON public.subscription_logs U
 --
 
 CREATE INDEX subscription_logs_user_time_idx ON public.subscription_logs USING btree (user_id, "timestamp" DESC);
+
+
+--
+-- Name: taches_categorie_id_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_categorie_id_idx ON public.taches USING btree (categorie_id);
 
 
 --
@@ -3756,6 +4211,48 @@ CREATE TRIGGER taches_sync_categorie BEFORE INSERT OR UPDATE ON public.taches FO
 
 
 --
+-- Name: categories trg_categories_ctr_del; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_categories_ctr_del AFTER DELETE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.categories_counter_del();
+
+
+--
+-- Name: categories trg_categories_ctr_ins; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_categories_ctr_ins AFTER INSERT ON public.categories FOR EACH ROW EXECUTE FUNCTION public.categories_counter_ins();
+
+
+--
+-- Name: recompenses trg_rewards_ctr_del; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_rewards_ctr_del AFTER DELETE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.rewards_counter_del();
+
+
+--
+-- Name: recompenses trg_rewards_ctr_ins; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_rewards_ctr_ins AFTER INSERT ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.rewards_counter_ins();
+
+
+--
+-- Name: taches trg_taches_ctr_del; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_taches_ctr_del AFTER DELETE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.taches_counter_del();
+
+
+--
+-- Name: taches trg_taches_ctr_ins; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_taches_ctr_ins AFTER INSERT ON public.taches FOR EACH ROW EXECUTE FUNCTION public.taches_counter_ins();
+
+
+--
 -- Name: buckets enforce_bucket_name_length_trigger; Type: TRIGGER; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -3917,6 +4414,14 @@ ALTER TABLE ONLY public.taches
 
 
 --
+-- Name: user_assets user_assets_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_assets
+    ADD CONSTRAINT user_assets_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: user_prefs user_prefs_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3946,6 +4451,14 @@ ALTER TABLE ONLY public.user_roles
 
 ALTER TABLE ONLY public.user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_usage_counters user_usage_counters_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.user_usage_counters
+    ADD CONSTRAINT user_usage_counters_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
 
 --
@@ -4025,7 +4538,7 @@ ALTER TABLE public.account_audit_logs ENABLE ROW LEVEL SECURITY;
 -- Name: account_audit_logs account_audit_logs_insert_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY account_audit_logs_insert_admin ON public.account_audit_logs FOR INSERT WITH CHECK ((public.is_admin() OR (changed_by = auth.uid())));
+CREATE POLICY account_audit_logs_insert_admin ON public.account_audit_logs FOR INSERT WITH CHECK (public.is_admin());
 
 
 --
@@ -4052,7 +4565,7 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 -- Name: categories categories_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_insert_quota_free ON public.categories FOR INSERT TO authenticated WITH CHECK (public.check_user_quota_free_only(auth.uid(), 'category'::text, 'total'::text));
+CREATE POLICY categories_insert_quota_free ON public.categories FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'category'::text, 'total'::text)));
 
 
 --
@@ -4174,7 +4687,7 @@ CREATE POLICY parametres_delete_admin_only ON public.parametres FOR DELETE TO au
 -- Name: parametres parametres_insert_all_users; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY parametres_insert_all_users ON public.parametres FOR INSERT TO authenticated WITH CHECK (true);
+CREATE POLICY parametres_insert_all_users ON public.parametres FOR INSERT TO authenticated WITH CHECK (public.is_admin());
 
 
 --
@@ -4188,7 +4701,7 @@ CREATE POLICY parametres_select_all_users ON public.parametres FOR SELECT TO aut
 -- Name: parametres parametres_update_all_users; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY parametres_update_all_users ON public.parametres FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY parametres_update_all_users ON public.parametres FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
@@ -4297,7 +4810,7 @@ CREATE POLICY recompenses_insert_own ON public.recompenses FOR INSERT TO authent
 -- Name: recompenses recompenses_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_insert_quota_free ON public.recompenses FOR INSERT TO authenticated WITH CHECK (public.check_user_quota_free_only(auth.uid(), 'reward'::text, 'total'::text));
+CREATE POLICY recompenses_insert_quota_free ON public.recompenses FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'reward'::text, 'total'::text)));
 
 
 --
@@ -4454,7 +4967,7 @@ CREATE POLICY taches_insert_own ON public.taches FOR INSERT TO authenticated WIT
 -- Name: taches taches_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_insert_quota_free ON public.taches FOR INSERT TO authenticated WITH CHECK ((public.check_user_quota_free_only(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'monthly'::text)));
+CREATE POLICY taches_insert_quota_free ON public.taches FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'monthly'::text)));
 
 
 --
@@ -4483,6 +4996,61 @@ CREATE POLICY taches_update_admin ON public.taches FOR UPDATE TO authenticated U
 --
 
 CREATE POLICY taches_update_own ON public.taches FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+
+
+--
+-- Name: user_assets; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.user_assets ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_assets user_assets_delete_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_delete_admin ON public.user_assets FOR DELETE TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: user_assets user_assets_delete_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_delete_self ON public.user_assets FOR DELETE TO authenticated USING ((auth.uid() = user_id));
+
+
+--
+-- Name: user_assets user_assets_insert_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_insert_self ON public.user_assets FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: user_assets user_assets_select_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_select_admin ON public.user_assets FOR SELECT TO authenticated USING (public.is_admin());
+
+
+--
+-- Name: user_assets user_assets_select_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_select_self ON public.user_assets FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+
+
+--
+-- Name: user_assets user_assets_update_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_update_admin ON public.user_assets FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+
+--
+-- Name: user_assets user_assets_update_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_assets_update_self ON public.user_assets FOR UPDATE TO authenticated USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
 
 
 --
@@ -4530,6 +5098,19 @@ CREATE POLICY user_roles_admin_all ON public.user_roles TO authenticated USING (
 --
 
 CREATE POLICY user_roles_select_own ON public.user_roles FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: user_usage_counters; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.user_usage_counters ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: user_usage_counters user_usage_counters_select_self; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_usage_counters_select_self ON public.user_usage_counters FOR SELECT TO authenticated USING ((auth.uid() = user_id));
 
 
 --
@@ -4769,19 +5350,61 @@ GRANT ALL ON SCHEMA storage TO dashboard_user;
 
 
 --
+-- Name: FUNCTION assert_self_or_admin(p_target uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.assert_self_or_admin(p_target uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.assert_self_or_admin(p_target uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.assert_self_or_admin(p_target uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION bump_usage_counter(p_user uuid, p_col text, p_delta integer); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) TO service_role;
+
+
+--
+-- Name: FUNCTION categories_counter_del(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.categories_counter_del() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.categories_counter_del() TO service_role;
+
+
+--
+-- Name: FUNCTION categories_counter_ins(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.categories_counter_ins() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.categories_counter_ins() TO service_role;
+
+
+--
 -- Name: FUNCTION change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO anon;
+REVOKE ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO authenticated;
 GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) TO service_role;
+
+
+--
+-- Name: FUNCTION check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) TO authenticated;
+GRANT ALL ON FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) TO service_role;
 
 
 --
 -- Name: FUNCTION check_user_quota(user_uuid uuid, quota_type text, quota_period text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO anon;
+REVOKE ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO authenticated;
 GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, quota_period text) TO service_role;
 
@@ -4790,7 +5413,7 @@ GRANT ALL ON FUNCTION public.check_user_quota(user_uuid uuid, quota_type text, q
 -- Name: FUNCTION check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO anon;
+REVOKE ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO authenticated;
 GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_type text, p_period text) TO service_role;
 
@@ -4799,7 +5422,7 @@ GRANT ALL ON FUNCTION public.check_user_quota_free_only(p_user_id uuid, p_quota_
 -- Name: FUNCTION cleanup_old_audit_logs(retention_days integer); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO anon;
+REVOKE ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO authenticated;
 GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO service_role;
 
@@ -4808,16 +5431,17 @@ GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO s
 -- Name: FUNCTION email_exists(email_to_check text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO anon;
+REVOKE ALL ON FUNCTION public.email_exists(email_to_check text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO authenticated;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO service_role;
+GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO anon;
 
 
 --
 -- Name: FUNCTION get_account_history(user_uuid uuid, limit_count integer); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO anon;
+REVOKE ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO authenticated;
 GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count integer) TO service_role;
 
@@ -4826,7 +5450,7 @@ GRANT ALL ON FUNCTION public.get_account_history(user_uuid uuid, limit_count int
 -- Name: FUNCTION get_account_status(user_uuid uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO anon;
+REVOKE ALL ON FUNCTION public.get_account_status(user_uuid uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO authenticated;
 GRANT ALL ON FUNCTION public.get_account_status(user_uuid uuid) TO service_role;
 
@@ -4845,6 +5469,7 @@ GRANT ALL ON FUNCTION public.get_confettis() TO service_role;
 -- Name: FUNCTION get_demo_cards(card_type_filter text); Type: ACL; Schema: public; Owner: postgres
 --
 
+REVOKE ALL ON FUNCTION public.get_demo_cards(card_type_filter text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO anon;
 GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO authenticated;
 GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO service_role;
@@ -4854,6 +5479,7 @@ GRANT ALL ON FUNCTION public.get_demo_cards(card_type_filter text) TO service_ro
 -- Name: FUNCTION get_demo_rewards(); Type: ACL; Schema: public; Owner: postgres
 --
 
+REVOKE ALL ON FUNCTION public.get_demo_rewards() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_demo_rewards() TO anon;
 GRANT ALL ON FUNCTION public.get_demo_rewards() TO authenticated;
 GRANT ALL ON FUNCTION public.get_demo_rewards() TO service_role;
@@ -4863,6 +5489,7 @@ GRANT ALL ON FUNCTION public.get_demo_rewards() TO service_role;
 -- Name: FUNCTION get_demo_tasks(); Type: ACL; Schema: public; Owner: postgres
 --
 
+REVOKE ALL ON FUNCTION public.get_demo_tasks() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO anon;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO authenticated;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
@@ -4872,16 +5499,34 @@ GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
 -- Name: FUNCTION get_migration_report(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_migration_report() TO anon;
+REVOKE ALL ON FUNCTION public.get_migration_report() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_migration_report() TO authenticated;
 GRANT ALL ON FUNCTION public.get_migration_report() TO service_role;
+
+
+--
+-- Name: FUNCTION get_usage_fast(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.get_usage_fast(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_usage_fast(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_usage_fast(p_user_id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_assets_stats(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.get_user_assets_stats(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_user_assets_stats(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_assets_stats(p_user_id uuid) TO service_role;
 
 
 --
 -- Name: FUNCTION get_user_emails(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_user_emails() TO anon;
+REVOKE ALL ON FUNCTION public.get_user_emails() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_user_emails() TO authenticated;
 GRANT ALL ON FUNCTION public.get_user_emails() TO service_role;
 
@@ -4890,7 +5535,7 @@ GRANT ALL ON FUNCTION public.get_user_emails() TO service_role;
 -- Name: FUNCTION get_user_last_logins(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_user_last_logins() TO anon;
+REVOKE ALL ON FUNCTION public.get_user_last_logins() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_user_last_logins() TO authenticated;
 GRANT ALL ON FUNCTION public.get_user_last_logins() TO service_role;
 
@@ -4899,7 +5544,7 @@ GRANT ALL ON FUNCTION public.get_user_last_logins() TO service_role;
 -- Name: FUNCTION get_user_month_bounds_utc(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO anon;
+REVOKE ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO authenticated;
 GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO service_role;
 
@@ -4908,26 +5553,43 @@ GRANT ALL ON FUNCTION public.get_user_month_bounds_utc(p_user_id uuid) TO servic
 -- Name: FUNCTION get_user_permissions(user_uuid uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_user_permissions(user_uuid uuid) TO anon;
+REVOKE ALL ON FUNCTION public.get_user_permissions(user_uuid uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_user_permissions(user_uuid uuid) TO authenticated;
 GRANT ALL ON FUNCTION public.get_user_permissions(user_uuid uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_primary_role(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.get_user_primary_role(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_user_primary_role(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_primary_role(p_user_id uuid) TO service_role;
 
 
 --
 -- Name: FUNCTION get_user_quota_info(user_uuid uuid, quota_type text, quota_period text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO anon;
+REVOKE ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO authenticated;
 GRANT ALL ON FUNCTION public.get_user_quota_info(user_uuid uuid, quota_type text, quota_period text) TO service_role;
+
+
+--
+-- Name: FUNCTION get_user_roles(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.get_user_roles(p_user_id uuid) FROM PUBLIC;
+GRANT ALL ON FUNCTION public.get_user_roles(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_user_roles(p_user_id uuid) TO service_role;
 
 
 --
 -- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.handle_new_user() TO anon;
-GRANT ALL ON FUNCTION public.handle_new_user() TO authenticated;
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
 
 
@@ -4935,8 +5597,7 @@ GRANT ALL ON FUNCTION public.handle_new_user() TO service_role;
 -- Name: FUNCTION handle_subscription_role_change(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO anon;
-GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO authenticated;
+REVOKE ALL ON FUNCTION public.handle_subscription_role_change() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO service_role;
 
 
@@ -4945,17 +5606,16 @@ GRANT ALL ON FUNCTION public.handle_subscription_role_change() TO service_role;
 --
 
 REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
-GRANT ALL ON FUNCTION public.is_admin() TO anon;
 GRANT ALL ON FUNCTION public.is_admin() TO authenticated;
 GRANT ALL ON FUNCTION public.is_admin() TO service_role;
+GRANT ALL ON FUNCTION public.is_admin() TO anon;
 
 
 --
 -- Name: FUNCTION is_system_role(role_name text); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO anon;
-GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO authenticated;
+REVOKE ALL ON FUNCTION public.is_system_role(role_name text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO service_role;
 
 
@@ -4963,8 +5623,7 @@ GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO service_role;
 -- Name: FUNCTION prevent_system_role_deletion(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO anon;
-GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO authenticated;
+REVOKE ALL ON FUNCTION public.prevent_system_role_deletion() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO service_role;
 
 
@@ -4972,26 +5631,56 @@ GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO service_role;
 -- Name: FUNCTION purge_old_consentements(retention_months integer); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO anon;
+REVOKE ALL ON FUNCTION public.purge_old_consentements(retention_months integer) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO authenticated;
 GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO service_role;
+
+
+--
+-- Name: FUNCTION rewards_counter_del(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.rewards_counter_del() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.rewards_counter_del() TO service_role;
+
+
+--
+-- Name: FUNCTION rewards_counter_ins(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.rewards_counter_ins() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.rewards_counter_ins() TO service_role;
 
 
 --
 -- Name: FUNCTION set_updated_at(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.set_updated_at() TO anon;
-GRANT ALL ON FUNCTION public.set_updated_at() TO authenticated;
+REVOKE ALL ON FUNCTION public.set_updated_at() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.set_updated_at() TO service_role;
+
+
+--
+-- Name: FUNCTION taches_counter_del(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.taches_counter_del() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.taches_counter_del() TO service_role;
+
+
+--
+-- Name: FUNCTION taches_counter_ins(); Type: ACL; Schema: public; Owner: postgres
+--
+
+REVOKE ALL ON FUNCTION public.taches_counter_ins() FROM PUBLIC;
+GRANT ALL ON FUNCTION public.taches_counter_ins() TO service_role;
 
 
 --
 -- Name: FUNCTION tg_audit_permission_change(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO anon;
-GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_audit_permission_change() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO service_role;
 
 
@@ -4999,8 +5688,7 @@ GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO service_role;
 -- Name: FUNCTION tg_categories_normalize_value(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO anon;
-GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_categories_normalize_value() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO service_role;
 
 
@@ -5008,8 +5696,7 @@ GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO service_role;
 -- Name: FUNCTION tg_parametres_lock_id(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO anon;
-GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_parametres_lock_id() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO service_role;
 
 
@@ -5017,8 +5704,7 @@ GRANT ALL ON FUNCTION public.tg_parametres_lock_id() TO service_role;
 -- Name: FUNCTION tg_permission_changes_validate_json(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO anon;
-GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_permission_changes_validate_json() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO service_role;
 
 
@@ -5026,8 +5712,7 @@ GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO service_ro
 -- Name: FUNCTION tg_recompenses_normalize(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO anon;
-GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_recompenses_normalize() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO service_role;
 
 
@@ -5035,8 +5720,7 @@ GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO service_role;
 -- Name: FUNCTION tg_taches_sync_categorie(); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO anon;
-GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO authenticated;
+REVOKE ALL ON FUNCTION public.tg_taches_sync_categorie() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO service_role;
 
 
@@ -5044,7 +5728,7 @@ GRANT ALL ON FUNCTION public.tg_taches_sync_categorie() TO service_role;
 -- Name: FUNCTION user_can_upload_avatar(uid uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) TO anon;
+REVOKE ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) TO authenticated;
 GRANT ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) TO service_role;
 
@@ -5210,6 +5894,15 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.taches TO authenticated;
 
 
 --
+-- Name: TABLE user_assets; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.user_assets TO anon;
+GRANT ALL ON TABLE public.user_assets TO authenticated;
+GRANT ALL ON TABLE public.user_assets TO service_role;
+
+
+--
 -- Name: TABLE user_prefs; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -5225,6 +5918,15 @@ GRANT ALL ON TABLE public.user_prefs TO service_role;
 GRANT ALL ON TABLE public.user_roles TO anon;
 GRANT ALL ON TABLE public.user_roles TO authenticated;
 GRANT ALL ON TABLE public.user_roles TO service_role;
+
+
+--
+-- Name: TABLE user_usage_counters; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.user_usage_counters TO anon;
+GRANT ALL ON TABLE public.user_usage_counters TO authenticated;
+GRANT ALL ON TABLE public.user_usage_counters TO service_role;
 
 
 --

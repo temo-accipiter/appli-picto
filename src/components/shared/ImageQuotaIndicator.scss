@@ -1,0 +1,144 @@
+// src/components/shared/ImageQuotaIndicator.scss
+.image-quota-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--bg-secondary, #f8f9fa);
+  border: 1px solid var(--border-color, #e9ecef);
+  font-size: 12px;
+  color: var(--text-secondary, #6c757d);
+
+  &.small {
+    padding: 4px;
+    font-size: 10px;
+  }
+
+  &.large {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  &.loading {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  &.near-limit {
+    border-color: var(--warning-color, #ffc107);
+    background: var(--warning-bg, #fff3cd);
+  }
+
+  &.at-limit {
+    border-color: var(--error-color, #dc3545);
+    background: var(--error-bg, #f8d7da);
+  }
+
+  .quota-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+
+    .quota-label {
+      color: var(--text-primary, #212529);
+    }
+
+    .quota-count {
+      font-weight: 600;
+      color: var(--text-primary, #212529);
+    }
+  }
+
+  .quota-bar {
+    position: relative;
+    height: 6px;
+    background: var(--bg-tertiary, #e9ecef);
+    border-radius: 3px;
+    overflow: hidden;
+
+    .quota-fill {
+      height: 100%;
+      background: var(--success-color, #28a745);
+      transition: width 0.3s ease, background-color 0.3s ease;
+      border-radius: 3px;
+
+      &.near-limit {
+        background: var(--warning-color, #ffc107);
+      }
+
+      &.at-limit {
+        background: var(--error-color, #dc3545);
+      }
+    }
+
+    .quota-percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-primary, #212529);
+      text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  .quota-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+
+    .quota-size {
+      color: var(--text-secondary, #6c757d);
+    }
+
+    .quota-warning {
+      color: var(--error-color, #dc3545);
+      font-weight: 600;
+    }
+  }
+}
+
+// Mode sombre
+@media (prefers-color-scheme: dark) {
+  .image-quota-indicator {
+    background: var(--bg-secondary-dark, #2d3748);
+    border-color: var(--border-color-dark, #4a5568);
+    color: var(--text-secondary-dark, #a0aec0);
+
+    .quota-header {
+      .quota-label,
+      .quota-count {
+        color: var(--text-primary-dark, #e2e8f0);
+      }
+    }
+
+    .quota-bar {
+      background: var(--bg-tertiary-dark, #4a5568);
+
+      .quota-percentage {
+        color: var(--text-primary-dark, #e2e8f0);
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+      }
+    }
+
+    .quota-details {
+      .quota-size {
+        color: var(--text-secondary-dark, #a0aec0);
+      }
+    }
+
+    &.near-limit {
+      border-color: var(--warning-color-dark, #ed8936);
+      background: var(--warning-bg-dark, #744210);
+    }
+
+    &.at-limit {
+      border-color: var(--error-color-dark, #f56565);
+      background: var(--error-bg-dark, #742a2a);
+    }
+  }
+}
