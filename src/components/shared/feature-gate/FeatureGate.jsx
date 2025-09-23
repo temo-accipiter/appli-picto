@@ -18,7 +18,7 @@ export const FeatureGate = ({
   // pour éviter les warnings dans la console
   if (loading) {
     // Pendant le chargement, afficher le contenu par défaut
-    // Cela évite les warnings "Fonctionnalité non trouvée" 
+    // Cela évite les warnings "Fonctionnalité non trouvée"
     // qui apparaissent avant que les permissions soient chargées
     return children
   }
@@ -82,7 +82,7 @@ export const PremiumFeatureGate = ({
           className="upgrade-button"
           onClick={() => (window.location.href = '/signup')}
         >
-          S'abonner
+          S&apos;abonner
         </button>
       )}
     </div>

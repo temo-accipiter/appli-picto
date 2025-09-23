@@ -22,27 +22,27 @@ function playBeep(audioCtx) {
     if (audioCtx.state === 'suspended') {
       audioCtx.resume()
     }
-    
+
     if (audioCtx.state !== 'running') {
       return // Ne pas jouer si le contexte n'est pas prêt
     }
-    
+
     const osc = audioCtx.createOscillator()
     const gainNode = audioCtx.createGain()
-    
+
     osc.type = 'sine'
     osc.frequency.setValueAtTime(440, audioCtx.currentTime)
-    
+
     // Contrôler le volume pour éviter les sons trop forts
     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime)
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1)
-    
+
     osc.connect(gainNode)
     gainNode.connect(audioCtx.destination)
-    
+
     osc.start(audioCtx.currentTime)
     osc.stop(audioCtx.currentTime + 0.1)
-    
+
     // Nettoyer les nœuds après utilisation
     osc.onended = () => {
       osc.disconnect()
@@ -60,7 +60,7 @@ function TableauCard({ tache, done, toggleDone }) {
   // if (import.meta.env.DEV) {
   //   console.log('🔍 TableauCard reçoit:', { id: tache.id, label: tache.label, done })
   // }
-  
+
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: tache.id.toString() })
 
@@ -74,11 +74,12 @@ function TableauCard({ tache, done, toggleDone }) {
   )
   // — créer le contexte audio seulement quand nécessaire (après interaction utilisateur)
   const audioCtxRef = useRef(null)
-  
+
   const getAudioContext = useCallback(() => {
     if (!audioCtxRef.current) {
       try {
-        audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)()
+        audioCtxRef.current = new (window.AudioContext ||
+          window.webkitAudioContext)()
         // Si le contexte est suspendu, on le reprend
         if (audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume()
@@ -97,7 +98,7 @@ function TableauCard({ tache, done, toggleDone }) {
   const handleCheck = useCallback(() => {
     // Créer l'AudioContext seulement lors de la première interaction
     const audioCtx = getAudioContext()
-    
+
     if (!done && audioCtx) {
       try {
         playBeep(audioCtx)
@@ -107,7 +108,7 @@ function TableauCard({ tache, done, toggleDone }) {
         }
       }
     }
-    
+
     // Inverser l'état : si c'est fait, on le défait, et vice versa
     toggleDone(tache.id, !done)
   }, [done, tache.id, toggleDone, getAudioContext])
@@ -121,8 +122,8 @@ function TableauCard({ tache, done, toggleDone }) {
       {...listeners}
     >
       <span>{tache.label}</span>
-      {tache.imagepath && (
-        tache.isDemo ? (
+      {tache.imagepath &&
+        (tache.isDemo ? (
           <DemoSignedImage
             filePath={tache.imagepath}
             alt={tache.label}
@@ -135,8 +136,7 @@ function TableauCard({ tache, done, toggleDone }) {
             alt={tache.label}
             className="tableau-card__image img-size-lg"
           />
-        )
-      )}
+        ))}
 
       <Checkbox
         id={`tache-fait-${tache.id}`}
@@ -154,6 +154,7 @@ TableauCard.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
     label: PropTypes.string.isRequired,
     imagepath: PropTypes.string,
+    isDemo: PropTypes.bool,
   }).isRequired,
   done: PropTypes.bool.isRequired,
   toggleDone: PropTypes.func.isRequired,

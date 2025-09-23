@@ -1,14 +1,23 @@
 import { InputWithValidation, Loader, ModalConfirm, Navbar } from '@/components'
 import {
-    HistoryTab,
-    LogsTab,
-    PermissionsTab,
-    RolesTab,
-    UsersTab,
+  HistoryTab,
+  LogsTab,
+  PermissionsTab,
+  RolesTab,
+  UsersTab,
 } from '@/components/admin-permissions'
 import { usePermissions } from '@/contexts'
 import { createFeatureValidationRules } from '@/utils/validationRules'
-import { BarChart3, History, Plus, Save, Settings, Shield, Users, X } from 'lucide-react'
+import {
+  BarChart3,
+  History,
+  Plus,
+  Save,
+  Settings,
+  Shield,
+  Users,
+  X,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
@@ -96,7 +105,7 @@ export default function AdminPermissions() {
         <Navbar />
         <div className="loading-container">
           <Loader />
-          <p>Chargement de l'administration...</p>
+          <p>Chargement de l&apos;administration...</p>
         </div>
       </div>
     )
@@ -121,7 +130,9 @@ export default function AdminPermissions() {
   }
 
   // Filtrer les rôles actifs pour la gestion des permissions (exclure admin qui a tous les droits)
-  const manageableRoles = roles.filter(role => role.name !== 'admin' && role.is_active)
+  const manageableRoles = roles.filter(
+    role => role.name !== 'admin' && role.is_active
+  )
 
   // Gérer la création d'un nouveau rôle
   const handleCreateRole = async () => {
@@ -186,7 +197,7 @@ export default function AdminPermissions() {
   }
 
   // Initialiser les permissions temporaires avec les permissions existantes
-  const initializeTempPermissions = (roleId) => {
+  const initializeTempPermissions = roleId => {
     const existingPermissions = permissions.filter(p => p.role_id === roleId)
     setTempPermissions(existingPermissions.map(p => ({ ...p })))
   }
@@ -542,7 +553,8 @@ export default function AdminPermissions() {
             {showEditFeatureForm && editingFeature && (
               <div className="edit-feature-form">
                 <h3>
-                  Modifier la fonctionnalité "{editingFeature.display_name}"
+                  Modifier la fonctionnalité &quot;{editingFeature.display_name}
+                  &quot;
                 </h3>
                 <div className="form-row">
                   <InputWithValidation
@@ -721,7 +733,7 @@ export default function AdminPermissions() {
         cancelLabel="Annuler"
       >
         Êtes-vous sûr de vouloir supprimer le rôle{' '}
-        <strong>"{confirmDelete.roleName}"</strong> ?
+        <strong>&quot;{confirmDelete.roleName}&quot;</strong> ?
         <br />
         <small>
           Cette action est irréversible et supprimera toutes les permissions
@@ -744,7 +756,7 @@ export default function AdminPermissions() {
         cancelLabel="Annuler"
       >
         Êtes-vous sûr de vouloir supprimer la fonctionnalité{' '}
-        <strong>"{confirmDeleteFeature.featureName}"</strong> ?
+        <strong>&quot;{confirmDeleteFeature.featureName}&quot;</strong> ?
         <br />
         <small>
           Cette action est irréversible et supprimera toutes les permissions

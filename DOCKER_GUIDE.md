@@ -13,6 +13,7 @@ Ce projet utilise Docker pour créer un environnement de développement cohéren
 ## 🚀 Commandes essentielles
 
 ### Démarrage rapide
+
 ```bash
 # Construire l'image (première fois ou après changements majeurs)
 docker compose build
@@ -25,6 +26,7 @@ docker compose up -d
 ```
 
 ### Gestion des conteneurs
+
 ```bash
 # Arrêter l'application
 docker compose down
@@ -43,6 +45,7 @@ docker compose logs -f
 ```
 
 ### Nettoyage
+
 ```bash
 # Supprimer les conteneurs arrêtés
 docker compose down
@@ -57,17 +60,21 @@ docker system prune -a
 ## 🔧 Développement
 
 ### Option 1 : Développement local classique
+
 ```bash
 yarn dev
 ```
+
 - Plus rapide à démarrer
 - Hot reload natif
 - Accès direct aux fichiers
 
 ### Option 2 : Développement avec Docker
+
 ```bash
 docker compose up
 ```
+
 - Environnement isolé
 - Identique à la production
 - Partage facile avec l'équipe
@@ -75,11 +82,13 @@ docker compose up
 ## 📝 Workflow recommandé
 
 ### Pour le développement quotidien
+
 1. Utilisez `yarn dev` pour un développement rapide
 2. Testez avec `docker compose up` avant de commiter
 3. Utilisez Docker pour reproduire des bugs spécifiques
 
 ### Pour les changements majeurs
+
 1. Modifiez le code
 2. Si changement de dépendances : `yarn install`
 3. Rebuilder l'image : `docker compose build`
@@ -93,6 +102,7 @@ docker compose up
 ## 🐛 Dépannage
 
 ### L'application ne démarre pas
+
 ```bash
 # Vérifier que Docker tourne
 docker info
@@ -105,6 +115,7 @@ docker compose up --no-deps
 ```
 
 ### Problèmes de dépendances
+
 ```bash
 # Mettre à jour yarn.lock localement
 yarn install
@@ -114,6 +125,7 @@ docker compose build --no-cache
 ```
 
 ### Problèmes de port
+
 ```bash
 # Vérifier les ports utilisés
 docker compose ps
@@ -126,17 +138,20 @@ ports:
 ## 📊 Informations utiles
 
 ### Structure de l'image
+
 - **Base** : Node.js 20 Alpine Linux
 - **Taille** : Optimisée avec .dockerignore
 - **Port** : 5173 (Vite par défaut)
 
 ### Volumes montés
+
 - Code source synchronisé en temps réel
 - node_modules isolé dans le conteneur
 
 ## 🎉 Prochaines étapes
 
 ### Ajouts possibles
+
 - [ ] Base de données PostgreSQL
 - [ ] Redis pour le cache
 - [ ] Nginx pour la production
@@ -144,6 +159,7 @@ ports:
 - [ ] CI/CD avec Docker
 
 ### Production
+
 - Créer un Dockerfile.prod optimisé
 - Utiliser docker-compose.prod.yml
 - Configurer les variables d'environnement
@@ -160,11 +176,12 @@ ports:
 ## 🆘 Aide
 
 Si vous rencontrez des problèmes :
+
 1. Vérifiez que Docker Desktop tourne
 2. Consultez les logs : `docker compose logs`
 3. Essayez un rebuild : `docker compose build --no-cache`
 4. En dernier recours : `docker system prune -a` (attention, supprime tout)
 
 ---
-*Guide créé le $(date) - Docker version 28.4.0*
 
+_Guide créé le $(date) - Docker version 28.4.0_

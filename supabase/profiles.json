@@ -75,36 +75,28 @@
         {
           "policyname": "profiles_admin_all",
           "command": "ALL",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "is_admin()",
           "with_check": "is_admin()"
         },
         {
           "policyname": "profiles_insert_own",
           "command": "INSERT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": null,
           "with_check": "(auth.uid() = id)"
         },
         {
           "policyname": "profiles_select_own",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(auth.uid() = id)",
           "with_check": null
         },
         {
           "policyname": "profiles_update_own",
           "command": "UPDATE",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(auth.uid() = id)",
           "with_check": "(auth.uid() = id)"
         }

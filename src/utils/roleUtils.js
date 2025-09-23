@@ -19,7 +19,7 @@ export const SYSTEM_ROLE_PRIORITIES = {
  * @param {string} roleName - Nom du rôle à vérifier
  * @returns {boolean} True si c'est un rôle système
  */
-export const isSystemRole = (roleName) => {
+export const isSystemRole = roleName => {
   return SYSTEM_ROLES.includes(roleName)
 }
 
@@ -28,7 +28,7 @@ export const isSystemRole = (roleName) => {
  * @param {string} roleName - Nom du rôle
  * @returns {boolean} True si le rôle peut être supprimé
  */
-export const canDeleteRole = (roleName) => {
+export const canDeleteRole = roleName => {
   return !isSystemRole(roleName)
 }
 
@@ -37,7 +37,7 @@ export const canDeleteRole = (roleName) => {
  * @param {string} roleName - Nom du rôle
  * @returns {boolean} True si le rôle peut être modifié
  */
-export const canModifyRole = (roleName) => {
+export const canModifyRole = roleName => {
   return !isSystemRole(roleName)
 }
 
@@ -46,7 +46,7 @@ export const canModifyRole = (roleName) => {
  * @param {string} roleName - Nom du rôle
  * @returns {boolean} True si le rôle peut être activé/désactivé
  */
-export const canToggleRole = (roleName) => {
+export const canToggleRole = roleName => {
   return isSystemRole(roleName)
 }
 
@@ -55,7 +55,7 @@ export const canToggleRole = (roleName) => {
  * @param {Array} roles - Liste des rôles
  * @returns {Array} Rôles actifs
  */
-export const getActiveRoles = (roles) => {
+export const getActiveRoles = roles => {
   return roles.filter(role => role.is_active)
 }
 
@@ -64,7 +64,7 @@ export const getActiveRoles = (roles) => {
  * @param {Array} roles - Liste des rôles
  * @returns {Array} Rôles disponibles pour attribution
  */
-export const getAvailableRoles = (roles) => {
+export const getAvailableRoles = roles => {
   return roles.filter(role => role.is_active && role.name !== 'admin')
 }
 
@@ -73,7 +73,7 @@ export const getAvailableRoles = (roles) => {
  * @param {string} roleName - Nom du rôle
  * @returns {number} Priorité du rôle
  */
-export const getRolePriority = (roleName) => {
+export const getRolePriority = roleName => {
   return SYSTEM_ROLE_PRIORITIES[roleName] || 0
 }
 
@@ -82,7 +82,7 @@ export const getRolePriority = (roleName) => {
  * @param {Array} roles - Liste des rôles
  * @returns {Array} Rôles triés par priorité
  */
-export const sortRolesByPriority = (roles) => {
+export const sortRolesByPriority = roles => {
   return [...roles].sort((a, b) => {
     const priorityA = getRolePriority(a.name)
     const priorityB = getRolePriority(b.name)
@@ -95,11 +95,11 @@ export const sortRolesByPriority = (roles) => {
  * @param {Object} role - Objet rôle
  * @returns {string} Nom d'affichage du rôle
  */
-export const getRoleDisplayName = (role) => {
+export const getRoleDisplayName = role => {
   if (role.display_name) {
     return role.display_name
   }
-  
+
   // Noms d'affichage par défaut pour les rôles système
   const defaultNames = {
     admin: 'Administrateur',
@@ -108,7 +108,7 @@ export const getRoleDisplayName = (role) => {
     free: 'Gratuit',
     visitor: 'Visiteur',
   }
-  
+
   return defaultNames[role.name] || role.name
 }
 
@@ -117,19 +117,19 @@ export const getRoleDisplayName = (role) => {
  * @param {Object} role - Objet rôle
  * @returns {string} Description du rôle
  */
-export const getRoleDescription = (role) => {
+export const getRoleDescription = role => {
   if (role.description) {
     return role.description
   }
-  
+
   // Descriptions par défaut pour les rôles système
   const defaultDescriptions = {
     admin: 'Administrateur avec tous les droits',
-    staff: 'Membre de l\'équipe avec accès privilégié',
+    staff: "Membre de l'équipe avec accès privilégié",
     abonne: 'Utilisateur abonné avec accès complet',
     free: 'Utilisateur avec accès gratuit limité',
     visitor: 'Visiteur avec accès limité',
   }
-  
+
   return defaultDescriptions[role.name] || 'Rôle personnalisé'
 }

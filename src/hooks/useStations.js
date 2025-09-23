@@ -28,11 +28,13 @@ export default function useStations(ligne = '1', type = 'metro') {
           // Choisir une première station aléatoire
           const randomIndex = Math.floor(Math.random() * stations.length)
           const firstStation = stations[randomIndex]
-          
+
           // Créer un nouveau tableau avec la première station aléatoire
-          const remainingStations = stations.filter((_, index) => index !== randomIndex)
+          const remainingStations = stations.filter(
+            (_, index) => index !== randomIndex
+          )
           const shuffledStations = [firstStation, ...remainingStations]
-          
+
           setStations(shuffledStations)
         } else {
           setStations(stations)

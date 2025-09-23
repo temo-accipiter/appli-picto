@@ -19,29 +19,23 @@ export default function AccountManagement({ className = '' }) {
   const [selectedUser, setSelectedUser] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
 
-  // Vérifier les permissions
-  if (!can('account_management')) {
-    return (
-      <div className={`account-management no-permission ${className}`}>
-        <p>Vous n'avez pas les permissions pour gérer les comptes.</p>
-      </div>
-    )
-  }
-
   // Charger les utilisateurs
   useEffect(() => {
+    if (!can('account_management')) return
     const fetchUsers = async () => {
       setLoading(true)
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select(`
+          .select(
+            `
             *,
             user_roles!inner(
               is_active,
               roles!inner(name, display_name, priority)
             )
-          `)
+          `
+          )
           .order('created_at', { ascending: false })
 
         if (error) throw error
@@ -52,7 +46,7 @@ export default function AccountManagement({ className = '' }) {
           return {
             ...user,
             role: activeRole?.roles?.name || 'visitor',
-            roleDisplay: activeRole?.roles?.display_name || 'Visiteur'
+            roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
           }
         })
 
@@ -65,15 +59,16 @@ export default function AccountManagement({ className = '' }) {
     }
 
     fetchUsers()
-  }, [])
+  }, [can])
 
   // Filtrer les utilisateurs
   const filteredUsers = users.filter(user => {
     const matchesFilter = filter === 'all' || user.account_status === filter
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch =
+      searchTerm === '' ||
       user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     return matchesFilter && matchesSearch
   })
 
@@ -81,26 +76,31 @@ export default function AccountManagement({ className = '' }) {
   const changeAccountStatus = async (userId, newStatus, reason = '') => {
     setActionLoading(true)
     try {
-      const { error } = await supabase.functions.invoke('change-account-status', {
-        body: {
-          target_user_id: userId,
-          new_status: newStatus,
-          reason: reason
+      const { error } = await supabase.functions.invoke(
+        'change-account-status',
+        {
+          body: {
+            target_user_id: userId,
+            new_status: newStatus,
+            reason: reason,
+          },
         }
-      })
+      )
 
       if (error) throw error
 
       // Rafraîchir la liste
       const { data, error: refreshError } = await supabase
         .from('profiles')
-        .select(`
+        .select(
+          `
           *,
           user_roles!inner(
             is_active,
             roles!inner(name, display_name, priority)
           )
-        `)
+        `
+        )
         .order('created_at', { ascending: false })
 
       if (refreshError) throw refreshError
@@ -110,7 +110,7 @@ export default function AccountManagement({ className = '' }) {
         return {
           ...user,
           role: activeRole?.roles?.name || 'visitor',
-          roleDisplay: activeRole?.roles?.display_name || 'Visiteur'
+          roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
         }
       })
 
@@ -124,7 +124,7 @@ export default function AccountManagement({ className = '' }) {
   }
 
   // Obtenir l'affichage de l'état
-  const getStatusDisplay = (status) => {
+  const getStatusDisplay = status => {
     switch (status) {
       case 'active':
         return { label: 'Actif', color: 'success', icon: '✅' }
@@ -148,6 +148,15 @@ export default function AccountManagement({ className = '' }) {
     )
   }
 
+  // Vérifier les permissions
+  if (!can('account_management')) {
+    return (
+      <div className={`account-management no-permission ${className}`}>
+        <p>Vous n&apos;avez pas les permissions pour gérer les comptes.</p>
+      </div>
+    )
+  }
+
   return (
     <div className={`account-management ${className}`}>
       <div className="account-header">
@@ -161,15 +170,12 @@ export default function AccountManagement({ className = '' }) {
             type="text"
             placeholder="Rechercher par pseudo ou email..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="filter-select">
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
+          <select value={filter} onChange={e => setFilter(e.target.value)}>
             <option value="all">Tous les états</option>
             <option value="active">Actifs</option>
             <option value="suspended">Suspendus</option>
@@ -194,14 +200,15 @@ export default function AccountManagement({ className = '' }) {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="user-details">
                   <h3 className="user-name">{user.pseudo || 'Sans pseudo'}</h3>
                   <p className="user-email">{user.email}</p>
                   <div className="user-meta">
                     <span className="user-role">{user.roleDisplay}</span>
                     <span className="user-created">
-                      Inscrit le {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                      Inscrit le{' '}
+                      {new Date(user.created_at).toLocaleDateString('fr-FR')}
                     </span>
                   </div>
                 </div>
@@ -239,37 +246,69 @@ export default function AccountManagement({ className = '' }) {
         <div className="account-modal">
           <div className="modal-content">
             <h3>Gérer le compte de {selectedUser.pseudo}</h3>
-            
+
             <div className="user-summary">
-              <p><strong>Email:</strong> {selectedUser.email}</p>
-              <p><strong>Rôle:</strong> {selectedUser.roleDisplay}</p>
-              <p><strong>État actuel:</strong> {getStatusDisplay(selectedUser.account_status).label}</p>
+              <p>
+                <strong>Email:</strong> {selectedUser.email}
+              </p>
+              <p>
+                <strong>Rôle:</strong> {selectedUser.roleDisplay}
+              </p>
+              <p>
+                <strong>État actuel:</strong>{' '}
+                {getStatusDisplay(selectedUser.account_status).label}
+              </p>
             </div>
 
             <div className="status-actions">
-              <h4>Changer l'état du compte</h4>
-              
+              <h4>Changer l&apos;état du compte</h4>
+
               <div className="action-buttons">
                 <button
                   className="status-button success"
-                  onClick={() => changeAccountStatus(selectedUser.id, 'active', 'Réactivation par admin')}
-                  disabled={actionLoading || selectedUser.account_status === 'active'}
+                  onClick={() =>
+                    changeAccountStatus(
+                      selectedUser.id,
+                      'active',
+                      'Réactivation par admin'
+                    )
+                  }
+                  disabled={
+                    actionLoading || selectedUser.account_status === 'active'
+                  }
                 >
                   ✅ Activer
                 </button>
-                
+
                 <button
                   className="status-button error"
-                  onClick={() => changeAccountStatus(selectedUser.id, 'suspended', 'Suspension par admin')}
-                  disabled={actionLoading || selectedUser.account_status === 'suspended'}
+                  onClick={() =>
+                    changeAccountStatus(
+                      selectedUser.id,
+                      'suspended',
+                      'Suspension par admin'
+                    )
+                  }
+                  disabled={
+                    actionLoading || selectedUser.account_status === 'suspended'
+                  }
                 >
                   ⛔ Suspendre
                 </button>
-                
+
                 <button
                   className="status-button warning"
-                  onClick={() => changeAccountStatus(selectedUser.id, 'deletion_scheduled', 'Suppression programmée par admin')}
-                  disabled={actionLoading || selectedUser.account_status === 'deletion_scheduled'}
+                  onClick={() =>
+                    changeAccountStatus(
+                      selectedUser.id,
+                      'deletion_scheduled',
+                      'Suppression programmée par admin'
+                    )
+                  }
+                  disabled={
+                    actionLoading ||
+                    selectedUser.account_status === 'deletion_scheduled'
+                  }
                 >
                   🗑️ Programmer suppression
                 </button>

@@ -121,7 +121,9 @@ function patchFetchForCheckout() {
               init.body.get('price_id') ||
               init.body.get('price')
           }
-        } catch {}
+        } catch {
+          // Ignore parsing errors
+        }
         const planName = priceIdToPlanName(priceId)
 
         window.gtag('event', 'start_checkout', {

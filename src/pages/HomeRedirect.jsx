@@ -8,7 +8,7 @@ import { Navigate } from 'react-router-dom'
  * - Utilisateurs connectés → /tableau (avec cartes personnelles)
  */
 export default function HomeRedirect() {
-  const { role, loading } = usePermissions()
+  const { role: _role, loading } = usePermissions()
 
   // Afficher un loader pendant la détermination du rôle
   if (loading) {

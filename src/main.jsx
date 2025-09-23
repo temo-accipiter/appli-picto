@@ -1,10 +1,10 @@
 // src/main.jsx
 import { Layout, Loader, ProtectedRoute } from '@/components'
 import {
-    AuthProvider,
-    DisplayProvider,
-    PermissionsProvider,
-    ToastProvider,
+  AuthProvider,
+  DisplayProvider,
+  PermissionsProvider,
+  ToastProvider,
 } from '@/contexts'
 import '@/i18n/i18n'
 import '@/styles/main.scss'
@@ -101,25 +101,25 @@ if (
 
 // Pages lazy-loaded
 import {
-    Abonnement,
-    Accessibilite,
-    AdminPermissions,
-    CGU,
-    CGV,
-    Edition,
-    ForgotPassword,
-    HomeRedirect,
-    Login,
-    Logs,
-    MentionsLegales,
-    NotFound,
-    PolitiqueConfidentialite,
-    PolitiqueCookies,
-    PortailRGPD,
-    Profil,
-    ResetPassword,
-    Signup,
-    Tableau,
+  Abonnement,
+  Accessibilite,
+  AdminPermissions,
+  CGU,
+  CGV,
+  Edition,
+  ForgotPassword,
+  HomeRedirect,
+  Login,
+  Logs,
+  MentionsLegales,
+  NotFound,
+  PolitiqueConfidentialite,
+  PolitiqueCookies,
+  PortailRGPD,
+  Profil,
+  ResetPassword,
+  Signup,
+  Tableau,
 } from '@/pages'
 
 // ✅ Routes : on place aussi login/signup/forgot/reset SOUS Layout

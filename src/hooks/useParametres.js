@@ -7,7 +7,7 @@ export default function useParametres(reload = 0) {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const isCorsAccessControl = (err) => {
+  const isCorsAccessControl = err => {
     const msg = String(err?.message ?? err).toLowerCase()
     // Safari/Firefox typiques
     return (
@@ -36,7 +36,9 @@ export default function useParametres(reload = 0) {
       // Important: si c’est un blocage CORS Safari, ne pas tenter l’insert par défaut.
       if (isCorsAccessControl(error)) {
         if (import.meta.env.DEV) {
-          console.info('useParametres: blocage CORS/ITP détecté (Safari). Re-essai/ignorer.')
+          console.info(
+            'useParametres: blocage CORS/ITP détecté (Safari). Re-essai/ignorer.'
+          )
         }
         setError(error)
         setLoading(false)
@@ -63,56 +65,70 @@ export default function useParametres(reload = 0) {
   }, [])
 
   // Insert “par défaut” seulement si on sait que la SELECT a abouti (pas un blocage CORS)
-  const insertDefaults = useCallback(async (defaults = {}) => {
-    const payload = { id: 1, ...defaults }
+  const insertDefaults = useCallback(
+    async (defaults = {}) => {
+      const payload = { id: 1, ...defaults }
 
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('parametres').upsert(payload, { onConflict: 'id' })
-    )
+      const { error, aborted } = await withAbortSafe(
+        supabase.from('parametres').upsert(payload, { onConflict: 'id' })
+      )
 
-    if (aborted || (error && isAbortLike(error))) return { ok: false, error: null }
-    if (error) {
-      if (import.meta.env.DEV) {
-        console.error('Erreur insertion paramètres par défaut :', String(error?.message ?? error))
+      if (aborted || (error && isAbortLike(error)))
+        return { ok: false, error: null }
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error(
+            'Erreur insertion paramètres par défaut :',
+            String(error?.message ?? error)
+          )
+        }
+        return { ok: false, error }
       }
-      return { ok: false, error }
-    }
 
-    // re-charge pour refléter la DB
-    await fetchParametres()
-    return { ok: true, error: null }
-  }, [fetchParametres])
+      // re-charge pour refléter la DB
+      await fetchParametres()
+      return { ok: true, error: null }
+    },
+    [fetchParametres]
+  )
 
   useEffect(() => {
     fetchParametres()
   }, [reload, fetchParametres])
 
   // Fonction pour mettre à jour les paramètres
-  const updateParametres = useCallback(async (updates) => {
-    if (!parametres) {
-      // Si pas de paramètres, créer avec les valeurs par défaut
-      const defaults = { confettis: true, ...updates }
-      return await insertDefaults(defaults)
-    }
-
-    const payload = { ...parametres, ...updates }
-
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('parametres').upsert(payload, { onConflict: 'id' })
-    )
-
-    if (aborted || (error && isAbortLike(error))) return { ok: false, error: null }
-    if (error) {
-      if (import.meta.env.DEV) {
-        console.error('Erreur mise à jour paramètres :', String(error?.message ?? error))
+  const updateParametres = useCallback(
+    async updates => {
+      if (!parametres) {
+        // Si pas de paramètres, créer avec les valeurs par défaut
+        const defaults = { confettis: true, ...updates }
+        return await insertDefaults(defaults)
       }
-      return { ok: false, error }
-    }
 
-    // Mettre à jour l'état local
-    setParametres(payload)
-    return { ok: true, error: null }
-  }, [parametres, insertDefaults])
+      const payload = { ...parametres, ...updates }
+
+      const { error, aborted } = await withAbortSafe(
+        supabase.from('parametres').upsert(payload, { onConflict: 'id' })
+      )
+
+      if (aborted || (error && isAbortLike(error)))
+        return { ok: false, error: null }
+      if (error) {
+        if (import.meta.env.DEV) {
+          console.error(
+            'Erreur mise à jour paramètres :',
+            String(error?.message ?? error)
+          )
+        }
+        return { ok: false, error }
+      }
+
+      // Mettre à jour l'état local
+      setParametres(payload)
+      return { ok: true, error: null }
+    },
+    [parametres, insertDefaults]
+  )
 
   return {
     parametres,

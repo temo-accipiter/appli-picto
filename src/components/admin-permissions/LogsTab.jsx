@@ -34,7 +34,10 @@ export default function LogsTab() {
 
         if (error) {
           console.error('Erreur chargement logs:', error)
-          showToast(`Erreur lors du chargement des logs: ${error.message}`, 'error')
+          showToast(
+            `Erreur lors du chargement des logs: ${error.message}`,
+            'error'
+          )
           return
         }
 
@@ -98,8 +101,8 @@ export default function LogsTab() {
   return (
     <div className="logs-tab">
       <div className="logs-header">
-        <h3>Logs d'abonnement</h3>
-        <p>Surveillez l'activité des abonnements et des utilisateurs</p>
+        <h3>Logs d&apos;abonnement</h3>
+        <p>Surveillez l&apos;activité des abonnements et des utilisateurs</p>
       </div>
 
       {/* Filtres */}

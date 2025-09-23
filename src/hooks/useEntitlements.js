@@ -1,172 +1,211 @@
 import { AuthContext } from '@/contexts/AuthContext'
-import { isAbortLike, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
-// Log "safe" pour Safari/Firefox
-const formatErr = (e) => {
-  const m = String(e?.message ?? e)
-  const parts = [
-    m,
-    e?.code ? `[${e.code}]` : '',
-    e?.details ? `— ${e.details}` : '',
-    e?.hint ? `(hint: ${e.hint})` : '',
-  ].filter(Boolean)
-  return parts.join(' ')
-}
+const sleep = ms => new Promise(r => setTimeout(r, ms))
+const withTimeout = (p, ms) =>
+  Promise.race([p, sleep(ms).then(() => ({ __timeout: true }))])
 
-/**
- * Hook pour gérer les droits et permissions de l'utilisateur
- * Utilise le nouveau système de permissions basé sur user_roles
- */
-export const useEntitlements = () => {
-  const { user } = useContext(AuthContext)
-  const [role, setRole] = useState('visitor')
+// Cache simple pour éviter les appels multiples
+const roleCache = new Map()
+const CACHE_DURATION = 5000 // 5 secondes
+
+export function useEntitlements() {
+  const { user, authReady } = useContext(AuthContext)
+  const [role, setRole] = useState('unknown') // tri-state au démarrage
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    let mounted = true
+  // Empêche les chevauchements (React 18 / StrictMode)
+  const runIdRef = useRef(0)
 
-    const determineRole = async (retryCount = 0) => {
-      const maxRetries = 3
-      // Attendre un petit délai pour éviter les conditions de course
-      await new Promise(resolve => setTimeout(resolve, 100 + (retryCount * 200)))
-      console.log('🔍 useEntitlements: determineRole appelé avec user:', user?.id, retryCount > 0 ? `(tentative ${retryCount + 1}/${maxRetries + 1})` : '')
-      
-      if (!user?.id) {
-        if (!mounted) return
-        console.log('🔍 useEntitlements: pas d\'utilisateur, rôle = visitor')
+  useEffect(() => {
+    let alive = true
+    const runId = ++runIdRef.current
+    const timerId = `entitlements-${runId}-${Date.now()}`
+    let timerStarted = false
+
+    const startTimer = () => {
+      if (!timerStarted) {
+        console.time(timerId)
+        timerStarted = true
+      }
+    }
+
+    const endTimer = () => {
+      if (timerStarted) {
+        try {
+          console.timeEnd(timerId)
+        } catch {
+          // Timer déjà terminé, ignorer l'erreur
+        }
+        timerStarted = false
+      }
+    }
+
+    const resolveRole = async () => {
+      // 1) Attente de l'auth
+      if (!authReady) {
+        setLoading(true)
+        return
+      }
+
+      // 2) Pas connecté → visitor
+      if (!user) {
+        if (!alive || runIdRef.current !== runId) return
+        startTimer()
         setRole('visitor')
         setSubscription(null)
         setLoading(false)
+        endTimer()
         return
       }
 
       setLoading(true)
-      console.log('🔍 useEntitlements: début de la détermination du rôle pour user:', user.id)
 
-      // Utiliser get_usage_fast qui est plus fiable et existe déjà
-      // Note: Cette fonction nécessite une authentification (assert_self_or_admin)
-      const { data: usageData, error: usageError, aborted: usageAborted } =
-        await withAbortSafe(
-          supabase.rpc('get_usage_fast', { p_user_id: user.id })
-        )
-
-      if (!mounted) return
-      if (usageAborted || (usageError && isAbortLike(usageError))) {
-        console.log('🔍 useEntitlements: requête usage annulée ou aborted')
-        setLoading(false)
-        return
-      }
-      
-      if (usageError) {
-        console.error('🔍 useEntitlements: erreur récupération usage/rôle:', usageError)
-        console.debug(
-          'useEntitlements: récupération du rôle transitoirement échouée',
-          usageError
-        )
-        // Fallback vers abonnement en cas d'erreur
-      } else if (usageData?.role?.name && usageData.role.name !== 'undefined') {
-        console.log('🔍 useEntitlements: rôle trouvé via get_usage_fast:', usageData.role.name)
-        console.log('🔍 useEntitlements: données complètes usageData:', JSON.stringify(usageData, null, 2))
-        setRole(usageData.role.name)
-        setLoading(false)
-        return
-      } else {
-        console.warn('🔍 useEntitlements: aucun rôle trouvé dans usageData:', JSON.stringify(usageData, null, 2))
-        console.warn('🔍 useEntitlements: usageData.role:', usageData?.role)
-        console.warn('🔍 useEntitlements: usageData.role.name:', usageData?.role?.name)
-        
-        // Retry logic si pas de rôle trouvé et qu'on a des tentatives restantes
-        if (retryCount < maxRetries && usageData?.role?.name === undefined) {
-          console.log('🔍 useEntitlements: retry dans 500ms...')
-          setTimeout(() => {
-            if (mounted) determineRole(retryCount + 1)
-          }, 500)
+      try {
+        // 3) Vérifier le cache d'abord
+        const cacheKey = user.id
+        const cached = roleCache.get(cacheKey)
+        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+          console.log('🔍 useEntitlements: rôle depuis le cache:', cached.role)
+          startTimer()
+          setRole(cached.role)
+          setLoading(false)
+          endTimer()
           return
         }
-        
-        // Ajouter un délai avant le fallback pour éviter les conditions de course
-        await new Promise(resolve => setTimeout(resolve, 200))
-      }
 
-      // FALLBACK : abonnement actif (active/trialing) le plus récent
-      console.log('🔍 useEntitlements: passage au fallback abonnement...')
-      const {
-        data: abonnement,
-        error: aboError,
-        aborted: aboAborted,
-      } = await withAbortSafe(
-        supabase
-          .from('abonnements')
-          .select('*')
-          .eq('user_id', user.id)
-          .in('status', ['active', 'trialing'])
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      )
+        // 4) Petit délai pour éviter les courses entre hooks
+        await sleep(100)
 
-      if (!mounted) return
-      if (aboAborted || (aboError && isAbortLike(aboError))) {
-        setLoading(false)
-        return
-      }
-      if (aboError) {
-        console.debug(
-          `useEntitlements: fallback abonnement transitoirement échoué: ${formatErr(aboError)}`
+        // 5) Tenter le rôle via RPC (avec timeout pour ne jamais bloquer l'UI)
+        startTimer()
+        console.log(
+          '🔍 useEntitlements: appel get_usage_fast pour user:',
+          user.id
         )
-        setRole('visitor')
-        setSubscription(null)
-        setLoading(false)
-        return
-      }
+        const { data, error, __timeout } = await withTimeout(
+          supabase.rpc('get_usage_fast', { p_user_id: user.id }),
+          5000 // Augmenté à 5 secondes
+        )
 
-      if (abonnement) {
-        console.log('🔍 useEntitlements: abonnement trouvé, rôle = abonné')
-        setSubscription(abonnement)
-        setRole('abonne')
-      } else {
-        console.warn('🔍 useEntitlements: aucun abonnement trouvé, rôle = visitor')
-        setSubscription(null)
-        setRole('visitor')
+        console.log('🔍 useEntitlements: réponse get_usage_fast:', {
+          data,
+          error,
+          __timeout,
+        })
+
+        if (!alive || runIdRef.current !== runId) return
+
+        if (!__timeout && !error && data?.role?.name) {
+          const roleName = String(data.role.name)
+          console.log(
+            '🔍 useEntitlements: rôle déterminé via get_usage_fast:',
+            roleName
+          )
+
+          // Mettre en cache
+          roleCache.set(cacheKey, {
+            role: roleName,
+            timestamp: Date.now(),
+          })
+
+          setRole(roleName)
+          setLoading(false)
+          endTimer()
+          return
+        }
+
+        // 6) Si get_usage_fast a échoué, fallback intelligent avec données
+        if (__timeout) {
+          console.warn(
+            '🔍 useEntitlements: get_usage_fast timeout 5s, fallback vers free (utilisateur connecté)'
+          )
+          // Si l'utilisateur est connecté mais get_usage_fast timeout,
+          // on assume qu'il est au minimum "free" (pas "visitor")
+          setRole('free')
+          setSubscription(null)
+
+          // 🔧 Charger les données de base même en cas de timeout
+          try {
+            console.log(
+              '🔍 useEntitlements: chargement des données de fallback...'
+            )
+            const fallbackData = {
+              role: { name: 'free' },
+              quotas: {
+                max_tasks: 4,
+                max_rewards: 2,
+                max_categories: 2,
+                monthly_tasks: 0,
+                monthly_rewards: 0,
+              },
+              usage: {
+                max_tasks: 0,
+                max_rewards: 0,
+                max_categories: 0,
+                monthly_tasks: 0,
+                monthly_rewards: 0,
+              },
+            }
+            setSubscription(fallbackData)
+            console.log('✅ useEntitlements: données de fallback chargées')
+          } catch (e) {
+            console.warn('❌ useEntitlements: erreur chargement fallback:', e)
+          }
+        } else if (error) {
+          console.warn(
+            '🔍 useEntitlements: get_usage_fast erreur, fallback vers free (utilisateur connecté)',
+            error
+          )
+          setRole('free')
+          setSubscription(null)
+        } else {
+          console.warn(
+            '🔍 useEntitlements: get_usage_fast a échoué, fallback vers visitor'
+          )
+          setRole('visitor')
+          setSubscription(null)
+        }
+      } finally {
+        if (alive && runIdRef.current === runId) {
+          setLoading(false)
+          endTimer()
+        }
       }
-      setLoading(false)
     }
 
-    determineRole()
-
+    resolveRole()
     return () => {
-      mounted = false
+      alive = false
     }
-  }, [user])
+  }, [authReady, user])
 
-  // Vérifier si l'abonnement est en période d’essai
   const isTrialPeriod = subscription?.status === 'trialing'
-
-  // Vérifier si l'abonnement est actif
   const isActiveSubscription =
     subscription?.status === 'active' || isTrialPeriod
 
-  // Vérifier si l'abonnement expire bientôt
-  const isExpiringSoon =
-    subscription?.current_period_end &&
-    new Date(subscription.current_period_end) <
-      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-
-  return {
-    role,
-    subscription,
-    loading,
-    isTrialPeriod,
-    isActiveSubscription,
-    isExpiringSoon,
-    isVisitor: role === 'visitor',
-    isSubscriber: role === 'abonne',
-    isAdmin: role === 'admin',
-    isFree: role === 'free',
-    isStaff: role === 'staff',
-    userId: user?.id,
-  }
+  return useMemo(
+    () => ({
+      role,
+      subscription,
+      loading,
+      isTrialPeriod,
+      isActiveSubscription,
+      isExpiringSoon:
+        !!subscription?.current_period_end &&
+        new Date(subscription.current_period_end) <
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      isVisitor: role === 'visitor',
+      isSubscriber: role === 'abonne',
+      isAdmin: role === 'admin',
+      isFree: role === 'free',
+      isStaff: role === 'staff',
+      userId: user?.id,
+      isUnknown: role === 'unknown',
+      isDetermined: role !== 'unknown',
+    }),
+    [role, subscription, loading, isTrialPeriod, isActiveSubscription, user?.id]
+  )
 }

@@ -8,7 +8,7 @@ export function isAbortLike(err) {
     msg.includes('the operation was aborted') ||
     msg.includes('request was aborted') ||
     msg.includes('load failed') ||
-    msg.includes('due to access control checks') 
+    msg.includes('due to access control checks')
   )
 }
 

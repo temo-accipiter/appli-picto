@@ -136,8 +136,8 @@ export const SignupPromptModal = ({
             {/* Trial info */}
             <div className="trial-info">
               <p>
-                <strong>1 semaine d'essai gratuite</strong> • Annulez à tout
-                moment
+                <strong>1 semaine d&apos;essai gratuite</strong> • Annulez à
+                tout moment
               </p>
             </div>
           </motion.div>

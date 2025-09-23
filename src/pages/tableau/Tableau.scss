@@ -1,6 +1,23 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
+// Indicateur de chargement fallback
+.loading-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  margin: 1rem 0;
+
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #666;
+  }
+}
+
 .metro-line {
   margin-bottom: $spacing-xl;
   text-align: center;

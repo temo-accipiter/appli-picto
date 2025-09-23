@@ -1,9 +1,9 @@
 import {
-    Button,
-    EditionCard,
-    EditionList,
-    ModalAjout,
-    SignedImage,
+  Button,
+  EditionCard,
+  EditionList,
+  ModalAjout,
+  SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
 import PropTypes from 'prop-types'

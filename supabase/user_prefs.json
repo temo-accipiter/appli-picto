@@ -33,27 +33,21 @@
         {
           "policyname": "user_prefs_select_self",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(auth.uid() = user_id)",
           "with_check": null
         },
         {
           "policyname": "user_prefs_update_self",
           "command": "UPDATE",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(auth.uid() = user_id)",
           "with_check": "(auth.uid() = user_id)"
         },
         {
           "policyname": "user_prefs_upsert_self",
           "command": "INSERT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": null,
           "with_check": "(auth.uid() = user_id)"
         }

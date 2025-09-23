@@ -1,8 +1,19 @@
-import { LangSelector, PersonalizationModal, ThemeToggle, UserMenu } from '@/components'
+import {
+  LangSelector,
+  PersonalizationModal,
+  ThemeToggle,
+  UserMenu,
+} from '@/components'
 import { usePermissions } from '@/contexts'
 import { useAuth } from '@/hooks'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Palette, Pencil, Settings, UserPlus } from 'lucide-react'
+import {
+  LayoutDashboard,
+  Palette,
+  Pencil,
+  Settings,
+  UserPlus,
+} from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.scss'
@@ -10,13 +21,14 @@ import './Navbar.scss'
 export default function Navbar() {
   const location = useLocation()
   const { user } = useAuth()
-  const { can, isVisitor } = usePermissions()
-  const [showPersonalizationModal, setShowPersonalizationModal] = useState(false)
+  const { can: _can, isVisitor } = usePermissions()
+  const [showPersonalizationModal, setShowPersonalizationModal] =
+    useState(false)
 
   const isTableau = location.pathname === '/tableau'
   const isEdition = location.pathname === '/edition'
   const isProfil = location.pathname === '/profil'
-  const isTableauDemo = location.pathname === '/tableau-demo'
+  const _isTableauDemo = location.pathname === '/tableau-demo'
   const isAdminPermissions = location.pathname === '/admin/permissions'
 
   return (
@@ -39,7 +51,9 @@ export default function Navbar() {
           </motion.div>
         )}
 
-        {(isEdition || isProfil || isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
+        {(isEdition ||
+          isProfil ||
+          isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
           <NavLink
             to="/tableau"
             className="nav-icon-link"
@@ -119,7 +133,7 @@ export default function Navbar() {
                   title="Créer un compte"
                 >
                   <UserPlus size={18} />
-                  <span>S'inscrire</span>
+                  <span>S&apos;inscrire</span>
                 </NavLink>
 
                 <NavLink
@@ -136,7 +150,7 @@ export default function Navbar() {
           </div>
         </motion.div>
       )}
-      
+
       {/* Modal de personnalisation pour les visiteurs */}
       <PersonalizationModal
         isOpen={showPersonalizationModal}

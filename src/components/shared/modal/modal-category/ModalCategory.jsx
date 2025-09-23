@@ -37,13 +37,13 @@ export default function ModalCategory({
 
   const handleSubmit = e => {
     e.preventDefault()
-    
+
     const hasError = validationRules.some(rule => rule(newCategory))
     if (hasError) {
       inputRef.current?.blur()
       return
     }
-    
+
     if (typeof onAddCategory === 'function') {
       // Passer la valeur de la catégorie en paramètre
       onAddCategory(e, newCategory)

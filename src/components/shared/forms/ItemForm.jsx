@@ -1,13 +1,13 @@
 import { Button, ImagePreview, InputWithValidation, Select } from '@/components'
 import {
-    compressImageIfNeeded,
-    compressionErrorMessage,
-    noDoubleSpaces,
-    noEdgeSpaces,
-    validateImageHeader,
-    validateImagePresence,
-    validateImageType,
-    validateNotEmpty,
+  compressImageIfNeeded,
+  compressionErrorMessage,
+  noDoubleSpaces,
+  noEdgeSpaces,
+  validateImageHeader,
+  validateImagePresence,
+  validateImageType,
+  validateNotEmpty,
 } from '@/utils'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'

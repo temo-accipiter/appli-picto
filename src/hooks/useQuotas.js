@@ -33,8 +33,8 @@ export default function useQuotas() {
 
     try {
       // 🚀 RPC UNIQUE - Une seule requête pour tout récupérer
-      const { data, error } = await supabase.rpc('get_usage_fast', { 
-        p_user_id: user.id 
+      const { data, error } = await supabase.rpc('get_usage_fast', {
+        p_user_id: user.id,
       })
 
       if (error) {
@@ -78,9 +78,9 @@ export default function useQuotas() {
       // Organiser les quotas par type
       const quotasMap = {}
       quotasData.forEach(q => {
-        quotasMap[q.quota_type] = { 
-          limit: q.quota_limit, 
-          period: q.quota_period 
+        quotasMap[q.quota_type] = {
+          limit: q.quota_limit,
+          period: q.quota_period,
         }
       })
 
@@ -92,7 +92,7 @@ export default function useQuotas() {
         // Quotas mensuels désactivés pour l'instant
         monthly_tasks: 0,
         monthly_rewards: 0,
-        monthly_categories: 0
+        monthly_categories: 0,
       }
 
       setQuotas(quotasMap)
@@ -104,10 +104,9 @@ export default function useQuotas() {
         console.log('🚀 useQuotas (RPC optimisé):', {
           role: role?.name,
           quotas: quotasMap,
-          usage: usageMap
+          usage: usageMap,
         })
       }
-
     } catch (err) {
       console.error('useQuotas: erreur fetch quotas RPC', err)
       setQuotas({})
@@ -134,16 +133,34 @@ export default function useQuotas() {
 
     const channel = supabase
       .channel(`quotas:user:${user.id}`)
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'taches', filter: `user_id=eq.${user.id}` },
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'taches',
+          filter: `user_id=eq.${user.id}`,
+        },
         () => setTimeout(fetchQuotas, 100)
       )
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'recompenses', filter: `user_id=eq.${user.id}` },
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'recompenses',
+          filter: `user_id=eq.${user.id}`,
+        },
         () => setTimeout(fetchQuotas, 100)
       )
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'categories', filter: `user_id=eq.${user.id}` },
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'categories',
+          filter: `user_id=eq.${user.id}`,
+        },
         () => setTimeout(fetchQuotas, 100)
       )
       .subscribe()
@@ -156,73 +173,101 @@ export default function useQuotas() {
   }, [user?.id, isFreeAccount, fetchQuotas])
 
   // Autorisations
-  const canCreate = useCallback((contentType) => {
-    if (!isFreeAccount) return true
-    const totalKey =
-      contentType === 'task' ? 'max_tasks' :
-      contentType === 'reward' ? 'max_rewards' :
-      contentType === 'category' ? 'max_categories' : null
+  const canCreate = useCallback(
+    contentType => {
+      if (!isFreeAccount) return true
+      const totalKey =
+        contentType === 'task'
+          ? 'max_tasks'
+          : contentType === 'reward'
+            ? 'max_rewards'
+            : contentType === 'category'
+              ? 'max_categories'
+              : null
 
-    if (!totalKey || !quotas[totalKey]) return true
-    const limit = quotas[totalKey].limit
-    const current = usage[totalKey] ?? 0
-    return current < limit
-  }, [isFreeAccount, quotas, usage])
+      if (!totalKey || !quotas[totalKey]) return true
+      const limit = quotas[totalKey].limit
+      const current = usage[totalKey] ?? 0
+      return current < limit
+    },
+    [isFreeAccount, quotas, usage]
+  )
 
   const canCreateTask = useCallback(() => canCreate('task'), [canCreate])
   const canCreateReward = useCallback(() => canCreate('reward'), [canCreate])
-  const canCreateCategory = useCallback(() => canCreate('category'), [canCreate])
+  const canCreateCategory = useCallback(
+    () => canCreate('category'),
+    [canCreate]
+  )
 
   // Infos structurées pour l'UI (inclut pourcentage/états)
-  const getQuotaInfo = useCallback((contentType) => {
-    const totalKey =
-      contentType === 'task' ? 'max_tasks' :
-      contentType === 'reward' ? 'max_rewards' :
-      contentType === 'category' ? 'max_categories' : null
+  const getQuotaInfo = useCallback(
+    contentType => {
+      const totalKey =
+        contentType === 'task'
+          ? 'max_tasks'
+          : contentType === 'reward'
+            ? 'max_rewards'
+            : contentType === 'category'
+              ? 'max_categories'
+              : null
 
-    if (!totalKey || !quotas[totalKey]) return null
+      if (!totalKey || !quotas[totalKey]) return null
 
-    const limit = quotas[totalKey].limit
-    const current = usage[totalKey] ?? 0
-    const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
-    const isAtLimit = current >= limit
-    const isNearLimit = !isAtLimit && current >= Math.floor(limit * NEAR_LIMIT_RATIO)
+      const limit = quotas[totalKey].limit
+      const current = usage[totalKey] ?? 0
+      const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
+      const isAtLimit = current >= limit
+      const isNearLimit =
+        !isAtLimit && current >= Math.floor(limit * NEAR_LIMIT_RATIO)
 
-    return {
-      limit,
-      current,
-      remaining: Math.max(0, limit - current),
-      percentage,
-      isAtLimit,
-      isNearLimit,
-    }
-  }, [quotas, usage])
+      return {
+        limit,
+        current,
+        remaining: Math.max(0, limit - current),
+        percentage,
+        isAtLimit,
+        isNearLimit,
+      }
+    },
+    [quotas, usage]
+  )
 
-  const getMonthlyQuotaInfo = useCallback((contentType) => {
-    const monthlyKey =
-      contentType === 'task' ? 'monthly_tasks' :
-      contentType === 'reward' ? 'monthly_rewards' :
-      contentType === 'category' ? 'monthly_categories' : null
+  const getMonthlyQuotaInfo = useCallback(
+    contentType => {
+      const monthlyKey =
+        contentType === 'task'
+          ? 'monthly_tasks'
+          : contentType === 'reward'
+            ? 'monthly_rewards'
+            : contentType === 'category'
+              ? 'monthly_categories'
+              : null
 
-    if (!monthlyKey || !quotas[monthlyKey]) return null
+      if (!monthlyKey || !quotas[monthlyKey]) return null
 
-    const limit = quotas[monthlyKey].limit
-    const current = usage[monthlyKey] ?? 0
-    const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
-    const isAtLimit = current >= limit
-    const isNearLimit = !isAtLimit && current >= Math.floor(limit * NEAR_LIMIT_RATIO)
+      const limit = quotas[monthlyKey].limit
+      const current = usage[monthlyKey] ?? 0
+      const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
+      const isAtLimit = current >= limit
+      const isNearLimit =
+        !isAtLimit && current >= Math.floor(limit * NEAR_LIMIT_RATIO)
 
-    return {
-      limit,
-      current,
-      remaining: Math.max(0, limit - current),
-      percentage,
-      isAtLimit,
-      isNearLimit,
-    }
-  }, [quotas, usage])
+      return {
+        limit,
+        current,
+        remaining: Math.max(0, limit - current),
+        percentage,
+        isAtLimit,
+        isNearLimit,
+      }
+    },
+    [quotas, usage]
+  )
 
-  const refreshQuotas = useCallback(() => { fetchQuotas() }, [fetchQuotas])
+  const refreshQuotas = useCallback(() => {
+    fetchQuotas()
+  }, [fetchQuotas])
 
   return {
     loading,

@@ -61,7 +61,9 @@
     .quota-fill {
       height: 100%;
       background: var(--success-color, #28a745);
-      transition: width 0.3s ease, background-color 0.3s ease;
+      transition:
+        width 0.3s ease,
+        background-color 0.3s ease;
       border-radius: 3px;
 
       &.near-limit {

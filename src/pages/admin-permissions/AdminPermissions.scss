@@ -389,20 +389,28 @@
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--accent-color)
+        );
         opacity: 0;
         transition: opacity 0.3s ease;
       }
 
       &.admin-user {
         border-color: #ef4444;
-        background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(239, 68, 68, 0.05) 100%);
-        
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          rgba(239, 68, 68, 0.05) 100%
+        );
+
         &::before {
           opacity: 1;
           background: linear-gradient(90deg, #ef4444, #f97316);
         }
-        
+
         .user-header h4 {
           color: #dc2626;
         }
@@ -410,13 +418,17 @@
 
       &.regular-user {
         border-color: #3b82f6;
-        background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(59, 130, 246, 0.05) 100%);
-        
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          rgba(59, 130, 246, 0.05) 100%
+        );
+
         &::before {
           opacity: 1;
           background: linear-gradient(90deg, #3b82f6, #8b5cf6);
         }
-        
+
         .user-header h4 {
           color: #1d4ed8;
         }
@@ -559,18 +571,18 @@
           }
 
           /* Styles spécifiques selon le type de rôle */
-          &[data-role="admin"] {
+          &[data-role='admin'] {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             border-color: #dc2626;
             box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
             animation: pulse 2s infinite;
-            
+
             .role-icon {
               background: rgba(255, 255, 255, 0.2);
               color: white;
             }
-            
+
             .role-name {
               color: white;
               font-weight: 700;
@@ -582,60 +594,76 @@
             }
           }
 
-          &[data-role="abonne"] {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+          &[data-role='abonne'] {
+            background: linear-gradient(
+              135deg,
+              rgba(245, 158, 11, 0.1),
+              rgba(217, 119, 6, 0.05)
+            );
             border-color: #f59e0b;
-            
+
             .role-icon {
               background: #f59e0b;
               color: white;
             }
-            
+
             .role-name {
               color: #d97706;
               font-weight: 600;
             }
           }
 
-          &[data-role="staff"] {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+          &[data-role='staff'] {
+            background: linear-gradient(
+              135deg,
+              rgba(139, 92, 246, 0.1),
+              rgba(124, 58, 237, 0.05)
+            );
             border-color: #8b5cf6;
-            
+
             .role-icon {
               background: #8b5cf6;
               color: white;
             }
-            
+
             .role-name {
               color: #7c3aed;
               font-weight: 600;
             }
           }
 
-          &[data-role="free"] {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+          &[data-role='free'] {
+            background: linear-gradient(
+              135deg,
+              rgba(59, 130, 246, 0.1),
+              rgba(37, 99, 235, 0.05)
+            );
             border-color: #3b82f6;
-            
+
             .role-icon {
               background: #3b82f6;
               color: white;
             }
-            
+
             .role-name {
               color: #2563eb;
               font-weight: 600;
             }
           }
 
-          &[data-role="visitor"] {
-            background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.05));
+          &[data-role='visitor'] {
+            background: linear-gradient(
+              135deg,
+              rgba(107, 114, 128, 0.1),
+              rgba(75, 85, 99, 0.05)
+            );
             border-color: #6b7280;
-            
+
             .role-icon {
               background: #6b7280;
               color: white;
             }
-            
+
             .role-name {
               color: #4b5563;
               font-weight: 600;
@@ -864,18 +892,18 @@
           }
 
           /* Styles spécifiques selon le type de rôle */
-          &[data-role="admin"] {
+          &[data-role='admin'] {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             border-color: #dc2626;
             box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
             animation: pulse 2s infinite;
-            
+
             .role-icon {
               background: rgba(255, 255, 255, 0.2);
               color: white;
             }
-            
+
             .role-name {
               color: white;
               font-weight: 700;
@@ -887,60 +915,76 @@
             }
           }
 
-          &[data-role="abonne"] {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.05));
+          &[data-role='abonne'] {
+            background: linear-gradient(
+              135deg,
+              rgba(245, 158, 11, 0.1),
+              rgba(217, 119, 6, 0.05)
+            );
             border-color: #f59e0b;
-            
+
             .role-icon {
               background: #f59e0b;
               color: white;
             }
-            
+
             .role-name {
               color: #d97706;
               font-weight: 600;
             }
           }
 
-          &[data-role="staff"] {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05));
+          &[data-role='staff'] {
+            background: linear-gradient(
+              135deg,
+              rgba(139, 92, 246, 0.1),
+              rgba(124, 58, 237, 0.05)
+            );
             border-color: #8b5cf6;
-            
+
             .role-icon {
               background: #8b5cf6;
               color: white;
             }
-            
+
             .role-name {
               color: #7c3aed;
               font-weight: 600;
             }
           }
 
-          &[data-role="free"] {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05));
+          &[data-role='free'] {
+            background: linear-gradient(
+              135deg,
+              rgba(59, 130, 246, 0.1),
+              rgba(37, 99, 235, 0.05)
+            );
             border-color: #3b82f6;
-            
+
             .role-icon {
               background: #3b82f6;
               color: white;
             }
-            
+
             .role-name {
               color: #2563eb;
               font-weight: 600;
             }
           }
 
-          &[data-role="visitor"] {
-            background: linear-gradient(135deg, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.05));
+          &[data-role='visitor'] {
+            background: linear-gradient(
+              135deg,
+              rgba(107, 114, 128, 0.1),
+              rgba(75, 85, 99, 0.05)
+            );
             border-color: #6b7280;
-            
+
             .role-icon {
               background: #6b7280;
               color: white;
             }
-            
+
             .role-name {
               color: #4b5563;
               font-weight: 600;
@@ -973,57 +1017,32 @@
         }
       }
 
-    /* Pagination */
-    .pagination-container {
-      margin-top: 2rem;
-      padding: 1.5rem;
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-
-      .pagination-info {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      .pagination-controls {
+      /* Pagination */
+      .pagination-container {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 0.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
 
-        .pagination-btn {
-          padding: 0.5rem 1rem;
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          border-radius: 6px;
-          color: var(--text-primary);
+        .pagination-info {
+          color: var(--text-secondary);
           font-size: 0.9rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover:not(:disabled) {
-            background: var(--bg-hover);
-            border-color: var(--primary-color);
-          }
-
-          &:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-          }
+          font-weight: 500;
         }
 
-        .pagination-pages {
+        .pagination-controls {
           display: flex;
-          gap: 0.25rem;
+          align-items: center;
+          gap: 0.5rem;
 
-          .pagination-page {
-            padding: 0.5rem 0.75rem;
+          .pagination-btn {
+            padding: 0.5rem 1rem;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
@@ -1031,23 +1050,48 @@
             font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 40px;
 
-            &:hover {
+            &:hover:not(:disabled) {
               background: var(--bg-hover);
               border-color: var(--primary-color);
             }
 
-            &.active {
-              background: var(--primary-color);
-              color: white;
-              border-color: var(--primary-color);
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+          }
+
+          .pagination-pages {
+            display: flex;
+            gap: 0.25rem;
+
+            .pagination-page {
+              padding: 0.5rem 0.75rem;
+              background: var(--bg-primary);
+              border: 1px solid var(--border-color);
+              border-radius: 6px;
+              color: var(--text-primary);
+              font-size: 0.9rem;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              min-width: 40px;
+
+              &:hover {
+                background: var(--bg-hover);
+                border-color: var(--primary-color);
+              }
+
+              &.active {
+                background: var(--primary-color);
+                color: white;
+                border-color: var(--primary-color);
+              }
             }
           }
         }
       }
     }
-  }
 
     /* État vide */
     .no-users {
@@ -1088,7 +1132,8 @@
 
   // Animations
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 1;
     }
     50% {
@@ -1903,7 +1948,7 @@
         font-size: 0.875rem;
         width: 100%;
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           width: 16px;
           height: 16px;
           cursor: pointer;
@@ -2277,7 +2322,9 @@
       gap: 1rem;
       align-items: end;
 
-      .filter-group, .limit-group, .action-group {
+      .filter-group,
+      .limit-group,
+      .action-group {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -2307,19 +2354,19 @@
 
       // Couleurs par type de table
       &.table-roles {
-        border-left: 4px solid #3B82F6;
+        border-left: 4px solid #3b82f6;
       }
 
       &.table-features {
-        border-left: 4px solid #10B981;
+        border-left: 4px solid #10b981;
       }
 
       &.table-role_permissions {
-        border-left: 4px solid #F59E0B;
+        border-left: 4px solid #f59e0b;
       }
 
       &.table-user_roles {
-        border-left: 4px solid #8B5CF6;
+        border-left: 4px solid #8b5cf6;
       }
 
       .history-header {
@@ -2539,13 +2586,13 @@
   .logs-header {
     margin-bottom: 2rem;
     text-align: center;
-    
+
     h3 {
       margin: 0 0 0.5rem 0;
       color: var(--text-primary);
       font-size: 1.5rem;
     }
-    
+
     p {
       margin: 0;
       color: var(--text-secondary);
@@ -2686,7 +2733,7 @@
     .logs-filters {
       .filter-buttons {
         flex-direction: column;
-        
+
         button {
           width: 100%;
         }
@@ -2704,7 +2751,7 @@
       .log-row {
         grid-template-columns: 1fr;
         gap: 0.5rem;
-        
+
         span {
           padding: 0.25rem 0;
         }

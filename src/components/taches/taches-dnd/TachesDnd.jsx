@@ -5,12 +5,12 @@
 
 import { Button, ModalConfirm, TableauCard } from '@/components'
 import {
-    DndContext,
-    DragOverlay,
-    PointerSensor,
-    closestCenter,
-    useSensor,
-    useSensors,
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'

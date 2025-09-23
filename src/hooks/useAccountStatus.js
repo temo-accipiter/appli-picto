@@ -10,16 +10,6 @@ import useAuth from './useAuth'
  */
 export default function useAccountStatus() {
   const { user } = useAuth()
-  
-  // Gestion sécurisée de useToast
-  let showToast = null
-  try {
-    const { useToast } = require('@/contexts')
-    const toastContext = useToast()
-    showToast = toastContext?.show || (() => console.log('Toast non disponible'))
-  } catch (error) {
-    showToast = (message, type) => console.log(`[${type}] ${message}`)
-  }
 
   const [loading, setLoading] = useState(true)
   const [accountStatus, setAccountStatus] = useState(null)
@@ -116,86 +106,101 @@ export default function useAccountStatus() {
   }, [user?.id, fetchAccountStatus])
 
   // Fonction pour changer l'état du compte (admin seulement)
-  const changeAccountStatus = useCallback(async (newStatus, reason = null) => {
-    if (!user?.id) return false
+  const changeAccountStatus = useCallback(
+    async (newStatus, reason = null) => {
+      if (!user?.id) return false
 
-    try {
-      const { data, error } = await supabase.functions.invoke('change-account-status', {
-        body: {
-          target_user_id: user.id,
-          new_status: newStatus,
-          reason: reason,
-        },
-      })
+      // Définir showToast à l'intérieur du callback
+      const showToast = (message, type) => console.log(`[${type}] ${message}`)
 
-      if (error) {
-        console.error('Erreur changement état compte:', error)
-        showToast(`Erreur : ${error.message}`, 'error')
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          'change-account-status',
+          {
+            body: {
+              target_user_id: user.id,
+              new_status: newStatus,
+              reason: reason,
+            },
+          }
+        )
+
+        if (error) {
+          console.error('Erreur changement état compte:', error)
+          showToast(`Erreur : ${error.message}`, 'error')
+          return false
+        }
+
+        if (data?.success) {
+          showToast('État du compte mis à jour', 'success')
+          await fetchAccountStatus() // Rafraîchir l'état
+          return true
+        }
+
+        return false
+      } catch (err) {
+        console.error('Erreur changement état compte:', err)
+        showToast('Erreur lors de la mise à jour', 'error')
         return false
       }
-
-      if (data?.success) {
-        showToast('État du compte mis à jour', 'success')
-        await fetchAccountStatus() // Rafraîchir l'état
-        return true
-      }
-
-      return false
-    } catch (err) {
-      console.error('Erreur changement état compte:', err)
-      showToast('Erreur lors de la mise à jour', 'error')
-      return false
-    }
-  }, [user?.id, showToast, fetchAccountStatus])
+    },
+    [user?.id, fetchAccountStatus]
+  )
 
   // Fonction pour annuler la suppression programmée
   const cancelDeletion = useCallback(async () => {
     if (!isScheduledForDeletion) return false
-    return await changeAccountStatus('active', 'Suppression annulée par l\'utilisateur')
+    return await changeAccountStatus(
+      'active',
+      "Suppression annulée par l'utilisateur"
+    )
   }, [isScheduledForDeletion, changeAccountStatus])
 
   // Fonction pour programmer la suppression
   const scheduleDeletion = useCallback(async () => {
-    return await changeAccountStatus('deletion_scheduled', 'Suppression programmée par l\'utilisateur')
+    return await changeAccountStatus(
+      'deletion_scheduled',
+      "Suppression programmée par l'utilisateur"
+    )
   }, [changeAccountStatus])
 
   // Affichage de l'état
-  const getStatusDisplay = useCallback((status) => {
+  const getStatusDisplay = useCallback(status => {
     switch (status) {
       case 'active':
-        return { 
-          label: 'Actif', 
-          color: 'success', 
+        return {
+          label: 'Actif',
+          color: 'success',
           icon: '✅',
-          description: 'Votre compte est actif et fonctionnel'
+          description: 'Votre compte est actif et fonctionnel',
         }
       case 'suspended':
-        return { 
-          label: 'Suspendu', 
-          color: 'error', 
+        return {
+          label: 'Suspendu',
+          color: 'error',
           icon: '⛔',
-          description: 'Votre compte a été suspendu. Contactez le support.'
+          description: 'Votre compte a été suspendu. Contactez le support.',
         }
       case 'deletion_scheduled':
-        return { 
-          label: 'Suppression programmée', 
-          color: 'warning', 
+        return {
+          label: 'Suppression programmée',
+          color: 'warning',
           icon: '🗑️',
-          description: 'Votre compte sera supprimé prochainement'
+          description: 'Votre compte sera supprimé prochainement',
         }
       case 'pending_verification':
-        return { 
-          label: 'En attente de vérification', 
-          color: 'info', 
+        return {
+          label: 'En attente de vérification',
+          color: 'info',
           icon: '⏳',
-          description: 'Vérifiez votre email pour activer votre compte'
+          description: 'Vérifiez votre email pour activer votre compte',
         }
       default:
-        return { 
-          label: 'Inconnu', 
-          color: 'default', 
+        return {
+          label: 'Inconnu',
+          color: 'default',
           icon: '❓',
-          description: 'État du compte non reconnu'
+          description: 'État du compte non reconnu',
         }
     }
   }, [])
@@ -207,7 +212,9 @@ export default function useAccountStatus() {
 
   // Vérifier si l'utilisateur peut utiliser l'application
   const canUseApp = useMemo(() => {
-    return accountStatus === 'active' || accountStatus === 'pending_verification'
+    return (
+      accountStatus === 'active' || accountStatus === 'pending_verification'
+    )
   }, [accountStatus])
 
   // Vérifier si l'utilisateur peut créer du contenu
@@ -223,12 +230,12 @@ export default function useAccountStatus() {
     isPendingVerification,
     isScheduledForDeletion,
     deletionDate,
-    
+
     // Affichage
     statusDisplay,
     canUseApp,
     canCreateContent,
-    
+
     // Actions
     changeAccountStatus,
     cancelDeletion,

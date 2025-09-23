@@ -63,18 +63,14 @@
         {
           "policyname": "roles_admin_all",
           "command": "ALL",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "is_admin()",
           "with_check": "is_admin()"
         },
         {
           "policyname": "roles_select_public",
           "command": "SELECT",
-          "roles": [
-            "public"
-          ],
+          "roles": ["public"],
           "using": "(((is_active = true) AND (name = ANY (ARRAY['visitor'::text, 'abonne'::text, 'free'::text, 'staff'::text]))) OR is_admin())",
           "with_check": null
         }

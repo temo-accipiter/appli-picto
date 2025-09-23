@@ -1,7 +1,11 @@
 import { InputWithValidation, ModalConfirm } from '@/components'
-import { assignRoleToUser, getUsersWithRoles, removeRoleFromUser } from '@/utils/permissions-api'
+import {
+  assignRoleToUser,
+  getUsersWithRoles,
+  removeRoleFromUser,
+} from '@/utils/permissions-api'
 import { Crown, Shield, UserMinus, UserPlus, Users } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function UsersTab() {
   const [users, setUsers] = useState([])
@@ -10,7 +14,7 @@ export default function UsersTab() {
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  
+
   // États pour la pagination et les filtres
   const [currentPage, setCurrentPage] = useState(1)
   const [roleFilter, setRoleFilter] = useState('all')
@@ -21,20 +25,24 @@ export default function UsersTab() {
   // Charger les utilisateurs au montage et quand les filtres changent
   useEffect(() => {
     loadUsers()
-  }, [currentPage, roleFilter, statusFilter])
+  }, [currentPage, roleFilter, statusFilter, loadUsers])
 
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true)
       const options = {
         page: currentPage,
         limit: 20,
         roleFilter,
-        statusFilter
+        statusFilter,
       }
-      
-      const { data, error, pagination: paginationData } = await getUsersWithRoles(options)
-      
+
+      const {
+        data,
+        error,
+        pagination: paginationData,
+      } = await getUsersWithRoles(options)
+
       if (error) {
         console.error('Erreur lors du chargement des utilisateurs:', error)
         return
@@ -42,14 +50,15 @@ export default function UsersTab() {
 
       setUsers(data || [])
       setPagination(paginationData)
-      
+
       // Calculer les statistiques
       if (data) {
         const userStats = {
           total: paginationData?.total || 0,
           admins: data.filter(u => u.is_admin).length,
-          withRoles: data.filter(u => u.user_roles && u.user_roles.length > 0).length,
-          online: data.filter(u => u.is_online).length
+          withRoles: data.filter(u => u.user_roles && u.user_roles.length > 0)
+            .length,
+          online: data.filter(u => u.is_online).length,
         }
         setStats(userStats)
       }
@@ -58,15 +67,15 @@ export default function UsersTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, roleFilter, statusFilter])
 
   const handleAssignRole = async (userId, roleId) => {
     try {
       const { error } = await assignRoleToUser(userId, roleId)
-      
+
       if (error) {
-        console.error('Erreur lors de l\'assignation du rôle:', error)
-        alert('❌ Erreur lors de l\'assignation du rôle')
+        console.error("Erreur lors de l'assignation du rôle:", error)
+        alert("❌ Erreur lors de l'assignation du rôle")
         return
       }
 
@@ -74,18 +83,18 @@ export default function UsersTab() {
       await loadUsers()
       setShowAssignModal(false)
       setSelectedUser(null)
-      
+
       console.log('✅ Rôle assigné avec succès')
     } catch (error) {
-      console.error('Erreur lors de l\'assignation du rôle:', error)
-      alert('❌ Erreur lors de l\'assignation du rôle')
+      console.error("Erreur lors de l'assignation du rôle:", error)
+      alert("❌ Erreur lors de l'assignation du rôle")
     }
   }
 
   const handleRemoveRole = async (userId, roleId) => {
     try {
       const { error } = await removeRoleFromUser(userId, roleId)
-      
+
       if (error) {
         console.error('Erreur lors de la suppression du rôle:', error)
         alert('❌ Erreur lors de la suppression du rôle')
@@ -96,7 +105,7 @@ export default function UsersTab() {
       await loadUsers()
       setShowRemoveModal(false)
       setSelectedUser(null)
-      
+
       console.log('✅ Rôle supprimé avec succès')
     } catch (error) {
       console.error('Erreur lors de la suppression du rôle:', error)
@@ -104,16 +113,16 @@ export default function UsersTab() {
     }
   }
 
-  const getRoleDisplayName = (role) => {
+  const getRoleDisplayName = role => {
     const roleNames = {
-      'admin': 'Administrateur',
-      'abonne': 'Abonné',
-      'visitor': 'Visiteur'
+      admin: 'Administrateur',
+      abonne: 'Abonné',
+      visitor: 'Visiteur',
     }
     return roleNames[role.name] || role.display_name || role.name
   }
 
-  const getRoleIcon = (roleName) => {
+  const getRoleIcon = roleName => {
     switch (roleName) {
       case 'admin':
         return <Shield size={16} className="text-red-500" />
@@ -124,9 +133,10 @@ export default function UsersTab() {
     }
   }
 
-  const filteredUsers = users.filter(user => 
-    user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    user =>
+      user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   if (loading) {
@@ -169,10 +179,10 @@ export default function UsersTab() {
         <div className="filters-row">
           <div className="filter-group">
             <label htmlFor="role-filter">Filtrer par rôle :</label>
-            <select 
+            <select
               id="role-filter"
-              value={roleFilter} 
-              onChange={(e) => {
+              value={roleFilter}
+              onChange={e => {
                 setRoleFilter(e.target.value)
                 setCurrentPage(1) // Reset à la première page
               }}
@@ -190,10 +200,10 @@ export default function UsersTab() {
 
           <div className="filter-group">
             <label htmlFor="status-filter">Statut du compte :</label>
-            <select 
+            <select
               id="status-filter"
-              value={statusFilter} 
-              onChange={(e) => {
+              value={statusFilter}
+              onChange={e => {
                 setStatusFilter(e.target.value)
                 setCurrentPage(1) // Reset à la première page
               }}
@@ -228,12 +238,15 @@ export default function UsersTab() {
           <div className="no-users">
             <Users size={48} className="icon" />
             <h3>Aucun utilisateur trouvé</h3>
-            <p>Essayez de modifier votre recherche ou créez un nouvel utilisateur.</p>
+            <p>
+              Essayez de modifier votre recherche ou créez un nouvel
+              utilisateur.
+            </p>
           </div>
         ) : (
           filteredUsers.map(user => (
-            <div 
-              key={user.id} 
+            <div
+              key={user.id}
               className={`user-card ${user.is_admin ? 'admin-user' : 'regular-user'}`}
             >
               <div className="user-info">
@@ -247,10 +260,14 @@ export default function UsersTab() {
                         </span>
                       )}
                       {user.account_status !== 'active' && (
-                        <span className={`account-status status-${user.account_status}`}>
+                        <span
+                          className={`account-status status-${user.account_status}`}
+                        >
                           {user.account_status === 'suspended' && '⚠️ Suspendu'}
-                          {user.account_status === 'deletion_scheduled' && '🗑️ Suppression programmée'}
-                          {user.account_status === 'pending_verification' && '⏳ En attente'}
+                          {user.account_status === 'deletion_scheduled' &&
+                            '🗑️ Suppression programmée'}
+                          {user.account_status === 'pending_verification' &&
+                            '⏳ En attente'}
                         </span>
                       )}
                     </div>
@@ -285,21 +302,34 @@ export default function UsersTab() {
                     <p className="user-email">
                       {user.email ? (
                         <>
-                          <span className="email-label">Email :</span> {user.email}
+                          <span className="email-label">Email :</span>{' '}
+                          {user.email}
                         </>
                       ) : (
                         <span className="no-email">Email non disponible</span>
                       )}
                     </p>
                     <p className="user-created">
-                      Membre depuis le {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                      Membre depuis le{' '}
+                      {new Date(user.created_at).toLocaleDateString('fr-FR')}
                     </p>
                     <p className="user-last-login">
                       {user.last_login ? (
                         <>
-                          <span className="login-label">Dernière connexion :</span>
-                          <span className={`login-time ${user.is_online ? 'online' : 'offline'}`}>
-                            {new Date(user.last_login).toLocaleDateString('fr-FR')} à {new Date(user.last_login).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                          <span className="login-label">
+                            Dernière connexion :
+                          </span>
+                          <span
+                            className={`login-time ${user.is_online ? 'online' : 'offline'}`}
+                          >
+                            {new Date(user.last_login).toLocaleDateString(
+                              'fr-FR'
+                            )}{' '}
+                            à{' '}
+                            {new Date(user.last_login).toLocaleTimeString(
+                              'fr-FR',
+                              { hour: '2-digit', minute: '2-digit' }
+                            )}
                           </span>
                         </>
                       ) : (
@@ -317,27 +347,35 @@ export default function UsersTab() {
                         setShowAssignModal(true)
                       }}
                       disabled={user.is_admin}
-                      title={user.is_admin ? "Un administrateur a déjà tous les droits" : "Assigner un rôle"}
+                      title={
+                        user.is_admin
+                          ? 'Un administrateur a déjà tous les droits'
+                          : 'Assigner un rôle'
+                      }
                     >
                       <UserPlus size={14} />
                       Assigner un rôle
                     </button>
-                    
+
                     {user.user_roles && user.user_roles.length > 0 && (
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => {
                           // Pour l'instant, on retire le premier rôle trouvé
                           const firstRole = user.user_roles[0]
-                          setSelectedUser({ 
-                            id: user.id, 
-                            roleId: firstRole.roles.id, 
-                            userName: user.pseudo 
+                          setSelectedUser({
+                            id: user.id,
+                            roleId: firstRole.roles.id,
+                            userName: user.pseudo,
                           })
                           setShowRemoveModal(true)
                         }}
                         disabled={user.is_admin}
-                        title={user.is_admin ? "Un administrateur ne peut pas retirer son propre rôle admin" : "Retirer un rôle"}
+                        title={
+                          user.is_admin
+                            ? 'Un administrateur ne peut pas retirer son propre rôle admin'
+                            : 'Retirer un rôle'
+                        }
                       >
                         <UserMinus size={14} />
                         Retirer un rôle
@@ -346,7 +384,6 @@ export default function UsersTab() {
                   </div>
                 </div>
               </div>
-
             </div>
           ))
         )}
@@ -356,10 +393,10 @@ export default function UsersTab() {
       {pagination && pagination.totalPages > 1 && (
         <div className="pagination-container">
           <div className="pagination-info">
-            Page {pagination.page} sur {pagination.totalPages} 
-            ({pagination.total} utilisateurs au total)
+            Page {pagination.page} sur {pagination.totalPages}(
+            {pagination.total} utilisateurs au total)
           </div>
-          
+
           <div className="pagination-controls">
             <button
               className="pagination-btn"
@@ -368,27 +405,38 @@ export default function UsersTab() {
             >
               ← Précédent
             </button>
-            
+
             <div className="pagination-pages">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, Math.min(pagination.totalPages - 4, currentPage - 2)) + i
-                if (pageNum > pagination.totalPages) return null
-                
-                return (
-                  <button
-                    key={pageNum}
-                    className={`pagination-page ${pageNum === currentPage ? 'active' : ''}`}
-                    onClick={() => setCurrentPage(pageNum)}
-                  >
-                    {pageNum}
-                  </button>
-                )
-              })}
+              {Array.from(
+                { length: Math.min(5, pagination.totalPages) },
+                (_, i) => {
+                  const pageNum =
+                    Math.max(
+                      1,
+                      Math.min(pagination.totalPages - 4, currentPage - 2)
+                    ) + i
+                  if (pageNum > pagination.totalPages) return null
+
+                  return (
+                    <button
+                      key={pageNum}
+                      className={`pagination-page ${pageNum === currentPage ? 'active' : ''}`}
+                      onClick={() => setCurrentPage(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                }
+              )}
             </div>
-            
+
             <button
               className="pagination-btn"
-              onClick={() => setCurrentPage(prev => Math.min(pagination.totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage(prev =>
+                  Math.min(pagination.totalPages, prev + 1)
+                )
+              }
               disabled={currentPage === pagination.totalPages}
             >
               Suivant →
@@ -437,13 +485,19 @@ export default function UsersTab() {
         <ModalConfirm
           isOpen={showRemoveModal}
           onClose={() => setShowRemoveModal(false)}
-          onConfirm={() => handleRemoveRole(selectedUser.id, selectedUser.roleId)}
+          onConfirm={() =>
+            handleRemoveRole(selectedUser.id, selectedUser.roleId)
+          }
           confirmLabel="Retirer le rôle"
           cancelLabel="Annuler"
         >
-          Êtes-vous sûr de vouloir retirer le rôle de <strong>"{selectedUser.userName}"</strong> ?
+          Êtes-vous sûr de vouloir retirer le rôle de{' '}
+          <strong>&quot;{selectedUser.userName}&quot;</strong> ?
           <br />
-          <small>Cette action peut limiter l'accès de l'utilisateur à certaines fonctionnalités.</small>
+          <small>
+            Cette action peut limiter l&apos;accès de l&apos;utilisateur à
+            certaines fonctionnalités.
+          </small>
         </ModalConfirm>
       )}
     </div>

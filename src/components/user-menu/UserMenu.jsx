@@ -244,8 +244,12 @@ export default function UserMenu() {
 // src/components/user-menu/UserMenu.jsx
 import { LangSelector, SignedImage, ThemeToggle } from '@/components'
 import { usePermissions } from '@/contexts'
-import { useAuth, useSubscriptionStatus } from '@/hooks'
-import { withAbortSafe, isAbortLike } from '@/hooks' // ⬅️ ajout
+import {
+  isAbortLike,
+  useAuth,
+  useSubscriptionStatus,
+  withAbortSafe,
+} from '@/hooks'
 import { supabase } from '@/utils'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import { Crown, LogOut, Shield, User } from 'lucide-react'
@@ -255,9 +259,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import './UserMenu.scss'
 
 export default function UserMenu() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, authReady } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
-  const { isAdmin } = usePermissions()
+  const { isAdmin } = usePermissions() // ⚠️ On ne bloque plus sur isUnknown
   const [open, setOpen] = useState(false)
   const [dbPseudo, setDbPseudo] = useState('')
   const navigate = useNavigate()
@@ -265,6 +269,17 @@ export default function UserMenu() {
   const dialogRef = useRef(null)
   const btnRef = useRef(null)
   const checkingOutRef = useRef(false) // évite double-clic sur checkout
+
+  // ⚠️ Garde-fou: si tout reste en "chargement" > 3s, on débloque l'UI
+  const [forceUnblock, setForceUnblock] = useState(false)
+  useEffect(() => {
+    if (!loading) {
+      setForceUnblock(false)
+      return
+    }
+    const t = setTimeout(() => setForceUnblock(true), 3000)
+    return () => clearTimeout(t)
+  }, [loading])
 
   // Ferme le menu sur changement de route
   useEffect(() => setOpen(false), [location.pathname])
@@ -275,18 +290,28 @@ export default function UserMenu() {
     const fetchDbPseudo = async () => {
       if (!user?.id) return
       const { data, error, aborted } = await withAbortSafe(
-        supabase.from('profiles').select('pseudo').eq('id', user.id).maybeSingle()
+        supabase
+          .from('profiles')
+          .select('pseudo')
+          .eq('id', user.id)
+          .maybeSingle()
       )
       if (cancelled) return
       if (aborted || (error && isAbortLike(error))) return
       if (error) {
-        if (import.meta.env.DEV) console.warn('profiles.pseudo fetch:', String(error?.message ?? error))
+        if (import.meta.env.DEV)
+          console.warn(
+            'profiles.pseudo fetch:',
+            String(error?.message ?? error)
+          )
         return
       }
       setDbPseudo(data?.pseudo ?? '')
     }
     fetchDbPseudo()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [user?.id])
 
   if (!user) return null
@@ -445,17 +470,17 @@ export default function UserMenu() {
                 <button
                   className="user-menu-item"
                   onClick={
-                    loading
+                    (loading || !authReady) && !forceUnblock
                       ? undefined
                       : isActive
                         ? () => navigate('/abonnement')
                         : handleCheckout
                   }
-                  disabled={loading}
+                  disabled={(loading || !authReady) && !forceUnblock}
                 >
                   <Crown className="icon" aria-hidden />
                   <span>
-                    {loading
+                    {(loading || !authReady) && !forceUnblock
                       ? 'Vérification…'
                       : isActive
                         ? 'Gérer mon abonnement'

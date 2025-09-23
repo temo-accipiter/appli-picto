@@ -28,7 +28,7 @@ function checkSupabaseCLI() {
   try {
     execSync('supabase --version', { stdio: 'pipe' })
     return true
-  } catch (error) {
+  } catch {
     log(
       'Supabase CLI non trouvé. Installez-le avec : npm install -g supabase',
       'error'
@@ -45,7 +45,7 @@ function linkProject() {
     try {
       execSync('supabase status', { cwd: projectRoot, stdio: 'pipe' })
       return true
-    } catch (statusError) {
+    } catch {
       // Si le statut échoue, essayer de lier le projet
       log('Projet non lié ou erreur Docker. Tentative de liaison...', 'warning')
 
@@ -64,7 +64,7 @@ function linkProject() {
         )
         log('Projet lié avec succès', 'success')
         return true
-      } catch (linkError) {
+      } catch {
         log(
           'Impossible de lier le projet via CLI. Vérifiez votre authentification Supabase',
           'warning'
@@ -84,15 +84,15 @@ function linkProject() {
             )
             return true
           }
-        } catch (e) {
+        } catch {
           // Ignorer l'erreur
         }
 
         return false
       }
     }
-  } catch (error) {
-    log(`Erreur lors de la liaison : ${error.message}`, 'error')
+  } catch {
+    log('Erreur lors de la liaison', 'error')
     return false
   }
 }
@@ -162,7 +162,7 @@ function checkStatus() {
       if (hooks.includes('useAuth') && hooks.includes('useTaches')) {
         log("   Hooks d'intégration présents", 'success')
       }
-    } catch (e) {
+    } catch {
       log('   Hooks non trouvés', 'warning')
     }
 
@@ -174,7 +174,7 @@ function checkStatus() {
       if (authContext.includes('supabase.auth')) {
         log("   Contexte d'authentification configuré", 'success')
       }
-    } catch (e) {
+    } catch {
       log("   Contexte d'authentification non trouvé", 'warning')
     }
 
@@ -210,8 +210,8 @@ function checkStatus() {
       '   4. Le schema.sql est à jour et contient toutes vos tables',
       'success'
     )
-  } catch (error) {
-    log(`Erreur lors de la vérification : ${error.message}`, 'error')
+  } catch {
+    log('Erreur lors de la vérification', 'error')
   }
 }
 
@@ -224,7 +224,7 @@ function updateSchema() {
     const currentSchema = readFileSync(SCHEMA_PATH, 'utf8')
     writeFileSync(BACKUP_PATH, currentSchema)
     log('Ancien schema sauvegardé dans schema.backup.sql', 'success')
-  } catch (error) {
+  } catch {
     log("Impossible de sauvegarder l'ancien schema", 'warning')
   }
 
@@ -244,7 +244,7 @@ function updateSchema() {
       showSchemaSummary()
       return
     }
-  } catch (cliError) {
+  } catch {
     log('Méthode CLI échouée, tentative alternative...', 'warning')
   }
 
@@ -271,7 +271,7 @@ function showSchemaSummary() {
       )
       log(`Tables trouvées : ${tables.join(', ')}`, 'info')
     }
-  } catch (error) {
+  } catch {
     log('Impossible de lire le nouveau schema', 'warning')
   }
 }
@@ -341,7 +341,7 @@ function compareSchemas() {
       if (removed.length > 0)
         log(`Tables supprimées : ${removed.join(', ')}`, 'warning')
     }
-  } catch (error) {
+  } catch {
     log('Impossible de comparer les schemas', 'warning')
   }
 }

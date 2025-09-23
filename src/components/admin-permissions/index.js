@@ -5,4 +5,3 @@ export { default as PermissionsTable } from './PermissionsTable'
 export { getPermissionDescription } from './permissionUtils'
 export { default as RolesTab } from './RolesTab'
 export { default as UsersTab } from './UsersTab'
-

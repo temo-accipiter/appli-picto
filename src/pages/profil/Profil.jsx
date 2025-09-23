@@ -1,20 +1,20 @@
 import {
-    AvatarProfil,
-    Button,
-    DeleteAccountModal,
-    FloatingPencil,
-    Input,
-    InputWithValidation,
-    ModalConfirm,
+  AvatarProfil,
+  Button,
+  DeleteAccountModal,
+  FloatingPencil,
+  Input,
+  InputWithValidation,
+  ModalConfirm,
 } from '@/components'
 import { useToast } from '@/contexts'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
 import {
-    getDisplayPseudo,
-    noDoubleSpaces,
-    noEdgeSpaces,
-    normalizeSpaces,
-    supabase,
+  getDisplayPseudo,
+  noDoubleSpaces,
+  noEdgeSpaces,
+  normalizeSpaces,
+  supabase,
 } from '@/utils'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -39,7 +39,7 @@ export default function Profil() {
   const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
   const [captchaTokenReset, setCaptchaTokenReset] = useState(null)
   const [captchaKey, setCaptchaKey] = useState(0)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [_isAdmin, setIsAdmin] = useState(false)
 
   // même logique d'affichage que le UserMenu (DB > metadata > email)
   const displayPseudo = getDisplayPseudo(user, pseudo)
@@ -312,7 +312,6 @@ export default function Profil() {
             variant="secondary"
             // disabled={!captchaTokenReset}
           />
-
 
           <Button
             type="button"

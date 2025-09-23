@@ -23,7 +23,7 @@ export default function SupabaseTestSimple() {
       }
 
       // Test 3: Vérifier l'accès aux tables
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: _profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('count')
         .limit(1)
@@ -114,8 +114,8 @@ export default function SupabaseTestSimple() {
           <strong>Note:</strong> Tests de connectivité de base
         </p>
         <p style={{ margin: '5px 0' }}>
-          Pour des tests complets, vérifiez l'authentification et les opérations
-          CRUD
+          Pour des tests complets, vérifiez l&apos;authentification et les
+          opérations CRUD
         </p>
       </div>
     </div>

@@ -1,13 +1,13 @@
 import {
-    Button,
-    Checkbox,
-    EditionCard,
-    EditionList,
-    ModalAjout,
-    ModalCategory,
-    ModalConfirm,
-    Select,
-    SignedImage,
+  Button,
+  Checkbox,
+  EditionCard,
+  EditionList,
+  ModalAjout,
+  ModalCategory,
+  ModalConfirm,
+  Select,
+  SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
 import PropTypes from 'prop-types'

@@ -10,7 +10,7 @@ export default function ImageQuotaIndicator({
   assetType = 'task_image', // 'task_image' ou 'reward_image'
   showDetails = true,
   size = 'medium',
-  className = ''
+  className = '',
 }) {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
@@ -46,27 +46,36 @@ export default function ImageQuotaIndicator({
 
   if (!stats) return null
 
-  const getAssetTypeLabel = (type) => {
+  const getAssetTypeLabel = type => {
     switch (type) {
-      case 'task_image': return 'images de tâches'
-      case 'reward_image': return 'images de récompenses'
-      default: return 'images'
+      case 'task_image':
+        return 'images de tâches'
+      case 'reward_image':
+        return 'images de récompenses'
+      default:
+        return 'images'
     }
   }
 
-  const getAssetTypeCount = (type) => {
+  const getAssetTypeCount = type => {
     switch (type) {
-      case 'task_image': return stats.task_images || 0
-      case 'reward_image': return stats.reward_images || 0
-      default: return stats.total_images || 0
+      case 'task_image':
+        return stats.task_images || 0
+      case 'reward_image':
+        return stats.reward_images || 0
+      default:
+        return stats.total_images || 0
     }
   }
 
-  const getAssetTypeSize = (type) => {
+  const getAssetTypeSize = type => {
     switch (type) {
-      case 'task_image': return stats.task_images_size || 0
-      case 'reward_image': return stats.reward_images_size || 0
-      default: return stats.total_size || 0
+      case 'task_image':
+        return stats.task_images_size || 0
+      case 'reward_image':
+        return stats.reward_images_size || 0
+      default:
+        return stats.total_size || 0
     }
   }
 
@@ -78,23 +87,26 @@ export default function ImageQuotaIndicator({
     free: {
       task_images: 5,
       reward_images: 2,
-      total_images: 7
+      total_images: 7,
     },
     abonné: {
       task_images: 40,
       reward_images: 10,
-      total_images: 50
-    }
+      total_images: 50,
+    },
   }
 
   // Déterminer le quota selon le rôle (simplifié)
   const userQuotas = quotas.free // À améliorer avec le système de rôles
 
-  const getQuotaLimit = (type) => {
+  const getQuotaLimit = type => {
     switch (type) {
-      case 'task_image': return userQuotas.task_images
-      case 'reward_image': return userQuotas.reward_images
-      default: return userQuotas.total_images
+      case 'task_image':
+        return userQuotas.task_images
+      case 'reward_image':
+        return userQuotas.reward_images
+      default:
+        return userQuotas.total_images
     }
   }
 
@@ -103,7 +115,7 @@ export default function ImageQuotaIndicator({
   const isNearLimit = percentage >= 80
   const isAtLimit = currentCount >= limit
 
-  const formatFileSize = (bytes) => {
+  const formatFileSize = bytes => {
     if (bytes === 0) return '0 B'
     const k = 1024
     const sizes = ['B', 'KB', 'MB', 'GB']
@@ -112,7 +124,7 @@ export default function ImageQuotaIndicator({
   }
 
   return (
-    <div 
+    <div
       className={`image-quota-indicator ${size} ${className} ${
         isAtLimit ? 'at-limit' : isNearLimit ? 'near-limit' : ''
       }`}
@@ -120,7 +132,9 @@ export default function ImageQuotaIndicator({
     >
       <div className="quota-header">
         <span className="quota-label">{getAssetTypeLabel(assetType)}</span>
-        <span className="quota-count">{currentCount}/{limit}</span>
+        <span className="quota-count">
+          {currentCount}/{limit}
+        </span>
       </div>
 
       <div className="quota-bar">
@@ -147,5 +161,5 @@ ImageQuotaIndicator.propTypes = {
   assetType: PropTypes.oneOf(['task_image', 'reward_image']),
   showDetails: PropTypes.bool,
   size: PropTypes.oneOf(['small', 'medium', 'large']),
-  className: PropTypes.string
+  className: PropTypes.string,
 }

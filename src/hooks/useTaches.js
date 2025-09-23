@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks'
 import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // Log "safe" pour Safari/Firefox
-const formatErr = (e) => {
+const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
     m,
@@ -22,7 +22,6 @@ export default function useTaches(reload = 0) {
 
   useEffect(() => {
     if (!user?.id) return
-
     ;(async () => {
       const { data, error, aborted } = await withAbortSafe(
         supabase
@@ -62,10 +61,7 @@ export default function useTaches(reload = 0) {
 
   const resetFait = async () => {
     const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('taches')
-        .update({ fait: false })
-        .eq('user_id', user.id)
+      supabase.from('taches').update({ fait: false }).eq('user_id', user.id)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {
@@ -75,7 +71,7 @@ export default function useTaches(reload = 0) {
     setTaches(prev => prev.map(t => ({ ...t, fait: 0 })))
   }
 
-  const updatePosition = async (ordered) => {
+  const updatePosition = async ordered => {
     // On garde ta logique mais on sécurise chaque update
     await Promise.all(
       ordered.map((t, idx) =>
@@ -88,7 +84,9 @@ export default function useTaches(reload = 0) {
         ).then(({ error, aborted }) => {
           if (aborted || (error && isAbortLike(error))) return
           if (error) {
-            console.error(`❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`)
+            console.error(
+              `❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`
+            )
           }
         })
       )
@@ -96,7 +94,7 @@ export default function useTaches(reload = 0) {
     setTaches(ordered)
   }
 
-  const deleteTache = async (t) => {
+  const deleteTache = async t => {
     const id = typeof t === 'string' ? t : t?.id
     const imagePath = t?.imagepath
 
@@ -106,9 +104,8 @@ export default function useTaches(reload = 0) {
     }
 
     if (imagePath) {
-      const { error: storageError, aborted: storageAborted } = await withAbortSafe(
-        supabase.storage.from('images').remove([imagePath])
-      )
+      const { error: storageError, aborted: storageAborted } =
+        await withAbortSafe(supabase.storage.from('images').remove([imagePath]))
       if (!storageAborted && storageError) {
         console.warn(`⚠️ Erreur suppression image : ${formatErr(storageError)}`)
       } else if (!storageAborted) {
@@ -117,11 +114,7 @@ export default function useTaches(reload = 0) {
     }
 
     const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('taches')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id)
+      supabase.from('taches').delete().eq('id', id).eq('user_id', user.id)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {

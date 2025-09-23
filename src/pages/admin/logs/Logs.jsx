@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import './Logs.scss'
 
 export default function Logs() {
-  const { role, isAdmin, loading: permissionsLoading } = usePermissions()
+  const { role: _role, isAdmin, loading: permissionsLoading } = usePermissions()
   const { show: showToast } = useToast()
   const navigate = useNavigate()
 
@@ -52,7 +52,10 @@ export default function Logs() {
 
         if (error) {
           console.error('Erreur chargement logs:', error)
-          showToast(`Erreur lors du chargement des logs: ${error.message}`, 'error')
+          showToast(
+            `Erreur lors du chargement des logs: ${error.message}`,
+            'error'
+          )
           return
         }
 
@@ -91,7 +94,6 @@ export default function Logs() {
     setPage(prev => prev + 1)
     loadLogs()
   }
-
 
   const formatTimestamp = timestamp => {
     return new Date(timestamp).toLocaleString('fr-FR', {

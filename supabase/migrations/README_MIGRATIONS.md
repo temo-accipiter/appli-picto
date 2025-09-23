@@ -5,35 +5,42 @@
 Appliquez les scripts dans l'ordre suivant dans l'interface Supabase :
 
 ### 1. **01_add_account_status.sql**
+
 - ✅ Ajoute les colonnes `account_status` et `deletion_scheduled_at` à la table `profiles`
 - ✅ Crée les index pour les performances
 - ✅ Met à jour tous les profils existants avec le statut 'active'
 
 ### 2. **02_add_roles_free_staff.sql**
+
 - ✅ Ajoute les rôles `free` (compte gratuit) et `staff` (support)
 - ✅ Met à jour les priorités des rôles existants
 
 ### 3. **03_create_quota_system.sql**
+
 - ✅ Crée la table `role_quotas` pour gérer les limites
 - ✅ Configure les quotas pour les comptes gratuits
 - ✅ Crée les fonctions `check_user_quota` et `get_user_quota_info`
 
 ### 4. **04_create_demo_cards.sql**
+
 - ✅ Crée la table `demo_cards` pour les visiteurs
 - ✅ Insère des cartes de démonstration prédéfinies
 - ✅ Crée les fonctions d'accès aux cartes de démo
 
 ### 5. **05_create_audit_logs.sql**
+
 - ✅ Crée la table `account_audit_logs` pour tracer les changements
 - ✅ Crée les fonctions de gestion des états de compte
 - ✅ Configure les politiques RLS appropriées
 
 ### 6. **06_migrate_existing_data.sql**
+
 - ✅ Migre les utilisateurs existants vers le nouveau système
 - ✅ Assigne les bons rôles selon leur statut actuel
 - ✅ Crée un rapport de migration
 
 ### 7. **07_verification_finale.sql**
+
 - ✅ Vérifie que toutes les migrations ont été appliquées
 - ✅ Teste les fonctions principales
 - ✅ Affiche un rapport final complet
@@ -70,16 +77,19 @@ supabase db push
 ## ⚠️ Points d'Attention
 
 ### Avant d'Appliquer :
+
 - ✅ **Sauvegardez votre base de données** (export complet)
 - ✅ **Testez sur un environnement de développement** si possible
 - ✅ **Vérifiez que vous avez les droits d'administration**
 
 ### Pendant l'Application :
+
 - ✅ **Appliquez les scripts dans l'ordre exact**
 - ✅ **Attendez que chaque script se termine complètement**
 - ✅ **Notez les messages d'erreur éventuels**
 
 ### Après l'Application :
+
 - ✅ **Exécutez le script de vérification finale**
 - ✅ **Testez les fonctionnalités dans votre application**
 - ✅ **Vérifiez que les utilisateurs existants fonctionnent toujours**

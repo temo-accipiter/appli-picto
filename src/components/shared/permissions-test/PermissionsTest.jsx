@@ -8,8 +8,14 @@ import './PermissionsTest.scss'
  * Affiche le statut actuel et teste quelques fonctionnalités
  */
 export const PermissionsTest = () => {
-  const { role, can, loading, isVisitor, isSubscriber, isAdmin } =
-    usePermissions()
+  const {
+    role,
+    can: _can,
+    loading,
+    isVisitor,
+    isSubscriber,
+    isAdmin,
+  } = usePermissions()
 
   if (loading) {
     return (

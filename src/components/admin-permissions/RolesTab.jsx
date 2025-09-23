@@ -1,14 +1,26 @@
 import { InputWithValidation } from '@/components'
 import {
-    canDeleteRole,
-    canModifyRole,
-    getRoleDescription,
-    getRoleDisplayName,
-    isSystemRole,
-    sortRolesByPriority
+  canDeleteRole,
+  canModifyRole,
+  getRoleDescription,
+  getRoleDisplayName,
+  isSystemRole,
+  sortRolesByPriority,
 } from '@/utils/roleUtils'
-import { createRoleValidationRules, updateRoleValidationRules } from '@/utils/validationRules'
-import { Check, Edit, Plus, Shield, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react'
+import {
+  createRoleValidationRules,
+  updateRoleValidationRules,
+} from '@/utils/validationRules'
+import {
+  Check,
+  Edit,
+  Plus,
+  Shield,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
+} from 'lucide-react'
+import PropTypes from 'prop-types'
 
 export default function RolesTab({
   roles,
@@ -19,7 +31,7 @@ export default function RolesTab({
   handleCreateRole,
   handleUpdateRole,
   handleDeleteRole,
-  handleToggleRole
+  handleToggleRole,
 }) {
   // Séparer les rôles système des rôles personnalisés
   const systemRoles = roles.filter(role => isSystemRole(role.name))
@@ -35,9 +47,9 @@ export default function RolesTab({
       <div className="admin-note">
         <Shield className="icon" aria-hidden />
         <p>
-          <strong>Note :</strong> Les rôles système (admin, visitor, free, abonne, staff) 
-          sont protégés et ne peuvent pas être supprimés. Vous pouvez les activer/désactiver 
-          selon vos besoins.
+          <strong>Note :</strong> Les rôles système (admin, visitor, free,
+          abonne, staff) sont protégés et ne peuvent pas être supprimés. Vous
+          pouvez les activer/désactiver selon vos besoins.
         </p>
       </div>
 
@@ -50,8 +62,8 @@ export default function RolesTab({
             label="Nom du rôle"
             placeholder="ex: pro"
             value={newRole.name}
-            onChange={(value) => setNewRole({ ...newRole, name: value })}
-            onValid={(value) => setNewRole({ ...newRole, name: value })}
+            onChange={value => setNewRole({ ...newRole, name: value })}
+            onValid={value => setNewRole({ ...newRole, name: value })}
             rules={createRoleValidationRules.name(newRole.name, roles)}
             ariaLabel="Nom du rôle"
           />
@@ -60,8 +72,8 @@ export default function RolesTab({
             label="Nom d'affichage"
             placeholder="ex: Abonné Pro"
             value={newRole.display_name}
-            onChange={(value) => setNewRole({ ...newRole, display_name: value })}
-            onValid={(value) => setNewRole({ ...newRole, display_name: value })}
+            onChange={value => setNewRole({ ...newRole, display_name: value })}
+            onValid={value => setNewRole({ ...newRole, display_name: value })}
             rules={createRoleValidationRules.displayName(newRole.display_name)}
             ariaLabel="Nom d'affichage du rôle"
           />
@@ -70,8 +82,8 @@ export default function RolesTab({
             label="Description"
             placeholder="Description du rôle"
             value={newRole.description}
-            onChange={(value) => setNewRole({ ...newRole, description: value })}
-            onValid={(value) => setNewRole({ ...newRole, description: value })}
+            onChange={value => setNewRole({ ...newRole, description: value })}
+            onValid={value => setNewRole({ ...newRole, description: value })}
             rules={createRoleValidationRules.description(newRole.description)}
             ariaLabel="Description du rôle"
           />
@@ -91,15 +103,18 @@ export default function RolesTab({
         <h3>Rôles Système</h3>
         <div className="roles-list">
           {sortedSystemRoles.map(role => (
-            <div key={role.id} className={`role-card system-role ${!role.is_active ? 'inactive' : ''}`}>
+            <div
+              key={role.id}
+              className={`role-card system-role ${!role.is_active ? 'inactive' : ''}`}
+            >
               <div className="role-info">
                 <h4>{getRoleDisplayName(role)}</h4>
-                <span className={`role-badge ${role.name}`}>
-                  {role.name}
-                </span>
+                <span className={`role-badge ${role.name}`}>{role.name}</span>
                 <p>{getRoleDescription(role)}</p>
                 <div className="role-status">
-                  <span className={`status-badge ${role.is_active ? 'active' : 'inactive'}`}>
+                  <span
+                    className={`status-badge ${role.is_active ? 'active' : 'inactive'}`}
+                  >
                     {role.is_active ? '✅ Actif' : '❌ Inactif'}
                   </span>
                 </div>
@@ -109,7 +124,9 @@ export default function RolesTab({
                 <button
                   className={`btn ${role.is_active ? 'btn-warning' : 'btn-success'}`}
                   onClick={() => handleToggleRole(role.id, !role.is_active)}
-                  title={role.is_active ? 'Désactiver ce rôle' : 'Activer ce rôle'}
+                  title={
+                    role.is_active ? 'Désactiver ce rôle' : 'Activer ce rôle'
+                  }
                 >
                   {role.is_active ? (
                     <>
@@ -134,15 +151,18 @@ export default function RolesTab({
         <h3>Rôles Personnalisés</h3>
         <div className="roles-list">
           {customRoles.map(role => (
-            <div key={role.id} className={`role-card custom-role ${!role.is_active ? 'inactive' : ''}`}>
+            <div
+              key={role.id}
+              className={`role-card custom-role ${!role.is_active ? 'inactive' : ''}`}
+            >
               <div className="role-info">
                 <h4>{getRoleDisplayName(role)}</h4>
-                <span className={`role-badge ${role.name}`}>
-                  {role.name}
-                </span>
+                <span className={`role-badge ${role.name}`}>{role.name}</span>
                 <p>{getRoleDescription(role)}</p>
                 <div className="role-status">
-                  <span className={`status-badge ${role.is_active ? 'active' : 'inactive'}`}>
+                  <span
+                    className={`status-badge ${role.is_active ? 'active' : 'inactive'}`}
+                  >
                     {role.is_active ? '✅ Actif' : '❌ Inactif'}
                   </span>
                 </div>
@@ -156,17 +176,19 @@ export default function RolesTab({
                       label="Nom d'affichage"
                       placeholder="Nouveau nom d'affichage"
                       value={role.display_name}
-                      onChange={(value) => {
+                      onChange={value => {
                         // Mettre à jour temporairement l'état local
-                        const updatedRole = { ...role, display_name: value }
+                        const _updatedRole = { ...role, display_name: value }
                         setEditingRole(role.id)
                         // Ici on pourrait mettre à jour un état temporaire
                       }}
-                      onValid={(value) => {
+                      onValid={value => {
                         // Validation réussie, on peut sauvegarder
                         handleUpdateRole(role.id, { display_name: value })
                       }}
-                      rules={updateRoleValidationRules.displayName(role.display_name)}
+                      rules={updateRoleValidationRules.displayName(
+                        role.display_name
+                      )}
                       ariaLabel={`Modifier le nom d'affichage de ${role.display_name}`}
                     />
                     <button
@@ -199,7 +221,11 @@ export default function RolesTab({
                     <button
                       className={`btn ${role.is_active ? 'btn-warning' : 'btn-success'}`}
                       onClick={() => handleToggleRole(role.id, !role.is_active)}
-                      title={role.is_active ? 'Désactiver ce rôle' : 'Activer ce rôle'}
+                      title={
+                        role.is_active
+                          ? 'Désactiver ce rôle'
+                          : 'Activer ce rôle'
+                      }
                     >
                       {role.is_active ? (
                         <>
@@ -218,14 +244,29 @@ export default function RolesTab({
               </div>
             </div>
           ))}
-          
+
           {customRoles.length === 0 && (
             <div className="empty-state">
-              <p>Aucun rôle personnalisé créé. Utilisez le formulaire ci-dessus pour en créer un.</p>
+              <p>
+                Aucun rôle personnalisé créé. Utilisez le formulaire ci-dessus
+                pour en créer un.
+              </p>
             </div>
           )}
         </div>
       </div>
     </div>
   )
+}
+
+RolesTab.propTypes = {
+  roles: PropTypes.array,
+  newRole: PropTypes.object,
+  setNewRole: PropTypes.func,
+  editingRole: PropTypes.string,
+  setEditingRole: PropTypes.func,
+  handleCreateRole: PropTypes.func,
+  handleUpdateRole: PropTypes.func,
+  handleDeleteRole: PropTypes.func,
+  handleToggleRole: PropTypes.func,
 }

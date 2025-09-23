@@ -1,5 +1,6 @@
 import { ButtonDelete } from '@/components'
 import { Edit, Save, Settings, X } from 'lucide-react'
+import PropTypes from 'prop-types'
 import { getPermissionDescription } from './permissionUtils'
 
 export default function PermissionsTable({
@@ -156,4 +157,18 @@ export default function PermissionsTable({
       </table>
     </div>
   )
+}
+
+PermissionsTable.propTypes = {
+  features: PropTypes.array,
+  manageableRoles: PropTypes.array,
+  permissions: PropTypes.array,
+  tempPermissions: PropTypes.object,
+  editingPermissions: PropTypes.bool,
+  setEditingPermissions: PropTypes.func,
+  handlePermissionChange: PropTypes.func,
+  handleSavePermissions: PropTypes.func,
+  handleDeleteFeature: PropTypes.func,
+  handleEditFeature: PropTypes.func,
+  initializeTempPermissions: PropTypes.func,
 }

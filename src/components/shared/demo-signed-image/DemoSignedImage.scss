@@ -56,8 +56,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Responsive
@@ -65,7 +69,7 @@
   .demo-signed-image {
     border-radius: 6px;
   }
-  
+
   .demo-image-loading,
   .demo-image-error {
     border-radius: 6px;

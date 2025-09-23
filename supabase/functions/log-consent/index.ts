@@ -66,10 +66,14 @@ serve(async req => {
 
     // S'assurer que version n'est jamais null
     const safeVersion = version || '1.0.0'
-    
+
     // Validation stricte des colonnes obligatoires
     if (!mode || !choices || !safeVersion) {
-      console.error('❌ Validation failed:', { mode, choices, version: safeVersion })
+      console.error('❌ Validation failed:', {
+        mode,
+        choices,
+        version: safeVersion,
+      })
       return new Response('Invalid data: missing required fields', {
         status: 400,
         headers: corsHeaders(req),
@@ -86,7 +90,13 @@ serve(async req => {
     }
 
     // Validation de l'action selon la contrainte CHECK
-    const validActions = ['first_load', 'update', 'withdraw', 'restore', 'revoke']
+    const validActions = [
+      'first_load',
+      'update',
+      'withdraw',
+      'restore',
+      'revoke',
+    ]
     const safeAction = action && validActions.includes(action) ? action : null
 
     // Init Supabase client
@@ -102,9 +112,10 @@ serve(async req => {
       ''
     const salt = Deno.env.get('CONSENT_IP_SALT') || 'default-salt'
     const ip_hash = ip ? await sha256Hex(ip + ':' + salt) : null
-    
+
     // Validation de ip_hash selon la contrainte CHECK (32-128 caractères)
-    const safeIpHash = ip_hash && ip_hash.length >= 32 && ip_hash.length <= 128 ? ip_hash : null
+    const safeIpHash =
+      ip_hash && ip_hash.length >= 32 && ip_hash.length <= 128 ? ip_hash : null
 
     const country = req.headers.get('cf-ipcountry') || null
     const origin = bodyOrigin || req.headers.get('origin') || null

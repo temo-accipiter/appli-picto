@@ -1,4 +1,5 @@
 import { Shield } from 'lucide-react'
+import PropTypes from 'prop-types'
 import PermissionsTable from './PermissionsTable'
 
 export default function PermissionsTab({
@@ -51,4 +52,18 @@ export default function PermissionsTab({
       </div>
     </div>
   )
+}
+
+PermissionsTab.propTypes = {
+  features: PropTypes.array,
+  manageableRoles: PropTypes.array,
+  permissions: PropTypes.array,
+  tempPermissions: PropTypes.object,
+  editingPermissions: PropTypes.bool,
+  setEditingPermissions: PropTypes.func,
+  handlePermissionChange: PropTypes.func,
+  handleSavePermissions: PropTypes.func,
+  handleDeleteFeature: PropTypes.func,
+  handleEditFeature: PropTypes.func,
+  initializeTempPermissions: PropTypes.func,
 }

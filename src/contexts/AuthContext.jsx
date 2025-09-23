@@ -1,107 +1,106 @@
 import { saveUserTimezoneOnce } from '@/services/saveUserTimezone'
 import { supabase } from '@/utils'
 import PropTypes from 'prop-types'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useMemo, useState } from 'react'
 
 export const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [authReady, setAuthReady] = useState(false)
 
   useEffect(() => {
-    const getSession = async () => {
+    let mounted = true
+    const timerId = `authReady-${Date.now()}-${Math.random()}`
+    console.time(timerId)
+
+    // ✅ DÉBLOQUER L'UI IMMÉDIATEMENT
+    setAuthReady(true)
+    console.timeEnd(timerId)
+    ;(async () => {
       try {
         console.log('🔐 Récupération de la session au démarrage...')
         const { data, error } = await supabase.auth.getSession()
-        
+        if (!mounted) return
+
         if (error) {
-          console.error('Erreur session Supabase:', error)
-          // En cas d'erreur, on force une déconnexion propre
-          await supabase.auth.signOut({ scope: 'global' })
-          setUser(null)
-          setLoading(false)
-          return
+          console.warn('Session: erreur getSession()', error)
         }
 
-        const user = data?.session?.user ?? null
-        console.log('🔐 Session récupérée:', user ? `utilisateur ${user.id}` : 'aucun utilisateur')
-        
-        // Vérifier si la session est valide en testant une requête simple
-        if (user) {
-          try {
-            const { error: testError } = await supabase.rpc('get_usage_fast', { p_user_id: user.id })
-            if (testError) {
-              console.warn('🔐 Session semble invalide, déconnexion forcée:', testError)
-              await supabase.auth.signOut({ scope: 'global' })
-              setUser(null)
-              setLoading(false)
-              return
-            }
-          } catch (testErr) {
-            console.warn('🔐 Erreur test session, déconnexion forcée:', testErr)
-            await supabase.auth.signOut({ scope: 'global' })
-            setUser(null)
-            setLoading(false)
-            return
-          }
-        }
+        const u = data?.session?.user ?? null
+        setUser(u)
 
-        setUser(user)
-        setLoading(false)
-      } catch (err) {
-        console.error('🔐 Erreur critique lors de la récupération de session:', err)
+        // Test de session non-bloquant (optionnel)
+        if (u) {
+          supabase
+            .rpc('get_usage_fast', { p_user_id: u.id })
+            .then(({ error: testError }) => {
+              if (testError)
+                console.warn('Test session (non-bloquant):', testError)
+            })
+            .catch(e => console.warn('Test session (non-bloquant):', e))
+        }
+      } catch (e) {
+        if (!mounted) return
+        console.error('getSession() a échoué:', e)
         setUser(null)
-        setLoading(false)
       }
-    }
+    })()
 
-    getSession()
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: sub } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔐 Changement d\'état auth:', event, session?.user?.id || 'aucun utilisateur')
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-        
-        // Sauvegarder le timezone de l'utilisateur quand il se connecte
-        if (currentUser && event === 'SIGNED_IN') {
+        const u = session?.user ?? null
+        console.log(
+          "🔐 Changement d'état auth:",
+          event,
+          u?.id || 'aucun utilisateur'
+        )
+        setUser(u)
+        if (u && event === 'SIGNED_IN') {
           await saveUserTimezoneOnce()
         }
       }
     )
 
-    return () => listener.subscription.unsubscribe()
+    return () => {
+      mounted = false
+      sub?.subscription?.unsubscribe?.()
+    }
   }, [])
 
   const signOut = async () => {
     try {
       console.log('🔐 Début de la déconnexion...')
-      
-      // Force la déconnexion avec scope 'global' pour s'assurer que tous les onglets sont déconnectés
-      const { error } = await supabase.auth.signOut({ scope: 'global' })
-      
+
+      // Timeout de 5 secondes pour éviter le blocage
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout déconnexion')), 5000)
+      )
+
+      const signOutPromise = supabase.auth.signOut({ scope: 'global' })
+
+      const { error } = await Promise.race([signOutPromise, timeoutPromise])
+
       if (error) {
         console.error('Erreur déconnexion Supabase:', error)
-        // Même en cas d'erreur, on force la déconnexion locale
       }
-      
-      // Force la mise à jour de l'état local
+
+      // Toujours forcer la déconnexion locale
       setUser(null)
+      setAuthReady(false)
       console.log('🔐 Déconnexion terminée')
-      
     } catch (err) {
       console.error('Erreur lors de la déconnexion:', err)
-      // En cas d'erreur complète, on force quand même la déconnexion locale
+      // Même en cas d'erreur, forcer la déconnexion locale
       setUser(null)
+      setAuthReady(false)
+      console.log('🔐 Déconnexion forcée (timeout/erreur)')
     }
   }
 
-  return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  const value = useMemo(() => ({ user, authReady, signOut }), [user, authReady])
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 AuthProvider.propTypes = {

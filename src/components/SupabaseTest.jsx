@@ -14,7 +14,7 @@ export default function SupabaseTest() {
       results.connection = '✅ Client Supabase créé avec succès'
 
       // Test 2: Vérifier les tables
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: _profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('count')
         .limit(1)
@@ -45,7 +45,7 @@ export default function SupabaseTest() {
 
       // Test 5: Vérifier les fonctions Edge
       try {
-        const { data: functions, error: functionsError } =
+        const { data: _functions, error: functionsError } =
           await supabase.functions.invoke('test-connection', {
             body: { message: 'test' },
           })
@@ -54,7 +54,7 @@ export default function SupabaseTest() {
         } else {
           results.functions = '✅ Fonctions Edge accessibles'
         }
-      } catch (e) {
+      } catch {
         results.functions =
           '⚠️ Fonctions Edge non testées (fonction test-connection inexistante)'
       }
@@ -76,7 +76,7 @@ export default function SupabaseTest() {
         margin: '20px',
       }}
     >
-      <h3>🧪 Test d'intégration Supabase</h3>
+      <h3>🧪 Test d&apos;intégration Supabase</h3>
 
       <button
         onClick={runTests}
@@ -119,7 +119,7 @@ export default function SupabaseTest() {
         </p>
         <p>Pour des tests complets, vérifiez aussi :</p>
         <ul>
-          <li>L'authentification utilisateur</li>
+          <li>L&apos;authentification utilisateur</li>
           <li>Les opérations CRUD sur vos tables</li>
           <li>Le téléchargement/upload de fichiers</li>
           <li>Les fonctions Edge</li>

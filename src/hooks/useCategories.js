@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks'
 import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
-const formatErr = (e) => {
+const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
     m,
@@ -51,7 +51,7 @@ export default function useCategories() {
     fetchCategories()
   }, [fetchCategories])
 
-  const addCategory = async (cat) => {
+  const addCategory = async cat => {
     const { error, aborted } = await withAbortSafe(
       supabase.from('categories').insert([
         {
@@ -87,13 +87,9 @@ export default function useCategories() {
     fetchCategories()
   }
 
-  const deleteCategory = async (id) => {
+  const deleteCategory = async id => {
     const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('categories')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', user.id)
+      supabase.from('categories').delete().eq('id', id).eq('user_id', user.id)
     )
 
     if (aborted || (error && isAbortLike(error))) return

@@ -57,9 +57,7 @@
         {
           "policyname": "role_quotas_select_public",
           "command": "SELECT",
-          "roles": [
-            "public"
-          ],
+          "roles": ["public"],
           "using": "true",
           "with_check": null
         }

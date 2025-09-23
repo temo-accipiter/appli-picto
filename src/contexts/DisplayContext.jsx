@@ -46,7 +46,10 @@ export function DisplayProvider({ children }) {
   const [showRecompense, setShowRecompense] = useState(() => {
     // Pendant le chargement, utiliser localStorage ou true par défaut
     if (loading) {
-      return localStorage.getItem('showRecompense') === 'true' || localStorage.getItem('showRecompense') === null
+      return (
+        localStorage.getItem('showRecompense') === 'true' ||
+        localStorage.getItem('showRecompense') === null
+      )
     }
     if (isVisitor) return true // Par défaut activé pour les visiteurs
     return localStorage.getItem('showRecompense') === 'true'

@@ -6,11 +6,11 @@ import './PermissionsDebug.scss'
 export const PermissionsDebug = () => {
   const {
     role,
-    can,
+    can: _can,
     loading,
-    subscription,
-    isVisitor,
-    isSubscriber,
+    subscription: _subscription,
+    isVisitor: _isVisitor,
+    isSubscriber: _isSubscriber,
     isAdmin,
     permissions,
     features,
@@ -74,7 +74,7 @@ export const PermissionsDebug = () => {
   })
 
   // Obtenir l'icône pour chaque rôle
-  const getRoleIcon = role => {
+  const _getRoleIcon = role => {
     switch (role) {
       case 'visitor':
         return <User size={16} />
@@ -88,7 +88,7 @@ export const PermissionsDebug = () => {
   }
 
   // Obtenir la couleur pour chaque rôle
-  const getRoleColor = role => {
+  const _getRoleColor = role => {
     switch (role) {
       case 'visitor':
         return '#6b7280'
@@ -105,7 +105,7 @@ export const PermissionsDebug = () => {
     <div className="permissions-debug">
       <div className="debug-header">
         <div className="header-left">
-          <h3>🔧 Panneau d'Administration des Permissions</h3>
+          <h3>🔧 Panneau d&apos;Administration des Permissions</h3>
           <div className="current-role">
             Rôle actuel: <span className={`role-badge ${role}`}>{role}</span>
           </div>
@@ -203,7 +203,7 @@ export const PermissionsDebug = () => {
         </div>
         <div className="warning-text">
           ⚠️ <strong>Note</strong> - Les permissions sont maintenant gérées via
-          l'interface d'administration.
+          l&apos;interface d&apos;administration.
         </div>
       </div>
     </div>

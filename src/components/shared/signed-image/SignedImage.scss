@@ -45,7 +45,12 @@
     font-size: 1.2em;
 
     &:hover {
-      background: linear-gradient(135deg, #ffcccc 30%, #ffb3b3 50%, #ffcccc 70%);
+      background: linear-gradient(
+        135deg,
+        #ffcccc 30%,
+        #ffb3b3 50%,
+        #ffcccc 70%
+      );
       border-color: #e74c3c;
       transform: scale(1.05);
     }

@@ -1,26 +1,29 @@
 // src/pages/edition/Edition.jsx
 import {
-    Button,
-    Checkbox,
-    ModalCategory,
-    ModalConfirm,
-    ModalQuota,
-    RecompensesEdition,
-    Separator,
-    TachesEdition,
+  Button,
+  Checkbox,
+  ModalCategory,
+  ModalConfirm,
+  ModalQuota,
+  RecompensesEdition,
+  Separator,
+  TachesEdition,
 } from '@/components'
 import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
 import ImageQuotaIndicator from '@/components/shared/ImageQuotaIndicator'
 import { useDisplay, useToast } from '@/contexts'
 import {
-    useAuth,
-    useCategories,
-    useParametres,
-    useQuotas,
-    useRecompenses,
-    useTachesEdition,
+  useAuth,
+  useCategories,
+  useParametres,
+  useQuotas,
+  useRecompenses,
+  useTachesEdition,
 } from '@/hooks'
-import { checkImageQuota, uploadImageWithQuota } from '@/services/imageUploadService'
+import {
+  checkImageQuota,
+  uploadImageWithQuota,
+} from '@/services/imageUploadService'
 import { supabase } from '@/utils'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -55,22 +58,28 @@ export default function Edition() {
     assetType: 'task_image',
     currentUsage: 0,
     limit: 0,
-    reason: ''
+    reason: '',
   })
 
   // Vérification des quotas d'images
-  const handleImageQuotaCheck = async (assetType) => {
+  const handleImageQuotaCheck = async assetType => {
     if (!user?.id) return true
 
     try {
       const quotaResult = await checkImageQuota(user.id, assetType)
-      
+
       if (!quotaResult.canUpload) {
         setImageQuotaContent({
           assetType,
-          currentUsage: quotaResult.stats?.[assetType === 'task_image' ? 'task_images' : 'reward_images'] || 0,
-          limit: quotaResult.quotas?.[`max_${assetType.replace('_image', '_images')}`] || 0,
-          reason: quotaResult.reason
+          currentUsage:
+            quotaResult.stats?.[
+              assetType === 'task_image' ? 'task_images' : 'reward_images'
+            ] || 0,
+          limit:
+            quotaResult.quotas?.[
+              `max_${assetType.replace('_image', '_images')}`
+            ] || 0,
+          reason: quotaResult.reason,
         })
         setImageQuotaModalOpen(true)
         return false
@@ -78,17 +87,21 @@ export default function Edition() {
       return true
     } catch (error) {
       console.error('Erreur vérification quota image:', error)
-      show('Erreur lors de la vérification des quotas d\'images', 'error')
+      show("Erreur lors de la vérification des quotas d'images", 'error')
       return false
     }
   }
 
   // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
-  const handleQuotaCheck = async (contentType) => {
+  const handleQuotaCheck = async contentType => {
     const allowed =
-      contentType === 'task' ? canCreateTask() :
-      contentType === 'reward' ? canCreateReward() :
-      contentType === 'category' ? canCreateCategory() : true
+      contentType === 'task'
+        ? canCreateTask()
+        : contentType === 'reward'
+          ? canCreateReward()
+          : contentType === 'category'
+            ? canCreateCategory()
+            : true
 
     if (allowed) return true
 
@@ -179,7 +192,11 @@ export default function Edition() {
       if (!canUploadImage) return
 
       try {
-        const uploadResult = await uploadImageWithQuota(image, 'task_image', user.id)
+        const uploadResult = await uploadImageWithQuota(
+          image,
+          'task_image',
+          user.id
+        )
         imagePath = uploadResult.filePath
       } catch (error) {
         show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
@@ -187,15 +204,17 @@ export default function Edition() {
       }
     }
 
-    const { error: insertError } = await supabase.from('taches').insert([{
-      label,
-      categorie,
-      aujourdhui: false,
-      fait: false,
-      position: 0,
-      imagepath: imagePath,
-      user_id: user.id,
-    }])
+    const { error: insertError } = await supabase.from('taches').insert([
+      {
+        label,
+        categorie,
+        aujourdhui: false,
+        fait: false,
+        position: 0,
+        imagepath: imagePath,
+        user_id: user.id,
+      },
+    ])
 
     if (insertError) {
       show('Erreur lors de la création de la tâche.', 'error')
@@ -206,7 +225,9 @@ export default function Edition() {
     show('Tâche ajoutée ✅', 'success')
 
     // Rafraîchir les quotas sans dépendre de window
-    setTimeout(() => { refreshQuotas() }, 100)
+    setTimeout(() => {
+      refreshQuotas()
+    }, 100)
   }
 
   const handleSubmitReward = async ({ label, image }) => {
@@ -225,13 +246,19 @@ export default function Edition() {
     if (!canUploadImage) return
 
     try {
-      const uploadResult = await uploadImageWithQuota(image, 'reward_image', user.id)
-      
+      const uploadResult = await uploadImageWithQuota(
+        image,
+        'reward_image',
+        user.id
+      )
+
       // Utiliser l'ancien système pour créer la récompense mais avec le nouveau chemin d'image
       await createRecompense({ label, image: uploadResult.filePath })
       handleRecompenseAjoutee()
       show('Récompense ajoutée', 'success')
-      setTimeout(() => { refreshQuotas() }, 100)
+      setTimeout(() => {
+        refreshQuotas()
+      }, 100)
     } catch (error) {
       show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
     }
@@ -245,26 +272,34 @@ export default function Edition() {
       return
     }
 
-    const labelToUse = (categoryLabel ?? newCatLabel ?? '').trim().replace(/\s+/g, ' ')
+    const labelToUse = (categoryLabel ?? newCatLabel ?? '')
+      .trim()
+      .replace(/\s+/g, ' ')
     if (!labelToUse) return
 
     const slug = labelToUse.toLowerCase().replace(/ /g, '-')
     await addCategory({ value: slug, label: labelToUse })
     setNewCatLabel('')
     triggerReload()
-    setTimeout(() => { refreshQuotas() }, 100)
+    setTimeout(() => {
+      refreshQuotas()
+    }, 100)
   }
 
-  const handleRemoveCategory = async (value) => {
+  const handleRemoveCategory = async value => {
     await deleteCategory(value)
     triggerReload()
-    setTimeout(() => { refreshQuotas() }, 300)
+    setTimeout(() => {
+      refreshQuotas()
+    }, 300)
   }
 
-  const toggleSelectRecompense = (id, sel) => (sel ? deselectAll() : selectRecompense(id))
+  const toggleSelectRecompense = (id, sel) =>
+    sel ? deselectAll() : selectRecompense(id)
 
   const visibleTaches = taches.filter(t => {
-    const catMatch = filterCategory === 'all' || (t.categorie || 'none') === filterCategory
+    const catMatch =
+      filterCategory === 'all' || (t.categorie || 'none') === filterCategory
     const doneMatch = !filterDone || !!t.aujourdhui
     return catMatch && doneMatch
   })
@@ -279,7 +314,11 @@ export default function Edition() {
           <Checkbox
             id="confettis"
             className="confettis-checkbox"
-            label={parametres.confettis ? '🎉 Confettis activés' : '🎊 Confettis désactivés'}
+            label={
+              parametres.confettis
+                ? '🎉 Confettis activés'
+                : '🎊 Confettis désactivés'
+            }
             checked={!!parametres.confettis}
             onChange={e => updateParametres({ confettis: e.target.checked })}
           />
@@ -299,7 +338,7 @@ export default function Edition() {
           label="🎁 Afficher la récompense"
           checked={showRecompense}
           onChange={e => setShowRecompense(e.target.checked)}
-          />
+        />
       </div>
 
       <div className="edition-sections">
@@ -308,7 +347,10 @@ export default function Edition() {
             <span className="button-label">
               <ListChecks className="button-icon" size={18} />
               Tâches
-              <ChevronDown className={`chevron ${showTaches ? 'open' : ''}`} size={16} />
+              <ChevronDown
+                className={`chevron ${showTaches ? 'open' : ''}`}
+                size={16}
+              />
             </span>
           }
           onClick={() => setShowTaches(prev => !prev)}
@@ -348,7 +390,10 @@ export default function Edition() {
             <span className="button-label">
               <Gift className="button-icon" size={18} />
               Récompenses
-              <ChevronDown className={`chevron ${showRecompenses ? 'open' : ''}`} size={16} />
+              <ChevronDown
+                className={`chevron ${showRecompenses ? 'open' : ''}`}
+                size={16}
+              />
             </span>
           }
           onClick={() => setShowRecompenses(prev => !prev)}
@@ -381,10 +426,12 @@ export default function Edition() {
           deleteRecompense(recompenseASupprimer.id)
           show('Récompense supprimée', 'error')
           setRecompenseASupprimer(null)
-          setTimeout(() => { refreshQuotas() }, 300)
+          setTimeout(() => {
+            refreshQuotas()
+          }, 300)
         }}
       >
-        ❗ Supprimer la récompense "{recompenseASupprimer?.label}" ?
+        ❗ Supprimer la récompense &quot;{recompenseASupprimer?.label}&quot; ?
       </ModalConfirm>
 
       <ModalConfirm
@@ -395,10 +442,12 @@ export default function Edition() {
           deleteTache(tacheASupprimer)
           show('Tâche supprimée', 'error')
           setTacheASupprimer(null)
-          setTimeout(() => { refreshQuotas() }, 300)
+          setTimeout(() => {
+            refreshQuotas()
+          }, 300)
         }}
       >
-        ❗ Supprimer la tâche "{tacheASupprimer?.label}" ?
+        ❗ Supprimer la tâche &quot;{tacheASupprimer?.label}&quot; ?
       </ModalConfirm>
 
       <ModalCategory
@@ -418,10 +467,11 @@ export default function Edition() {
         onConfirm={() => handleRemoveCategory(catASupprimer)}
       >
         <>
-          ❗ Supprimer la catégorie "
-          {categories.find(c => c.value === catASupprimer)?.label}" ?
+          ❗ Supprimer la catégorie &quot;
+          {categories.find(c => c.value === catASupprimer)?.label}&quot; ?
           <br />
-          Les tâches associées seront réattribuées à "Pas de catégorie".
+          Les tâches associées seront réattribuées à &quot;Pas de
+          catégorie&quot;.
         </>
       </ModalConfirm>
 
@@ -438,7 +488,9 @@ export default function Edition() {
       <ModalQuota
         isOpen={imageQuotaModalOpen}
         onClose={() => setImageQuotaModalOpen(false)}
-        contentType={imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'}
+        contentType={
+          imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
+        }
         currentUsage={imageQuotaContent.currentUsage}
         limit={imageQuotaContent.limit}
         period="total"

@@ -158,23 +158,33 @@ export const usePermissions = () => {
   }
   return context
 }
+
+PermissionsProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+}
 */
-import { useAccountStatus, useEntitlements, usePermissionsAPI, useQuotas } from '@/hooks'
+import {
+  useAccountStatus,
+  usePermissionsAPI,
+  useQuotas,
+  useSimpleRole,
+} from '@/hooks'
+import PropTypes from 'prop-types'
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { AuthContext } from './AuthContext'
 
 const PermissionsContext = createContext()
 
 export const PermissionsProvider = ({ children }) => {
-  const entitlements = useEntitlements()
+  const entitlements = useSimpleRole()
   const accountStatus = useAccountStatus()
   const quotas = useQuotas()
   const {
     permissions,
     features,
     roles,
-    loading: permissionsLoading,  // objet de flags par section
-    isLoading,                     // bool global du hook
+    loading: _permissionsLoading, // objet de flags par section (non utilisé)
+    isLoading, // bool global du hook
     createRole,
     updateRole,
     deleteRole,
@@ -185,57 +195,71 @@ export const PermissionsProvider = ({ children }) => {
     loadAllData,
   } = usePermissionsAPI()
 
-  // Charger automatiquement les permissions au démarrage
+  // Charger automatiquement les permissions au démarrage (sauf pour les visiteurs)
   useEffect(() => {
-    loadAllData()
-  }, [loadAllData])
+    // Ne pas charger les permissions si l'utilisateur est visitor
+    if (entitlements.role !== 'visitor') {
+      loadAllData()
+    }
+  }, [loadAllData, entitlements.role])
 
   // Vérifie si l'utilisateur a accès à une fonctionnalité
   const can = useMemo(() => {
-    return (featureName) => {
+    return featureName => {
       // Vérifier d'abord l'état du compte
       if (!accountStatus.canUseApp) {
         return false // Compte suspendu ou en suppression
       }
 
+      // Admin = accès total
       if (!entitlements.role || entitlements.role === 'admin') {
-        return true // Admin = accès total
+        return true
       }
 
-      // Debug logging supprimé pour réduire le spam
+      // Visitor = accès limité (seulement au tableau avec cartes prédéfinies)
+      if (entitlements.role === 'visitor') {
+        // Les visiteurs n'ont accès qu'à la visualisation du tableau
+        return featureName === 'view_tableau'
+      }
 
-      const feature = features.find((f) => f.name === featureName)
+      // Pour les autres rôles, vérifier les permissions
+      const feature = features.find(f => f.name === featureName)
       if (!feature) {
-        if (import.meta.env.DEV) console.log('❌ Fonctionnalité non trouvée:', featureName)
+        if (import.meta.env.DEV)
+          console.log('❌ Fonctionnalité non trouvée:', featureName)
         return false
       }
 
-      const userRole = roles.find((r) => r.name === entitlements.role)
+      const userRole = roles.find(r => r.name === entitlements.role)
       if (!userRole) {
-        if (import.meta.env.DEV) console.log('❌ Rôle utilisateur non trouvé:', entitlements.role)
+        if (import.meta.env.DEV)
+          console.log('❌ Rôle utilisateur non trouvé:', entitlements.role)
         return false
       }
 
       const permission = permissions.find(
-        (p) => p.feature_id === feature.id && p.role_id === userRole.id
+        p => p.feature_id === feature.id && p.role_id === userRole.id
       )
-
-      // Debug désactivé - approche hybride implémentée
 
       return !!permission?.can_access
     }
   }, [entitlements.role, permissions, features, roles, accountStatus.canUseApp])
 
   const canAll = useMemo(() => {
-    return (featureNames) => featureNames.every((f) => can(f))
+    return featureNames => featureNames.every(f => can(f))
   }, [can])
 
   const canAny = useMemo(() => {
-    return (featureNames) => featureNames.some((f) => can(f))
+    return featureNames => featureNames.some(f => can(f))
   }, [can])
 
   // Debug (DEV seulement) - Log unique au chargement initial
-  if (import.meta.env.DEV && !entitlements.loading && !isLoading && entitlements.userId) {
+  if (
+    import.meta.env.DEV &&
+    !entitlements.loading &&
+    !isLoading &&
+    entitlements.userId
+  ) {
     // Log seulement une fois quand l'utilisateur est connecté et les données chargées
     const shouldLog = !window._permissionsContextLogged
     if (shouldLog) {
@@ -252,7 +276,12 @@ export const PermissionsProvider = ({ children }) => {
 
   // Alerte UX si non connecté une fois les chargements terminés (réduit)
   const { loading: authLoading } = useContext(AuthContext)
-  if (!entitlements.loading && !authLoading && !entitlements.userId && import.meta.env.DEV) {
+  if (
+    !entitlements.loading &&
+    !authLoading &&
+    !entitlements.userId &&
+    import.meta.env.DEV
+  ) {
     console.debug('⚠️ Utilisateur non connecté - mode visitor')
   }
 
@@ -292,7 +321,13 @@ export const PermissionsProvider = ({ children }) => {
 export const usePermissions = () => {
   const context = useContext(PermissionsContext)
   if (!context) {
-    throw new Error('usePermissions doit être utilisé dans un PermissionsProvider')
+    throw new Error(
+      'usePermissions doit être utilisé dans un PermissionsProvider'
+    )
   }
   return context
+}
+
+PermissionsProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 }

@@ -51,18 +51,14 @@
         {
           "policyname": "role_permissions_admin_all",
           "command": "ALL",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "is_admin()",
           "with_check": "is_admin()"
         },
         {
           "policyname": "role_permissions_select_own_or_admin",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(is_admin() OR (EXISTS ( SELECT 1\n   FROM user_roles ur\n  WHERE ((ur.user_id = auth.uid()) AND (ur.role_id = role_permissions.role_id) AND (ur.is_active = true)))))",
           "with_check": null
         }

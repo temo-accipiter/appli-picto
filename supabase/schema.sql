@@ -3581,6 +3581,13 @@ CREATE INDEX consentements_user_created_idx ON public.consentements USING btree 
 
 
 --
+-- Name: idx_abonnements_user_status_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_abonnements_user_status_created ON public.abonnements USING btree (user_id, status, created_at DESC);
+
+
+--
 -- Name: idx_account_audit_logs_action; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3788,6 +3795,13 @@ CREATE INDEX idx_user_roles_role_active ON public.user_roles USING btree (role_i
 --
 
 CREATE INDEX idx_user_roles_role_id ON public.user_roles USING btree (role_id);
+
+
+--
+-- Name: idx_user_roles_user_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_user_active ON public.user_roles USING btree (user_id, is_active) WHERE (is_active = true);
 
 
 --
@@ -5737,63 +5751,59 @@ GRANT ALL ON FUNCTION public.user_can_upload_avatar(uid uuid) TO service_role;
 -- Name: TABLE abonnements; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.abonnements TO anon;
-GRANT ALL ON TABLE public.abonnements TO authenticated;
 GRANT ALL ON TABLE public.abonnements TO service_role;
+GRANT SELECT ON TABLE public.abonnements TO authenticated;
 
 
 --
 -- Name: TABLE account_audit_logs; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.account_audit_logs TO anon;
-GRANT ALL ON TABLE public.account_audit_logs TO authenticated;
 GRANT ALL ON TABLE public.account_audit_logs TO service_role;
+GRANT SELECT,INSERT ON TABLE public.account_audit_logs TO authenticated;
 
 
 --
 -- Name: TABLE categories; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.categories TO anon;
-GRANT ALL ON TABLE public.categories TO authenticated;
 GRANT ALL ON TABLE public.categories TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.categories TO authenticated;
 
 
 --
 -- Name: TABLE consentements; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.consentements TO anon;
-GRANT ALL ON TABLE public.consentements TO authenticated;
 GRANT ALL ON TABLE public.consentements TO service_role;
+GRANT INSERT ON TABLE public.consentements TO anon;
+GRANT SELECT,INSERT ON TABLE public.consentements TO authenticated;
 
 
 --
 -- Name: TABLE consentements_latest; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.consentements_latest TO anon;
-GRANT ALL ON TABLE public.consentements_latest TO authenticated;
 GRANT ALL ON TABLE public.consentements_latest TO service_role;
+GRANT SELECT ON TABLE public.consentements_latest TO authenticated;
 
 
 --
 -- Name: TABLE demo_cards; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.demo_cards TO anon;
-GRANT ALL ON TABLE public.demo_cards TO authenticated;
 GRANT ALL ON TABLE public.demo_cards TO service_role;
+GRANT SELECT ON TABLE public.demo_cards TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.demo_cards TO authenticated;
 
 
 --
 -- Name: TABLE features; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.features TO anon;
-GRANT ALL ON TABLE public.features TO authenticated;
 GRANT ALL ON TABLE public.features TO service_role;
+GRANT SELECT ON TABLE public.features TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.features TO authenticated;
 
 
 --
@@ -5801,6 +5811,7 @@ GRANT ALL ON TABLE public.features TO service_role;
 --
 
 GRANT ALL ON TABLE public.parametres TO service_role;
+GRANT SELECT ON TABLE public.parametres TO anon;
 GRANT SELECT,INSERT,UPDATE ON TABLE public.parametres TO authenticated;
 
 
@@ -5816,9 +5827,8 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.permission_changes TO authenti
 -- Name: TABLE profiles; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.profiles TO anon;
-GRANT ALL ON TABLE public.profiles TO authenticated;
 GRANT ALL ON TABLE public.profiles TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.profiles TO authenticated;
 
 
 --
@@ -5834,36 +5844,33 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.recompenses TO authenticated;
 -- Name: TABLE role_permissions; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.role_permissions TO anon;
-GRANT ALL ON TABLE public.role_permissions TO authenticated;
 GRANT ALL ON TABLE public.role_permissions TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.role_permissions TO authenticated;
 
 
 --
 -- Name: TABLE roles; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.roles TO anon;
-GRANT ALL ON TABLE public.roles TO authenticated;
 GRANT ALL ON TABLE public.roles TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.roles TO authenticated;
+GRANT SELECT ON TABLE public.roles TO anon;
 
 
 --
 -- Name: TABLE role_permissions_admin_view; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.role_permissions_admin_view TO anon;
-GRANT ALL ON TABLE public.role_permissions_admin_view TO authenticated;
 GRANT ALL ON TABLE public.role_permissions_admin_view TO service_role;
+GRANT SELECT ON TABLE public.role_permissions_admin_view TO authenticated;
 
 
 --
 -- Name: TABLE role_quotas; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.role_quotas TO anon;
-GRANT ALL ON TABLE public.role_quotas TO authenticated;
 GRANT ALL ON TABLE public.role_quotas TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.role_quotas TO authenticated;
 
 
 --
@@ -5879,9 +5886,8 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.stations TO authenticated;
 -- Name: TABLE subscription_logs; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.subscription_logs TO anon;
-GRANT ALL ON TABLE public.subscription_logs TO authenticated;
 GRANT ALL ON TABLE public.subscription_logs TO service_role;
+GRANT SELECT ON TABLE public.subscription_logs TO authenticated;
 
 
 --
@@ -5897,36 +5903,32 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.taches TO authenticated;
 -- Name: TABLE user_assets; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.user_assets TO anon;
-GRANT ALL ON TABLE public.user_assets TO authenticated;
 GRANT ALL ON TABLE public.user_assets TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.user_assets TO authenticated;
 
 
 --
 -- Name: TABLE user_prefs; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.user_prefs TO anon;
-GRANT ALL ON TABLE public.user_prefs TO authenticated;
 GRANT ALL ON TABLE public.user_prefs TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.user_prefs TO authenticated;
 
 
 --
 -- Name: TABLE user_roles; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.user_roles TO anon;
-GRANT ALL ON TABLE public.user_roles TO authenticated;
 GRANT ALL ON TABLE public.user_roles TO service_role;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.user_roles TO authenticated;
 
 
 --
 -- Name: TABLE user_usage_counters; Type: ACL; Schema: public; Owner: postgres
 --
 
-GRANT ALL ON TABLE public.user_usage_counters TO anon;
-GRANT ALL ON TABLE public.user_usage_counters TO authenticated;
 GRANT ALL ON TABLE public.user_usage_counters TO service_role;
+GRANT SELECT ON TABLE public.user_usage_counters TO authenticated;
 
 
 --
@@ -6030,7 +6032,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public GRANT ALL ON F
 --
 
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO postgres;
-ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO service_role;
 

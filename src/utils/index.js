@@ -9,9 +9,8 @@ export * from './validationRules'
 
 // Utilitaires de test de configuration légale
 export {
-    generateDetailedReport,
-    testDocumentPlaceholders,
-    testLegalConfiguration,
-    testRGPDCompliance
+  generateDetailedReport,
+  testDocumentPlaceholders,
+  testLegalConfiguration,
+  testRGPDCompliance,
 } from './testLegalConfig'
-

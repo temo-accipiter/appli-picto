@@ -1,6 +1,6 @@
 import { getPermissionHistory } from '@/utils/permissions-api'
 import { Clock, Edit, History, Plus, Trash2, User } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export default function HistoryTab() {
   const [history, setHistory] = useState([])
@@ -12,27 +12,27 @@ export default function HistoryTab() {
   // Charger l'historique au montage
   useEffect(() => {
     loadHistory()
-  }, [limit])
+  }, [limit, loadHistory])
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await getPermissionHistory(limit)
-      
+
       if (error) {
-        console.error('Erreur lors du chargement de l\'historique:', error)
+        console.error("Erreur lors du chargement de l'historique:", error)
         return
       }
 
       setHistory(data || [])
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error)
+      console.error("Erreur lors du chargement de l'historique:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [limit])
 
-  const getChangeTypeIcon = (changeType) => {
+  const getChangeTypeIcon = changeType => {
     switch (changeType) {
       case 'INSERT':
         return <Plus size={16} className="text-green-500" />
@@ -45,7 +45,7 @@ export default function HistoryTab() {
     }
   }
 
-  const getChangeTypeLabel = (changeType) => {
+  const getChangeTypeLabel = changeType => {
     switch (changeType) {
       case 'INSERT':
         return 'Création'
@@ -58,57 +58,58 @@ export default function HistoryTab() {
     }
   }
 
-  const getTableDisplayName = (tableName) => {
+  const getTableDisplayName = tableName => {
     const tableNames = {
-      'roles': 'Rôles',
-      'features': 'Fonctionnalités',
-      'role_permissions': 'Permissions des rôles',
-      'user_roles': 'Attributions de rôles'
+      roles: 'Rôles',
+      features: 'Fonctionnalités',
+      role_permissions: 'Permissions des rôles',
+      user_roles: 'Attributions de rôles',
     }
     return tableNames[tableName] || tableName
   }
 
-  const getTableIcon = (tableName) => {
+  const getTableIcon = tableName => {
     const icons = {
-      'roles': '👤',
-      'features': '⚙️',
-      'role_permissions': '🔐',
-      'user_roles': '🔗'
+      roles: '👤',
+      features: '⚙️',
+      role_permissions: '🔐',
+      user_roles: '🔗',
     }
     return icons[tableName] || '📋'
   }
 
-  const getTableColor = (tableName) => {
+  const getTableColor = tableName => {
     const colors = {
-      'roles': '#3B82F6',      // Bleu
-      'features': '#10B981',    // Vert
-      'role_permissions': '#F59E0B', // Orange
-      'user_roles': '#8B5CF6'   // Violet
+      roles: '#3B82F6', // Bleu
+      features: '#10B981', // Vert
+      role_permissions: '#F59E0B', // Orange
+      user_roles: '#8B5CF6', // Violet
     }
     return colors[tableName] || '#6B7280'
   }
 
-  const formatDate = (dateString) => {
+  const formatDate = dateString => {
     const date = new Date(dateString)
     return date.toLocaleString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     })
   }
 
   const filteredHistory = history.filter(item => {
-    const changeTypeMatch = changeTypeFilter === 'all' || item.change_type === changeTypeFilter
+    const changeTypeMatch =
+      changeTypeFilter === 'all' || item.change_type === changeTypeFilter
     const tableMatch = tableFilter === 'all' || item.table_name === tableFilter
     return changeTypeMatch && tableMatch
   })
 
-  const getChangeDescription = (item) => {
+  const getChangeDescription = item => {
     const tableName = getTableDisplayName(item.table_name)
     const changeType = getChangeTypeLabel(item.change_type)
-    
+
     switch (item.table_name) {
       case 'roles':
         return `${changeType} du rôle "${item.new_values?.display_name || item.old_values?.display_name || 'Inconnu'}"`
@@ -129,7 +130,7 @@ export default function HistoryTab() {
         <h2>Historique des Changements</h2>
         <p>Suivez tous les modifications apportées aux permissions.</p>
         <div className="loading-container">
-          <p>Chargement de l'historique...</p>
+          <p>Chargement de l&apos;historique...</p>
         </div>
       </div>
     )
@@ -148,7 +149,7 @@ export default function HistoryTab() {
             <select
               id="change-type-filter"
               value={changeTypeFilter}
-              onChange={(e) => setChangeTypeFilter(e.target.value)}
+              onChange={e => setChangeTypeFilter(e.target.value)}
               className="form-select"
             >
               <option value="all">Tous les types</option>
@@ -159,11 +160,11 @@ export default function HistoryTab() {
           </div>
 
           <div className="filter-group">
-            <label htmlFor="table-filter">Type d'élément :</label>
+            <label htmlFor="table-filter">Type d&apos;élément :</label>
             <select
               id="table-filter"
               value={tableFilter}
-              onChange={(e) => setTableFilter(e.target.value)}
+              onChange={e => setTableFilter(e.target.value)}
               className="form-select"
             >
               <option value="all">Tous les éléments</option>
@@ -175,11 +176,11 @@ export default function HistoryTab() {
           </div>
 
           <div className="limit-group">
-            <label htmlFor="history-limit">Nombre d'éléments :</label>
+            <label htmlFor="history-limit">Nombre d&apos;éléments :</label>
             <select
               id="history-limit"
               value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
+              onChange={e => setLimit(Number(e.target.value))}
               className="form-select"
             >
               <option value={25}>25</option>
@@ -189,10 +190,7 @@ export default function HistoryTab() {
           </div>
 
           <div className="action-group">
-            <button
-              className="btn btn-secondary"
-              onClick={loadHistory}
-            >
+            <button className="btn btn-secondary" onClick={loadHistory}>
               <Clock size={16} />
               Actualiser
             </button>
@@ -208,24 +206,32 @@ export default function HistoryTab() {
             <h3>Aucun changement trouvé</h3>
             <p>
               {changeTypeFilter === 'all' && tableFilter === 'all'
-                ? 'Aucun changement n\'a encore été effectué dans le système.'
-                : `Aucun changement trouvé avec les filtres sélectionnés.`
-              }
+                ? "Aucun changement n'a encore été effectué dans le système."
+                : `Aucun changement trouvé avec les filtres sélectionnés.`}
             </p>
           </div>
         ) : (
           filteredHistory.map(item => (
-            <div key={item.id} className={`history-item table-${item.table_name}`}>
+            <div
+              key={item.id}
+              className={`history-item table-${item.table_name}`}
+            >
               <div className="history-header">
                 <div className="change-type">
-                  <span className="table-icon" style={{ color: getTableColor(item.table_name) }}>
+                  <span
+                    className="table-icon"
+                    style={{ color: getTableColor(item.table_name) }}
+                  >
                     {getTableIcon(item.table_name)}
                   </span>
                   {getChangeTypeIcon(item.change_type)}
                   <span className="change-label">
                     {getChangeTypeLabel(item.change_type)}
                   </span>
-                  <span className="table-label" style={{ backgroundColor: getTableColor(item.table_name) }}>
+                  <span
+                    className="table-label"
+                    style={{ backgroundColor: getTableColor(item.table_name) }}
+                  >
                     {getTableDisplayName(item.table_name)}
                   </span>
                 </div>
@@ -237,7 +243,7 @@ export default function HistoryTab() {
 
               <div className="change-content">
                 <h4>{getChangeDescription(item)}</h4>
-                
+
                 <div className="change-details">
                   {item.changed_by && (
                     <div className="detail-row">
@@ -284,15 +290,21 @@ export default function HistoryTab() {
             </div>
             <div className="stat-item">
               <strong>Créations :</strong>
-              <span>{filteredHistory.filter(h => h.change_type === 'INSERT').length}</span>
+              <span>
+                {filteredHistory.filter(h => h.change_type === 'INSERT').length}
+              </span>
             </div>
             <div className="stat-item">
               <strong>Modifications :</strong>
-              <span>{filteredHistory.filter(h => h.change_type === 'UPDATE').length}</span>
+              <span>
+                {filteredHistory.filter(h => h.change_type === 'UPDATE').length}
+              </span>
             </div>
             <div className="stat-item">
               <strong>Suppressions :</strong>
-              <span>{filteredHistory.filter(h => h.change_type === 'DELETE').length}</span>
+              <span>
+                {filteredHistory.filter(h => h.change_type === 'DELETE').length}
+              </span>
             </div>
           </div>
         </div>

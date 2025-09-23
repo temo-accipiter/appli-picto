@@ -1,5 +1,11 @@
 import { Button, ButtonDelete, SignedImage } from '@/components'
-import { compressImageIfNeeded, compressionErrorMessage, supabase, validateImageHeader, validateImageType } from '@/utils'
+import {
+  compressImageIfNeeded,
+  compressionErrorMessage,
+  supabase,
+  validateImageHeader,
+  validateImageType,
+} from '@/utils'
 import PropTypes from 'prop-types'
 import { useRef, useState } from 'react'
 import './AvatarProfil.scss'

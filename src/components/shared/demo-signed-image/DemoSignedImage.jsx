@@ -33,8 +33,8 @@ export default function DemoSignedImage({
     const getPublicUrl = () => {
       try {
         // Nettoyer le chemin : enlever /demo-images/ si présent
-        const cleanPath = filePath.startsWith('/demo-images/') 
-          ? filePath.replace('/demo-images/', '') 
+        const cleanPath = filePath.startsWith('/demo-images/')
+          ? filePath.replace('/demo-images/', '')
           : filePath
 
         // Debug logs désactivés pour réduire le bruit dans la console
@@ -56,7 +56,7 @@ export default function DemoSignedImage({
           setUrl(data.publicUrl)
           setError(false)
         } else {
-          throw new Error('Impossible de générer l\'URL publique')
+          throw new Error("Impossible de générer l'URL publique")
         }
       } catch (err) {
         if (import.meta.env.DEV) {
@@ -91,7 +91,7 @@ export default function DemoSignedImage({
 
   if (error) {
     return (
-      <div 
+      <div
         className={`demo-image-error ${className}`}
         style={{ width: size, height: size }}
         onClick={handleRetry}
@@ -105,7 +105,7 @@ export default function DemoSignedImage({
 
   if (!url) {
     return (
-      <div 
+      <div
         className={`demo-image-loading ${className}`}
         style={{ width: size, height: size }}
       >

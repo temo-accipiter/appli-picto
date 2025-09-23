@@ -40,9 +40,9 @@ export function initGA4() {
     anonymize_ip: true,
     allow_google_signals: false,
     allow_ad_personalization_signals: false,
-    // Pas de page_view auto : on déclenche manuellement
+    // Pas de page_view auto : on declenche manuellement
     send_page_view: false,
-    // Cookies « sûrs »
+    // Cookies "surs"
     cookie_flags: 'SameSite=None;Secure',
     cookie_domain: 'auto',
     cookie_expires: 63072000, // 2 ans max
@@ -88,7 +88,7 @@ export function setupConsentBridges() {
       initGA4()
     } else {
       teardownGA4()
-      // Option : location.reload() pour couper toute session résiduelle
+      // Option : location.reload() pour couper toute session residuelle
     }
   })
 }

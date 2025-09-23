@@ -10,7 +10,7 @@ export default function QuotaIndicator({
   showRemaining = true,
   size = 'medium',
   className = '',
-  onClick = null
+  onClick = null,
 }) {
   const {
     loading,
@@ -18,7 +18,7 @@ export default function QuotaIndicator({
     isFreeAccount,
     getQuotaInfo,
     getMonthlyQuotaInfo,
-    canCreate
+    canCreate,
   } = useQuotas()
 
   if (loading && !initialLoad) {
@@ -41,14 +41,18 @@ export default function QuotaIndicator({
   const canCreateContent = canCreate(contentType)
 
   const contentLabel =
-    contentType === 'task' ? 'tâches'
-      : contentType === 'reward' ? 'récompenses'
-      : 'catégories'
+    contentType === 'task'
+      ? 'tâches'
+      : contentType === 'reward'
+        ? 'récompenses'
+        : 'catégories'
 
   const monthlyLabel =
-    contentType === 'task' ? 'tâches ce mois'
-      : contentType === 'reward' ? 'récompenses ce mois'
-      : 'catégories ce mois'
+    contentType === 'task'
+      ? 'tâches ce mois'
+      : contentType === 'reward'
+        ? 'récompenses ce mois'
+        : 'catégories ce mois'
 
   const { current, limit, remaining, percentage, isNearLimit, isAtLimit } = info
 
@@ -76,7 +80,9 @@ export default function QuotaIndicator({
           className={`quota-fill ${isAtLimit ? 'at-limit' : isNearLimit ? 'near-limit' : ''}`}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
-        {showPercentage && <span className="quota-percentage">{percentage}%</span>}
+        {showPercentage && (
+          <span className="quota-percentage">{percentage}%</span>
+        )}
       </div>
 
       <div className="quota-details">
@@ -84,7 +90,9 @@ export default function QuotaIndicator({
         <span className="quota-separator">/</span>
         <span className="quota-limit">{limit}</span>
         {showRemaining && remaining > 0 && (
-          <span className="quota-remaining">({remaining} restante{remaining > 1 ? 's' : ''})</span>
+          <span className="quota-remaining">
+            ({remaining} restante{remaining > 1 ? 's' : ''})
+          </span>
         )}
       </div>
 
@@ -97,7 +105,9 @@ export default function QuotaIndicator({
 
       {!canCreateContent && (
         <div className="quota-upgrade">
-          <span className="upgrade-text">Passez à Premium pour plus de {contentLabel}</span>
+          <span className="upgrade-text">
+            Passez à Premium pour plus de {contentLabel}
+          </span>
         </div>
       )}
     </div>

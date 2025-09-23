@@ -44,5 +44,6 @@ SelectedRewardFloating.propTypes = {
     id: PropTypes.string.isRequired,
     imagepath: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
+    isDemo: PropTypes.bool,
   }).isRequired,
 }

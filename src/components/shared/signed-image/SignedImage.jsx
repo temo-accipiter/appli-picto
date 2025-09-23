@@ -89,7 +89,7 @@ export default function SignedImage({
           role="button"
           tabIndex={0}
           onClick={handleRetry}
-          onKeyDown={(e) => e.key === 'Enter' && handleRetry()}
+          onKeyDown={e => e.key === 'Enter' && handleRetry()}
           aria-label="Erreur de chargement, cliquer pour réessayer"
         >
           <span>🔄</span>

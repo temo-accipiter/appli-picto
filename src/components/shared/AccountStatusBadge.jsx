@@ -7,13 +7,14 @@ import './AccountStatusBadge.scss'
  * Composant pour afficher l'état du compte utilisateur
  * Affiche un badge avec l'état, l'icône et la description
  */
-export default function AccountStatusBadge({ 
-  showDescription = false, 
+export default function AccountStatusBadge({
+  showDescription = false,
   size = 'medium',
   className = '',
-  onClick = null 
+  onClick = null,
 }) {
-  const { accountStatus, loading, statusDisplay, canUseApp } = useAccountStatus()
+  const { accountStatus, loading, statusDisplay, canUseApp } =
+    useAccountStatus()
 
   if (loading) {
     return (
@@ -31,7 +32,7 @@ export default function AccountStatusBadge({
   const { label, color, icon, description } = statusDisplay
 
   return (
-    <div 
+    <div
       className={`account-status-badge ${color} ${size} ${className} ${onClick ? 'clickable' : ''}`}
       onClick={onClick}
       title={showDescription ? undefined : description}
@@ -42,9 +43,7 @@ export default function AccountStatusBadge({
         <span className="status-description">{description}</span>
       )}
       {!canUseApp && (
-        <div className="status-warning">
-          ⚠️ Compte non fonctionnel
-        </div>
+        <div className="status-warning">⚠️ Compte non fonctionnel</div>
       )}
     </div>
   )

@@ -69,45 +69,35 @@
         {
           "policyname": "Users can view own user_roles",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(auth.uid() = user_id)",
           "with_check": null
         },
         {
           "policyname": "user_roles_admin_all",
           "command": "ALL",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "is_admin()",
           "with_check": "is_admin()"
         },
         {
           "policyname": "user_roles_select_own",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(user_id = auth.uid())",
           "with_check": null
         },
         {
           "policyname": "users_can_self_assign_basic_roles",
           "command": "INSERT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": null,
           "with_check": "((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id\n   FROM roles\n  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true)))))"
         },
         {
           "policyname": "users_can_update_own_basic_roles",
           "command": "UPDATE",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(user_id = auth.uid())",
           "with_check": "((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id\n   FROM roles\n  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true)))))"
         }

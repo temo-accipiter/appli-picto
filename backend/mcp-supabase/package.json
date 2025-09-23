@@ -1,0 +1,20 @@
+{
+  "name": "mcp-supabase-bridge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon --watch server.js --ext js,mjs --signal SIGTERM server.js",
+    "start": "NODE_ENV=production node server.js",
+    "check": "curl -s http://127.0.0.1:8787/mcp/health && echo"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks'
 import { withAbortSafe, isAbortLike } from '@/hooks'
 
 // sérialise proprement les erreurs pour éviter les soucis d’inspecteur Safari
-const formatErr = (e) => {
+const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
     m,
@@ -21,7 +21,6 @@ export default function useTachesEdition(reload = 0) {
 
   useEffect(() => {
     if (!user?.id) return
-
     ;(async () => {
       const { data, error, aborted } = await withAbortSafe(
         supabase.from('taches').select('*').eq('user_id', user.id)
@@ -51,8 +50,8 @@ export default function useTachesEdition(reload = 0) {
       console.error(`❌ Erreur toggle aujourdhui : ${formatErr(error)}`)
       return
     }
-    setTaches((prev) =>
-      prev.map((t) =>
+    setTaches(prev =>
+      prev.map(t =>
         t.id === id ? { ...t, aujourdhui: !current ? 1 : 0, fait: 0 } : t
       )
     )
@@ -60,29 +59,37 @@ export default function useTachesEdition(reload = 0) {
 
   const updateLabel = async (id, label) => {
     const { error, aborted } = await withAbortSafe(
-      supabase.from('taches').update({ label }).eq('id', id).eq('user_id', user.id)
+      supabase
+        .from('taches')
+        .update({ label })
+        .eq('id', id)
+        .eq('user_id', user.id)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {
       console.error(`❌ Erreur update label : ${formatErr(error)}`)
       return
     }
-    setTaches((prev) => prev.map((t) => (t.id === id ? { ...t, label } : t)))
+    setTaches(prev => prev.map(t => (t.id === id ? { ...t, label } : t)))
   }
 
   const updateCategorie = async (id, categorie) => {
     const { error, aborted } = await withAbortSafe(
-      supabase.from('taches').update({ categorie }).eq('id', id).eq('user_id', user.id)
+      supabase
+        .from('taches')
+        .update({ categorie })
+        .eq('id', id)
+        .eq('user_id', user.id)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {
       console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
       return
     }
-    setTaches((prev) => prev.map((t) => (t.id === id ? { ...t, categorie } : t)))
+    setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
   }
 
-  const deleteTache = async (t) => {
+  const deleteTache = async t => {
     const id = typeof t === 'string' ? t : t?.id
     const imagePath = t?.imagepath
 
@@ -93,9 +100,8 @@ export default function useTachesEdition(reload = 0) {
 
     // 1) supprimer l’image éventuelle (silence si abort)
     if (imagePath) {
-      const { error: storageError, aborted: storageAborted } = await withAbortSafe(
-        supabase.storage.from('images').remove([imagePath])
-      )
+      const { error: storageError, aborted: storageAborted } =
+        await withAbortSafe(supabase.storage.from('images').remove([imagePath]))
       if (!storageAborted && storageError) {
         console.warn(`⚠️ Erreur suppression image : ${formatErr(storageError)}`)
       }
@@ -111,7 +117,7 @@ export default function useTachesEdition(reload = 0) {
       return
     }
 
-    setTaches((prev) => prev.filter((task) => task.id !== id))
+    setTaches(prev => prev.filter(task => task.id !== id))
   }
 
   const resetEdition = async () => {
@@ -127,7 +133,7 @@ export default function useTachesEdition(reload = 0) {
       console.error(`❌ Erreur resetEdition : ${formatErr(error)}`)
       return
     }
-    setTaches((prev) => prev.map((t) => ({ ...t, aujourdhui: 0 })))
+    setTaches(prev => prev.map(t => ({ ...t, aujourdhui: 0 })))
   }
 
   return {

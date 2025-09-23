@@ -35,8 +35,8 @@ export { default as ThemeToggle } from './shared/theme-toggle/ThemeToggle'
 export { default as PersonalizationModal } from './modals/PersonalizationModal'
 export { SignupPromptModal } from './modals/SignupPromptModal'
 export {
-    FeatureGate,
-    PremiumFeatureGate
+  FeatureGate,
+  PremiumFeatureGate,
 } from './shared/feature-gate/FeatureGate'
 export { default as ModalRecompense } from './shared/modal/modal-recompense/ModalRecompense'
 
@@ -64,4 +64,3 @@ export { default as UserMenu } from './user-menu/UserMenu'
 // Composants d'administration
 export { default as AccountManagement } from './admin/AccountManagement'
 export { default as QuotaManagement } from './admin/QuotaManagement'
-

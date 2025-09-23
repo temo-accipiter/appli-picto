@@ -99,7 +99,9 @@ function boot() {
     supabase.auth.onAuthStateChange(() => {
       if (hasConsent('analytics')) refreshGAUserProperties()
     })
-  } catch {}
+  } catch {
+    // Ignore errors
+  }
   // Helpers debug
   window.gaUserProps = {
     refresh: refreshGAUserProperties,

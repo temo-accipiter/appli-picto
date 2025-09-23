@@ -15,7 +15,7 @@ async function testConnection() {
     console.log('✅ Client Supabase créé avec succès')
 
     // Test 2: Vérifier les tables
-    const { data: tables, error: tablesError } = await supabase
+    const { data: _tables, error: tablesError } = await supabase
       .from('profiles')
       .select('count')
       .limit(1)

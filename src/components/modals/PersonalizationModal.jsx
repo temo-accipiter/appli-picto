@@ -4,19 +4,17 @@ import './PersonalizationModal.scss'
 
 export default function PersonalizationModal({ isOpen, onClose }) {
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
       title="🎨 Personnalisez votre expérience !"
       className="personalization-modal"
     >
       <div className="personalization-content">
-        <div className="personalization-icon">
-          🎯
-        </div>
-        
+        <div className="personalization-icon">🎯</div>
+
         <h3>Créez votre compte pour débloquer toutes les fonctionnalités</h3>
-        
+
         <div className="features-list">
           <div className="feature-item">
             <span className="feature-icon">✏️</span>
@@ -36,10 +34,10 @@ export default function PersonalizationModal({ isOpen, onClose }) {
           </div>
           <div className="feature-item">
             <span className="feature-icon">⚙️</span>
-            <span>Personnalisez l'affichage selon vos préférences</span>
+            <span>Personnalisez l&apos;affichage selon vos préférences</span>
           </div>
         </div>
-        
+
         <div className="personalization-actions">
           <Button
             label="Créer mon compte"
@@ -58,9 +56,9 @@ export default function PersonalizationModal({ isOpen, onClose }) {
             className="secondary-button"
           />
         </div>
-        
+
         <p className="personalization-note">
-          C'est gratuit et ne prend que 2 minutes ! 🚀
+          C&apos;est gratuit et ne prend que 2 minutes ! 🚀
         </p>
       </div>
     </Modal>

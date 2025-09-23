@@ -8,7 +8,7 @@ const IMAGE_CONFIG = {
   maxDimensions: { width: 256, height: 256 },
   allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
   cacheControl: '31536000', // 1 an en cache
-  signedUrlTTL: 6 * 60 * 60 // 6 heures pour les URLs signées
+  signedUrlTTL: 6 * 60 * 60, // 6 heures pour les URLs signées
 }
 
 /**
@@ -19,17 +19,21 @@ export function validateImageFile(file) {
 
   // Vérifier le type MIME
   if (!IMAGE_CONFIG.allowedTypes.includes(file.type)) {
-    errors.push(`Type de fichier non autorisé. Types acceptés: ${IMAGE_CONFIG.allowedTypes.join(', ')}`)
+    errors.push(
+      `Type de fichier non autorisé. Types acceptés: ${IMAGE_CONFIG.allowedTypes.join(', ')}`
+    )
   }
 
   // Vérifier la taille
   if (file.size > IMAGE_CONFIG.maxSize) {
-    errors.push(`Fichier trop volumineux. Taille max: ${IMAGE_CONFIG.maxSize / 1024} Ko`)
+    errors.push(
+      `Fichier trop volumineux. Taille max: ${IMAGE_CONFIG.maxSize / 1024} Ko`
+    )
   }
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   }
 }
 
@@ -44,7 +48,7 @@ export async function resizeImageIfNeeded(file) {
 
     img.onload = () => {
       const { width, height } = IMAGE_CONFIG.maxDimensions
-      
+
       // Si l'image est déjà dans les bonnes dimensions, pas besoin de redimensionner
       if (img.width <= width && img.height <= height) {
         resolve(file)
@@ -70,17 +74,21 @@ export async function resizeImageIfNeeded(file) {
       canvas.height = newHeight
       ctx.drawImage(img, 0, 0, newWidth, newHeight)
 
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const resizedFile = new File([blob], file.name, { type: file.type })
-          resolve(resizedFile)
-        } else {
-          reject(new Error('Erreur lors du redimensionnement'))
-        }
-      }, file.type, 0.8) // Qualité 80%
+      canvas.toBlob(
+        blob => {
+          if (blob) {
+            const resizedFile = new File([blob], file.name, { type: file.type })
+            resolve(resizedFile)
+          } else {
+            reject(new Error('Erreur lors du redimensionnement'))
+          }
+        },
+        file.type,
+        0.8
+      ) // Qualité 80%
     }
 
-    img.onerror = () => reject(new Error('Impossible de charger l\'image'))
+    img.onerror = () => reject(new Error("Impossible de charger l'image"))
     img.src = URL.createObjectURL(file)
   })
 }
@@ -92,19 +100,24 @@ export async function checkImageQuota(userId, assetType) {
   try {
     const { data, error } = await supabase.rpc('check_image_quota', {
       p_user_id: userId,
-      p_asset_type: assetType
+      p_asset_type: assetType,
     })
 
     if (error) {
       // Si la fonction n'existe pas encore, permettre l'upload
-      if (error.code === 'PGRST202' || error.message?.includes('Could not find the function')) {
-        console.warn('Fonction check_image_quota pas encore créée, autorisation d\'upload par défaut')
+      if (
+        error.code === 'PGRST202' ||
+        error.message?.includes('Could not find the function')
+      ) {
+        console.warn(
+          "Fonction check_image_quota pas encore créée, autorisation d'upload par défaut"
+        )
         return {
           canUpload: true,
           reason: 'function_not_created',
           role: 'free', // Par défaut
           quotas: {},
-          stats: {}
+          stats: {},
         }
       }
       throw error
@@ -115,14 +128,14 @@ export async function checkImageQuota(userId, assetType) {
       reason: data.reason,
       role: data.role,
       quotas: data.quotas,
-      stats: data.stats
+      stats: data.stats,
     }
   } catch (error) {
     console.error('Erreur vérification quota image:', error)
     return {
       canUpload: false,
       reason: 'error',
-      error: error.message
+      error: error.message,
     }
   }
 }
@@ -149,30 +162,30 @@ export async function uploadImageWithQuota(file, assetType, userId) {
 
     // 4. Génération du chemin de fichier
     const timestamp = Date.now()
-    const cleanName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
+    const cleanName = file.name
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9_.-]/g, '')
     const filePath = `${userId}/${assetType}s/${timestamp}-${cleanName}`
 
     // 5. Upload vers Supabase Storage avec cache agressif
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: _uploadData, error: uploadError } = await supabase.storage
       .from('images')
       .upload(filePath, processedFile, {
         cacheControl: IMAGE_CONFIG.cacheControl,
-        upsert: false
+        upsert: false,
       })
 
     if (uploadError) throw uploadError
 
     // 6. Enregistrement dans la table de suivi
-    const { error: trackingError } = await supabase
-      .from('user_assets')
-      .insert({
-        user_id: userId,
-        asset_type: assetType,
-        file_path: filePath,
-        file_size: processedFile.size,
-        mime_type: processedFile.type,
-        dimensions: `${processedFile.width || 'unknown'}x${processedFile.height || 'unknown'}`
-      })
+    const { error: trackingError } = await supabase.from('user_assets').insert({
+      user_id: userId,
+      asset_type: assetType,
+      file_path: filePath,
+      file_size: processedFile.size,
+      mime_type: processedFile.type,
+      dimensions: `${processedFile.width || 'unknown'}x${processedFile.height || 'unknown'}`,
+    })
 
     if (trackingError) {
       console.warn('Erreur enregistrement tracking:', trackingError)
@@ -180,9 +193,10 @@ export async function uploadImageWithQuota(file, assetType, userId) {
     }
 
     // 7. Génération URL signée avec TTL court
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('images')
-      .createSignedUrl(filePath, IMAGE_CONFIG.signedUrlTTL)
+    const { data: signedUrlData, error: signedUrlError } =
+      await supabase.storage
+        .from('images')
+        .createSignedUrl(filePath, IMAGE_CONFIG.signedUrlTTL)
 
     if (signedUrlError) {
       console.warn('Erreur génération URL signée:', signedUrlError)
@@ -193,9 +207,8 @@ export async function uploadImageWithQuota(file, assetType, userId) {
       filePath,
       signedUrl: signedUrlData.signedUrl,
       success: true,
-      fileSize: processedFile.size
+      fileSize: processedFile.size,
     }
-
   } catch (error) {
     console.error('Erreur upload image:', error)
     throw error
@@ -238,20 +251,25 @@ export async function deleteImageWithQuota(filePath, userId) {
 export async function getUserAssetsStats(userId) {
   try {
     const { data, error } = await supabase.rpc('get_user_assets_stats', {
-      p_user_id: userId
+      p_user_id: userId,
     })
 
     if (error) {
       // Si la fonction n'existe pas encore, retourner des stats par défaut
-      if (error.code === 'PGRST202' || error.message?.includes('Could not find the function')) {
-        console.warn('Fonction get_user_assets_stats pas encore créée, retour de stats par défaut')
+      if (
+        error.code === 'PGRST202' ||
+        error.message?.includes('Could not find the function')
+      ) {
+        console.warn(
+          'Fonction get_user_assets_stats pas encore créée, retour de stats par défaut'
+        )
         return {
           total_images: 0,
           total_size: 0,
           task_images: 0,
           reward_images: 0,
           task_images_size: 0,
-          reward_images_size: 0
+          reward_images_size: 0,
         }
       }
       throw error
@@ -266,7 +284,7 @@ export async function getUserAssetsStats(userId) {
       task_images: 0,
       reward_images: 0,
       task_images_size: 0,
-      reward_images_size: 0
+      reward_images_size: 0,
     }
   }
 }

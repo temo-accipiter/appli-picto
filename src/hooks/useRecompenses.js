@@ -3,7 +3,7 @@ import { supabase } from '@/utils'
 import { useEffect, useState } from 'react'
 
 // Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
-const formatErr = (e) => {
+const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
     m,
@@ -21,7 +21,6 @@ export default function useRecompenses(reload = 0) {
 
   useEffect(() => {
     if (!userId) return
-
     ;(async () => {
       const { data, error, aborted } = await withAbortSafe(
         supabase.from('recompenses').select('*').eq('user_id', userId)
@@ -45,7 +44,11 @@ export default function useRecompenses(reload = 0) {
         : `${Date.now()}`
       const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
 
-      const { data, error: uploadError, aborted: uploadAborted } = await withAbortSafe(
+      const {
+        data,
+        error: uploadError,
+        aborted: uploadAborted,
+      } = await withAbortSafe(
         supabase.storage.from('images').upload(fileName, image)
       )
       if (uploadAborted) return
@@ -75,18 +78,19 @@ export default function useRecompenses(reload = 0) {
       throw new Error('Erreur ajout récompense')
     }
 
-    setRecompenses((prev) => [...prev, data])
+    setRecompenses(prev => [...prev, data])
     return data
   }
 
-  const deleteRecompense = async (id) => {
-    const rec = recompenses.find((r) => r.id === id)
+  const deleteRecompense = async id => {
+    const rec = recompenses.find(r => r.id === id)
 
     // 1) Supprimer l’image associée si présente
     if (rec?.imagepath) {
-      const { error: storageError, aborted: storageAborted } = await withAbortSafe(
-        supabase.storage.from('images').remove([rec.imagepath])
-      )
+      const { error: storageError, aborted: storageAborted } =
+        await withAbortSafe(
+          supabase.storage.from('images').remove([rec.imagepath])
+        )
       if (!storageAborted && storageError) {
         console.warn(`⚠️ Erreur suppression image: ${formatErr(storageError)}`)
       }
@@ -102,27 +106,27 @@ export default function useRecompenses(reload = 0) {
       throw new Error('Erreur suppression récompense')
     }
 
-    setRecompenses((prev) => prev.filter((r) => r.id !== id))
+    setRecompenses(prev => prev.filter(r => r.id !== id))
   }
 
-  const selectRecompense = async (id) => {
-    const updates = recompenses.map((r) =>
+  const selectRecompense = async id => {
+    const updates = recompenses.map(r =>
       r.id === id
-        ? { 
-            id: r.id, 
-            selected: true, 
+        ? {
+            id: r.id,
+            selected: true,
             user_id: userId,
             label: r.label, // Inclure le label obligatoire
             points_requis: r.points_requis,
-            visible_en_demo: r.visible_en_demo
+            visible_en_demo: r.visible_en_demo,
           }
-        : { 
-            id: r.id, 
-            selected: false, 
+        : {
+            id: r.id,
+            selected: false,
             user_id: userId,
             label: r.label, // Inclure le label obligatoire
             points_requis: r.points_requis,
-            visible_en_demo: r.visible_en_demo
+            visible_en_demo: r.visible_en_demo,
           }
     )
 
@@ -135,31 +139,41 @@ export default function useRecompenses(reload = 0) {
       throw new Error('Erreur sélection récompense')
     }
 
-    setRecompenses((prev) => prev.map((r) => ({ ...r, selected: r.id === id })))
+    setRecompenses(prev => prev.map(r => ({ ...r, selected: r.id === id })))
   }
 
   const deselectAll = async () => {
     const { error, aborted } = await withAbortSafe(
-      supabase.from('recompenses').update({ selected: false }).eq('user_id', userId).neq('selected', false)
+      supabase
+        .from('recompenses')
+        .update({ selected: false })
+        .eq('user_id', userId)
+        .neq('selected', false)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {
       console.error(`❌ Erreur désélection récompenses: ${formatErr(error)}`)
       throw new Error('Erreur désélection')
     }
-    setRecompenses((prev) => prev.map((r) => ({ ...r, selected: false })))
+    setRecompenses(prev => prev.map(r => ({ ...r, selected: false })))
   }
 
   const updateLabel = async (id, label) => {
     const { error, aborted } = await withAbortSafe(
-      supabase.from('recompenses').update({ label }).eq('id', id).eq('user_id', userId)
+      supabase
+        .from('recompenses')
+        .update({ label })
+        .eq('id', id)
+        .eq('user_id', userId)
     )
     if (aborted || (error && isAbortLike(error))) return
     if (error) {
-      console.error(`❌ Erreur mise à jour label récompense: ${formatErr(error)}`)
+      console.error(
+        `❌ Erreur mise à jour label récompense: ${formatErr(error)}`
+      )
       throw new Error('Erreur mise à jour label')
     }
-    setRecompenses((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r)))
+    setRecompenses(prev => prev.map(r => (r.id === id ? { ...r, label } : r)))
   }
 
   return {
