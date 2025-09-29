@@ -32,7 +32,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   const { width, height } = useWindowSize()
   const { role: permissionsRole } = usePermissions()
-  const { role: simpleRole, loading: roleLoading } = useSimpleRole()
+  const { role: simpleRole, loading: _roleLoading } = useSimpleRole()
 
   // Utiliser le rôle simple en priorité, fallback vers permissions
   const role = simpleRole !== 'unknown' ? simpleRole : permissionsRole

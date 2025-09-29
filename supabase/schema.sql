@@ -102,26 +102,34 @@ COMMENT ON FUNCTION public.assert_self_or_admin(p_target uuid) IS 'Raise if the 
 --
 
 CREATE FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) RETURNS void
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
     AS $$
 begin
+  -- Pas d’utilisateur (ligne demo, SQL sans JWT…) => on ne compte pas
+  if p_user is null then
+    return;
+  end if;
+
   update public.user_usage_counters
      set updated_at = now(),
-         -- sécurité pour éviter valeurs négatives
-         tasks      = case when p_col='tasks'      then greatest(0, tasks + p_delta)      else tasks      end,
-         rewards    = case when p_col='rewards'    then greatest(0, rewards + p_delta)    else rewards    end,
-         categories = case when p_col='categories' then greatest(0, categories + p_delta) else categories end
+         -- pas de valeurs négatives
+         tasks      = case when p_col = 'tasks'      then greatest(0, tasks + p_delta)      else tasks      end,
+         rewards    = case when p_col = 'rewards'    then greatest(0, rewards + p_delta)    else rewards    end,
+         categories = case when p_col = 'categories' then greatest(0, categories + p_delta) else categories end
    where user_id = p_user;
 
   if not found then
     insert into public.user_usage_counters(user_id, tasks, rewards, categories)
-    values (p_user,
-      case when p_col='tasks' then greatest(0, p_delta) else 0 end,
-      case when p_col='rewards' then greatest(0, p_delta) else 0 end,
+    values (
+      p_user,
+      case when p_col='tasks'      then greatest(0, p_delta) else 0 end,
+      case when p_col='rewards'    then greatest(0, p_delta) else 0 end,
       case when p_col='categories' then greatest(0, p_delta) else 0 end
     );
   end if;
-end $$;
+end;
+$$;
 
 
 ALTER FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta integer) OWNER TO postgres;
@@ -131,12 +139,14 @@ ALTER FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta intege
 --
 
 CREATE FUNCTION public.categories_counter_del() RETURNS trigger
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
     AS $$
 begin
-  perform public.bump_usage_counter(old.user_id, 'categories', -1);
+  perform public.bump_usage_counter(coalesce(old.user_id, auth.uid()), 'categories', -1);
   return old;
-end $$;
+end;
+$$;
 
 
 ALTER FUNCTION public.categories_counter_del() OWNER TO postgres;
@@ -146,12 +156,14 @@ ALTER FUNCTION public.categories_counter_del() OWNER TO postgres;
 --
 
 CREATE FUNCTION public.categories_counter_ins() RETURNS trigger
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
     AS $$
 begin
-  perform public.bump_usage_counter(new.user_id, 'categories', 1);
+  perform public.bump_usage_counter(coalesce(new.user_id, auth.uid()), 'categories', 1);
   return new;
-end $$;
+end;
+$$;
 
 
 ALTER FUNCTION public.categories_counter_ins() OWNER TO postgres;
@@ -164,63 +176,66 @@ CREATE FUNCTION public.change_account_status(target_user_id uuid, new_status tex
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-DECLARE
+declare
   old_status text;
   old_role text;
   new_role text;
-BEGIN
-  -- Admin only
-  IF NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Permission denied: admin only' USING ERRCODE='42501';
-  END IF;
+  had_admin boolean := false;
+begin
+  if not public.is_admin() then
+    raise exception 'Permission denied: admin only' using errcode='42501';
+  end if;
 
-  SELECT p.account_status, r.name INTO old_status, old_role
-  FROM public.profiles p
-  LEFT JOIN public.user_roles ur ON ur.user_id = p.id AND ur.is_active = true
-  LEFT JOIN public.roles r ON r.id = ur.role_id
-  WHERE p.id = target_user_id;
+  select p.account_status, r.name
+    into old_status, old_role
+  from public.profiles p
+  left join public.user_roles ur on ur.user_id = p.id and ur.is_active = true
+  left join public.roles r on r.id = ur.role_id
+  where p.id = target_user_id;
 
-  UPDATE public.profiles
-  SET account_status = new_status,
-      deletion_scheduled_at = CASE
-        WHEN new_status = 'deletion_scheduled' THEN now() + interval '30 days'
-        ELSE NULL
-      END
-  WHERE id = target_user_id;
+  had_admin := public.is_admin();
 
-  IF new_status = 'active' THEN
-    SELECT CASE
-      WHEN EXISTS (
-        SELECT 1 FROM public.abonnements
-        WHERE user_id = target_user_id
-        AND status IN ('active', 'trialing', 'past_due')
-      ) THEN 'abonne'
-      ELSE 'free'
-    END INTO new_role;
+  update public.profiles
+     set account_status = new_status,
+         deletion_scheduled_at = case
+           when new_status = 'deletion_scheduled' then now() + interval '30 days'
+           else null
+         end
+   where id = target_user_id;
 
-  ELSIF new_status IN ('suspended','deletion_scheduled','pending_verification') THEN
+  if new_status = 'active' then
+    select case
+      when public.is_subscriber(target_user_id) then 'abonne'
+      else 'free' end
+    into new_role;
+  elsif new_status in ('suspended','deletion_scheduled','pending_verification') then
     new_role := 'visitor';
-  END IF;
+  end if;
 
-  IF new_role IS NOT NULL AND new_role <> old_role THEN
-    UPDATE public.user_roles SET is_active = false WHERE user_id = target_user_id;
+  if new_role is not null and new_role <> old_role then
+    update public.user_roles set is_active=false where user_id=target_user_id;
 
-    INSERT INTO public.user_roles (user_id, role_id, assigned_by)
-    SELECT target_user_id, r.id, changed_by_user_id
-    FROM public.roles r
-    WHERE r.name = new_role;
-  END IF;
+    insert into public.user_roles (user_id, role_id, assigned_by)
+    select target_user_id, r.id, changed_by_user_id
+    from public.roles r
+    where r.name = new_role
+    on conflict (user_id, role_id) do nothing;
 
-  INSERT INTO public.account_audit_logs (
-    user_id, action, old_status, new_status,
-    old_role, new_role, changed_by, reason, metadata
-  ) VALUES (
-    target_user_id, 'status_change', old_status, new_status,
-    old_role, new_role, changed_by_user_id, reason, metadata
-  );
+    update public.user_roles
+       set is_active=true, updated_at=now()
+     where user_id=target_user_id
+       and role_id in (select id from public.roles where name=new_role);
+  end if;
 
-  RETURN true;
-END;
+  if had_admin then
+    update public.profiles set is_admin = true where id = target_user_id;
+  end if;
+
+  insert into public.account_audit_logs(user_id, changed_by, old_status, new_status, reason, metadata, action)
+  values (target_user_id, changed_by_user_id, old_status, new_status, reason, metadata, 'status_change');
+
+  return true;
+end;
 $$;
 
 
@@ -489,6 +504,37 @@ $$;
 ALTER FUNCTION public.email_exists(email_to_check text) OWNER TO postgres;
 
 --
+-- Name: generate_unique_pseudo(text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.generate_unique_pseudo(base text) RETURNS text
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  candidate text := null;
+  i int := 0;
+BEGIN
+  IF base IS NULL OR btrim(base) = '' THEN
+    base := 'Utilisateur';
+  END IF;
+
+  -- nettoyage simple
+  base := lower(regexp_replace(btrim(base), '\s+', '-', 'g'));
+
+  LOOP
+    candidate := CASE WHEN i = 0 THEN base ELSE base || '-' || i::text END;
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM public.profiles WHERE pseudo = candidate);
+    i := i + 1;
+  END LOOP;
+
+  RETURN candidate;
+END;
+$$;
+
+
+ALTER FUNCTION public.generate_unique_pseudo(base text) OWNER TO postgres;
+
+--
 -- Name: get_account_history(uuid, integer); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -666,6 +712,20 @@ $$;
 
 
 ALTER FUNCTION public.get_migration_report() OWNER TO postgres;
+
+--
+-- Name: get_usage(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_usage(p_user_id uuid) RETURNS jsonb
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+      select jsonb_build_object('user_id', p_user_id);
+    $$;
+
+
+ALTER FUNCTION public.get_usage(p_user_id uuid) OWNER TO postgres;
 
 --
 -- Name: get_usage_fast(uuid); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1035,24 +1095,25 @@ CREATE FUNCTION public.handle_new_user() RETURNS trigger
     SET search_path TO 'public'
     AS $$
 DECLARE
-    free_role_id uuid;
+  free_role_id uuid;
+  pseudo_base text;
 BEGIN
-    -- Créer le profil
-    INSERT INTO public.profiles (id, pseudo)
-    VALUES (NEW.id, split_part(NEW.email, '@', 1))
-    ON CONFLICT (id) DO NOTHING;
+  pseudo_base := split_part(NEW.email, '@', 1);
 
-    -- Attribuer automatiquement le rôle 'free'
-    SELECT id INTO free_role_id FROM public.roles WHERE name = 'free' AND is_active = true;
-    
-    IF free_role_id IS NOT NULL THEN
-        INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_by, assigned_at)
-        VALUES (NEW.id, free_role_id, true, NEW.id, now())
-        ON CONFLICT (user_id, role_id) 
-        DO UPDATE SET is_active = true, assigned_by = NEW.id, assigned_at = now(), updated_at = now();
-    END IF;
+  INSERT INTO public.profiles (id, pseudo)
+  VALUES (NEW.id, public.generate_unique_pseudo(pseudo_base))
+  ON CONFLICT (id) DO NOTHING;
 
-    RETURN NEW;
+  SELECT id INTO free_role_id FROM public.roles WHERE name = 'free' AND is_active = true;
+
+  IF free_role_id IS NOT NULL THEN
+    INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_by, assigned_at)
+    VALUES (NEW.id, free_role_id, true, NEW.id, now())
+    ON CONFLICT (user_id, role_id)
+    DO UPDATE SET is_active = true, assigned_by = NEW.id, assigned_at = now(), updated_at = now();
+  END IF;
+
+  RETURN NEW;
 END;
 $$;
 
@@ -1067,33 +1128,41 @@ CREATE FUNCTION public.handle_subscription_role_change() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     SET search_path TO 'public'
     AS $$
-DECLARE
-  free_role_id uuid;
-  abonne_role_id uuid;
-BEGIN
-  SELECT id INTO free_role_id   FROM public.roles WHERE name = 'free'   AND is_active = true;
-  SELECT id INTO abonne_role_id FROM public.roles WHERE name = 'abonne' AND is_active = true;
+declare
+  v_role_free   uuid;
+  v_role_abonne uuid;
+  v_should_be_abonne boolean;
+begin
+  select id into v_role_abonne from public.roles where name='abonne' and is_active = true;
+  select id into v_role_free   from public.roles where name='free'   and is_active = true;
 
-  -- "Actif" = active, trialing, past_due (cohérent avec change_account_status)
-  IF NEW.status IN ('active','trialing','past_due') AND COALESCE(OLD.status,'') NOT IN ('active','trialing','past_due') THEN
-    UPDATE public.user_roles SET is_active = false, updated_at = now()
-    WHERE user_id = NEW.user_id AND role_id = free_role_id;
+  -- Abonné si statut Stripe valide ET période non expirée (si présente)
+  v_should_be_abonne := (new.status in ('trialing','active','past_due','paused'))
+                        and (new.current_period_end is null or new.current_period_end >= now());
 
-    INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
-    VALUES (NEW.user_id, abonne_role_id, true, now())
-    ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true, updated_at = now();
+  -- Désactiver tous les rôles actifs (respecte uq_user_roles_one_active)
+  update public.user_roles
+     set is_active = false, updated_at = now()
+   where user_id = new.user_id and is_active = true;
 
-  ELSIF NEW.status NOT IN ('active','trialing','past_due') AND COALESCE(OLD.status,'') IN ('active','trialing','past_due') THEN
-    UPDATE public.user_roles SET is_active = false, updated_at = now()
-    WHERE user_id = NEW.user_id AND role_id = abonne_role_id;
+  if v_should_be_abonne and v_role_abonne is not null then
+    -- Activer 'abonne'
+    insert into public.user_roles (user_id, role_id, is_active, assigned_at)
+    values (new.user_id, v_role_abonne, true, now())
+    on conflict (user_id, role_id) do update
+      set is_active = true, updated_at = now();
+  else
+      -- Variante B : réactiver 'free' (toujours au minimum free)
+    if v_role_free is not null then
+      insert into public.user_roles (user_id, role_id, is_active, assigned_at)
+      values (new.user_id, v_role_free, true, now())
+      on conflict (user_id, role_id) do update
+        set is_active = true, updated_at = now();
+    end if;
+  end if;
 
-    INSERT INTO public.user_roles (user_id, role_id, is_active, assigned_at)
-    VALUES (NEW.user_id, free_role_id, true, now())
-    ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true, updated_at = now();
-  END IF;
-
-  RETURN NEW;
-END
+  return new;
+end
 $$;
 
 
@@ -1132,6 +1201,24 @@ COMMENT ON FUNCTION public.is_admin() IS 'Retourne true si auth.uid() possède l
 
 
 --
+-- Name: is_subscriber(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.is_subscriber(p_user uuid DEFAULT auth.uid()) RETURNS boolean
+    LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select exists (
+    select 1 from public.abonnements a
+    where a.user_id = p_user
+      and a.status in ('trialing','active','past_due','paused')
+  );
+$$;
+
+
+ALTER FUNCTION public.is_subscriber(p_user uuid) OWNER TO postgres;
+
+--
 -- Name: is_system_role(text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1150,6 +1237,50 @@ ALTER FUNCTION public.is_system_role(role_name text) OWNER TO postgres;
 
 COMMENT ON FUNCTION public.is_system_role(role_name text) IS 'Vérifie si un rôle est un rôle système protégé';
 
+
+--
+-- Name: log_card_creation(uuid, text, uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+begin
+  if to_regclass('public.card_creation_logs') is not null then
+    insert into public.card_creation_logs(user_id, entity, entity_id, created_at)
+    values (_user, _entity, _id, now());
+  elsif to_regclass('public.image_creation_logs') is not null then
+    -- fallback si tu avais déjà une table "image_creation_logs"
+    insert into public.image_creation_logs(user_id, kind, card_id, created_at)
+    values (_user, _entity, _id, now());
+  else
+    -- rien d'installé => no-op (ou RAISE NOTICE)
+    raise notice 'Aucune table de logs trouvée.';
+  end if;
+end
+$$;
+
+
+ALTER FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) OWNER TO postgres;
+
+--
+-- Name: prevent_system_role_delete(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.prevent_system_role_delete() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF public.is_system_role(OLD.name) THEN
+    RAISE EXCEPTION 'Deleting a system role (%) is forbidden', OLD.name;
+  END IF;
+  RETURN OLD;
+END;
+$$;
+
+
+ALTER FUNCTION public.prevent_system_role_delete() OWNER TO postgres;
 
 --
 -- Name: prevent_system_role_deletion(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1199,6 +1330,40 @@ $$;
 
 
 ALTER FUNCTION public.purge_old_consentements(retention_months integer) OWNER TO postgres;
+
+--
+-- Name: recompenses_counter_del(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.recompenses_counter_del() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+begin
+  perform public.bump_usage_counter(coalesce(old.user_id, auth.uid()), 'rewards', -1);
+  return old;
+end;
+$$;
+
+
+ALTER FUNCTION public.recompenses_counter_del() OWNER TO postgres;
+
+--
+-- Name: recompenses_counter_ins(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.recompenses_counter_ins() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+begin
+  perform public.bump_usage_counter(coalesce(new.user_id, auth.uid()), 'rewards', 1);
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.recompenses_counter_ins() OWNER TO postgres;
 
 --
 -- Name: rewards_counter_del(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1251,7 +1416,8 @@ ALTER FUNCTION public.set_updated_at() OWNER TO postgres;
 --
 
 CREATE FUNCTION public.taches_counter_del() RETURNS trigger
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
     AS $$
 begin
   perform public.bump_usage_counter(old.user_id, 'tasks', -1);
@@ -1266,12 +1432,14 @@ ALTER FUNCTION public.taches_counter_del() OWNER TO postgres;
 --
 
 CREATE FUNCTION public.taches_counter_ins() RETURNS trigger
-    LANGUAGE plpgsql
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
     AS $$
 begin
-  perform public.bump_usage_counter(new.user_id, 'tasks', 1);
+  perform public.bump_usage_counter(coalesce(new.user_id, auth.uid()), 'tasks', 1);
   return new;
-end $$;
+end;
+$$;
 
 
 ALTER FUNCTION public.taches_counter_ins() OWNER TO postgres;
@@ -1328,21 +1496,83 @@ $$;
 ALTER FUNCTION public.tg_audit_permission_change() OWNER TO postgres;
 
 --
--- Name: tg_categories_normalize_value(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: tg_categories_fill_value(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
-CREATE FUNCTION public.tg_categories_normalize_value() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
+CREATE FUNCTION public.tg_categories_fill_value() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $_$
+declare
+  v text;
 begin
-  if new.value is not null then
-    new.value := lower(regexp_replace(btrim(new.value), '\s+', '-', 'g'));
+  if new.value is null or btrim(new.value) = '' then
+    -- 1) passe en minuscule
+    v := lower(coalesce(new.label, ''));
+    -- 2) remplace tout ce qui n'est pas [a-z0-9] par "_"
+    v := regexp_replace(v, '[^a-z0-9]+', '_', 'g');
+    -- 3) retire "_" au début/fin
+    v := regexp_replace(v, '^_+|_+$', '', 'g');
+    if v = '' then
+      v := 'cat_' || substring(md5(random()::text) for 8);
+    end if;
+    new.value := v;
   end if;
   return new;
-end$$;
+end;
+$_$;
 
 
-ALTER FUNCTION public.tg_categories_normalize_value() OWNER TO postgres;
+ALTER FUNCTION public.tg_categories_fill_value() OWNER TO postgres;
+
+--
+-- Name: tg_categories_set_user_id(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_categories_set_user_id() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+begin
+  if new.user_id is null then
+    new.user_id := auth.uid();
+  end if;
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.tg_categories_set_user_id() OWNER TO postgres;
+
+--
+-- Name: tg_on_auth_user_created(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_on_auth_user_created() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+declare
+  v_role_free uuid;
+begin
+  insert into public.profiles (id) values (new.id)
+  on conflict (id) do nothing;
+
+  select id into v_role_free from public.roles where name='free' and is_active = true;
+
+  if v_role_free is not null then
+    insert into public.user_roles (user_id, role_id, is_active, assigned_at)
+    values (new.id, v_role_free, true, now())
+    on conflict (user_id, role_id) do update
+      set is_active = true, updated_at = now();
+  end if;
+
+  return new;
+end
+$$;
+
+
+ALTER FUNCTION public.tg_on_auth_user_created() OWNER TO postgres;
 
 --
 -- Name: tg_parametres_lock_id(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1408,35 +1638,133 @@ end$$;
 ALTER FUNCTION public.tg_recompenses_normalize() OWNER TO postgres;
 
 --
+-- Name: tg_recompenses_set_user_id(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_recompenses_set_user_id() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+begin
+  if new.user_id is null then
+    new.user_id := auth.uid();
+  end if;
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.tg_recompenses_set_user_id() OWNER TO postgres;
+
+--
+-- Name: tg_taches_log_neutral(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_taches_log_neutral() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+begin
+  -- on log uniquement à la création de carte (INSERT)
+  perform public.log_card_creation(new.user_id, 'tache', new.id);
+  return new;
+end
+$$;
+
+
+ALTER FUNCTION public.tg_taches_log_neutral() OWNER TO postgres;
+
+--
+-- Name: tg_taches_normalize_categorie(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_taches_normalize_categorie() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.categorie IS NOT NULL THEN
+    NEW.categorie := regexp_replace(lower(trim(NEW.categorie)), '\s+', '-', 'g');
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION public.tg_taches_normalize_categorie() OWNER TO postgres;
+
+--
+-- Name: tg_taches_set_user_id(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.tg_taches_set_user_id() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+begin
+  if new.user_id is null then
+    new.user_id := auth.uid();
+  end if;
+  return new;
+end;
+$$;
+
+
+ALTER FUNCTION public.tg_taches_set_user_id() OWNER TO postgres;
+
+--
 -- Name: tg_taches_sync_categorie(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.tg_taches_sync_categorie() RETURNS trigger
     LANGUAGE plpgsql
-    SET search_path TO 'public'
     AS $$
 DECLARE
   v_norm text;
+  v_desired_id uuid;
 BEGIN
-  -- Si categorie_id est fourni, récupérer le value de la catégorie
-  IF NEW.categorie_id IS NOT NULL AND (NEW.categorie IS NULL OR NEW.categorie = '') THEN
-    SELECT value INTO NEW.categorie
-    FROM public.categories
-    WHERE id = NEW.categorie_id;
-  END IF;
-
-  -- Si categorie (texte) est fourni, normaliser puis retrouver l'id
-  IF NEW.categorie IS NOT NULL AND NEW.categorie <> '' AND NEW.categorie_id IS NULL THEN
-    v_norm := lower(regexp_replace(btrim(NEW.categorie), '\s+', '-', 'g'));
-    SELECT id INTO NEW.categorie_id
-    FROM public.categories
-    WHERE value = v_norm AND user_id = NEW.user_id;
-    -- On force aussi la valeur normalisée pour rester cohérent
+  -- 0) Normalisation défensive au cas où l'autre trigger n'ait pas tourné
+  IF NEW.categorie IS NOT NULL THEN
+    v_norm := regexp_replace(lower(trim(NEW.categorie)), '\s+', '-', 'g');
     NEW.categorie := v_norm;
   END IF;
 
+  -- 1) Cas INSERT : si categorie_id fourni par l'appelant, on ne touche pas (compat)
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.categorie_id IS NOT NULL THEN
+      RETURN NEW;
+    END IF;
+  END IF;
+
+  -- 2) Déterminer la categorie désirée (proprio d'abord, sinon globale)
+  IF NEW.categorie IS NOT NULL THEN
+    -- Propriétaire
+    SELECT id INTO v_desired_id
+    FROM public.categories
+    WHERE value = NEW.categorie
+      AND user_id = NEW.user_id
+    LIMIT 1;
+
+    -- Globale en fallback
+    IF v_desired_id IS NULL THEN
+      SELECT id INTO v_desired_id
+      FROM public.categories
+      WHERE value = NEW.categorie
+        AND user_id IS NULL
+      LIMIT 1;
+    END IF;
+  END IF;
+
+  -- 3) En UPDATE, même si categorie_id est déjà renseigné,
+  --    on préfère la propriétaire si elle existe maintenant.
+  --    En INSERT, on remplit si absent.
+  IF v_desired_id IS NOT NULL THEN
+    IF NEW.categorie_id IS DISTINCT FROM v_desired_id THEN
+      NEW.categorie_id := v_desired_id;
+    END IF;
+  END IF;
+
   RETURN NEW;
-END
+END;
 $$;
 
 
@@ -1499,6 +1827,73 @@ $$;
 
 
 ALTER FUNCTION storage.can_insert_object(bucketid text, name text, owner uuid, metadata jsonb) OWNER TO supabase_storage_admin;
+
+--
+-- Name: delete_leaf_prefixes(text[], text[]); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.delete_leaf_prefixes(bucket_ids text[], names text[]) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_rows_deleted integer;
+BEGIN
+    LOOP
+        WITH candidates AS (
+            SELECT DISTINCT
+                t.bucket_id,
+                unnest(storage.get_prefixes(t.name)) AS name
+            FROM unnest(bucket_ids, names) AS t(bucket_id, name)
+        ),
+        uniq AS (
+             SELECT
+                 bucket_id,
+                 name,
+                 storage.get_level(name) AS level
+             FROM candidates
+             WHERE name <> ''
+             GROUP BY bucket_id, name
+        ),
+        leaf AS (
+             SELECT
+                 p.bucket_id,
+                 p.name,
+                 p.level
+             FROM storage.prefixes AS p
+                  JOIN uniq AS u
+                       ON u.bucket_id = p.bucket_id
+                           AND u.name = p.name
+                           AND u.level = p.level
+             WHERE NOT EXISTS (
+                 SELECT 1
+                 FROM storage.objects AS o
+                 WHERE o.bucket_id = p.bucket_id
+                   AND o.level = p.level + 1
+                   AND o.name COLLATE "C" LIKE p.name || '/%'
+             )
+             AND NOT EXISTS (
+                 SELECT 1
+                 FROM storage.prefixes AS c
+                 WHERE c.bucket_id = p.bucket_id
+                   AND c.level = p.level + 1
+                   AND c.name COLLATE "C" LIKE p.name || '/%'
+             )
+        )
+        DELETE
+        FROM storage.prefixes AS p
+            USING leaf AS l
+        WHERE p.bucket_id = l.bucket_id
+          AND p.name = l.name
+          AND p.level = l.level;
+
+        GET DIAGNOSTICS v_rows_deleted = ROW_COUNT;
+        EXIT WHEN v_rows_deleted = 0;
+    END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION storage.delete_leaf_prefixes(bucket_ids text[], names text[]) OWNER TO supabase_storage_admin;
 
 --
 -- Name: delete_prefix(text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
@@ -1810,6 +2205,65 @@ $_$;
 ALTER FUNCTION storage.list_objects_with_delimiter(bucket_id text, prefix_param text, delimiter_param text, max_keys integer, start_after text, next_token text) OWNER TO supabase_storage_admin;
 
 --
+-- Name: lock_top_prefixes(text[], text[]); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.lock_top_prefixes(bucket_ids text[], names text[]) RETURNS void
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_bucket text;
+    v_top text;
+BEGIN
+    FOR v_bucket, v_top IN
+        SELECT DISTINCT t.bucket_id,
+            split_part(t.name, '/', 1) AS top
+        FROM unnest(bucket_ids, names) AS t(bucket_id, name)
+        WHERE t.name <> ''
+        ORDER BY 1, 2
+        LOOP
+            PERFORM pg_advisory_xact_lock(hashtextextended(v_bucket || '/' || v_top, 0));
+        END LOOP;
+END;
+$$;
+
+
+ALTER FUNCTION storage.lock_top_prefixes(bucket_ids text[], names text[]) OWNER TO supabase_storage_admin;
+
+--
+-- Name: objects_delete_cleanup(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.objects_delete_cleanup() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_bucket_ids text[];
+    v_names      text[];
+BEGIN
+    IF current_setting('storage.gc.prefixes', true) = '1' THEN
+        RETURN NULL;
+    END IF;
+
+    PERFORM set_config('storage.gc.prefixes', '1', true);
+
+    SELECT COALESCE(array_agg(d.bucket_id), '{}'),
+           COALESCE(array_agg(d.name), '{}')
+    INTO v_bucket_ids, v_names
+    FROM deleted AS d
+    WHERE d.name <> '';
+
+    PERFORM storage.lock_top_prefixes(v_bucket_ids, v_names);
+    PERFORM storage.delete_leaf_prefixes(v_bucket_ids, v_names);
+
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION storage.objects_delete_cleanup() OWNER TO supabase_storage_admin;
+
+--
 -- Name: objects_insert_prefix_trigger(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
@@ -1826,6 +2280,120 @@ $$;
 
 
 ALTER FUNCTION storage.objects_insert_prefix_trigger() OWNER TO supabase_storage_admin;
+
+--
+-- Name: objects_update_cleanup(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.objects_update_cleanup() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    -- NEW - OLD (destinations to create prefixes for)
+    v_add_bucket_ids text[];
+    v_add_names      text[];
+
+    -- OLD - NEW (sources to prune)
+    v_src_bucket_ids text[];
+    v_src_names      text[];
+BEGIN
+    IF TG_OP <> 'UPDATE' THEN
+        RETURN NULL;
+    END IF;
+
+    -- 1) Compute NEW−OLD (added paths) and OLD−NEW (moved-away paths)
+    WITH added AS (
+        SELECT n.bucket_id, n.name
+        FROM new_rows n
+        WHERE n.name <> '' AND position('/' in n.name) > 0
+        EXCEPT
+        SELECT o.bucket_id, o.name FROM old_rows o WHERE o.name <> ''
+    ),
+    moved AS (
+         SELECT o.bucket_id, o.name
+         FROM old_rows o
+         WHERE o.name <> ''
+         EXCEPT
+         SELECT n.bucket_id, n.name FROM new_rows n WHERE n.name <> ''
+    )
+    SELECT
+        -- arrays for ADDED (dest) in stable order
+        COALESCE( (SELECT array_agg(a.bucket_id ORDER BY a.bucket_id, a.name) FROM added a), '{}' ),
+        COALESCE( (SELECT array_agg(a.name      ORDER BY a.bucket_id, a.name) FROM added a), '{}' ),
+        -- arrays for MOVED (src) in stable order
+        COALESCE( (SELECT array_agg(m.bucket_id ORDER BY m.bucket_id, m.name) FROM moved m), '{}' ),
+        COALESCE( (SELECT array_agg(m.name      ORDER BY m.bucket_id, m.name) FROM moved m), '{}' )
+    INTO v_add_bucket_ids, v_add_names, v_src_bucket_ids, v_src_names;
+
+    -- Nothing to do?
+    IF (array_length(v_add_bucket_ids, 1) IS NULL) AND (array_length(v_src_bucket_ids, 1) IS NULL) THEN
+        RETURN NULL;
+    END IF;
+
+    -- 2) Take per-(bucket, top) locks: ALL prefixes in consistent global order to prevent deadlocks
+    DECLARE
+        v_all_bucket_ids text[];
+        v_all_names text[];
+    BEGIN
+        -- Combine source and destination arrays for consistent lock ordering
+        v_all_bucket_ids := COALESCE(v_src_bucket_ids, '{}') || COALESCE(v_add_bucket_ids, '{}');
+        v_all_names := COALESCE(v_src_names, '{}') || COALESCE(v_add_names, '{}');
+
+        -- Single lock call ensures consistent global ordering across all transactions
+        IF array_length(v_all_bucket_ids, 1) IS NOT NULL THEN
+            PERFORM storage.lock_top_prefixes(v_all_bucket_ids, v_all_names);
+        END IF;
+    END;
+
+    -- 3) Create destination prefixes (NEW−OLD) BEFORE pruning sources
+    IF array_length(v_add_bucket_ids, 1) IS NOT NULL THEN
+        WITH candidates AS (
+            SELECT DISTINCT t.bucket_id, unnest(storage.get_prefixes(t.name)) AS name
+            FROM unnest(v_add_bucket_ids, v_add_names) AS t(bucket_id, name)
+            WHERE name <> ''
+        )
+        INSERT INTO storage.prefixes (bucket_id, name)
+        SELECT c.bucket_id, c.name
+        FROM candidates c
+        ON CONFLICT DO NOTHING;
+    END IF;
+
+    -- 4) Prune source prefixes bottom-up for OLD−NEW
+    IF array_length(v_src_bucket_ids, 1) IS NOT NULL THEN
+        -- re-entrancy guard so DELETE on prefixes won't recurse
+        IF current_setting('storage.gc.prefixes', true) <> '1' THEN
+            PERFORM set_config('storage.gc.prefixes', '1', true);
+        END IF;
+
+        PERFORM storage.delete_leaf_prefixes(v_src_bucket_ids, v_src_names);
+    END IF;
+
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION storage.objects_update_cleanup() OWNER TO supabase_storage_admin;
+
+--
+-- Name: objects_update_level_trigger(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.objects_update_level_trigger() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    -- Ensure this is an update operation and the name has changed
+    IF TG_OP = 'UPDATE' AND (NEW."name" <> OLD."name" OR NEW."bucket_id" <> OLD."bucket_id") THEN
+        -- Set the new level
+        NEW."level" := "storage"."get_level"(NEW."name");
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION storage.objects_update_level_trigger() OWNER TO supabase_storage_admin;
 
 --
 -- Name: objects_update_prefix_trigger(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
@@ -1885,6 +2453,39 @@ $$;
 
 
 ALTER FUNCTION storage.operation() OWNER TO supabase_storage_admin;
+
+--
+-- Name: prefixes_delete_cleanup(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+--
+
+CREATE FUNCTION storage.prefixes_delete_cleanup() RETURNS trigger
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+DECLARE
+    v_bucket_ids text[];
+    v_names      text[];
+BEGIN
+    IF current_setting('storage.gc.prefixes', true) = '1' THEN
+        RETURN NULL;
+    END IF;
+
+    PERFORM set_config('storage.gc.prefixes', '1', true);
+
+    SELECT COALESCE(array_agg(d.bucket_id), '{}'),
+           COALESCE(array_agg(d.name), '{}')
+    INTO v_bucket_ids, v_names
+    FROM deleted AS d
+    WHERE d.name <> '';
+
+    PERFORM storage.lock_top_prefixes(v_bucket_ids, v_names);
+    PERFORM storage.delete_leaf_prefixes(v_bucket_ids, v_names);
+
+    RETURN NULL;
+END;
+$$;
+
+
+ALTER FUNCTION storage.prefixes_delete_cleanup() OWNER TO supabase_storage_admin;
 
 --
 -- Name: prefixes_insert_trigger(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
@@ -2070,53 +2671,102 @@ $_$;
 ALTER FUNCTION storage.search_v1_optimised(prefix text, bucketname text, limits integer, levels integer, offsets integer, search text, sortcolumn text, sortorder text) OWNER TO supabase_storage_admin;
 
 --
--- Name: search_v2(text, text, integer, integer, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
+-- Name: search_v2(text, text, integer, integer, text, text, text, text); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
 --
 
-CREATE FUNCTION storage.search_v2(prefix text, bucket_name text, limits integer DEFAULT 100, levels integer DEFAULT 1, start_after text DEFAULT ''::text) RETURNS TABLE(key text, name text, id uuid, updated_at timestamp with time zone, created_at timestamp with time zone, metadata jsonb)
+CREATE FUNCTION storage.search_v2(prefix text, bucket_name text, limits integer DEFAULT 100, levels integer DEFAULT 1, start_after text DEFAULT ''::text, sort_order text DEFAULT 'asc'::text, sort_column text DEFAULT 'name'::text, sort_column_after text DEFAULT ''::text) RETURNS TABLE(key text, name text, id uuid, updated_at timestamp with time zone, created_at timestamp with time zone, last_accessed_at timestamp with time zone, metadata jsonb)
     LANGUAGE plpgsql STABLE
     AS $_$
+DECLARE
+    sort_col text;
+    sort_ord text;
+    cursor_op text;
+    cursor_expr text;
+    sort_expr text;
 BEGIN
-    RETURN query EXECUTE
+    -- Validate sort_order
+    sort_ord := lower(sort_order);
+    IF sort_ord NOT IN ('asc', 'desc') THEN
+        sort_ord := 'asc';
+    END IF;
+
+    -- Determine cursor comparison operator
+    IF sort_ord = 'asc' THEN
+        cursor_op := '>';
+    ELSE
+        cursor_op := '<';
+    END IF;
+    
+    sort_col := lower(sort_column);
+    -- Validate sort column  
+    IF sort_col IN ('updated_at', 'created_at') THEN
+        cursor_expr := format(
+            '($5 = '''' OR ROW(date_trunc(''milliseconds'', %I), name COLLATE "C") %s ROW(COALESCE(NULLIF($6, '''')::timestamptz, ''epoch''::timestamptz), $5))',
+            sort_col, cursor_op
+        );
+        sort_expr := format(
+            'COALESCE(date_trunc(''milliseconds'', %I), ''epoch''::timestamptz) %s, name COLLATE "C" %s',
+            sort_col, sort_ord, sort_ord
+        );
+    ELSE
+        cursor_expr := format('($5 = '''' OR name COLLATE "C" %s $5)', cursor_op);
+        sort_expr := format('name COLLATE "C" %s', sort_ord);
+    END IF;
+
+    RETURN QUERY EXECUTE format(
         $sql$
         SELECT * FROM (
             (
                 SELECT
                     split_part(name, '/', $4) AS key,
-                    name || '/' AS name,
+                    name,
                     NULL::uuid AS id,
-                    NULL::timestamptz AS updated_at,
-                    NULL::timestamptz AS created_at,
+                    updated_at,
+                    created_at,
+                    NULL::timestamptz AS last_accessed_at,
                     NULL::jsonb AS metadata
                 FROM storage.prefixes
-                WHERE name COLLATE "C" LIKE $1 || '%'
-                AND bucket_id = $2
-                AND level = $4
-                AND name COLLATE "C" > $5
-                ORDER BY prefixes.name COLLATE "C" LIMIT $3
+                WHERE name COLLATE "C" LIKE $1 || '%%'
+                    AND bucket_id = $2
+                    AND level = $4
+                    AND %s
+                ORDER BY %s
+                LIMIT $3
             )
             UNION ALL
-            (SELECT split_part(name, '/', $4) AS key,
-                name,
-                id,
-                updated_at,
-                created_at,
-                metadata
-            FROM storage.objects
-            WHERE name COLLATE "C" LIKE $1 || '%'
-                AND bucket_id = $2
-                AND level = $4
-                AND name COLLATE "C" > $5
-            ORDER BY name COLLATE "C" LIMIT $3)
+            (
+                SELECT
+                    split_part(name, '/', $4) AS key,
+                    name,
+                    id,
+                    updated_at,
+                    created_at,
+                    last_accessed_at,
+                    metadata
+                FROM storage.objects
+                WHERE name COLLATE "C" LIKE $1 || '%%'
+                    AND bucket_id = $2
+                    AND level = $4
+                    AND %s
+                ORDER BY %s
+                LIMIT $3
+            )
         ) obj
-        ORDER BY name COLLATE "C" LIMIT $3;
-        $sql$
-        USING prefix, bucket_name, limits, levels, start_after;
+        ORDER BY %s
+        LIMIT $3
+        $sql$,
+        cursor_expr,    -- prefixes WHERE
+        sort_expr,      -- prefixes ORDER BY
+        cursor_expr,    -- objects WHERE
+        sort_expr,      -- objects ORDER BY
+        sort_expr       -- final ORDER BY
+    )
+    USING prefix, bucket_name, limits, levels, start_after, sort_column_after;
 END;
 $_$;
 
 
-ALTER FUNCTION storage.search_v2(prefix text, bucket_name text, limits integer, levels integer, start_after text) OWNER TO supabase_storage_admin;
+ALTER FUNCTION storage.search_v2(prefix text, bucket_name text, limits integer, levels integer, start_after text, sort_order text, sort_column text, sort_column_after text) OWNER TO supabase_storage_admin;
 
 --
 -- Name: update_updated_at_column(); Type: FUNCTION; Schema: storage; Owner: supabase_storage_admin
@@ -2159,7 +2809,7 @@ CREATE TABLE public.abonnements (
     start_date timestamp with time zone,
     end_date timestamp with time zone,
     cancel_at timestamp with time zone,
-    cancel_at_period_end boolean DEFAULT false,
+    cancel_at_period_end boolean DEFAULT false NOT NULL,
     latest_invoice text,
     CONSTRAINT abonnements_period_chk CHECK (((current_period_start IS NULL) OR (current_period_end IS NULL) OR (current_period_end >= current_period_start))),
     CONSTRAINT abonnements_status_check CHECK ((status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'incomplete_expired'::text, 'unpaid'::text, 'paused'::text])))
@@ -2239,7 +2889,7 @@ CREATE TABLE public.categories (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     value text NOT NULL,
     label text NOT NULL,
-    user_id uuid,
+    user_id uuid DEFAULT auth.uid(),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT categories_label_length_check CHECK ((length(label) <= 64)),
@@ -2612,7 +3262,7 @@ CREATE TABLE public.recompenses (
     imagepath text,
     selected boolean DEFAULT false NOT NULL,
     visible_en_demo boolean DEFAULT false NOT NULL,
-    user_id uuid,
+    user_id uuid DEFAULT auth.uid(),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT recompenses_description_length_check CHECK (((description IS NULL) OR (length(description) <= 1000))),
@@ -2780,6 +3430,23 @@ CREATE TABLE public.role_quotas (
 ALTER TABLE public.role_quotas OWNER TO postgres;
 
 --
+-- Name: role_quotas_backup_legacy; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.role_quotas_backup_legacy (
+    id uuid,
+    role_id uuid,
+    quota_type text,
+    quota_limit integer,
+    quota_period text,
+    created_at timestamp with time zone,
+    updated_at timestamp with time zone
+);
+
+
+ALTER TABLE public.role_quotas_backup_legacy OWNER TO postgres;
+
+--
 -- Name: stations; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2873,7 +3540,7 @@ CREATE TABLE public.taches (
     "position" integer DEFAULT 0 NOT NULL,
     imagepath text,
     visible_en_demo boolean DEFAULT false NOT NULL,
-    user_id uuid,
+    user_id uuid DEFAULT auth.uid(),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     CONSTRAINT taches_description_length_check CHECK ((length(description) <= 1000)),
@@ -3000,7 +3667,8 @@ CREATE TABLE public.user_assets (
     dimensions text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT user_assets_asset_type_check CHECK ((asset_type = ANY (ARRAY['task_image'::text, 'reward_image'::text])))
+    CONSTRAINT user_assets_asset_type_check CHECK ((asset_type = ANY (ARRAY['task_image'::text, 'reward_image'::text]))),
+    CONSTRAINT user_assets_file_size_nonneg CHECK ((file_size >= 0))
 );
 
 
@@ -3052,6 +3720,37 @@ CREATE TABLE public.user_usage_counters (
 
 
 ALTER TABLE public.user_usage_counters OWNER TO postgres;
+
+--
+-- Name: v_role_quota_matrix; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.v_role_quota_matrix AS
+ SELECT r.name AS role_name,
+    rq.quota_type,
+    rq.quota_period,
+    rq.quota_limit
+   FROM (public.role_quotas rq
+     JOIN public.roles r ON ((r.id = rq.role_id)))
+  ORDER BY r.name, rq.quota_type, rq.quota_period;
+
+
+ALTER VIEW public.v_role_quota_matrix OWNER TO postgres;
+
+--
+-- Name: v_user_storage_usage; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.v_user_storage_usage AS
+ SELECT user_id,
+    (count(*))::integer AS files_count,
+    (COALESCE(sum(file_size), (0)::numeric))::bigint AS bytes_total,
+    max(created_at) AS last_upload_at
+   FROM public.user_assets ua
+  GROUP BY user_id;
+
+
+ALTER VIEW public.v_user_storage_usage OWNER TO postgres;
 
 --
 -- Name: buckets; Type: TABLE; Schema: storage; Owner: supabase_storage_admin
@@ -3581,10 +4280,24 @@ CREATE INDEX consentements_user_created_idx ON public.consentements USING btree 
 
 
 --
+-- Name: idx_abonnements_stripe_customer; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_abonnements_stripe_customer ON public.abonnements USING btree (stripe_customer);
+
+
+--
 -- Name: idx_abonnements_user_status_created; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX idx_abonnements_user_status_created ON public.abonnements USING btree (user_id, status, created_at DESC);
+
+
+--
+-- Name: idx_abos_last_event_id_unique; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_abos_last_event_id_unique ON public.abonnements USING btree (last_event_id) WHERE (last_event_id IS NOT NULL);
 
 
 --
@@ -3746,6 +4459,13 @@ CREATE INDEX idx_user_assets_created ON public.user_assets USING btree (created_
 --
 
 CREATE INDEX idx_user_assets_type ON public.user_assets USING btree (user_id, asset_type);
+
+
+--
+-- Name: idx_user_assets_user_created_desc; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_user_created_desc ON public.user_assets USING btree (user_id, created_at DESC);
 
 
 --
@@ -3987,6 +4707,20 @@ CREATE INDEX taches_user_aujourdhui_idx ON public.taches USING btree (user_id, a
 
 
 --
+-- Name: taches_user_fait_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_user_fait_idx ON public.taches USING btree (user_id, fait);
+
+
+--
+-- Name: taches_user_fait_true_idx; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX taches_user_fait_true_idx ON public.taches USING btree (user_id) WHERE (fait IS TRUE);
+
+
+--
 -- Name: taches_user_id_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -4005,6 +4739,13 @@ CREATE INDEX taches_user_position_idx ON public.taches USING btree (user_id, "po
 --
 
 CREATE INDEX taches_visible_en_demo_idx ON public.taches USING btree (visible_en_demo);
+
+
+--
+-- Name: uq_user_roles_one_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX uq_user_roles_one_active ON public.user_roles USING btree (user_id) WHERE (is_active = true);
 
 
 --
@@ -4071,6 +4812,69 @@ CREATE UNIQUE INDEX objects_bucket_id_level_idx ON storage.objects USING btree (
 
 
 --
+-- Name: categories a00_categories_set_user_id_before; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a00_categories_set_user_id_before BEFORE INSERT ON public.categories FOR EACH ROW EXECUTE FUNCTION public.tg_categories_set_user_id();
+
+
+--
+-- Name: recompenses a00_recompenses_set_user_id_before; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a00_recompenses_set_user_id_before BEFORE INSERT ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.tg_recompenses_set_user_id();
+
+
+--
+-- Name: taches a00_taches_set_user_id_before; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a00_taches_set_user_id_before BEFORE INSERT ON public.taches FOR EACH ROW EXECUTE FUNCTION public.tg_taches_set_user_id();
+
+
+--
+-- Name: categories a01_categories_fill_value_before; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a01_categories_fill_value_before BEFORE INSERT OR UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.tg_categories_fill_value();
+
+
+--
+-- Name: taches a10_taches_normalize_categorie; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a10_taches_normalize_categorie BEFORE INSERT OR UPDATE OF categorie ON public.taches FOR EACH ROW EXECUTE FUNCTION public.tg_taches_normalize_categorie();
+
+
+--
+-- Name: taches a20_taches_sync_categorie; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a20_taches_sync_categorie BEFORE INSERT OR UPDATE OF categorie, user_id ON public.taches FOR EACH ROW EXECUTE FUNCTION public.tg_taches_sync_categorie();
+
+
+--
+-- Name: categories a99_categories_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a99_categories_set_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: recompenses a99_recompenses_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a99_recompenses_set_updated_at BEFORE UPDATE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
+-- Name: taches a99_taches_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER a99_taches_set_updated_at BEFORE UPDATE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+
+--
 -- Name: features audit_features_changes; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -4099,20 +4903,6 @@ CREATE TRIGGER audit_user_roles_changes AFTER INSERT OR DELETE OR UPDATE ON publ
 
 
 --
--- Name: categories categories_normalize_value; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER categories_normalize_value BEFORE INSERT OR UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.tg_categories_normalize_value();
-
-
---
--- Name: categories categories_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER categories_set_updated_at BEFORE UPDATE ON public.categories FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
 -- Name: abonnements on_subscription_change; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -4134,6 +4924,13 @@ CREATE TRIGGER permission_changes_validate_json BEFORE INSERT OR UPDATE ON publi
 
 
 --
+-- Name: roles prevent_system_role_delete_trigger; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER prevent_system_role_delete_trigger BEFORE DELETE ON public.roles FOR EACH ROW EXECUTE FUNCTION public.prevent_system_role_delete();
+
+
+--
 -- Name: roles prevent_system_role_deletion_trigger; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -4145,13 +4942,6 @@ CREATE TRIGGER prevent_system_role_deletion_trigger BEFORE UPDATE ON public.role
 --
 
 CREATE TRIGGER recompenses_normalize BEFORE INSERT OR UPDATE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.tg_recompenses_normalize();
-
-
---
--- Name: recompenses recompenses_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER recompenses_set_updated_at BEFORE UPDATE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
@@ -4211,17 +5001,12 @@ CREATE TRIGGER stations_set_updated_at BEFORE UPDATE ON public.stations FOR EACH
 
 
 --
--- Name: taches taches_set_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER taches_set_updated_at BEFORE UPDATE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
-
---
 -- Name: taches taches_sync_categorie; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
 CREATE TRIGGER taches_sync_categorie BEFORE INSERT OR UPDATE ON public.taches FOR EACH ROW EXECUTE FUNCTION public.tg_taches_sync_categorie();
+
+ALTER TABLE public.taches DISABLE TRIGGER taches_sync_categorie;
 
 
 --
@@ -4239,17 +5024,17 @@ CREATE TRIGGER trg_categories_ctr_ins AFTER INSERT ON public.categories FOR EACH
 
 
 --
--- Name: recompenses trg_rewards_ctr_del; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: recompenses trg_recompenses_ctr_del; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_rewards_ctr_del AFTER DELETE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.rewards_counter_del();
+CREATE TRIGGER trg_recompenses_ctr_del AFTER DELETE ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.recompenses_counter_del();
 
 
 --
--- Name: recompenses trg_rewards_ctr_ins; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: recompenses trg_recompenses_ctr_ins; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER trg_rewards_ctr_ins AFTER INSERT ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.rewards_counter_ins();
+CREATE TRIGGER trg_recompenses_ctr_ins AFTER INSERT ON public.recompenses FOR EACH ROW EXECUTE FUNCTION public.recompenses_counter_ins();
 
 
 --
@@ -4264,6 +5049,13 @@ CREATE TRIGGER trg_taches_ctr_del AFTER DELETE ON public.taches FOR EACH ROW EXE
 --
 
 CREATE TRIGGER trg_taches_ctr_ins AFTER INSERT ON public.taches FOR EACH ROW EXECUTE FUNCTION public.taches_counter_ins();
+
+
+--
+-- Name: user_assets trg_user_assets_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER trg_user_assets_updated_at BEFORE UPDATE ON public.user_assets FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 
 --
@@ -4516,13 +5308,6 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- Name: user_roles Users can view own user_roles; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Users can view own user_roles" ON public.user_roles FOR SELECT TO authenticated USING ((auth.uid() = user_id));
-
-
---
 -- Name: abonnements; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -4576,17 +5361,24 @@ CREATE POLICY account_audit_logs_select_own ON public.account_audit_logs FOR SEL
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: categories categories_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
+-- Name: categories categories_delete_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_insert_quota_free ON public.categories FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'category'::text, 'total'::text)));
+CREATE POLICY categories_delete_own ON public.categories FOR DELETE TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
 
 
 --
--- Name: categories categories_mutate_auth; Type: POLICY; Schema: public; Owner: postgres
+-- Name: categories categories_insert_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_mutate_auth ON public.categories TO authenticated USING (((user_id = auth.uid()) OR public.is_admin())) WITH CHECK (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY categories_insert_admin ON public.categories FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+
+--
+-- Name: categories categories_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY categories_insert_user_limits ON public.categories FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'category'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'category'::text, 'monthly'::text)));
 
 
 --
@@ -4594,6 +5386,13 @@ CREATE POLICY categories_mutate_auth ON public.categories TO authenticated USING
 --
 
 CREATE POLICY categories_select_auth ON public.categories FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR (user_id IS NULL) OR public.is_admin()));
+
+
+--
+-- Name: categories categories_update_own; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY categories_update_own ON public.categories FOR UPDATE TO authenticated USING (((user_id = auth.uid()) OR public.is_admin())) WITH CHECK (((user_id = auth.uid()) OR public.is_admin()));
 
 
 --
@@ -4766,6 +5565,13 @@ CREATE POLICY profiles_admin_all ON public.profiles TO authenticated USING (publ
 
 
 --
+-- Name: profiles profiles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_insert_admin_only ON public.profiles FOR INSERT WITH CHECK (public.is_admin());
+
+
+--
 -- Name: profiles profiles_insert_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -4780,10 +5586,24 @@ CREATE POLICY profiles_select_own ON public.profiles FOR SELECT TO authenticated
 
 
 --
+-- Name: profiles profiles_select_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_select_self_or_admin ON public.profiles FOR SELECT USING (((id = auth.uid()) OR public.is_admin()));
+
+
+--
 -- Name: profiles profiles_update_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
 CREATE POLICY profiles_update_own ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
+
+
+--
+-- Name: profiles profiles_update_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY profiles_update_self_or_admin ON public.profiles FOR UPDATE USING (((id = auth.uid()) OR public.is_admin())) WITH CHECK (((id = auth.uid()) OR public.is_admin()));
 
 
 --
@@ -4814,17 +5634,10 @@ CREATE POLICY recompenses_insert_admin ON public.recompenses FOR INSERT TO authe
 
 
 --
--- Name: recompenses recompenses_insert_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_insert_own ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
-
-
---
--- Name: recompenses recompenses_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY recompenses_insert_quota_free ON public.recompenses FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'reward'::text, 'total'::text)));
+CREATE POLICY recompenses_insert_user_limits ON public.recompenses FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'reward'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'reward'::text, 'monthly'::text)));
 
 
 --
@@ -4839,6 +5652,13 @@ CREATE POLICY recompenses_select_demo ON public.recompenses FOR SELECT TO anon U
 --
 
 CREATE POLICY recompenses_select_own ON public.recompenses FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((user_id IS NULL) AND (visible_en_demo = true))));
+
+
+--
+-- Name: recompenses recompenses_select_owner_or_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY recompenses_select_owner_or_admin ON public.recompenses FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
 
 
 --
@@ -4904,10 +5724,10 @@ CREATE POLICY roles_admin_all ON public.roles TO authenticated USING (public.is_
 
 
 --
--- Name: roles roles_select_public; Type: POLICY; Schema: public; Owner: postgres
+-- Name: roles roles_select_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY roles_select_public ON public.roles FOR SELECT USING ((((is_active = true) AND (name = ANY (ARRAY['visitor'::text, 'abonne'::text, 'free'::text, 'staff'::text]))) OR public.is_admin()));
+CREATE POLICY roles_select_authenticated ON public.roles FOR SELECT TO authenticated USING (((is_active = true) OR public.is_admin()));
 
 
 --
@@ -4971,17 +5791,10 @@ CREATE POLICY taches_insert_admin ON public.taches FOR INSERT TO authenticated W
 
 
 --
--- Name: taches taches_insert_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_insert_own ON public.taches FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
-
-
---
--- Name: taches taches_insert_quota_free; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY taches_insert_quota_free ON public.taches FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota_free_only(auth.uid(), 'task'::text, 'monthly'::text)));
+CREATE POLICY taches_insert_user_limits ON public.taches FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'task'::text, 'monthly'::text)));
 
 
 --
@@ -4992,10 +5805,10 @@ CREATE POLICY taches_select_demo ON public.taches FOR SELECT TO anon USING ((vis
 
 
 --
--- Name: taches taches_select_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_select_owner_or_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_select_own ON public.taches FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((user_id IS NULL) AND (visible_en_demo = true))));
+CREATE POLICY taches_select_owner_or_admin ON public.taches FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
 
 
 --
@@ -5108,10 +5921,31 @@ CREATE POLICY user_roles_admin_all ON public.user_roles TO authenticated USING (
 
 
 --
+-- Name: user_roles user_roles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_roles_insert_admin_only ON public.user_roles FOR INSERT WITH CHECK (public.is_admin());
+
+
+--
 -- Name: user_roles user_roles_select_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
 CREATE POLICY user_roles_select_own ON public.user_roles FOR SELECT TO authenticated USING ((user_id = auth.uid()));
+
+
+--
+-- Name: user_roles user_roles_select_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_roles_select_self_or_admin ON public.user_roles FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
+
+
+--
+-- Name: user_roles user_roles_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY user_roles_update_admin_only ON public.user_roles FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 
 --
@@ -5128,21 +5962,21 @@ CREATE POLICY user_usage_counters_select_self ON public.user_usage_counters FOR 
 
 
 --
--- Name: user_roles users_can_self_assign_basic_roles; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles users_can_self_assign_free_only; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY users_can_self_assign_basic_roles ON public.user_roles FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
+CREATE POLICY users_can_self_assign_free_only ON public.user_roles FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
    FROM public.roles
-  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true))))));
+  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true))))));
 
 
 --
--- Name: user_roles users_can_update_own_basic_roles; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles users_can_update_free_only; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY users_can_update_own_basic_roles ON public.user_roles FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
+CREATE POLICY users_can_update_free_only ON public.user_roles FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
    FROM public.roles
-  WHERE ((roles.name = ANY (ARRAY['free'::text, 'visitor'::text])) AND (roles.is_active = true))))));
+  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true))))));
 
 
 --
@@ -5386,6 +6220,8 @@ GRANT ALL ON FUNCTION public.bump_usage_counter(p_user uuid, p_col text, p_delta
 
 REVOKE ALL ON FUNCTION public.categories_counter_del() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.categories_counter_del() TO service_role;
+GRANT ALL ON FUNCTION public.categories_counter_del() TO anon;
+GRANT ALL ON FUNCTION public.categories_counter_del() TO authenticated;
 
 
 --
@@ -5394,6 +6230,8 @@ GRANT ALL ON FUNCTION public.categories_counter_del() TO service_role;
 
 REVOKE ALL ON FUNCTION public.categories_counter_ins() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.categories_counter_ins() TO service_role;
+GRANT ALL ON FUNCTION public.categories_counter_ins() TO anon;
+GRANT ALL ON FUNCTION public.categories_counter_ins() TO authenticated;
 
 
 --
@@ -5448,7 +6286,15 @@ GRANT ALL ON FUNCTION public.cleanup_old_audit_logs(retention_days integer) TO s
 REVOKE ALL ON FUNCTION public.email_exists(email_to_check text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO authenticated;
 GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO service_role;
-GRANT ALL ON FUNCTION public.email_exists(email_to_check text) TO anon;
+
+
+--
+-- Name: FUNCTION generate_unique_pseudo(base text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.generate_unique_pseudo(base text) TO anon;
+GRANT ALL ON FUNCTION public.generate_unique_pseudo(base text) TO authenticated;
+GRANT ALL ON FUNCTION public.generate_unique_pseudo(base text) TO service_role;
 
 
 --
@@ -5516,6 +6362,15 @@ GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
 REVOKE ALL ON FUNCTION public.get_migration_report() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_migration_report() TO authenticated;
 GRANT ALL ON FUNCTION public.get_migration_report() TO service_role;
+
+
+--
+-- Name: FUNCTION get_usage(p_user_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_usage(p_user_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.get_usage(p_user_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.get_usage(p_user_id uuid) TO service_role;
 
 
 --
@@ -5626,11 +6481,38 @@ GRANT ALL ON FUNCTION public.is_admin() TO anon;
 
 
 --
+-- Name: FUNCTION is_subscriber(p_user uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.is_subscriber(p_user uuid) TO anon;
+GRANT ALL ON FUNCTION public.is_subscriber(p_user uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.is_subscriber(p_user uuid) TO service_role;
+
+
+--
 -- Name: FUNCTION is_system_role(role_name text); Type: ACL; Schema: public; Owner: postgres
 --
 
 REVOKE ALL ON FUNCTION public.is_system_role(role_name text) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.is_system_role(role_name text) TO service_role;
+
+
+--
+-- Name: FUNCTION log_card_creation(_user uuid, _entity text, _id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) TO anon;
+GRANT ALL ON FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) TO service_role;
+
+
+--
+-- Name: FUNCTION prevent_system_role_delete(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.prevent_system_role_delete() TO anon;
+GRANT ALL ON FUNCTION public.prevent_system_role_delete() TO authenticated;
+GRANT ALL ON FUNCTION public.prevent_system_role_delete() TO service_role;
 
 
 --
@@ -5648,6 +6530,24 @@ GRANT ALL ON FUNCTION public.prevent_system_role_deletion() TO service_role;
 REVOKE ALL ON FUNCTION public.purge_old_consentements(retention_months integer) FROM PUBLIC;
 GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO authenticated;
 GRANT ALL ON FUNCTION public.purge_old_consentements(retention_months integer) TO service_role;
+
+
+--
+-- Name: FUNCTION recompenses_counter_del(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.recompenses_counter_del() TO anon;
+GRANT ALL ON FUNCTION public.recompenses_counter_del() TO authenticated;
+GRANT ALL ON FUNCTION public.recompenses_counter_del() TO service_role;
+
+
+--
+-- Name: FUNCTION recompenses_counter_ins(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.recompenses_counter_ins() TO anon;
+GRANT ALL ON FUNCTION public.recompenses_counter_ins() TO authenticated;
+GRANT ALL ON FUNCTION public.recompenses_counter_ins() TO service_role;
 
 
 --
@@ -5680,6 +6580,8 @@ GRANT ALL ON FUNCTION public.set_updated_at() TO service_role;
 
 REVOKE ALL ON FUNCTION public.taches_counter_del() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.taches_counter_del() TO service_role;
+GRANT ALL ON FUNCTION public.taches_counter_del() TO anon;
+GRANT ALL ON FUNCTION public.taches_counter_del() TO authenticated;
 
 
 --
@@ -5688,6 +6590,8 @@ GRANT ALL ON FUNCTION public.taches_counter_del() TO service_role;
 
 REVOKE ALL ON FUNCTION public.taches_counter_ins() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.taches_counter_ins() TO service_role;
+GRANT ALL ON FUNCTION public.taches_counter_ins() TO anon;
+GRANT ALL ON FUNCTION public.taches_counter_ins() TO authenticated;
 
 
 --
@@ -5699,11 +6603,30 @@ GRANT ALL ON FUNCTION public.tg_audit_permission_change() TO service_role;
 
 
 --
--- Name: FUNCTION tg_categories_normalize_value(); Type: ACL; Schema: public; Owner: postgres
+-- Name: FUNCTION tg_categories_fill_value(); Type: ACL; Schema: public; Owner: postgres
 --
 
-REVOKE ALL ON FUNCTION public.tg_categories_normalize_value() FROM PUBLIC;
-GRANT ALL ON FUNCTION public.tg_categories_normalize_value() TO service_role;
+GRANT ALL ON FUNCTION public.tg_categories_fill_value() TO anon;
+GRANT ALL ON FUNCTION public.tg_categories_fill_value() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_categories_fill_value() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_categories_set_user_id(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_categories_set_user_id() TO anon;
+GRANT ALL ON FUNCTION public.tg_categories_set_user_id() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_categories_set_user_id() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_on_auth_user_created(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_on_auth_user_created() TO anon;
+GRANT ALL ON FUNCTION public.tg_on_auth_user_created() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_on_auth_user_created() TO service_role;
 
 
 --
@@ -5728,6 +6651,42 @@ GRANT ALL ON FUNCTION public.tg_permission_changes_validate_json() TO service_ro
 
 REVOKE ALL ON FUNCTION public.tg_recompenses_normalize() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.tg_recompenses_normalize() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_recompenses_set_user_id(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_recompenses_set_user_id() TO anon;
+GRANT ALL ON FUNCTION public.tg_recompenses_set_user_id() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_recompenses_set_user_id() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_taches_log_neutral(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_taches_log_neutral() TO anon;
+GRANT ALL ON FUNCTION public.tg_taches_log_neutral() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_taches_log_neutral() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_taches_normalize_categorie(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_taches_normalize_categorie() TO anon;
+GRANT ALL ON FUNCTION public.tg_taches_normalize_categorie() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_taches_normalize_categorie() TO service_role;
+
+
+--
+-- Name: FUNCTION tg_taches_set_user_id(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.tg_taches_set_user_id() TO anon;
+GRANT ALL ON FUNCTION public.tg_taches_set_user_id() TO authenticated;
+GRANT ALL ON FUNCTION public.tg_taches_set_user_id() TO service_role;
 
 
 --
@@ -5874,6 +6833,14 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.role_quotas TO authenticated;
 
 
 --
+-- Name: TABLE role_quotas_backup_legacy; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.role_quotas_backup_legacy TO authenticated;
+GRANT ALL ON TABLE public.role_quotas_backup_legacy TO service_role;
+
+
+--
 -- Name: TABLE stations; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -5929,6 +6896,22 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.user_roles TO authenticated;
 
 GRANT ALL ON TABLE public.user_usage_counters TO service_role;
 GRANT SELECT ON TABLE public.user_usage_counters TO authenticated;
+
+
+--
+-- Name: TABLE v_role_quota_matrix; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.v_role_quota_matrix TO authenticated;
+GRANT ALL ON TABLE public.v_role_quota_matrix TO service_role;
+
+
+--
+-- Name: TABLE v_user_storage_usage; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.v_user_storage_usage TO authenticated;
+GRANT ALL ON TABLE public.v_user_storage_usage TO service_role;
 
 
 --

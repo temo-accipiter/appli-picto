@@ -26,7 +26,7 @@ export function useSimpleRole() {
     console.log('🔍 useSimpleRole: utilisateur connecté, rôle = free')
     setRole('free')
     setLoading(false)
-  }, [authReady, user?.id])
+  }, [authReady, user])
 
   return { role, loading }
 }

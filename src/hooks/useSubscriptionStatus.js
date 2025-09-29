@@ -3,7 +3,7 @@ import { AuthContext } from '@/contexts/AuthContext'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
-const withTimeout = (p, ms) =>
+const _withTimeout = (p, ms) =>
   Promise.race([p, sleep(ms).then(() => ({ __timeout: true }))])
 
 export function useSubscriptionStatus() {
@@ -13,7 +13,7 @@ export function useSubscriptionStatus() {
   const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null)
 
   // Empêche chevauchements (StrictMode) et "double-run" des effets
-  const runIdRef = useRef(0)
+  const _runIdRef = useRef(0)
 
   useEffect(() => {
     // 🚀 SOLUTION ULTRA-SIMPLE : Pas de requêtes, juste des fallbacks
