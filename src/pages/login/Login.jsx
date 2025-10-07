@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useAuth } from '@/hooks'
 import { useToast } from '@/contexts'
 import { InputWithValidation, Button } from '@/components'

@@ -176,7 +176,7 @@
           "kind": "r",
           "persistence": "p",
           "est_rows": 4,
-          "total_size": "200 kB"
+          "total_size": "184 kB"
         },
         {
           "schema": "public",
@@ -5771,23 +5771,6 @@
         {
           "schema": "public",
           "table": "user_roles",
-          "index": "user_roles_one_active_per_user",
-          "method": "btree",
-          "columns": ["user_id"],
-          "is_unique": true,
-          "is_primary": false,
-          "is_valid": true,
-          "is_partial": true,
-          "is_exclusion": false,
-          "predicate": "(is_active = true)",
-          "definition": "CREATE UNIQUE INDEX user_roles_one_active_per_user ON public.user_roles USING btree (user_id) WHERE (is_active = true)",
-          "tablespace": null,
-          "size_pretty": "16 kB",
-          "size_bytes": 16384
-        },
-        {
-          "schema": "public",
-          "table": "user_roles",
           "index": "user_roles_pkey",
           "method": "btree",
           "columns": ["id"],
@@ -9424,7 +9407,7 @@
             },
             {
               "name": "taches_sync_categorie",
-              "enabled": "O",
+              "enabled": "D",
               "definition": "CREATE TRIGGER taches_sync_categorie BEFORE INSERT OR UPDATE ON taches FOR EACH ROW EXECUTE FUNCTION tg_taches_sync_categorie()",
               "function_name": "tg_taches_sync_categorie"
             },
@@ -9882,10 +9865,6 @@
               "def": "CREATE UNIQUE INDEX uq_user_roles_one_active ON public.user_roles USING btree (user_id) WHERE (is_active = true)"
             },
             {
-              "name": "user_roles_one_active_per_user",
-              "def": "CREATE UNIQUE INDEX user_roles_one_active_per_user ON public.user_roles USING btree (user_id) WHERE (is_active = true)"
-            },
-            {
               "name": "user_roles_pkey",
               "def": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
             },
@@ -9937,8 +9916,8 @@
           ],
           "estimates": {
             "row_estimate": 4,
-            "size_pretty": "200 kB",
-            "size_bytes": 204800
+            "size_pretty": "184 kB",
+            "size_bytes": 188416
           }
         },
         {

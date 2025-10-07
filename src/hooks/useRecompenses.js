@@ -1,187 +1,278 @@
-import { isAbortLike, useAuth, withAbortSafe } from '@/hooks'
-import { supabase } from '@/utils'
-import { useEffect, useState } from 'react'
+// src/hooks/useRecompenses.js
+/**
+ * Récompenses (compatibles avec le schéma Supabase fourni) :
+ * - 🔎 Chargement par utilisateur (ordre: created_at asc via index)
+ * - ➕ Création (user_id géré par trigger; on n'envoie pas user_id explicitement)
+ * - ✏️ Update (label, description, points_requis, icone, couleur, selected, imagepath)
+ * - 🖼️ Upload/remplacement d'image (bucket privé "images")
+ * - 🗑️ Suppression (avec purge image Storage)
+ * - ⭐ Sélection unique (index unique "recompenses_one_selected_per_user")
+ */
 
-// Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
-const formatErr = e => {
-  const m = String(e?.message ?? e)
-  const parts = [
-    m,
-    e?.code ? `[${e.code}]` : '',
-    e?.details ? `— ${e.details}` : '',
-    e?.hint ? `(hint: ${e.hint})` : '',
-  ].filter(Boolean)
-  return parts.join(' ')
-}
+import { useEffect, useState } from 'react'
+import { supabase } from '@/utils/supabaseClient'
+import { useAuth } from '@/hooks'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
+import formatErr from '@/utils/logs/formatErr'
+import { uploadImage } from '@/utils/storage/uploadImage'
+import replaceImageIfAny from '@/utils/storage/replaceImageIfAny'
 
 export default function useRecompenses(reload = 0) {
-  const [recompenses, setRecompenses] = useState([])
   const { user } = useAuth()
-  const userId = user?.id
+  const [recompenses, setRecompenses] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
+  // 📥 Lecture : uniquement les récompenses de l'utilisateur connecté
   useEffect(() => {
-    if (!userId) return
+    let cancelled = false
+    if (!user?.id) return
     ;(async () => {
-      const { data, error, aborted } = await withAbortSafe(
-        supabase.from('recompenses').select('*').eq('user_id', userId)
-      )
-      if (aborted || (error && isAbortLike(error))) return
-      if (error) {
-        console.error(`❌ Erreur chargement récompenses: ${formatErr(error)}`)
-        return
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Ordre par created_at (index user_id,created_at existant)
+        let { data, error } = await supabase
+          .from('recompenses')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true })
+
+        // (sécurité) si jamais created_at n'existe pas (autre env), refaire sans order
+        if (error && String(error.code) === '42703') {
+          const retry = await supabase
+            .from('recompenses')
+            .select('*')
+            .eq('user_id', user.id)
+          data = retry.data
+          error = retry.error
+        }
+
+        if (error) throw error
+        if (cancelled) return
+
+        setRecompenses(data || [])
+      } catch (e) {
+        if (!cancelled) {
+          setError(e)
+          console.error(`❌ Erreur fetch récompenses : ${formatErr(e)}`)
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      setRecompenses(Array.isArray(data) ? data : [])
     })()
-  }, [reload, userId])
 
-  const createRecompense = async ({ label, image }) => {
-    let imagepath = ''
-
-    // 1) Upload éventuel (silencieux si abort)
-    if (image) {
-      const cleanName = image.name
-        ? image.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9_.-]/g, '')
-        : `${Date.now()}`
-      const fileName = `${userId}/recompenses/${Date.now()}-${cleanName}`
-
-      const {
-        data,
-        error: uploadError,
-        aborted: uploadAborted,
-      } = await withAbortSafe(
-        supabase.storage.from('images').upload(fileName, image)
-      )
-      if (uploadAborted) return
-      if (uploadError) {
-        console.error(`❌ Erreur upload image: ${formatErr(uploadError)}`)
-        throw new Error('Erreur upload image')
-      }
-      imagepath = data.path
+    return () => {
+      cancelled = true
     }
+  }, [user?.id, reload])
 
-    // 2) Insertion de la récompense
-    const { data, error, aborted } = await withAbortSafe(
-      supabase
+  // ➕ Création (user_id fixé par trigger; on ne l'envoie pas)
+  const addRecompense = async payload => {
+    try {
+      setError(null)
+
+      const toInsert = {
+        label: payload.label ?? '',
+        description: payload.description ?? null,
+        points_requis: Number.isFinite(payload.points_requis)
+          ? payload.points_requis
+          : 0,
+        icone: payload.icone ?? null,
+        couleur: payload.couleur ?? null,
+        imagepath: payload.imagepath ?? null,
+        selected: !!payload.selected,
+        // visible_en_demo est faux par défaut (réservé aux démos globales)
+      }
+
+      const { data, error } = await supabase
         .from('recompenses')
-        .insert({
-          label,
-          imagepath,
-          selected: false,
-          user_id: userId,
-        })
+        .insert([toInsert])
         .select()
         .single()
-    )
-    if (aborted) return
-    if (error) {
-      console.error(`❌ Erreur ajout récompense: ${formatErr(error)}`)
-      throw new Error('Erreur ajout récompense')
-    }
 
-    setRecompenses(prev => [...prev, data])
-    return data
+      if (error) throw error
+      setRecompenses(prev => [...prev, data])
+      return { data, error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur ajout récompense : ${formatErr(e)}`)
+      return { data: null, error: e }
+    }
   }
 
-  const deleteRecompense = async id => {
-    const rec = recompenses.find(r => r.id === id)
+  // ➕ Création avec fichier (upload → path → insert)
+  const addRecompenseFromFile = async (file, fields = {}) => {
+    if (!user?.id)
+      return { data: null, error: new Error('Utilisateur manquant') }
+    try {
+      setError(null)
+      const { path, error: upErr } = await uploadImage(file, {
+        userId: user.id,
+        bucket: 'images', // ✅ bucket privé réel
+        prefix: 'recompenses', // sous-dossier
+        sign: false, // on stocke le path; les composants afficheront via URL signée
+      })
+      if (upErr) throw upErr
 
-    // 1) Supprimer l’image associée si présente
-    if (rec?.imagepath) {
-      const { error: storageError, aborted: storageAborted } =
-        await withAbortSafe(
-          supabase.storage.from('images').remove([rec.imagepath])
-        )
-      if (!storageAborted && storageError) {
-        console.warn(`⚠️ Erreur suppression image: ${formatErr(storageError)}`)
+      return await addRecompense({
+        ...fields,
+        imagepath: path,
+      })
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur ajout récompense (upload) : ${formatErr(e)}`)
+      return { data: null, error: e }
+    }
+  }
+
+  // ✏️ Mise à jour (champ à champ)
+  const updateRecompense = async (id, updates) => {
+    try {
+      setError(null)
+      const allowed = {
+        label: updates.label,
+        description: updates.description,
+        points_requis: updates.points_requis,
+        icone: updates.icone,
+        couleur: updates.couleur,
+        imagepath: updates.imagepath,
+        selected:
+          typeof updates.selected === 'boolean' ? updates.selected : undefined,
+        visible_en_demo: updates.visible_en_demo,
       }
-    }
+      // retire les undefined (évite UPDATE inutile)
+      Object.keys(allowed).forEach(
+        k => allowed[k] === undefined && delete allowed[k]
+      )
 
-    // 2) Supprimer la ligne
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('recompenses').delete().eq('id', id).eq('user_id', userId)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur suppression récompense: ${formatErr(error)}`)
-      throw new Error('Erreur suppression récompense')
-    }
+      const { data, error } = await supabase
+        .from('recompenses')
+        .update(allowed)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
 
-    setRecompenses(prev => prev.filter(r => r.id !== id))
+      if (error) throw error
+      setRecompenses(prev =>
+        prev.map(r => (r.id === id ? { ...r, ...data } : r))
+      )
+      return { data, error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur update récompense : ${formatErr(e)}`)
+      return { data: null, error: e }
+    }
   }
 
+  // 🖼️ Remplacement d'image (delete best-effort + upload)
+  const updateRecompenseImage = async (id, file) => {
+    if (!user?.id)
+      return { data: null, error: new Error('Utilisateur manquant') }
+    try {
+      const current = recompenses.find(r => r.id === id)
+      const oldPath = current?.imagepath || null
+
+      const { path, error } = await replaceImageIfAny(oldPath, file, {
+        userId: user.id,
+        prefix: 'recompenses',
+      })
+      if (error) throw error
+
+      return await updateRecompense(id, { imagepath: path })
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur remplacement image récompense : ${formatErr(e)}`)
+      return { data: null, error: e }
+    }
+  }
+
+  // 🗑️ Suppression (ligne + image storage si présente)
+  const deleteRecompense = async rec => {
+    const id = typeof rec === 'string' ? rec : rec?.id
+    const imagePath = rec?.imagepath
+    if (!id) {
+      console.error('❌ Récompense invalide :', rec)
+      return { error: new Error('Récompense invalide') }
+    }
+
+    try {
+      setError(null)
+
+      if (imagePath) {
+        const { error } = await deleteImageIfAny(imagePath)
+        if (error)
+          console.warn('⚠️ Erreur suppression image :', formatErr(error))
+      }
+
+      const { error } = await supabase
+        .from('recompenses')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setRecompenses(prev => prev.filter(r => r.id !== id))
+      return { error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur suppression récompense : ${formatErr(e)}`)
+      return { error: e }
+    }
+  }
+
+  // ⭐ Sélection unique (utilise l’index unique user_id WHERE selected)
   const selectRecompense = async id => {
-    const updates = recompenses.map(r =>
-      r.id === id
-        ? {
-            id: r.id,
-            selected: true,
-            user_id: userId,
-            label: r.label, // Inclure le label obligatoire
-            points_requis: r.points_requis,
-            visible_en_demo: r.visible_en_demo,
-          }
-        : {
-            id: r.id,
-            selected: false,
-            user_id: userId,
-            label: r.label, // Inclure le label obligatoire
-            points_requis: r.points_requis,
-            visible_en_demo: r.visible_en_demo,
-          }
-    )
-
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('recompenses').upsert(updates, { onConflict: 'id' })
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur sélection récompense: ${formatErr(error)}`)
-      throw new Error('Erreur sélection récompense')
-    }
-
-    setRecompenses(prev => prev.map(r => ({ ...r, selected: r.id === id })))
-  }
-
-  const deselectAll = async () => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
+    if (!user?.id)
+      return { data: null, error: new Error('Utilisateur manquant') }
+    try {
+      setError(null)
+      // 1) désélectionner existantes (si présentes)
+      const { error: e1 } = await supabase
         .from('recompenses')
         .update({ selected: false })
-        .eq('user_id', userId)
-        .neq('selected', false)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur désélection récompenses: ${formatErr(error)}`)
-      throw new Error('Erreur désélection')
-    }
-    setRecompenses(prev => prev.map(r => ({ ...r, selected: false })))
-  }
+        .eq('user_id', user.id)
+        .eq('selected', true)
+      if (e1) throw e1
 
-  const updateLabel = async (id, label) => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
+      // 2) marquer celle choisie
+      const { data, error: e2 } = await supabase
         .from('recompenses')
-        .update({ label })
+        .update({ selected: true })
         .eq('id', id)
-        .eq('user_id', userId)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(
-        `❌ Erreur mise à jour label récompense: ${formatErr(error)}`
+        .eq('user_id', user.id)
+        .select()
+        .single()
+      if (e2) throw e2
+
+      setRecompenses(prev =>
+        prev.map(r =>
+          r.id === id ? { ...r, selected: true } : { ...r, selected: false }
+        )
       )
-      throw new Error('Erreur mise à jour label')
+      return { data, error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur sélection récompense : ${formatErr(e)}`)
+      return { data: null, error: e }
     }
-    setRecompenses(prev => prev.map(r => (r.id === id ? { ...r, label } : r)))
   }
 
   return {
     recompenses,
-    createRecompense,
+    loading,
+    error,
+
+    addRecompense,
+    addRecompenseFromFile,
+    updateRecompense,
+    updateRecompenseImage,
     deleteRecompense,
     selectRecompense,
-    deselectAll,
-    updateLabel,
+
+    setRecompenses,
   }
 }

@@ -1,10 +1,10 @@
 // src/hooks/useTaches.js
 import { useEffect, useState } from 'react'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient' // ✅ instance unique
 import { useAuth } from '@/hooks'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny' // ✅ utilitaire commun
 
-// Log "safe" pour Safari/Firefox
+// Log d'erreur "safe"
 const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
@@ -20,80 +20,74 @@ export default function useTaches(reload = 0) {
   const [taches, setTaches] = useState([])
   const { user } = useAuth()
 
+  // 📥 Chargement initial
   useEffect(() => {
     if (!user?.id) return
-    ;(async () => {
-      const { data, error, aborted } = await withAbortSafe(
-        supabase
-          .from('taches')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('position', { ascending: true })
-      )
-
-      if (aborted || (error && isAbortLike(error))) return
-      if (error) {
-        console.error(`❌ Erreur fetch taches Supabase : ${formatErr(error)}`)
-        return
-      }
-
-      setTaches(Array.isArray(data) ? data : [])
-    })()
+    supabase
+      .from('taches')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('position', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(`❌ Erreur fetch taches Supabase : ${formatErr(error)}`)
+        } else {
+          // ✅ Normalise en booléens côté front
+          const norm = (data || []).map(t => ({
+            ...t,
+            aujourdhui: !!t.aujourdhui,
+            fait: !!t.fait,
+          }))
+          setTaches(norm)
+        }
+      })
   }, [reload, user?.id])
 
-  const toggleFait = async (id, current) => {
-    const { error, aborted } = await withAbortSafe(
+  // ✅ Toggle "fait" (DB en bool, état local en bool)
+  const toggleFait = (id, current) =>
+    supabase
+      .from('taches')
+      .update({ fait: !current })
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .then(({ error }) => {
+        if (error)
+          return console.error(`❌ Erreur update fait : ${formatErr(error)}`)
+        setTaches(prev =>
+          prev.map(t => (t.id === id ? { ...t, fait: !current } : t))
+        )
+      })
+
+  // ♻️ Reset "fait"
+  const resetFait = () =>
+    supabase
+      .from('taches')
+      .update({ fait: false })
+      .eq('user_id', user.id)
+      .then(({ error }) => {
+        if (error)
+          return console.error(`❌ Erreur reset fait : ${formatErr(error)}`)
+        setTaches(prev => prev.map(t => ({ ...t, fait: false })))
+      })
+
+  // ↕️ Mise à jour de l’ordre
+  const updatePosition = ordered => {
+    ordered.forEach((t, idx) => {
       supabase
         .from('taches')
-        .update({ fait: !current })
-        .eq('id', id)
+        .update({ position: idx })
+        .eq('id', t.id)
         .eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur update fait : ${formatErr(error)}`)
-      return
-    }
-    setTaches(prev =>
-      prev.map(t => (t.id === id ? { ...t, fait: current ? 0 : 1 } : t))
-    )
-  }
-
-  const resetFait = async () => {
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('taches').update({ fait: false }).eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur reset fait : ${formatErr(error)}`)
-      return
-    }
-    setTaches(prev => prev.map(t => ({ ...t, fait: 0 })))
-  }
-
-  const updatePosition = async ordered => {
-    // On garde ta logique mais on sécurise chaque update
-    await Promise.all(
-      ordered.map((t, idx) =>
-        withAbortSafe(
-          supabase
-            .from('taches')
-            .update({ position: idx })
-            .eq('id', t.id)
-            .eq('user_id', user.id)
-        ).then(({ error, aborted }) => {
-          if (aborted || (error && isAbortLike(error))) return
-          if (error) {
-            console.error(
-              `❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`
-            )
-          }
-        })
-      )
-    )
+        .catch(error =>
+          console.error(
+            `❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`
+          )
+        )
+    })
     setTaches(ordered)
   }
 
+  // 🗑️ Suppression (avec image associée si présente)
   const deleteTache = async t => {
     const id = typeof t === 'string' ? t : t?.id
     const imagePath = t?.imagepath
@@ -104,26 +98,23 @@ export default function useTaches(reload = 0) {
     }
 
     if (imagePath) {
-      const { error: storageError, aborted: storageAborted } =
-        await withAbortSafe(supabase.storage.from('images').remove([imagePath]))
-      if (!storageAborted && storageError) {
-        console.warn(`⚠️ Erreur suppression image : ${formatErr(storageError)}`)
-      } else if (!storageAborted) {
-        console.log('🗑️ Image Supabase supprimée avec succès')
-      }
+      const { deleted, error } = await deleteImageIfAny(imagePath)
+      if (error) console.warn('⚠️ Erreur suppression image :', formatErr(error))
+      else if (deleted) console.log('🗑️ Image Supabase supprimée')
     }
 
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('taches').delete().eq('id', id).eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
+    const { error } = await supabase
+      .from('taches')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+
     if (error) {
       console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
-      return
+    } else {
+      console.log('✅ Tâche supprimée avec succès')
+      setTaches(prev => prev.filter(task => task.id !== id))
     }
-
-    console.log('✅ Tâche supprimée avec succès')
-    setTaches(prev => prev.filter(task => task.id !== id))
   }
 
   return {

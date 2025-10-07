@@ -1,11 +1,14 @@
+// src/components/AvatarProfil.jsx
+// Sélecteur d’avatar. Conserve l’API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
+
 import { Button, ButtonDelete, SignedImage } from '@/components'
 import {
   compressImageIfNeeded,
   compressionErrorMessage,
-  supabase,
   validateImageHeader,
   validateImageType,
-} from '@/utils'
+} from '@/utils/validationRules'
+import { supabase } from '@/utils/supabaseClient'
 import PropTypes from 'prop-types'
 import { useRef, useState } from 'react'
 import './AvatarProfil.scss'
@@ -23,35 +26,30 @@ export default function AvatarProfil({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 🛡️ Validation du type de fichier
+    // 🛡️ Validation du type + en-tête
     const typeError = validateImageType(file)
     if (typeError) {
       setImageError(typeError)
       return
     }
-
-    // 🛡️ Validation sécurisée de l'en-tête
     const headerError = await validateImageHeader(file)
     if (headerError) {
       setImageError(headerError)
       return
     }
 
-    // 🎯 Compression et optimisation automatique (50 Ko max, 256x256px, PNG)
+    // 🎯 Compression UI (cible config = 100 Ko)
     const compressed = await compressImageIfNeeded(file)
     if (!compressed) {
       setImageError(compressionErrorMessage)
       return
     }
 
-    // Le fichier compressé peut être JPEG ou PNG selon l'optimisation
-    const timestamp = Date.now()
-
     const {
       data: { user },
     } = await supabase.auth.getUser()
     const userId = user?.id || 'anonymous'
-
+    const timestamp = Date.now()
     const extension = compressed.type === 'image/jpeg' ? 'jpg' : 'png'
     const cleanName = `avatar_${userId}_${timestamp}.${extension}`
 
@@ -61,9 +59,7 @@ export default function AvatarProfil({
     })
 
     setImageError('')
-    if (onUpload) {
-      onUpload(finalFile)
-    }
+    onUpload?.(finalFile) // on laisse le parent uploader vers le bucket 'avatars'
   }
 
   return (

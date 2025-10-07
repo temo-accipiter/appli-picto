@@ -1,5 +1,5 @@
 import { isAbortLike, withAbortSafe } from '@/hooks'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useParametres(reload = 0) {

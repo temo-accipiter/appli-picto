@@ -1,6 +1,6 @@
 // src/analytics/userProps.js
 // Définit des user_properties GA4 (uid hashé + tier + plan) après consentement & auth.
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { hasConsent } from '@/utils/consent'
 
 const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()

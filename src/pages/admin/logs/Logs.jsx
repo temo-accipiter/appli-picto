@@ -1,7 +1,7 @@
 // src/pages/admin/logs/Logs.jsx
 import { Button, FloatingPencil } from '@/components'
 import { usePermissions, useToast } from '@/contexts'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Logs.scss'

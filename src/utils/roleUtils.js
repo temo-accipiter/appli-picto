@@ -2,86 +2,66 @@
  * Utilitaires pour la gestion des rôles
  */
 
+// Noms normalisés utiles partout dans l'app
+export const ROLE = {
+  ADMIN: 'admin',
+  STAFF: 'staff',
+  ABONNE: 'abonne',
+  FREE: 'free',
+  VISITOR: 'visitor',
+}
+
 // Rôles système protégés qui ne peuvent pas être supprimés
-export const SYSTEM_ROLES = ['admin', 'visitor', 'free', 'abonne', 'staff']
+export const SYSTEM_ROLES = [
+  ROLE.ADMIN,
+  ROLE.VISITOR,
+  ROLE.FREE,
+  ROLE.ABONNE,
+  ROLE.STAFF,
+]
 
 // Priorités par défaut des rôles système
 export const SYSTEM_ROLE_PRIORITIES = {
-  admin: 100,
-  staff: 80,
-  abonne: 50,
-  free: 20,
-  visitor: 10,
+  [ROLE.ADMIN]: 100,
+  [ROLE.STAFF]: 80,
+  [ROLE.ABONNE]: 50,
+  [ROLE.FREE]: 20,
+  [ROLE.VISITOR]: 10,
 }
 
-/**
- * Vérifie si un rôle est un rôle système protégé
- * @param {string} roleName - Nom du rôle à vérifier
- * @returns {boolean} True si c'est un rôle système
- */
-export const isSystemRole = roleName => {
-  return SYSTEM_ROLES.includes(roleName)
+/** Normalise quelques synonymes éventuels (utile si la DB renvoie 'subscriber', etc.) */
+export const normalizeRoleName = name => {
+  if (!name) return ''
+  const s = String(name).toLowerCase()
+  if (s === 'subscriber') return ROLE.ABONNE
+  if (s === 'gratuit' || s === 'free') return ROLE.FREE
+  if (s === 'visiteur' || s === 'visitor') return ROLE.VISITOR
+  return s
 }
 
-/**
- * Vérifie si un rôle peut être supprimé
- * @param {string} roleName - Nom du rôle
- * @returns {boolean} True si le rôle peut être supprimé
- */
-export const canDeleteRole = roleName => {
-  return !isSystemRole(roleName)
-}
+/** Vérifie si un rôle est un rôle système protégé */
+export const isSystemRole = roleName => SYSTEM_ROLES.includes(roleName)
 
-/**
- * Vérifie si un rôle peut être modifié (nom, description, etc.)
- * @param {string} roleName - Nom du rôle
- * @returns {boolean} True si le rôle peut être modifié
- */
-export const canModifyRole = roleName => {
-  return !isSystemRole(roleName)
-}
+/** Vérifie si un rôle peut être supprimé */
+export const canDeleteRole = roleName => !isSystemRole(roleName)
 
-/**
- * Vérifie si un rôle peut être activé/désactivé
- * @param {string} roleName - Nom du rôle
- * @returns {boolean} True si le rôle peut être activé/désactivé
- */
-export const canToggleRole = roleName => {
-  return isSystemRole(roleName)
-}
+/** Vérifie si un rôle peut être modifié (nom, description, etc.) */
+export const canModifyRole = roleName => !isSystemRole(roleName)
 
-/**
- * Filtre les rôles actifs pour l'affichage
- * @param {Array} roles - Liste des rôles
- * @returns {Array} Rôles actifs
- */
-export const getActiveRoles = roles => {
-  return roles.filter(role => role.is_active)
-}
+/** Vérifie si un rôle peut être activé/désactivé */
+export const canToggleRole = roleName => isSystemRole(roleName)
 
-/**
- * Filtre les rôles actifs et non-système pour la sélection utilisateur
- * @param {Array} roles - Liste des rôles
- * @returns {Array} Rôles disponibles pour attribution
- */
-export const getAvailableRoles = roles => {
-  return roles.filter(role => role.is_active && role.name !== 'admin')
-}
+/** Filtre les rôles actifs pour l'affichage */
+export const getActiveRoles = roles => roles.filter(role => role.is_active)
 
-/**
- * Obtient la priorité d'un rôle
- * @param {string} roleName - Nom du rôle
- * @returns {number} Priorité du rôle
- */
-export const getRolePriority = roleName => {
-  return SYSTEM_ROLE_PRIORITIES[roleName] || 0
-}
+/** Filtre les rôles actifs et non-système pour la sélection utilisateur */
+export const getAvailableRoles = roles =>
+  roles.filter(role => role.is_active && role.name !== ROLE.ADMIN)
 
-/**
- * Trie les rôles par priorité (décroissante)
- * @param {Array} roles - Liste des rôles
- * @returns {Array} Rôles triés par priorité
- */
+/** Obtient la priorité d'un rôle */
+export const getRolePriority = roleName => SYSTEM_ROLE_PRIORITIES[roleName] || 0
+
+/** Trie les rôles par priorité (décroissante) */
 export const sortRolesByPriority = roles => {
   return [...roles].sort((a, b) => {
     const priorityA = getRolePriority(a.name)
@@ -90,46 +70,28 @@ export const sortRolesByPriority = roles => {
   })
 }
 
-/**
- * Obtient le nom d'affichage d'un rôle
- * @param {Object} role - Objet rôle
- * @returns {string} Nom d'affichage du rôle
- */
+/** Obtient le nom d'affichage d'un rôle */
 export const getRoleDisplayName = role => {
-  if (role.display_name) {
-    return role.display_name
-  }
-
-  // Noms d'affichage par défaut pour les rôles système
+  if (role.display_name) return role.display_name
   const defaultNames = {
-    admin: 'Administrateur',
-    staff: 'Équipe',
-    abonne: 'Abonné',
-    free: 'Gratuit',
-    visitor: 'Visiteur',
+    [ROLE.ADMIN]: 'Administrateur',
+    [ROLE.STAFF]: 'Équipe',
+    [ROLE.ABONNE]: 'Abonné',
+    [ROLE.FREE]: 'Gratuit',
+    [ROLE.VISITOR]: 'Visiteur',
   }
-
   return defaultNames[role.name] || role.name
 }
 
-/**
- * Obtient la description d'un rôle
- * @param {Object} role - Objet rôle
- * @returns {string} Description du rôle
- */
+/** Obtient la description d'un rôle */
 export const getRoleDescription = role => {
-  if (role.description) {
-    return role.description
-  }
-
-  // Descriptions par défaut pour les rôles système
+  if (role.description) return role.description
   const defaultDescriptions = {
-    admin: 'Administrateur avec tous les droits',
-    staff: "Membre de l'équipe avec accès privilégié",
-    abonne: 'Utilisateur abonné avec accès complet',
-    free: 'Utilisateur avec accès gratuit limité',
-    visitor: 'Visiteur avec accès limité',
+    [ROLE.ADMIN]: 'Administrateur avec tous les droits',
+    [ROLE.STAFF]: "Membre de l'équipe avec accès privilégié",
+    [ROLE.ABONNE]: 'Utilisateur abonné avec accès complet',
+    [ROLE.FREE]: 'Utilisateur avec accès gratuit limité',
+    [ROLE.VISITOR]: 'Visiteur avec accès limité',
   }
-
   return defaultDescriptions[role.name] || 'Rôle personnalisé'
 }

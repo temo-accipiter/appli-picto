@@ -1,14 +1,29 @@
+// src/utils/validationRules.js
+// Règles de validation/normalisation côté UI :
+// - Textes, e-mails, mots de passe, rôles, fonctionnalités
+// - Images : types MIME autorisés (alignés sur config), vérif en-tête, compression < TARGET_MAX_UI_SIZE_KO
+
+import {
+  ALLOWED_MIME_TYPES,
+  TARGET_MAX_UI_SIZE_KO,
+} from '@/utils/images/config'
+
+/* =========================
+ * Texte générique
+ * ========================= */
 export const validateNotEmpty = label =>
-  !label.trim() ? 'Le nom est requis' : ''
+  !String(label ?? '').trim() ? 'Le nom est requis' : ''
 
 export const noEdgeSpaces = label =>
-  label !== label.trim() ? 'Pas d’espace en début/fin' : ''
+  String(label ?? '') !== String(label ?? '').trim()
+    ? 'Pas d’espace en début/fin'
+    : ''
 
 export const noDoubleSpaces = label =>
-  /\s{2,}/.test(label) ? 'Pas de doubles espaces' : ''
+  /\s{2,}/.test(String(label ?? '')) ? 'Pas de doubles espaces' : ''
 
 export const validatePseudo = pseudo => {
-  const trimmed = pseudo.trim()
+  const trimmed = String(pseudo ?? '').trim()
   if (!trimmed) return 'Le pseudo est requis.'
   if (trimmed.length > 30)
     return 'Le pseudo ne doit pas dépasser 30 caractères.'
@@ -18,59 +33,181 @@ export const validatePseudo = pseudo => {
 /* ➕ Normalisation finale (enregistrement) : supprime espaces doublons et bords */
 export const normalizeSpaces = s => (s ?? '').replace(/\s{2,}/g, ' ').trim()
 
-// --- Validation images (inchangé) ---
+/* =========================
+ * Images (MÀJ → 100 Ko)
+ * ========================= */
+
+// Presence
 export const validateImagePresence = file =>
-  !file ? 'Choisis une image (PNG, JPEG, JPG, SVG, WEBP ≤ 50 Ko)' : ''
+  !file ? 'Choisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)' : ''
 
-export const validateImageType = file =>
-  file &&
-  ![
-    'image/png',
-    'image/jpeg',
-    'image/jpg',
-    'image/webp',
-    'image/svg+xml',
-  ].includes(file.type)
-    ? 'Format non supporté.\nChoisis une image (PNG, JPG, SVG, WEBP ≤ 50 Ko)'
+// Type MIME (aligné sur config) — on normalise image/jpg → image/jpeg
+export const validateImageType = file => {
+  if (!file) return 'Choisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)'
+  const raw = String(file.type || '').toLowerCase()
+  const type = raw === 'image/jpg' ? 'image/jpeg' : raw
+  return !ALLOWED_MIME_TYPES.includes(type)
+    ? 'Format non supporté.\nChoisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)'
     : ''
+}
 
-// 🛡️ Validation sécurisée de l'en-tête du fichier (protection contre les faux fichiers)
+/**
+ * Validation sécurisée de l'en-tête (magic bytes) — GIF volontairement non pris en charge.
+ * PNG: 89 50 4E 47 0D 0A 1A 0A
+ * JPEG: FF D8 (on ne vérifie que le début)
+ * WEBP: "RIFF" .... "WEBP"
+ * SVG: type textuel (on se contente de MIME + signature XML/<svg> éventuelle)
+ */
 export const validateImageHeader = async file => {
   if (!file) return ''
+  try {
+    const buf = await file.slice(0, 16).arrayBuffer()
+    const bytes = new Uint8Array(buf)
 
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = e => {
-      const arr = new Uint8Array(e.target.result)
-      let header = ''
-      for (let i = 0; i < Math.min(4, arr.length); i++) {
-        header += arr[i].toString(16).padStart(2, '0')
-      }
+    const isPNG =
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4e &&
+      bytes[3] === 0x47 &&
+      bytes[4] === 0x0d &&
+      bytes[5] === 0x0a &&
+      bytes[6] === 0x1a &&
+      bytes[7] === 0x0a
 
-      // Vérification des signatures de fichiers (magic bytes)
-      const validHeaders = {
-        '89504e47': 'PNG',
-        ffd8ffe0: 'JPEG',
-        ffd8ffe1: 'JPEG',
-        ffd8ffe2: 'JPEG',
-        ffd8ffe3: 'JPEG',
-        52494646: 'WEBP', // RIFF (début WEBP)
-        '3c3f786d': 'SVG', // <?xml
-        '3c737667': 'SVG', // <svg
-      }
+    const isJPEG = bytes[0] === 0xff && bytes[1] === 0xd8
 
-      const isValid = Object.keys(validHeaders).some(h => header.startsWith(h))
-      resolve(isValid ? '' : 'Fichier image corrompu ou invalide.')
-    }
-    reader.onerror = () => resolve('Erreur lors de la lecture du fichier.')
-    reader.readAsArrayBuffer(file.slice(0, 4))
-  })
+    const isWebP =
+      bytes[0] === 0x52 && // R
+      bytes[1] === 0x49 && // I
+      bytes[2] === 0x46 && // F
+      bytes[3] === 0x46 && // F
+      bytes[8] === 0x57 && // W
+      bytes[9] === 0x45 && // E
+      bytes[10] === 0x42 && // B
+      bytes[11] === 0x50 // P
+
+    const isSVG = String(file.type).toLowerCase() === 'image/svg+xml'
+
+    if (isPNG || isJPEG || isWebP || isSVG) return ''
+    return 'Fichier image corrompu ou invalide.'
+  } catch {
+    return 'Erreur lors de la lecture du fichier.'
+  }
 }
 
 export const compressionErrorMessage =
-  'Impossible de compresser cette image sous 50 Ko.\nEssayez une image plus simple ou de meilleure qualité.'
+  'Impossible de compresser cette image sous 100 Ko.\nEssayez une image plus simple ou de meilleure qualité.'
 
-// --- Email ---
+/**
+ * Compression côté UI (progressive) pour pictos : cible = TARGET_MAX_UI_SIZE_KO.
+ * - Si SVG : renvoie tel quel.
+ * - Si déjà < cible : renvoie tel quel.
+ * - Sinon : redimensionne progressivement et ajuste la qualité (JPEG) ; PNG en dernier recours.
+ */
+export const compressImageIfNeeded = async (
+  file,
+  maxSizeKo = TARGET_MAX_UI_SIZE_KO
+) => {
+  if (
+    !file ||
+    String(file.type).toLowerCase() === 'image/svg+xml' ||
+    file.size <= maxSizeKo * 1024
+  ) {
+    return file
+  }
+
+  return new Promise(resolve => {
+    const img = new Image()
+    const reader = new FileReader()
+    reader.onload = e => {
+      img.src = e.target.result
+    }
+
+    img.onload = () => {
+      // Stratégies progressives (dimension/qualité)
+      const compressionStrategies = [
+        // Étape 1: Dimensions normales, qualité élevée
+        { maxWidth: 256, maxHeight: 256, quality: 0.9, useJPEG: true },
+        // Étape 2: Dimensions normales, qualité moyenne
+        { maxWidth: 256, maxHeight: 256, quality: 0.7, useJPEG: true },
+        // Étape 3: Dimensions normales, qualité basse
+        { maxWidth: 256, maxHeight: 256, quality: 0.5, useJPEG: true },
+        // Étape 4: Dimensions réduites, qualité moyenne
+        { maxWidth: 192, maxHeight: 192, quality: 0.7, useJPEG: true },
+        // Étape 5: Dimensions réduites, qualité basse
+        { maxWidth: 192, maxHeight: 192, quality: 0.5, useJPEG: true },
+        // Étape 6: Très petites dimensions, qualité basse
+        { maxWidth: 128, maxHeight: 128, quality: 0.4, useJPEG: true },
+        // Étape 7: PNG en dernier recours (sans perte, peut être plus gros)
+        { maxWidth: 128, maxHeight: 128, quality: 1, useJPEG: false },
+      ]
+
+      const tryCompression = async (strategyIndex = 0) => {
+        if (strategyIndex >= compressionStrategies.length) {
+          resolve(null) // échec (trop lourd malgré tout)
+          return
+        }
+
+        const strategy = compressionStrategies[strategyIndex]
+        const canvas = document.createElement('canvas')
+
+        // Calcul dimensions
+        let { width, height } = img
+        if (width > strategy.maxWidth || height > strategy.maxHeight) {
+          const ratio = Math.min(
+            strategy.maxWidth / width,
+            strategy.maxHeight / height
+          )
+          width = Math.round(width * ratio)
+          height = Math.round(height * ratio)
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.clearRect(0, 0, width, height)
+        ctx.drawImage(img, 0, 0, width, height)
+
+        const outputType = strategy.useJPEG ? 'image/jpeg' : 'image/png'
+        const quality = strategy.useJPEG ? strategy.quality : 1
+
+        canvas.toBlob(
+          blob => {
+            if (!blob) {
+              tryCompression(strategyIndex + 1)
+              return
+            }
+            const extension = strategy.useJPEG ? 'jpg' : 'png'
+            const fileName = String(file.name || 'image').replace(
+              /\.\w+$/,
+              `.${extension}`
+            )
+            const compressedFile = new File([blob], fileName, {
+              type: outputType,
+              lastModified: Date.now(),
+            })
+
+            if (compressedFile.size <= maxSizeKo * 1024) {
+              resolve(compressedFile)
+            } else {
+              tryCompression(strategyIndex + 1)
+            }
+          },
+          outputType,
+          quality
+        )
+      }
+
+      tryCompression(0)
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
+/* =========================
+ * Email
+ * ========================= */
 export const validateEmail = (email = '') => {
   const e = String(email).trim()
   if (!e) return 'L’e-mail est requis.'
@@ -81,7 +218,9 @@ export const validateEmail = (email = '') => {
 }
 export const normalizeEmail = (email = '') => String(email).trim().toLowerCase()
 
-// --- Mot de passe (aligné Supabase) ---
+/* =========================
+ * Mot de passe (aligné Supabase)
+ * ========================= */
 export const PASSWORD_MIN = 10
 
 export const validatePasswordStrength = (pw = '') => {
@@ -106,103 +245,9 @@ export const makeMatchRule =
   value =>
     value === getOther() ? '' : message
 
-// ✅ Compression progressive pour pictos (50 Ko max, dimensions adaptatives)
-export const compressImageIfNeeded = async (file, maxSizeKo = 50) => {
-  if (!file || file.type === 'image/svg+xml' || file.size <= maxSizeKo * 1024) {
-    return file
-  }
-
-  return new Promise(resolve => {
-    const img = new Image()
-    const reader = new FileReader()
-    reader.onload = e => {
-      img.src = e.target.result
-    }
-
-    img.onload = () => {
-      // 🔄 Stratégie de compression progressive
-      const compressionStrategies = [
-        // Étape 1: Dimensions normales, qualité élevée
-        { maxWidth: 256, maxHeight: 256, quality: 0.9, useJPEG: true },
-        // Étape 2: Dimensions normales, qualité moyenne
-        { maxWidth: 256, maxHeight: 256, quality: 0.7, useJPEG: true },
-        // Étape 3: Dimensions normales, qualité basse
-        { maxWidth: 256, maxHeight: 256, quality: 0.5, useJPEG: true },
-        // Étape 4: Dimensions réduites, qualité moyenne
-        { maxWidth: 192, maxHeight: 192, quality: 0.7, useJPEG: true },
-        // Étape 5: Dimensions réduites, qualité basse
-        { maxWidth: 192, maxHeight: 192, quality: 0.5, useJPEG: true },
-        // Étape 6: Très petites dimensions, qualité basse
-        { maxWidth: 128, maxHeight: 128, quality: 0.4, useJPEG: true },
-        // Étape 7: PNG en dernier recours (plus gros mais meilleure qualité)
-        { maxWidth: 128, maxHeight: 128, quality: 1, useJPEG: false },
-      ]
-
-      const tryCompression = async (strategyIndex = 0) => {
-        if (strategyIndex >= compressionStrategies.length) {
-          // Toutes les stratégies épuisées, on rejette
-          resolve(null)
-          return
-        }
-
-        const strategy = compressionStrategies[strategyIndex]
-        const canvas = document.createElement('canvas')
-
-        // Calcul des dimensions avec la stratégie actuelle
-        let { width, height } = img
-        if (width > strategy.maxWidth || height > strategy.maxHeight) {
-          const ratio = Math.min(
-            strategy.maxWidth / width,
-            strategy.maxHeight / height
-          )
-          width = Math.round(width * ratio)
-          height = Math.round(height * ratio)
-        }
-
-        canvas.width = width
-        canvas.height = height
-        const ctx = canvas.getContext('2d')
-
-        // 🛡️ Sécurité CNIL : Suppression automatique des métadonnées
-        ctx.clearRect(0, 0, width, height)
-        ctx.drawImage(img, 0, 0, width, height)
-
-        // Format et qualité selon la stratégie
-        const outputType = strategy.useJPEG ? 'image/jpeg' : 'image/png'
-        const quality = strategy.useJPEG ? strategy.quality : 1
-
-        canvas.toBlob(
-          blob => {
-            const extension = strategy.useJPEG ? 'jpg' : 'png'
-            const fileName = file.name.replace(/\.\w+$/, `.${extension}`)
-            const compressedFile = new File([blob], fileName, {
-              type: outputType,
-              lastModified: Date.now(),
-            })
-
-            // ✅ Vérifier si on a atteint la taille cible
-            if (compressedFile.size <= maxSizeKo * 1024) {
-              // 🎉 Succès ! On retourne le fichier compressé
-              resolve(compressedFile)
-            } else {
-              // 🔄 Pas encore assez petit, essayer la stratégie suivante
-              tryCompression(strategyIndex + 1)
-            }
-          },
-          outputType,
-          quality
-        )
-      }
-
-      // Démarrer la compression progressive
-      tryCompression(0)
-    }
-
-    reader.readAsDataURL(file)
-  })
-}
-
-// --- Validation des rôles ---
+/* =========================
+ * Rôles
+ * ========================= */
 export const validateRoleName = (name = '') => {
   const trimmed = name.trim()
   if (!trimmed) return 'Le nom du rôle est requis.'
@@ -237,10 +282,10 @@ export const validateRoleNameUniqueness = (
   existingRoles,
   currentRoleId = null
 ) => {
-  const trimmed = name.trim()
+  const trimmed = (name ?? '').trim()
   if (!trimmed) return ''
 
-  const isDuplicate = existingRoles.some(
+  const isDuplicate = (existingRoles ?? []).some(
     role => role.name === trimmed && role.id !== currentRoleId
   )
 
@@ -267,7 +312,9 @@ export const updateRoleValidationRules = {
   description: value => [validateRoleDescription(value)].filter(Boolean),
 }
 
-// --- Validation des fonctionnalités ---
+/* =========================
+ * Fonctionnalités (features)
+ * ========================= */
 export const validateFeatureName = (name = '') => {
   const trimmed = name.trim()
   if (!trimmed) return 'Le nom technique est requis.'
@@ -302,10 +349,10 @@ export const validateFeatureNameUniqueness = (
   existingFeatures,
   currentFeatureId = null
 ) => {
-  const trimmed = name.trim()
+  const trimmed = (name ?? '').trim()
   if (!trimmed) return ''
 
-  const isDuplicate = existingFeatures.some(
+  const isDuplicate = (existingFeatures ?? []).some(
     feature => feature.name === trimmed && feature.id !== currentFeatureId
   )
 

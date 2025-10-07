@@ -1,6 +1,6 @@
 // src/hooks/useAccountStatus.js
 import { isAbortLike, withAbortSafe } from '@/hooks'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useAuth from './useAuth'
 

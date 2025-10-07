@@ -24,7 +24,7 @@ import {
   checkImageQuota,
   uploadImageWithQuota,
 } from '@/services/imageUploadService'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import './Edition.scss'

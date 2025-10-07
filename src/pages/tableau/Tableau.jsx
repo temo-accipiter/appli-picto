@@ -1,3 +1,4 @@
+// src/pages/tableau/Tableau.jsx
 import {
   ModalRecompense,
   PersonalizationModal,
@@ -32,7 +33,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   const { width, height } = useWindowSize()
   const { role: permissionsRole } = usePermissions()
-  const { role: simpleRole, loading: _roleLoading } = useSimpleRole()
+  const { role: simpleRole /*, loading: _roleLoading*/ } = useSimpleRole()
 
   // Utiliser le rôle simple en priorité, fallback vers permissions
   const role = simpleRole !== 'unknown' ? simpleRole : permissionsRole
@@ -60,8 +61,8 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const { demoTaches, demoRecompenses } = useDemoData()
   const { fallbackData, loading: fallbackLoading } = useFallbackData()
   const {
-    taches: personalTaches,
-    doneMap: personalDoneMap,
+    taches: personalTachesRaw,
+    doneMap: personalDoneMapRaw,
     toggleDone: personalToggleDone,
     saveOrder: personalSaveOrder,
     resetAll: personalResetAll,
@@ -69,7 +70,16 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     setDoneCount(done)
     setTotalTaches(total)
   })
-  const { recompenses: personalRecompenses } = useRecompenses()
+  const { recompenses: personalRecompensesRaw } = useRecompenses()
+
+  // ⚠️ Garde-fous : toujours travailler sur des tableaux
+  const personalTaches = Array.isArray(personalTachesRaw)
+    ? personalTachesRaw
+    : []
+  const personalRecompenses = Array.isArray(personalRecompensesRaw)
+    ? personalRecompensesRaw
+    : []
+  const personalDoneMap = personalDoneMapRaw ?? {}
 
   // En mode démo, créer des fonctions de toggle temporaires
   const [demoTachesState, setDemoTachesState] = useState([])
@@ -77,7 +87,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   useEffect(() => {
     if (isDemoMode) {
-      const initialTaches = demoTaches.map(t => ({ ...t, done: false }))
+      const initialTaches = (demoTaches ?? []).map(t => ({ ...t, done: false }))
       setDemoTachesState(initialTaches)
       setTotalTaches(initialTaches.length)
       setDoneCount(0)
@@ -92,26 +102,26 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   // Utiliser les données de démo, fallback ou personnelles selon le mode
   const taches = useMemo(() => {
     if (isDemoMode) return demoTachesState
-    return personalTaches.length > 0
-      ? personalTaches
-      : fallbackData?.tasks || []
+    const fallbackTasks = Array.isArray(fallbackData?.tasks)
+      ? fallbackData.tasks
+      : []
+    return personalTaches.length > 0 ? personalTaches : fallbackTasks
   }, [isDemoMode, demoTachesState, personalTaches, fallbackData?.tasks])
 
   const recompenses = useMemo(() => {
-    if (isDemoMode) return demoRecompenses
+    if (isDemoMode) return Array.isArray(demoRecompenses) ? demoRecompenses : []
+    const fallbackRewards = Array.isArray(fallbackData?.rewards)
+      ? fallbackData.rewards
+      : []
     return personalRecompenses.length > 0
       ? personalRecompenses
-      : fallbackData?.rewards || []
+      : fallbackRewards
   }, [isDemoMode, demoRecompenses, personalRecompenses, fallbackData?.rewards])
 
   const doneMap = isDemoMode ? demoDoneMap : personalDoneMap
 
   const toggleDone = isDemoMode
     ? (id, newDone) => {
-        // Debug logs désactivés pour réduire le bruit dans la console
-        // if (import.meta.env.DEV) {
-        //   console.log('🔍 Toggle démo:', { id, newDone, isDemoMode })
-        // }
         setDemoTachesState(prev => {
           const updated = prev.map(t =>
             t.id === id ? { ...t, done: newDone } : t
@@ -119,9 +129,6 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
           // Mettre à jour le compteur
           const newDoneCount = updated.filter(t => t.done).length
           setDoneCount(newDoneCount)
-          // if (import.meta.env.DEV) {
-          //   console.log('🔍 État mis à jour:', updated)
-          // }
           return updated
         })
         // Mettre à jour le doneMap pour l'affichage
@@ -135,9 +142,10 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const saveOrder = isDemoMode
     ? newList => {
         // En mode démo, mettre à jour l'état local
-        setDemoTachesState(newList)
+        setDemoTachesState(Array.isArray(newList) ? newList : [])
       }
     : personalSaveOrder
+
   const resetAll = isDemoMode
     ? () => {
         setDemoTachesState(prev => prev.map(t => ({ ...t, done: false })))
@@ -148,16 +156,17 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       }
     : personalResetAll
 
-  const selected = recompenses.find(
-    r => r.selected === true || r.selected === 1
+  // ⚠️ Sécurise l'accès à .find()
+  const selected = (Array.isArray(recompenses) ? recompenses : []).find(
+    r => r?.selected === true || r?.selected === 1
   )
   const { showTrain, showRecompense } = useDisplay()
 
   // Pour les visiteurs, sélectionner automatiquement la première récompense
   const selectedReward = useMemo(() => {
-    if (isDemoMode && recompenses.length > 0) {
-      // En mode démo, toujours retourner la première récompense
-      return recompenses[0]
+    const list = Array.isArray(recompenses) ? recompenses : []
+    if (isDemoMode && list.length > 0) {
+      return list[0]
     }
     return selected
   }, [isDemoMode, recompenses, selected])
@@ -172,17 +181,14 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     }
 
     if (totalTaches > 0 && doneCount === totalTaches) {
-      // Pour les visiteurs : pas de confettis, mais modal de récompense
       if (isDemoMode) {
-        // Mode démo : pas de confettis, juste la modal
         setShowConfettis(false)
         setShowModalRecompense(true)
 
         modalTimeoutRef.current = setTimeout(() => {
           setShowModalRecompense(false)
-        }, 5000) // Modal plus courte pour les visiteurs
+        }, 5000)
       } else {
-        // Mode normal : confettis + modal
         setShowConfettis(true)
         setTimeout(() => setShowConfettis(false), 10000)
         setShowModalRecompense(true)
@@ -193,7 +199,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       }
     } else {
       setShowConfettis(false)
-      setShowModalRecompense(false) // ✅ cache modal si une tâche décochée
+      setShowModalRecompense(false)
     }
 
     return () => {
@@ -202,6 +208,9 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       }
     }
   }, [doneCount, totalTaches, isDemoMode])
+
+  // ⚠️ Sécurise .find() lors du reorder
+  const safeTaches = Array.isArray(taches) ? taches : []
 
   return (
     <div className="tableau-magique">
@@ -237,13 +246,15 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
         items={taches}
         doneMap={doneMap}
         onReorder={ids => {
-          const newList = ids.map(id => taches.find(t => t.id === id))
+          const newList = (ids ?? [])
+            .map(id => safeTaches.find(t => t?.id === id))
+            .filter(Boolean)
           saveOrder(newList)
         }}
         onToggle={toggleDone}
         onReset={() => {
           resetAll()
-          setShowModalRecompense(false) // ✅ ferme modal si reset
+          setShowModalRecompense(false)
         }}
       />
 
@@ -254,7 +265,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       {showModalRecompense && selectedReward && (
         <ModalRecompense
           isOpen={true}
-          onClose={() => setShowModalRecompense(false)} // ✅ fermeture manuelle
+          onClose={() => setShowModalRecompense(false)}
           reward={selectedReward}
         />
       )}

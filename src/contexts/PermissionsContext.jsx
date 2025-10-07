@@ -1,315 +1,189 @@
-/*
-import { useEntitlements } from '@/hooks/useEntitlements'
-import { usePermissionsAPI } from '@/hooks/usePermissionsAPI'
-import { createContext, useContext, useMemo } from 'react'
-import { AuthContext } from './AuthContext'
+// src/contexts/PermissionsContext.jsx
+// Détection des rôles robuste + permissions.
+// - Attend que l’auth soit prête (AuthContext.authReady).
+// - Ne considère JAMAIS "visitor" tant que ready=false → rôle "unknown" temporaire.
+// - RPC avec retry exponentiel pour absorber les races au démarrage.
+// - Exporte des flags pratiques : isUnknown, isVisitor, isAdmin.
 
-const PermissionsContext = createContext()
-
-export const PermissionsProvider = ({ children }) => {
-  const entitlements = useEntitlements()
-  const {
-    permissions,
-    features,
-    roles,
-    loading: permissionsLoading,
-    isLoading,
-    createRole,
-    updateRole,
-    deleteRole,
-    updateRolePermissions,
-    createFeature,
-    updateFeature,
-    deleteFeature,
-    loadAllData,
-  } = usePermissionsAPI()
-
-  /**
-   * Vérifie si l'utilisateur a accès à une fonctionnalité
-   * @param {string} featureName - Nom de la fonctionnalité
-   * @returns {boolean}
-   *
-  const can = useMemo(() => {
-    return featureName => {
-      if (!entitlements.role || entitlements.role === 'admin') {
-        return true // Admin a accès à tout
-      }
-
-      // Debug logging supprimé pour réduire le spam
-
-      // Trouver la fonctionnalité
-      const feature = features.find(f => f.name === featureName)
-      if (!feature) {
-        console.log('❌ Fonctionnalité non trouvée:', featureName)
-        return false
-      }
-
-      // Trouver le rôle par son nom
-      const userRole = roles.find(r => r.name === entitlements.role)
-      if (!userRole) {
-        console.log('❌ Rôle utilisateur non trouvé:', entitlements.role)
-        return false
-      }
-
-      // Trouver la permission pour ce rôle et cette fonctionnalité
-      const permission = permissions.find(
-        p => p.feature_id === feature.id && p.role_id === userRole.id
-      )
-
-      // Log de permission supprimé pour réduire le spam
-
-      return permission?.can_access || false
-    }
-  }, [entitlements.role, permissions, features, roles])
-
-  /**
-   * Vérifie si l'utilisateur a accès à plusieurs fonctionnalités
-   * @param {string[]} featureNames - Liste des fonctionnalités
-   * @returns {boolean}
-   *
-  const canAll = useMemo(() => {
-    return featureNames => {
-      return featureNames.every(feature => can(feature))
-    }
-  }, [can])
-
-  /**
-   * Vérifie si l'utilisateur a accès à au moins une fonctionnalité
-   * @param {string[]} featureNames - Liste des fonctionnalités
-   * @returns {boolean}
-   *
-  const canAny = useMemo(() => {
-    return featureNames => {
-      return featureNames.some(feature => can(feature))
-    }
-  }, [can])
-
-  // Calculer l'état de chargement global
-  // Debug logging détaillé (seulement en développement)
-  if (import.meta.env.DEV) {
-    console.log('🔍 PermissionsContext Debug:', {
-      entitlements: {
-        role: entitlements.role,
-        loading: entitlements.loading,
-        userId: entitlements.userId,
-      },
-      permissions: {
-        count: permissions.length,
-        data: permissions.slice(0, 3), // Premières 3 permissions pour debug
-      },
-      features: {
-        count: features.length,
-        data: features.slice(0, 3), // Premières 3 fonctionnalités pour debug
-      },
-      roles: {
-        count: roles.length,
-        data: roles.slice(0, 3), // Premiers 3 rôles pour debug
-      },
-      loading: {
-        entitlements: entitlements.loading,
-        permissions: permissionsLoading.isLoading,
-        api: isLoading,
-      },
-    })
-  }
-
-  // Vérifier si l'utilisateur est connecté (seulement si pas en cours de chargement ET que l'auth a fini de charger)
-  const { loading: authLoading } = useContext(AuthContext)
-  if (!entitlements.loading && !authLoading && !entitlements.userId) {
-    console.warn('⚠️ Utilisateur non connecté - userId undefined')
-  }
-
-  const globalLoading =
-    entitlements.loading || permissionsLoading.isLoading || isLoading
-
-  const value = {
-    ...entitlements,
-    can,
-    canAll,
-    canAny,
-    permissions,
-    features,
-    roles,
-    loading: globalLoading,
-    // Fonctions de gestion
-    createRole,
-    updateRole,
-    deleteRole,
-    updateRolePermissions,
-    createFeature,
-    updateFeature,
-    deleteFeature,
-    loadAllData,
-  }
-
-  return (
-    <PermissionsContext.Provider value={value}>
-      {children}
-    </PermissionsContext.Provider>
-  )
-}
-
-export const usePermissions = () => {
-  const context = useContext(PermissionsContext)
-  if (!context) {
-    throw new Error(
-      'usePermissions doit être utilisé dans un PermissionsProvider'
-    )
-  }
-  return context
-}
-
-PermissionsProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-*/
-import {
-  useAccountStatus,
-  usePermissionsAPI,
-  useQuotas,
-  useSimpleRole,
-} from '@/hooks'
 import PropTypes from 'prop-types'
-import { createContext, useContext, useEffect, useMemo } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import { supabase } from '@/utils/supabaseClient'
+import { ROLE, normalizeRoleName } from '@/utils/roleUtils'
 import { AuthContext } from './AuthContext'
 
-const PermissionsContext = createContext()
+export const PermissionsContext = createContext(null)
+
+// --- Utils --------------------------------------------------------------
+
+function extractRoleName(payload) {
+  if (!payload) return ''
+  const candidate =
+    payload.role_name ?? payload.role ?? payload.rolename ?? payload.name ?? ''
+  return normalizeRoleName(candidate)
+}
+
+function toPermissionMap(rows = []) {
+  const map = Object.create(null)
+  for (const r of rows) {
+    const rawName = r.feature_name ?? r.name ?? r.feature ?? r.code ?? ''
+    const key = String(rawName).trim()
+    const allowed =
+      typeof r.can_access === 'boolean'
+        ? r.can_access
+        : typeof r.allowed === 'boolean'
+          ? r.allowed
+          : !!r.enabled
+    if (key) map[key] = !!allowed
+  }
+  return map
+}
+
+// Erreurs transitoires courantes quand le token n’est pas prêt
+const TRANSIENT_ERR_CODES = new Set([
+  'AuthSessionMissingError',
+  'JWTInvalid',
+  'PGRST301',
+  'PGRST302',
+])
+
+async function retryUntilStable(
+  fn,
+  { attempts = 5, delays = [0, 200, 400, 800, 1600] } = {}
+) {
+  let lastErr
+  for (let i = 0; i < attempts; i++) {
+    try {
+      if (delays[i]) await new Promise(r => setTimeout(r, delays[i]))
+      return await fn()
+    } catch (e) {
+      lastErr = e
+      const code = e?.code || e?.name
+      if (!TRANSIENT_ERR_CODES.has(code)) break // erreur non transitoire → on stoppe
+    }
+  }
+  throw lastErr
+}
+
+// --- Provider -----------------------------------------------------------
 
 export const PermissionsProvider = ({ children }) => {
-  const entitlements = useSimpleRole()
-  const accountStatus = useAccountStatus()
-  const quotas = useQuotas()
-  const {
-    permissions,
-    features,
-    roles,
-    loading: _permissionsLoading, // objet de flags par section (non utilisé)
-    isLoading, // bool global du hook
-    createRole,
-    updateRole,
-    deleteRole,
-    updateRolePermissions,
-    createFeature,
-    updateFeature,
-    deleteFeature,
-    loadAllData,
-  } = usePermissionsAPI()
+  const { user, authReady } = useContext(AuthContext)
 
-  // Charger automatiquement les permissions au démarrage (sauf pour les visiteurs)
-  useEffect(() => {
-    // Ne pas charger les permissions si l'utilisateur est visitor
-    if (entitlements.role !== 'visitor') {
-      loadAllData()
+  const [ready, setReady] = useState(false)
+  const [role, setRole] = useState('unknown')
+  const [permissions, setPermissions] = useState({})
+  const [error, setError] = useState(null)
+
+  const load = useCallback(async () => {
+    setError(null)
+
+    // 1) Tant que l’auth n’est pas prête, on reste en "unknown"
+    if (!authReady) {
+      setReady(false)
+      setRole('unknown')
+      setPermissions({})
+      return
     }
-  }, [loadAllData, entitlements.role])
 
-  // Vérifie si l'utilisateur a accès à une fonctionnalité
-  const can = useMemo(() => {
-    return featureName => {
-      // Vérifier d'abord l'état du compte
-      if (!accountStatus.canUseApp) {
-        return false // Compte suspendu ou en suppression
-      }
-
-      // Admin = accès total
-      if (!entitlements.role || entitlements.role === 'admin') {
-        return true
-      }
-
-      // Visitor = accès limité (seulement au tableau avec cartes prédéfinies)
-      if (entitlements.role === 'visitor') {
-        // Les visiteurs n'ont accès qu'à la visualisation du tableau
-        return featureName === 'view_tableau'
-      }
-
-      // Pour les autres rôles, vérifier les permissions
-      const feature = features.find(f => f.name === featureName)
-      if (!feature) {
-        if (import.meta.env.DEV)
-          console.log('❌ Fonctionnalité non trouvée:', featureName)
-        return false
-      }
-
-      const userRole = roles.find(r => r.name === entitlements.role)
-      if (!userRole) {
-        if (import.meta.env.DEV)
-          console.log('❌ Rôle utilisateur non trouvé:', entitlements.role)
-        return false
-      }
-
-      const permission = permissions.find(
-        p => p.feature_id === feature.id && p.role_id === userRole.id
-      )
-
-      return !!permission?.can_access
+    // 2) Pas d’utilisateur → visitor
+    if (!user) {
+      setRole(ROLE.VISITOR)
+      setPermissions({})
+      setReady(true)
+      return
     }
-  }, [entitlements.role, permissions, features, roles, accountStatus.canUseApp])
 
-  const canAll = useMemo(() => {
-    return featureNames => featureNames.every(f => can(f))
-  }, [can])
-
-  const canAny = useMemo(() => {
-    return featureNames => featureNames.some(f => can(f))
-  }, [can])
-
-  // Debug (DEV seulement) - Log unique au chargement initial
-  if (
-    import.meta.env.DEV &&
-    !entitlements.loading &&
-    !isLoading &&
-    entitlements.userId
-  ) {
-    // Log seulement une fois quand l'utilisateur est connecté et les données chargées
-    const shouldLog = !window._permissionsContextLogged
-    if (shouldLog) {
-      console.log('🔍 PermissionsContext initialisé:', {
-        role: entitlements.role,
-        userId: entitlements.userId,
-        permissionsCount: permissions.length,
-        featuresCount: features.length,
-        rolesCount: roles.length,
+    // 3) Utilisateur présent → on récupère rôle + permissions avec retry
+    try {
+      const { roleRows, permRows } = await retryUntilStable(async () => {
+        const [
+          { data: roleRows, error: rErr },
+          { data: permRows, error: pErr },
+        ] = await Promise.all([
+          supabase.rpc('get_my_primary_role'),
+          supabase.rpc('get_my_permissions'),
+        ])
+        if (rErr) {
+          rErr.code ||= rErr?.name
+          throw rErr
+        }
+        if (pErr) {
+          pErr.code ||= pErr?.name
+          throw pErr
+        }
+        return { roleRows, permRows }
       })
-      window._permissionsContextLogged = true
+
+      const primary = Array.isArray(roleRows) ? roleRows[0] : roleRows
+      const normRole = extractRoleName(primary) || ROLE.VISITOR
+      const permMap = toPermissionMap(permRows || [])
+
+      setRole(normRole)
+      setPermissions(permMap)
+      setReady(true)
+    } catch (e) {
+      // En cas d’erreur "réelle", on termine en ready=true pour éviter de bloquer l’UI.
+      if (import.meta.env.DEV) console.warn('[Permissions] load error:', e)
+      setError(e)
+      setRole('unknown')
+      setPermissions({})
+      setReady(true)
     }
-  }
+  }, [authReady, user])
 
-  // Alerte UX si non connecté une fois les chargements terminés (réduit)
-  const { loading: authLoading } = useContext(AuthContext)
-  if (
-    !entitlements.loading &&
-    !authLoading &&
-    !entitlements.userId &&
-    import.meta.env.DEV
-  ) {
-    console.debug('⚠️ Utilisateur non connecté - mode visitor')
-  }
+  // Chargement initial + sur changements d’auth
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      await load()
+      if (!mounted) return
+    })()
 
-  // Global loading = entitlements OU chargement global du hook API
-  const globalLoading = entitlements.loading || isLoading
+    const { data: sub } = supabase.auth.onAuthStateChange(async () => {
+      try {
+        await load()
+      } catch {
+        /* déjà loggé */
+      }
+    })
 
-  const value = {
-    ...entitlements,
-    can,
-    canAll,
-    canAny,
-    permissions,
-    features,
-    roles,
-    loading: globalLoading,
-    // Nouveaux hooks
-    accountStatus,
-    quotas,
-    // Actions
-    createRole,
-    updateRole,
-    deleteRole,
-    updateRolePermissions,
-    createFeature,
-    updateFeature,
-    deleteFeature,
-    loadAllData,
-  }
+    return () => {
+      mounted = false
+      sub?.subscription?.unsubscribe?.()
+    }
+  }, [load])
+
+  const can = useCallback(
+    featureName => {
+      if (!featureName) return false
+      if (!ready) return false
+      if (role === ROLE.ADMIN) return true
+      return !!permissions[String(featureName)]
+    },
+    [permissions, ready, role]
+  )
+
+  const value = useMemo(
+    () => ({
+      ready, // TRUE quand une décision est prise
+      role, // 'unknown' | 'visitor' | 'user' | 'admin' | …
+      isUnknown: role === 'unknown',
+      isVisitor: ready && role === ROLE.VISITOR,
+      isAdmin: ready && role === ROLE.ADMIN, // ✅ exposé pour UserMenu & co
+      permissions,
+      error,
+      can,
+      reload: load,
+    }),
+    [ready, role, permissions, error, can, load]
+  )
 
   return (
     <PermissionsContext.Provider value={value}>
@@ -318,16 +192,16 @@ export const PermissionsProvider = ({ children }) => {
   )
 }
 
-export const usePermissions = () => {
-  const context = useContext(PermissionsContext)
-  if (!context) {
-    throw new Error(
-      'usePermissions doit être utilisé dans un PermissionsProvider'
-    )
-  }
-  return context
-}
-
 PermissionsProvider.propTypes = {
   children: PropTypes.node.isRequired,
 }
+
+// Hook pratique
+export function usePermissions() {
+  const ctx = useContext(PermissionsContext)
+  if (!ctx)
+    throw new Error('usePermissions must be used within a PermissionsProvider')
+  return ctx
+}
+
+export default PermissionsProvider

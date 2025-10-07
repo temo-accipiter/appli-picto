@@ -1,7 +1,7 @@
 // src/components/admin-permissions/LogsTab.jsx
 import { Button } from '@/components'
 import { useToast } from '@/contexts'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function LogsTab() {

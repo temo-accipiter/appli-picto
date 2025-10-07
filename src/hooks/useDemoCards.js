@@ -1,13 +1,16 @@
 // src/hooks/useDemoCards.js
 import { isAbortLike, withAbortSafe } from '@/hooks'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useAuth } from '@/hooks' // pour savoir si visiteur
 
 /**
- * Hook pour gérer les cartes de démonstration
- * Récupère les cartes prédéfinies pour les visiteurs
+ * Hook pour gérer les cartes de démonstration (visiteurs uniquement).
+ * - Si utilisateur authentifié : ne retourne rien (tableaux vides), pas de fetch, pas de canal.
  */
 export default function useDemoCards() {
+  const { user, authReady } = useAuth()
+
   const [loading, setLoading] = useState(true)
   const [demoCards, setDemoCards] = useState([])
   const [demoTasks, setDemoTasks] = useState([])
@@ -16,8 +19,10 @@ export default function useDemoCards() {
 
   const channelRef = useRef(null)
 
-  // Fonction pour récupérer les cartes de démonstration
+  const isVisitor = authReady && !user
+
   const fetchDemoCards = useCallback(async () => {
+    if (!isVisitor) return // 🚫 connecté => on ne charge pas les démos
     setLoading(true)
     setError(null)
 
@@ -27,7 +32,7 @@ export default function useDemoCards() {
           .from('demo_cards')
           .select('*')
           .eq('is_active', true)
-          .order('"position"', { ascending: true })
+          .order('position', { ascending: true }) // nom de colonne sans quotes
       )
 
       if (error && isAbortLike(error)) {
@@ -46,7 +51,6 @@ export default function useDemoCards() {
       const cards = data || []
       setDemoCards(cards)
 
-      // Séparer les tâches et récompenses
       const tasks = cards.filter(card => card.card_type === 'task')
       const rewards = cards.filter(card => card.card_type === 'reward')
 
@@ -58,32 +62,39 @@ export default function useDemoCards() {
       setError('Erreur lors du chargement des cartes de démonstration')
       setLoading(false)
     }
-  }, [])
+  }, [isVisitor])
 
-  // Charger les cartes initialement
+  // Chargement initial seulement pour visiteurs
   useEffect(() => {
+    if (!authReady) return
+    if (!isVisitor) {
+      // utilisateur connecté : expose un état "vide prêt"
+      setLoading(false)
+      setDemoCards([])
+      setDemoTasks([])
+      setDemoRewards([])
+      setError(null)
+      return
+    }
     fetchDemoCards()
-  }, [fetchDemoCards])
+  }, [authReady, isVisitor, fetchDemoCards])
 
-  // Écouter les changements en temps réel
+  // Abonnement temps réel seulement pour visiteurs
   useEffect(() => {
+    // Nettoie tout canal existant
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
       channelRef.current = null
     }
 
+    if (!isVisitor) return // 🚫 pas de canal si connecté
+
     const channel = supabase
       .channel('demo_cards_changes')
       .on(
         'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'demo_cards',
-        },
-        () => {
-          fetchDemoCards()
-        }
+        { event: '*', schema: 'public', table: 'demo_cards' },
+        () => fetchDemoCards()
       )
       .subscribe()
 
@@ -95,14 +106,35 @@ export default function useDemoCards() {
         channelRef.current = null
       }
     }
-  }, [fetchDemoCards])
+  }, [isVisitor, fetchDemoCards])
 
-  // Fonction pour créer une nouvelle carte de démonstration (admin seulement)
+  // Statistiques mémoïsées
+  const getStats = useMemo(() => {
+    const total = demoCards.length
+    const active = demoCards.filter(card => card.is_active).length
+    const tasks = demoTasks.length
+    const rewards = demoRewards.length
+    return { total, active, inactive: total - active, tasks, rewards }
+  }, [demoCards, demoTasks, demoRewards])
+
+  // Sélecteurs utilitaires
+  const getCardsByType = useCallback(
+    type => demoCards.filter(card => card.card_type === type),
+    [demoCards]
+  )
+  const getActiveCards = useCallback(
+    () => demoCards.filter(card => card.is_active),
+    [demoCards]
+  )
+  const getInactiveCards = useCallback(
+    () => demoCards.filter(card => !card.is_active),
+    [demoCards]
+  )
+
+  // Actions (admin) — gardées pour compat, mais n’auront d’effet que côté visiteur/admin
   const createDemoCard = useCallback(
     async cardData => {
-      // Définir showToast à l'intérieur du callback
       const showToast = (message, type) => console.log(`[${type}] ${message}`)
-
       try {
         const { data, error } = await supabase
           .from('demo_cards')
@@ -117,31 +149,24 @@ export default function useDemoCards() {
           ])
           .select()
           .single()
-
         if (error) {
-          console.error('Erreur création carte démo:', error)
           showToast(`Erreur : ${error.message}`, 'error')
           return null
         }
-
         showToast('Carte de démonstration créée', 'success')
-        await fetchDemoCards() // Rafraîchir la liste
+        await fetchDemoCards()
         return data
       } catch (err) {
         console.error('Erreur création carte démo:', err)
-        showToast('Erreur lors de la création', 'error')
         return null
       }
     },
     [fetchDemoCards]
   )
 
-  // Fonction pour mettre à jour une carte de démonstration (admin seulement)
   const updateDemoCard = useCallback(
     async (cardId, updates) => {
-      // Définir showToast à l'intérieur du callback
       const showToast = (message, type) => console.log(`[${type}] ${message}`)
-
       try {
         const { data, error } = await supabase
           .from('demo_cards')
@@ -149,128 +174,72 @@ export default function useDemoCards() {
           .eq('id', cardId)
           .select()
           .single()
-
         if (error) {
-          console.error('Erreur mise à jour carte démo:', error)
           showToast(`Erreur : ${error.message}`, 'error')
           return null
         }
-
         showToast('Carte de démonstration mise à jour', 'success')
-        await fetchDemoCards() // Rafraîchir la liste
+        await fetchDemoCards()
         return data
       } catch (err) {
         console.error('Erreur mise à jour carte démo:', err)
-        showToast('Erreur lors de la mise à jour', 'error')
         return null
       }
     },
     [fetchDemoCards]
   )
 
-  // Fonction pour supprimer une carte de démonstration (admin seulement)
   const deleteDemoCard = useCallback(
     async cardId => {
-      // Définir showToast à l'intérieur du callback
       const showToast = (message, type) => console.log(`[${type}] ${message}`)
-
       try {
         const { error } = await supabase
           .from('demo_cards')
           .delete()
           .eq('id', cardId)
-
         if (error) {
-          console.error('Erreur suppression carte démo:', error)
           showToast(`Erreur : ${error.message}`, 'error')
           return false
         }
-
         showToast('Carte de démonstration supprimée', 'success')
-        await fetchDemoCards() // Rafraîchir la liste
+        await fetchDemoCards()
         return true
       } catch (err) {
         console.error('Erreur suppression carte démo:', err)
-        showToast('Erreur lors de la suppression', 'error')
         return false
       }
     },
     [fetchDemoCards]
   )
 
-  // Fonction pour réorganiser les cartes (admin seulement)
   const reorderDemoCards = useCallback(
     async cardIds => {
-      // Définir showToast à l'intérieur du callback
       const showToast = (message, type) => console.log(`[${type}] ${message}`)
-
       try {
         const updates = cardIds.map((cardId, index) => ({
           id: cardId,
           position: index + 1,
         }))
-
         const { error } = await supabase.from('demo_cards').upsert(updates)
-
         if (error) {
-          console.error('Erreur réorganisation cartes démo:', error)
           showToast(`Erreur : ${error.message}`, 'error')
           return false
         }
-
         showToast('Ordre des cartes mis à jour', 'success')
-        await fetchDemoCards() // Rafraîchir la liste
+        await fetchDemoCards()
         return true
       } catch (err) {
         console.error('Erreur réorganisation cartes démo:', err)
-        showToast('Erreur lors de la réorganisation', 'error')
         return false
       }
     },
     [fetchDemoCards]
   )
 
-  // Fonction pour activer/désactiver une carte (admin seulement)
   const toggleDemoCard = useCallback(
-    async (cardId, isActive) => {
-      return await updateDemoCard(cardId, { is_active: isActive })
-    },
+    async (cardId, isActive) => updateDemoCard(cardId, { is_active: isActive }),
     [updateDemoCard]
   )
-
-  // Obtenir les cartes par type
-  const getCardsByType = useCallback(
-    type => {
-      return demoCards.filter(card => card.card_type === type)
-    },
-    [demoCards]
-  )
-
-  // Obtenir les cartes actives
-  const getActiveCards = useCallback(() => {
-    return demoCards.filter(card => card.is_active)
-  }, [demoCards])
-
-  // Obtenir les cartes inactives
-  const getInactiveCards = useCallback(() => {
-    return demoCards.filter(card => !card.is_active)
-  }, [demoCards])
-
-  // Statistiques des cartes
-  const getStats = useMemo(() => {
-    const total = demoCards.length
-    const active = demoCards.filter(card => card.is_active).length
-    const tasks = demoTasks.length
-    const rewards = demoRewards.length
-
-    return {
-      total,
-      active,
-      inactive: total - active,
-      tasks,
-      rewards,
-    }
-  }, [demoCards, demoTasks, demoRewards])
 
   return {
     // État
@@ -280,7 +249,7 @@ export default function useDemoCards() {
     demoTasks,
     demoRewards,
 
-    // Fonctions de récupération
+    // Sélecteurs
     getCardsByType,
     getActiveCards,
     getInactiveCards,
@@ -292,10 +261,10 @@ export default function useDemoCards() {
     reorderDemoCards,
     toggleDemoCard,
 
-    // Statistiques
+    // Stats
     stats: getStats,
 
-    // Utilitaires
+    // Utilitaire
     refresh: fetchDemoCards,
   }
 }

@@ -1,108 +1,98 @@
-import { saveUserTimezoneOnce } from '@/services/saveUserTimezone'
-import { supabase } from '@/utils'
+// src/contexts/AuthContext.jsx
+// Auth global robuste : annonce toujours authReady (succès ou échec),
+// et met à jour user depuis la session courante + onAuthStateChange.
+
 import PropTypes from 'prop-types'
 import { createContext, useEffect, useMemo, useState } from 'react'
+import { supabase } from '@/utils/supabaseClient'
 
-export const AuthContext = createContext()
+export const AuthContext = createContext(null)
 
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [authReady, setAuthReady] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     let mounted = true
-    const timerId = `authReady-${Date.now()}-${Math.random()}`
-    console.time(timerId)
+    let timeoutId
 
-    // ✅ DÉBLOQUER L'UI IMMÉDIATEMENT
-    setAuthReady(true)
-    console.timeEnd(timerId)
-    ;(async () => {
+    const markReady = () => mounted && setAuthReady(true)
+
+    const init = async () => {
+      setError(null)
+
       try {
-        console.log('🔐 Récupération de la session au démarrage...')
-        const { data, error } = await supabase.auth.getSession()
-        if (!mounted) return
+        // 1) Lecture synchronisée de la session (plus fiable que getUser au tout début)
+        const { data: sessionData, error: sErr } =
+          await supabase.auth.getSession()
+        if (sErr && import.meta.env.DEV)
+          console.warn('[Auth] getSession error:', sErr)
 
-        if (error) {
-          console.warn('Session: erreur getSession()', error)
+        const sessionUser = sessionData?.session?.user ?? null
+        if (mounted) setUser(sessionUser)
+
+        // 2) Même si la session n’est pas encore restaurée, on ne doit PAS bloquer l’app.
+        //    On met un garde-fou: authReady TRUE après un court délai quoi qu’il arrive.
+        timeoutId = window.setTimeout(markReady, 800)
+
+        // 3) Si la session est déjà là, on peut lever le ready tout de suite.
+        if (sessionUser) {
+          window.clearTimeout(timeoutId)
+          markReady()
         }
 
-        const u = data?.session?.user ?? null
-        setUser(u)
+        // 4) Abonnement aux changements (login/logout/refresh)
+        const { data: sub } = supabase.auth.onAuthStateChange(
+          (_event, session) => {
+            if (!mounted) return
+            setUser(session?.user ?? null)
+            // La première fois qu’on reçoit un event, on force ready
+            window.clearTimeout(timeoutId)
+            markReady()
+          }
+        )
 
-        // Test de session non-bloquant (optionnel)
-        if (u) {
-          supabase
-            .rpc('get_usage_fast', { p_user_id: u.id })
-            .then(({ error: testError }) => {
-              if (testError)
-                console.warn('Test session (non-bloquant):', testError)
-            })
-            .catch(e => console.warn('Test session (non-bloquant):', e))
+        return () => {
+          sub?.subscription?.unsubscribe?.()
         }
       } catch (e) {
-        if (!mounted) return
-        console.error('getSession() a échoué:', e)
-        setUser(null)
+        if (import.meta.env.DEV)
+          console.warn('[Auth] unexpected init error:', e)
+        setError(e)
+        // Ne jamais bloquer : on annonce ready même en erreur
+        markReady()
       }
-    })()
+    }
 
-    const { data: sub } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        const u = session?.user ?? null
-        console.log(
-          "🔐 Changement d'état auth:",
-          event,
-          u?.id || 'aucun utilisateur'
-        )
-        setUser(u)
-        if (u && event === 'SIGNED_IN') {
-          await saveUserTimezoneOnce()
-        }
-      }
-    )
+    init()
 
     return () => {
       mounted = false
-      sub?.subscription?.unsubscribe?.()
+      if (timeoutId) window.clearTimeout(timeoutId)
     }
   }, [])
 
   const signOut = async () => {
     try {
-      console.log('🔐 Début de la déconnexion...')
-
-      // Timeout de 5 secondes pour éviter le blocage
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout déconnexion')), 5000)
-      )
-
-      const signOutPromise = supabase.auth.signOut({ scope: 'global' })
-
-      const { error } = await Promise.race([signOutPromise, timeoutPromise])
-
-      if (error) {
-        console.error('Erreur déconnexion Supabase:', error)
-      }
-
-      // Toujours forcer la déconnexion locale
+      await supabase.auth.signOut()
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('[Auth] signOut error:', e)
+      setError(e)
+    } finally {
       setUser(null)
-      setAuthReady(false)
-      console.log('🔐 Déconnexion terminée')
-    } catch (err) {
-      console.error('Erreur lors de la déconnexion:', err)
-      // Même en cas d'erreur, forcer la déconnexion locale
-      setUser(null)
-      setAuthReady(false)
-      console.log('🔐 Déconnexion forcée (timeout/erreur)')
+      setAuthReady(true)
     }
   }
 
-  const value = useMemo(() => ({ user, authReady, signOut }), [user, authReady])
+  const value = useMemo(
+    () => ({ user, authReady, error, signOut }),
+    [user, authReady, error]
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-AuthProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
+AuthProvider.propTypes = { children: PropTypes.node.isRequired }
+
+export default AuthProvider

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './PortailRGPD.scss'
 
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useAuth } from '@/hooks'
 import { useToast } from '@/contexts'
 import { exportUserDataZip } from '@/utils/rgpdExport'

@@ -1,6 +1,6 @@
 // src/hooks/useQuotas-optimized.js
 // Version ultra-optimisée utilisant la RPC get_usage_fast
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import useAuth from './useAuth'
 

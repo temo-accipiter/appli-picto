@@ -1,6 +1,6 @@
 // src/services/imageUploadService.js
 // Service d'upload d'images avec quotas et optimisations
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 
 // Configuration des quotas d'images
 const IMAGE_CONFIG = {

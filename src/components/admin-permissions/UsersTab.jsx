@@ -3,9 +3,10 @@ import {
   assignRoleToUser,
   getUsersWithRoles,
   removeRoleFromUser,
+  getRoles, // ← NEW: pour construire la map name -> id
 } from '@/utils/permissions-api'
 import { Crown, Shield, UserMinus, UserPlus, Users } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 export default function UsersTab() {
   const [users, setUsers] = useState([])
@@ -22,10 +23,27 @@ export default function UsersTab() {
   const [pagination, setPagination] = useState(null)
   const [stats, setStats] = useState(null)
 
+  // NEW — map des rôles { name -> id } pour traduire 'visitor' / 'abonne' en UUID
+  const [rolesMap, setRolesMap] = useState(null)
+
   // Charger les utilisateurs au montage et quand les filtres changent
   useEffect(() => {
     loadUsers()
-  }, [currentPage, roleFilter, statusFilter, loadUsers])
+  }, [currentPage, roleFilter, statusFilter]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Charger la map des rôles une seule fois
+  useEffect(() => {
+    ;(async () => {
+      const { data, error } = await getRoles()
+      if (!error && Array.isArray(data)) {
+        const map = Object.create(null)
+        data.forEach(r => {
+          if (r?.name && r?.id) map[r.name] = r.id
+        })
+        setRolesMap(map)
+      }
+    })()
+  }, [])
 
   const loadUsers = useCallback(async () => {
     try {
@@ -69,8 +87,22 @@ export default function UsersTab() {
     }
   }, [currentPage, roleFilter, statusFilter])
 
-  const handleAssignRole = async (userId, roleId) => {
+  const handleAssignRole = async (userId, roleIdOrName) => {
     try {
+      // 👇 Compat : si on reçoit un NOM ('visitor'/'abonne'), on le mappe vers l'UUID
+      let roleId = roleIdOrName
+      const looksLikeUuid =
+        typeof roleIdOrName === 'string' && roleIdOrName.length > 30
+
+      if (!looksLikeUuid) {
+        const idFromName = rolesMap?.[roleIdOrName]
+        if (!idFromName) {
+          alert(`Rôle introuvable: ${roleIdOrName}`)
+          return
+        }
+        roleId = idFromName
+      }
+
       const { error } = await assignRoleToUser(userId, roleId)
 
       if (error) {
@@ -133,10 +165,14 @@ export default function UsersTab() {
     }
   }
 
-  const filteredUsers = users.filter(
-    user =>
-      user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = useMemo(
+    () =>
+      users.filter(
+        user =>
+          user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      ),
+    [users, searchTerm]
   )
 
   if (loading) {

@@ -1,30 +1,40 @@
+// src/utils/useFallbackData.js
+// Fallback data loader : utilisé seulement si on a VRAIMENT quelque chose à afficher
+// (ou en cas d'erreur réseau), sinon renvoie null pour laisser l'UI afficher "vide".
+//
+// Règles :
+// - Si pas d'utilisateur/auth non prêt → fallbackData = null
+// - Si requêtes OK ET 0 tâche + 0 récompense + 0 catégorie → fallbackData = null  (🔧 changement clé)
+// - Si on a des données (≥1) OU des erreurs → fallbackData = { ... } (permet à l'UI d'afficher ce qu'on a)
+// - loading reflète l'état de la requête fallback uniquement (pas l'état global de la page)
+
 import { AuthContext } from '@/contexts/AuthContext'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useContext, useEffect, useState } from 'react'
 
-/**
- * Hook de fallback pour charger les données de base même si les RPC timeout
- * Garantit que l'utilisateur voit ses données même en cas de problème de performance
- */
 export function useFallbackData() {
   const { user, authReady } = useContext(AuthContext)
-  const [fallbackData, setFallbackData] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [fallbackData, setFallbackData] = useState(null) // null = pas de fallback à utiliser
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    // Pas de user → aucun fallback côté compte authentifié
     if (!authReady || !user) {
       setFallbackData(null)
       setLoading(false)
       return
     }
 
+    let cancelled = false
+
     const loadFallbackData = async () => {
       setLoading(true)
-
       try {
-        console.log('🔄 useFallbackData: chargement des données de fallback...')
+        if (import.meta.env.DEV) {
+          console.log('🔄 useFallbackData: chargement des données de fallback…')
+        }
 
-        // Charger les tâches de l'utilisateur
+        // Tâches
         const { data: tasks, error: tasksError } = await supabase
           .from('taches')
           .select('*')
@@ -32,7 +42,7 @@ export function useFallbackData() {
           .order('created_at', { ascending: false })
           .limit(10)
 
-        // Charger les récompenses de l'utilisateur
+        // Récompenses
         const { data: rewards, error: rewardsError } = await supabase
           .from('recompenses')
           .select('*')
@@ -40,44 +50,75 @@ export function useFallbackData() {
           .order('created_at', { ascending: false })
           .limit(10)
 
-        // Charger les catégories de l'utilisateur
+        // Catégories
         const { data: categories, error: categoriesError } = await supabase
           .from('categories')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
 
-        const data = {
+        if (cancelled) return
+
+        const safe = {
           tasks: tasks || [],
           rewards: rewards || [],
           categories: categories || [],
           errors: {
-            tasks: tasksError,
-            rewards: rewardsError,
-            categories: categoriesError,
+            tasks: tasksError || null,
+            rewards: rewardsError || null,
+            categories: categoriesError || null,
+          },
+          meta: {
+            // vrai si au moins une collection contient des éléments
+            hasAny:
+              (tasks?.length || 0) > 0 ||
+              (rewards?.length || 0) > 0 ||
+              (categories?.length || 0) > 0,
+            // vrai si au moins une requête a échoué (timeout/RLS/etc.)
+            hasError: !!tasksError || !!rewardsError || !!categoriesError,
           },
         }
 
-        setFallbackData(data)
-        console.log('✅ useFallbackData: données chargées', {
-          tasks: data.tasks.length,
-          rewards: data.rewards.length,
-          categories: data.categories.length,
-        })
+        // 🔧 Changement FONDAMENTAL :
+        // - Si utilisateur AUTHENTIFIÉ et que TOUT est vide et SANS erreur → pas de fallback
+        if (!safe.meta.hasAny && !safe.meta.hasError) {
+          setFallbackData(null)
+          if (import.meta.env.DEV) {
+            console.log(
+              'ℹ️ useFallbackData: rien à fallback (données vides) → null'
+            )
+          }
+        } else {
+          setFallbackData(safe)
+          if (import.meta.env.DEV) {
+            console.log('✅ useFallbackData: fallback prêt', {
+              tasks: safe.tasks.length,
+              rewards: safe.rewards.length,
+              categories: safe.categories.length,
+              hasError: safe.meta.hasError,
+            })
+          }
+        }
       } catch (error) {
+        if (cancelled) return
         console.error('❌ useFallbackData: erreur:', error)
+        // En cas d’exception globale, on renvoie un fallback "vide" mais marqué en erreur
         setFallbackData({
           tasks: [],
           rewards: [],
           categories: [],
           errors: { general: error },
+          meta: { hasAny: false, hasError: true },
         })
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
     loadFallbackData()
+    return () => {
+      cancelled = true
+    }
   }, [authReady, user])
 
   return { fallbackData, loading }

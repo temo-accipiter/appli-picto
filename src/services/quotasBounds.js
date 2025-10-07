@@ -1,5 +1,5 @@
 // src/services/quotasBounds.js
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 
 /**
  * Récupère (start_utc, end_utc) du mois courant pour l'utilisateur,

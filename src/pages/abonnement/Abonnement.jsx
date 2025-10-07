@@ -2,7 +2,7 @@
 import { Button, FloatingPencil } from '@/components'
 import { useToast } from '@/contexts'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Abonnement.scss'

@@ -2,7 +2,7 @@
 // API fine pour lire/écrire user_prefs depuis ton code applicatif.
 //
 // ⚠️ Adapte l'import du client Supabase à ton projet ("/utils" vs "/supabase").
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 
 export async function getCurrentUser() {
   const { data, error } = await supabase.auth.getUser()

@@ -1,73 +1,95 @@
-import { supabase } from '@/utils'
-import PropTypes from 'prop-types'
-import { useEffect, useState } from 'react'
-import './SignedImage.scss'
+// src/components/SignedImage.jsx
+// Affiche une image issue d’un bucket privé en générant une URL signée côté client.
+// Props conservées : { filePath, alt = '', size = 60, bucket = 'images' }
+// Nouveautés :
+// - Si bucket === 'demo-images' (public), on construit une URL publique (pas de signature).
+// - Si la signature échoue avec le bucket fourni (ex. 'avatars'), on tente automatiquement 'images' en fallback.
 
-// ⚡ cache en mémoire pour éviter les appels redondants
-const signedUrlCache = new Map()
+import PropTypes from 'prop-types'
+import { useEffect, useRef, useState } from 'react'
+import { getSignedImageUrl } from '@/utils/storage/getSignedUrl'
+import { supabase } from '@/utils/supabaseClient'
+import './SignedImage.scss'
 
 export default function SignedImage({
   filePath,
   alt = '',
   size = 60,
-  bucket = 'images', // 👈 permet de choisir le bucket (ex: avatars, images, etc.)
+  bucket = 'images',
 }) {
   const [url, setUrl] = useState(null)
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
+  const mountedRef = useRef(true)
 
   useEffect(() => {
-    if (!filePath) return
-
-    const cacheKey = `${bucket}/${filePath}`
-
-    if (signedUrlCache.has(cacheKey)) {
-      setUrl(signedUrlCache.get(cacheKey))
-      return
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
     }
+  }, [])
 
-    const getSignedUrl = async () => {
-      try {
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(filePath, 3600)
+  useEffect(() => {
+    let cancelled = false
+    setError(false)
+    setUrl(null)
 
-        if (!error && data?.signedUrl) {
-          signedUrlCache.set(cacheKey, data.signedUrl)
-          setUrl(data.signedUrl)
-          setError(false)
-        } else {
-          throw new Error(error?.message || 'Erreur création URL signée')
+    async function run() {
+      if (!filePath) return
+
+      // 1) Bucket public de démo : URL directe
+      if (bucket === 'demo-images') {
+        const { data } = supabase.storage
+          .from('demo-images')
+          .getPublicUrl(String(filePath).replace(/^demo-images\//, ''))
+        if (!cancelled && mountedRef.current) {
+          setUrl(data?.publicUrl || null)
         }
-      } catch (err) {
-        if (import.meta.env.DEV) {
-          console.warn('⚠️ Erreur SignedImage:', err.message)
+        return
+      }
+
+      // 2) Buckets privés : on signe le bucket demandé…
+      const primary = await getSignedImageUrl(filePath, {
+        bucket,
+        expiresIn: 3600,
+        forceRefresh: false,
+      })
+      if (!cancelled && mountedRef.current && primary.url) {
+        setUrl(primary.url)
+        return
+      }
+
+      // 3) …puis on tente un fallback transparent sur 'images'
+      // (utile si des anciens avatars ont été enregistrés dans 'images')
+      if (!cancelled && mountedRef.current && bucket !== 'images') {
+        const fallback = await getSignedImageUrl(filePath, {
+          bucket: 'images',
+          expiresIn: 3600,
+          forceRefresh: false,
+        })
+        if (fallback.url) {
+          setUrl(fallback.url)
+          return
         }
+      }
+
+      // 4) Gestion d’erreur + mini retry
+      if (!cancelled && mountedRef.current) {
         setError(true)
+        if (retryCount < 2) {
+          setTimeout(() => {
+            if (!mountedRef.current) return
+            setRetryCount(c => c + 1)
+          }, 2000)
+        }
       }
     }
 
-    getSignedUrl()
-  }, [filePath, bucket, retryCount])
-
-  // Fonction de retry pour Firefox
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1)
-    setError(false)
-    setUrl(null)
-  }
-
-  // Gestion des erreurs d'image
-  const handleImageError = () => {
-    if (import.meta.env.DEV) {
-      console.warn('⚠️ Image corrompue détectée, tentative de retry...')
+    run()
+    return () => {
+      cancelled = true
     }
-    // Retry automatique après 2 secondes
-    setTimeout(() => {
-      setRetryCount(prev => prev + 1)
-      setUrl(null)
-    }, 2000)
-  }
+  }, [filePath, bucket, retryCount])
 
   return (
     <div
@@ -78,27 +100,16 @@ export default function SignedImage({
         <img
           src={url}
           alt={alt}
+          width={size}
+          height={size}
           className="signed-image__img"
-          crossOrigin="anonymous"
-          onError={handleImageError}
-          onLoad={() => setError(false)}
+          loading="lazy"
+          decoding="async"
         />
-      ) : error ? (
-        <div
-          className="signed-image__error"
-          role="button"
-          tabIndex={0}
-          onClick={handleRetry}
-          onKeyDown={e => e.key === 'Enter' && handleRetry()}
-          aria-label="Erreur de chargement, cliquer pour réessayer"
-        >
-          <span>🔄</span>
-          {retryCount > 0 && <small>Retry {retryCount}</small>}
-        </div>
       ) : (
         <div
-          role="status"
-          aria-label="Chargement image"
+          role="img"
+          aria-label={error ? 'Image indisponible' : 'Chargement image'}
           className="signed-image__placeholder"
         />
       )}

@@ -1,5 +1,5 @@
 import { isAbortLike, useAuth, withAbortSafe } from '@/hooks'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
 // Sérialise proprement les erreurs (évite les soucis d’inspecteur Safari)

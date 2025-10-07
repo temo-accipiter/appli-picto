@@ -1,34 +1,30 @@
-import { AuthContext } from '@/contexts/AuthContext'
-import { useContext, useEffect, useState } from 'react'
+// src/hooks/useSimpleRole.js
+// Objectif : fournir un accès ultra-simple au rôle courant
+// → On lit désormais le rôle depuis PermissionsContext (source unique)
 
-/**
- * Hook simplifié pour déterminer le rôle de l'utilisateur
- * Ne dépend pas des RPC lents, utilise des requêtes directes rapides
- */
-export function useSimpleRole() {
-  const { user, authReady } = useContext(AuthContext)
-  const [role, setRole] = useState('unknown')
-  const [loading, setLoading] = useState(true)
+import { useContext, useMemo } from 'react'
+import { PermissionsContext } from '@/contexts'
+import { ROLE } from '@/utils/roleUtils'
 
-  useEffect(() => {
-    if (!authReady) {
-      setLoading(true)
-      return
+export default function useSimpleRole() {
+  const ctx = useContext(PermissionsContext)
+
+  // Protection : si le provider n'est pas monté
+  const ready = !!ctx?.ready
+  const role = ctx?.role ?? ROLE.VISITOR
+
+  const value = useMemo(() => {
+    return {
+      ready,
+      role,
+      isVisitor: role === ROLE.VISITOR,
+      isUnknown: role === 'unknown',
+      isAdmin: role === ROLE.ADMIN,
+      // pratique dans l’UI
+      can: ctx?.can ?? (() => false),
+      reload: ctx?.reload ?? (() => {}),
     }
+  }, [ready, role, ctx?.can, ctx?.reload])
 
-    if (!user) {
-      setRole('visitor')
-      setLoading(false)
-      return
-    }
-
-    // 🚀 SOLUTION ULTRA-SIMPLE : Pas de requêtes, juste des fallbacks
-    console.log('🔍 useSimpleRole: utilisateur connecté, rôle = free')
-    setRole('free')
-    setLoading(false)
-  }, [authReady, user])
-
-  return { role, loading }
+  return value
 }
-
-export default useSimpleRole

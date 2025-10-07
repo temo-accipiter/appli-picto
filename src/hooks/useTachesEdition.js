@@ -1,9 +1,17 @@
+// src/hooks/useTachesEdition.js
+/**
+ * Édition des tâches :
+ * - Liste / toggle "aujourdhui" / update label & catégorie
+ * - Suppression (avec purge image)
+ * - ✅ Upload/Remplacement d'image factorisé (helpers addFromFile / updateImage)
+ */
 import { useState, useEffect } from 'react'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useAuth } from '@/hooks'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
+import { uploadImage } from '@/utils/storage/uploadImage'
+import replaceImageIfAny from '@/utils/storage/replaceImageIfAny'
 
-// sérialise proprement les erreurs pour éviter les soucis d’inspecteur Safari
 const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
@@ -22,118 +30,166 @@ export default function useTachesEdition(reload = 0) {
   useEffect(() => {
     if (!user?.id) return
     ;(async () => {
-      const { data, error, aborted } = await withAbortSafe(
-        supabase.from('taches').select('*').eq('user_id', user.id)
-      )
-
-      if (aborted || (error && isAbortLike(error))) return
+      const { data, error } = await supabase
+        .from('taches')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('position', { ascending: true })
 
       if (error) {
         console.error(`❌ Erreur fetch Supabase : ${formatErr(error)}`)
         return
       }
-
-      setTaches(Array.isArray(data) ? data : [])
+      const norm = (data || []).map(t => ({
+        ...t,
+        aujourdhui: !!t.aujourdhui,
+        fait: !!t.fait,
+      }))
+      setTaches(norm)
     })()
   }, [reload, user?.id])
 
   const toggleAujourdhui = async (id, current) => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('taches')
-        .update({ aujourdhui: !current, fait: false })
-        .eq('id', id)
-        .eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
+    const { error } = await supabase
+      .from('taches')
+      .update({ aujourdhui: !current, fait: false })
+      .eq('id', id)
+      .eq('user_id', user.id)
     if (error) {
       console.error(`❌ Erreur toggle aujourdhui : ${formatErr(error)}`)
       return
     }
     setTaches(prev =>
       prev.map(t =>
-        t.id === id ? { ...t, aujourdhui: !current ? 1 : 0, fait: 0 } : t
+        t.id === id ? { ...t, aujourdhui: !current, fait: false } : t
       )
     )
   }
 
   const updateLabel = async (id, label) => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('taches')
-        .update({ label })
-        .eq('id', id)
-        .eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur update label : ${formatErr(error)}`)
-      return
-    }
+    const { error } = await supabase
+      .from('taches')
+      .update({ label })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error)
+      return console.error(`❌ Erreur update label : ${formatErr(error)}`)
     setTaches(prev => prev.map(t => (t.id === id ? { ...t, label } : t)))
   }
 
   const updateCategorie = async (id, categorie) => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
+    const { error } = await supabase
+      .from('taches')
+      .update({ categorie })
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error)
+      return console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
+    setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
+  }
+
+  // ➕ Ajout avec fichier (upload + insert)
+  const addTacheFromFile = async (file, fields = {}) => {
+    if (!user?.id)
+      return { data: null, error: new Error('Utilisateur manquant') }
+    try {
+      const { path, error } = await uploadImage(file, {
+        userId: user.id,
+        prefix: 'taches',
+      })
+      if (error) throw error
+
+      const toInsert = {
+        user_id: user.id,
+        label: fields.label ?? '',
+        categorie: fields.categorie ?? null,
+        aujourdhui: !!fields.aujourdhui,
+        fait: false,
+        imagepath: path,
+        position: Number.isFinite(fields.position)
+          ? fields.position
+          : taches.length,
+      }
+
+      const { data, error: insErr } = await supabase
         .from('taches')
-        .update({ categorie })
+        .insert([toInsert])
+        .select()
+        .single()
+      if (insErr) throw insErr
+
+      setTaches(prev => [
+        ...prev,
+        { ...data, aujourdhui: !!data.aujourdhui, fait: !!data.fait },
+      ])
+      return { data, error: null }
+    } catch (e) {
+      console.error(`❌ Erreur ajout tâche (upload) : ${formatErr(e)}`)
+      return { data: null, error: e }
+    }
+  }
+
+  // ✏️ Remplacement d'image
+  const updateTacheImage = async (id, file) => {
+    if (!user?.id)
+      return { data: null, error: new Error('Utilisateur manquant') }
+    try {
+      const current = taches.find(x => x.id === id)
+      const oldPath = current?.imagepath || null
+      const { path, error } = await replaceImageIfAny(oldPath, file, {
+        userId: user.id,
+        prefix: 'taches',
+      })
+      if (error) throw error
+
+      const { data, error: updErr } = await supabase
+        .from('taches')
+        .update({ imagepath: path })
         .eq('id', id)
         .eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
-      return
+        .select()
+        .single()
+      if (updErr) throw updErr
+
+      setTaches(prev =>
+        prev.map(t => (t.id === id ? { ...t, imagepath: path } : t))
+      )
+      return { data, error: null }
+    } catch (e) {
+      console.error(`❌ Erreur remplacement image tâche : ${formatErr(e)}`)
+      return { data: null, error: e }
     }
-    setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
   }
 
   const deleteTache = async t => {
     const id = typeof t === 'string' ? t : t?.id
     const imagePath = t?.imagepath
-
     if (!id) {
       console.error('❌ Tâche invalide :', t)
       return
     }
-
-    // 1) supprimer l’image éventuelle (silence si abort)
     if (imagePath) {
-      const { error: storageError, aborted: storageAborted } =
-        await withAbortSafe(supabase.storage.from('images').remove([imagePath]))
-      if (!storageAborted && storageError) {
-        console.warn(`⚠️ Erreur suppression image : ${formatErr(storageError)}`)
-      }
+      const { error } = await deleteImageIfAny(imagePath)
+      if (error) console.warn('⚠️ Erreur suppression image :', error)
     }
-
-    // 2) supprimer la tâche
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('taches').delete().eq('id', id).eq('user_id', user.id)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
-      return
-    }
-
+    const { error } = await supabase
+      .from('taches')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id)
+    if (error)
+      return console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
     setTaches(prev => prev.filter(task => task.id !== id))
   }
 
   const resetEdition = async () => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
-        .from('taches')
-        .update({ aujourdhui: false })
-        .eq('user_id', user.id)
-        .neq('aujourdhui', false)
-    )
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`❌ Erreur resetEdition : ${formatErr(error)}`)
-      return
-    }
-    setTaches(prev => prev.map(t => ({ ...t, aujourdhui: 0 })))
+    const { error } = await supabase
+      .from('taches')
+      .update({ aujourdhui: false })
+      .eq('user_id', user.id)
+    if (error)
+      return console.error(`❌ Erreur reset édition : ${formatErr(error)}`)
+    setTaches(prev => prev.map(t => ({ ...t, aujourdhui: false })))
   }
 
   return {
@@ -141,6 +197,8 @@ export default function useTachesEdition(reload = 0) {
     toggleAujourdhui,
     updateLabel,
     updateCategorie,
+    addTacheFromFile, // ✅ nouveau
+    updateTacheImage, // ✅ nouveau
     deleteTache,
     resetEdition,
   }

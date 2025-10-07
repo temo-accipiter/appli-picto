@@ -1,64 +1,47 @@
+// src/contexts/DisplayContext.jsx
 import PropTypes from 'prop-types'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { usePermissions } from './PermissionsContext'
 
-const DisplayContext = createContext()
+// ✅ on exporte maintenant le contexte nommément
+export const DisplayContext = createContext()
 
 export function DisplayProvider({ children }) {
-  const { isVisitor, loading } = usePermissions()
+  // Dans notre PermissionsContext refondu, on a `ready` au lieu de `loading`
+  const { isVisitor, ready } = usePermissions()
+  const loading = !ready // alias pour compat avec l'ancienne logique
 
-  // ✅ Train - Valeurs par défaut pour les visiteurs
-  const [showTrain, setShowTrain] = useState(() => {
-    if (isVisitor) return true // Par défaut activé pour les visiteurs
-    return localStorage.getItem('showTrain') === 'true'
-  })
-
-  // Mettre à jour showTrain quand isVisitor change
+  const [showTrain, setShowTrain] = useState(() =>
+    isVisitor ? true : localStorage.getItem('showTrain') === 'true'
+  )
   useEffect(() => {
-    if (!loading && isVisitor && !showTrain) {
-      setShowTrain(true) // Forcer true pour les visiteurs
-    }
+    if (!loading && isVisitor && !showTrain) setShowTrain(true)
   }, [isVisitor, loading, showTrain])
-
   useEffect(() => {
     if (!isVisitor) {
       localStorage.setItem('showTrain', showTrain ? 'true' : 'false')
     }
   }, [showTrain, isVisitor])
 
-  // ✅ Autre (réservé pour plus tard)
   const [showAutre, setShowAutre] = useState(() => {
-    // Pendant le chargement, utiliser localStorage ou false par défaut
-    if (loading) {
-      return localStorage.getItem('showAutre') === 'true'
-    }
-    if (isVisitor) return false // Par défaut désactivé pour les visiteurs
-    return localStorage.getItem('showAutre') === 'true'
+    if (loading) return localStorage.getItem('showAutre') === 'true'
+    return isVisitor ? false : localStorage.getItem('showAutre') === 'true'
   })
-
   useEffect(() => {
-    if (!isVisitor) {
+    if (!isVisitor)
       localStorage.setItem('showAutre', showAutre ? 'true' : 'false')
-    }
   }, [showAutre, isVisitor])
 
-  // ✅ Récompense - Valeurs par défaut pour les visiteurs
   const [showRecompense, setShowRecompense] = useState(() => {
-    // Pendant le chargement, utiliser localStorage ou true par défaut
     if (loading) {
-      return (
-        localStorage.getItem('showRecompense') === 'true' ||
-        localStorage.getItem('showRecompense') === null
-      )
+      const v = localStorage.getItem('showRecompense')
+      return v === null ? true : v === 'true'
     }
-    if (isVisitor) return true // Par défaut activé pour les visiteurs
-    return localStorage.getItem('showRecompense') === 'true'
+    return isVisitor ? true : localStorage.getItem('showRecompense') === 'true'
   })
-
   useEffect(() => {
-    if (!isVisitor) {
+    if (!isVisitor)
       localStorage.setItem('showRecompense', showRecompense ? 'true' : 'false')
-    }
   }, [showRecompense, isVisitor])
 
   return (
@@ -70,6 +53,8 @@ export function DisplayProvider({ children }) {
         setShowAutre,
         showRecompense,
         setShowRecompense,
+        loading, // expose l’alias si d’autres consommateurs l’utilisent
+        isVisitor, // utile à l’UI
       }}
     >
       {children}
@@ -77,10 +62,11 @@ export function DisplayProvider({ children }) {
   )
 }
 
-DisplayProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
+DisplayProvider.propTypes = { children: PropTypes.node.isRequired }
 
 export function useDisplay() {
   return useContext(DisplayContext)
 }
+
+// ✅ Export par défaut homogène
+export default DisplayProvider

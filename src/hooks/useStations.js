@@ -1,4 +1,4 @@
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 
 export default function useStations(ligne = '1', type = 'metro') {

@@ -1,7 +1,7 @@
 // src/components/SubscribeButton.jsx
 import { Button } from '@/components'
 import { useToast } from '@/contexts'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useState } from 'react'
 
 export default function SubscribeButton() {

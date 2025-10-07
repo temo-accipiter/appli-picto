@@ -1,6 +1,6 @@
 // src/components/admin/AccountManagement.jsx
 import { usePermissions } from '@/contexts'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import './AccountManagement.scss'

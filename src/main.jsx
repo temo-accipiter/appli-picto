@@ -1,27 +1,31 @@
 // src/main.jsx
-import { Layout, Loader, ProtectedRoute } from '@/components'
-import {
-  AuthProvider,
-  DisplayProvider,
-  PermissionsProvider,
-  ToastProvider,
-} from '@/contexts'
-import '@/i18n/i18n'
-import '@/styles/main.scss'
-import { supabase } from '@/utils'
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-// ⬇️ Pont consentement ↔ trackers (charge GA4 uniquement si analytics=true)
+import { Layout, Loader, ProtectedRoute } from '@/components'
+import {
+  AuthProvider,
+  PermissionsProvider,
+  DisplayProvider,
+  ToastProvider,
+} from '@/contexts'
+
+import { supabase } from '@/utils/supabaseClient'
+
+// i18n + styles
+import '@/i18n/i18n'
+import '@/styles/main.scss'
+
+// Consentement / analytics (chargé seulement si nécessaire)
 import { setupConsentBridges } from '@/analytics'
 import '@/analytics/routePageViews'
 import '@/analytics/userProps'
 
-// Initialisation des ponts consentement
+// Expose quelques helpers de test en DEV
 if (typeof window !== 'undefined') {
   setupConsentBridges()
-  // Helpers de test dans la console (check GA4, etc.)
+
   window.testLegalCompliance = {
     testConfig: async () => {
       const { testLegalConfiguration } = await import('@/utils/testLegalConfig')
@@ -62,23 +66,21 @@ if (typeof window !== 'undefined') {
       }))
     },
     help: () => {
-      console.log(`
-🧪 FONCTIONS : testLegalCompliance.testConfig() / testRGPD() / checkGA4() / testDocuments()
-`)
+      console.log(
+        '🧪 testLegalCompliance.testConfig() / testRGPD() / checkGA4() / testDocuments()'
+      )
     },
   }
+
   window.env = {
     GA4_ID: import.meta.env.VITE_GA4_ID,
     SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     APP_ENV: import.meta.env.VITE_APP_ENV,
     APP_URL: import.meta.env.VITE_APP_URL,
   }
-  if (import.meta.env.DEV) {
-    console.log('🧪 testLegalCompliance.help() • 🌍 env')
-  }
 }
 
-// Redirections/cleanups auth
+// Nettoyage des URLs de callback auth (Supabase)
 if (
   typeof window !== 'undefined' &&
   window.location.hash.includes('type=recovery')
@@ -99,7 +101,7 @@ if (
   })
 }
 
-// Pages lazy-loaded
+// Pages (lazy load côté pages/index)
 import {
   Abonnement,
   Accessibilite,
@@ -122,11 +124,11 @@ import {
   Tableau,
 } from '@/pages'
 
-// ✅ Routes : on place aussi login/signup/forgot/reset SOUS Layout
+// Routes : login/signup sous Layout pour afficher bannière cookies & footer
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />, // Layout rend Footer + CookieBanner + CookiePreferences
+    element: <Layout />,
     children: [
       { index: true, element: <HomeRedirect /> },
       { path: 'tableau', element: <Tableau /> },
@@ -171,13 +173,13 @@ const router = createBrowserRouter([
         ),
       },
 
-      // 🔽 Déplacées ici pour afficher la bannière sur /login & co
+      // Auth
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
       { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'reset-password', element: <ResetPassword /> },
 
-      // Pages légales (conformes aux liens du Footer)
+      // Légal
       { path: 'mentions-legales', element: <MentionsLegales /> },
       { path: 'cgu', element: <CGU /> },
       { path: 'cgv', element: <CGV /> },

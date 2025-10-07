@@ -1,6 +1,6 @@
 // src/pages/forgot-password/ForgotPassword.jsx
 import { useState, useRef } from 'react'
-import { supabase } from '@/utils'
+import { supabase } from '@/utils/supabaseClient'
 import { useToast } from '@/contexts'
 import { InputWithValidation, Button } from '@/components'
 import { validateEmail, normalizeEmail } from '@/utils'

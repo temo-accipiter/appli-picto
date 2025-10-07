@@ -1,9 +1,15 @@
-import { useEffect, useState, useCallback } from 'react'
-import { supabase } from '@/utils'
-import { useAuth } from '@/hooks'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+// src/hooks/useCategories.js
+// Gestion des catégories compatible avec ton schéma/policies :
+// - SELECT : catégories de l'utilisateur + globales (user_id IS NULL)
+// - INSERT : ne renseigne pas user_id (trigger le fait via auth.uid())
+// - DELETE : par "value" (ton UI passe bien "value", pas "id")
+// - Logs d'erreur clairs + rechargement après mutation
 
-// Log d'erreur "safe" (évite les soucis d'inspection sous Safari)
+import { useEffect, useState, useCallback } from 'react'
+import { supabase } from '@/utils/supabaseClient'
+import { useAuth } from '@/hooks'
+
+// Log d'erreur "safe"
 const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
@@ -15,96 +21,105 @@ const formatErr = e => {
   return parts.join(' ')
 }
 
-export default function useCategories() {
+export default function useCategories(reload = 0) {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { user } = useAuth()
 
   const fetchCategories = useCallback(async () => {
-    if (!user?.id) return
+    if (!user?.id) {
+      setCategories([])
+      setLoading(false)
+      return
+    }
 
     setLoading(true)
-    const { data, error, aborted } = await withAbortSafe(
-      supabase
+    setError(null)
+    try {
+      // ✅ Récupérer à la fois les catégories de l'utilisateur ET les globales
+      // Supabase JS: .or() s'applique au dernier filtre
+      const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .eq('user_id', user.id)
+        .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('label', { ascending: true })
-    )
 
-    if (aborted || (error && isAbortLike(error))) {
+      if (error) throw error
+
+      setCategories(Array.isArray(data) ? data : [])
+    } catch (e) {
+      console.error(`Erreur chargement catégories : ${formatErr(e)}`)
+      setError(e)
+    } finally {
       setLoading(false)
-      return
     }
-
-    if (error) {
-      console.error(`Erreur chargement catégories : ${formatErr(error)}`)
-      setLoading(false)
-      return
-    }
-
-    setCategories(Array.isArray(data) ? data : [])
-    setLoading(false)
   }, [user?.id])
 
   useEffect(() => {
     fetchCategories()
-  }, [fetchCategories])
+  }, [fetchCategories, reload])
 
   const addCategory = async cat => {
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('categories').insert([
+    // cat = { value, label } — user_id géré par trigger
+    try {
+      const { error } = await supabase.from('categories').insert([
         {
           label: cat.label,
           value: cat.value,
-          user_id: user.id,
+          // user_id: trigger a00_categories_set_user_id_before => auth.uid()
         },
       ])
-    )
-
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`Erreur ajout catégorie : ${formatErr(error)}`)
-      return
+      if (error) throw error
+      await fetchCategories()
+      return { error: null }
+    } catch (e) {
+      console.error(`Erreur ajout catégorie : ${formatErr(e)}`)
+      return { error: e }
     }
-    fetchCategories()
   }
 
   const updateCategory = async (id, newLabel) => {
-    const { error, aborted } = await withAbortSafe(
-      supabase
+    try {
+      const { error } = await supabase
         .from('categories')
         .update({ label: newLabel })
         .eq('id', id)
-        .eq('user_id', user.id)
-    )
-
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`Erreur modification catégorie : ${formatErr(error)}`)
-      return
+        // garde-fou : on laisse aussi admin (policy le permet), sinon restreint à l'user
+        .or(`user_id.eq.${user?.id},user_id.is.null`)
+      if (error) throw error
+      await fetchCategories()
+      return { error: null }
+    } catch (e) {
+      console.error(`Erreur modification catégorie : ${formatErr(e)}`)
+      return { error: e }
     }
-    fetchCategories()
   }
 
-  const deleteCategory = async id => {
-    const { error, aborted } = await withAbortSafe(
-      supabase.from('categories').delete().eq('id', id).eq('user_id', user.id)
-    )
-
-    if (aborted || (error && isAbortLike(error))) return
-    if (error) {
-      console.error(`Erreur suppression catégorie : ${formatErr(error)}`)
-      return
+  const deleteCategory = async value => {
+    // ⚠️ Ton UI passe "value" (slug), pas "id"
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('value', value)
+        .eq('user_id', user?.id) // on ne supprime que les catégories de l'utilisateur
+      if (error) throw error
+      await fetchCategories()
+      return { error: null }
+    } catch (e) {
+      console.error(`Erreur suppression catégorie : ${formatErr(e)}`)
+      return { error: e }
     }
-    fetchCategories()
   }
 
   return {
     categories,
     loading,
+    error,
     addCategory,
     updateCategory,
     deleteCategory,
+    refresh: fetchCategories,
   }
 }
