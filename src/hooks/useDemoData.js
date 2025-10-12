@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks' // garde la compat avec ton barrel de hooks
 
 export default function useDemoData() {
   const { user, authReady } = useAuth()
+  const { demoTasks, demoRewards, loading, error } = useDemoCards()
 
   useEffect(() => {
     // Avertissement non bloquant (une seule fois)
@@ -16,7 +17,7 @@ export default function useDemoData() {
     )
   }, [])
 
-  // Si l’auth n’est pas prête → pas de données démo (évite clignotements)
+  // Si l'auth n'est pas prête → pas de données démo (évite clignotements)
   if (!authReady) {
     return { tasks: [], rewards: [], loading: true, error: null }
   }
@@ -27,7 +28,6 @@ export default function useDemoData() {
   }
 
   // 🟢 Visiteur → autorisé à recevoir les démos
-  const { demoTasks, demoRewards, loading, error } = useDemoCards()
   return {
     tasks: demoTasks,
     rewards: demoRewards,

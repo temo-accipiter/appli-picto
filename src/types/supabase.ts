@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '12.2.12 (cd3cf9e)'
+    PostgrestVersion: '13.0.5'
   }
   public: {
     Tables: {
@@ -870,6 +870,21 @@ export type Database = {
       }
     }
     Functions: {
+      _compute_my_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          can_access: boolean
+          feature_name: string
+        }[]
+      }
+      _compute_my_primary_role: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          priority: number
+          role_id: string
+          role_name: string
+        }[]
+      }
       assert_self_or_admin: {
         Args: { p_target: string }
         Returns: undefined
@@ -983,6 +998,21 @@ export type Database = {
           suspended_users: number
           total_users: number
           visitor_users: number
+        }[]
+      }
+      get_my_permissions: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          can_access: boolean
+          feature_name: string
+        }[]
+      }
+      get_my_primary_role: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          priority: number
+          role_id: string
+          role_name: string
         }[]
       }
       get_usage: {

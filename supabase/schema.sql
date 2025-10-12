@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.4
+-- Dumped from database version 17.6
 -- Dumped by pg_dump version 17.5
 
 SET statement_timeout = 0;
@@ -67,6 +67,53 @@ CREATE TYPE storage.buckettype AS ENUM (
 
 
 ALTER TYPE storage.buckettype OWNER TO supabase_storage_admin;
+
+--
+-- Name: _compute_my_permissions(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public._compute_my_permissions() RETURNS TABLE(feature_name text, can_access boolean)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  with my_role as (
+    select role_id, role_name from public._compute_my_primary_role()
+  )
+  select
+    f.name as feature_name,
+    case
+      when (select role_name from my_role) = 'admin' then true
+      else coalesce(rp.can_access, false)
+    end as can_access
+  from features f
+  left join role_permissions rp
+    on rp.feature_id = f.id
+   and rp.role_id = (select role_id from my_role)
+$$;
+
+
+ALTER FUNCTION public._compute_my_permissions() OWNER TO postgres;
+
+--
+-- Name: _compute_my_primary_role(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public._compute_my_primary_role() RETURNS TABLE(role_id uuid, role_name text, priority integer)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+  select r.id as role_id, r.name as role_name, r.priority
+  from user_roles ur
+  join roles r on r.id = ur.role_id
+  where ur.user_id = auth.uid()
+    and coalesce(ur.is_active, true) = true
+    and coalesce(r.is_active, true) = true
+  order by r.priority asc
+  limit 1
+$$;
+
+
+ALTER FUNCTION public._compute_my_primary_role() OWNER TO postgres;
 
 --
 -- Name: assert_self_or_admin(uuid); Type: FUNCTION; Schema: public; Owner: postgres
@@ -489,6 +536,7 @@ ALTER FUNCTION public.cleanup_old_audit_logs(retention_days integer) OWNER TO po
 
 CREATE FUNCTION public.email_exists(email_to_check text) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
     -- Vérifier si l'email existe dans la table auth.users
@@ -509,6 +557,7 @@ ALTER FUNCTION public.email_exists(email_to_check text) OWNER TO postgres;
 
 CREATE FUNCTION public.generate_unique_pseudo(base text) RETURNS text
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 DECLARE
   candidate text := null;
@@ -624,6 +673,7 @@ COMMENT ON FUNCTION public.get_confettis() IS 'Lecture simple du paramètre conf
 
 CREATE FUNCTION public.get_demo_cards(card_type_filter text DEFAULT NULL::text) RETURNS TABLE(id uuid, card_type text, label text, imagepath text, "position" integer)
     LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
     SELECT 
         dc.id,
@@ -646,6 +696,7 @@ ALTER FUNCTION public.get_demo_cards(card_type_filter text) OWNER TO postgres;
 
 CREATE FUNCTION public.get_demo_rewards() RETURNS TABLE(id uuid, label text, imagepath text, "position" integer)
     LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
     SELECT 
         dc.id,
@@ -667,6 +718,7 @@ ALTER FUNCTION public.get_demo_rewards() OWNER TO postgres;
 
 CREATE FUNCTION public.get_demo_tasks() RETURNS TABLE(id uuid, label text, imagepath text, "position" integer)
     LANGUAGE sql STABLE SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
     SELECT 
         dc.id,
@@ -712,6 +764,30 @@ $$;
 
 
 ALTER FUNCTION public.get_migration_report() OWNER TO postgres;
+
+--
+-- Name: get_my_permissions(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_my_permissions() RETURNS TABLE(feature_name text, can_access boolean)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$ select * from public._compute_my_permissions(); $$;
+
+
+ALTER FUNCTION public.get_my_permissions() OWNER TO postgres;
+
+--
+-- Name: get_my_primary_role(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_my_primary_role() RETURNS TABLE(role_id uuid, role_name text, priority integer)
+    LANGUAGE sql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$ select * from public._compute_my_primary_role(); $$;
+
+
+ALTER FUNCTION public.get_my_primary_role() OWNER TO postgres;
 
 --
 -- Name: get_usage(uuid); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1224,6 +1300,7 @@ ALTER FUNCTION public.is_subscriber(p_user uuid) OWNER TO postgres;
 
 CREATE FUNCTION public.is_system_role(role_name text) RETURNS boolean
     LANGUAGE sql STABLE
+    SET search_path TO 'public', 'pg_temp'
     AS $$
   SELECT role_name = ANY (ARRAY['admin', 'visitor', 'free', 'abonne', 'staff'])
 $$;
@@ -1270,6 +1347,7 @@ ALTER FUNCTION public.log_card_creation(_user uuid, _entity text, _id uuid) OWNE
 
 CREATE FUNCTION public.prevent_system_role_delete() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   IF public.is_system_role(OLD.name) THEN
@@ -1288,6 +1366,7 @@ ALTER FUNCTION public.prevent_system_role_delete() OWNER TO postgres;
 
 CREATE FUNCTION public.prevent_system_role_deletion() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   IF OLD.is_active = false AND public.is_system_role(OLD.name) THEN
@@ -1371,6 +1450,7 @@ ALTER FUNCTION public.recompenses_counter_ins() OWNER TO postgres;
 
 CREATE FUNCTION public.rewards_counter_del() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 begin
   perform public.bump_usage_counter(old.user_id, 'rewards', -1);
@@ -1386,6 +1466,7 @@ ALTER FUNCTION public.rewards_counter_del() OWNER TO postgres;
 
 CREATE FUNCTION public.rewards_counter_ins() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 begin
   perform public.bump_usage_counter(new.user_id, 'rewards', 1);
@@ -1580,6 +1661,7 @@ ALTER FUNCTION public.tg_on_auth_user_created() OWNER TO postgres;
 
 CREATE FUNCTION public.tg_parametres_lock_id() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 begin
   if new.id is distinct from old.id then
@@ -1680,6 +1762,7 @@ ALTER FUNCTION public.tg_taches_log_neutral() OWNER TO postgres;
 
 CREATE FUNCTION public.tg_taches_normalize_categorie() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 BEGIN
   IF NEW.categorie IS NOT NULL THEN
@@ -1717,6 +1800,7 @@ ALTER FUNCTION public.tg_taches_set_user_id() OWNER TO postgres;
 
 CREATE FUNCTION public.tg_taches_sync_categorie() RETURNS trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public', 'pg_temp'
     AS $$
 DECLARE
   v_norm text;
@@ -2964,7 +3048,7 @@ COMMENT ON TABLE public.consentements IS 'Journal immuable des consentements (RG
 -- Name: consentements_latest; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.consentements_latest AS
+CREATE VIEW public.consentements_latest WITH (security_invoker='true') AS
  WITH base AS (
          SELECT consentements.id,
             consentements.user_id,
@@ -3392,7 +3476,7 @@ COMMENT ON COLUMN public.roles.is_active IS 'Indique si le rôle est actif et di
 -- Name: role_permissions_admin_view; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.role_permissions_admin_view AS
+CREATE VIEW public.role_permissions_admin_view WITH (security_invoker='true') AS
  SELECT rp.id,
     rp.role_id,
     rp.feature_id,
@@ -3725,7 +3809,7 @@ ALTER TABLE public.user_usage_counters OWNER TO postgres;
 -- Name: v_role_quota_matrix; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.v_role_quota_matrix AS
+CREATE VIEW public.v_role_quota_matrix WITH (security_invoker='true') AS
  SELECT r.name AS role_name,
     rq.quota_type,
     rq.quota_period,
@@ -3741,7 +3825,7 @@ ALTER VIEW public.v_role_quota_matrix OWNER TO postgres;
 -- Name: v_user_storage_usage; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.v_user_storage_usage AS
+CREATE VIEW public.v_user_storage_usage WITH (security_invoker='true') AS
  SELECT user_id,
     (count(*))::integer AS files_count,
     (COALESCE(sum(file_size), (0)::numeric))::bigint AS bytes_total,
@@ -5314,17 +5398,10 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 ALTER TABLE public.abonnements ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: abonnements abonnements_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: abonnements abonnements_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY abonnements_admin_all ON public.abonnements TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: abonnements abonnements_select_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY abonnements_select_own ON public.abonnements FOR SELECT TO authenticated USING (((auth.uid() = user_id) OR public.is_admin()));
+CREATE POLICY abonnements_select_unified ON public.abonnements FOR SELECT TO authenticated USING ((public.is_admin() OR (( SELECT auth.uid() AS uid) = user_id)));
 
 
 --
@@ -5341,17 +5418,17 @@ CREATE POLICY account_audit_logs_insert_admin ON public.account_audit_logs FOR I
 
 
 --
--- Name: account_audit_logs account_audit_logs_select_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: account_audit_logs account_audit_logs_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY account_audit_logs_select_admin ON public.account_audit_logs FOR SELECT USING (public.is_admin());
+CREATE POLICY account_audit_logs_select_unified ON public.account_audit_logs FOR SELECT USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
--- Name: account_audit_logs account_audit_logs_select_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: role_quotas_backup_legacy block_all_access; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY account_audit_logs_select_own ON public.account_audit_logs FOR SELECT USING ((user_id = auth.uid()));
+CREATE POLICY block_all_access ON public.role_quotas_backup_legacy USING (false);
 
 
 --
@@ -5364,35 +5441,28 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 -- Name: categories categories_delete_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_delete_own ON public.categories FOR DELETE TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY categories_delete_own ON public.categories FOR DELETE TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin()));
 
 
 --
--- Name: categories categories_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: categories categories_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_insert_admin ON public.categories FOR INSERT TO authenticated WITH CHECK (public.is_admin());
-
-
---
--- Name: categories categories_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY categories_insert_user_limits ON public.categories FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'category'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'category'::text, 'monthly'::text)));
+CREATE POLICY categories_insert_unified ON public.categories FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'category'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'category'::text, 'monthly'::text))));
 
 
 --
 -- Name: categories categories_select_auth; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_select_auth ON public.categories FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR (user_id IS NULL) OR public.is_admin()));
+CREATE POLICY categories_select_auth ON public.categories FOR SELECT TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR (user_id IS NULL) OR public.is_admin()));
 
 
 --
 -- Name: categories categories_update_own; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_update_own ON public.categories FOR UPDATE TO authenticated USING (((user_id = auth.uid()) OR public.is_admin())) WITH CHECK (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY categories_update_own ON public.categories FOR UPDATE TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin())) WITH CHECK (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin()));
 
 
 --
@@ -5405,35 +5475,28 @@ ALTER TABLE public.consentements ENABLE ROW LEVEL SECURITY;
 -- Name: consentements consentements_delete; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_delete ON public.consentements FOR DELETE TO authenticated, anon USING (false);
+CREATE POLICY consentements_delete ON public.consentements FOR DELETE TO anon, authenticated USING (false);
 
 
 --
--- Name: consentements consentements_insert_anon; Type: POLICY; Schema: public; Owner: postgres
+-- Name: consentements consentements_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_insert_anon ON public.consentements FOR INSERT TO anon WITH CHECK ((user_id IS NULL));
-
-
---
--- Name: consentements consentements_insert_self; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY consentements_insert_self ON public.consentements FOR INSERT TO authenticated WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY consentements_insert_unified ON public.consentements FOR INSERT WITH CHECK (((user_id IS NULL) OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
 -- Name: consentements consentements_select; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_select ON public.consentements FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY consentements_select ON public.consentements FOR SELECT USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin()));
 
 
 --
 -- Name: consentements consentements_update; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authenticated, anon USING (false) WITH CHECK (false);
+CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO anon, authenticated USING (false) WITH CHECK (false);
 
 
 --
@@ -5443,17 +5506,10 @@ CREATE POLICY consentements_update ON public.consentements FOR UPDATE TO authent
 ALTER TABLE public.demo_cards ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: demo_cards demo_cards_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: demo_cards demo_cards_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY demo_cards_admin_all ON public.demo_cards USING (public.is_admin());
-
-
---
--- Name: demo_cards demo_cards_select_public; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY demo_cards_select_public ON public.demo_cards FOR SELECT USING ((is_active = true));
+CREATE POLICY demo_cards_select_unified ON public.demo_cards FOR SELECT USING ((public.is_admin() OR (is_active = true)));
 
 
 --
@@ -5463,24 +5519,17 @@ CREATE POLICY demo_cards_select_public ON public.demo_cards FOR SELECT USING ((i
 ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: features features_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: features features_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY features_admin_all ON public.features TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: features features_read_active; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY features_read_active ON public.features FOR SELECT USING (((is_active = true) OR public.is_admin()));
+CREATE POLICY features_select_unified ON public.features FOR SELECT TO authenticated USING ((public.is_admin() OR (is_active = true)));
 
 
 --
 -- Name: subscription_logs logs_select_user_or_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY logs_select_user_or_admin ON public.subscription_logs FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY logs_select_user_or_admin ON public.subscription_logs FOR SELECT TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin()));
 
 
 --
@@ -5558,52 +5607,24 @@ CREATE POLICY permission_changes_update_admin ON public.permission_changes FOR U
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: profiles profiles_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: profiles profiles_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY profiles_admin_all ON public.profiles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: profiles profiles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY profiles_insert_admin_only ON public.profiles FOR INSERT WITH CHECK (public.is_admin());
+CREATE POLICY profiles_insert_unified ON public.profiles FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR (( SELECT auth.uid() AS uid) = id)));
 
 
 --
--- Name: profiles profiles_insert_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: profiles profiles_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY profiles_insert_own ON public.profiles FOR INSERT TO authenticated WITH CHECK ((auth.uid() = id));
-
-
---
--- Name: profiles profiles_select_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY profiles_select_own ON public.profiles FOR SELECT TO authenticated USING ((auth.uid() = id));
+CREATE POLICY profiles_select_unified ON public.profiles FOR SELECT TO authenticated USING ((public.is_admin() OR (id = ( SELECT auth.uid() AS uid))));
 
 
 --
--- Name: profiles profiles_select_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: profiles profiles_update_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY profiles_select_self_or_admin ON public.profiles FOR SELECT USING (((id = auth.uid()) OR public.is_admin()));
-
-
---
--- Name: profiles profiles_update_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY profiles_update_own ON public.profiles FOR UPDATE TO authenticated USING ((auth.uid() = id)) WITH CHECK ((auth.uid() = id));
-
-
---
--- Name: profiles profiles_update_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY profiles_update_self_or_admin ON public.profiles FOR UPDATE USING (((id = auth.uid()) OR public.is_admin())) WITH CHECK (((id = auth.uid()) OR public.is_admin()));
+CREATE POLICY profiles_update_unified ON public.profiles FOR UPDATE TO authenticated USING ((public.is_admin() OR (id = ( SELECT auth.uid() AS uid)))) WITH CHECK ((public.is_admin() OR (id = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -5613,31 +5634,17 @@ CREATE POLICY profiles_update_self_or_admin ON public.profiles FOR UPDATE USING 
 ALTER TABLE public.recompenses ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: recompenses recompenses_delete_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_delete_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_delete_admin ON public.recompenses FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: recompenses recompenses_delete_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY recompenses_delete_own ON public.recompenses FOR DELETE TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY recompenses_delete_unified ON public.recompenses FOR DELETE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
--- Name: recompenses recompenses_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_insert_admin ON public.recompenses FOR INSERT TO authenticated WITH CHECK (public.is_admin());
-
-
---
--- Name: recompenses recompenses_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY recompenses_insert_user_limits ON public.recompenses FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'reward'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'reward'::text, 'monthly'::text)));
+CREATE POLICY recompenses_insert_unified ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'monthly'::text))));
 
 
 --
@@ -5648,31 +5655,17 @@ CREATE POLICY recompenses_select_demo ON public.recompenses FOR SELECT TO anon U
 
 
 --
--- Name: recompenses recompenses_select_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_select_own ON public.recompenses FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR ((user_id IS NULL) AND (visible_en_demo = true))));
-
-
---
--- Name: recompenses recompenses_select_owner_or_admin; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY recompenses_select_owner_or_admin ON public.recompenses FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY recompenses_select_unified ON public.recompenses FOR SELECT TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid)) OR ((user_id IS NULL) AND (visible_en_demo = true))));
 
 
 --
--- Name: recompenses recompenses_update_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_update_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_update_admin ON public.recompenses FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: recompenses recompenses_update_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY recompenses_update_own ON public.recompenses FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY recompenses_update_unified ON public.recompenses FOR UPDATE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))) WITH CHECK ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -5682,19 +5675,12 @@ CREATE POLICY recompenses_update_own ON public.recompenses FOR UPDATE TO authent
 ALTER TABLE public.role_permissions ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: role_permissions role_permissions_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: role_permissions role_permissions_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY role_permissions_admin_all ON public.role_permissions TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: role_permissions role_permissions_select_own_or_admin; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY role_permissions_select_own_or_admin ON public.role_permissions FOR SELECT TO authenticated USING ((public.is_admin() OR (EXISTS ( SELECT 1
+CREATE POLICY role_permissions_select_unified ON public.role_permissions FOR SELECT TO authenticated USING ((public.is_admin() OR (EXISTS ( SELECT 1
    FROM public.user_roles ur
-  WHERE ((ur.user_id = auth.uid()) AND (ur.role_id = role_permissions.role_id) AND (ur.is_active = true))))));
+  WHERE ((ur.user_id = ( SELECT auth.uid() AS uid)) AND (ur.role_id = role_permissions.role_id) AND (ur.is_active = true))))));
 
 
 --
@@ -5702,6 +5688,12 @@ CREATE POLICY role_permissions_select_own_or_admin ON public.role_permissions FO
 --
 
 ALTER TABLE public.role_quotas ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: role_quotas_backup_legacy; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.role_quotas_backup_legacy ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: role_quotas role_quotas_select_public; Type: POLICY; Schema: public; Owner: postgres
@@ -5717,17 +5709,10 @@ CREATE POLICY role_quotas_select_public ON public.role_quotas FOR SELECT USING (
 ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: roles roles_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: roles roles_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY roles_admin_all ON public.roles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: roles roles_select_authenticated; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY roles_select_authenticated ON public.roles FOR SELECT TO authenticated USING (((is_active = true) OR public.is_admin()));
+CREATE POLICY roles_select_unified ON public.roles FOR SELECT TO authenticated USING ((public.is_admin() OR (is_active = true)));
 
 
 --
@@ -5737,13 +5722,6 @@ CREATE POLICY roles_select_authenticated ON public.roles FOR SELECT TO authentic
 ALTER TABLE public.stations ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: stations stations_mutate_admin; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY stations_mutate_admin ON public.stations TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
 -- Name: stations stations_select_anon; Type: POLICY; Schema: public; Owner: postgres
 --
 
@@ -5751,10 +5729,10 @@ CREATE POLICY stations_select_anon ON public.stations FOR SELECT TO anon USING (
 
 
 --
--- Name: stations stations_select_auth; Type: POLICY; Schema: public; Owner: postgres
+-- Name: stations stations_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY stations_select_auth ON public.stations FOR SELECT TO authenticated USING (true);
+CREATE POLICY stations_select_unified ON public.stations FOR SELECT TO authenticated USING (true);
 
 
 --
@@ -5770,31 +5748,17 @@ ALTER TABLE public.subscription_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.taches ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: taches taches_delete_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_delete_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_delete_admin ON public.taches FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: taches taches_delete_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY taches_delete_own ON public.taches FOR DELETE TO authenticated USING ((user_id = auth.uid()));
+CREATE POLICY taches_delete_unified ON public.taches FOR DELETE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
--- Name: taches taches_insert_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_insert_admin ON public.taches FOR INSERT TO authenticated WITH CHECK (public.is_admin());
-
-
---
--- Name: taches taches_insert_user_limits; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY taches_insert_user_limits ON public.taches FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND public.check_user_quota(auth.uid(), 'task'::text, 'total'::text) AND public.check_user_quota(auth.uid(), 'task'::text, 'monthly'::text)));
+CREATE POLICY taches_insert_unified ON public.taches FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'monthly'::text))));
 
 
 --
@@ -5808,21 +5772,14 @@ CREATE POLICY taches_select_demo ON public.taches FOR SELECT TO anon USING ((vis
 -- Name: taches taches_select_owner_or_admin; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_select_owner_or_admin ON public.taches FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY taches_select_owner_or_admin ON public.taches FOR SELECT TO authenticated USING (((user_id = ( SELECT auth.uid() AS uid)) OR public.is_admin()));
 
 
 --
--- Name: taches taches_update_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_update_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_update_admin ON public.taches FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: taches taches_update_own; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY taches_update_own ON public.taches FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK ((user_id = auth.uid()));
+CREATE POLICY taches_update_unified ON public.taches FOR UPDATE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))) WITH CHECK ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
@@ -5832,52 +5789,31 @@ CREATE POLICY taches_update_own ON public.taches FOR UPDATE TO authenticated USI
 ALTER TABLE public.user_assets ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: user_assets user_assets_delete_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_assets user_assets_delete_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_assets_delete_admin ON public.user_assets FOR DELETE TO authenticated USING (public.is_admin());
-
-
---
--- Name: user_assets user_assets_delete_self; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_assets_delete_self ON public.user_assets FOR DELETE TO authenticated USING ((auth.uid() = user_id));
+CREATE POLICY user_assets_delete_unified ON public.user_assets FOR DELETE TO authenticated USING ((public.is_admin() OR (( SELECT auth.uid() AS uid) = user_id)));
 
 
 --
 -- Name: user_assets user_assets_insert_self; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_assets_insert_self ON public.user_assets FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY user_assets_insert_self ON public.user_assets FOR INSERT TO authenticated WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
--- Name: user_assets user_assets_select_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_assets user_assets_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_assets_select_admin ON public.user_assets FOR SELECT TO authenticated USING (public.is_admin());
-
-
---
--- Name: user_assets user_assets_select_self; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_assets_select_self ON public.user_assets FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+CREATE POLICY user_assets_select_unified ON public.user_assets FOR SELECT TO authenticated USING ((public.is_admin() OR (( SELECT auth.uid() AS uid) = user_id)));
 
 
 --
--- Name: user_assets user_assets_update_admin; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_assets user_assets_update_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_assets_update_admin ON public.user_assets FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: user_assets user_assets_update_self; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_assets_update_self ON public.user_assets FOR UPDATE TO authenticated USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY user_assets_update_unified ON public.user_assets FOR UPDATE TO authenticated USING ((public.is_admin() OR (( SELECT auth.uid() AS uid) = user_id))) WITH CHECK ((public.is_admin() OR (( SELECT auth.uid() AS uid) = user_id)));
 
 
 --
@@ -5890,21 +5826,21 @@ ALTER TABLE public.user_prefs ENABLE ROW LEVEL SECURITY;
 -- Name: user_prefs user_prefs_select_self; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_prefs_select_self ON public.user_prefs FOR SELECT TO authenticated USING ((auth.uid() = user_id));
+CREATE POLICY user_prefs_select_self ON public.user_prefs FOR SELECT TO authenticated USING ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
 -- Name: user_prefs user_prefs_update_self; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_prefs_update_self ON public.user_prefs FOR UPDATE TO authenticated USING ((auth.uid() = user_id)) WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY user_prefs_update_self ON public.user_prefs FOR UPDATE TO authenticated USING ((( SELECT auth.uid() AS uid) = user_id)) WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
 -- Name: user_prefs user_prefs_upsert_self; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_prefs_upsert_self ON public.user_prefs FOR INSERT TO authenticated WITH CHECK ((auth.uid() = user_id));
+CREATE POLICY user_prefs_upsert_self ON public.user_prefs FOR INSERT TO authenticated WITH CHECK ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -5914,38 +5850,28 @@ CREATE POLICY user_prefs_upsert_self ON public.user_prefs FOR INSERT TO authenti
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 --
--- Name: user_roles user_roles_admin_all; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles user_roles_insert_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_roles_admin_all ON public.user_roles TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
-
-
---
--- Name: user_roles user_roles_insert_admin_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_roles_insert_admin_only ON public.user_roles FOR INSERT WITH CHECK (public.is_admin());
+CREATE POLICY user_roles_insert_unified ON public.user_roles FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND (role_id IN ( SELECT roles.id
+   FROM public.roles
+  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true)))))));
 
 
 --
--- Name: user_roles user_roles_select_own; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles user_roles_select_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_roles_select_own ON public.user_roles FOR SELECT TO authenticated USING ((user_id = auth.uid()));
-
-
---
--- Name: user_roles user_roles_select_self_or_admin; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY user_roles_select_self_or_admin ON public.user_roles FOR SELECT USING (((user_id = auth.uid()) OR public.is_admin()));
+CREATE POLICY user_roles_select_unified ON public.user_roles FOR SELECT TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
 
 
 --
--- Name: user_roles user_roles_update_admin_only; Type: POLICY; Schema: public; Owner: postgres
+-- Name: user_roles user_roles_update_unified; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_roles_update_admin_only ON public.user_roles FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY user_roles_update_unified ON public.user_roles FOR UPDATE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))) WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND (role_id IN ( SELECT roles.id
+   FROM public.roles
+  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true)))))));
 
 
 --
@@ -5958,25 +5884,7 @@ ALTER TABLE public.user_usage_counters ENABLE ROW LEVEL SECURITY;
 -- Name: user_usage_counters user_usage_counters_select_self; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY user_usage_counters_select_self ON public.user_usage_counters FOR SELECT TO authenticated USING ((auth.uid() = user_id));
-
-
---
--- Name: user_roles users_can_self_assign_free_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY users_can_self_assign_free_only ON public.user_roles FOR INSERT TO authenticated WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
-   FROM public.roles
-  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true))))));
-
-
---
--- Name: user_roles users_can_update_free_only; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY users_can_update_free_only ON public.user_roles FOR UPDATE TO authenticated USING ((user_id = auth.uid())) WITH CHECK (((user_id = auth.uid()) AND (role_id IN ( SELECT roles.id
-   FROM public.roles
-  WHERE ((roles.name = 'free'::text) AND (roles.is_active = true))))));
+CREATE POLICY user_usage_counters_select_self ON public.user_usage_counters FOR SELECT TO authenticated USING ((( SELECT auth.uid() AS uid) = user_id));
 
 
 --
@@ -6198,6 +6106,24 @@ GRANT ALL ON SCHEMA storage TO dashboard_user;
 
 
 --
+-- Name: FUNCTION _compute_my_permissions(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public._compute_my_permissions() TO anon;
+GRANT ALL ON FUNCTION public._compute_my_permissions() TO authenticated;
+GRANT ALL ON FUNCTION public._compute_my_permissions() TO service_role;
+
+
+--
+-- Name: FUNCTION _compute_my_primary_role(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public._compute_my_primary_role() TO anon;
+GRANT ALL ON FUNCTION public._compute_my_primary_role() TO authenticated;
+GRANT ALL ON FUNCTION public._compute_my_primary_role() TO service_role;
+
+
+--
 -- Name: FUNCTION assert_self_or_admin(p_target uuid); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6362,6 +6288,24 @@ GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
 REVOKE ALL ON FUNCTION public.get_migration_report() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_migration_report() TO authenticated;
 GRANT ALL ON FUNCTION public.get_migration_report() TO service_role;
+
+
+--
+-- Name: FUNCTION get_my_permissions(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_my_permissions() TO anon;
+GRANT ALL ON FUNCTION public.get_my_permissions() TO authenticated;
+GRANT ALL ON FUNCTION public.get_my_permissions() TO service_role;
+
+
+--
+-- Name: FUNCTION get_my_primary_role(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_my_primary_role() TO anon;
+GRANT ALL ON FUNCTION public.get_my_primary_role() TO authenticated;
+GRANT ALL ON FUNCTION public.get_my_primary_role() TO service_role;
 
 
 --

@@ -24,12 +24,7 @@
     "deploy:checkout": "dotenv -e .env -- sh -lc 'supabase functions deploy create-checkout-session --project-ref \"$SUPABASE_PROJECT_REF\"'",
     "deploy:webhook": "dotenv -e .env -- sh -lc 'supabase functions deploy stripe-webhook --no-verify-jwt --project-ref \"$SUPABASE_PROJECT_REF\"'",
     "logs:checkout": "dotenv -e .env -- sh -lc 'supabase functions logs create-checkout-session --project-ref \"$SUPABASE_PROJECT_REF\" --follow'",
-    "logs:webhook": "dotenv -e .env -- sh -lc 'supabase functions logs stripe-webhook --project-ref \"$SUPABASE_PROJECT_REF\" --follow'",
-    "test:supabase": "node scripts/supabase-manager.js",
-    "test:supabase:update": "node scripts/supabase-manager.js update",
-    "test:supabase:compare": "node scripts/supabase-manager.js compare",
-    "test:supabase:setup-docker": "node scripts/supabase-manager.js setup-docker",
-    "test:app": "yarn dev"
+    "logs:webhook": "dotenv -e .env -- sh -lc 'supabase functions logs stripe-webhook --project-ref \"$SUPABASE_PROJECT_REF\" --follow'"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -83,9 +78,6 @@
   "volta": {
     "node": "20.19.4"
   },
-  "workspaces": [
-    "backend/mcp-supabase-mcp"
-  ],
   "resolutions": {
     "@modelcontextprotocol/sdk": "1.18.1"
   },

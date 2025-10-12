@@ -111,11 +111,11 @@ export const PermissionsProvider = ({ children }) => {
           supabase.rpc('get_my_permissions'),
         ])
         if (rErr) {
-          rErr.code ||= rErr?.name
+          rErr.code = rErr.code || rErr?.name
           throw rErr
         }
         if (pErr) {
-          pErr.code ||= pErr?.name
+          pErr.code = pErr.code || pErr?.name
           throw pErr
         }
         return { roleRows, permRows }
