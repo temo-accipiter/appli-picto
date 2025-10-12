@@ -170,9 +170,28 @@ export const PermissionsProvider = ({ children }) => {
     [permissions, ready, role]
   )
 
+  const canAll = useCallback(
+    (featureNames = []) => {
+      if (!ready) return false
+      if (role === ROLE.ADMIN) return true
+      return featureNames.every(name => !!permissions[String(name)])
+    },
+    [permissions, ready, role]
+  )
+
+  const canAny = useCallback(
+    (featureNames = []) => {
+      if (!ready) return false
+      if (role === ROLE.ADMIN) return true
+      return featureNames.some(name => !!permissions[String(name)])
+    },
+    [permissions, ready, role]
+  )
+
   const value = useMemo(
     () => ({
       ready, // TRUE quand une décision est prise
+      loading: !ready, // Pour compatibilité avec FeatureGate
       role, // 'unknown' | 'visitor' | 'user' | 'admin' | …
       isUnknown: role === 'unknown',
       isVisitor: ready && role === ROLE.VISITOR,
@@ -180,9 +199,11 @@ export const PermissionsProvider = ({ children }) => {
       permissions,
       error,
       can,
+      canAll,
+      canAny,
       reload: load,
     }),
-    [ready, role, permissions, error, can, load]
+    [ready, role, permissions, error, can, canAll, canAny, load]
   )
 
   return (

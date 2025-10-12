@@ -39,16 +39,25 @@ globalThis.scrollTo = globalThis.scrollTo || (() => {})
 
 // --- Env Vite pour les tests ---
 // On étend l'existant au lieu de l'écraser
-globalThis.import = globalThis.import || {}
-globalThis.import.meta = globalThis.import.meta || {}
-globalThis.import.meta.env = {
-  ...(globalThis.import.meta.env || {}),
+// Note: import est un mot réservé, on doit utiliser des guillemets
+if (!globalThis['import']) {
+  globalThis['import'] = { meta: { env: {} } }
+}
+if (!globalThis['import'].meta) {
+  globalThis['import'].meta = { env: {} }
+}
+if (!globalThis['import'].meta.env) {
+  globalThis['import'].meta.env = {}
+}
+
+const existingEnv = globalThis['import'].meta.env
+globalThis['import'].meta.env = {
+  ...existingEnv,
   VITE_SUPABASE_URL: 'http://localhost:54321',
   // Ces deux-là sont lus par ton code (consent/log-consent & URLs absolues)
   VITE_SUPABASE_FUNCTIONS_URL:
-    globalThis.import.meta.env?.VITE_SUPABASE_FUNCTIONS_URL ||
+    existingEnv.VITE_SUPABASE_FUNCTIONS_URL ||
     'http://localhost:54321/functions/v1',
-  VITE_APP_URL:
-    globalThis.import.meta.env?.VITE_APP_URL || 'http://localhost:5173',
+  VITE_APP_URL: existingEnv.VITE_APP_URL || 'http://localhost:5173',
   VITE_APP_ENV: 'test',
 }
