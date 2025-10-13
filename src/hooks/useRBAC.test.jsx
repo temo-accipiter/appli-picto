@@ -40,7 +40,7 @@ describe('useRBAC', () => {
     vi.clearAllMocks()
   })
 
-  it('expose toutes les propriétés de l\'API unifiée', async () => {
+  it("expose toutes les propriétés de l'API unifiée", async () => {
     supabase.rpc.mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
@@ -52,7 +52,11 @@ describe('useRBAC', () => {
         return Promise.resolve({
           data: {
             quotas: [
-              { quota_type: 'max_tasks', quota_limit: 5, quota_period: 'total' },
+              {
+                quota_type: 'max_tasks',
+                quota_limit: 5,
+                quota_period: 'total',
+              },
             ],
             usage: { tasks: 2 },
           },
@@ -100,7 +104,11 @@ describe('useRBAC', () => {
         return Promise.resolve({
           data: {
             quotas: [
-              { quota_type: 'max_tasks', quota_limit: 5, quota_period: 'total' },
+              {
+                quota_type: 'max_tasks',
+                quota_limit: 5,
+                quota_period: 'total',
+              },
               {
                 quota_type: 'max_rewards',
                 quota_limit: 2,
@@ -138,7 +146,11 @@ describe('useRBAC', () => {
         return Promise.resolve({
           data: {
             quotas: [
-              { quota_type: 'max_tasks', quota_limit: 5, quota_period: 'total' },
+              {
+                quota_type: 'max_tasks',
+                quota_limit: 5,
+                quota_period: 'total',
+              },
             ],
             usage: { tasks: 2 },
           },
@@ -168,7 +180,11 @@ describe('useRBAC', () => {
         return Promise.resolve({
           data: {
             quotas: [
-              { quota_type: 'max_tasks', quota_limit: 5, quota_period: 'total' },
+              {
+                quota_type: 'max_tasks',
+                quota_limit: 5,
+                quota_period: 'total',
+              },
             ],
             usage: { tasks: 5 },
           },
@@ -198,7 +214,11 @@ describe('useRBAC', () => {
         return Promise.resolve({
           data: {
             quotas: [
-              { quota_type: 'max_tasks', quota_limit: 5, quota_period: 'total' },
+              {
+                quota_type: 'max_tasks',
+                quota_limit: 5,
+                quota_period: 'total',
+              },
             ],
             usage: { tasks: 3 },
           },

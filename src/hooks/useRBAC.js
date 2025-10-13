@@ -186,6 +186,33 @@ export default function useRBAC() {
     [quotas, usage]
   )
 
+  const getMonthlyQuotaInfo = useCallback(
+    contentType => {
+      const key =
+        contentType === 'task'
+          ? 'monthly_tasks'
+          : contentType === 'reward'
+            ? 'monthly_rewards'
+            : contentType === 'category'
+              ? 'monthly_categories'
+              : null
+      if (!key || !quotas[key]) return null
+      const limit = quotas[key].limit
+      const current = usage[key] ?? 0
+      const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
+      return {
+        limit,
+        current,
+        remaining: Math.max(0, limit - current),
+        percentage,
+        isAtLimit: current >= limit,
+        isNearLimit:
+          current >= Math.floor(limit * NEAR_LIMIT_RATIO) && current < limit,
+      }
+    },
+    [quotas, usage]
+  )
+
   // API unifiée
   const rbac = useMemo(
     () => ({
@@ -212,6 +239,8 @@ export default function useRBAC() {
       canCreateReward: () => canCreate('reward'),
       canCreateCategory: () => canCreate('category'),
       getQuotaInfo,
+      getMonthlyQuotaInfo,
+      refreshQuotas: () => fetchQuotas(),
 
       // Reload
       reload: () => {
@@ -227,6 +256,7 @@ export default function useRBAC() {
       usage,
       canCreate,
       getQuotaInfo,
+      getMonthlyQuotaInfo,
       fetchQuotas,
     ]
   )
