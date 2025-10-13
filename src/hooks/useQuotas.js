@@ -7,7 +7,30 @@ import useAuth from './useAuth'
 // Seuil visuel « proche de la limite » (80%)
 const NEAR_LIMIT_RATIO = 0.8
 
+/**
+ * @deprecated Use useRBAC() instead
+ *
+ * Ce hook est déprécié depuis Phase 2 du refactoring RBAC (janvier 2025).
+ * Migrez vers useRBAC() pour une API unifiée qui combine permissions + quotas + rôles.
+ *
+ * @see {@link useRBAC} - Hook unifié recommandé
+ * @see RBAC_GUIDE.md - Guide de migration complet
+ *
+ * @example
+ * // ❌ Ancien code (déprécié)
+ * const { canCreateTask, getQuotaInfo } = useQuotas()
+ *
+ * // ✅ Nouveau code (recommandé)
+ * const { canCreateTask, getQuotaInfo } = useRBAC()
+ */
 export default function useQuotas() {
+  // Warning en développement
+  if (import.meta.env.DEV) {
+    console.warn(
+      '⚠️ useQuotas() is deprecated. Use useRBAC() instead.\n' +
+        'See src/hooks/RBAC_GUIDE.md for migration guide.'
+    )
+  }
   const { user } = useAuth()
 
   const [loading, setLoading] = useState(false)

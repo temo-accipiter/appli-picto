@@ -28,7 +28,30 @@ async function fetchUsageFast(signal) {
   return data || {}
 }
 
+/**
+ * @deprecated Use useRBAC() instead
+ *
+ * Ce hook est déprécié depuis Phase 2 du refactoring RBAC (janvier 2025).
+ * Migrez vers useRBAC() pour une API unifiée qui combine permissions + quotas + rôles.
+ *
+ * @see {@link useRBAC} - Hook unifié recommandé
+ * @see RBAC_GUIDE.md - Guide de migration complet
+ *
+ * @example
+ * // ❌ Ancien code (déprécié)
+ * const { canCreateMoreTaches, isSubscriber, quotas } = useEntitlements()
+ *
+ * // ✅ Nouveau code (recommandé)
+ * const { canCreateTask, isSubscriber, quotas } = useRBAC()
+ */
 export default function useEntitlements() {
+  // Warning en développement
+  if (import.meta.env.DEV) {
+    console.warn(
+      '⚠️ useEntitlements() is deprecated. Use useRBAC() instead.\n' +
+        'See src/hooks/RBAC_GUIDE.md for migration guide.'
+    )
+  }
   const {
     ready: permsReady,
     role,
