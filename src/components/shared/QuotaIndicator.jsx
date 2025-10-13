@@ -1,5 +1,5 @@
 // src/components/shared/QuotaIndicator.jsx
-import { useQuotas } from '@/hooks'
+import { useRBAC } from '@/hooks'
 import PropTypes from 'prop-types'
 import './QuotaIndicator.scss'
 
@@ -14,14 +14,13 @@ export default function QuotaIndicator({
 }) {
   const {
     loading,
-    initialLoad,
-    isFreeAccount,
+    isFree: isFreeAccount,
     getQuotaInfo,
     getMonthlyQuotaInfo,
     canCreate,
-  } = useQuotas()
+  } = useRBAC()
 
-  if (loading && !initialLoad) {
+  if (loading) {
     return (
       <div className={`quota-indicator loading ${size} ${className}`}>
         <div className="quota-bar">

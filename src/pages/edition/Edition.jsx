@@ -16,7 +16,7 @@ import {
   useAuth,
   useCategories,
   useParametres,
-  useQuotas,
+  useRBAC,
   useRecompenses,
   useTachesEdition,
 } from '@/hooks'
@@ -33,7 +33,7 @@ export default function Edition() {
   const { show } = useToast()
   const { user } = useAuth()
 
-  // 👉 On s'appuie sur le hook (pas de re-requêtage « direct DB » ici)
+  // 👉 Hook RBAC unifié (Phase 2)
   const {
     canCreateTask,
     canCreateReward,
@@ -41,7 +41,7 @@ export default function Edition() {
     getQuotaInfo,
     getMonthlyQuotaInfo,
     refreshQuotas,
-  } = useQuotas()
+  } = useRBAC()
 
   // États modaux quotas
   const [quotaModalOpen, setQuotaModalOpen] = useState(false)

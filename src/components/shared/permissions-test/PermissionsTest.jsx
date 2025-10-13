@@ -11,6 +11,8 @@ export const PermissionsTest = () => {
   const {
     role,
     can: _can,
+    canAll: _canAll,
+    canAny: _canAny,
     loading,
     isVisitor,
     isSubscriber,
@@ -106,6 +108,82 @@ export const PermissionsTest = () => {
               fallback={<XCircle size={16} className="error" />}
             >
               <span>✅ Admin autorisé</span>
+            </FeatureGate>
+          </div>
+        </div>
+      </div>
+
+      {/* Test des nouvelles fonctions canAll et canAny */}
+      <div className="test-section">
+        <h4>🆕 Test canAll & canAny (Phase 1) :</h4>
+        <div className="features-test">
+          <div className="feature-test">
+            <span>canAll([&apos;view_demo&apos;, &apos;confetti&apos;]) :</span>
+            <FeatureGate features={['view_demo', 'confetti']} requireAll={true}>
+              <CheckCircle size={16} className="success" />
+              <span>✅ Les DEUX permissions</span>
+            </FeatureGate>
+            <FeatureGate
+              features={['view_demo', 'confetti']}
+              requireAll={true}
+              fallback={
+                <>
+                  <XCircle size={16} className="error" />
+                  <span>❌ Au moins une manque</span>
+                </>
+              }
+            >
+              {null}
+            </FeatureGate>
+          </div>
+
+          <div className="feature-test">
+            <span>
+              canAny([&apos;create_tasks&apos;, &apos;admin_panel&apos;]) :
+            </span>
+            <FeatureGate
+              features={['create_tasks', 'admin_panel']}
+              requireAll={false}
+            >
+              <CheckCircle size={16} className="success" />
+              <span>✅ Au moins UNE permission</span>
+            </FeatureGate>
+            <FeatureGate
+              features={['create_tasks', 'admin_panel']}
+              requireAll={false}
+              fallback={
+                <>
+                  <XCircle size={16} className="error" />
+                  <span>❌ Aucune des deux</span>
+                </>
+              }
+            >
+              {null}
+            </FeatureGate>
+          </div>
+
+          <div className="feature-test">
+            <span>
+              canAll([&apos;confetti&apos;, &apos;admin_panel&apos;]) :
+            </span>
+            <FeatureGate
+              features={['confetti', 'admin_panel']}
+              requireAll={true}
+            >
+              <CheckCircle size={16} className="success" />
+              <span>✅ Les DEUX (rare sauf admin)</span>
+            </FeatureGate>
+            <FeatureGate
+              features={['confetti', 'admin_panel']}
+              requireAll={true}
+              fallback={
+                <>
+                  <XCircle size={16} className="error" />
+                  <span>❌ Manque admin_panel</span>
+                </>
+              }
+            >
+              {null}
             </FeatureGate>
           </div>
         </div>
