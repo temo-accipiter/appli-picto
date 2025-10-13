@@ -124,6 +124,9 @@ import {
   Tableau,
 } from '@/pages'
 
+// Page de test temporaire pour Phase 1 RBAC
+import TestRBAC from '@/pages/test-rbac/TestRBAC'
+
 // Routes : login/signup sous Layout pour afficher bannière cookies & footer
 const router = createBrowserRouter([
   {
@@ -190,6 +193,9 @@ const router = createBrowserRouter([
       { path: 'politique-cookies', element: <PolitiqueCookies /> },
       { path: 'accessibilite', element: <Accessibilite /> },
       { path: 'rgpd', element: <PortailRGPD /> },
+
+      // Route de test temporaire - Phase 1 RBAC
+      { path: 'test-rbac', element: <TestRBAC /> },
 
       { path: '*', element: <NotFound /> },
     ],
