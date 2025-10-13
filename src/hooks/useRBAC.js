@@ -2,14 +2,60 @@
 /**
  * Hook unifié RBAC (Role-Based Access Control)
  *
- * Combine usePermissions + useQuotas + useEntitlements en une seule API cohérente
+ * Combine usePermissions + useQuotas + useEntitlements en une seule API cohérente.
+ * Ce hook centralise TOUTES les vérifications d'accès, quotas et rôles.
+ *
+ * @returns {Object} RBAC API
+ * @returns {boolean} return.ready - True quand permissions ET quotas sont chargés
+ * @returns {boolean} return.loading - True pendant le chargement
+ * @returns {string} return.role - Rôle actuel ('visitor' | 'free' | 'abonne' | 'admin' | 'unknown')
+ *
+ * @returns {boolean} return.isVisitor - True si visiteur (non connecté)
+ * @returns {boolean} return.isAdmin - True si administrateur
+ * @returns {boolean} return.isUnknown - True si rôle inconnu (état transitoire)
+ * @returns {boolean} return.isFree - True si compte gratuit
+ * @returns {boolean} return.isSubscriber - True si abonné payant
+ *
+ * @returns {Function} return.can - Vérifie UNE permission : can('feature_name')
+ * @returns {Function} return.canAll - Vérifie TOUTES les permissions : canAll(['f1', 'f2'])
+ * @returns {Function} return.canAny - Vérifie AU MOINS UNE permission : canAny(['f1', 'f2'])
+ *
+ * @returns {Object} return.quotas - Limites par type (max_tasks, max_rewards, etc.)
+ * @returns {Object} return.usage - Utilisation actuelle par type
+ * @returns {Function} return.canCreate - Vérifie si création possible : canCreate('task')
+ * @returns {Function} return.canCreateTask - Shortcut : peut créer une tâche ?
+ * @returns {Function} return.canCreateReward - Shortcut : peut créer une récompense ?
+ * @returns {Function} return.canCreateCategory - Shortcut : peut créer une catégorie ?
+ * @returns {Function} return.getQuotaInfo - Infos quota : getQuotaInfo('task') → {limit, current, remaining, percentage, isAtLimit, isNearLimit}
+ * @returns {Function} return.getMonthlyQuotaInfo - Infos quota mensuel (si applicable)
+ * @returns {Function} return.refreshQuotas - Recharger manuellement les quotas
+ *
+ * @returns {Function} return.reload - Recharger permissions ET quotas
  *
  * @example
- * const { role, can, canAll, canCreateTask, quotaInfo } = useRBAC()
+ * // Vérifier un rôle
+ * const { isAdmin, isFree } = useRBAC()
+ * if (isAdmin) { /* ... *\/ }
  *
- * Phase 2 - Refactoring RBAC
- * Élimine la duplication entre useQuotas et useEntitlements
- * Fournit une API unifiée pour toutes les vérifications RBAC
+ * @example
+ * // Vérifier des permissions
+ * const { can, canAll } = useRBAC()
+ * if (can('edit_tasks')) { /* ... *\/ }
+ * if (canAll(['edit_tasks', 'delete_tasks'])) { /* ... *\/ }
+ *
+ * @example
+ * // Vérifier quotas
+ * const { canCreateTask, getQuotaInfo } = useRBAC()
+ * if (!canCreateTask()) {
+ *   const info = getQuotaInfo('task')
+ *   alert(`Limite atteinte : ${info.current}/${info.limit}`)
+ * }
+ *
+ * Phase 2-3 - Refactoring RBAC
+ * - Élimine la duplication entre useQuotas et useEntitlements
+ * - API unifiée pour toutes les vérifications RBAC
+ * - Single RPC call (get_usage_fast)
+ * - Realtime updates pour free accounts
  */
 
 import { usePermissions } from '@/contexts/PermissionsContext'
