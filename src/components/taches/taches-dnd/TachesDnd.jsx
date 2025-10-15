@@ -14,10 +14,10 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import PropTypes from 'prop-types'
-import { useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import './TachesDnd.scss'
 
-export default function ChecklistTachesDnd({
+const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   items,
   onReorder,
   onToggle,
@@ -52,6 +52,9 @@ export default function ChecklistTachesDnd({
     [items, onReorder]
   )
 
+  // Mémoïser la liste des IDs pour SortableContext
+  const sortableItems = useMemo(() => items.map(t => t.id.toString()), [items])
+
   return (
     <DndContext
       sensors={sensors}
@@ -59,10 +62,7 @@ export default function ChecklistTachesDnd({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext
-        items={items.map(t => t.id.toString())}
-        strategy={rectSortingStrategy}
-      >
+      <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
         <div className="grid-taches">
           {items.map(t => (
             <TableauCard
@@ -108,7 +108,9 @@ export default function ChecklistTachesDnd({
       )}
     </DndContext>
   )
-}
+})
+
+ChecklistTachesDnd.displayName = 'ChecklistTachesDnd'
 
 ChecklistTachesDnd.propTypes = {
   items: PropTypes.arrayOf(
@@ -124,3 +126,5 @@ ChecklistTachesDnd.propTypes = {
   onReset: PropTypes.func.isRequired,
   doneMap: PropTypes.object,
 }
+
+export default ChecklistTachesDnd

@@ -7,7 +7,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth } from '@/hooks'
+import { useAuth, useToast } from '@/hooks'
 
 // Log d'erreur "safe"
 const formatErr = e => {
@@ -26,6 +26,7 @@ export default function useCategories(reload = 0) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { user } = useAuth()
+  const { show } = useToast()
 
   const fetchCategories = useCallback(async () => {
     if (!user?.id) {
@@ -72,9 +73,11 @@ export default function useCategories(reload = 0) {
       ])
       if (error) throw error
       await fetchCategories()
+      show('Catégorie ajoutée', 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur ajout catégorie : ${formatErr(e)}`)
+      show("Erreur lors de l'ajout de la catégorie", 'error')
       return { error: e }
     }
   }
@@ -89,9 +92,11 @@ export default function useCategories(reload = 0) {
         .or(`user_id.eq.${user?.id},user_id.is.null`)
       if (error) throw error
       await fetchCategories()
+      show('Catégorie modifiée', 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur modification catégorie : ${formatErr(e)}`)
+      show('Erreur lors de la modification', 'error')
       return { error: e }
     }
   }
@@ -106,9 +111,11 @@ export default function useCategories(reload = 0) {
         .eq('user_id', user?.id) // on ne supprime que les catégories de l'utilisateur
       if (error) throw error
       await fetchCategories()
+      show('Catégorie supprimée', 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur suppression catégorie : ${formatErr(e)}`)
+      show('Impossible de supprimer la catégorie', 'error')
       return { error: e }
     }
   }

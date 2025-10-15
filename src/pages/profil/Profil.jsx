@@ -87,11 +87,19 @@ export default function Profil() {
   const handleSave = async e => {
     e.preventDefault()
 
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleSave - Début sauvegarde profil', {
+        pseudo,
+        dateNaissance,
+        ville,
+      })
+    }
+
     // Bloque si règle violée
     const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
     const villeMsg = noEdgeSpaces(ville) || noDoubleSpaces(ville)
     if (pseudoMsg || villeMsg) {
-      showToast('Corrige les champs en rouge avant d’enregistrer.', 'error')
+      showToast("Corrige les champs en rouge avant d'enregistrer.", 'error')
       return
     }
 
@@ -106,6 +114,10 @@ export default function Profil() {
         (dateNaissance || '').trim() === '' ? null : dateNaissance,
     }
 
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleSave - Payload nettoyé', payload)
+    }
+
     const { error: metaError } = await supabase.auth.updateUser({
       data: { pseudo: payload.pseudo },
     })
@@ -116,8 +128,13 @@ export default function Profil() {
       .update(payload)
       .eq('id', user.id)
 
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleSave - Résultat update profiles', { error })
+    }
+
     if (error) {
       showToast('Erreur lors de la sauvegarde du profil', 'error')
+      console.error('❌ Erreur sauvegarde profil:', error)
     } else {
       showToast('Profil mis à jour', 'success')
     }
@@ -125,6 +142,15 @@ export default function Profil() {
 
   const handleAvatarUpload = async file => {
     if (!user) return
+
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleAvatarUpload - Début upload', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+      })
+    }
+
     const previousAvatar = user.user_metadata?.avatar
     const fileName = `${user.id}/${Date.now()}-${file.name}`
 
@@ -140,8 +166,17 @@ export default function Profil() {
     const { data, error: uploadError } = await supabase.storage
       .from('avatars')
       .upload(fileName, file)
+
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleAvatarUpload - Résultat upload', {
+        data,
+        uploadError,
+      })
+    }
+
     if (uploadError) {
       showToast('❌ Upload échoué', 'error')
+      console.error('❌ Erreur upload avatar:', uploadError)
       return
     }
 
@@ -153,8 +188,15 @@ export default function Profil() {
       .update({ avatar_url: data.path })
       .eq('id', user.id)
 
+    if (import.meta.env.DEV) {
+      console.log('🔍 handleAvatarUpload - Mise à jour metadata/profil', {
+        metaError,
+      })
+    }
+
     if (metaError) {
       showToast('❌ Erreur profil', 'error')
+      console.error('❌ Erreur mise à jour profil:', metaError)
     } else {
       showToast('✅ Avatar mis à jour', 'success')
       window.location.reload()

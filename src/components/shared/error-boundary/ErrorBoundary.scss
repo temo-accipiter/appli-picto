@@ -1,0 +1,185 @@
+// src/components/shared/error-boundary/ErrorBoundary.scss
+// Styles TSA-friendly : couleurs pastel, animations douces, layout apaisant
+
+.error-boundary {
+  // Plein écran centré
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e3eaf2 100%);
+
+  &__content {
+    max-width: 500px;
+    text-align: center;
+    background: white;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+    // Animation douce d'apparition (TSA-friendly)
+    animation: fadeInScale 0.3s ease;
+  }
+
+  &__icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+
+    // Animation douce de balancement
+    animation: gentleSwing 2s ease-in-out infinite;
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+  }
+
+  &__message {
+    font-size: 1rem;
+    color: #4a5568;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+
+    @media (min-width: 480px) {
+      flex-direction: row;
+      justify-content: center;
+    }
+  }
+
+  &__button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    // Taille minimum accessible (WCAG AA)
+    min-height: 44px;
+    min-width: 120px;
+
+    &:focus {
+      outline: 3px solid #4299e1;
+      outline-offset: 2px;
+    }
+
+    &--primary {
+      background: #4299e1;
+      color: white;
+
+      &:hover:not(:disabled) {
+        background: #3182ce;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    &--secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+
+      &:hover:not(:disabled) {
+        background: #cbd5e0;
+        transform: translateY(-2px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  &__details {
+    margin-top: 2rem;
+    text-align: left;
+    background: #f7fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+
+  &__details-summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #4a5568;
+    padding: 0.5rem;
+    user-select: none;
+
+    &:hover {
+      color: #2d3748;
+    }
+  }
+
+  &__details-content {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #e53e3e;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+// Animation douce d'apparition (TSA-friendly, max 0.3s)
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Animation douce de balancement pour l'icône
+@keyframes gentleSwing {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+// Support prefers-reduced-motion (accessibilité)
+@media (prefers-reduced-motion: reduce) {
+  .error-boundary__content {
+    animation: none;
+  }
+
+  .error-boundary__icon {
+    animation: none;
+  }
+
+  .error-boundary__button {
+    transition: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}

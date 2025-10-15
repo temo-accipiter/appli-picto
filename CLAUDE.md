@@ -146,8 +146,6 @@ src/
   - `log-consent/` - Cookie consent logging
   - `cleanup-unconfirmed/` - Remove unconfirmed accounts
 
-- **MCP Bridge** (`backend/mcp-supabase/`): Express server providing database introspection endpoints for AI assistants (schema, indexes, policies, RLS diagnostics)
-
 ### Supabase Tables
 
 - `taches` - User tasks (label, fait, aujourdhui, imagePath, position, category_id)

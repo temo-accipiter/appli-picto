@@ -2,7 +2,8 @@
 import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
 import PropTypes from 'prop-types'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
+import { useDebounce } from '@/hooks'
 import './AccountManagement.scss'
 
 /**
@@ -16,6 +17,7 @@ export default function AccountManagement({ className = '' }) {
   const [users, setUsers] = useState([])
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
   const [selectedUser, setSelectedUser] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
 
@@ -61,16 +63,20 @@ export default function AccountManagement({ className = '' }) {
     fetchUsers()
   }, [can])
 
-  // Filtrer les utilisateurs
-  const filteredUsers = users.filter(user => {
-    const matchesFilter = filter === 'all' || user.account_status === filter
-    const matchesSearch =
-      searchTerm === '' ||
-      user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filtrer les utilisateurs avec debounce et mémoïsation
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const matchesFilter = filter === 'all' || user.account_status === filter
+      const matchesSearch =
+        debouncedSearchTerm === '' ||
+        user.pseudo
+          ?.toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
 
-    return matchesFilter && matchesSearch
-  })
+      return matchesFilter && matchesSearch
+    })
+  }, [users, filter, debouncedSearchTerm])
 
   // Changer l'état d'un compte
   const changeAccountStatus = async (userId, newStatus, reason = '') => {

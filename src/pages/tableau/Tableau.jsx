@@ -11,14 +11,14 @@ import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
 
 import { useDisplay, usePermissions } from '@/contexts'
 import {
-  useDemoData,
+  useDemoCards,
   useFallbackData,
   useRecompenses,
   useSimpleRole,
   useTachesDnd,
 } from '@/hooks'
 import PropTypes from 'prop-types'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from 'react-use'
 import './Tableau.scss'
@@ -58,7 +58,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   }
 
   // Données selon le mode (démo ou personnel)
-  const { demoTaches, demoRecompenses } = useDemoData()
+  const { demoTasks: demoTaches, demoRewards: demoRecompenses } = useDemoCards()
   const { fallbackData, loading: fallbackLoading } = useFallbackData()
   const {
     taches: personalTachesRaw,
@@ -87,7 +87,11 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   useEffect(() => {
     if (isDemoMode) {
-      const initialTaches = (demoTaches ?? []).map(t => ({ ...t, done: false }))
+      const initialTaches = (demoTaches ?? []).map(t => ({
+        ...t,
+        done: false,
+        isDemo: true,
+      }))
       setDemoTachesState(initialTaches)
       setTotalTaches(initialTaches.length)
       setDoneCount(0)
@@ -109,7 +113,11 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   }, [isDemoMode, demoTachesState, personalTaches, fallbackData?.tasks])
 
   const recompenses = useMemo(() => {
-    if (isDemoMode) return Array.isArray(demoRecompenses) ? demoRecompenses : []
+    if (isDemoMode) {
+      return Array.isArray(demoRecompenses)
+        ? demoRecompenses.map(r => ({ ...r, isDemo: true }))
+        : []
+    }
     const fallbackRewards = Array.isArray(fallbackData?.rewards)
       ? fallbackData.rewards
       : []
@@ -120,8 +128,10 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   const doneMap = isDemoMode ? demoDoneMap : personalDoneMap
 
-  const toggleDone = isDemoMode
-    ? (id, newDone) => {
+  // Mémoïser les fonctions pour éviter re-renders inutiles de TachesDnd
+  const toggleDone = useCallback(
+    (id, newDone) => {
+      if (isDemoMode) {
         setDemoTachesState(prev => {
           const updated = prev.map(t =>
             t.id === id ? { ...t, done: newDone } : t
@@ -136,25 +146,36 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
           ...prev,
           [id]: newDone,
         }))
+      } else {
+        personalToggleDone(id, newDone)
       }
-    : personalToggleDone
+    },
+    [isDemoMode, personalToggleDone]
+  )
 
-  const saveOrder = isDemoMode
-    ? newList => {
+  const saveOrder = useCallback(
+    newList => {
+      if (isDemoMode) {
         // En mode démo, mettre à jour l'état local
         setDemoTachesState(Array.isArray(newList) ? newList : [])
+      } else {
+        personalSaveOrder(newList)
       }
-    : personalSaveOrder
+    },
+    [isDemoMode, personalSaveOrder]
+  )
 
-  const resetAll = isDemoMode
-    ? () => {
-        setDemoTachesState(prev => prev.map(t => ({ ...t, done: false })))
-        setDemoDoneMap(prev =>
-          Object.fromEntries(Object.keys(prev).map(id => [id, false]))
-        )
-        setDoneCount(0)
-      }
-    : personalResetAll
+  const resetAll = useCallback(() => {
+    if (isDemoMode) {
+      setDemoTachesState(prev => prev.map(t => ({ ...t, done: false })))
+      setDemoDoneMap(prev =>
+        Object.fromEntries(Object.keys(prev).map(id => [id, false]))
+      )
+      setDoneCount(0)
+    } else {
+      personalResetAll()
+    }
+  }, [isDemoMode, personalResetAll])
 
   // ⚠️ Sécurise l'accès à .find()
   const selected = (Array.isArray(recompenses) ? recompenses : []).find(
@@ -216,7 +237,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     <div className="tableau-magique">
       <DebugRole />
       {showTrain && (
-        <FeatureGate feature="trainprogressbar">
+        <>
           {isDemoMode ? (
             <TrainProgressBar
               total={totalTaches}
@@ -232,7 +253,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
               onLineChange={onLineChange}
             />
           )}
-        </FeatureGate>
+        </>
       )}
 
       {/* Indicateur de chargement fallback */}

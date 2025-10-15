@@ -1,8 +1,9 @@
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 import { BaseCard } from '@/components'
 import './EditionCard.scss'
 
-export default function CardEdition(props) {
+const CardEdition = memo(function CardEdition(props) {
   return (
     <BaseCard
       editable
@@ -10,7 +11,9 @@ export default function CardEdition(props) {
       className={`card-edition ${props.className || ''}`}
     />
   )
-}
+})
+
+CardEdition.displayName = 'CardEdition'
 
 CardEdition.propTypes = {
   image: PropTypes.string.isRequired,
@@ -25,4 +28,7 @@ CardEdition.propTypes = {
   labelId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   className: PropTypes.string,
   onBlur: PropTypes.func,
+  imageComponent: PropTypes.node,
 }
+
+export default CardEdition

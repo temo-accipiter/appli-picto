@@ -3,12 +3,13 @@ import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import { Layout, Loader, ProtectedRoute } from '@/components'
+import { ErrorBoundary, Layout, Loader, ProtectedRoute } from '@/components'
 import {
   AuthProvider,
   PermissionsProvider,
   DisplayProvider,
   ToastProvider,
+  LoadingProvider,
 } from '@/contexts'
 
 import { supabase } from '@/utils/supabaseClient'
@@ -198,16 +199,20 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider>
-      <PermissionsProvider>
-        <DisplayProvider>
-          <ToastProvider>
-            <Suspense fallback={<Loader />}>
-              <RouterProvider router={router} />
-            </Suspense>
-          </ToastProvider>
-        </DisplayProvider>
-      </PermissionsProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <PermissionsProvider>
+          <DisplayProvider>
+            <LoadingProvider>
+              <ToastProvider>
+                <Suspense fallback={<Loader />}>
+                  <RouterProvider router={router} />
+                </Suspense>
+              </ToastProvider>
+            </LoadingProvider>
+          </DisplayProvider>
+        </PermissionsProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 )

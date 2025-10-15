@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth } from '@/hooks'
+import { useAuth, useToast } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import formatErr from '@/utils/logs/formatErr'
 import { uploadImage } from '@/utils/storage/uploadImage'
@@ -19,6 +19,7 @@ import replaceImageIfAny from '@/utils/storage/replaceImageIfAny'
 
 export default function useRecompenses(reload = 0) {
   const { user } = useAuth()
+  const { show } = useToast()
   const [recompenses, setRecompenses] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -94,18 +95,22 @@ export default function useRecompenses(reload = 0) {
 
       if (error) throw error
       setRecompenses(prev => [...prev, data])
+      show('Récompense ajoutée', 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur ajout récompense : ${formatErr(e)}`)
+      show("Erreur lors de l'ajout de la récompense", 'error')
       return { data: null, error: e }
     }
   }
 
   // ➕ Création avec fichier (upload → path → insert)
   const addRecompenseFromFile = async (file, fields = {}) => {
-    if (!user?.id)
+    if (!user?.id) {
+      show('Erreur : utilisateur manquant', 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
+    }
     try {
       setError(null)
       const { path, error: upErr } = await uploadImage(file, {
@@ -123,6 +128,7 @@ export default function useRecompenses(reload = 0) {
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur ajout récompense (upload) : ${formatErr(e)}`)
+      show("Erreur lors de l'upload de l'image", 'error')
       return { data: null, error: e }
     }
   }
@@ -159,18 +165,22 @@ export default function useRecompenses(reload = 0) {
       setRecompenses(prev =>
         prev.map(r => (r.id === id ? { ...r, ...data } : r))
       )
+      show('Récompense modifiée', 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur update récompense : ${formatErr(e)}`)
+      show('Erreur lors de la modification', 'error')
       return { data: null, error: e }
     }
   }
 
   // 🖼️ Remplacement d'image (delete best-effort + upload)
   const updateRecompenseImage = async (id, file) => {
-    if (!user?.id)
+    if (!user?.id) {
+      show('Erreur : utilisateur manquant', 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
+    }
     try {
       const current = recompenses.find(r => r.id === id)
       const oldPath = current?.imagepath || null
@@ -185,6 +195,7 @@ export default function useRecompenses(reload = 0) {
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur remplacement image récompense : ${formatErr(e)}`)
+      show("Erreur lors du remplacement de l'image", 'error')
       return { data: null, error: e }
     }
   }
@@ -195,6 +206,7 @@ export default function useRecompenses(reload = 0) {
     const imagePath = rec?.imagepath
     if (!id) {
       console.error('❌ Récompense invalide :', rec)
+      show('Erreur : récompense invalide', 'error')
       return { error: new Error('Récompense invalide') }
     }
 
@@ -216,18 +228,22 @@ export default function useRecompenses(reload = 0) {
       if (error) throw error
 
       setRecompenses(prev => prev.filter(r => r.id !== id))
+      show('Récompense supprimée', 'success')
       return { error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur suppression récompense : ${formatErr(e)}`)
+      show('Impossible de supprimer la récompense', 'error')
       return { error: e }
     }
   }
 
   // ⭐ Sélection unique (utilise l’index unique user_id WHERE selected)
   const selectRecompense = async id => {
-    if (!user?.id)
+    if (!user?.id) {
+      show('Erreur : utilisateur manquant', 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
+    }
     try {
       setError(null)
       // 1) désélectionner existantes (si présentes)
@@ -253,10 +269,12 @@ export default function useRecompenses(reload = 0) {
           r.id === id ? { ...r, selected: true } : { ...r, selected: false }
         )
       )
+      show('Récompense sélectionnée', 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur sélection récompense : ${formatErr(e)}`)
+      show('Erreur lors de la sélection', 'error')
       return { data: null, error: e }
     }
   }

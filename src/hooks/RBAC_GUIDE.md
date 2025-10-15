@@ -73,62 +73,62 @@ function handleAddTask() {
 
 ### Propriétés d'état
 
-| Propriété | Type | Description |
-|-----------|------|-------------|
-| `ready` | `boolean` | `true` quand permissions ET quotas chargés |
-| `loading` | `boolean` | `true` pendant le chargement |
-| `role` | `string` | `'visitor'` \| `'free'` \| `'abonne'` \| `'admin'` \| `'unknown'` |
+| Propriété | Type      | Description                                                       |
+| --------- | --------- | ----------------------------------------------------------------- |
+| `ready`   | `boolean` | `true` quand permissions ET quotas chargés                        |
+| `loading` | `boolean` | `true` pendant le chargement                                      |
+| `role`    | `string`  | `'visitor'` \| `'free'` \| `'abonne'` \| `'admin'` \| `'unknown'` |
 
 ### Flags de rôle
 
-| Flag | Type | Description |
-|------|------|-------------|
-| `isVisitor` | `boolean` | Utilisateur non connecté |
-| `isFree` | `boolean` | Compte gratuit |
-| `isSubscriber` | `boolean` | Abonné payant |
-| `isAdmin` | `boolean` | Administrateur |
-| `isUnknown` | `boolean` | Rôle inconnu (transitoire) |
+| Flag           | Type      | Description                |
+| -------------- | --------- | -------------------------- |
+| `isVisitor`    | `boolean` | Utilisateur non connecté   |
+| `isFree`       | `boolean` | Compte gratuit             |
+| `isSubscriber` | `boolean` | Abonné payant              |
+| `isAdmin`      | `boolean` | Administrateur             |
+| `isUnknown`    | `boolean` | Rôle inconnu (transitoire) |
 
 ### Fonctions de permissions
 
-| Fonction | Signature | Description |
-|----------|-----------|-------------|
-| `can(name)` | `(string) => boolean` | Vérifie UNE permission |
+| Fonction        | Signature               | Description                          |
+| --------------- | ----------------------- | ------------------------------------ |
+| `can(name)`     | `(string) => boolean`   | Vérifie UNE permission               |
 | `canAll(names)` | `(string[]) => boolean` | Vérifie TOUTES les permissions (AND) |
-| `canAny(names)` | `(string[]) => boolean` | Vérifie AU MOINS UNE (OR) |
+| `canAny(names)` | `(string[]) => boolean` | Vérifie AU MOINS UNE (OR)            |
 
 ### Fonctions de quotas
 
-| Fonction | Signature | Description |
-|----------|-----------|-------------|
-| `canCreate(type)` | `('task'\|'reward'\|'category') => boolean` | Peut créer ce type ? |
-| `canCreateTask()` | `() => boolean` | Shortcut pour tasks |
-| `canCreateReward()` | `() => boolean` | Shortcut pour rewards |
-| `canCreateCategory()` | `() => boolean` | Shortcut pour categories |
-| `getQuotaInfo(type)` | `(string) => QuotaInfo \| null` | Détails du quota |
-| `getMonthlyQuotaInfo(type)` | `(string) => QuotaInfo \| null` | Quota mensuel |
-| `refreshQuotas()` | `() => void` | Recharger manuellement |
+| Fonction                    | Signature                                   | Description              |
+| --------------------------- | ------------------------------------------- | ------------------------ |
+| `canCreate(type)`           | `('task'\|'reward'\|'category') => boolean` | Peut créer ce type ?     |
+| `canCreateTask()`           | `() => boolean`                             | Shortcut pour tasks      |
+| `canCreateReward()`         | `() => boolean`                             | Shortcut pour rewards    |
+| `canCreateCategory()`       | `() => boolean`                             | Shortcut pour categories |
+| `getQuotaInfo(type)`        | `(string) => QuotaInfo \| null`             | Détails du quota         |
+| `getMonthlyQuotaInfo(type)` | `(string) => QuotaInfo \| null`             | Quota mensuel            |
+| `refreshQuotas()`           | `() => void`                                | Recharger manuellement   |
 
 ### Type QuotaInfo
 
 ```typescript
 {
-  limit: number          // Limite maximale
-  current: number        // Utilisation actuelle
-  remaining: number      // Restant (limit - current)
-  percentage: number     // Pourcentage (0-100)
-  isAtLimit: boolean     // Limite atteinte ?
-  isNearLimit: boolean   // Proche de la limite ? (>80%)
+  limit: number // Limite maximale
+  current: number // Utilisation actuelle
+  remaining: number // Restant (limit - current)
+  percentage: number // Pourcentage (0-100)
+  isAtLimit: boolean // Limite atteinte ?
+  isNearLimit: boolean // Proche de la limite ? (>80%)
 }
 ```
 
 ### Autres
 
-| Fonction | Description |
-|----------|-------------|
+| Fonction   | Description                     |
+| ---------- | ------------------------------- |
 | `reload()` | Recharger permissions ET quotas |
-| `quotas` | Objet brut des quotas |
-| `usage` | Objet brut de l'utilisation |
+| `quotas`   | Objet brut des quotas           |
+| `usage`    | Objet brut de l'utilisation     |
 
 ---
 
@@ -149,15 +149,14 @@ function TaskList() {
       {isFree && info && (
         <div className="quota-bar">
           <progress value={info.current} max={info.limit} />
-          <span>{info.current} / {info.limit} tâches</span>
+          <span>
+            {info.current} / {info.limit} tâches
+          </span>
           {info.isNearLimit && <span>⚠️ Bientôt à la limite</span>}
         </div>
       )}
 
-      <button
-        onClick={handleAddTask}
-        disabled={!canCreateTask()}
-      >
+      <button onClick={handleAddTask} disabled={!canCreateTask()}>
         Ajouter une tâche
       </button>
     </div>
@@ -193,14 +192,10 @@ function AdvancedEditor() {
     'edit_tasks',
     'delete_tasks',
     'manage_categories',
-    'bulk_operations'
+    'bulk_operations',
   ])
 
-  return hasFullAccess ? (
-    <AdvancedUI />
-  ) : (
-    <BasicUI />
-  )
+  return hasFullAccess ? <AdvancedUI /> : <BasicUI />
 }
 ```
 

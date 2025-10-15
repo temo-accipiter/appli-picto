@@ -1,4 +1,5 @@
 import { InputWithValidation, ModalConfirm } from '@/components'
+import { useDebounce } from '@/hooks'
 import {
   assignRoleToUser,
   getUsersWithRoles,
@@ -165,14 +166,19 @@ export default function UsersTab() {
     }
   }
 
+  // ✅ Debounce la recherche pour éviter trop de filtres pendant la saisie
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
   const filteredUsers = useMemo(
     () =>
       users.filter(
         user =>
-          user.pseudo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          user.pseudo
+            ?.toLowerCase()
+            .includes(debouncedSearchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       ),
-    [users, searchTerm]
+    [users, debouncedSearchTerm]
   )
 
   if (loading) {

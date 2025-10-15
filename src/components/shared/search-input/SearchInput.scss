@@ -1,0 +1,88 @@
+// src/components/shared/search-input/SearchInput.scss
+// Styles TSA-friendly pour input de recherche avec debounce
+
+.search-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+
+  &__icon {
+    position: absolute;
+    left: 12px;
+    color: #718096;
+    pointer-events: none;
+  }
+
+  &__field {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 2.75rem;
+    font-size: 1rem;
+    color: #2d3748;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+
+    // Taille minimum accessible (WCAG AA)
+    min-height: 44px;
+
+    &::placeholder {
+      color: #a0aec0;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+
+    &:hover:not(:focus) {
+      border-color: #cbd5e0;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 50%;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #cbd5e0;
+      transform: scale(1.1);
+    }
+
+    &:focus {
+      outline: 2px solid #4299e1;
+      outline-offset: 2px;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Support prefers-reduced-motion (accessibilité)
+@media (prefers-reduced-motion: reduce) {
+  .search-input__field,
+  .search-input__clear {
+    transition: none;
+  }
+
+  .search-input__clear:hover {
+    transform: none;
+  }
+}

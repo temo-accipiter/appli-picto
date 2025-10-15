@@ -33,6 +33,7 @@ export { default as Card } from './card/Card'
 export { default as EditionList } from './edition-list/EditionList'
 
 // Composants utilitaires
+export { default as ErrorBoundary } from './error-boundary/ErrorBoundary'
 export { default as LegalConfigTester } from './LegalConfigTester'
 
 // Web Vitals

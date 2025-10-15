@@ -20,10 +20,12 @@ Nettoyer et optimiser le système RBAC maintenant que tous les fichiers sont mig
 ### 1. Déprécier formellement les anciens hooks
 
 **Fichiers à modifier :**
+
 - `src/hooks/useQuotas.js`
 - `src/hooks/useEntitlements.js`
 
 **Actions :**
+
 ```javascript
 /**
  * @deprecated Use useRBAC() instead
@@ -37,7 +39,7 @@ export default function useQuotas() {
   if (import.meta.env.DEV) {
     console.warn(
       '⚠️ useQuotas() is deprecated. Use useRBAC() instead. ' +
-      'See src/hooks/RBAC_GUIDE.md for migration guide.'
+        'See src/hooks/RBAC_GUIDE.md for migration guide.'
     )
   }
 
@@ -46,6 +48,7 @@ export default function useQuotas() {
 ```
 
 **Bénéfices :**
+
 - Warnings dans la console en dev
 - JSDoc indique la dépréciation
 - Guides vers la nouvelle API
@@ -70,15 +73,18 @@ rm src/hooks/useEntitlements.js
 ```
 
 **Bénéfices :**
+
 - Code plus propre
 - Moins de maintenance
 - -450 lignes de code
 
 **Risques :**
+
 - Breaking change si imports directs quelque part
 - Plus de backward compatibility
 
 **Recommandation :** ❌ **NE PAS FAIRE** maintenant
+
 - Garde les hooks pour compatibilité
 - Supprime-les dans 3-6 mois quand tu es sûr
 
@@ -91,11 +97,13 @@ rm src/hooks/useEntitlements.js
 **Créer :** `src/hooks/useRBAC.integration.test.jsx`
 
 **Tester :**
+
 - Scénario complet utilisateur (visitor → free → subscriber)
 - Vérifier quotas en conditions réelles
 - Tester realtime updates
 
 **Bénéfices :**
+
 - Confiance accrue
 - Détecte les bugs subtils
 
@@ -106,11 +114,13 @@ rm src/hooks/useEntitlements.js
 ### 4. Optimisations (optionnel)
 
 **Idées :**
+
 - Cache plus agressif pour quotas
 - Debouncing des realtime updates
 - Prefetch des quotas au login
 
 **Bénéfices :**
+
 - Performance améliorée
 - Moins de requêtes RPC
 
@@ -150,6 +160,7 @@ export default function useQuotas() {
 **Le refactoring RBAC est fonctionnellement TERMINÉ.**
 
 Phase 4 concerne uniquement :
+
 - Cleanup cosmétique
 - Optimisations futures
 - Maintenance à long terme

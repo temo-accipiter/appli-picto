@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import PropTypes from 'prop-types'
 import {
   InputWithValidation,
@@ -9,7 +10,7 @@ import {
 import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
 import './BaseCard.scss'
 
-export default function BaseCard({
+const BaseCard = memo(function BaseCard({
   image,
   label,
   editable = false,
@@ -76,7 +77,9 @@ export default function BaseCard({
       </div>
     </div>
   )
-}
+})
+
+BaseCard.displayName = 'BaseCard'
 
 BaseCard.propTypes = {
   image: PropTypes.string.isRequired,
@@ -94,3 +97,5 @@ BaseCard.propTypes = {
   className: PropTypes.string,
   imageComponent: PropTypes.node,
 }
+
+export default BaseCard

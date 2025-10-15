@@ -1,6 +1,7 @@
 import { usePermissions } from '@/contexts'
 import { Crown, Eye, EyeOff, Settings, Shield, User } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { useDebounce } from '@/hooks'
 import './PermissionsDebug.scss'
 
 export const PermissionsDebug = () => {
@@ -17,6 +18,47 @@ export const PermissionsDebug = () => {
   } = usePermissions()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
+  // Créer une structure de données pour l'affichage avec mémoïsation
+  const featurePermissions = useMemo(() => {
+    if (!features || !permissions) return []
+
+    return features.map(feature => {
+      const featurePerms = permissions.filter(p => p.feature_id === feature.id)
+      const featurePermissionsMap = {}
+
+      featurePerms.forEach(perm => {
+        const roleName = perm.role_name || 'unknown'
+        featurePermissionsMap[roleName] = perm.can_access
+      })
+
+      return {
+        name: feature.name,
+        display_name: feature.display_name,
+        description: feature.description,
+        permissions: featurePermissionsMap,
+      }
+    })
+  }, [features, permissions])
+
+  // Filtrer les features par recherche avec debounce et mémoïsation
+  const filteredFeatures = useMemo(() => {
+    return featurePermissions.filter(feature => {
+      if (!debouncedSearchTerm) return true
+      return (
+        feature.name
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase()) ||
+        feature.display_name
+          .toLowerCase()
+          .includes(debouncedSearchTerm.toLowerCase()) ||
+        Object.keys(feature.permissions).some(role =>
+          role.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        )
+      )
+    })
+  }, [featurePermissions, debouncedSearchTerm])
 
   // N'afficher que pour les administrateurs en développement
   if (import.meta.env.PROD || !isAdmin) {
@@ -33,45 +75,6 @@ export const PermissionsDebug = () => {
       </div>
     )
   }
-
-  // Créer une structure de données pour l'affichage
-  const getFeaturePermissions = () => {
-    if (!features || !permissions) return []
-
-    return features.map(feature => {
-      const featurePermissions = {}
-
-      // Trouver les permissions pour cette fonctionnalité
-      const featurePerms = permissions.filter(p => p.feature_id === feature.id)
-
-      // Organiser par rôle
-      featurePerms.forEach(perm => {
-        const roleName = perm.role_name || 'unknown'
-        featurePermissions[roleName] = perm.can_access
-      })
-
-      return {
-        name: feature.name,
-        display_name: feature.display_name,
-        description: feature.description,
-        permissions: featurePermissions,
-      }
-    })
-  }
-
-  const featurePermissions = getFeaturePermissions()
-
-  // Filtrer les features par recherche
-  const filteredFeatures = featurePermissions.filter(feature => {
-    if (!searchTerm) return true
-    return (
-      feature.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feature.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      Object.keys(feature.permissions).some(role =>
-        role.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
-  })
 
   // Obtenir l'icône pour chaque rôle
   const _getRoleIcon = role => {

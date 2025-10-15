@@ -1,7 +1,7 @@
 // src/hooks/useTaches.js
 import { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient' // ✅ instance unique
-import { useAuth } from '@/hooks'
+import { useAuth, useToast } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny' // ✅ utilitaire commun
 
 // Log d'erreur "safe"
@@ -19,6 +19,7 @@ const formatErr = e => {
 export default function useTaches(reload = 0) {
   const [taches, setTaches] = useState([])
   const { user } = useAuth()
+  const { show } = useToast()
 
   // 📥 Chargement initial
   useEffect(() => {
@@ -51,11 +52,14 @@ export default function useTaches(reload = 0) {
       .eq('id', id)
       .eq('user_id', user.id)
       .then(({ error }) => {
-        if (error)
-          return console.error(`❌ Erreur update fait : ${formatErr(error)}`)
-        setTaches(prev =>
-          prev.map(t => (t.id === id ? { ...t, fait: !current } : t))
-        )
+        if (error) {
+          console.error(`❌ Erreur update fait : ${formatErr(error)}`)
+          show('Erreur lors de la mise à jour', 'error')
+        } else {
+          setTaches(prev =>
+            prev.map(t => (t.id === id ? { ...t, fait: !current } : t))
+          )
+        }
       })
 
   // ♻️ Reset "fait"
@@ -65,9 +69,13 @@ export default function useTaches(reload = 0) {
       .update({ fait: false })
       .eq('user_id', user.id)
       .then(({ error }) => {
-        if (error)
-          return console.error(`❌ Erreur reset fait : ${formatErr(error)}`)
-        setTaches(prev => prev.map(t => ({ ...t, fait: false })))
+        if (error) {
+          console.error(`❌ Erreur reset fait : ${formatErr(error)}`)
+          show('Erreur lors de la réinitialisation', 'error')
+        } else {
+          setTaches(prev => prev.map(t => ({ ...t, fait: false })))
+          show('Toutes les tâches ont été réinitialisées', 'success')
+        }
       })
 
   // ↕️ Mise à jour de l’ordre
@@ -94,6 +102,7 @@ export default function useTaches(reload = 0) {
 
     if (!id) {
       console.error('❌ Tâche invalide :', t)
+      show('Erreur : tâche invalide', 'error')
       return
     }
 
@@ -111,9 +120,11 @@ export default function useTaches(reload = 0) {
 
     if (error) {
       console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
+      show('Impossible de supprimer la tâche', 'error')
     } else {
       console.log('✅ Tâche supprimée avec succès')
       setTaches(prev => prev.filter(task => task.id !== id))
+      show('Tâche supprimée', 'success')
     }
   }
 
