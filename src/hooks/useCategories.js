@@ -28,7 +28,8 @@ export default function useCategories(reload = 0) {
   const { user } = useAuth()
   const { show } = useToast()
 
-  const fetchCategories = useCallback(async () => {
+  // 📥 Fonction interne de fetch (sans useCallback pour simplifier les tests)
+  const fetchCategoriesInternal = async () => {
     if (!user?.id) {
       setCategories([])
       setLoading(false)
@@ -55,24 +56,35 @@ export default function useCategories(reload = 0) {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }
 
+  // 📥 Chargement initial (comme useTaches)
   useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories, reload])
+    fetchCategoriesInternal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reload, user?.id])
 
   const addCategory = async cat => {
     // cat = { value, label } — user_id géré par trigger
     try {
-      const { error } = await supabase.from('categories').insert([
-        {
-          label: cat.label,
-          value: cat.value,
-          // user_id: trigger a00_categories_set_user_id_before => auth.uid()
-        },
-      ])
+      const { data, error } = await supabase
+        .from('categories')
+        .insert([
+          {
+            label: cat.label,
+            value: cat.value,
+            // user_id: trigger a00_categories_set_user_id_before => auth.uid()
+          },
+        ])
+        .select()
+
       if (error) throw error
-      await fetchCategories()
+
+      if (!data || data.length === 0) {
+        throw new Error('Insertion bloquée par les permissions (RLS)')
+      }
+
+      await fetchCategoriesInternal()
       show('Catégorie ajoutée', 'success')
       return { error: null }
     } catch (e) {
@@ -91,7 +103,7 @@ export default function useCategories(reload = 0) {
         // garde-fou : on laisse aussi admin (policy le permet), sinon restreint à l'user
         .or(`user_id.eq.${user?.id},user_id.is.null`)
       if (error) throw error
-      await fetchCategories()
+      await fetchCategoriesInternal()
       show('Catégorie modifiée', 'success')
       return { error: null }
     } catch (e) {
@@ -109,8 +121,10 @@ export default function useCategories(reload = 0) {
         .delete()
         .eq('value', value)
         .eq('user_id', user?.id) // on ne supprime que les catégories de l'utilisateur
+
       if (error) throw error
-      await fetchCategories()
+
+      await fetchCategoriesInternal()
       show('Catégorie supprimée', 'success')
       return { error: null }
     } catch (e) {
@@ -120,6 +134,11 @@ export default function useCategories(reload = 0) {
     }
   }
 
+  // Exposer refresh avec useCallback pour stabilité de référence
+  const refresh = useCallback(() => {
+    return fetchCategoriesInternal()
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   return {
     categories,
     loading,
@@ -127,6 +146,6 @@ export default function useCategories(reload = 0) {
     addCategory,
     updateCategory,
     deleteCategory,
-    refresh: fetchCategories,
+    refresh,
   }
 }

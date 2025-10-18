@@ -1,4 +1,140 @@
 {
-  "welcome": "Bienvenue sur ton tableau magique !",
-  "addTask": "Ajouter une tâche"
+  "app": {
+    "title": "Appli Picto",
+    "welcome": "Bienvenue sur ton tableau magique !"
+  },
+  "nav": {
+    "tableau": "Tableau",
+    "edition": "Édition",
+    "profil": "Profil",
+    "abonnement": "Abonnement",
+    "admin": "Administration",
+    "permissions": "Permissions",
+    "login": "Se connecter",
+    "signup": "S'inscrire",
+    "logout": "Déconnexion",
+    "createAccount": "Créer un compte",
+    "personalization": "Personnalisation"
+  },
+  "actions": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer",
+    "upload": "Téléverser",
+    "download": "Télécharger",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "finish": "Terminer"
+  },
+  "tasks": {
+    "title": "Tâches",
+    "add": "Ajouter une tâche",
+    "edit": "Modifier la tâche",
+    "delete": "Supprimer la tâche",
+    "done": "Terminée",
+    "pending": "En attente",
+    "today": "Aujourd'hui",
+    "noTasks": "Aucune tâche pour le moment",
+    "dragDrop": "Glisse-dépose les tâches"
+  },
+  "rewards": {
+    "title": "Récompenses",
+    "add": "Ajouter une récompense",
+    "edit": "Modifier la récompense",
+    "delete": "Supprimer la récompense",
+    "selected": "Sélectionnée",
+    "noRewards": "Aucune récompense pour le moment",
+    "congrats": "Félicitations !"
+  },
+  "categories": {
+    "title": "Catégories",
+    "add": "Ajouter une catégorie",
+    "edit": "Modifier la catégorie",
+    "delete": "Supprimer la catégorie",
+    "noCategories": "Aucune catégorie"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "theme": "Thème",
+    "language": "Langue",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "deleteAccount": "Supprimer mon compte",
+    "confetti": "Confettis"
+  },
+  "subscription": {
+    "title": "Abonnement",
+    "free": "Gratuit",
+    "premium": "Premium",
+    "subscribe": "S'abonner",
+    "manage": "Gérer mon abonnement",
+    "cancel": "Annuler l'abonnement",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "expired": "Expiré"
+  },
+  "quota": {
+    "title": "Quotas",
+    "tasks": "Tâches",
+    "rewards": "Récompenses",
+    "categories": "Catégories",
+    "images": "Images",
+    "exceeded": "Quota dépassé",
+    "remaining": "Restant"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "resetPassword": "Réinitialiser le mot de passe",
+    "signupSuccess": "Compte créé avec succès",
+    "loginSuccess": "Connexion réussie",
+    "logoutSuccess": "Déconnexion réussie",
+    "error": "Erreur d'authentification"
+  },
+  "errors": {
+    "generic": "Une erreur est survenue",
+    "network": "Erreur réseau",
+    "notFound": "Page non trouvée",
+    "unauthorized": "Non autorisé",
+    "forbidden": "Accès interdit",
+    "serverError": "Erreur serveur",
+    "validationError": "Erreur de validation"
+  },
+  "legal": {
+    "mentions": "Mentions légales",
+    "cgu": "Conditions générales d'utilisation",
+    "cgv": "Conditions générales de vente",
+    "privacy": "Politique de confidentialité",
+    "cookies": "Politique de cookies",
+    "rgpd": "Portail RGPD",
+    "accessibility": "Accessibilité"
+  },
+  "cookies": {
+    "banner": "Ce site utilise des cookies pour améliorer votre expérience",
+    "accept": "Accepter",
+    "refuse": "Refuser",
+    "customize": "Personnaliser",
+    "necessary": "Cookies nécessaires",
+    "analytics": "Cookies analytiques",
+    "marketing": "Cookies marketing"
+  },
+  "accessibility": {
+    "skipToContent": "Aller au contenu principal",
+    "closeMenu": "Fermer le menu",
+    "openMenu": "Ouvrir le menu",
+    "switchLanguage": "Changer de langue",
+    "switchTheme": "Changer de thème"
+  }
 }

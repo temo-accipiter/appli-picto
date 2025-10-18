@@ -40,6 +40,8 @@ export default function Profil() {
   const [captchaTokenReset, setCaptchaTokenReset] = useState(null)
   const [captchaKey, setCaptchaKey] = useState(0)
   const [_isAdmin, setIsAdmin] = useState(false)
+  const [tempAvatarPath, setTempAvatarPath] = useState(null)
+  const [avatarKey, setAvatarKey] = useState(0)
 
   // même logique d'affichage que le UserMenu (DB > metadata > email)
   const displayPseudo = getDisplayPseudo(user, pseudo)
@@ -165,12 +167,18 @@ export default function Profil() {
 
     const { data, error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(fileName, file)
+      .upload(fileName, file, {
+        upsert: true, // Écrase le fichier s'il existe déjà
+      })
 
     if (import.meta.env.DEV) {
       console.log('🔍 handleAvatarUpload - Résultat upload', {
+        fileName,
         data,
         uploadError,
+        path: data?.path,
+        errorCode: uploadError?.statusCode,
+        errorMessage: uploadError?.message,
       })
     }
 
@@ -179,6 +187,20 @@ export default function Profil() {
       console.error('❌ Erreur upload avatar:', uploadError)
       return
     }
+
+    if (!data || !data.path) {
+      showToast('❌ Upload échoué: données invalides', 'error')
+      console.error('❌ Données upload invalides:', { data, uploadError })
+      return
+    }
+
+    // Attendre un peu pour que le fichier soit disponible dans Storage
+    await wait(300)
+
+    // Mettre à jour l'état local immédiatement pour afficher le nouvel avatar
+    setTempAvatarPath(data.path)
+    // Forcer le re-render du composant AvatarProfil pour réinitialiser SignedImage
+    setAvatarKey(k => k + 1)
 
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
@@ -191,15 +213,17 @@ export default function Profil() {
     if (import.meta.env.DEV) {
       console.log('🔍 handleAvatarUpload - Mise à jour metadata/profil', {
         metaError,
+        avatarPath: data.path,
       })
     }
 
     if (metaError) {
       showToast('❌ Erreur profil', 'error')
       console.error('❌ Erreur mise à jour profil:', metaError)
+      setTempAvatarPath(null) // Réinitialiser en cas d'erreur
     } else {
       showToast('✅ Avatar mis à jour', 'success')
-      window.location.reload()
+      // Plus besoin de recharger la page, l'avatar s'affiche déjà via tempAvatarPath
     }
   }
 
@@ -218,8 +242,10 @@ export default function Profil() {
     })
     if (metaError) showToast('❌ Erreur mise à jour', 'error')
     else {
+      setTempAvatarPath(null) // Réinitialiser l'état local
+      setAvatarKey(k => k + 1) // Forcer le re-render
       showToast('✅ Avatar supprimé', 'success')
-      window.location.reload()
+      // Plus besoin de recharger la page
     }
   }
 
@@ -272,7 +298,8 @@ export default function Profil() {
       <h1>Mon profil</h1>
       <FloatingPencil className="floating-pencil--profil" />
       <AvatarProfil
-        avatarPath={user.user_metadata?.avatar || null}
+        key={avatarKey}
+        avatarPath={tempAvatarPath || user.user_metadata?.avatar || null}
         pseudo={displayPseudo}
         onUpload={handleAvatarUpload}
         onDelete={() => setConfirmDeleteAvatar(true)}

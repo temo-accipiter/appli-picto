@@ -1,0 +1,140 @@
+{
+  "app": {
+    "title": "Picto App",
+    "welcome": "Welcome to your magic board!"
+  },
+  "nav": {
+    "tableau": "Dashboard",
+    "edition": "Edit",
+    "profil": "Profile",
+    "abonnement": "Subscription",
+    "admin": "Administration",
+    "permissions": "Permissions",
+    "login": "Log in",
+    "signup": "Sign up",
+    "logout": "Log out",
+    "createAccount": "Create account",
+    "personalization": "Personalization"
+  },
+  "actions": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "upload": "Upload",
+    "download": "Download",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "add": "Add task",
+    "edit": "Edit task",
+    "delete": "Delete task",
+    "done": "Done",
+    "pending": "Pending",
+    "today": "Today",
+    "noTasks": "No tasks yet",
+    "dragDrop": "Drag and drop tasks"
+  },
+  "rewards": {
+    "title": "Rewards",
+    "add": "Add reward",
+    "edit": "Edit reward",
+    "delete": "Delete reward",
+    "selected": "Selected",
+    "noRewards": "No rewards yet",
+    "congrats": "Congratulations!"
+  },
+  "categories": {
+    "title": "Categories",
+    "add": "Add category",
+    "edit": "Edit category",
+    "delete": "Delete category",
+    "noCategories": "No categories"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "deleteAccount": "Delete my account",
+    "confetti": "Confetti"
+  },
+  "subscription": {
+    "title": "Subscription",
+    "free": "Free",
+    "premium": "Premium",
+    "subscribe": "Subscribe",
+    "manage": "Manage subscription",
+    "cancel": "Cancel subscription",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "expired": "Expired"
+  },
+  "quota": {
+    "title": "Quotas",
+    "tasks": "Tasks",
+    "rewards": "Rewards",
+    "categories": "Categories",
+    "images": "Images",
+    "exceeded": "Quota exceeded",
+    "remaining": "Remaining"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset password",
+    "signupSuccess": "Account created successfully",
+    "loginSuccess": "Login successful",
+    "logoutSuccess": "Logged out successfully",
+    "error": "Authentication error"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "network": "Network error",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Access denied",
+    "serverError": "Server error",
+    "validationError": "Validation error"
+  },
+  "legal": {
+    "mentions": "Legal notices",
+    "cgu": "Terms of use",
+    "cgv": "Terms of sale",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy",
+    "rgpd": "GDPR portal",
+    "accessibility": "Accessibility"
+  },
+  "cookies": {
+    "banner": "This site uses cookies to improve your experience",
+    "accept": "Accept",
+    "refuse": "Refuse",
+    "customize": "Customize",
+    "necessary": "Necessary cookies",
+    "analytics": "Analytics cookies",
+    "marketing": "Marketing cookies"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu",
+    "switchLanguage": "Switch language",
+    "switchTheme": "Switch theme"
+  }
+}

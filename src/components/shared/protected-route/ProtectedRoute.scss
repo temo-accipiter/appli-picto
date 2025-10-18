@@ -1,4 +1,5 @@
-.protected-route {
+.protected-route,
+.protected-route-loading {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -6,9 +7,16 @@
   min-height: 60vh;
   font-size: 1.2rem;
   color: #555;
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.15s ease-in-out;
   text-align: center;
   padding: 2rem;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+// Délai avant l'apparition du loader (évite le flash si le chargement est très rapide)
+.protected-route-loading {
+  animation-delay: 0.1s;
 }
 
 .protected-route .spinner {

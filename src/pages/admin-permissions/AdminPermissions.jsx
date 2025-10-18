@@ -5,8 +5,9 @@ import {
   PermissionsTab,
   RolesTab,
   UsersTab,
-} from '@/components/admin-permissions'
+} from '@/components/features/admin/permissions'
 import { usePermissions } from '@/contexts'
+import { useAdminPermissions } from '@/hooks/useAdminPermissions'
 import { createFeatureValidationRules } from '@/utils/validationRules'
 import {
   BarChart3,
@@ -23,9 +24,12 @@ import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
 
 export default function AdminPermissions() {
+  // Permissions utilisateur (pour vérifier isAdmin)
+  const { loading: permissionsLoading, ready, isAdmin } = usePermissions()
+
+  // Données et fonctions d'administration
   const {
-    loading,
-    isAdmin,
+    loading: adminLoading,
     permissions,
     features,
     roles,
@@ -37,7 +41,9 @@ export default function AdminPermissions() {
     createFeature,
     updateFeature,
     deleteFeature,
-  } = usePermissions()
+  } = useAdminPermissions()
+
+  const loading = permissionsLoading || adminLoading
 
   const [activeTab, setActiveTab] = useState('permissions')
 
@@ -95,9 +101,14 @@ export default function AdminPermissions() {
   }, [permissions])
 
   // Attendre que TOUT soit chargé avant de décider
-  const isLoading = loading || !isAdmin || !permissions || !features || !roles
+  const isLoading = loading || !ready || !permissions || !features || !roles
   const hasLoadedData =
-    !loading && isAdmin !== undefined && permissions && features && roles
+    !loading &&
+    ready &&
+    isAdmin !== undefined &&
+    permissions &&
+    features &&
+    roles
 
   if (isLoading) {
     return (
@@ -111,7 +122,7 @@ export default function AdminPermissions() {
     )
   }
 
-  // Rediriger les non-admins SEULEMENT après le chargement complet
+  // Rediriger les non-admins SEULEMENT après le chargement complet ET la vérification du rôle
   if (hasLoadedData && !isAdmin) {
     return <Navigate to="/" replace />
   }

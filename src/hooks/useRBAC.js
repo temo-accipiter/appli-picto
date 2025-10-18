@@ -79,7 +79,13 @@ export default function useRBAC() {
 
   // Fetch quotas depuis get_usage_fast
   const fetchQuotas = useCallback(async () => {
-    if (!permissions.ready || permissions.isUnknown || permissions.isVisitor) {
+    // Pas de quotas pour: visiteurs, unknown, ou admins
+    if (
+      !permissions.ready ||
+      permissions.isUnknown ||
+      permissions.isVisitor ||
+      permissions.isAdmin
+    ) {
       setQuotas({})
       setUsage({})
       setQuotasLoading(false)
@@ -143,6 +149,7 @@ export default function useRBAC() {
     permissions.ready,
     permissions.isUnknown,
     permissions.isVisitor,
+    permissions.isAdmin,
     permissions.role,
     initialLoad,
   ])

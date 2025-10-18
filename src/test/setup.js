@@ -1,5 +1,14 @@
 // src/test/setup.js
 import '@testing-library/jest-dom'
+import { server } from './mocks/server'
+import { afterAll, afterEach, beforeAll } from 'vitest'
+
+// ========================================
+// MSW Server Setup (Mock HTTP requests)
+// ========================================
+beforeAll(() => server.listen({ onUnhandledRequest: 'warn' }))
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
 
 // --- Mocks d'APIs navigateur utiles ---
 

@@ -238,7 +238,7 @@ export default function useRecompenses(reload = 0) {
     }
   }
 
-  // ⭐ Sélection unique (utilise l’index unique user_id WHERE selected)
+  // ⭐ Sélection unique OPTIMISÉE (1 seul appel RPC au lieu de 2 requêtes)
   const selectRecompense = async id => {
     if (!user?.id) {
       show('Erreur : utilisateur manquant', 'error')
@@ -246,24 +246,20 @@ export default function useRecompenses(reload = 0) {
     }
     try {
       setError(null)
-      // 1) désélectionner existantes (si présentes)
-      const { error: e1 } = await supabase
-        .from('recompenses')
-        .update({ selected: false })
-        .eq('user_id', user.id)
-        .eq('selected', true)
-      if (e1) throw e1
 
-      // 2) marquer celle choisie
-      const { data, error: e2 } = await supabase
-        .from('recompenses')
-        .update({ selected: true })
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .select()
-        .single()
-      if (e2) throw e2
+      // ✅ OPTIMISATION : Utiliser la fonction RPC atomique
+      // - 1 seul round-trip réseau (au lieu de 2)
+      // - Atomicité garantie (transaction implicite)
+      // - Pas de race condition
+      const { data, error } = await supabase
+        .rpc('select_recompense_atomic', {
+          p_reward_id: id,
+        })
+        .maybeSingle()
 
+      if (error) throw error
+
+      // Mise à jour de l'état local
       setRecompenses(prev =>
         prev.map(r =>
           r.id === id ? { ...r, selected: true } : { ...r, selected: false }
@@ -279,6 +275,31 @@ export default function useRecompenses(reload = 0) {
     }
   }
 
+  // ⭐ Désélectionner toutes les récompenses
+  const deselectAll = async () => {
+    if (!user?.id) return { error: new Error('Utilisateur manquant') }
+    try {
+      setError(null)
+      const { error } = await supabase
+        .from('recompenses')
+        .update({ selected: false })
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      setRecompenses(prev => prev.map(r => ({ ...r, selected: false })))
+      return { error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur désélection récompenses : ${formatErr(e)}`)
+      return { error: e }
+    }
+  }
+
+  // ✏️ Renommer (alias pour updateRecompense avec label uniquement)
+  const updateLabel = async (id, label) => {
+    return await updateRecompense(id, { label })
+  }
+
   return {
     recompenses,
     loading,
@@ -286,10 +307,13 @@ export default function useRecompenses(reload = 0) {
 
     addRecompense,
     addRecompenseFromFile,
+    createRecompense: addRecompense, // Alias pour compatibilité
     updateRecompense,
     updateRecompenseImage,
+    updateLabel,
     deleteRecompense,
     selectRecompense,
+    deselectAll,
 
     setRecompenses,
   }

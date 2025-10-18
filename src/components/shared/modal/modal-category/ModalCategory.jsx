@@ -45,14 +45,14 @@ export default function ModalCategory({
     }
 
     if (typeof onAddCategory === 'function') {
-      // Passer la valeur de la catégorie en paramètre
-      onAddCategory(e, newCategory)
+      const categoryToAdd = newCategory // Sauvegarder la valeur AVANT de vider
+      onAddCategory(e, categoryToAdd)
+      onChangeNewCategory('') // Vider APRÈS l'appel
     }
-    onChangeNewCategory('')
   }
 
-  const handleDelete = id => {
-    onDeleteCategory(id) // ✅ envoie l’id maintenant
+  const handleDelete = value => {
+    onDeleteCategory(value) // Envoie le 'value' (slug) pas l'id
   }
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function ModalCategory({
               >
                 {cat.label}
                 <ButtonDelete
-                  onClick={() => handleDelete(cat.id)} // ✅ envoie l’id
+                  onClick={() => handleDelete(cat.value)} // Envoie le 'value' (slug)
                   title={`Supprimer la catégorie ${cat.label}`}
                 />
               </motion.li>

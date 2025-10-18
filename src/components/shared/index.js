@@ -17,6 +17,7 @@ export { default as Layout } from './layout/Layout'
 export { default as Navbar } from './navbar/Navbar'
 export { default as PageTransition } from './page-transition/PageTransition'
 export { default as ProtectedRoute } from './protected-route/ProtectedRoute'
+export { default as InitializationLoader } from './initialization-loader/InitializationLoader'
 
 // Composants de formulaire
 export { default as Forms } from './forms/Forms'

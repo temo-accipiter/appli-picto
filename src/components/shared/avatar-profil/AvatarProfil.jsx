@@ -26,21 +26,46 @@ export default function AvatarProfil({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // 🛡️ Validation du type + en-tête
-    const typeError = validateImageType(file)
-    if (typeError) {
-      setImageError(typeError)
-      return
+    if (import.meta.env.DEV) {
+      console.log('🔍 AvatarProfil - handleFileChange début', {
+        fileName: file.name,
+        fileSize: file.size,
+      })
     }
-    const headerError = await validateImageHeader(file)
-    if (headerError) {
-      setImageError(headerError)
+
+    // 🛡️ Validation du type + en-tête
+    try {
+      const typeError = validateImageType(file)
+      if (typeError) {
+        console.error('❌ AvatarProfil - Erreur type:', typeError)
+        setImageError(typeError)
+        return
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('🔍 AvatarProfil - Type OK, validation header...')
+      }
+
+      const headerError = await validateImageHeader(file)
+      if (headerError) {
+        console.error('❌ AvatarProfil - Erreur header:', headerError)
+        setImageError(headerError)
+        return
+      }
+
+      if (import.meta.env.DEV) {
+        console.log('🔍 AvatarProfil - Header OK')
+      }
+    } catch (err) {
+      console.error('❌ AvatarProfil - Exception validation:', err)
+      setImageError('Erreur lors de la validation du fichier')
       return
     }
 
     // 🎯 Compression UI (cible config = 100 Ko)
     const compressed = await compressImageIfNeeded(file)
     if (!compressed) {
+      console.error('❌ AvatarProfil - Erreur compression')
       setImageError(compressionErrorMessage)
       return
     }
@@ -58,8 +83,19 @@ export default function AvatarProfil({
       lastModified: compressed.lastModified,
     })
 
+    if (import.meta.env.DEV) {
+      console.log('🔍 AvatarProfil - Avant appel onUpload', {
+        finalFileName: finalFile.name,
+        hasOnUpload: !!onUpload,
+      })
+    }
+
     setImageError('')
     onUpload?.(finalFile) // on laisse le parent uploader vers le bucket 'avatars'
+
+    if (import.meta.env.DEV) {
+      console.log('🔍 AvatarProfil - Après appel onUpload')
+    }
   }
 
   return (

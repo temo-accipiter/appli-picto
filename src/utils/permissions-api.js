@@ -116,39 +116,30 @@ export const getMyPermissions = async () => {
 export const getUsersWithRoles = async (opts = {}) => {
   const page = Math.max(1, opts.page || 1)
   const limit = Math.max(1, Math.min(200, opts.limit || 20))
-  const from = (page - 1) * limit
-  const to = from + limit - 1
+  const roleFilter = opts.roleFilter || 'all'
+  const statusFilter = opts.statusFilter || 'all'
 
-  let q = supabase
-    .from('profiles')
-    .select(
-      `
-      id, email, pseudo, created_at, last_login, account_status, is_online,
-      user_roles (
-        id, role_id,
-        roles ( id, name, display_name )
-      )
-    `,
-      { count: 'exact' }
-    )
-    .order('created_at', { ascending: false })
+  // Utiliser la fonction RPC pour éviter les problèmes de FK entre profiles et user_roles
+  const { data, error } = await supabase.rpc('get_users_with_roles', {
+    page_num: page,
+    page_limit: limit,
+    role_filter: roleFilter,
+    status_filter: statusFilter,
+  })
 
-  if (opts.roleFilter && opts.roleFilter !== 'all') {
-    if (opts.roleFilter === 'no_roles') {
-      q = q.is('user_roles', null)
-    } else {
-      // filtre large par nom de rôle
-      q = q.contains('user_roles', [{ roles: { name: opts.roleFilter } }])
+  if (error) {
+    return {
+      data: null,
+      error,
+      pagination: { page, limit, total: 0, totalPages: 1 },
     }
   }
-  if (opts.statusFilter && opts.statusFilter !== 'all') {
-    q = q.eq('account_status', opts.statusFilter)
-  }
 
-  const { data, error, count } = await q.range(from, to)
-  const total = count || 0
+  // Extraire le total_count de la première ligne (toutes les lignes ont le même total)
+  const total = data && data.length > 0 ? data[0].total_count : 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
-  return { data, error, pagination: { page, limit, total, totalPages } }
+
+  return { data, error: null, pagination: { page, limit, total, totalPages } }
 }
 
 export const assignRoleToUser = async (userId, roleId) => {
@@ -171,7 +162,7 @@ export const getPermissionHistory = async (limit = 50) => {
   return await supabase
     .from('permission_changes')
     .select(
-      `id, change_type, table_name, record_id, old_values, new_values, changed_by, changed_at, created_at, user_pseudo`
+      `id, change_type, table_name, record_id, old_values, new_values, changed_by, changed_at, created_at, change_reason`
     )
     .order('changed_at', { ascending: false })
     .limit(limit)

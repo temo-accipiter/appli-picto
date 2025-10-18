@@ -3,10 +3,11 @@ import { useAuth } from '@/hooks'
 import PropTypes from 'prop-types'
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const location = useLocation()
 
-  if (loading) return null
+  // Plus besoin de vérifier loading ici car InitializationLoader
+  // attend déjà que authReady soit true avant d'afficher quoi que ce soit
 
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />

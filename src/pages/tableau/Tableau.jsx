@@ -6,13 +6,13 @@ import {
   TachesDnd,
   TrainProgressBar,
 } from '@/components'
-import DebugRole from '@/components/DebugRole'
-import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
+import DebugRole from '@/tools/debug-role/DebugRole'
 
 import { useDisplay, usePermissions } from '@/contexts'
 import {
   useDemoCards,
   useFallbackData,
+  useParametres,
   useRecompenses,
   useSimpleRole,
   useTachesDnd,
@@ -71,14 +71,17 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     setTotalTaches(total)
   })
   const { recompenses: personalRecompensesRaw } = useRecompenses()
+  const { parametres } = useParametres()
 
-  // ⚠️ Garde-fous : toujours travailler sur des tableaux
-  const personalTaches = Array.isArray(personalTachesRaw)
-    ? personalTachesRaw
-    : []
-  const personalRecompenses = Array.isArray(personalRecompensesRaw)
-    ? personalRecompensesRaw
-    : []
+  // ⚠️ Garde-fous : toujours travailler sur des tableaux (avec useMemo pour éviter re-création)
+  const personalTaches = useMemo(
+    () => (Array.isArray(personalTachesRaw) ? personalTachesRaw : []),
+    [personalTachesRaw]
+  )
+  const personalRecompenses = useMemo(
+    () => (Array.isArray(personalRecompensesRaw) ? personalRecompensesRaw : []),
+    [personalRecompensesRaw]
+  )
   const personalDoneMap = personalDoneMapRaw ?? {}
 
   // En mode démo, créer des fonctions de toggle temporaires
@@ -210,7 +213,9 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
           setShowModalRecompense(false)
         }, 5000)
       } else {
-        setShowConfettis(true)
+        // Activer les confettis seulement si le paramètre global le permet
+        const confettisEnabled = parametres?.confettis !== false
+        setShowConfettis(confettisEnabled)
         setTimeout(() => setShowConfettis(false), 10000)
         setShowModalRecompense(true)
 

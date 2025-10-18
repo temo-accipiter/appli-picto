@@ -1,7 +1,10 @@
 // src/utils/testLegalConfig.js
 // Script de test pour vérifier la configuration légale
 
-import { LEGAL_CONFIG, replaceLegalPlaceholders } from '@/data/legalConfig'
+import {
+  LEGAL_CONFIG,
+  replaceLegalPlaceholders,
+} from '@/config/constants/legalConfig'
 
 export function testLegalConfiguration() {
   console.log('🧪 Test de la configuration légale...')

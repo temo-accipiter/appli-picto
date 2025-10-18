@@ -3,7 +3,13 @@ import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import { ErrorBoundary, Layout, Loader, ProtectedRoute } from '@/components'
+import {
+  ErrorBoundary,
+  Layout,
+  Loader,
+  ProtectedRoute,
+  InitializationLoader,
+} from '@/components'
 import {
   AuthProvider,
   PermissionsProvider,
@@ -15,13 +21,13 @@ import {
 import { supabase } from '@/utils/supabaseClient'
 
 // i18n + styles
-import '@/i18n/i18n'
+import '@/config/i18n/i18n'
 import '@/styles/main.scss'
 
 // Consentement / analytics (chargé seulement si nécessaire)
-import { setupConsentBridges } from '@/analytics'
-import '@/analytics/routePageViews'
-import '@/analytics/userProps'
+import { setupConsentBridges } from '@/config/analytics'
+import '@/config/analytics/routePageViews'
+import '@/config/analytics/userProps'
 
 // Expose quelques helpers de test en DEV
 if (typeof window !== 'undefined') {
@@ -37,7 +43,7 @@ if (typeof window !== 'undefined') {
       return testRGPDCompliance()
     },
     checkGA4: async () => {
-      const { getGA4ComplianceStatus } = await import('@/analytics')
+      const { getGA4ComplianceStatus } = await import('@/config/analytics')
       return getGA4ComplianceStatus()
     },
     testDocuments: async () => {
@@ -205,9 +211,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <DisplayProvider>
             <LoadingProvider>
               <ToastProvider>
-                <Suspense fallback={<Loader />}>
-                  <RouterProvider router={router} />
-                </Suspense>
+                <InitializationLoader>
+                  <Suspense fallback={<Loader />}>
+                    <RouterProvider router={router} />
+                  </Suspense>
+                </InitializationLoader>
               </ToastProvider>
             </LoadingProvider>
           </DisplayProvider>

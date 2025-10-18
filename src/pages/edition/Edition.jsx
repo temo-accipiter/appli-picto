@@ -10,7 +10,7 @@ import {
   TachesEdition,
 } from '@/components'
 import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
-import ImageQuotaIndicator from '@/components/shared/ImageQuotaIndicator'
+import ImageQuotaIndicator from '@/components/shared/image-quota-indicator/ImageQuotaIndicator'
 import { useDisplay, useToast } from '@/contexts'
 import {
   useAuth,
@@ -23,7 +23,7 @@ import {
 import {
   checkImageQuota,
   uploadImageWithQuota,
-} from '@/services/imageUploadService'
+} from '@/lib/services/imageUploadService'
 import { supabase } from '@/utils/supabaseClient'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -41,6 +41,7 @@ export default function Edition() {
     getQuotaInfo,
     getMonthlyQuotaInfo,
     refreshQuotas,
+    isAdmin,
   } = useRBAC()
 
   // États modaux quotas
@@ -252,8 +253,8 @@ export default function Edition() {
         user.id
       )
 
-      // Utiliser l'ancien système pour créer la récompense mais avec le nouveau chemin d'image
-      await createRecompense({ label, image: uploadResult.filePath })
+      // Créer la récompense avec le chemin d'image uploadé
+      await createRecompense({ label, imagepath: uploadResult.filePath })
       handleRecompenseAjoutee()
       show('Récompense ajoutée', 'success')
       setTimeout(() => {
@@ -275,6 +276,7 @@ export default function Edition() {
     const labelToUse = (categoryLabel ?? newCatLabel ?? '')
       .trim()
       .replace(/\s+/g, ' ')
+
     if (!labelToUse) return
 
     const slug = labelToUse.toLowerCase().replace(/ /g, '-')
@@ -357,9 +359,11 @@ export default function Edition() {
         />
         {showTaches && (
           <div className="taches-edition">
-            <div className="quota-indicators">
-              <ImageQuotaIndicator assetType="task_image" size="small" />
-            </div>
+            {!isAdmin && (
+              <div className="quota-indicators">
+                <ImageQuotaIndicator assetType="task_image" size="small" />
+              </div>
+            )}
             <TachesEdition
               items={visibleTaches}
               categories={categories}
@@ -400,9 +404,11 @@ export default function Edition() {
         />
         {showRecompenses && (
           <div className="recompenses-edition">
-            <div className="quota-indicators">
-              <ImageQuotaIndicator assetType="reward_image" size="small" />
-            </div>
+            {!isAdmin && (
+              <div className="quota-indicators">
+                <ImageQuotaIndicator assetType="reward_image" size="small" />
+              </div>
+            )}
             <RecompensesEdition
               items={recompenses}
               onDelete={r => setRecompenseASupprimer(r)}

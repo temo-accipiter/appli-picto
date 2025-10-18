@@ -32,9 +32,9 @@ export function AuthProvider({ children }) {
         const sessionUser = sessionData?.session?.user ?? null
         if (mounted) setUser(sessionUser)
 
-        // 2) Même si la session n’est pas encore restaurée, on ne doit PAS bloquer l’app.
-        //    On met un garde-fou: authReady TRUE après un court délai quoi qu’il arrive.
-        timeoutId = window.setTimeout(markReady, 800)
+        // 2) Même si la session n'est pas encore restaurée, on ne doit PAS bloquer l'app.
+        //    On met un garde-fou: authReady TRUE après un court délai quoi qu'il arrive.
+        timeoutId = window.setTimeout(markReady, 400)
 
         // 3) Si la session est déjà là, on peut lever le ready tout de suite.
         if (sessionUser) {
@@ -86,7 +86,13 @@ export function AuthProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ user, authReady, error, signOut }),
+    () => ({
+      user,
+      authReady,
+      loading: !authReady, // ✅ Ajout de loading pour compatibilité
+      error,
+      signOut,
+    }),
     [user, authReady, error]
   )
 

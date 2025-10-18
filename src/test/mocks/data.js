@@ -1,0 +1,163 @@
+// src/test/mocks/data.js
+/**
+ * 📦 Données mock pour les tests
+ *
+ * Données réutilisables pour simuler Supabase dans les tests
+ */
+
+// ✅ Utiliser des UUIDs valides pour les tests
+export const TEST_USER_ID = '123e4567-e89b-12d3-a456-426614174000'
+export const ADMIN_USER_ID = '223e4567-e89b-12d3-a456-426614174000'
+
+export const mockUsers = {
+  testUser: {
+    id: TEST_USER_ID,
+    email: 'test@example.com',
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  adminUser: {
+    id: ADMIN_USER_ID,
+    email: 'admin@example.com',
+    created_at: '2024-01-01T00:00:00Z',
+  },
+}
+
+export const mockTaches = [
+  {
+    id: '1',
+    label: 'Brosser les dents',
+    fait: false,
+    aujourdhui: true,
+    position: 0,
+    imagepath: null,
+    category_id: null,
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    label: 'Ranger sa chambre',
+    fait: false,
+    aujourdhui: true,
+    position: 1,
+    imagepath: 'images/room.jpg',
+    category_id: '1',
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '3',
+    label: 'Faire ses devoirs',
+    fait: true,
+    aujourdhui: false,
+    position: 2,
+    imagepath: null,
+    category_id: null,
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockRecompenses = [
+  {
+    id: '1',
+    label: 'Temps de jeu vidéo',
+    imagepath: 'images/gaming.jpg',
+    selected: true,
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    label: 'Sortie au parc',
+    imagepath: null,
+    selected: false,
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockCategories = [
+  {
+    id: '1',
+    name: 'École',
+    color: '#3B82F6',
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: '2',
+    name: 'Maison',
+    color: '#10B981',
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'global-1',
+    name: 'Hygiène',
+    color: '#8B5CF6',
+    user_id: null, // Catégorie globale
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockParametres = [
+  {
+    id: '1',
+    confettis: true,
+    user_id: TEST_USER_ID,
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockDemoCards = {
+  tasks: [
+    {
+      id: 'demo-1',
+      label: 'Se brosser les dents',
+      fait: false,
+      position: 0,
+      isDemo: true,
+    },
+    {
+      id: 'demo-2',
+      label: 'Ranger son cartable',
+      fait: false,
+      position: 1,
+      isDemo: true,
+    },
+  ],
+  rewards: [
+    {
+      id: 'demo-reward-1',
+      label: '15 min de jeu',
+      isDemo: true,
+    },
+  ],
+}
+
+export const mockProfiles = [
+  {
+    id: 'test-user-123',
+    email: 'test@example.com',
+    account_status: 'active',
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockAbonnements = [
+  {
+    id: '1',
+    user_id: TEST_USER_ID,
+    stripe_customer_id: 'cus_test123',
+    stripe_subscription_id: 'sub_test123',
+    status: 'active',
+    created_at: '2024-01-01T00:00:00Z',
+  },
+]
+
+export const mockStations = [
+  { id: '1', name: 'Châtelet', ligne: 1 },
+  { id: '2', name: 'Gare du Nord', ligne: 1 },
+  { id: '3', name: 'République', ligne: 1 },
+]
