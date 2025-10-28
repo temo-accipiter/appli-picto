@@ -120,11 +120,7 @@ import { useI18n } from '@/hooks'
 function AddButton() {
   const { t } = useI18n()
 
-  return (
-    <button>
-      {t('actions.add')}
-    </button>
-  )
+  return <button>{t('actions.add')}</button>
 }
 ```
 
@@ -185,6 +181,7 @@ La langue est détectée dans cet ordre :
 ### Sauvegarde automatique
 
 Quand l'utilisateur change de langue :
+
 - La langue est sauvegardée dans le localStorage
 - L'attribut `lang` de la page HTML est mis à jour (accessibilité)
 
@@ -206,7 +203,7 @@ Un composant d'exemple est disponible pour tester toutes les fonctionnalités :
 import I18nExample from '@/components/examples/I18nExample'
 
 // Utiliser dans une route ou une page pour tester
-<I18nExample />
+;<I18nExample />
 ```
 
 Pour le visualiser, ajoutez temporairement cette route dans `main.jsx` :
@@ -222,6 +219,7 @@ Puis accédez à http://localhost:5173/test-i18n
 ### 1. Ajouter dans les fichiers JSON
 
 **public/locales/fr/common.json**
+
 ```json
 {
   "myNewSection": {
@@ -232,6 +230,7 @@ Puis accédez à http://localhost:5173/test-i18n
 ```
 
 **public/locales/en/common.json**
+
 ```json
 {
   "myNewSection": {
@@ -279,6 +278,7 @@ return (
 ## 🌍 Langues supportées
 
 Actuellement :
+
 - 🇫🇷 Français (`fr`) - langue par défaut
 - 🇬🇧 Anglais (`en`)
 

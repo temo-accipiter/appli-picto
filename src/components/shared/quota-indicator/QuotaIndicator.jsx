@@ -1,5 +1,5 @@
 // src/components/shared/QuotaIndicator.jsx
-import { useRBAC } from '@/hooks'
+import { useRBAC, useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import './QuotaIndicator.scss'
 
@@ -12,6 +12,7 @@ export default function QuotaIndicator({
   className = '',
   onClick = null,
 }) {
+  const { t } = useI18n()
   const {
     loading,
     isFree: isFreeAccount,
@@ -26,7 +27,7 @@ export default function QuotaIndicator({
         <div className="quota-bar">
           <div className="quota-fill" style={{ width: '0%' }} />
         </div>
-        <span className="quota-text">Chargement...</span>
+        <span className="quota-text">{t('quota.loading')}</span>
       </div>
     )
   }
@@ -34,6 +35,12 @@ export default function QuotaIndicator({
   if (!isFreeAccount) return null
 
   const info = getQuotaInfo(contentType)
+  console.log('🔍 [QuotaIndicator] Debug:', {
+    contentType,
+    isFreeAccount,
+    info,
+    loading,
+  })
   if (!info) return null
 
   const monthly = getMonthlyQuotaInfo(contentType)
@@ -41,17 +48,17 @@ export default function QuotaIndicator({
 
   const contentLabel =
     contentType === 'task'
-      ? 'tâches'
+      ? t('quota.tasksLabel')
       : contentType === 'reward'
-        ? 'récompenses'
-        : 'catégories'
+        ? t('quota.rewardsLabel')
+        : t('quota.categoriesLabel')
 
   const monthlyLabel =
     contentType === 'task'
-      ? 'tâches ce mois'
+      ? t('quota.tasksThisMonth')
       : contentType === 'reward'
-        ? 'récompenses ce mois'
-        : 'catégories ce mois'
+        ? t('quota.rewardsThisMonth')
+        : t('quota.categoriesThisMonth')
 
   const { current, limit, remaining, percentage, isNearLimit, isAtLimit } = info
 
@@ -98,14 +105,14 @@ export default function QuotaIndicator({
       {isAtLimit && (
         <div className="quota-warning">
           <span className="warning-icon">⚠️</span>
-          <span className="warning-text">Limite atteinte</span>
+          <span className="warning-text">{t('quota.limitReached')}</span>
         </div>
       )}
 
       {!canCreateContent && (
         <div className="quota-upgrade">
           <span className="upgrade-text">
-            Passez à Premium pour plus de {contentLabel}
+            {t('quota.upgradeToPremium', { contentType: contentLabel })}
           </span>
         </div>
       )}

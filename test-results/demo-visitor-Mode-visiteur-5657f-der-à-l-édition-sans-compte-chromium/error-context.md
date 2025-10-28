@@ -1,0 +1,72 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+    - main [ref=e5]:
+        - generic [ref=e7]:
+            - heading "Log in" [level=1] [ref=e8]
+            - generic [ref=e9]:
+                - generic [ref=e10]:
+                    - generic [ref=e11]: Email
+                    - textbox "Champ" [ref=e13]:
+                        - /placeholder: ''
+                    - paragraph [ref=e14]
+                - generic [ref=e15]:
+                    - generic [ref=e16]: Password
+                    - generic [ref=e17]:
+                        - textbox "Champ" [ref=e18]:
+                            - /placeholder: ''
+                        - button "Afficher le mot de passe" [ref=e19] [cursor=pointer]: 👁
+                    - paragraph [ref=e20]
+                - paragraph [ref=e21]:
+                    - link "Forgot password?" [ref=e22] [cursor=pointer]:
+                        - /url: /forgot-password
+                - button "Log in" [disabled]:
+                    - generic: Log in
+            - separator [ref=e23]
+            - paragraph [ref=e24]:
+                - text: Create account
+                - link "Sign up" [ref=e25] [cursor=pointer]:
+                    - /url: /signup
+    - contentinfo "Legal notices" [ref=e26]:
+        - navigation "Legal notices" [ref=e27]:
+            - list [ref=e28]:
+                - listitem [ref=e29]:
+                    - link "Legal notices" [ref=e30] [cursor=pointer]:
+                        - /url: /mentions-legales
+                - listitem [ref=e31]:
+                    - link "Terms of use" [ref=e32] [cursor=pointer]:
+                        - /url: /cgu
+                - listitem [ref=e33]:
+                    - link "Terms of sale" [ref=e34] [cursor=pointer]:
+                        - /url: /cgv
+                - listitem [ref=e35]:
+                    - link "Privacy policy" [ref=e36] [cursor=pointer]:
+                        - /url: /politique-confidentialite
+                - listitem [ref=e37]:
+                    - link "Cookie policy" [ref=e38] [cursor=pointer]:
+                        - /url: /politique-cookies
+                - listitem [ref=e39]:
+                    - button "Customize" [ref=e40] [cursor=pointer]
+                - listitem [ref=e41]:
+                    - button "Refuse" [ref=e42] [cursor=pointer]
+                - listitem [ref=e43]:
+                    - link "Accessibility" [ref=e44] [cursor=pointer]:
+                        - /url: /accessibilite
+                - listitem [ref=e45]:
+                    - link "GDPR portal" [ref=e46] [cursor=pointer]:
+                        - /url: /rgpd
+        - paragraph [ref=e47]: © 2025
+    - dialog "This site uses cookies to improve your experience" [ref=e48]:
+        - generic [ref=e49]:
+            - generic [ref=e50]:
+                - heading "This site uses cookies to improve your experience" [level=2] [ref=e51]
+                - paragraph [ref=e52]: This site uses cookies to improve your experience
+                - paragraph [ref=e53]:
+                    - link "Cookie policy" [ref=e54] [cursor=pointer]:
+                        - /url: /politique-cookies
+            - group "This site uses cookies to improve your experience" [ref=e55]:
+                - button "Refuse" [ref=e56] [cursor=pointer]
+                - button "Customize" [ref=e57] [cursor=pointer]
+                - button "Accept" [ref=e58] [cursor=pointer]
+```

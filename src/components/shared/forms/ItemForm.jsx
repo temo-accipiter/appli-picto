@@ -1,16 +1,15 @@
 import { Button, ImagePreview, InputWithValidation, Select } from '@/components'
+import { useI18n } from '@/hooks'
 import {
-  compressImageIfNeeded,
-  compressionErrorMessage,
-  noDoubleSpaces,
-  noEdgeSpaces,
-  validateImageHeader,
-  validateImagePresence,
-  validateImageType,
-  validateNotEmpty,
+  makeNoDoubleSpaces,
+  makeNoEdgeSpaces,
+  makeValidateImageHeader,
+  makeValidateImagePresence,
+  makeValidateImageType,
+  makeValidateNotEmpty,
 } from '@/utils'
 import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './ItemForm.scss'
 
 export default function ItemForm({
@@ -18,6 +17,7 @@ export default function ItemForm({
   categories = [],
   onSubmit,
 }) {
+  const { t } = useI18n()
   const [label, setLabel] = useState('')
   const [categorie, setCategorie] = useState('none')
   const [image, setImage] = useState(null)
@@ -25,6 +25,14 @@ export default function ItemForm({
   const [imageError, setImageError] = useState('')
   const confirmRef = useRef(null)
   const labelRef = useRef(null)
+
+  // Créer les fonctions de validation i18n avec useMemo pour éviter les re-créations
+  const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
+  const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
+  const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
+  const validateImagePresence = useMemo(() => makeValidateImagePresence(t), [t])
+  const validateImageType = useMemo(() => makeValidateImageType(t), [t])
+  const validateImageHeader = useMemo(() => makeValidateImageHeader(t), [t])
 
   useEffect(() => {
     confirmRef.current?.focus()
@@ -59,27 +67,10 @@ export default function ItemForm({
       return
     }
 
-    // 🎯 Compression et optimisation automatique (50 Ko max, 256x256px, PNG)
-    const compressed = await compressImageIfNeeded(file)
-    if (!compressed) {
-      setImage(null)
-      setPreviewUrl(null)
-      setImageError(compressionErrorMessage)
-      return
-    }
-
-    // Le fichier compressé peut être JPEG ou PNG selon l'optimisation
-    const timestamp = Date.now()
-    const extension = compressed.type === 'image/jpeg' ? 'jpg' : 'png'
-    const cleanName = `tache_${timestamp}.${extension}`
-
-    const finalFile = new File([compressed], cleanName, {
-      type: compressed.type, // 'image/jpeg' ou 'image/png'
-      lastModified: compressed.lastModified,
-    })
-
-    setImage(finalFile)
-    setPreviewUrl(URL.createObjectURL(finalFile))
+    // ✅ Pas de compression ici - modernUploadImage() gère tout
+    // (HEIC → JPEG → WebP ≤ 20 KB, 192×192px, SHA-256, déduplication)
+    setImage(file)
+    setPreviewUrl(URL.createObjectURL(file))
     setImageError('')
   }
 
@@ -105,15 +96,15 @@ export default function ItemForm({
         value={label}
         onValid={val => setLabel(val)}
         rules={[validateNotEmpty, noEdgeSpaces, noDoubleSpaces]}
-        ariaLabel="Nom"
+        ariaLabel={t('tasks.title')}
       />
 
       {includeCategory && (
         <Select
           id="item-form-categorie"
-          label="Catégorie"
+          label={t('categories.title')}
           options={[
-            { value: 'none', label: 'Pas de catégorie' },
+            { value: 'none', label: t('categories.noCategories') },
             ...categories.filter(c => c.value !== 'none'),
           ]}
           value={categorie}
@@ -121,24 +112,27 @@ export default function ItemForm({
         />
       )}
 
-      <input
-        id="item-form-image"
-        type="file"
-        accept="image/*"
-        className={`input-field__input ${
-          imageError ? 'input-field__input--error' : ''
-        }`}
-        onChange={handleImage}
-        aria-label="Image"
-      />
+      <div className="file-input-wrapper">
+        <label htmlFor="item-form-image" className="file-input-label">
+          {t('actions.chooseFile')}
+        </label>
+        <input
+          id="item-form-image"
+          type="file"
+          accept="image/*"
+          className={`file-input ${imageError ? 'file-input--error' : ''}`}
+          onChange={handleImage}
+          aria-label={t('quota.images')}
+        />
+      </div>
       {imageError && (
         <div className="input-field__error-message message-erreur">
           {imageError}
         </div>
       )}
 
-      <ImagePreview url={previewUrl} alt="Aperçu de l’image" size="lg" />
-      <Button ref={confirmRef} type="submit" label="Ajouter" />
+      <ImagePreview url={previewUrl} alt={t('quota.images')} size="lg" />
+      <Button ref={confirmRef} type="submit" label={t('actions.add')} />
     </form>
   )
 }

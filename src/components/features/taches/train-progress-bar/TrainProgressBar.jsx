@@ -1,6 +1,6 @@
 import { Select } from '@/components'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
-import { useStations } from '@/hooks'
+import { useI18n, useStations } from '@/hooks'
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import './TrainProgressBar.scss'
@@ -11,6 +11,7 @@ export default function TrainProgressBar({
   isDemo = false,
   onLineChange,
 }) {
+  const { t } = useI18n()
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur = COULEURS_LIGNES[ligne] || '#999'
   const stationCount = total + 1
@@ -28,7 +29,7 @@ export default function TrainProgressBar({
     }
   }, [loading, ligneStations])
 
-  if (error) return <p>Erreur lors du chargement des stations.</p>
+  if (error) return <p>{t('errors.generic')}</p>
 
   const stations = Array.from({ length: stationCount }, (_, i) => ({
     label: currentStations[i % currentStations.length]?.label || '',
@@ -95,7 +96,7 @@ export default function TrainProgressBar({
       <div className="toolbar">
         <Select
           id="ligne"
-          label="Ligne :"
+          label={t('tableau.selectLine')}
           value={ligne}
           onChange={e => {
             const nouvelleLigne = e.target.value
@@ -115,14 +116,15 @@ export default function TrainProgressBar({
             localStorage.setItem('ligne', nouvelleLigne)
           }}
           options={[
-            { value: '1', label: 'Ligne 1' },
-            { value: '6', label: 'Ligne 6' },
-            { value: '12', label: 'Ligne 12' },
+            { value: '1', label: t('tableau.line1') },
+            { value: '6', label: t('tableau.line6') },
+            { value: '12', label: t('tableau.line12') },
           ]}
         />
 
         <p className="progression">
-          Progression : {done} / {total} tâches
+          {t('tableau.progression')} : {done} / {total}{' '}
+          {t('tasks.title').toLowerCase()}
         </p>
       </div>
     </div>

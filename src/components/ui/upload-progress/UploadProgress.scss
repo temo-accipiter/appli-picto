@@ -1,0 +1,44 @@
+// src/components/ui/upload-progress/UploadProgress.scss
+// Styles TSA-friendly : couleurs pastel, animations douces
+
+.upload-progress {
+  padding: 1rem;
+  text-align: center;
+  background: var(--pastel-blue-lightest, #f0f8ff);
+  border-radius: 8px;
+  border: 2px solid var(--pastel-blue-light, #d0e8ff);
+
+  &__bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--pastel-blue-light, #d0e8ff);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  &__fill {
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      var(--pastel-blue, #a8d5ff),
+      var(--pastel-green, #b8e0d0)
+    );
+    // Animation DOUCE (TSA-friendly : max 0.3s ease)
+    transition: width 0.3s ease;
+    border-radius: 4px;
+  }
+
+  &__message {
+    font-size: 0.875rem;
+    color: var(--text-dark, #333);
+    margin: 0 0 0.25rem 0;
+    font-weight: 500;
+  }
+
+  &__percent {
+    font-size: 0.75rem;
+    color: var(--text-muted, #666);
+    font-weight: 400;
+  }
+}

@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { getConsent, saveConsent, tryLogServerConsent } from '@/utils/consent'
 import { useEffect, useState } from 'react'
 import './CookieBanner.scss'
@@ -6,6 +6,7 @@ import './CookieBanner.scss'
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
   const { user } = useAuth()
+  const { t } = useI18n()
 
   useEffect(() => {
     const existing = getConsent()
@@ -55,54 +56,45 @@ export default function CookieBanner() {
       <div className="cookie-banner__content">
         <div className="cookie-banner__text">
           <h2 id="cookie-banner-title" className="cookie-banner__title">
-            Gestion des cookies et traceurs
+            {t('cookies.banner')}
           </h2>
+          <p>{t('cookies.banner')}</p>
           <p>
-            Nous utilisons des <strong>cookies et traceurs</strong> pour assurer
-            le bon fonctionnement du site et,
-            <strong>avec votre consentement</strong>, pour mesurer
-            l&apos;audience et vous proposer des contenus personnalisés.
-          </p>
-          <p>
-            Vous pouvez <strong>accepter</strong>, <strong>refuser</strong> ou{' '}
-            <strong>paramétrer</strong>
-            vos choix à tout moment. Pour en savoir plus, consultez notre{' '}
             <a
               href="/politique-cookies"
               target="_blank"
               rel="noopener"
               className="cookie-banner__link"
             >
-              politique de cookies
+              {t('legal.cookies')}
             </a>
-            .
           </p>
         </div>
         <div
           className="cookie-banner__actions"
           role="group"
-          aria-label="Actions de gestion des cookies"
+          aria-label={t('cookies.banner')}
         >
           <button
             className="btn btn-secondary"
             onClick={refuseAll}
             aria-describedby="cookie-banner-title"
           >
-            Refuser
+            {t('cookies.refuse')}
           </button>
           <button
             className="btn btn-outline"
             onClick={openPreferences}
             aria-describedby="cookie-banner-title"
           >
-            Paramétrer
+            {t('cookies.customize')}
           </button>
           <button
             className="btn"
             onClick={acceptAll}
             aria-describedby="cookie-banner-title"
           >
-            Accepter
+            {t('cookies.accept')}
           </button>
         </div>
       </div>

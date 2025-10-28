@@ -2,9 +2,9 @@ import PropTypes from 'prop-types'
 import { useEffect, useMemo, useState } from 'react'
 import { Modal, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
-import { validatePasswordNotEmpty } from '@/utils'
+import { makeValidatePasswordNotEmpty } from '@/utils'
 import Turnstile from 'react-turnstile'
 import './DeleteAccountGuard.scss'
 
@@ -13,8 +13,15 @@ export default function DeleteAccountModal({
   onClose,
   onConfirm, // function(turnstileTokenForDeletion)
 }) {
+  const { t, language } = useI18n()
   const { user } = useAuth()
   const { show } = useToast()
+
+  // Créer la fonction de validation i18n avec useMemo
+  const validatePasswordNotEmpty = useMemo(
+    () => makeValidatePasswordNotEmpty(t),
+    [t]
+  )
 
   const [typed, setTyped] = useState('')
   const [password, setPassword] = useState('')
@@ -39,12 +46,23 @@ export default function DeleteAccountModal({
     }
   }, [isOpen])
 
+  const deleteWord = language === 'fr' ? 'SUPPRIMER' : 'DELETE'
+
   const canSubmit = useMemo(() => {
-    const wordOk = typed.trim().toUpperCase() === 'SUPPRIMER'
+    const wordOk = typed.trim().toUpperCase() === deleteWord
     const pwOk = validatePasswordNotEmpty(password) === ''
     const captchaOk = phase === 'login' ? !!tokenLogin : !!tokenDelete
     return wordOk && pwOk && captchaOk && !busy
-  }, [typed, password, tokenLogin, tokenDelete, phase, busy])
+  }, [
+    typed,
+    password,
+    tokenLogin,
+    tokenDelete,
+    phase,
+    busy,
+    deleteWord,
+    validatePasswordNotEmpty,
+  ])
 
   const handleTurnstileSuccess = token => {
     if (phase === 'login') setTokenLogin(token)
@@ -65,7 +83,7 @@ export default function DeleteAccountModal({
     if (!canSubmit) return
     if (typeof onConfirm !== 'function') {
       console.error('DeleteAccountModal: onConfirm doit être une fonction.')
-      show('Action invalide. Réessaie.', 'error')
+      show(t('profil.deleteModalInvalidAction'), 'error')
       return
     }
 
@@ -80,12 +98,12 @@ export default function DeleteAccountModal({
           options: { captchaToken: tokenLogin },
         })
         if (reauthErr) {
-          show('Mot de passe incorrect ou CAPTCHA expiré.', 'error')
+          show(t('profil.deleteModalErrorPassword'), 'error')
           return
         }
         // Passe en phase suppression et recharge le même widget
         reloadTurnstile('delete')
-        show('Vérification OK. Confirme le CAPTCHA pour supprimer.', 'success')
+        show(t('profil.deleteModalSuccessVerify'), 'success')
         return
       }
 
@@ -103,13 +121,13 @@ export default function DeleteAccountModal({
       isOpen={isOpen}
       onClose={onClose}
       actions={[
-        { label: 'Annuler', onClick: onClose },
+        { label: t('profil.deleteModalCancel'), onClick: onClose },
         {
           label: busy
-            ? 'Traitement…'
+            ? t('profil.deleteModalProcessing')
             : phase === 'login'
-              ? 'Vérifier et continuer'
-              : 'Supprimer définitivement',
+              ? t('profil.deleteModalVerify')
+              : t('profil.deleteModalDeleteFinal'),
           onClick: handleConfirm,
           variant: 'danger',
           disabled: !canSubmit,
@@ -119,26 +137,34 @@ export default function DeleteAccountModal({
     >
       <div className="delete-guard">
         <p className="delete-guard__intro">
-          Cette action est <strong>définitive</strong>. Pour confirmer :
+          {language === 'fr' ? (
+            <>
+              Cette action est <strong>définitive</strong>. Pour confirmer :
+            </>
+          ) : (
+            <>
+              This action is <strong>final</strong>. To confirm:
+            </>
+          )}
         </p>
 
         <InputWithValidation
           id="delete-word"
-          label="Tape « SUPPRIMER »"
+          label={t('profil.deleteModalTypeDelete')}
           value={typed}
           onValid={setTyped}
           onChange={setTyped}
           rules={[
             v =>
-              String(v).trim().toUpperCase() === 'SUPPRIMER'
+              String(v).trim().toUpperCase() === deleteWord
                 ? ''
-                : 'Tape exactement « SUPPRIMER »',
+                : t('profil.deleteModalTypeExactly'),
           ]}
         />
 
         <InputWithValidation
           id="delete-password"
-          label="Mot de passe"
+          label={t('profil.deleteModalPassword')}
           type="password"
           value={password}
           onValid={setPassword}
@@ -149,8 +175,8 @@ export default function DeleteAccountModal({
         <div>
           <p className="delete-guard__note">
             {phase === 'login'
-              ? 'Étape 1 : vérification de connexion'
-              : 'Étape 2 : confirmer la suppression'}
+              ? t('profil.deleteModalStep1')
+              : t('profil.deleteModalStep2')}
           </p>
           <Turnstile
             key={widgetKey}
@@ -161,6 +187,7 @@ export default function DeleteAccountModal({
               else setTokenDelete(null)
             }}
             theme="light"
+            language={language}
           />
         </div>
       </div>

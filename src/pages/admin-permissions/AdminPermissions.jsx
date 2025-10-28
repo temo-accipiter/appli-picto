@@ -1,4 +1,10 @@
-import { InputWithValidation, Loader, ModalConfirm, Navbar } from '@/components'
+import {
+  ImageAnalytics,
+  InputWithValidation,
+  Loader,
+  ModalConfirm,
+  Navbar,
+} from '@/components'
 import {
   HistoryTab,
   LogsTab,
@@ -463,6 +469,13 @@ export default function AdminPermissions() {
           <BarChart3 className="icon" aria-hidden />
           Logs
         </button>
+        <button
+          className={`tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          <BarChart3 className="icon" aria-hidden />
+          Analytics Images
+        </button>
       </div>
 
       <div className="tab-content">
@@ -710,6 +723,9 @@ export default function AdminPermissions() {
 
         {/* Onglet Logs */}
         {activeTab === 'logs' && <LogsTab />}
+
+        {/* Onglet Analytics Images */}
+        {activeTab === 'analytics' && <ImageAnalytics />}
       </div>
 
       {/* Debug info */}

@@ -7,14 +7,16 @@ import {
   validatePasswordStrength,
   makeMatchRule,
 } from '@/utils'
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
 import { InputWithValidation, Button, PasswordChecklist } from '@/components'
 import Turnstile from 'react-turnstile'
+import i18n from '@/config/i18n/i18n'
 import '../login/Login.scss'
 
 export default function Signup() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const { show: showToast } = useToast()
 
   const [email, setEmail] = useState('')
@@ -40,17 +42,14 @@ export default function Signup() {
 
     const e1 = validateEmail(email)
     const e2 = validatePasswordStrength(password)
-    const e3 =
-      confirmPassword === password
-        ? ''
-        : 'Les mots de passe ne correspondent pas.'
+    const e3 = confirmPassword === password ? '' : t('auth.passwordsDontMatch')
     if (e1 || e2 || e3) {
       setError(e1 || e2 || e3)
       return
     }
 
     if (!captchaToken) {
-      setError('Veuillez valider le CAPTCHA.')
+      setError(t('errors.validationError'))
       return
     }
 
@@ -64,20 +63,18 @@ export default function Signup() {
     )
 
     if (checkError) {
-      setError("Erreur lors de la vérification de l'e-mail")
+      setError(t('errors.validationError'))
       setLoading(false)
       return
     }
 
     if (exists) {
-      setError(
-        'Impossible de créer le compte. Vérifie que cette adresse n’est pas déjà utilisée.'
-      )
+      setError(t('auth.emailAlreadyUsed'))
       setLoading(false)
       return
     }
 
-    const defaultPseudo = (emailNorm || '').split('@')[0] || 'Utilisateur'
+    const defaultPseudo = (emailNorm || '').split('@')[0] || t('auth.pseudo')
 
     const { error: signUpError } = await supabase.auth.signUp({
       email: emailNorm,
@@ -92,16 +89,16 @@ export default function Signup() {
     if (signUpError) {
       setError(
         /Password should|weak password/i.test(signUpError.message)
-          ? 'Ton mot de passe ne respecte pas les exigences de sécurité.'
+          ? t('auth.passwordTooShort')
           : signUpError.message
       )
-      showToast('Échec de création du compte', 'error')
+      showToast(t('auth.error'), 'error')
       setLoading(false)
       return
     }
 
-    setSuccess('Un lien de confirmation a été envoyé par e-mail.')
-    showToast('Vérifie ta boîte mail pour confirmer ton compte', 'info')
+    setSuccess(t('auth.resetEmailSent'))
+    showToast(t('auth.checkYourEmail'), 'info')
     setLoading(false)
   }
 
@@ -109,13 +106,13 @@ export default function Signup() {
 
   return (
     <div className="signup-page">
-      <h1>Créer un compte</h1>
+      <h1>{t('nav.createAccount')}</h1>
 
       <form onSubmit={handleSignup}>
         <InputWithValidation
           ref={emailRef}
           id="signup-email"
-          label="Adresse e-mail"
+          label={t('auth.email')}
           type="email"
           value={email}
           onValid={val => setEmail(val)}
@@ -125,7 +122,7 @@ export default function Signup() {
         <InputWithValidation
           ref={pwRef}
           id="signup-password"
-          label="Mot de passe"
+          label={t('auth.password')}
           type="password"
           value={password}
           onValid={val => setPassword(val)}
@@ -143,16 +140,11 @@ export default function Signup() {
         <InputWithValidation
           ref={confirmRef}
           id="signup-confirm"
-          label="Confirmer le mot de passe"
+          label={t('auth.confirmPassword')}
           type="password"
           value={confirmPassword}
           onValid={val => setConfirmPassword(val)}
-          rules={[
-            makeMatchRule(
-              () => password,
-              'Les mots de passe ne correspondent pas.'
-            ),
-          ]}
+          rules={[makeMatchRule(() => password, t('auth.passwordsDontMatch'))]}
         />
 
         <Turnstile
@@ -160,12 +152,13 @@ export default function Signup() {
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
           theme="light"
+          language={i18n.language}
         />
 
         <Button
           type="submit"
           disabled={loading || !captchaToken}
-          label={loading ? 'Création...' : 'Créer un compte'}
+          label={loading ? t('app.loading') : t('nav.createAccount')}
         />
 
         {error && <p className="error">{error}</p>}
@@ -175,7 +168,7 @@ export default function Signup() {
       <hr className="separator" />
 
       <p>
-        Déjà inscrit ? <Link to="/login">Se connecter</Link>
+        {t('nav.login')} <Link to="/login">{t('nav.login')}</Link>
       </p>
     </div>
   )

@@ -269,6 +269,57 @@ export type Database = {
         }
         Relationships: []
       }
+      image_metrics: {
+        Row: {
+          asset_type: string
+          compressed_size: number
+          compression_ratio: number | null
+          conversion_method: string | null
+          conversion_ms: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          mime_type_final: string | null
+          mime_type_original: string | null
+          original_size: number
+          result: string
+          upload_ms: number | null
+          user_id: string
+        }
+        Insert: {
+          asset_type: string
+          compressed_size: number
+          compression_ratio?: number | null
+          conversion_method?: string | null
+          conversion_ms?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          mime_type_final?: string | null
+          mime_type_original?: string | null
+          original_size: number
+          result: string
+          upload_ms?: number | null
+          user_id: string
+        }
+        Update: {
+          asset_type?: string
+          compressed_size?: number
+          compression_ratio?: number | null
+          conversion_method?: string | null
+          conversion_ms?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          mime_type_final?: string | null
+          mime_type_original?: string | null
+          original_size?: number
+          result?: string
+          upload_ms?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       parametres: {
         Row: {
           confettis: boolean
@@ -679,35 +730,53 @@ export type Database = {
         Row: {
           asset_type: string
           created_at: string
+          deleted_at: string | null
           dimensions: string | null
           file_path: string
           file_size: number
+          height: number | null
           id: string
+          migrated_at: string | null
           mime_type: string | null
+          sha256_hash: string | null
           updated_at: string
           user_id: string
+          version: number
+          width: number | null
         }
         Insert: {
           asset_type: string
           created_at?: string
+          deleted_at?: string | null
           dimensions?: string | null
           file_path: string
           file_size: number
+          height?: number | null
           id?: string
+          migrated_at?: string | null
           mime_type?: string | null
+          sha256_hash?: string | null
           updated_at?: string
           user_id: string
+          version?: number
+          width?: number | null
         }
         Update: {
           asset_type?: string
           created_at?: string
+          deleted_at?: string | null
           dimensions?: string | null
           file_path?: string
           file_size?: number
+          height?: number | null
           id?: string
+          migrated_at?: string | null
           mime_type?: string | null
+          sha256_hash?: string | null
           updated_at?: string
           user_id?: string
+          version?: number
+          width?: number | null
         }
         Relationships: []
       }
@@ -871,24 +940,21 @@ export type Database = {
     }
     Functions: {
       _compute_my_permissions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           can_access: boolean
           feature_name: string
         }[]
       }
       _compute_my_primary_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           priority: number
           role_id: string
           role_name: string
         }[]
       }
-      assert_self_or_admin: {
-        Args: { p_target: string }
-        Returns: undefined
-      }
+      assert_self_or_admin: { Args: { p_target: string }; Returns: undefined }
       bump_usage_counter: {
         Args: { p_col: string; p_delta: number; p_user: string }
         Returns: undefined
@@ -902,6 +968,10 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      check_duplicate_image: {
+        Args: { p_sha256_hash: string; p_user_id: string }
+        Returns: Json
       }
       check_image_quota: {
         Args: { p_asset_type: string; p_file_size?: number; p_user_id: string }
@@ -919,14 +989,8 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
-      email_exists: {
-        Args: { email_to_check: string }
-        Returns: boolean
-      }
-      generate_unique_pseudo: {
-        Args: { base: string }
-        Returns: string
-      }
+      email_exists: { Args: { email_to_check: string }; Returns: boolean }
+      generate_unique_pseudo: { Args: { base: string }; Returns: string }
       get_account_history: {
         Args: { limit_count?: number; user_uuid: string }
         Returns: {
@@ -953,10 +1017,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_confettis: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      get_confettis: { Args: never; Returns: boolean }
       get_demo_cards: {
         Args: { card_type_filter?: string }
         Returns: {
@@ -968,7 +1029,7 @@ export type Database = {
         }[]
       }
       get_demo_rewards: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           id: string
           imagepath: string
@@ -977,7 +1038,7 @@ export type Database = {
         }[]
       }
       get_demo_tasks: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           id: string
           imagepath: string
@@ -985,8 +1046,9 @@ export type Database = {
           position: number
         }[]
       }
+      get_image_analytics_summary: { Args: never; Returns: Json }
       get_migration_report: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           abonne_users: number
           active_users: number
@@ -1001,41 +1063,32 @@ export type Database = {
         }[]
       }
       get_my_permissions: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           can_access: boolean
           feature_name: string
         }[]
       }
       get_my_primary_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           priority: number
           role_id: string
           role_name: string
         }[]
       }
-      get_usage: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
-      get_usage_fast: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
-      get_user_assets_stats: {
-        Args: { p_user_id: string }
-        Returns: Json
-      }
+      get_usage: { Args: { p_user_id: string }; Returns: Json }
+      get_usage_fast: { Args: { p_user_id: string }; Returns: Json }
+      get_user_assets_stats: { Args: { p_user_id: string }; Returns: Json }
       get_user_emails: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           user_id: string
         }[]
       }
       get_user_last_logins: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           is_online: boolean
           last_login: string
@@ -1082,18 +1135,28 @@ export type Database = {
           role_name: string
         }[]
       }
-      is_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
+      get_users_with_roles: {
+        Args: {
+          page_limit?: number
+          page_num?: number
+          role_filter?: string
+          status_filter?: string
+        }
+        Returns: {
+          account_status: string
+          created_at: string
+          email: string
+          id: string
+          is_online: boolean
+          last_login: string
+          pseudo: string
+          total_count: number
+          user_roles: Json
+        }[]
       }
-      is_subscriber: {
-        Args: { p_user?: string }
-        Returns: boolean
-      }
-      is_system_role: {
-        Args: { role_name: string }
-        Returns: boolean
-      }
+      is_admin: { Args: never; Returns: boolean }
+      is_subscriber: { Args: { p_user?: string }; Returns: boolean }
+      is_system_role: { Args: { role_name: string }; Returns: boolean }
       log_card_creation: {
         Args: { _entity: string; _id: string; _user: string }
         Returns: undefined
@@ -1102,10 +1165,30 @@ export type Database = {
         Args: { retention_months?: number }
         Returns: undefined
       }
-      user_can_upload_avatar: {
-        Args: { uid: string }
-        Returns: boolean
+      select_recompense_atomic: {
+        Args: { p_reward_id: string }
+        Returns: {
+          couleur: string | null
+          created_at: string
+          description: string | null
+          icone: string | null
+          id: string
+          imagepath: string | null
+          label: string
+          points_requis: number
+          selected: boolean
+          updated_at: string
+          user_id: string | null
+          visible_en_demo: boolean
+        }[]
+        SetofOptions: {
+          from: '*'
+          to: 'recompenses'
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
+      user_can_upload_avatar: { Args: { uid: string }; Returns: boolean }
     }
     Enums: {
       transport_type: 'metro' | 'bus' | 'tram' | 'rer'

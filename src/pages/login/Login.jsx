@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
 import { InputWithValidation, Button } from '@/components'
 import {
@@ -10,10 +10,12 @@ import {
   normalizeEmail,
 } from '@/utils'
 import Turnstile from 'react-turnstile'
+import i18n from '@/config/i18n/i18n'
 import './Login.scss'
 
 export default function Login() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { show: showToast } = useToast()
   const location = useLocation()
@@ -45,7 +47,7 @@ export default function Login() {
     }
 
     if (!captchaToken) {
-      setError('Merci de valider le CAPTCHA.')
+      setError(t('errors.validationError'))
       return
     }
 
@@ -59,10 +61,10 @@ export default function Login() {
 
     if (error) {
       console.warn('Erreur login :', error.message)
-      setError('Email ou mot de passe incorrect.')
-      showToast('Email ou mot de passe incorrect.', 'error')
+      setError(t('auth.invalidCredentials'))
+      showToast(t('auth.invalidCredentials'), 'error')
     } else {
-      showToast('Connexion réussie', 'success')
+      showToast(t('auth.loginSuccess'), 'success')
       navigate('/tableau')
     }
 
@@ -75,12 +77,12 @@ export default function Login() {
 
   return (
     <div className="login-page">
-      <h1>Connexion</h1>
+      <h1>{t('nav.login')}</h1>
       <form onSubmit={handleLogin}>
         <InputWithValidation
           ref={emailRef}
           id="login-email"
-          label="Adresse e-mail"
+          label={t('auth.email')}
           type="email"
           value={email}
           onValid={val => setEmail(val)}
@@ -90,7 +92,7 @@ export default function Login() {
         <InputWithValidation
           ref={pwRef}
           id="login-password"
-          label="Mot de passe"
+          label={t('auth.password')}
           type="password"
           value={password}
           onValid={val => setPassword(val)}
@@ -102,15 +104,16 @@ export default function Login() {
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
           theme="light"
+          language={i18n.language}
         />
 
         <p className="forgot-password">
-          <Link to="/forgot-password">Mot de passe oublié ?</Link>
+          <Link to="/forgot-password">{t('auth.forgotPassword')}</Link>
         </p>
 
         <Button
           type="submit"
-          label={loading ? 'Connexion...' : 'Se connecter'}
+          label={loading ? t('app.loading') : t('nav.login')}
           disabled={loading || !captchaToken}
         />
 
@@ -120,7 +123,7 @@ export default function Login() {
       <hr />
 
       <p>
-        Pas encore de compte ? <Link to="/signup">Créer un compte</Link>
+        {t('nav.createAccount')} <Link to="/signup">{t('nav.signup')}</Link>
       </p>
     </div>
   )

@@ -1,8 +1,13 @@
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
-import { noDoubleSpaces, noEdgeSpaces, validateNotEmpty } from '@/utils'
+import { useI18n } from '@/hooks'
+import {
+  makeNoDoubleSpaces,
+  makeNoEdgeSpaces,
+  makeValidateNotEmpty,
+} from '@/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './ModalCategory.scss'
 
 export default function ModalCategory({
@@ -14,26 +19,35 @@ export default function ModalCategory({
   newCategory,
   onChangeNewCategory,
 }) {
+  const { t } = useI18n()
   const inputRef = useRef(null)
   const [visibleCats, setVisibleCats] = useState([])
+
+  // Créer les fonctions de validation i18n avec useMemo
+  const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
+  const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
+  const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
 
   useEffect(() => {
     const filtered = categories.filter(c => c.value !== 'none')
     setVisibleCats(filtered)
   }, [categories])
 
-  const validationRules = [
-    validateNotEmpty,
-    noEdgeSpaces,
-    noDoubleSpaces,
-    val => {
-      const labelClean = val.trim().replace(/\s+/g, ' ').toLowerCase()
-      const exists = categories.some(
-        cat => cat.label.trim().toLowerCase() === labelClean
-      )
-      return exists ? 'Cette catégorie existe déjà.' : ''
-    },
-  ]
+  const validationRules = useMemo(
+    () => [
+      validateNotEmpty,
+      noEdgeSpaces,
+      noDoubleSpaces,
+      val => {
+        const labelClean = val.trim().replace(/\s+/g, ' ').toLowerCase()
+        const exists = categories.some(
+          cat => cat.label.trim().toLowerCase() === labelClean
+        )
+        return exists ? t('edition.categoryExists') : ''
+      },
+    ],
+    [validateNotEmpty, noEdgeSpaces, noDoubleSpaces, categories, t]
+  )
 
   const handleSubmit = e => {
     e.preventDefault()
@@ -66,7 +80,7 @@ export default function ModalCategory({
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title="Gérer les catégories"
+        title={t('edition.manageCategoriesTitle')}
         actions={[]}
       >
         <ul className="category-list">
@@ -83,7 +97,7 @@ export default function ModalCategory({
                 {cat.label}
                 <ButtonDelete
                   onClick={() => handleDelete(cat.value)} // Envoie le 'value' (slug)
-                  title={`Supprimer la catégorie ${cat.label}`}
+                  title={`${t('edition.deleteCategoryTitle')} ${cat.label}`}
                 />
               </motion.li>
             ))}
@@ -98,9 +112,9 @@ export default function ModalCategory({
             onChange={onChangeNewCategory}
             onValid={onChangeNewCategory}
             rules={validationRules}
-            ariaLabel="Nouvelle catégorie"
+            ariaLabel={t('edition.newCategory')}
           />
-          <Button label="Ajouter" type="submit" />
+          <Button label={t('actions.add')} type="submit" />
         </form>
       </Modal>
     </>

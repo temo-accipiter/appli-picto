@@ -12,6 +12,7 @@ import { useDisplay, usePermissions } from '@/contexts'
 import {
   useDemoCards,
   useFallbackData,
+  useI18n,
   useParametres,
   useRecompenses,
   useSimpleRole,
@@ -24,6 +25,7 @@ import { useWindowSize } from 'react-use'
 import './Tableau.scss'
 
 export default function TableauGrille({ isDemo = false, onLineChange }) {
+  const { t } = useI18n()
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
   const [showConfettis, setShowConfettis] = useState(false)
@@ -233,6 +235,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
         clearTimeout(modalTimeoutRef.current)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doneCount, totalTaches, isDemoMode])
 
   // ⚠️ Sécurise .find() lors du reorder
@@ -264,7 +267,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       {/* Indicateur de chargement fallback */}
       {!isDemoMode && fallbackLoading && personalTaches.length === 0 && (
         <div className="loading-fallback">
-          <p>🔄 Chargement de vos données...</p>
+          <p>🔄 {t('tableau.loadingData')}</p>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useI18n } from '@/hooks'
 import './Input.scss'
 
 export default function Input({
@@ -13,9 +14,11 @@ export default function Input({
   className = '',
   ...rest
 }) {
+  const { language } = useI18n()
   const [showPassword, setShowPassword] = useState(false)
   const isPassword = type === 'password'
   const inputType = isPassword && showPassword ? 'text' : type
+  const isDateInput = type === 'date'
 
   const inputClass = [
     'input-field__input',
@@ -35,6 +38,7 @@ export default function Input({
 
       <div className="input-field__container">
         <input
+          key={isDateInput ? `${id}-${language}` : undefined}
           id={id}
           name={id}
           type={inputType}
@@ -44,6 +48,7 @@ export default function Input({
           aria-invalid={!!error}
           aria-describedby={error ? `${id}-error` : undefined}
           className={inputClass}
+          lang={isDateInput ? language : undefined}
           {...rest}
         />
 

@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { useI18n } from '@/hooks'
 import './EditionList.scss'
 
 export default function EditionList({
@@ -6,8 +7,10 @@ export default function EditionList({
   children,
   items,
   renderCard,
-  emptyLabel = 'Aucun élément',
+  emptyLabel,
 }) {
+  const { t } = useI18n()
+  const defaultEmptyLabel = emptyLabel || t('editionList.noItems')
   return (
     <div className="edition-list">
       {title && <h2 className="edition-list__title">{title}</h2>}
@@ -17,7 +20,7 @@ export default function EditionList({
       <div className="edition-list__grid">
         {items.length === 0 ? (
           <div className="edition-list__empty" role="status" aria-live="polite">
-            💤 {emptyLabel}
+            💤 {defaultEmptyLabel}
           </div>
         ) : (
           items.map(renderCard)

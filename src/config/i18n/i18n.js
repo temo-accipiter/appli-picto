@@ -65,10 +65,16 @@ i18n
     debug: import.meta.env.DEV && import.meta.env.VITE_I18N_DEBUG === 'true',
   })
 
+// Initialiser l'attribut lang au chargement
+const initialLang = getInitialLanguage()
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = initialLang
+}
+
 // Sauvegarder la langue choisie dans le localStorage
 i18n.on('languageChanged', lng => {
   localStorage.setItem('lang', lng)
-  // Mettre à jour l'attribut lang de la page pour l'accessibilité
+  // Mettre à jour l'attribut lang de la page pour l'accessibilité et le calendrier
   document.documentElement.lang = lng
 })
 

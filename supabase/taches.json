@@ -1,0 +1,292 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "taches"
+      },
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "label",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "categorie",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "categorie_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "points",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "default": "0"
+        },
+        {
+          "column_name": "icone",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "couleur",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "aujourdhui",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        },
+        {
+          "column_name": "fait",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        },
+        {
+          "column_name": "position",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "default": "0"
+        },
+        {
+          "column_name": "imagepath",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "visible_en_demo",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        },
+        {
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "default": "auth.uid()"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": true
+      },
+      "policies": [
+        {
+          "policyname": "taches_delete_unified",
+          "command": "DELETE",
+          "roles": ["authenticated"],
+          "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+          "with_check": null
+        },
+        {
+          "policyname": "taches_insert_unified",
+          "command": "INSERT",
+          "roles": ["authenticated"],
+          "using": null,
+          "with_check": "(is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'total'::text) AND check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'monthly'::text)))"
+        },
+        {
+          "policyname": "taches_select_demo",
+          "command": "SELECT",
+          "roles": ["anon"],
+          "using": "(visible_en_demo = true)",
+          "with_check": null
+        },
+        {
+          "policyname": "taches_select_owner_or_admin",
+          "command": "SELECT",
+          "roles": ["authenticated"],
+          "using": "((user_id = ( SELECT auth.uid() AS uid)) OR is_admin())",
+          "with_check": null
+        },
+        {
+          "policyname": "taches_update_unified",
+          "command": "UPDATE",
+          "roles": ["authenticated"],
+          "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+          "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_taches_user_created",
+          "def": "CREATE INDEX idx_taches_user_created ON public.taches USING btree (user_id, created_at)"
+        },
+        {
+          "name": "taches_categorie_id_idx",
+          "def": "CREATE INDEX taches_categorie_id_idx ON public.taches USING btree (categorie_id)"
+        },
+        {
+          "name": "taches_categorie_idx",
+          "def": "CREATE INDEX taches_categorie_idx ON public.taches USING btree (categorie)"
+        },
+        {
+          "name": "taches_fait_idx",
+          "def": "CREATE INDEX taches_fait_idx ON public.taches USING btree (fait)"
+        },
+        {
+          "name": "taches_pkey",
+          "def": "CREATE UNIQUE INDEX taches_pkey ON public.taches USING btree (id)"
+        },
+        {
+          "name": "taches_user_aujourdhui_idx",
+          "def": "CREATE INDEX taches_user_aujourdhui_idx ON public.taches USING btree (user_id, aujourdhui)"
+        },
+        {
+          "name": "taches_user_fait_idx",
+          "def": "CREATE INDEX taches_user_fait_idx ON public.taches USING btree (user_id, fait)"
+        },
+        {
+          "name": "taches_user_fait_true_idx",
+          "def": "CREATE INDEX taches_user_fait_true_idx ON public.taches USING btree (user_id) WHERE (fait IS TRUE)"
+        },
+        {
+          "name": "taches_user_id_idx",
+          "def": "CREATE INDEX taches_user_id_idx ON public.taches USING btree (user_id)"
+        },
+        {
+          "name": "taches_user_position_idx",
+          "def": "CREATE INDEX taches_user_position_idx ON public.taches USING btree (user_id, \"position\")"
+        },
+        {
+          "name": "taches_visible_en_demo_idx",
+          "def": "CREATE INDEX taches_visible_en_demo_idx ON public.taches USING btree (visible_en_demo)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "taches_categorie_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (categorie_id) REFERENCES categories(id) ON DELETE SET NULL"
+        },
+        {
+          "name": "taches_description_length_check",
+          "type": "c",
+          "definition": "CHECK ((length(description) <= 1000))"
+        },
+        {
+          "name": "taches_label_length_check",
+          "type": "c",
+          "definition": "CHECK ((length(label) <= 200))"
+        },
+        {
+          "name": "taches_label_not_blank",
+          "type": "c",
+          "definition": "CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text)))"
+        },
+        {
+          "name": "taches_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "taches_points_positive",
+          "type": "c",
+          "definition": "CHECK ((points >= 0))"
+        },
+        {
+          "name": "taches_position_positive",
+          "type": "c",
+          "definition": "CHECK ((\"position\" >= 0))"
+        },
+        {
+          "name": "taches_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "a00_taches_set_user_id_before",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a00_taches_set_user_id_before BEFORE INSERT ON taches FOR EACH ROW EXECUTE FUNCTION tg_taches_set_user_id()",
+          "function_name": "tg_taches_set_user_id"
+        },
+        {
+          "name": "a10_taches_normalize_categorie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a10_taches_normalize_categorie BEFORE INSERT OR UPDATE OF categorie ON taches FOR EACH ROW EXECUTE FUNCTION tg_taches_normalize_categorie()",
+          "function_name": "tg_taches_normalize_categorie"
+        },
+        {
+          "name": "a20_taches_sync_categorie",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a20_taches_sync_categorie BEFORE INSERT OR UPDATE OF categorie, user_id ON taches FOR EACH ROW EXECUTE FUNCTION tg_taches_sync_categorie()",
+          "function_name": "tg_taches_sync_categorie"
+        },
+        {
+          "name": "a99_taches_set_updated_at",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a99_taches_set_updated_at BEFORE UPDATE ON taches FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+          "function_name": "set_updated_at"
+        },
+        {
+          "name": "taches_sync_categorie",
+          "enabled": "D",
+          "definition": "CREATE TRIGGER taches_sync_categorie BEFORE INSERT OR UPDATE ON taches FOR EACH ROW EXECUTE FUNCTION tg_taches_sync_categorie()",
+          "function_name": "tg_taches_sync_categorie"
+        },
+        {
+          "name": "trg_taches_ctr_del",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_taches_ctr_del AFTER DELETE ON taches FOR EACH ROW EXECUTE FUNCTION taches_counter_del()",
+          "function_name": "taches_counter_del"
+        },
+        {
+          "name": "trg_taches_ctr_ins",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_taches_ctr_ins AFTER INSERT ON taches FOR EACH ROW EXECUTE FUNCTION taches_counter_ins()",
+          "function_name": "taches_counter_ins"
+        }
+      ],
+      "data_preview": null,
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <!-- SVG test icon TSA-friendly (pastel colors) -->
+  <rect fill="#E8F4F8" width="192" height="192"/>
+  <circle cx="96" cy="96" r="60" fill="#A8D5FF" opacity="0.8"/>
+  <circle cx="96" cy="96" r="40" fill="#B8E0D0" opacity="0.7"/>
+  <path d="M 96 56 L 116 96 L 96 136 L 76 96 Z" fill="#F0F8FF" opacity="0.9"/>
+  <text x="96" y="105" font-family="Arial" font-size="16" fill="#5A9FB8" text-anchor="middle" font-weight="bold">TEST</text>
+</svg>

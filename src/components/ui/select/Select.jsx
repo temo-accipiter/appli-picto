@@ -1,3 +1,4 @@
+import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import './Select.scss'
 
@@ -8,8 +9,12 @@ export default function Select({
   onChange,
   options = [],
   error = '',
+  placeholder,
   ...rest
 }) {
+  const { t } = useI18n()
+  const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
+
   return (
     <div className="select-field">
       {label && (
@@ -26,7 +31,7 @@ export default function Select({
         aria-describedby={error ? `${id}-error` : undefined}
         {...rest}
       >
-        <option value="">— Sélectionner —</option>
+        <option value="">{defaultPlaceholder}</option>
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
@@ -55,4 +60,5 @@ Select.propTypes = {
     })
   ),
   error: PropTypes.string,
+  placeholder: PropTypes.string,
 }

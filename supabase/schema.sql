@@ -289,6 +289,64 @@ $$;
 ALTER FUNCTION public.change_account_status(target_user_id uuid, new_status text, changed_by_user_id uuid, reason text, metadata jsonb) OWNER TO postgres;
 
 --
+-- Name: check_duplicate_image(uuid, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+DECLARE
+  v_existing RECORD;
+BEGIN
+  -- ─────────────────────────────────────────────────────────────
+  -- 1️⃣ VÉRIFICATION PERMISSION (self ou admin)
+  -- ─────────────────────────────────────────────────────────────
+  PERFORM public.assert_self_or_admin(p_user_id);
+
+  -- ─────────────────────────────────────────────────────────────
+  -- 2️⃣ RECHERCHE HASH EXISTANT (non supprimé)
+  -- ─────────────────────────────────────────────────────────────
+  SELECT id, file_path, width, height, version, asset_type
+  INTO v_existing
+  FROM public.user_assets
+  WHERE user_id = p_user_id
+    AND sha256_hash = p_sha256_hash
+    AND deleted_at IS NULL -- Seulement assets actifs
+  LIMIT 1;
+
+  -- ─────────────────────────────────────────────────────────────
+  -- 3️⃣ RÉSULTAT
+  -- ─────────────────────────────────────────────────────────────
+  IF v_existing.id IS NOT NULL THEN
+    -- ✅ Hash existe déjà → retourner infos asset
+    RETURN jsonb_build_object(
+      'exists', true,
+      'asset_id', v_existing.id,
+      'file_path', v_existing.file_path,
+      'width', v_existing.width,
+      'height', v_existing.height,
+      'version', v_existing.version,
+      'asset_type', v_existing.asset_type
+    );
+  ELSE
+    -- ❌ Hash nouveau → autoriser upload
+    RETURN jsonb_build_object('exists', false);
+  END IF;
+END;
+$$;
+
+
+ALTER FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) OWNER TO postgres;
+
+--
+-- Name: FUNCTION check_duplicate_image(p_user_id uuid, p_sha256_hash text); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) IS 'Vérifie si un hash SHA-256 existe déjà pour un utilisateur (déduplication). Retourne {exists: true, asset_id, file_path, ...} si trouvé, sinon {exists: false}.';
+
+
+--
 -- Name: check_image_quota(uuid, text, bigint); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -297,101 +355,150 @@ CREATE FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_fi
     SET search_path TO 'public'
     AS $$
 DECLARE
-  v_role record;
-  v_quotas jsonb := '{}'::jsonb;
-  v_stats jsonb;
-  v_can_upload boolean := true;
-  v_reason text;
-  v_max_image_size bigint;
-  v_max_total_size bigint;
-  v_sub record;
+  v_role_name TEXT;
+  v_current_count INTEGER;
+  v_max_tasks INTEGER;
+  v_max_rewards INTEGER;
+  v_total_storage BIGINT;
+  v_max_storage BIGINT := 100 * 1024 * 1024; -- 100 Mo par défaut
+  v_reason TEXT;
 BEGIN
-  -- Garde self/admin
+  -- ─────────────────────────────────────────────────────────────
+  -- 1️⃣ VÉRIFICATION PERMISSION (self ou admin)
+  -- ─────────────────────────────────────────────────────────────
   PERFORM public.assert_self_or_admin(p_user_id);
 
-  -- Rôle prioritaire
-  SELECT r.id, r.name, r.priority
-    INTO v_role
+  -- ─────────────────────────────────────────────────────────────
+  -- 2️⃣ RÉCUPÉRER RÔLE UTILISATEUR
+  -- ─────────────────────────────────────────────────────────────
+  SELECT r.name INTO v_role_name
   FROM public.user_roles ur
   JOIN public.roles r ON r.id = ur.role_id
-  WHERE ur.user_id = p_user_id AND ur.is_active = true
+  WHERE ur.user_id = p_user_id
+    AND ur.is_active = true
   ORDER BY r.priority DESC
   LIMIT 1;
 
-  -- 🔧 Fallback si aucun rôle encore actif
-  IF v_role.id IS NULL THEN
-    SELECT * INTO v_sub
-    FROM public.abonnements
-    WHERE user_id = p_user_id AND status IN ('active','trialing','past_due','paused')
-    ORDER BY created_at DESC
-    LIMIT 1;
+  -- Admin → aucune limite
+  IF v_role_name = 'admin' THEN
+    RETURN jsonb_build_object(
+      'can_upload', true,
+      'reason', 'admin_unlimited'
+    );
+  END IF;
 
-    IF v_sub.id IS NOT NULL THEN
-      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'abonne' LIMIT 1;
-    ELSE
-      SELECT id, name, priority INTO v_role FROM public.roles WHERE name = 'free' LIMIT 1;
+  -- Fallback rôle si non trouvé
+  IF v_role_name IS NULL THEN
+    v_role_name := 'free';
+  END IF;
+
+  -- ─────────────────────────────────────────────────────────────
+  -- 3️⃣ RÉCUPÉRER QUOTAS SELON RÔLE
+  -- ─────────────────────────────────────────────────────────────
+  -- Free : 5 tâches, 2 récompenses
+  -- Abonné : 40 tâches, 10 récompenses
+  IF v_role_name = 'abonne' THEN
+    v_max_tasks := 40;
+    v_max_rewards := 10;
+    v_max_storage := 500 * 1024 * 1024; -- 500 Mo
+  ELSE
+    -- Free
+    v_max_tasks := 5;
+    v_max_rewards := 2;
+    v_max_storage := 50 * 1024 * 1024; -- 50 Mo
+  END IF;
+
+  -- ─────────────────────────────────────────────────────────────
+  -- 4️⃣ VÉRIFICATION QUOTA IMAGES (task_image ou reward_image)
+  -- ─────────────────────────────────────────────────────────────
+  IF p_asset_type = 'task_image' THEN
+    -- Compter tâches actuelles (user_assets actifs)
+    SELECT COUNT(*) INTO v_current_count
+    FROM public.user_assets
+    WHERE user_id = p_user_id
+      AND asset_type = 'task_image'
+      AND deleted_at IS NULL;
+
+    IF v_current_count >= v_max_tasks THEN
+      v_reason := 'task_image_limit_reached';
+      RETURN jsonb_build_object(
+        'can_upload', false,
+        'reason', v_reason,
+        'current', v_current_count,
+        'max', v_max_tasks
+      );
+    END IF;
+
+  ELSIF p_asset_type = 'reward_image' THEN
+    -- Compter récompenses actuelles
+    SELECT COUNT(*) INTO v_current_count
+    FROM public.user_assets
+    WHERE user_id = p_user_id
+      AND asset_type = 'reward_image'
+      AND deleted_at IS NULL;
+
+    IF v_current_count >= v_max_rewards THEN
+      v_reason := 'reward_image_limit_reached';
+      RETURN jsonb_build_object(
+        'can_upload', false,
+        'reason', v_reason,
+        'current', v_current_count,
+        'max', v_max_rewards
+      );
     END IF;
   END IF;
 
-  -- Admin/Staff : pas de limite
-  IF v_role.name IN ('admin','staff') THEN
-    RETURN jsonb_build_object('can_upload', true, 'reason', 'admin_unlimited');
+  -- ─────────────────────────────────────────────────────────────
+  -- 5️⃣ VÉRIFICATION QUOTA STORAGE TOTAL
+  -- ─────────────────────────────────────────────────────────────
+  SELECT COALESCE(SUM(file_size), 0) INTO v_total_storage
+  FROM public.user_assets
+  WHERE user_id = p_user_id
+    AND deleted_at IS NULL;
+
+  IF (v_total_storage + p_file_size) > v_max_storage THEN
+    v_reason := 'total_storage_limit_reached';
+    RETURN jsonb_build_object(
+      'can_upload', false,
+      'reason', v_reason,
+      'current_storage_mb', ROUND(v_total_storage / 1048576.0, 2),
+      'max_storage_mb', ROUND(v_max_storage / 1048576.0, 2)
+    );
   END IF;
 
-  -- Quotas image du rôle
-  SELECT COALESCE(jsonb_object_agg(quota_type, quota_limit), '{}'::jsonb)
-    INTO v_quotas
-  FROM public.role_quotas
-  WHERE role_id = v_role.id
-    AND quota_type LIKE '%image%';
-
-  -- Stats actuelles
-  SELECT public.get_user_assets_stats(p_user_id) INTO v_stats;
-
-  -- Tailles facultatives
-  v_max_image_size := NULLIF((v_quotas->>'max_image_size')::bigint, 0);
-  v_max_total_size := NULLIF((v_quotas->>'max_total_images_size')::bigint, 0);
-
-  IF p_asset_type NOT IN ('task_image','reward_image') THEN
-    RETURN jsonb_build_object('can_upload', false, 'reason', 'invalid_asset_type');
+  -- ─────────────────────────────────────────────────────────────
+  -- 6️⃣ VÉRIFICATION TAILLE FICHIER (10 Mo max)
+  -- ─────────────────────────────────────────────────────────────
+  IF p_file_size > (10 * 1024 * 1024) THEN
+    v_reason := 'image_too_large';
+    RETURN jsonb_build_object(
+      'can_upload', false,
+      'reason', v_reason,
+      'file_size_mb', ROUND(p_file_size / 1048576.0, 2),
+      'max_file_size_mb', 10
+    );
   END IF;
 
-  IF v_max_image_size IS NOT NULL AND p_file_size > v_max_image_size THEN
-    v_can_upload := false; v_reason := 'image_too_large';
-  END IF;
-
-  IF v_can_upload AND p_asset_type = 'task_image' THEN
-    IF (v_stats->>'task_images')::int >= COALESCE((v_quotas->>'max_task_images')::int, 2147483647) THEN
-      v_can_upload := false; v_reason := 'task_image_limit_reached';
-    END IF;
-  ELSIF v_can_upload AND p_asset_type = 'reward_image' THEN
-    IF (v_stats->>'reward_images')::int >= COALESCE((v_quotas->>'max_reward_images')::int, 2147483647) THEN
-      v_can_upload := false; v_reason := 'reward_image_limit_reached';
-    END IF;
-  END IF;
-
-  IF v_can_upload AND (v_stats->>'total_images')::int >= COALESCE((v_quotas->>'max_total_images')::int, 2147483647) THEN
-    v_can_upload := false; v_reason := 'total_image_limit_reached';
-  END IF;
-
-  IF v_can_upload AND v_max_total_size IS NOT NULL THEN
-    IF COALESCE((v_stats->>'total_size')::bigint, 0) + GREATEST(p_file_size,0) > v_max_total_size THEN
-      v_can_upload := false; v_reason := 'total_image_size_limit_reached';
-    END IF;
-  END IF;
-
+  -- ─────────────────────────────────────────────────────────────
+  -- 7️⃣ AUTORISÉ ✅
+  -- ─────────────────────────────────────────────────────────────
   RETURN jsonb_build_object(
-    'can_upload', v_can_upload,
-    'reason', COALESCE(v_reason, 'ok'),
-    'role', v_role.name,
-    'quotas', v_quotas,
-    'stats', v_stats
+    'can_upload', true,
+    'reason', 'quota_ok',
+    'role', v_role_name
   );
-END
+END;
 $$;
 
 
 ALTER FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) OWNER TO postgres;
+
+--
+-- Name: FUNCTION check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint) IS 'Vérifie quotas AVANT upload image (tâches, récompenses, storage total). Paramètres : user_id, asset_type (task_image|reward_image), file_size (bytes). Retourne {can_upload: bool, reason: string, current?, max?}.';
+
 
 --
 -- Name: check_user_quota(uuid, text, text); Type: FUNCTION; Schema: public; Owner: postgres
@@ -733,6 +840,55 @@ $$;
 
 
 ALTER FUNCTION public.get_demo_tasks() OWNER TO postgres;
+
+--
+-- Name: get_image_analytics_summary(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_image_analytics_summary() RETURNS jsonb
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public'
+    AS $$
+BEGIN
+  -- ─────────────────────────────────────────────────────────────
+  -- Admins uniquement
+  -- ─────────────────────────────────────────────────────────────
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Permission denied: admins only' USING ERRCODE = '42501';
+  END IF;
+
+  -- ─────────────────────────────────────────────────────────────
+  -- Statistiques globales (7 derniers jours)
+  -- ─────────────────────────────────────────────────────────────
+  RETURN (
+    SELECT jsonb_build_object(
+      'period_days', 7,
+      'total_uploads', COUNT(*),
+      'success_count', COUNT(*) FILTER (WHERE result = 'success'),
+      'failed_count', COUNT(*) FILTER (WHERE result = 'failed'),
+      'fallback_count', COUNT(*) FILTER (WHERE result = 'fallback_original'),
+      'avg_compression_ratio', ROUND(AVG(compression_ratio), 2),
+      'avg_conversion_ms', ROUND(AVG(conversion_ms), 0),
+      'avg_upload_ms', ROUND(AVG(upload_ms), 0),
+      'total_storage_saved_mb', ROUND(SUM(original_size - compressed_size) / 1048576.0, 2),
+      'webp_conversions', COUNT(*) FILTER (WHERE conversion_method = 'client_webp'),
+      'heic_conversions', COUNT(*) FILTER (WHERE conversion_method LIKE 'heic%')
+    )
+    FROM public.image_metrics
+    WHERE created_at > NOW() - INTERVAL '7 days'
+  );
+END;
+$$;
+
+
+ALTER FUNCTION public.get_image_analytics_summary() OWNER TO postgres;
+
+--
+-- Name: FUNCTION get_image_analytics_summary(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.get_image_analytics_summary() IS 'Statistiques uploads 7 derniers jours (admins uniquement). Retourne métriques globales : uploads totaux, taux succès, compression moyenne, etc.';
+
 
 --
 -- Name: get_migration_report(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -1163,6 +1319,85 @@ $$;
 ALTER FUNCTION public.get_user_roles(p_user_id uuid) OWNER TO postgres;
 
 --
+-- Name: get_users_with_roles(integer, integer, text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_users_with_roles(page_num integer DEFAULT 1, page_limit integer DEFAULT 20, role_filter text DEFAULT 'all'::text, status_filter text DEFAULT 'all'::text) RETURNS TABLE(id uuid, email text, pseudo text, created_at timestamp with time zone, last_login timestamp with time zone, account_status text, is_online boolean, user_roles jsonb, total_count bigint)
+    LANGUAGE plpgsql SECURITY DEFINER
+    AS $$
+  DECLARE
+    offset_val INT;
+    total BIGINT;
+  BEGIN
+    offset_val := (page_num - 1) * page_limit;
+
+    -- Compter le total
+    SELECT COUNT(DISTINCT p.id) INTO total
+    FROM profiles p
+    LEFT JOIN user_roles ur ON ur.user_id = p.id
+    LEFT JOIN roles r ON r.id = ur.role_id
+    WHERE
+      (status_filter = 'all' OR p.account_status = status_filter)
+      AND (
+        role_filter = 'all'
+        OR (role_filter = 'no_roles' AND ur.id IS NULL)
+        OR r.name = role_filter
+      );
+
+    -- Retourner les résultats avec données de auth.users
+    RETURN QUERY
+    SELECT
+      p.id,
+      COALESCE(au.email::TEXT, '') AS email,
+      p.pseudo,
+      p.created_at,
+      au.last_sign_in_at AS last_login,
+      p.account_status,
+      CASE
+        WHEN au.last_sign_in_at > (NOW() - INTERVAL '15 minutes') THEN true
+        ELSE false
+      END AS is_online,
+      COALESCE(
+        jsonb_agg(
+          CASE
+            WHEN ur.id IS NOT NULL THEN
+              jsonb_build_object(
+                'id', ur.id,
+                'role_id', ur.role_id,
+                'roles', jsonb_build_object(
+                  'id', r.id,
+                  'name', r.name,
+                  'display_name', r.display_name
+                )
+              )
+            ELSE NULL
+          END
+        ) FILTER (WHERE ur.id IS NOT NULL),
+        '[]'::jsonb
+      ) AS user_roles,
+      total AS total_count
+    FROM profiles p
+    LEFT JOIN auth.users au ON au.id = p.id
+    LEFT JOIN user_roles ur ON ur.user_id = p.id
+    LEFT JOIN roles r ON r.id = ur.role_id
+    WHERE
+      (status_filter = 'all' OR p.account_status = status_filter)
+      AND (
+        role_filter = 'all'
+        OR (role_filter = 'no_roles' AND ur.id IS NULL)
+        OR r.name = role_filter
+      )
+    GROUP BY p.id, au.email, p.pseudo, p.created_at, au.last_sign_in_at, p.account_status
+    ORDER BY p.created_at DESC
+    LIMIT page_limit
+    OFFSET offset_val;
+  END;
+  $$;
+
+
+ALTER FUNCTION public.get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text) OWNER TO postgres;
+
+--
 -- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -1475,6 +1710,163 @@ end $$;
 
 
 ALTER FUNCTION public.rewards_counter_ins() OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: recompenses; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.recompenses (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    label text NOT NULL,
+    description text,
+    points_requis integer DEFAULT 0 NOT NULL,
+    icone text,
+    couleur text,
+    imagepath text,
+    selected boolean DEFAULT false NOT NULL,
+    visible_en_demo boolean DEFAULT false NOT NULL,
+    user_id uuid DEFAULT auth.uid(),
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT recompenses_description_length_check CHECK (((description IS NULL) OR (length(description) <= 1000))),
+    CONSTRAINT recompenses_imagepath_length_check CHECK (((imagepath IS NULL) OR (length(imagepath) <= 2048))),
+    CONSTRAINT recompenses_label_length_check CHECK ((length(label) <= 200)),
+    CONSTRAINT recompenses_label_not_blank CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text))),
+    CONSTRAINT recompenses_points_requis_positive CHECK ((points_requis >= 0))
+);
+
+ALTER TABLE ONLY public.recompenses FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE public.recompenses OWNER TO postgres;
+
+--
+-- Name: TABLE recompenses; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.recompenses IS 'Récompenses des utilisateurs avec système de points';
+
+
+--
+-- Name: COLUMN recompenses.label; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.label IS 'Nom de la récompense affiché';
+
+
+--
+-- Name: COLUMN recompenses.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.description IS 'Description détaillée de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.points_requis; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.points_requis IS 'Points nécessaires pour débloquer cette récompense';
+
+
+--
+-- Name: COLUMN recompenses.icone; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.icone IS 'Icône de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.couleur; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.couleur IS 'Couleur de la récompense';
+
+
+--
+-- Name: COLUMN recompenses.imagepath; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.imagepath IS 'Chemin de l''image associée';
+
+
+--
+-- Name: COLUMN recompenses.selected; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.selected IS 'Récompense sélectionnée par l''utilisateur';
+
+
+--
+-- Name: COLUMN recompenses.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.visible_en_demo IS 'Si true, cette récompense sera visible en mode démo pour tous les visiteurs';
+
+
+--
+-- Name: COLUMN recompenses.user_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.recompenses.user_id IS 'Propriétaire de la récompense';
+
+
+--
+-- Name: select_recompense_atomic(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.select_recompense_atomic(p_reward_id uuid) RETURNS SETOF public.recompenses
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_catalog'
+    AS $$
+  DECLARE
+    v_user_id uuid;
+  BEGIN
+    -- Récupérer l'utilisateur courant
+    v_user_id := auth.uid();
+
+    -- Vérifier que l'utilisateur est connecté
+    IF v_user_id IS NULL THEN
+      RAISE EXCEPTION 'Utilisateur non connecté' USING ERRCODE = '42501';
+    END IF;
+
+    -- Vérifier que la récompense existe et appartient à l'utilisateur
+    PERFORM 1
+    FROM public.recompenses
+    WHERE id = p_reward_id
+      AND user_id = v_user_id;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Récompense introuvable ou non autorisée' USING ERRCODE = '42501';
+    END IF;
+
+    -- 1️⃣ Désélectionner TOUTES les récompenses de l'utilisateur
+    UPDATE public.recompenses
+    SET selected = false,
+        updated_at = now()
+    WHERE user_id = v_user_id
+      AND selected = true;
+
+    -- 2️⃣ Sélectionner la récompense demandée
+    UPDATE public.recompenses
+    SET selected = true,
+        updated_at = now()
+    WHERE id = p_reward_id
+      AND user_id = v_user_id;
+
+    -- 3️⃣ Retourner la récompense sélectionnée
+    RETURN QUERY
+    SELECT r.*
+    FROM public.recompenses r
+    WHERE r.id = p_reward_id;
+  END;
+  $$;
+
+
+ALTER FUNCTION public.select_recompense_atomic(p_reward_id uuid) OWNER TO postgres;
 
 --
 -- Name: set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
@@ -2868,10 +3260,6 @@ $$;
 
 ALTER FUNCTION storage.update_updated_at_column() OWNER TO supabase_storage_admin;
 
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
 --
 -- Name: abonnements; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -3163,6 +3551,69 @@ CREATE TABLE public.features (
 ALTER TABLE public.features OWNER TO postgres;
 
 --
+-- Name: image_metrics; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.image_metrics (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    asset_type text NOT NULL,
+    original_size bigint NOT NULL,
+    compressed_size bigint NOT NULL,
+    compression_ratio numeric(5,2) GENERATED ALWAYS AS (
+CASE
+    WHEN (original_size > 0) THEN round((((1)::numeric - ((compressed_size)::numeric / (original_size)::numeric)) * (100)::numeric), 2)
+    ELSE (0)::numeric
+END) STORED,
+    conversion_ms integer,
+    upload_ms integer,
+    result text NOT NULL,
+    error_message text,
+    mime_type_original text,
+    mime_type_final text,
+    conversion_method text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    CONSTRAINT image_metrics_asset_type_check CHECK ((asset_type = ANY (ARRAY['task_image'::text, 'reward_image'::text]))),
+    CONSTRAINT image_metrics_compressed_size_check CHECK ((compressed_size >= 0)),
+    CONSTRAINT image_metrics_conversion_method_check CHECK ((conversion_method = ANY (ARRAY['client_webp'::text, 'heic_to_jpeg_then_webp'::text, 'heic_to_jpeg_only'::text, 'none'::text, 'svg_unchanged'::text, 'fallback_original'::text]))),
+    CONSTRAINT image_metrics_conversion_ms_check CHECK ((conversion_ms >= 0)),
+    CONSTRAINT image_metrics_original_size_check CHECK ((original_size >= 0)),
+    CONSTRAINT image_metrics_result_check CHECK ((result = ANY (ARRAY['success'::text, 'failed'::text, 'fallback_original'::text]))),
+    CONSTRAINT image_metrics_upload_ms_check CHECK ((upload_ms >= 0))
+);
+
+
+ALTER TABLE public.image_metrics OWNER TO postgres;
+
+--
+-- Name: TABLE image_metrics; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.image_metrics IS 'Métriques uploads images : compression ratio, performance, erreurs (analytics).';
+
+
+--
+-- Name: COLUMN image_metrics.compression_ratio; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.image_metrics.compression_ratio IS 'Ratio compression en % (calculé automatiquement). Ex: 75.50 = 75.5% de réduction.';
+
+
+--
+-- Name: COLUMN image_metrics.result; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.image_metrics.result IS 'Résultat upload : success (réussi), failed (échoué), fallback_original (original accepté).';
+
+
+--
+-- Name: COLUMN image_metrics.conversion_method; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.image_metrics.conversion_method IS 'Méthode conversion utilisée : client_webp (direct), heic_to_jpeg_then_webp (iPhone), etc.';
+
+
+--
 -- Name: parametres; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -3330,105 +3781,6 @@ COMMENT ON COLUMN public.profiles.account_status IS 'État du compte utilisateur
 --
 
 COMMENT ON COLUMN public.profiles.deletion_scheduled_at IS 'Date de suppression programmée pour les comptes en état deletion_scheduled (30 jours après la demande)';
-
-
---
--- Name: recompenses; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.recompenses (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    label text NOT NULL,
-    description text,
-    points_requis integer DEFAULT 0 NOT NULL,
-    icone text,
-    couleur text,
-    imagepath text,
-    selected boolean DEFAULT false NOT NULL,
-    visible_en_demo boolean DEFAULT false NOT NULL,
-    user_id uuid DEFAULT auth.uid(),
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT recompenses_description_length_check CHECK (((description IS NULL) OR (length(description) <= 1000))),
-    CONSTRAINT recompenses_imagepath_length_check CHECK (((imagepath IS NULL) OR (length(imagepath) <= 2048))),
-    CONSTRAINT recompenses_label_length_check CHECK ((length(label) <= 200)),
-    CONSTRAINT recompenses_label_not_blank CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text))),
-    CONSTRAINT recompenses_points_requis_positive CHECK ((points_requis >= 0))
-);
-
-ALTER TABLE ONLY public.recompenses FORCE ROW LEVEL SECURITY;
-
-
-ALTER TABLE public.recompenses OWNER TO postgres;
-
---
--- Name: TABLE recompenses; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON TABLE public.recompenses IS 'Récompenses des utilisateurs avec système de points';
-
-
---
--- Name: COLUMN recompenses.label; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.label IS 'Nom de la récompense affiché';
-
-
---
--- Name: COLUMN recompenses.description; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.description IS 'Description détaillée de la récompense';
-
-
---
--- Name: COLUMN recompenses.points_requis; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.points_requis IS 'Points nécessaires pour débloquer cette récompense';
-
-
---
--- Name: COLUMN recompenses.icone; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.icone IS 'Icône de la récompense';
-
-
---
--- Name: COLUMN recompenses.couleur; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.couleur IS 'Couleur de la récompense';
-
-
---
--- Name: COLUMN recompenses.imagepath; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.imagepath IS 'Chemin de l''image associée';
-
-
---
--- Name: COLUMN recompenses.selected; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.selected IS 'Récompense sélectionnée par l''utilisateur';
-
-
---
--- Name: COLUMN recompenses.visible_en_demo; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.visible_en_demo IS 'Si true, cette récompense sera visible en mode démo pour tous les visiteurs';
-
-
---
--- Name: COLUMN recompenses.user_id; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN public.recompenses.user_id IS 'Propriétaire de la récompense';
 
 
 --
@@ -3751,12 +4103,60 @@ CREATE TABLE public.user_assets (
     dimensions text,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    version integer DEFAULT 1 NOT NULL,
+    sha256_hash text,
+    width integer,
+    height integer,
+    deleted_at timestamp with time zone,
+    migrated_at timestamp with time zone,
     CONSTRAINT user_assets_asset_type_check CHECK ((asset_type = ANY (ARRAY['task_image'::text, 'reward_image'::text]))),
     CONSTRAINT user_assets_file_size_nonneg CHECK ((file_size >= 0))
 );
 
 
 ALTER TABLE public.user_assets OWNER TO postgres;
+
+--
+-- Name: COLUMN user_assets.version; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.version IS 'Version de l''image (incrémenté à chaque remplacement). Permet historique et rollback.';
+
+
+--
+-- Name: COLUMN user_assets.sha256_hash; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.sha256_hash IS 'Hash SHA-256 du fichier pour déduplication. Évite uploads identiques (économie storage).';
+
+
+--
+-- Name: COLUMN user_assets.width; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.width IS 'Largeur image en pixels (extrait après upload). NULL si extraction échoue.';
+
+
+--
+-- Name: COLUMN user_assets.height; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.height IS 'Hauteur image en pixels (extrait après upload). NULL si extraction échoue.';
+
+
+--
+-- Name: COLUMN user_assets.deleted_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.deleted_at IS 'Soft delete timestamp. NULL = actif, NOT NULL = supprimé (conservé 90 jours).';
+
+
+--
+-- Name: COLUMN user_assets.migrated_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_assets.migrated_at IS 'Date migration vers nouveau système. NULL = ancien système, NOT NULL = migré.';
+
 
 --
 -- Name: user_prefs; Type: TABLE; Schema: public; Owner: postgres
@@ -4039,6 +4439,14 @@ ALTER TABLE ONLY public.features
 
 ALTER TABLE ONLY public.features
     ADD CONSTRAINT features_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: image_metrics image_metrics_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.image_metrics
+    ADD CONSTRAINT image_metrics_pkey PRIMARY KEY (id);
 
 
 --
@@ -4455,6 +4863,34 @@ CREATE INDEX idx_features_active_category ON public.features USING btree (is_act
 
 
 --
+-- Name: idx_image_metrics_asset_type; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_image_metrics_asset_type ON public.image_metrics USING btree (asset_type);
+
+
+--
+-- Name: idx_image_metrics_date; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_image_metrics_date ON public.image_metrics USING btree (created_at DESC);
+
+
+--
+-- Name: idx_image_metrics_result; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_image_metrics_result ON public.image_metrics USING btree (result);
+
+
+--
+-- Name: idx_image_metrics_user; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_image_metrics_user ON public.image_metrics USING btree (user_id);
+
+
+--
 -- Name: idx_profiles_account_status; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -4539,10 +4975,31 @@ CREATE INDEX idx_user_assets_created ON public.user_assets USING btree (created_
 
 
 --
+-- Name: idx_user_assets_deleted; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_deleted ON public.user_assets USING btree (deleted_at) WHERE (deleted_at IS NOT NULL);
+
+
+--
+-- Name: idx_user_assets_sha256; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_sha256 ON public.user_assets USING btree (sha256_hash) WHERE (sha256_hash IS NOT NULL);
+
+
+--
 -- Name: idx_user_assets_type; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX idx_user_assets_type ON public.user_assets USING btree (user_id, asset_type);
+
+
+--
+-- Name: idx_user_assets_unique_hash; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_user_assets_unique_hash ON public.user_assets USING btree (user_id, sha256_hash) WHERE ((sha256_hash IS NOT NULL) AND (deleted_at IS NULL));
 
 
 --
@@ -4557,6 +5014,13 @@ CREATE INDEX idx_user_assets_user_created_desc ON public.user_assets USING btree
 --
 
 CREATE INDEX idx_user_assets_user_id ON public.user_assets USING btree (user_id);
+
+
+--
+-- Name: idx_user_assets_version; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_assets_version ON public.user_assets USING btree (user_id, asset_type, version);
 
 
 --
@@ -5232,6 +5696,14 @@ ALTER TABLE ONLY public.consentements
 
 
 --
+-- Name: image_metrics image_metrics_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.image_metrics
+    ADD CONSTRAINT image_metrics_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: permission_changes permission_changes_changed_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -5392,6 +5864,27 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
+-- Name: image_metrics Admins can view all metrics; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Admins can view all metrics" ON public.image_metrics FOR SELECT USING (public.is_admin());
+
+
+--
+-- Name: image_metrics Users can insert own metrics; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can insert own metrics" ON public.image_metrics FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
+-- Name: image_metrics Users can view own metrics; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY "Users can view own metrics" ON public.image_metrics FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
 -- Name: abonnements; Type: ROW SECURITY; Schema: public; Owner: postgres
 --
 
@@ -5524,6 +6017,12 @@ ALTER TABLE public.features ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY features_select_unified ON public.features FOR SELECT TO authenticated USING ((public.is_admin() OR (is_active = true)));
 
+
+--
+-- Name: image_metrics; Type: ROW SECURITY; Schema: public; Owner: postgres
+--
+
+ALTER TABLE public.image_metrics ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: subscription_logs logs_select_user_or_admin; Type: POLICY; Schema: public; Owner: postgres
@@ -6170,6 +6669,15 @@ GRANT ALL ON FUNCTION public.change_account_status(target_user_id uuid, new_stat
 
 
 --
+-- Name: FUNCTION check_duplicate_image(p_user_id uuid, p_sha256_hash text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) TO anon;
+GRANT ALL ON FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) TO authenticated;
+GRANT ALL ON FUNCTION public.check_duplicate_image(p_user_id uuid, p_sha256_hash text) TO service_role;
+
+
+--
 -- Name: FUNCTION check_image_quota(p_user_id uuid, p_asset_type text, p_file_size bigint); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6279,6 +6787,15 @@ REVOKE ALL ON FUNCTION public.get_demo_tasks() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO anon;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO authenticated;
 GRANT ALL ON FUNCTION public.get_demo_tasks() TO service_role;
+
+
+--
+-- Name: FUNCTION get_image_analytics_summary(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_image_analytics_summary() TO anon;
+GRANT ALL ON FUNCTION public.get_image_analytics_summary() TO authenticated;
+GRANT ALL ON FUNCTION public.get_image_analytics_summary() TO service_role;
 
 
 --
@@ -6399,6 +6916,15 @@ GRANT ALL ON FUNCTION public.get_user_roles(p_user_id uuid) TO service_role;
 
 
 --
+-- Name: FUNCTION get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text) TO anon;
+GRANT ALL ON FUNCTION public.get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text) TO authenticated;
+GRANT ALL ON FUNCTION public.get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text) TO service_role;
+
+
+--
 -- Name: FUNCTION handle_new_user(); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6508,6 +7034,24 @@ GRANT ALL ON FUNCTION public.rewards_counter_del() TO service_role;
 
 REVOKE ALL ON FUNCTION public.rewards_counter_ins() FROM PUBLIC;
 GRANT ALL ON FUNCTION public.rewards_counter_ins() TO service_role;
+
+
+--
+-- Name: TABLE recompenses; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.recompenses TO service_role;
+GRANT SELECT ON TABLE public.recompenses TO anon;
+GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.recompenses TO authenticated;
+
+
+--
+-- Name: FUNCTION select_recompense_atomic(p_reward_id uuid); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.select_recompense_atomic(p_reward_id uuid) TO anon;
+GRANT ALL ON FUNCTION public.select_recompense_atomic(p_reward_id uuid) TO authenticated;
+GRANT ALL ON FUNCTION public.select_recompense_atomic(p_reward_id uuid) TO service_role;
 
 
 --
@@ -6710,6 +7254,14 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.features TO authenticated;
 
 
 --
+-- Name: TABLE image_metrics; Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON TABLE public.image_metrics TO authenticated;
+GRANT ALL ON TABLE public.image_metrics TO service_role;
+
+
+--
 -- Name: TABLE parametres; Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -6732,15 +7284,6 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.permission_changes TO authenti
 
 GRANT ALL ON TABLE public.profiles TO service_role;
 GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.profiles TO authenticated;
-
-
---
--- Name: TABLE recompenses; Type: ACL; Schema: public; Owner: postgres
---
-
-GRANT ALL ON TABLE public.recompenses TO service_role;
-GRANT SELECT ON TABLE public.recompenses TO anon;
-GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE public.recompenses TO authenticated;
 
 
 --

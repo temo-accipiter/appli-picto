@@ -1,7 +1,7 @@
 // src/hooks/useTaches.js
 import { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient' // ✅ instance unique
-import { useAuth, useToast } from '@/hooks'
+import { useAuth, useI18n, useToast } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny' // ✅ utilitaire commun
 
 // Log d'erreur "safe"
@@ -20,6 +20,7 @@ export default function useTaches(reload = 0) {
   const [taches, setTaches] = useState([])
   const { user } = useAuth()
   const { show } = useToast()
+  const { t } = useI18n()
 
   // 📥 Chargement initial
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function useTaches(reload = 0) {
       .then(({ error }) => {
         if (error) {
           console.error(`❌ Erreur update fait : ${formatErr(error)}`)
-          show('Erreur lors de la mise à jour', 'error')
+          show(t('toasts.taskUpdateError'), 'error')
         } else {
           setTaches(prev =>
             prev.map(t => (t.id === id ? { ...t, fait: !current } : t))
@@ -71,10 +72,10 @@ export default function useTaches(reload = 0) {
       .then(({ error }) => {
         if (error) {
           console.error(`❌ Erreur reset fait : ${formatErr(error)}`)
-          show('Erreur lors de la réinitialisation', 'error')
+          show(t('toasts.taskResetError'), 'error')
         } else {
           setTaches(prev => prev.map(t => ({ ...t, fait: false })))
-          show('Toutes les tâches ont été réinitialisées', 'success')
+          show(t('toasts.allTasksReset'), 'success')
         }
       })
 
@@ -102,7 +103,7 @@ export default function useTaches(reload = 0) {
 
     if (!id) {
       console.error('❌ Tâche invalide :', t)
-      show('Erreur : tâche invalide', 'error')
+      show(t('toasts.invalidTask'), 'error')
       return
     }
 
@@ -120,11 +121,11 @@ export default function useTaches(reload = 0) {
 
     if (error) {
       console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
-      show('Impossible de supprimer la tâche', 'error')
+      show(t('toasts.taskDeleteError'), 'error')
     } else {
       console.log('✅ Tâche supprimée avec succès')
       setTaches(prev => prev.filter(task => task.id !== id))
-      show('Tâche supprimée', 'success')
+      show(t('toasts.taskDeleted'), 'success')
     }
   }
 

@@ -1,4 +1,5 @@
 import { Button, Modal } from '@/components'
+import { useI18n } from '@/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, Star, Users, X, Zap } from 'lucide-react'
 import PropTypes from 'prop-types'
@@ -12,11 +13,12 @@ import './SignupPromptModal.scss'
 export const SignupPromptModal = ({
   isOpen,
   onClose,
-  title = 'Débloquez toutes les fonctionnalités !',
-  message = "Créez votre compte et profitez d'une semaine d'essai gratuite",
-  trigger = 'feature_restriction', // feature_restriction, line_change, unlimited_tasks
+  title,
+  message,
+  trigger: _trigger = 'feature_restriction', // feature_restriction, line_change, unlimited_tasks
   showFeatures = true,
 }) => {
+  const { t } = useI18n()
   const [isClosing, setIsClosing] = useState(false)
 
   const handleClose = () => {
@@ -31,39 +33,29 @@ export const SignupPromptModal = ({
     window.location.href = '/signup'
   }
 
-  // Messages personnalisés selon le contexte
-  const getContextMessage = () => {
-    switch (trigger) {
-      case 'line_change':
-        return 'Changez de ligne de transport et personnalisez votre expérience !'
-      case 'unlimited_tasks':
-        return 'Créez autant de tâches que vous voulez et organisez votre vie !'
-      case 'feature_restriction':
-      default:
-        return message
-    }
-  }
+  const defaultTitle = t('quota.upgradeToUnlock')
+  const defaultMessage = t('demo.signupPrompt')
 
   const features = [
     {
       icon: <Zap size={20} />,
-      title: 'Tâches illimitées',
-      description: 'Créez autant de tâches que vous voulez',
+      title: t('tasks.allTasks'),
+      description: t('tasks.noTasks'),
     },
     {
       icon: <Users size={20} />,
-      title: 'Personnalisation complète',
-      description: 'Changez de ligne, ajoutez des images',
+      title: t('settings.personalization'),
+      description: t('settings.appearance'),
     },
     {
       icon: <Star size={20} />,
-      title: 'Récompenses avancées',
-      description: 'Accédez à toutes les récompenses',
+      title: t('rewards.title'),
+      description: t('rewards.noRewards'),
     },
     {
       icon: <CheckCircle size={20} />,
-      title: 'Synchronisation',
-      description: 'Vos données partout, tout le temps',
+      title: t('subscription.features'),
+      description: t('app.welcome'),
     },
   ]
 
@@ -80,11 +72,11 @@ export const SignupPromptModal = ({
           >
             {/* Header */}
             <div className="modal-header">
-              <h2 className="modal-title">{title}</h2>
+              <h2 className="modal-title">{title || defaultTitle}</h2>
               <button
                 className="close-button"
                 onClick={handleClose}
-                aria-label="Fermer la modal"
+                aria-label={t('modal.close')}
               >
                 <X size={24} />
               </button>
@@ -92,7 +84,7 @@ export const SignupPromptModal = ({
 
             {/* Message contextuel */}
             <div className="modal-message">
-              <p>{getContextMessage()}</p>
+              <p>{message || defaultMessage}</p>
             </div>
 
             {/* Features list */}
@@ -125,20 +117,17 @@ export const SignupPromptModal = ({
                 className="signup-button primary"
                 size="large"
               >
-                Commencer gratuitement
+                {t('demo.signupButton')}
               </Button>
 
               <button className="maybe-later-button" onClick={handleClose}>
-                Peut-être plus tard
+                {t('demo.continueDemo')}
               </button>
             </div>
 
             {/* Trial info */}
             <div className="trial-info">
-              <p>
-                <strong>1 semaine d&apos;essai gratuite</strong> • Annulez à
-                tout moment
-              </p>
+              <p>{t('subscription.features')}</p>
             </div>
           </motion.div>
         </Modal>

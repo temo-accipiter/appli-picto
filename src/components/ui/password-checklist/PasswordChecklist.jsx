@@ -1,3 +1,4 @@
+import { useI18n } from '@/hooks'
 import { PASSWORD_MIN } from '@/utils'
 import PropTypes from 'prop-types'
 import React, { useId, useMemo, useState } from 'react'
@@ -29,30 +30,34 @@ function ChecklistItem({ ok, children }) {
 }
 
 function Checklist({ criteria }) {
+  const { t } = useI18n()
+
   return (
     <div
       className="password-checklist"
       role="region"
-      aria-label="Exigences du mot de passe"
+      aria-label={t('password.requirements')}
     >
-      <p className="password-checklist__title">
-        Le mot de passe doit contenir :
-      </p>
+      <p className="password-checklist__title">{t('password.mustContain')}</p>
       <ul className="password-checklist__list">
         <ChecklistItem ok={criteria.lengthOK}>
-          au moins {PASSWORD_MIN} caractères
+          {t('password.minLength', { count: PASSWORD_MIN })}
         </ChecklistItem>
         <ChecklistItem ok={criteria.lowerOK}>
-          au moins une lettre minuscule
+          {t('password.lowercase')}
         </ChecklistItem>
         <ChecklistItem ok={criteria.upperOK}>
-          au moins une lettre majuscule
+          {t('password.uppercase')}
         </ChecklistItem>
-        <ChecklistItem ok={criteria.digitOK}>au moins un chiffre</ChecklistItem>
+        <ChecklistItem ok={criteria.digitOK}>
+          {t('password.digit')}
+        </ChecklistItem>
         <ChecklistItem ok={criteria.symbolOK}>
-          au moins un symbole
+          {t('password.symbol')}
         </ChecklistItem>
-        <ChecklistItem ok={criteria.noSpaceOK}>aucun espace</ChecklistItem>
+        <ChecklistItem ok={criteria.noSpaceOK}>
+          {t('password.noSpace')}
+        </ChecklistItem>
       </ul>
     </div>
   )
@@ -71,14 +76,16 @@ export default function PasswordChecklist({
   password = '',
   collapsible = false,
   defaultOpen = false,
-  toggleLabel = 'Exigences du mot de passe',
+  toggleLabel,
   id,
 }) {
+  const { t } = useI18n()
   const [open, setOpen] = useState(defaultOpen)
   const autoId = useId()
   const panelId = id || `pc-panel-${autoId}`
 
   const criteria = useMemo(() => getPasswordCriteria(password), [password])
+  const label = toggleLabel || t('password.requirements')
 
   if (!collapsible) {
     return <Checklist criteria={criteria} />
@@ -93,7 +100,7 @@ export default function PasswordChecklist({
         aria-controls={panelId}
         onClick={() => setOpen(s => !s)}
       >
-        {toggleLabel}
+        {label}
         <span
           className={`password-checklist__chev ${open ? 'is-open' : ''}`}
           aria-hidden="true"

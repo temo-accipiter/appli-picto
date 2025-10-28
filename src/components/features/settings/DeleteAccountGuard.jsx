@@ -2,6 +2,7 @@
 import { Button, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
 import useAuth from '@/hooks/useAuth'
+import { useI18n } from '@/hooks'
 import { supabase, validatePasswordNotEmpty } from '@/utils'
 import PropTypes from 'prop-types'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -21,6 +22,7 @@ export default function DeleteAccountGuard({
 }) {
   const { user } = useAuth()
   const { show } = useToast()
+  const { language } = useI18n()
 
   const [word, setWord] = useState('')
   const [password, setPassword] = useState('')
@@ -164,6 +166,7 @@ export default function DeleteAccountGuard({
         onSuccess={token => setCaptchaToken(token)}
         onExpire={() => setCaptchaToken(null)}
         theme="light"
+        language={language}
       />
 
       <Button

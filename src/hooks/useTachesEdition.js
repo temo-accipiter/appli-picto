@@ -9,8 +9,10 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { useAuth } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
-import { uploadImage } from '@/utils/storage/uploadImage'
-import replaceImageIfAny from '@/utils/storage/replaceImageIfAny'
+import {
+  modernUploadImage,
+  replaceImage,
+} from '@/utils/storage/modernUploadImage'
 
 const formatErr = e => {
   const m = String(e?.message ?? e)
@@ -28,8 +30,10 @@ export default function useTachesEdition(reload = 0) {
   const { user } = useAuth()
 
   useEffect(() => {
+    console.log('🔄 useTachesEdition: useEffect déclenché, reload =', reload)
     if (!user?.id) return
     ;(async () => {
+      console.log('📡 Fetching tâches depuis Supabase...')
       const { data, error } = await supabase
         .from('taches')
         .select('*')
@@ -45,6 +49,7 @@ export default function useTachesEdition(reload = 0) {
         aujourdhui: !!t.aujourdhui,
         fait: !!t.fait,
       }))
+      console.log(`✅ Tâches fetchées: ${norm.length} tâches`)
       setTaches(norm)
     })()
   }, [reload, user?.id])
@@ -88,16 +93,20 @@ export default function useTachesEdition(reload = 0) {
     setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
   }
 
-  // ➕ Ajout avec fichier (upload + insert)
-  const addTacheFromFile = async (file, fields = {}) => {
+  // ➕ Ajout avec fichier (upload moderne + insert)
+  const addTacheFromFile = async (file, fields = {}, onProgress = null) => {
     if (!user?.id)
       return { data: null, error: new Error('Utilisateur manquant') }
     try {
-      const { path, error } = await uploadImage(file, {
+      // 🆕 Upload moderne avec WebP, HEIC support, déduplication
+      const uploadResult = await modernUploadImage(file, {
         userId: user.id,
+        assetType: 'task_image',
         prefix: 'taches',
+        onProgress,
       })
-      if (error) throw error
+
+      if (uploadResult.error) throw uploadResult.error
 
       const toInsert = {
         user_id: user.id,
@@ -105,7 +114,7 @@ export default function useTachesEdition(reload = 0) {
         categorie: fields.categorie ?? null,
         aujourdhui: !!fields.aujourdhui,
         fait: false,
-        imagepath: path,
+        imagepath: uploadResult.path,
         position: Number.isFinite(fields.position)
           ? fields.position
           : taches.length,
@@ -116,7 +125,16 @@ export default function useTachesEdition(reload = 0) {
         .insert([toInsert])
         .select()
         .single()
-      if (insErr) throw insErr
+      if (insErr) {
+        console.error('❌ Erreur insertion tâche:', {
+          message: insErr.message,
+          code: insErr.code,
+          details: insErr.details,
+          hint: insErr.hint,
+          toInsert,
+        })
+        throw insErr
+      }
 
       setTaches(prev => [
         ...prev,
@@ -129,22 +147,39 @@ export default function useTachesEdition(reload = 0) {
     }
   }
 
-  // ✏️ Remplacement d'image
-  const updateTacheImage = async (id, file) => {
+  // ✏️ Remplacement d'image avec versioning
+  const updateTacheImage = async (id, file, onProgress = null) => {
     if (!user?.id)
       return { data: null, error: new Error('Utilisateur manquant') }
     try {
       const current = taches.find(x => x.id === id)
-      const oldPath = current?.imagepath || null
-      const { path, error } = await replaceImageIfAny(oldPath, file, {
+      if (!current?.imagepath) {
+        throw new Error('Tâche sans image associée')
+      }
+
+      // Trouver asset_id correspondant
+      const { data: asset } = await supabase
+        .from('user_assets')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('file_path', current.imagepath)
+        .single()
+
+      if (!asset) {
+        throw new Error('Asset introuvable')
+      }
+
+      // 🆕 Remplacer image avec versioning + invalidation cache
+      const replaceResult = await replaceImage(asset.id, file, {
         userId: user.id,
-        prefix: 'taches',
+        onProgress,
       })
-      if (error) throw error
+
+      if (replaceResult.error) throw replaceResult.error
 
       const { data, error: updErr } = await supabase
         .from('taches')
-        .update({ imagepath: path })
+        .update({ imagepath: replaceResult.path })
         .eq('id', id)
         .eq('user_id', user.id)
         .select()
@@ -152,7 +187,9 @@ export default function useTachesEdition(reload = 0) {
       if (updErr) throw updErr
 
       setTaches(prev =>
-        prev.map(t => (t.id === id ? { ...t, imagepath: path } : t))
+        prev.map(t =>
+          t.id === id ? { ...t, imagepath: replaceResult.path } : t
+        )
       )
       return { data, error: null }
     } catch (e) {

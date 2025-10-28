@@ -3,10 +3,12 @@
 ## ✅ Ce qui a été fait
 
 ### 1. Fichiers de traduction créés
+
 - ✅ `public/locales/fr/common.json` - Traductions françaises (langue par défaut)
 - ✅ `public/locales/en/common.json` - Traductions anglaises
 
 Les fichiers contiennent toutes les traductions essentielles organisées par catégories :
+
 - Application générale (titre, bienvenue)
 - Navigation (tableau, édition, profil, etc.)
 - Actions (ajouter, modifier, supprimer, etc.)
@@ -23,6 +25,7 @@ Les fichiers contiennent toutes les traductions essentielles organisées par cat
 - Accessibilité
 
 ### 2. Configuration i18n améliorée
+
 - ✅ `src/config/i18n/i18n.js` mis à jour avec :
   - Détection automatique de la langue (localStorage → navigateur → fallback)
   - Sauvegarde automatique dans localStorage
@@ -31,19 +34,23 @@ Les fichiers contiennent toutes les traductions essentielles organisées par cat
   - Configuration optimisée pour React
 
 ### 3. Hook personnalisé créé
+
 - ✅ `src/hooks/useI18n.js` - Hook simple et réutilisable
 - ✅ Exporté dans `src/hooks/index.js`
 
 API du hook :
+
 ```js
 const { t, language, changeLanguage, isReady, languages } = useI18n()
 ```
 
 ### 4. Composant d'exemple
+
 - ✅ `src/components/examples/I18nExample.jsx` - Composant de démonstration
 - ✅ `src/components/examples/I18nExample.scss` - Styles associés
 
 ### 5. Documentation complète
+
 - ✅ `docs/I18N_GUIDE.md` - Guide détaillé d'utilisation
 
 ## 🚀 Comment utiliser i18n maintenant
@@ -68,6 +75,7 @@ function MonComposant() {
 ### Le LangSelector est déjà intégré
 
 Le composant `LangSelector` existe déjà dans votre application et est déjà intégré dans la Navbar :
+
 - Emplacement : `src/components/shared/lang-selector/LangSelector.jsx`
 - Affiché dans : `src/components/layout/navbar/Navbar.jsx` (ligne 88)
 
@@ -80,11 +88,13 @@ Il utilise directement `useTranslation` de react-i18next et fonctionne déjà co
 Remplacer progressivement les textes codés en dur par des traductions :
 
 **Avant :**
+
 ```jsx
 <button>Ajouter une tâche</button>
 ```
 
 **Après :**
+
 ```jsx
 const { t } = useI18n()
 <button>{t('tasks.add')}</button>
@@ -101,6 +111,7 @@ const { t } = useI18n()
 ### 3. Exemples concrets de composants à traduire
 
 #### TachesDnd.jsx
+
 ```jsx
 // Avant
 <h2>Glisse-dépose les tâches</h2>
@@ -111,6 +122,7 @@ const { t } = useI18n()
 ```
 
 #### Navbar.jsx
+
 ```jsx
 // Avant
 <span>Créer un compte</span>
@@ -121,6 +133,7 @@ const { t } = useI18n()
 ```
 
 #### UserMenu.jsx
+
 ```jsx
 // Avant
 <button>Déconnexion</button>
@@ -141,9 +154,11 @@ Quand vous avez besoin d'une nouvelle traduction :
 ## 🎯 Recommandations
 
 ### Migration progressive
+
 Ne traduisez pas tout d'un coup. Procédez par composant ou par page.
 
 ### Utiliser le composant d'exemple
+
 Ajoutez temporairement une route de test :
 
 ```jsx
@@ -154,6 +169,7 @@ Ajoutez temporairement une route de test :
 Accédez à http://localhost:5173/test-i18n pour voir l'exemple fonctionnel.
 
 ### Attributs aria-label
+
 N'oubliez pas de traduire aussi les attributs d'accessibilité :
 
 ```jsx
@@ -162,6 +178,7 @@ const { t } = useI18n()
 ```
 
 ### Messages d'erreur
+
 Utilisez la catégorie `errors` pour les messages d'erreur :
 
 ```jsx
@@ -184,21 +201,25 @@ Pour chaque composant à migrer :
 ## 🔧 Configuration actuelle
 
 ### i18n est déjà importé dans main.jsx
+
 ```js
 // src/main.jsx ligne 24
 import '@/config/i18n/i18n'
 ```
 
 ### Langues supportées
+
 - 🇫🇷 Français (par défaut)
 - 🇬🇧 Anglais
 
 ### Détection de langue
+
 1. localStorage (`lang` key)
 2. Langue du navigateur
 3. Fallback : français
 
 ### Sauvegarde
+
 - Automatique dans localStorage
 - Persiste entre les sessions
 
@@ -215,6 +236,7 @@ import '@/config/i18n/i18n'
 L'intégration i18n est maintenant **complète et fonctionnelle** !
 
 Vous pouvez :
+
 - ✅ Utiliser `useI18n()` dans tous vos composants
 - ✅ Changer de langue avec le LangSelector (déjà dans la Navbar)
 - ✅ Ajouter de nouvelles traductions facilement

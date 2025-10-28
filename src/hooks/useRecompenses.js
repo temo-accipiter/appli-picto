@@ -11,15 +11,18 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth, useToast } from '@/hooks'
+import { useAuth, useI18n, useToast } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import formatErr from '@/utils/logs/formatErr'
-import { uploadImage } from '@/utils/storage/uploadImage'
-import replaceImageIfAny from '@/utils/storage/replaceImageIfAny'
+import {
+  modernUploadImage,
+  replaceImage,
+} from '@/utils/storage/modernUploadImage'
 
 export default function useRecompenses(reload = 0) {
   const { user } = useAuth()
   const { show } = useToast()
+  const { t } = useI18n()
   const [recompenses, setRecompenses] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -95,40 +98,47 @@ export default function useRecompenses(reload = 0) {
 
       if (error) throw error
       setRecompenses(prev => [...prev, data])
-      show('Récompense ajoutée', 'success')
+      show(t('toasts.rewardAdded'), 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur ajout récompense : ${formatErr(e)}`)
-      show("Erreur lors de l'ajout de la récompense", 'error')
+      show(t('toasts.rewardAddError'), 'error')
       return { data: null, error: e }
     }
   }
 
-  // ➕ Création avec fichier (upload → path → insert)
-  const addRecompenseFromFile = async (file, fields = {}) => {
+  // ➕ Création avec fichier (upload moderne → path → insert)
+  const addRecompenseFromFile = async (
+    file,
+    fields = {},
+    onProgress = null
+  ) => {
     if (!user?.id) {
-      show('Erreur : utilisateur manquant', 'error')
+      show(t('toasts.userMissing'), 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
     }
     try {
       setError(null)
-      const { path, error: upErr } = await uploadImage(file, {
+
+      // 🆕 Upload moderne avec WebP, HEIC support, déduplication
+      const uploadResult = await modernUploadImage(file, {
         userId: user.id,
-        bucket: 'images', // ✅ bucket privé réel
-        prefix: 'recompenses', // sous-dossier
-        sign: false, // on stocke le path; les composants afficheront via URL signée
+        assetType: 'reward_image',
+        prefix: 'recompenses',
+        onProgress,
       })
-      if (upErr) throw upErr
+
+      if (uploadResult.error) throw uploadResult.error
 
       return await addRecompense({
         ...fields,
-        imagepath: path,
+        imagepath: uploadResult.path,
       })
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur ajout récompense (upload) : ${formatErr(e)}`)
-      show("Erreur lors de l'upload de l'image", 'error')
+      show(t('toasts.imageUploadError'), 'error')
       return { data: null, error: e }
     }
   }
@@ -165,37 +175,53 @@ export default function useRecompenses(reload = 0) {
       setRecompenses(prev =>
         prev.map(r => (r.id === id ? { ...r, ...data } : r))
       )
-      show('Récompense modifiée', 'success')
+      show(t('toasts.rewardModified'), 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur update récompense : ${formatErr(e)}`)
-      show('Erreur lors de la modification', 'error')
+      show(t('toasts.rewardModifyError'), 'error')
       return { data: null, error: e }
     }
   }
 
-  // 🖼️ Remplacement d'image (delete best-effort + upload)
-  const updateRecompenseImage = async (id, file) => {
+  // 🖼️ Remplacement d'image avec versioning
+  const updateRecompenseImage = async (id, file, onProgress = null) => {
     if (!user?.id) {
-      show('Erreur : utilisateur manquant', 'error')
+      show(t('toasts.userMissing'), 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
     }
     try {
       const current = recompenses.find(r => r.id === id)
-      const oldPath = current?.imagepath || null
+      if (!current?.imagepath) {
+        throw new Error('Récompense sans image associée')
+      }
 
-      const { path, error } = await replaceImageIfAny(oldPath, file, {
+      // Trouver asset_id correspondant
+      const { data: asset } = await supabase
+        .from('user_assets')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('file_path', current.imagepath)
+        .single()
+
+      if (!asset) {
+        throw new Error('Asset introuvable')
+      }
+
+      // 🆕 Remplacer image avec versioning + invalidation cache
+      const replaceResult = await replaceImage(asset.id, file, {
         userId: user.id,
-        prefix: 'recompenses',
+        onProgress,
       })
-      if (error) throw error
 
-      return await updateRecompense(id, { imagepath: path })
+      if (replaceResult.error) throw replaceResult.error
+
+      return await updateRecompense(id, { imagepath: replaceResult.path })
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur remplacement image récompense : ${formatErr(e)}`)
-      show("Erreur lors du remplacement de l'image", 'error')
+      show(t('toasts.imageReplaceError'), 'error')
       return { data: null, error: e }
     }
   }
@@ -206,7 +232,7 @@ export default function useRecompenses(reload = 0) {
     const imagePath = rec?.imagepath
     if (!id) {
       console.error('❌ Récompense invalide :', rec)
-      show('Erreur : récompense invalide', 'error')
+      show(t('toasts.invalidReward'), 'error')
       return { error: new Error('Récompense invalide') }
     }
 
@@ -228,12 +254,12 @@ export default function useRecompenses(reload = 0) {
       if (error) throw error
 
       setRecompenses(prev => prev.filter(r => r.id !== id))
-      show('Récompense supprimée', 'success')
+      show(t('toasts.rewardDeleted'), 'success')
       return { error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur suppression récompense : ${formatErr(e)}`)
-      show('Impossible de supprimer la récompense', 'error')
+      show(t('toasts.rewardDeleteError'), 'error')
       return { error: e }
     }
   }
@@ -241,7 +267,7 @@ export default function useRecompenses(reload = 0) {
   // ⭐ Sélection unique OPTIMISÉE (1 seul appel RPC au lieu de 2 requêtes)
   const selectRecompense = async id => {
     if (!user?.id) {
-      show('Erreur : utilisateur manquant', 'error')
+      show(t('toasts.userMissing'), 'error')
       return { data: null, error: new Error('Utilisateur manquant') }
     }
     try {
@@ -265,12 +291,12 @@ export default function useRecompenses(reload = 0) {
           r.id === id ? { ...r, selected: true } : { ...r, selected: false }
         )
       )
-      show('Récompense sélectionnée', 'success')
+      show(t('toasts.rewardSelected'), 'success')
       return { data, error: null }
     } catch (e) {
       setError(e)
       console.error(`❌ Erreur sélection récompense : ${formatErr(e)}`)
-      show('Erreur lors de la sélection', 'error')
+      show(t('toasts.rewardSelectError'), 'error')
       return { data: null, error: e }
     }
   }

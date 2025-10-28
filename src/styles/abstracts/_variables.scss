@@ -15,9 +15,16 @@ $heading-font-stack: Georgia, 'Times New Roman', Times, serif;
 $max-width: 1200px;
 
 // Couleurs principales
-$color-primary: #0077c2;
+$color-primary: #0077c2; //buttons
 $color-secondary: #ef5350;
 $color-accent: #ffb400;
+
+// Couleurs sémantiques
+$color-success: #4caf50; //edition card border
+$color-warning: #ff9800;
+$color-error: #f44336;
+$color-info: #d1ecf9;
+$color-info-primary: #66c3f7;
 
 // Gris déclinés en map
 $gray: (
@@ -37,13 +44,6 @@ $gray: (
 @function gray($key) {
   @return map.get($gray, $key);
 }
-
-// Couleurs sémantiques
-$color-success: #4caf50;
-$color-warning: #ff9800;
-$color-error: #f44336;
-$color-info: #d1ecf9;
-$color-info-primary: #66c3f7;
 
 // Texte & surfaces
 $color-text: #333333;

@@ -26,30 +26,12 @@ export async function getSignedImageUrl(
     // marge de sécurité : on rogne 30s au TTL pour limiter les 401 proches de l'expiration
     const safeExpires = Math.max(30, expiresIn - 30)
 
-    if (import.meta.env.DEV && bucket === 'avatars') {
-      console.log('🔍 getSignedImageUrl - Tentative signature', {
-        bucket,
-        path,
-        key,
-        forceRefresh,
-      })
-    }
-
     // WORKAROUND: Pour le bucket avatars, utiliser download() au lieu de createSignedUrl()
     // car createSignedUrl() timeout (bug SDK ou config serveur)
     if (bucket === 'avatars') {
       const { data: blob, error: downloadError } = await supabase.storage
         .from(bucket)
         .download(path)
-
-      if (import.meta.env.DEV) {
-        console.log('🔍 getSignedImageUrl - Download blob', {
-          bucket,
-          path,
-          hasBlob: !!blob,
-          downloadError,
-        })
-      }
 
       if (downloadError || !blob) {
         return {
@@ -80,15 +62,6 @@ export async function getSignedImageUrl(
       timeoutPromise,
     ]).catch(e => ({ data: null, error: e }))
 
-    if (import.meta.env.DEV && bucket === 'avatars') {
-      console.log('🔍 getSignedImageUrl - Résultat signature', {
-        bucket,
-        path,
-        hasSignedUrl: !!data?.signedUrl,
-        error,
-      })
-    }
-
     if (error || !data?.signedUrl) {
       return {
         url: null,
@@ -100,9 +73,6 @@ export async function getSignedImageUrl(
     signedUrlCache.set(key, { url, exp: now + safeExpires * 1000 })
     return { url, error: null }
   } catch (e) {
-    if (import.meta.env.DEV && bucket === 'avatars') {
-      console.error('🔍 getSignedImageUrl - Exception', { bucket, path, e })
-    }
     return { url: null, error: e }
   }
 }

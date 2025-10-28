@@ -1,0 +1,116 @@
+// src/components/features/admin/ImageAnalytics.scss
+// Styles dashboard analytics images (TSA-friendly : pastel, calm)
+
+.image-analytics {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  &__title {
+    margin-bottom: 1.5rem;
+    color: var(--text-dark, #333);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  &__error {
+    color: var(--pastel-red, #e57373);
+    padding: 1rem;
+    background: var(--pastel-red-lightest, #ffebee);
+    border-radius: 8px;
+    border-left: 4px solid var(--pastel-red, #e57373);
+  }
+
+  &__empty {
+    color: var(--text-muted, #666);
+    text-align: center;
+    padding: 2rem;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+.stat-card {
+  background: var(--white, #fff);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  h3 {
+    font-size: 0.875rem;
+    color: var(--text-muted, #666);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-dark, #333);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  &--success {
+    border-left: 4px solid var(--pastel-green, #81c784);
+    background: linear-gradient(
+      135deg,
+      var(--white, #fff) 0%,
+      var(--pastel-green-lightest, #f1f8f4) 100%
+    );
+
+    .stat-card__value {
+      color: var(--pastel-green-dark, #388e3c);
+    }
+  }
+
+  &--error {
+    border-left: 4px solid var(--pastel-red, #e57373);
+    background: linear-gradient(
+      135deg,
+      var(--white, #fff) 0%,
+      var(--pastel-red-lightest, #ffebee) 100%
+    );
+
+    .stat-card__value {
+      color: var(--pastel-red-dark, #c62828);
+    }
+  }
+
+  &--highlight {
+    background: linear-gradient(
+      135deg,
+      var(--pastel-blue-light, #a8d5ff) 0%,
+      var(--pastel-green-light, #b8e0d0) 100%
+    );
+    border: 2px solid var(--pastel-blue, #64b5f6);
+
+    h3 {
+      color: var(--text-dark, #333);
+      font-weight: 600;
+    }
+
+    .stat-card__value {
+      color: var(--text-dark, #333);
+      font-size: 2.25rem;
+    }
+  }
+}

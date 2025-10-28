@@ -3,6 +3,7 @@ import { usePermissions } from '@/contexts'
 import {
   isAbortLike,
   useAuth,
+  useI18n,
   useSubscriptionStatus,
   withAbortSafe,
 } from '@/hooks'
@@ -18,6 +19,7 @@ export default function UserMenu() {
   const { user, signOut, authReady } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
   const { isAdmin } = usePermissions() // ⚠️ On ne bloque plus sur isUnknown
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [dbPseudo, setDbPseudo] = useState('')
   const navigate = useNavigate()
@@ -157,13 +159,13 @@ export default function UserMenu() {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label="Ouvrir le menu du compte"
+        aria-label={t('accessibility.openMenu')}
       >
         {avatarPath ? (
           <SignedImage
             filePath={avatarPath}
             bucket="avatars"
-            alt="Mon avatar"
+            alt={t('nav.profil')}
             size={36}
           />
         ) : (
@@ -171,7 +173,7 @@ export default function UserMenu() {
             {initials}
           </span>
         )}
-        <span className="sr-only">Ouvrir le menu compte</span>
+        <span className="sr-only">{t('accessibility.openMenu')}</span>
       </button>
 
       {open && (
@@ -185,7 +187,7 @@ export default function UserMenu() {
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Menu du compte"
+            aria-label={t('nav.profil')}
             className="user-menu-dialog"
             onMouseDown={e => e.stopPropagation()}
           >
@@ -207,18 +209,21 @@ export default function UserMenu() {
               </div>
             </header>
 
-            <div className="user-menu-preferences" aria-label="Préférences">
+            <div
+              className="user-menu-preferences"
+              aria-label={t('settings.title')}
+            >
               <LangSelector />
               <ThemeToggle />
             </div>
 
-            <nav className="user-menu-list" aria-label="Liens du compte">
+            <nav className="user-menu-list" aria-label={t('nav.profil')}>
               <button
                 className="user-menu-item"
                 onClick={() => navigate('/profil')}
               >
                 <User className="icon" aria-hidden />
-                <span>Profil</span>
+                <span>{t('nav.profil')}</span>
               </button>
 
               {/* Masquer le bouton d'abonnement pour les admins */}
@@ -237,10 +242,10 @@ export default function UserMenu() {
                   <Crown className="icon" aria-hidden />
                   <span>
                     {(loading || !authReady) && !forceUnblock
-                      ? 'Vérification…'
+                      ? t('subscription.status')
                       : isActive
-                        ? 'Gérer mon abonnement'
-                        : "S'abonner"}{' '}
+                        ? t('subscription.manage')
+                        : t('subscription.subscribe')}
                   </span>
                 </button>
               )}
@@ -251,7 +256,7 @@ export default function UserMenu() {
                   onClick={() => navigate('/admin/permissions')}
                 >
                   <Shield className="icon" aria-hidden />
-                  <span>Administration des Permissions</span>
+                  <span>{t('nav.admin')}</span>
                 </button>
               )}
 
@@ -263,7 +268,7 @@ export default function UserMenu() {
                 }}
               >
                 <LogOut className="icon" aria-hidden />
-                <span>Se déconnecter</span>
+                <span>{t('nav.logout')}</span>
               </button>
             </nav>
           </div>

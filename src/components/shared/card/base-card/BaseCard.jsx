@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import {
   InputWithValidation,
@@ -7,7 +7,12 @@ import {
   ImagePreview,
   ButtonDelete,
 } from '@/components'
-import { validateNotEmpty, noEdgeSpaces, noDoubleSpaces } from '@/utils'
+import { useI18n } from '@/hooks'
+import {
+  makeValidateNotEmpty,
+  makeNoEdgeSpaces,
+  makeNoDoubleSpaces,
+} from '@/utils'
 import './BaseCard.scss'
 
 const BaseCard = memo(function BaseCard({
@@ -26,6 +31,14 @@ const BaseCard = memo(function BaseCard({
   className = '',
   imageComponent,
 }) {
+  const { t } = useI18n()
+
+  // Créer les fonctions de validation i18n avec useMemo
+  const validationRules = useMemo(
+    () => [makeValidateNotEmpty(t), makeNoEdgeSpaces(t), makeNoDoubleSpaces(t)],
+    [t]
+  )
+
   return (
     <div className={`base-card ${className}`}>
       <div className="base-card__col image">
@@ -41,7 +54,7 @@ const BaseCard = memo(function BaseCard({
             id={`base-checkbox-${labelId}`}
             checked={checked}
             onChange={e => onToggleCheck?.(e.target.checked)}
-            aria-label="Actif"
+            aria-label={t('card.active')}
             size="md"
           />
         </div>
@@ -53,8 +66,8 @@ const BaseCard = memo(function BaseCard({
             id={`input-label-${labelId}`}
             value={label}
             onValid={val => onLabelChange(val)}
-            rules={[validateNotEmpty, noEdgeSpaces, noDoubleSpaces]}
-            aria-label="Nom"
+            rules={validationRules}
+            aria-label={t('card.name')}
             onBlur={onBlur}
           />
         ) : (
@@ -69,9 +82,9 @@ const BaseCard = memo(function BaseCard({
             options={
               Array.isArray(categorieOptions) && categorieOptions.length > 0
                 ? categorieOptions
-                : [{ value: '', label: '— Aucune catégorie —' }]
+                : [{ value: '', label: t('card.noCategory') }]
             }
-            aria-label="Catégorie"
+            aria-label={t('card.category')}
           />
         )}
       </div>

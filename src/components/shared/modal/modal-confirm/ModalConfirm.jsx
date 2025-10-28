@@ -1,23 +1,25 @@
 // src/components/modal/modal-confirm/ModalConfirm.jsx
 import PropTypes from 'prop-types'
 import { Modal } from '@/components'
+import { useI18n } from '@/hooks'
 
 export default function ModalConfirm({
   isOpen,
   onClose,
   onConfirm,
-  confirmLabel = 'Confirmer',
-  cancelLabel = 'Annuler',
+  confirmLabel,
+  cancelLabel,
   children,
 }) {
+  const { t } = useI18n()
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       actions={[
-        { label: cancelLabel, onClick: onClose },
+        { label: cancelLabel || t('actions.cancel'), onClick: onClose },
         {
-          label: confirmLabel,
+          label: confirmLabel || t('actions.confirm'),
           onClick: () => {
             onClose()
             onConfirm()

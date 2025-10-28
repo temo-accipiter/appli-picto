@@ -1,0 +1,115 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+    - navigation [ref=e5]:
+        - generic [ref=e6]:
+            - generic [ref=e7]:
+                - button "Activer le thème sombre" [ref=e8] [cursor=pointer]:
+                    - img [ref=e9]
+                - group "Sélecteur de langue" [ref=e11]:
+                    - button "Passer le site en français" [ref=e12] [cursor=pointer]: 🇫🇷
+                    - button "Switch site to English" [ref=e13] [cursor=pointer]: 🇬🇧
+            - generic [ref=e14]:
+                - button "Personalization" [ref=e15] [cursor=pointer]:
+                    - img [ref=e16]
+                    - generic [ref=e22]: Personalization
+                - link "Create account" [ref=e23] [cursor=pointer]:
+                    - /url: /signup
+                    - img [ref=e24]
+                    - generic [ref=e27]: Create account
+                - link "Log in" [ref=e28] [cursor=pointer]:
+                    - /url: /login
+                    - img [ref=e29]
+                    - generic [ref=e32]: Log in
+    - main [ref=e33]:
+        - generic [ref=e35]:
+            - generic [ref=e36]:
+                - generic [ref=e37]: '🔍 Debug Rôles:'
+                - generic [ref=e38]: 'Permissions: visitor'
+                - generic [ref=e39]: 'Simple: visitor'
+                - generic [ref=e40]: 'Final: visitor'
+                - generic [ref=e41]: 'ready: true — unknown: false'
+                - button "Recharger rôles" [ref=e42] [cursor=pointer]
+            - generic [ref=e43]:
+                - generic [ref=e44]:
+                    - img [ref=e45]
+                    - generic "Bérault" [ref=e47]
+                    - generic "Louvre - Rivoli" [ref=e50]
+                    - generic "La Défense" [ref=e53]
+                    - generic "Esplanade de la Défense" [ref=e56]
+                    - img "Métro" [ref=e59]
+                    - img "Ligne 1" [ref=e61]
+                - generic [ref=e62]:
+                    - generic [ref=e63]:
+                        - generic [ref=e64]: Choose a line
+                        - combobox "Choose a line" [ref=e65]:
+                            - option "— Select —"
+                            - option "Line 1" [selected]
+                            - option "Line 6"
+                            - option "Line 12"
+                    - paragraph [ref=e66]: 'Progress : 0 / 3 tasks'
+            - generic [ref=e67]:
+                - button "Se brosser les dents Se brosser les dents" [ref=e68]:
+                    - generic [ref=e69]: Se brosser les dents
+                    - img "Se brosser les dents" [ref=e70]
+                    - checkbox [ref=e72] [cursor=pointer]
+                - button "Se brosser les cheveux Se brosser les cheveux" [ref=e73]:
+                    - generic [ref=e74]: Se brosser les cheveux
+                    - img "Se brosser les cheveux" [ref=e75]
+                    - checkbox [ref=e77] [cursor=pointer]
+                - button "S'habiller S'habiller" [ref=e78]:
+                    - generic [ref=e79]: S'habiller
+                    - img "S'habiller" [ref=e80]
+                    - checkbox [ref=e82] [cursor=pointer]
+            - button "Reset" [ref=e84] [cursor=pointer]:
+                - generic [ref=e85]: Reset
+            - status [ref=e86]
+            - generic:
+                - generic:
+                    - generic:
+                        - img
+                    - generic:
+                        - generic: Bravo !
+    - contentinfo "Legal notices" [ref=e87]:
+        - navigation "Legal notices" [ref=e88]:
+            - list [ref=e89]:
+                - listitem [ref=e90]:
+                    - link "Legal notices" [ref=e91] [cursor=pointer]:
+                        - /url: /mentions-legales
+                - listitem [ref=e92]:
+                    - link "Terms of use" [ref=e93] [cursor=pointer]:
+                        - /url: /cgu
+                - listitem [ref=e94]:
+                    - link "Terms of sale" [ref=e95] [cursor=pointer]:
+                        - /url: /cgv
+                - listitem [ref=e96]:
+                    - link "Privacy policy" [ref=e97] [cursor=pointer]:
+                        - /url: /politique-confidentialite
+                - listitem [ref=e98]:
+                    - link "Cookie policy" [ref=e99] [cursor=pointer]:
+                        - /url: /politique-cookies
+                - listitem [ref=e100]:
+                    - button "Customize" [ref=e101] [cursor=pointer]
+                - listitem [ref=e102]:
+                    - button "Refuse" [ref=e103] [cursor=pointer]
+                - listitem [ref=e104]:
+                    - link "Accessibility" [ref=e105] [cursor=pointer]:
+                        - /url: /accessibilite
+                - listitem [ref=e106]:
+                    - link "GDPR portal" [ref=e107] [cursor=pointer]:
+                        - /url: /rgpd
+        - paragraph [ref=e108]: © 2025
+    - dialog "This site uses cookies to improve your experience" [ref=e109]:
+        - generic [ref=e110]:
+            - generic [ref=e111]:
+                - heading "This site uses cookies to improve your experience" [level=2] [ref=e112]
+                - paragraph [ref=e113]: This site uses cookies to improve your experience
+                - paragraph [ref=e114]:
+                    - link "Cookie policy" [ref=e115] [cursor=pointer]:
+                        - /url: /politique-cookies
+            - group "This site uses cookies to improve your experience" [ref=e116]:
+                - button "Refuse" [ref=e117] [cursor=pointer]
+                - button "Customize" [ref=e118] [cursor=pointer]
+                - button "Accept" [ref=e119] [cursor=pointer]
+```

@@ -77,6 +77,14 @@ export default function useRBAC() {
 
   const isFreeAccount = permissions.role === ROLE.FREE
 
+  console.log('🔍 [useRBAC] État:', {
+    role: permissions.role,
+    isFreeAccount,
+    ready: permissions.ready,
+    isVisitor: permissions.isVisitor,
+    isAdmin: permissions.isAdmin,
+  })
+
   // Fetch quotas depuis get_usage_fast
   const fetchQuotas = useCallback(async () => {
     // Pas de quotas pour: visiteurs, unknown, ou admins
@@ -96,7 +104,21 @@ export default function useRBAC() {
     if (!initialLoad) setQuotasLoading(true)
 
     try {
-      const { data, error } = await supabase.rpc('get_usage_fast')
+      // Récupérer l'user_id pour appeler la fonction RPC
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user?.id) {
+        setQuotas({})
+        setUsage({})
+        setQuotasLoading(false)
+        setInitialLoad(false)
+        return
+      }
+
+      const { data, error } = await supabase.rpc('get_usage_fast', {
+        p_user_id: user.id,
+      })
 
       if (error || !data) {
         setQuotas({})
@@ -119,9 +141,21 @@ export default function useRBAC() {
 
       const quotasMap = {}
       quotasData.forEach(q => {
-        quotasMap[q.quota_type] = {
-          limit: q.quota_limit,
-          period: q.quota_period,
+        // Mapper quota_type vers le format attendu (max_*)
+        const key =
+          q.quota_type === 'task'
+            ? 'max_tasks'
+            : q.quota_type === 'reward'
+              ? 'max_rewards'
+              : q.quota_type === 'category'
+                ? 'max_categories'
+                : null
+
+        if (key) {
+          quotasMap[key] = {
+            limit: q.quota_limit,
+            period: q.quota_period,
+          }
         }
       })
 
@@ -138,6 +172,13 @@ export default function useRBAC() {
       setUsage(usageMap)
       setQuotasLoading(false)
       setInitialLoad(false)
+
+      console.log('✅ [useRBAC] Quotas chargés:', {
+        role: permissions.role,
+        isFree: permissions.role === ROLE.FREE,
+        quotasMap,
+        usageMap,
+      })
     } catch (err) {
       console.error('useRBAC: erreur fetch quotas', err)
       setQuotas({})

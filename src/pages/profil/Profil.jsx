@@ -8,17 +8,18 @@ import {
   ModalConfirm,
 } from '@/components'
 import { useToast } from '@/contexts'
-import { useAuth, useSubscriptionStatus } from '@/hooks'
+import { useAuth, useI18n, useSubscriptionStatus } from '@/hooks'
 import {
   getDisplayPseudo,
-  noDoubleSpaces,
-  noEdgeSpaces,
+  makeNoDoubleSpaces,
+  makeNoEdgeSpaces,
   normalizeSpaces,
   supabase,
 } from '@/utils'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Turnstile from 'react-turnstile'
+import i18n from '@/config/i18n/i18n'
 import './Profil.scss'
 
 function wait(ms) {
@@ -26,6 +27,7 @@ function wait(ms) {
 }
 
 export default function Profil() {
+  const { t } = useI18n()
   const { isActive, status, loading, daysUntilExpiry } = useSubscriptionStatus()
 
   const { user, signOut } = useAuth()
@@ -45,6 +47,10 @@ export default function Profil() {
 
   // même logique d'affichage que le UserMenu (DB > metadata > email)
   const displayPseudo = getDisplayPseudo(user, pseudo)
+
+  // Créer les fonctions de validation i18n avec useMemo
+  const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
+  const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
 
   useEffect(() => {
     if (!user) return
@@ -101,7 +107,7 @@ export default function Profil() {
     const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
     const villeMsg = noEdgeSpaces(ville) || noDoubleSpaces(ville)
     if (pseudoMsg || villeMsg) {
-      showToast("Corrige les champs en rouge avant d'enregistrer.", 'error')
+      showToast(t('profil.fixFieldErrors'), 'error')
       return
     }
 
@@ -135,10 +141,10 @@ export default function Profil() {
     }
 
     if (error) {
-      showToast('Erreur lors de la sauvegarde du profil', 'error')
+      showToast(t('profil.profileUpdateError'), 'error')
       console.error('❌ Erreur sauvegarde profil:', error)
     } else {
-      showToast('Profil mis à jour', 'success')
+      showToast(t('profil.profileUpdated'), 'success')
     }
   }
 
@@ -218,11 +224,11 @@ export default function Profil() {
     }
 
     if (metaError) {
-      showToast('❌ Erreur profil', 'error')
+      showToast(t('profil.profileUpdateError'), 'error')
       console.error('❌ Erreur mise à jour profil:', metaError)
       setTempAvatarPath(null) // Réinitialiser en cas d'erreur
     } else {
-      showToast('✅ Avatar mis à jour', 'success')
+      showToast(t('profil.avatarUpdated'), 'success')
       // Plus besoin de recharger la page, l'avatar s'affiche déjà via tempAvatarPath
     }
   }
@@ -240,11 +246,11 @@ export default function Profil() {
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: null },
     })
-    if (metaError) showToast('❌ Erreur mise à jour', 'error')
+    if (metaError) showToast(t('profil.profileUpdateError'), 'error')
     else {
       setTempAvatarPath(null) // Réinitialiser l'état local
       setAvatarKey(k => k + 1) // Forcer le re-render
-      showToast('✅ Avatar supprimé', 'success')
+      showToast(t('profil.avatarDeleted'), 'success')
       // Plus besoin de recharger la page
     }
   }
@@ -252,7 +258,7 @@ export default function Profil() {
   const resetPassword = async () => {
     try {
       if (!captchaTokenReset) {
-        showToast('Veuillez valider le CAPTCHA.', 'error')
+        showToast(t('profil.validateCaptcha'), 'error')
         return
       }
       const redirectTo = `${window.location.origin}/reset-password`
@@ -261,10 +267,10 @@ export default function Profil() {
         captchaToken: captchaTokenReset,
       })
       if (error) throw error
-      showToast('Email de réinitialisation envoyé', 'success')
+      showToast(t('profil.resetEmailSent'), 'success')
     } catch (err) {
       console.error('Erreur reset mdp :', err)
-      showToast(err?.message || "Erreur lors de l'envoi de l'email", 'error')
+      showToast(err?.message || t('errors.generic'), 'error')
     } finally {
       setCaptchaTokenReset(null)
       setCaptchaKey(k => k + 1)
@@ -276,9 +282,9 @@ export default function Profil() {
       body: { turnstile: turnstileToken },
     })
     if (error) {
-      showToast('Erreur lors de la suppression du compte', 'error')
+      showToast(t('profil.accountDeleteError'), 'error')
     } else {
-      showToast('Compte supprimé avec succès', 'success')
+      showToast(t('profil.accountDeleted'), 'success')
       await signOut()
       navigate('/signup')
     }
@@ -287,15 +293,15 @@ export default function Profil() {
   if (!user) {
     return (
       <div className="profil-page">
-        <h1>Mon profil</h1>
-        <p>Chargement en cours...</p>
+        <h1>{t('profil.myProfile')}</h1>
+        <p>{t('profil.loading')}</p>
       </div>
     )
   }
 
   return (
     <div className="profil-page">
-      <h1>Mon profil</h1>
+      <h1>{t('profil.myProfile')}</h1>
       <FloatingPencil className="floating-pencil--profil" />
       <AvatarProfil
         key={avatarKey}
@@ -307,18 +313,18 @@ export default function Profil() {
       <form onSubmit={handleSave}>
         <InputWithValidation
           id="pseudo"
-          label="Pseudo"
+          label={t('profil.pseudo')}
           value={pseudo}
           rules={[noEdgeSpaces, noDoubleSpaces]}
           onChange={val => setPseudo(val)}
           onValid={val => setPseudo(normalizeSpaces(val))}
-          ariaLabel="Pseudo"
+          ariaLabel={t('profil.pseudo')}
           placeholder="ex. Alex"
         />
 
         <Input
           id="date-naissance"
-          label="Date de naissance"
+          label={t('profil.birthdate')}
           type="date"
           value={dateNaissance}
           onChange={e => setDateNaissance(e.target.value)}
@@ -326,44 +332,48 @@ export default function Profil() {
 
         <InputWithValidation
           id="ville"
-          label="Ville"
+          label={t('profil.city')}
           value={ville}
           rules={[noEdgeSpaces, noDoubleSpaces]}
           onChange={val => setVille(val)}
           onValid={val => setVille(normalizeSpaces(val))}
-          ariaLabel="Ville"
+          ariaLabel={t('profil.city')}
           placeholder="ex. Paris"
         />
 
-        <p>Email : {user.email}</p>
+        <p>
+          {t('profil.email')} : {user.email}
+        </p>
 
         {loading ? (
-          <p>Chargement de l&apos;abonnement...</p>
+          <p>{t('profil.loading')}</p>
         ) : isActive ? (
           <div className="abonnement-section">
             <p className="abonnement-statut actif">
-              ✅ Abonnement actif ({status}
+              ✅ {t('profil.subscriptionActive')} ({status}
               {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0
-                ? ` · ${daysUntilExpiry} jour${daysUntilExpiry > 1 ? 's' : ''} restants`
+                ? ` · ${daysUntilExpiry} ${t('profil.daysRemaining')}`
                 : ''}
               ){' '}
             </p>
             <Button
               type="button"
-              label="🔧 Gérer mon abonnement"
+              label={`🔧 ${t('profil.manageSubscription')}`}
               onClick={() => navigate('/abonnement')}
               variant="primary"
             />
           </div>
         ) : (
-          <p className="abonnement-statut inactif">❌ Aucun abonnement actif</p>
+          <p className="abonnement-statut inactif">
+            ❌ {t('profil.subscriptionInactive')}
+          </p>
         )}
 
         {/* ⬇️ Bouton S’abonner retiré */}
         {/* {!loading && !isActive && <SubscribeButton />} */}
 
         <div className="profil-buttons">
-          <Button type="submit" label="Enregistrer" variant="primary" />
+          <Button type="submit" label={t('profil.save')} variant="primary" />
 
           <Turnstile
             key={captchaKey}
@@ -372,11 +382,12 @@ export default function Profil() {
             onExpire={() => setCaptchaTokenReset(null)}
             options={{ refreshExpired: 'auto' }}
             theme="light"
+            language={i18n.language}
           />
 
           <Button
             type="button"
-            label="🔒 Réinitialiser mon mot de passe"
+            label={`🔒 ${t('profil.resetPassword')}`}
             onClick={resetPassword}
             variant="secondary"
             // disabled={!captchaTokenReset}
@@ -384,7 +395,7 @@ export default function Profil() {
 
           <Button
             type="button"
-            label="🗑 Supprimer mon compte"
+            label={`🗑 ${t('profil.deleteAccount')}`}
             onClick={() => setModalOpen(true)}
             variant="default"
           />
@@ -399,14 +410,14 @@ export default function Profil() {
       <ModalConfirm
         isOpen={confirmDeleteAvatar}
         onClose={() => setConfirmDeleteAvatar(false)}
-        confirmLabel="Oui, supprimer"
-        cancelLabel="Annuler"
+        confirmLabel={t('profil.deleteAccountConfirm')}
+        cancelLabel={t('profil.deleteAccountCancel')}
         onConfirm={() => {
           handleAvatarDelete()
           setConfirmDeleteAvatar(false)
         }}
       >
-        ❗ Supprimer l’avatar de ton profil ?
+        ❗ {t('profil.deleteAvatarConfirm')}
       </ModalConfirm>
     </div>
   )

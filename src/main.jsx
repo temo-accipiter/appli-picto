@@ -29,6 +29,17 @@ import { setupConsentBridges } from '@/config/analytics'
 import '@/config/analytics/routePageViews'
 import '@/config/analytics/userProps'
 
+// 🆕 Service Worker (production uniquement)
+import { registerServiceWorker } from '@/utils/serviceWorker/register'
+
+if (import.meta.env.PROD) {
+  registerServiceWorker().then(registration => {
+    if (registration) {
+      console.log('✅ Service Worker prêt pour cache images')
+    }
+  })
+}
+
 // Expose quelques helpers de test en DEV
 if (typeof window !== 'undefined') {
   setupConsentBridges()

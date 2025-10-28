@@ -12,6 +12,7 @@
  */
 
 import { render } from '@testing-library/react'
+import PropTypes from 'prop-types'
 import { BrowserRouter } from 'react-router-dom'
 import {
   AuthProvider,
@@ -38,6 +39,10 @@ export function AllTheProviders({ children }) {
       </AuthProvider>
     </BrowserRouter>
   )
+}
+
+AllTheProviders.propTypes = {
+  children: PropTypes.node.isRequired,
 }
 
 /**

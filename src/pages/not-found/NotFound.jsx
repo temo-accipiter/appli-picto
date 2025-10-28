@@ -1,12 +1,15 @@
-import './NotFound.scss'
+import { useI18n } from '@/hooks'
 import { Link } from 'react-router-dom'
+import './NotFound.scss'
 
 export default function NotFound() {
+  const { t } = useI18n()
+
   return (
     <div className="not-found">
-      <h1>404</h1>
-      <p>Oups ! La page que vous cherchez est introuvable.</p>
-      <Link to="/">Retour à l&apos;accueil</Link>
+      <h1>{t('notFound.title')}</h1>
+      <p>{t('notFound.message')}</p>
+      <Link to="/">{t('notFound.backHome')}</Link>
     </div>
   )
 }

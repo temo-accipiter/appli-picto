@@ -4,6 +4,7 @@
  */
 
 import { Button, ModalConfirm, TableauCard } from '@/components'
+import { useI18n } from '@/hooks'
 import {
   DndContext,
   DragOverlay,
@@ -25,6 +26,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   showResetButton = true,
   doneMap = {},
 }) {
+  const { t } = useI18n()
   const [activeId, setActiveId] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -89,19 +91,19 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         <div className="reset-all-zone">
           <>
             <Button
-              label="Réinitialiser"
+              label={t('tableau.reset')}
               onClick={() => setShowConfirm(true)}
             />
             <ModalConfirm
               isOpen={showConfirm}
               onClose={() => setShowConfirm(false)}
-              confirmLabel="Confirmer"
+              confirmLabel={t('actions.confirm')}
               onConfirm={() => {
                 setShowConfirm(false)
                 onReset()
               }}
             >
-              ❗ Es-tu sûr de vouloir tout réinitialiser ?
+              ❗ {t('edition.confirmResetAll')}
             </ModalConfirm>
           </>{' '}
         </div>

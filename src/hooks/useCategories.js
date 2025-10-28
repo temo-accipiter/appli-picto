@@ -7,7 +7,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth, useToast } from '@/hooks'
+import { useAuth, useI18n, useToast } from '@/hooks'
 
 // Log d'erreur "safe"
 const formatErr = e => {
@@ -23,6 +23,7 @@ const formatErr = e => {
 
 export default function useCategories(reload = 0) {
   const [categories, setCategories] = useState([])
+  const { t } = useI18n()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { user } = useAuth()
@@ -85,11 +86,11 @@ export default function useCategories(reload = 0) {
       }
 
       await fetchCategoriesInternal()
-      show('Catégorie ajoutée', 'success')
+      show(t('toasts.categoryAdded'), 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur ajout catégorie : ${formatErr(e)}`)
-      show("Erreur lors de l'ajout de la catégorie", 'error')
+      show(t('toasts.categoryAddError'), 'error')
       return { error: e }
     }
   }
@@ -104,11 +105,11 @@ export default function useCategories(reload = 0) {
         .or(`user_id.eq.${user?.id},user_id.is.null`)
       if (error) throw error
       await fetchCategoriesInternal()
-      show('Catégorie modifiée', 'success')
+      show(t('toasts.categoryModified'), 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur modification catégorie : ${formatErr(e)}`)
-      show('Erreur lors de la modification', 'error')
+      show(t('toasts.categoryModifyError'), 'error')
       return { error: e }
     }
   }
@@ -125,11 +126,11 @@ export default function useCategories(reload = 0) {
       if (error) throw error
 
       await fetchCategoriesInternal()
-      show('Catégorie supprimée', 'success')
+      show(t('toasts.categoryDeleted'), 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur suppression catégorie : ${formatErr(e)}`)
-      show('Impossible de supprimer la catégorie', 'error')
+      show(t('toasts.categoryDeleteError'), 'error')
       return { error: e }
     }
   }

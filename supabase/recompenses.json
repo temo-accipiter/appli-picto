@@ -1,0 +1,249 @@
+[
+  {
+    "table_report": {
+      "table": {
+        "schema": "public",
+        "name": "recompenses"
+      },
+      "columns": [
+        {
+          "column_name": "id",
+          "data_type": "uuid",
+          "is_nullable": "NO",
+          "default": "gen_random_uuid()"
+        },
+        {
+          "column_name": "label",
+          "data_type": "text",
+          "is_nullable": "NO",
+          "default": null
+        },
+        {
+          "column_name": "description",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "points_requis",
+          "data_type": "integer",
+          "is_nullable": "NO",
+          "default": "0"
+        },
+        {
+          "column_name": "icone",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "couleur",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "imagepath",
+          "data_type": "text",
+          "is_nullable": "YES",
+          "default": null
+        },
+        {
+          "column_name": "selected",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        },
+        {
+          "column_name": "visible_en_demo",
+          "data_type": "boolean",
+          "is_nullable": "NO",
+          "default": "false"
+        },
+        {
+          "column_name": "user_id",
+          "data_type": "uuid",
+          "is_nullable": "YES",
+          "default": "auth.uid()"
+        },
+        {
+          "column_name": "created_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        },
+        {
+          "column_name": "updated_at",
+          "data_type": "timestamp with time zone",
+          "is_nullable": "NO",
+          "default": "now()"
+        }
+      ],
+      "rls": {
+        "rls_enabled": true,
+        "rls_forced": true
+      },
+      "policies": [
+        {
+          "policyname": "recompenses_delete_unified",
+          "command": "DELETE",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+          "with_check": null
+        },
+        {
+          "policyname": "recompenses_insert_unified",
+          "command": "INSERT",
+          "roles": [
+            "authenticated"
+          ],
+          "using": null,
+          "with_check": "(is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'total'::text) AND check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'monthly'::text)))"
+        },
+        {
+          "policyname": "recompenses_select_demo",
+          "command": "SELECT",
+          "roles": [
+            "anon"
+          ],
+          "using": "(visible_en_demo = true)",
+          "with_check": null
+        },
+        {
+          "policyname": "recompenses_select_unified",
+          "command": "SELECT",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)) OR ((user_id IS NULL) AND (visible_en_demo = true)))",
+          "with_check": null
+        },
+        {
+          "policyname": "recompenses_update_unified",
+          "command": "UPDATE",
+          "roles": [
+            "authenticated"
+          ],
+          "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+          "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_recompenses_user_created",
+          "def": "CREATE INDEX idx_recompenses_user_created ON public.recompenses USING btree (user_id, created_at)"
+        },
+        {
+          "name": "recompenses_one_selected_per_user",
+          "def": "CREATE UNIQUE INDEX recompenses_one_selected_per_user ON public.recompenses USING btree (user_id) WHERE ((selected IS TRUE) AND (user_id IS NOT NULL))"
+        },
+        {
+          "name": "recompenses_pkey",
+          "def": "CREATE UNIQUE INDEX recompenses_pkey ON public.recompenses USING btree (id)"
+        },
+        {
+          "name": "recompenses_points_requis_idx",
+          "def": "CREATE INDEX recompenses_points_requis_idx ON public.recompenses USING btree (points_requis)"
+        },
+        {
+          "name": "recompenses_selected_idx",
+          "def": "CREATE INDEX recompenses_selected_idx ON public.recompenses USING btree (selected)"
+        },
+        {
+          "name": "recompenses_user_id_idx",
+          "def": "CREATE INDEX recompenses_user_id_idx ON public.recompenses USING btree (user_id)"
+        },
+        {
+          "name": "recompenses_user_selected_idx",
+          "def": "CREATE INDEX recompenses_user_selected_idx ON public.recompenses USING btree (user_id, selected)"
+        },
+        {
+          "name": "recompenses_visible_en_demo_idx",
+          "def": "CREATE INDEX recompenses_visible_en_demo_idx ON public.recompenses USING btree (visible_en_demo)"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "recompenses_description_length_check",
+          "type": "c",
+          "definition": "CHECK (((description IS NULL) OR (length(description) <= 1000)))"
+        },
+        {
+          "name": "recompenses_imagepath_length_check",
+          "type": "c",
+          "definition": "CHECK (((imagepath IS NULL) OR (length(imagepath) <= 2048)))"
+        },
+        {
+          "name": "recompenses_label_length_check",
+          "type": "c",
+          "definition": "CHECK ((length(label) <= 200))"
+        },
+        {
+          "name": "recompenses_label_not_blank",
+          "type": "c",
+          "definition": "CHECK (((label IS NOT NULL) AND (btrim(label) <> ''::text)))"
+        },
+        {
+          "name": "recompenses_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "recompenses_points_requis_positive",
+          "type": "c",
+          "definition": "CHECK ((points_requis >= 0))"
+        },
+        {
+          "name": "recompenses_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        }
+      ],
+      "triggers": [
+        {
+          "name": "a00_recompenses_set_user_id_before",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a00_recompenses_set_user_id_before BEFORE INSERT ON recompenses FOR EACH ROW EXECUTE FUNCTION tg_recompenses_set_user_id()",
+          "function_name": "tg_recompenses_set_user_id"
+        },
+        {
+          "name": "a99_recompenses_set_updated_at",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER a99_recompenses_set_updated_at BEFORE UPDATE ON recompenses FOR EACH ROW EXECUTE FUNCTION set_updated_at()",
+          "function_name": "set_updated_at"
+        },
+        {
+          "name": "recompenses_normalize",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER recompenses_normalize BEFORE INSERT OR UPDATE ON recompenses FOR EACH ROW EXECUTE FUNCTION tg_recompenses_normalize()",
+          "function_name": "tg_recompenses_normalize"
+        },
+        {
+          "name": "trg_recompenses_ctr_del",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_recompenses_ctr_del AFTER DELETE ON recompenses FOR EACH ROW EXECUTE FUNCTION recompenses_counter_del()",
+          "function_name": "recompenses_counter_del"
+        },
+        {
+          "name": "trg_recompenses_ctr_ins",
+          "enabled": "O",
+          "definition": "CREATE TRIGGER trg_recompenses_ctr_ins AFTER INSERT ON recompenses FOR EACH ROW EXECUTE FUNCTION recompenses_counter_ins()",
+          "function_name": "recompenses_counter_ins"
+        }
+      ],
+      "data_preview": null,
+      "functions": [
+        {
+          "name": "is_admin",
+          "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\n  select exists (\n    select 1 from public.user_roles ur\n    join public.roles r on r.id = ur.role_id\n    where ur.user_id = auth.uid() and ur.is_active and r.name='admin'\n  ) or exists (select 1 from public.profiles p where p.id=auth.uid() and p.is_admin);\n$function$\n"
+        },
+        {
+          "name": "set_updated_at",
+          "definition": "CREATE OR REPLACE FUNCTION public.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'pg_catalog', 'public'\nAS $function$\nbegin\n  new.updated_at := now();\n  return new;\nend$function$\n"
+        }
+      ]
+    }
+  }
+]

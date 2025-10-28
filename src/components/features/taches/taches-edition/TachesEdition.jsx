@@ -10,6 +10,7 @@ import {
   SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
+import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import './TachesEdition.scss'
@@ -41,11 +42,12 @@ export default function ChecklistTachesEdition({
   const [catASupprimer, setCatASupprimer] = useState(null)
 
   const { show } = useToast()
+  const { t } = useI18n()
 
   const validateLabel = label => {
     const trimmed = label.trim()
     if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return 'Nom invalide'
+      return t('tasks.invalidName')
     }
     return ''
   }
@@ -94,24 +96,23 @@ export default function ChecklistTachesEdition({
 
     if (!clean) return
 
-    const slug = clean.toLowerCase().replace(/ /g, '-')
     await onAddCategory(e, clean) // Passer aussi l'event pour compatibilité avec Edition.jsx
     setNewCatLabel('')
-    show('Catégorie ajoutée', 'success')
+    show(t('edition.categoryAdded'), 'success')
   }
 
   const handleRemoveCategory = async value => {
     await onDeleteCategory(value)
     setCatASupprimer(null)
-    show('Catégorie supprimée', 'error')
+    show(t('edition.categoryDeleted'), 'error')
   }
 
   return (
     <div className="checklist-edition">
       <EditionList
-        title="🗒️ Tâches à éditer"
+        title={`🗒️ ${t('tasks.toEdit')}`}
         items={items}
-        emptyLabel="Aucune tâche à afficher"
+        emptyLabel={t('tasks.noTasksToDisplay')}
         renderCard={t => (
           <EditionCard
             key={t.id}
@@ -144,7 +145,7 @@ export default function ChecklistTachesEdition({
         )}
       >
         <Button
-          label="➕ Ajouter une tâche"
+          label={`➕ ${t('tasks.addTask')}`}
           onClick={async () => {
             if (onShowQuotaModal) {
               const canOpen = await onShowQuotaModal('task')
@@ -157,24 +158,24 @@ export default function ChecklistTachesEdition({
           }}
         />
         <Button
-          label="⚙️ Gérer catégories"
+          label={`⚙️ ${t('tasks.manageCategories')}`}
           onClick={() => setManageCatOpen(true)}
         />
         <Button
-          label="Réinitialiser"
+          label={t('tasks.reset')}
           onClick={() => setShowConfirmReset(true)}
         />
         <Select
           id="filter-category"
-          label="Filtrer par catégorie"
-          options={[{ value: 'all', label: 'Toutes' }, ...categories]}
+          label={t('tasks.filterByCategory')}
+          options={[{ value: 'all', label: t('tasks.all') }, ...categories]}
           value={filterCategory}
           onChange={e => onChangeFilterCategory(e.target.value)}
         />
         <Checkbox
           id="filter-done"
           className="filtre-checkbox"
-          label="Tâches cochées seulement"
+          label={t('tasks.checkedOnly')}
           checked={filterDone}
           onChange={e => onChangeFilterDone(e.target.checked)}
           size="md"
@@ -200,7 +201,7 @@ export default function ChecklistTachesEdition({
           setShowConfirmReset(false)
         }}
       >
-        ❗ Es-tu sûr de vouloir tout réinitialiser ?
+        ❗ {t('edition.confirmResetAll')}
       </ModalConfirm>
 
       <ModalCategory
@@ -216,14 +217,14 @@ export default function ChecklistTachesEdition({
       <ModalConfirm
         isOpen={!!catASupprimer}
         onClose={() => setCatASupprimer(null)}
-        confirmLabel="Supprimer"
+        confirmLabel={t('actions.delete')}
         onConfirm={() => handleRemoveCategory(catASupprimer)}
       >
         <>
-          ❗ Supprimer la catégorie “
-          {categories.find(c => c.value === catASupprimer)?.label}” ?
+          ❗ {t('edition.confirmDeleteCategory')}
+          {categories.find(c => c.value === catASupprimer)?.label}&rdquo; ?
           <br />
-          Les tâches associées seront réattribuées à “Pas de catégorie”.
+          {t('edition.categoryReassignmentWarning')}
         </>
       </ModalConfirm>
     </div>

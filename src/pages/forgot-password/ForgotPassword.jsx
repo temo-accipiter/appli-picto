@@ -2,12 +2,15 @@
 import { useState, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { useToast } from '@/contexts'
+import { useI18n } from '@/hooks'
 import { InputWithValidation, Button } from '@/components'
 import { validateEmail, normalizeEmail } from '@/utils'
 import Turnstile from 'react-turnstile'
+import i18n from '@/config/i18n/i18n'
 import './ForgotPassword.scss'
 
 export default function ForgotPassword() {
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const { show } = useToast()
@@ -32,7 +35,7 @@ export default function ForgotPassword() {
     }
 
     if (!captchaToken) {
-      show('Merci de valider le CAPTCHA.', 'error')
+      show(t('errors.validationError'), 'error')
       return
     }
 
@@ -50,14 +53,11 @@ export default function ForgotPassword() {
 
       if (error) throw error
 
-      show(
-        'Si un compte existe avec cette adresse, un e-mail a été envoyé ✅',
-        'success'
-      )
+      show(t('auth.resetEmailSent'), 'success')
       setSuccess(true)
     } catch (err) {
       console.error('Erreur envoi reset :', err?.message)
-      show('Une erreur est survenue lors de l’envoi du lien.', 'error')
+      show(t('errors.generic'), 'error')
     } finally {
       // invalider le token et régénérer le widget
       setCaptchaToken(null)
@@ -68,15 +68,15 @@ export default function ForgotPassword() {
 
   return (
     <div className="forgot-password-page">
-      <h1>Mot de passe oublié</h1>
-      <p>Entre ton adresse e-mail pour recevoir un lien de réinitialisation.</p>
+      <h1>{t('auth.forgotPassword')}</h1>
+      <p>{t('auth.checkYourEmail')}</p>
 
       <form onSubmit={handleSubmit}>
         <InputWithValidation
           ref={emailRef}
           id="forgot-email"
           type="email"
-          label="Adresse e-mail"
+          label={t('auth.email')}
           value={email}
           onValid={val => setEmail(val)}
           rules={[validateEmail]}
@@ -90,11 +90,12 @@ export default function ForgotPassword() {
           onExpire={() => setCaptchaToken(null)}
           options={{ refreshExpired: 'auto' }}
           theme="light"
+          language={i18n.language}
         />
 
         <Button
           type="submit"
-          label={loading ? 'Envoi en cours...' : 'Envoyer le lien'}
+          label={loading ? t('app.loading') : t('auth.resetPassword')}
           disabled={loading || success || !captchaToken}
           variant="primary"
         />

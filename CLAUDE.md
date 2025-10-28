@@ -61,13 +61,22 @@ yarn logs:checkout    # Follow checkout function logs
 yarn logs:webhook     # Follow webhook function logs
 ```
 
-### MCP Bridge (backend/mcp-supabase)
+### MCP Supabase (Intégré à Claude Code)
 
-```bash
-cd backend/mcp-supabase
-yarn dev              # Start MCP bridge server (port 8787)
-yarn check            # Health check
-```
+**CRITICAL**: Ce projet utilise MCP Supabase **directement intégré dans Claude Code**.
+
+**Outils disponibles**:
+
+- `mcp__supabase__search_docs` - Rechercher dans la documentation Supabase officielle
+- `mcp__supabase__list_tables` - Lister les tables de la base de données
+- `mcp__supabase__list_extensions` - Lister les extensions PostgreSQL
+- `mcp__supabase__list_migrations` - Lister les migrations appliquées
+- `mcp__supabase__apply_migration` - Appliquer une nouvelle migration DDL
+- `mcp__supabase__execute_sql` - Exécuter du SQL brut (DML/DQL)
+
+**IMPORTANT**: Utiliser `apply_migration` pour les opérations DDL (CREATE, ALTER, DROP) et `execute_sql` pour les opérations DML (INSERT, UPDATE, DELETE) et DQL (SELECT).
+
+**NEVER**: Créer de serveur MCP bridge séparé - tout est intégré nativement.
 
 ### CRITICAL Workflows
 
@@ -145,6 +154,13 @@ src/
   - `delete-account/` - User account deletion (RGPD)
   - `log-consent/` - Cookie consent logging
   - `cleanup-unconfirmed/` - Remove unconfirmed accounts
+
+- **Email Templates** (`supabase/email-templates/`):
+  - `confirm-signup.html` - Bilingual email for account confirmation
+  - `reset-password.html` - Bilingual email for password reset
+  - `invite-user.html` - Bilingual email for user invitations (optional)
+  - `README.md` - Configuration guide for Supabase Dashboard
+  - `SUBJECTS.md` - Recommended email subjects
 
 ### Supabase Tables
 

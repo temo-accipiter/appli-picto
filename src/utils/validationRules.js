@@ -16,11 +16,25 @@ export const validateNotEmpty = label =>
 
 export const noEdgeSpaces = label =>
   String(label ?? '') !== String(label ?? '').trim()
-    ? 'Pas d’espace en début/fin'
+    ? "Pas d'espace en début/fin"
     : ''
 
 export const noDoubleSpaces = label =>
   /\s{2,}/.test(String(label ?? '')) ? 'Pas de doubles espaces' : ''
+
+/* =========================
+ * Texte générique (i18n)
+ * ========================= */
+export const makeValidateNotEmpty = t => label =>
+  !String(label ?? '').trim() ? t('validation.nameRequired') : ''
+
+export const makeNoEdgeSpaces = t => label =>
+  String(label ?? '') !== String(label ?? '').trim()
+    ? t('validation.noEdgeSpaces')
+    : ''
+
+export const makeNoDoubleSpaces = t => label =>
+  /\s{2,}/.test(String(label ?? '')) ? t('validation.noDoubleSpaces') : ''
 
 export const validatePseudo = pseudo => {
   const trimmed = String(pseudo ?? '').trim()
@@ -48,6 +62,21 @@ export const validateImageType = file => {
   const type = raw === 'image/jpg' ? 'image/jpeg' : raw
   return !ALLOWED_MIME_TYPES.includes(type)
     ? 'Format non supporté.\nChoisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)'
+    : ''
+}
+
+/* =========================
+ * Images (i18n)
+ * ========================= */
+export const makeValidateImagePresence = t => file =>
+  !file ? t('validation.chooseImage') : ''
+
+export const makeValidateImageType = t => file => {
+  if (!file) return t('validation.chooseImage')
+  const raw = String(file.type || '').toLowerCase()
+  const type = raw === 'image/jpg' ? 'image/jpeg' : raw
+  return !ALLOWED_MIME_TYPES.includes(type)
+    ? t('validation.unsupportedFormat')
     : ''
 }
 
@@ -88,15 +117,64 @@ export const validateImageHeader = async file => {
 
     const isSVG = String(file.type).toLowerCase() === 'image/svg+xml'
 
-    if (isPNG || isJPEG || isWebP || isSVG) return ''
+    // HEIC : Type-based uniquement (magic bytes complexes)
+    const isHEIC =
+      String(file.type).toLowerCase() === 'image/heic' ||
+      String(file.type).toLowerCase() === 'image/heif'
+
+    if (isPNG || isJPEG || isWebP || isSVG || isHEIC) return ''
     return 'Fichier image corrompu ou invalide.'
   } catch {
     return 'Erreur lors de la lecture du fichier.'
   }
 }
 
+export const makeValidateImageHeader = t => async file => {
+  if (!file) return ''
+  try {
+    const buf = await file.slice(0, 16).arrayBuffer()
+    const bytes = new Uint8Array(buf)
+
+    const isPNG =
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4e &&
+      bytes[3] === 0x47 &&
+      bytes[4] === 0x0d &&
+      bytes[5] === 0x0a &&
+      bytes[6] === 0x1a &&
+      bytes[7] === 0x0a
+
+    const isJPEG = bytes[0] === 0xff && bytes[1] === 0xd8
+
+    const isWebP =
+      bytes[0] === 0x52 && // R
+      bytes[1] === 0x49 && // I
+      bytes[2] === 0x46 && // F
+      bytes[3] === 0x46 && // F
+      bytes[8] === 0x57 && // W
+      bytes[9] === 0x45 && // E
+      bytes[10] === 0x42 && // B
+      bytes[11] === 0x50 // P
+
+    const isSVG = String(file.type).toLowerCase() === 'image/svg+xml'
+
+    // HEIC : Type-based uniquement (magic bytes complexes)
+    const isHEIC =
+      String(file.type).toLowerCase() === 'image/heic' ||
+      String(file.type).toLowerCase() === 'image/heif'
+
+    if (isPNG || isJPEG || isWebP || isSVG || isHEIC) return ''
+    return t('validation.corruptedFile')
+  } catch {
+    return t('validation.fileReadError')
+  }
+}
+
 export const compressionErrorMessage =
   'Impossible de compresser cette image sous 100 Ko.\nEssayez une image plus simple ou de meilleure qualité.'
+
+export const makeCompressionErrorMessage = t => t('validation.compressionError')
 
 /**
  * Compression côté UI (progressive) pour pictos : cible = TARGET_MAX_UI_SIZE_KO.
@@ -235,9 +313,15 @@ export const validatePasswordStrength = (pw = '') => {
   return ''
 }
 
-// Pour l’écran de Login : on ne bloque pas par complexité (compatibilité anciens comptes)
+// Pour l'écran de Login : on ne bloque pas par complexité (compatibilité anciens comptes)
 export const validatePasswordNotEmpty = (pw = '') =>
   pw ? '' : 'Le mot de passe est requis.'
+
+// Version i18n de validatePasswordNotEmpty
+export const makeValidatePasswordNotEmpty =
+  t =>
+  (pw = '') =>
+    pw ? '' : t('auth.passwordRequired')
 
 // Règle "doit correspondre à..." (ex: confirmer le mot de passe)
 export const makeMatchRule =

@@ -22,6 +22,7 @@ export { default as DeleteAccountModal } from './features/settings/DeleteAccount
 // Admin
 export { default as AccountManagement } from './features/admin/AccountManagement'
 export { default as QuotaManagement } from './features/admin/QuotaManagement'
+export { default as ImageAnalytics } from './features/admin/ImageAnalytics'
 
 // Subscription
 export { default as SubscribeButton } from './features/subscription/subscribe-button/SubscribeButton'
@@ -95,3 +96,4 @@ export { default as Loader } from './ui/loader/Loader'
 export { default as PasswordChecklist } from './ui/password-checklist/PasswordChecklist'
 export { default as Select } from './ui/select/Select'
 export { default as Toast } from './ui/toast/Toast'
+export { default as UploadProgress } from './ui/upload-progress/UploadProgress'

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { InputWithValidation, Button, PasswordChecklist } from '@/components'
 import { supabase, validatePasswordStrength, makeMatchRule } from '@/utils'
 import './ResetPassword.scss'
@@ -8,6 +8,7 @@ import './ResetPassword.scss'
 export default function ResetPassword() {
   const navigate = useNavigate()
   const { user, loading } = useAuth()
+  const { t } = useI18n()
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -31,7 +32,7 @@ export default function ResetPassword() {
     const handleRecovery = async () => {
       const token = extractAccessToken(window.location.hash)
       if (!token) {
-        setError('Lien invalide.')
+        setError(t('errors.validationError'))
         setRecoveryHandled(true)
         return
       }
@@ -43,7 +44,7 @@ export default function ResetPassword() {
 
       if (error) {
         console.error('❌ supabase.auth.setSession :', error.message)
-        setError('Session invalide ou expirée.')
+        setError(t('errors.unauthorized'))
       } else {
         console.log('✅ Session manuelle restaurée')
         window.history.replaceState(
@@ -61,6 +62,7 @@ export default function ResetPassword() {
     } else {
       setRecoveryHandled(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromEmailLink])
 
   if (!loading && recoveryHandled && !user) {
@@ -75,8 +77,7 @@ export default function ResetPassword() {
     confirmRef.current?.validateNow?.()
 
     const e1 = validatePasswordStrength(password)
-    const e2 =
-      confirm === password ? '' : 'Les mots de passe ne correspondent pas.'
+    const e2 = confirm === password ? '' : t('auth.passwordsDontMatch')
     if (e1 || e2) {
       setError(e1 || e2)
       return
@@ -86,7 +87,7 @@ export default function ResetPassword() {
 
     if (error) {
       const msg = /Password should|weak password/i.test(error.message)
-        ? 'Ton mot de passe ne respecte pas les exigences de sécurité.'
+        ? t('auth.passwordTooShort')
         : error.message
       setError(msg)
     } else {
@@ -97,18 +98,16 @@ export default function ResetPassword() {
 
   return (
     <div className="reset-password-page">
-      <h1>Réinitialiser mon mot de passe</h1>
+      <h1>{t('auth.resetPassword')}</h1>
 
       {success ? (
-        <p className="success">
-          Mot de passe modifié avec succès. Redirection vers la connexion…
-        </p>
+        <p className="success">{t('auth.loginSuccess')}</p>
       ) : (
         <form onSubmit={handleSubmit} className="reset-form">
           <InputWithValidation
             ref={pwRef}
             id="new-password"
-            label="Nouveau mot de passe"
+            label={t('auth.newPassword')}
             type="password"
             value={password}
             onValid={val => setPassword(val)}
@@ -126,19 +125,20 @@ export default function ResetPassword() {
           <InputWithValidation
             ref={confirmRef}
             id="confirm-password"
-            label="Confirmer le mot de passe"
+            label={t('auth.confirmPassword')}
             type="password"
             value={confirm}
             onValid={val => setConfirm(val)}
             rules={[
-              makeMatchRule(
-                () => password,
-                'Les mots de passe ne correspondent pas.'
-              ),
+              makeMatchRule(() => password, t('auth.passwordsDontMatch')),
             ]}
           />
 
-          <Button type="submit" label="Valider" variant="primary" />
+          <Button
+            type="submit"
+            label={t('actions.confirm')}
+            variant="primary"
+          />
 
           {error && <p className="error">{error}</p>}
         </form>

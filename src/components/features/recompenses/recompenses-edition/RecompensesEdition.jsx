@@ -6,6 +6,7 @@ import {
   SignedImage,
 } from '@/components'
 import { useToast } from '@/contexts'
+import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import './RecompensesEdition.scss'
@@ -24,11 +25,12 @@ export default function RecompensesEdition({
   const [successIds, setSuccessIds] = useState(new Set())
 
   const { show } = useToast()
+  const { t } = useI18n()
 
   const validateLabel = label => {
     const trimmed = label.trim()
     if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return 'Nom invalide'
+      return t('rewards.invalidName')
     }
     return ''
   }
@@ -46,7 +48,7 @@ export default function RecompensesEdition({
     }
 
     onLabelChange(id, value)
-    show('Récompense modifiée', 'success')
+    show(t('edition.rewardModified'), 'success')
 
     setDrafts(prev => {
       const next = { ...prev }
@@ -73,9 +75,9 @@ export default function RecompensesEdition({
   return (
     <div className="checklist-recompenses">
       <EditionList
-        title="🎁 Choisir la récompense"
+        title={`🎁 ${t('rewards.toEdit')}`}
         items={items}
-        emptyLabel="Aucune récompense"
+        emptyLabel={t('rewards.noRewardsToDisplay')}
         renderCard={r => (
           <EditionCard
             key={r.id}
@@ -109,7 +111,7 @@ export default function RecompensesEdition({
         )}
       >
         <Button
-          label="🏱 Ajouter une récompense"
+          label={`🏱 ${t('rewards.addReward')}`}
           onClick={async () => {
             if (onShowQuotaModal) {
               const canOpen = await onShowQuotaModal('reward')

@@ -1,12 +1,19 @@
 import { DemoSignedImage, Modal, SignedImage } from '@/components'
+import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import './ModalRecompense.scss'
 
 export default function ModalRecompense({ isOpen, onClose, reward }) {
+  const { t } = useI18n()
+
   if (!reward) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🎉 Bravo !">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`🎉 ${t('rewards.wellDone')}`}
+    >
       <div className="modal-recompense">
         {reward.isDemo ? (
           <DemoSignedImage
@@ -24,7 +31,7 @@ export default function ModalRecompense({ isOpen, onClose, reward }) {
         )}
 
         <h2 className="modal-recompense__label">{reward.label}</h2>
-        <p className="modal-recompense__text">Tu as gagné cette récompense !</p>
+        <p className="modal-recompense__text">{t('rewards.chooseReward')}</p>
       </div>
     </Modal>
   )

@@ -15,21 +15,20 @@ import { useDisplay, useToast } from '@/contexts'
 import {
   useAuth,
   useCategories,
+  useI18n,
   useParametres,
   useRBAC,
   useRecompenses,
   useTachesEdition,
 } from '@/hooks'
-import {
-  checkImageQuota,
-  uploadImageWithQuota,
-} from '@/lib/services/imageUploadService'
+import { modernUploadImage } from '@/utils/storage/modernUploadImage'
 import { supabase } from '@/utils/supabaseClient'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import './Edition.scss'
 
 export default function Edition() {
+  const { t } = useI18n()
   const { show } = useToast()
   const { user } = useAuth()
 
@@ -62,36 +61,8 @@ export default function Edition() {
     reason: '',
   })
 
-  // Vérification des quotas d'images
-  const handleImageQuotaCheck = async assetType => {
-    if (!user?.id) return true
-
-    try {
-      const quotaResult = await checkImageQuota(user.id, assetType)
-
-      if (!quotaResult.canUpload) {
-        setImageQuotaContent({
-          assetType,
-          currentUsage:
-            quotaResult.stats?.[
-              assetType === 'task_image' ? 'task_images' : 'reward_images'
-            ] || 0,
-          limit:
-            quotaResult.quotas?.[
-              `max_${assetType.replace('_image', '_images')}`
-            ] || 0,
-          reason: quotaResult.reason,
-        })
-        setImageQuotaModalOpen(true)
-        return false
-      }
-      return true
-    } catch (error) {
-      console.error('Erreur vérification quota image:', error)
-      show("Erreur lors de la vérification des quotas d'images", 'error')
-      return false
-    }
-  }
+  // Note: Vérification des quotas d'images maintenant gérée automatiquement
+  // dans modernUploadImage() via check_image_quota() RPC
 
   // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
   const handleQuotaCheck = async contentType => {
@@ -155,7 +126,10 @@ export default function Edition() {
     sessionStorage.setItem('showRecompenses', showRecompenses)
   }, [showRecompenses])
 
-  const triggerReload = () => setReload(r => r + 1)
+  const triggerReload = () => {
+    console.log('🔄 triggerReload appelé, reload:', reload, '→', reload + 1)
+    setReload(r => r + 1)
+  }
 
   const { categories, addCategory, deleteCategory } = useCategories(reload)
   const { parametres, updateParametres } = useParametres()
@@ -181,26 +155,28 @@ export default function Edition() {
 
   const handleSubmitTask = async ({ label, categorie, image }) => {
     if (!user?.id) {
-      show('Erreur utilisateur : veuillez vous reconnecter.', 'error')
+      show(t('edition.errorUser'), 'error')
       return
     }
 
     // Vérif quota côté bouton via handleQuotaCheck dans TachesEdition
     let imagePath = ''
     if (image) {
-      // Vérifier les quotas d'images avant upload
-      const canUploadImage = await handleImageQuotaCheck('task_image')
-      if (!canUploadImage) return
-
       try {
-        const uploadResult = await uploadImageWithQuota(
-          image,
-          'task_image',
-          user.id
-        )
-        imagePath = uploadResult.filePath
+        // 🆕 Utiliser le nouveau pipeline moderne (quota check inclus)
+        const uploadResult = await modernUploadImage(image, {
+          userId: user.id,
+          assetType: 'task_image',
+          prefix: 'taches',
+        })
+
+        if (uploadResult.error) {
+          throw uploadResult.error
+        }
+
+        imagePath = uploadResult.path
       } catch (error) {
-        show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
+        show(`${t('edition.errorImageUpload')}: ${error.message}`, 'error')
         return
       }
     }
@@ -218,12 +194,19 @@ export default function Edition() {
     ])
 
     if (insertError) {
-      show('Erreur lors de la création de la tâche.', 'error')
+      console.error('❌ Erreur insertion tâche:', {
+        message: insertError.message,
+        code: insertError.code,
+        details: insertError.details,
+        hint: insertError.hint,
+      })
+      show(t('edition.errorTaskCreation'), 'error')
       return
     }
 
+    console.log('✅ Tâche créée en BDD, déclenchement reload...')
     handleTacheAjoutee()
-    show('Tâche ajoutée ✅', 'success')
+    show(t('edition.taskAdded'), 'success')
 
     // Rafraîchir les quotas sans dépendre de window
     setTimeout(() => {
@@ -233,35 +216,36 @@ export default function Edition() {
 
   const handleSubmitReward = async ({ label, image }) => {
     if (!image) {
-      show('Image manquante.', 'error')
+      show(t('edition.imageMissing'), 'error')
       return
     }
 
     if (!user?.id) {
-      show('Erreur utilisateur : veuillez vous reconnecter.', 'error')
+      show(t('edition.errorUser'), 'error')
       return
     }
 
-    // Vérifier les quotas d'images avant upload
-    const canUploadImage = await handleImageQuotaCheck('reward_image')
-    if (!canUploadImage) return
-
     try {
-      const uploadResult = await uploadImageWithQuota(
-        image,
-        'reward_image',
-        user.id
-      )
+      // 🆕 Utiliser le nouveau pipeline moderne (quota check inclus)
+      const uploadResult = await modernUploadImage(image, {
+        userId: user.id,
+        assetType: 'reward_image',
+        prefix: 'recompenses',
+      })
+
+      if (uploadResult.error) {
+        throw uploadResult.error
+      }
 
       // Créer la récompense avec le chemin d'image uploadé
-      await createRecompense({ label, imagepath: uploadResult.filePath })
+      await createRecompense({ label, imagepath: uploadResult.path })
       handleRecompenseAjoutee()
-      show('Récompense ajoutée', 'success')
+      show(t('edition.rewardAdded'), 'success')
       setTimeout(() => {
         refreshQuotas()
       }, 100)
     } catch (error) {
-      show(`Erreur lors de l'upload de l'image: ${error.message}`, 'error')
+      show(`${t('edition.errorImageUpload')}: ${error.message}`, 'error')
     }
   }
 
@@ -318,8 +302,8 @@ export default function Edition() {
             className="confettis-checkbox"
             label={
               parametres.confettis
-                ? '🎉 Confettis activés'
-                : '🎊 Confettis désactivés'
+                ? t('edition.confettiEnabled')
+                : t('edition.confettiDisabled')
             }
             checked={!!parametres.confettis}
             onChange={e => updateParametres({ confettis: e.target.checked })}
@@ -329,7 +313,7 @@ export default function Edition() {
           <Checkbox
             id="train-toggle"
             className="train-checkbox"
-            label="🚆 Afficher le train"
+            label={t('edition.showTrain')}
             checked={showTrain}
             onChange={e => setShowTrain(e.target.checked)}
           />
@@ -337,7 +321,7 @@ export default function Edition() {
         <Checkbox
           id="recompense-toggle"
           className="recompense-checkbox"
-          label="🎁 Afficher la récompense"
+          label={t('edition.showReward')}
           checked={showRecompense}
           onChange={e => setShowRecompense(e.target.checked)}
         />
@@ -348,7 +332,7 @@ export default function Edition() {
           label={
             <span className="button-label">
               <ListChecks className="button-icon" size={18} />
-              Tâches
+              {t('tasks.title')}
               <ChevronDown
                 className={`chevron ${showTaches ? 'open' : ''}`}
                 size={16}
@@ -379,7 +363,7 @@ export default function Edition() {
               onShowQuotaModal={handleQuotaCheck}
               onUpdateLabel={(id, label) => {
                 updateTaskLabel(id, label)
-                show('Tâche renommée', 'success')
+                show(t('edition.taskRenamed'), 'success')
               }}
               onUpdateCategorie={updateCategorie}
               onDelete={t => setTacheASupprimer(t)}
@@ -393,7 +377,7 @@ export default function Edition() {
           label={
             <span className="button-label">
               <Gift className="button-icon" size={18} />
-              Récompenses
+              {t('rewards.title')}
               <ChevronDown
                 className={`chevron ${showRecompenses ? 'open' : ''}`}
                 size={16}
@@ -417,7 +401,7 @@ export default function Edition() {
               onShowQuotaModal={handleQuotaCheck}
               onLabelChange={(id, label) => {
                 updateRewardLabel(id, label)
-                show('Récompense modifiée', 'success')
+                show(t('edition.rewardModified'), 'success')
               }}
             />
           </div>
@@ -427,33 +411,35 @@ export default function Edition() {
       <ModalConfirm
         isOpen={!!recompenseASupprimer}
         onClose={() => setRecompenseASupprimer(null)}
-        confirmLabel="Supprimer"
+        confirmLabel={t('edition.confirmDeleteReward')}
         onConfirm={() => {
           deleteRecompense(recompenseASupprimer.id)
-          show('Récompense supprimée', 'error')
+          show(t('edition.rewardDeleted'), 'error')
           setRecompenseASupprimer(null)
           setTimeout(() => {
             refreshQuotas()
           }, 300)
         }}
       >
-        ❗ Supprimer la récompense &quot;{recompenseASupprimer?.label}&quot; ?
+        ❗ {t('edition.confirmDeleteReward')} &quot;
+        {recompenseASupprimer?.label}&quot; ?
       </ModalConfirm>
 
       <ModalConfirm
         isOpen={!!tacheASupprimer}
         onClose={() => setTacheASupprimer(null)}
-        confirmLabel="Supprimer"
+        confirmLabel={t('edition.confirmDeleteTask')}
         onConfirm={() => {
           deleteTache(tacheASupprimer)
-          show('Tâche supprimée', 'error')
+          show(t('edition.taskDeleted'), 'error')
           setTacheASupprimer(null)
           setTimeout(() => {
             refreshQuotas()
           }, 300)
         }}
       >
-        ❗ Supprimer la tâche &quot;{tacheASupprimer?.label}&quot; ?
+        ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}&quot;
+        ?
       </ModalConfirm>
 
       <ModalCategory
@@ -469,15 +455,14 @@ export default function Edition() {
       <ModalConfirm
         isOpen={!!catASupprimer}
         onClose={() => setCatASupprimer(null)}
-        confirmLabel="Supprimer"
+        confirmLabel={t('edition.confirmDeleteCategory')}
         onConfirm={() => handleRemoveCategory(catASupprimer)}
       >
         <>
-          ❗ Supprimer la catégorie &quot;
+          ❗ {t('edition.confirmDeleteCategory')} &quot;
           {categories.find(c => c.value === catASupprimer)?.label}&quot; ?
           <br />
-          Les tâches associées seront réattribuées à &quot;Pas de
-          catégorie&quot;.
+          {t('edition.categoryDeleteWarning')}
         </>
       </ModalConfirm>
 
