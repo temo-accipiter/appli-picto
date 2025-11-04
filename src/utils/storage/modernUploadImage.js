@@ -71,7 +71,7 @@ export async function modernUploadImage(file, options = {}) {
     conversionMethod: 'none',
   }
 
-  const startTime = Date.now()
+  const _startTime = Date.now() // Pour futures métriques si nécessaire
 
   try {
     // ─────────────────────────────────────────────────────────────

@@ -94,7 +94,7 @@ export async function validateImageFile(file) {
       error: 'Fichier corrompu ou type usurpé (magic bytes invalides)',
       normalizedType,
     }
-  } catch (error) {
+  } catch {
     return {
       valid: false,
       error: 'Erreur lors de la lecture du fichier',

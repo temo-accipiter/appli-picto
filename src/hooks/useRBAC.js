@@ -85,8 +85,8 @@ export default function useRBAC() {
     isAdmin: permissions.isAdmin,
   })
 
-  // Fetch quotas depuis get_usage_fast
-  const fetchQuotas = useCallback(async () => {
+  // ✅ CORRECTIF : Fonction stable pour éviter récréation channels
+  const fetchQuotasStable = useCallback(async () => {
     // Pas de quotas pour: visiteurs, unknown, ou admins
     if (
       !permissions.ready ||
@@ -138,6 +138,8 @@ export default function useRBAC() {
 
       const quotasData = data.quotas || []
       const usageData = data.usage || {}
+      // ✅ PHASE 1: Récupérer monthly_usage depuis get_usage_fast()
+      const monthlyUsageData = data.monthly_usage || {}
 
       const quotasMap = {}
       quotasData.forEach(q => {
@@ -154,18 +156,20 @@ export default function useRBAC() {
         if (key) {
           quotasMap[key] = {
             limit: q.quota_limit,
-            period: q.quota_period,
+            period: q.quota_period, // 'monthly' ou 'total'
           }
         }
       })
 
       const usageMap = {
+        // Compteurs totaux (pour quotas period='total')
         max_tasks: usageData.tasks || 0,
         max_rewards: usageData.rewards || 0,
         max_categories: usageData.categories || 0,
-        monthly_tasks: 0,
-        monthly_rewards: 0,
-        monthly_categories: 0,
+        // ✅ PHASE 1: Compteurs mensuels (pour quotas period='monthly')
+        monthly_tasks: monthlyUsageData.tasks || 0,
+        monthly_rewards: monthlyUsageData.rewards || 0,
+        monthly_categories: monthlyUsageData.categories || 0,
       }
 
       setQuotas(quotasMap)
@@ -180,7 +184,12 @@ export default function useRBAC() {
         usageMap,
       })
     } catch (err) {
-      console.error('useRBAC: erreur fetch quotas', err)
+      console.error('❌ [useRBAC] Erreur lors du chargement des quotas:', {
+        error: err,
+        role: permissions.role,
+        userId: permissions.user?.id,
+        message: err?.message || 'Unknown error',
+      })
       setQuotas({})
       setUsage({})
       setQuotasLoading(false)
@@ -195,50 +204,76 @@ export default function useRBAC() {
     initialLoad,
   ])
 
+  // ✅ Wrapper stable qui ne change jamais
+  const fetchQuotas = useCallback(() => {
+    fetchQuotasStable()
+  }, [fetchQuotasStable])
+
   // Chargement initial
   useEffect(() => {
-    if (permissions.ready) fetchQuotas()
-  }, [permissions.ready, fetchQuotas])
+    if (permissions.ready) fetchQuotasStable()
+  }, [permissions.ready, fetchQuotasStable])
 
-  // Realtime pour free accounts
+  // ✅ CORRECTIF : Realtime avec dépendances stables
   useEffect(() => {
-    if (!permissions.ready || !isFreeAccount) return
+    if (!permissions.ready || !isFreeAccount) {
+      // Cleanup si conditions changent
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+      return
+    }
 
+    // Cleanup du channel précédent
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
       channelRef.current = null
     }
 
+    // ✅ Utiliser fetchQuotasStable directement (stable)
+    const handleChange = () => {
+      setTimeout(() => fetchQuotasStable(), 100)
+    }
+
+    // ✅ CORRECTIF CRITIQUE : Nom de channel FIXE pour éviter l'accumulation de channels zombies
+    // AVANT: Chaque remount créait un nouveau channel avec Date.now() → fuite mémoire
+    // MAINTENANT: Nom fixe → le cleanup fonctionne correctement
     const channel = supabase
-      .channel(`rbac:quotas:${Date.now()}`)
+      .channel('rbac:quotas:changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'taches' },
-        () => setTimeout(fetchQuotas, 100)
+        handleChange
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'recompenses' },
-        () => setTimeout(fetchQuotas, 100)
+        handleChange
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'categories' },
-        () => setTimeout(fetchQuotas, 100)
+        handleChange
       )
       .subscribe()
 
     channelRef.current = channel
+
     return () => {
-      if (channelRef.current) supabase.removeChannel(channelRef.current)
-      channelRef.current = null
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
     }
-  }, [permissions.ready, isFreeAccount, fetchQuotas])
+  }, [permissions.ready, isFreeAccount, fetchQuotasStable])
 
   // Helpers de vérification
   const canCreate = useCallback(
     contentType => {
       if (!isFreeAccount) return true
+
+      // Mapper le type de contenu vers la clé de quota
       const key =
         contentType === 'task'
           ? 'max_tasks'
@@ -247,8 +282,29 @@ export default function useRBAC() {
             : contentType === 'category'
               ? 'max_categories'
               : null
+
       if (!key || !quotas[key]) return true
-      return (usage[key] ?? 0) < quotas[key].limit
+
+      // ✅ PHASE 1: Utiliser le bon compteur selon quota_period
+      const quotaPeriod = quotas[key].period || 'total'
+      const limit = quotas[key].limit
+
+      let currentUsage
+      if (quotaPeriod === 'monthly') {
+        // Quotas mensuels : utiliser monthly_tasks/monthly_rewards/monthly_categories
+        const monthlyKey =
+          contentType === 'task'
+            ? 'monthly_tasks'
+            : contentType === 'reward'
+              ? 'monthly_rewards'
+              : 'monthly_categories'
+        currentUsage = usage[monthlyKey] ?? 0
+      } else {
+        // Quotas totaux : utiliser max_tasks/max_rewards/max_categories
+        currentUsage = usage[key] ?? 0
+      }
+
+      return currentUsage < limit
     },
     [isFreeAccount, quotas, usage]
   )
@@ -263,15 +319,36 @@ export default function useRBAC() {
             : contentType === 'category'
               ? 'max_categories'
               : null
+
       if (!key || !quotas[key]) return null
+
+      // ✅ PHASE 1: Utiliser le bon compteur selon quota_period
+      const quotaPeriod = quotas[key].period || 'total'
       const limit = quotas[key].limit
-      const current = usage[key] ?? 0
+
+      let current
+      if (quotaPeriod === 'monthly') {
+        // Quotas mensuels : utiliser monthly_tasks/monthly_rewards/monthly_categories
+        const monthlyKey =
+          contentType === 'task'
+            ? 'monthly_tasks'
+            : contentType === 'reward'
+              ? 'monthly_rewards'
+              : 'monthly_categories'
+        current = usage[monthlyKey] ?? 0
+      } else {
+        // Quotas totaux : utiliser max_tasks/max_rewards/max_categories
+        current = usage[key] ?? 0
+      }
+
       const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
+
       return {
         limit,
         current,
         remaining: Math.max(0, limit - current),
         percentage,
+        period: quotaPeriod, // Ajouter period pour que l'UI sache si c'est mensuel ou total
         isAtLimit: current >= limit,
         isNearLimit:
           current >= Math.floor(limit * NEAR_LIMIT_RATIO) && current < limit,
@@ -280,31 +357,21 @@ export default function useRBAC() {
     [quotas, usage]
   )
 
+  // ✅ PHASE 1: getMonthlyQuotaInfo() est maintenant un alias de getQuotaInfo()
+  // getQuotaInfo() gère automatiquement les quotas mensuels ET totaux selon period
   const getMonthlyQuotaInfo = useCallback(
     contentType => {
-      const key =
-        contentType === 'task'
-          ? 'monthly_tasks'
-          : contentType === 'reward'
-            ? 'monthly_rewards'
-            : contentType === 'category'
-              ? 'monthly_categories'
-              : null
-      if (!key || !quotas[key]) return null
-      const limit = quotas[key].limit
-      const current = usage[key] ?? 0
-      const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
-      return {
-        limit,
-        current,
-        remaining: Math.max(0, limit - current),
-        percentage,
-        isAtLimit: current >= limit,
-        isNearLimit:
-          current >= Math.floor(limit * NEAR_LIMIT_RATIO) && current < limit,
+      // Simplement appeler getQuotaInfo qui gère déjà les quotas mensuels
+      const info = getQuotaInfo(contentType)
+
+      // Retourner null si pas de quota ou si le quota n'est pas mensuel
+      if (!info || info.period !== 'monthly') {
+        return null
       }
+
+      return info
     },
-    [quotas, usage]
+    [getQuotaInfo]
   )
 
   // API unifiée

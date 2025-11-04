@@ -18,13 +18,15 @@ const formatErr = e => {
 
 export default function useTaches(reload = 0) {
   const [taches, setTaches] = useState([])
-  const { user } = useAuth()
+  const { user, authReady } = useAuth()
   const { show } = useToast()
   const { t } = useI18n()
 
   // 📥 Chargement initial
   useEffect(() => {
-    if (!user?.id) return
+    // ✅ CORRECTIF : Attendre que l'auth soit prête ET que user existe
+    if (!authReady || !user?.id) return
+
     supabase
       .from('taches')
       .select('*')
@@ -43,7 +45,7 @@ export default function useTaches(reload = 0) {
           setTaches(norm)
         }
       })
-  }, [reload, user?.id])
+  }, [reload, user?.id, authReady])
 
   // ✅ Toggle "fait" (DB en bool, état local en bool)
   const toggleFait = (id, current) =>
@@ -79,21 +81,36 @@ export default function useTaches(reload = 0) {
         }
       })
 
-  // ↕️ Mise à jour de l’ordre
-  const updatePosition = ordered => {
-    ordered.forEach((t, idx) => {
-      supabase
-        .from('taches')
-        .update({ position: idx })
-        .eq('id', t.id)
-        .eq('user_id', user.id)
-        .catch(error =>
-          console.error(
-            `❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`
-          )
-        )
-    })
-    setTaches(ordered)
+  // ↕️ Mise à jour de l'ordre
+  const updatePosition = async ordered => {
+    try {
+      // Mettre à jour l'état local immédiatement pour une UI fluide
+      setTaches(ordered)
+
+      // Envoyer les mises à jour en série pour éviter les problèmes de concurrence
+      const updates = ordered.map((t, idx) =>
+        supabase
+          .from('taches')
+          .update({ position: idx })
+          .eq('id', t.id)
+          .eq('user_id', user.id)
+          .then(({ error }) => {
+            if (error) {
+              console.error(
+                `❌ Erreur update position tâche ${t.id} : ${formatErr(error)}`
+              )
+              throw error
+            }
+          })
+      )
+
+      await Promise.all(updates)
+      return { error: null }
+    } catch (error) {
+      console.error(`❌ Erreur mise à jour positions : ${formatErr(error)}`)
+      show(t('toasts.taskUpdateError'), 'error')
+      return { error }
+    }
   }
 
   // 🗑️ Suppression (avec image associée si présente)

@@ -9,7 +9,6 @@ import {
   Select,
   SignedImage,
 } from '@/components'
-import { useToast } from '@/contexts'
 import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
@@ -41,7 +40,6 @@ export default function ChecklistTachesEdition({
   const [newCatLabel, setNewCatLabel] = useState('')
   const [catASupprimer, setCatASupprimer] = useState(null)
 
-  const { show } = useToast()
   const { t } = useI18n()
 
   const validateLabel = label => {
@@ -96,15 +94,15 @@ export default function ChecklistTachesEdition({
 
     if (!clean) return
 
-    await onAddCategory(e, clean) // Passer aussi l'event pour compatibilité avec Edition.jsx
+    // Le toast est déjà géré dans le hook useCategories.addCategory
+    await onAddCategory(e, clean)
     setNewCatLabel('')
-    show(t('edition.categoryAdded'), 'success')
   }
 
   const handleRemoveCategory = async value => {
+    // Le toast est déjà géré dans le hook useCategories.deleteCategory
     await onDeleteCategory(value)
     setCatASupprimer(null)
-    show(t('edition.categoryDeleted'), 'error')
   }
 
   return (

@@ -71,7 +71,7 @@ test.describe('Image Upload Workflow - Page Accessibility (Smoke Tests)', () => 
     await expect(page.locator('input[type="file"]')).toBeVisible()
   })
 
-  test.skip('Upload PNG → WebP conversion', async ({ page }) => {
+  test.skip('Upload PNG → WebP conversion', async ({ page: _page }) => {
     // SKIP: Nécessite authentification Supabase + base de test
     // TODO: Activer quand environnement test configuré
     // Ce test validerait:
@@ -82,12 +82,14 @@ test.describe('Image Upload Workflow - Page Accessibility (Smoke Tests)', () => 
     // 5. Metrics loggées dans image_metrics
   })
 
-  test.skip('Upload SVG → pas de conversion', async ({ page }) => {
+  test.skip('Upload SVG → pas de conversion', async ({ page: _page }) => {
     // SKIP: Nécessite authentification Supabase
     // TODO: Activer quand environnement test configuré
   })
 
-  test.skip('Upload doublon → déduplication SHA-256', async ({ page }) => {
+  test.skip('Upload doublon → déduplication SHA-256', async ({
+    page: _page,
+  }) => {
     // SKIP: Nécessite authentification Supabase
     // TODO: Activer quand environnement test configuré
     // Ce test validerait:

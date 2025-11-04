@@ -20,7 +20,7 @@ import {
 } from '@/utils/storage/modernUploadImage'
 
 export default function useRecompenses(reload = 0) {
-  const { user } = useAuth()
+  const { user, authReady } = useAuth()
   const { show } = useToast()
   const { t } = useI18n()
   const [recompenses, setRecompenses] = useState([])
@@ -30,7 +30,8 @@ export default function useRecompenses(reload = 0) {
   // 📥 Lecture : uniquement les récompenses de l'utilisateur connecté
   useEffect(() => {
     let cancelled = false
-    if (!user?.id) return
+    // ✅ CORRECTIF : Attendre que l'auth soit prête ET que user existe
+    if (!authReady || !user?.id) return
     ;(async () => {
       try {
         setLoading(true)
@@ -70,7 +71,7 @@ export default function useRecompenses(reload = 0) {
     return () => {
       cancelled = true
     }
-  }, [user?.id, reload])
+  }, [user?.id, authReady, reload])
 
   // ➕ Création (user_id fixé par trigger; on ne l'envoie pas)
   const addRecompense = async payload => {
@@ -175,7 +176,7 @@ export default function useRecompenses(reload = 0) {
       setRecompenses(prev =>
         prev.map(r => (r.id === id ? { ...r, ...data } : r))
       )
-      show(t('toasts.rewardModified'), 'success')
+      // Pas de toast générique - on laisse les fonctions spécifiques gérer leurs toasts
       return { data, error: null }
     } catch (e) {
       setError(e)
@@ -291,7 +292,7 @@ export default function useRecompenses(reload = 0) {
           r.id === id ? { ...r, selected: true } : { ...r, selected: false }
         )
       )
-      show(t('toasts.rewardSelected'), 'success')
+      // Pas de toast pour la sélection (action visuelle suffisante)
       return { data, error: null }
     } catch (e) {
       setError(e)
@@ -321,9 +322,29 @@ export default function useRecompenses(reload = 0) {
     }
   }
 
-  // ✏️ Renommer (alias pour updateRecompense avec label uniquement)
+  // ✏️ Renommer (sans toast - déjà géré dans updateRecompense)
   const updateLabel = async (id, label) => {
-    return await updateRecompense(id, { label })
+    try {
+      setError(null)
+      const { data, error } = await supabase
+        .from('recompenses')
+        .update({ label })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setRecompenses(prev => prev.map(r => (r.id === id ? { ...r, label } : r)))
+      show(t('toasts.rewardRenamed'), 'success')
+      return { data, error: null }
+    } catch (e) {
+      setError(e)
+      console.error(`❌ Erreur renommage récompense : ${formatErr(e)}`)
+      show(t('toasts.rewardModifyError'), 'error')
+      return { data: null, error: e }
+    }
   }
 
   return {

@@ -214,24 +214,25 @@ const router = createBrowserRouter([
   },
 ])
 
+// ⚠️ StrictMode désactivé temporairement - cause deadlock avec Supabase SDK
+// React StrictMode monte/démonte les composants 2x en dev, ce qui crée
+// des problèmes de concurrence avec le SDK Supabase (mutex bloqué)
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <PermissionsProvider>
-          <DisplayProvider>
-            <LoadingProvider>
-              <ToastProvider>
-                <InitializationLoader>
-                  <Suspense fallback={<Loader />}>
-                    <RouterProvider router={router} />
-                  </Suspense>
-                </InitializationLoader>
-              </ToastProvider>
-            </LoadingProvider>
-          </DisplayProvider>
-        </PermissionsProvider>
-      </AuthProvider>
-    </ErrorBoundary>
-  </React.StrictMode>
+  <ErrorBoundary>
+    <AuthProvider>
+      <PermissionsProvider>
+        <DisplayProvider>
+          <LoadingProvider>
+            <ToastProvider>
+              <InitializationLoader>
+                <Suspense fallback={<Loader />}>
+                  <RouterProvider router={router} />
+                </Suspense>
+              </InitializationLoader>
+            </ToastProvider>
+          </LoadingProvider>
+        </DisplayProvider>
+      </PermissionsProvider>
+    </AuthProvider>
+  </ErrorBoundary>
 )

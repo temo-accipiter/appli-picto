@@ -54,7 +54,7 @@ export default function Edition() {
 
   // États pour les quotas d'images
   const [imageQuotaModalOpen, setImageQuotaModalOpen] = useState(false)
-  const [imageQuotaContent, setImageQuotaContent] = useState({
+  const [_imageQuotaContent, _setImageQuotaContent] = useState({
     assetType: 'task_image',
     currentUsage: 0,
     limit: 0,
@@ -325,6 +325,32 @@ export default function Edition() {
           checked={showRecompense}
           onChange={e => setShowRecompense(e.target.checked)}
         />
+        {parametres && (
+          <Checkbox
+            id="toasts-toggle"
+            className="toasts-checkbox"
+            label={
+              (parametres.toasts_enabled ?? true)
+                ? t('edition.toastsEnabled')
+                : t('edition.toastsDisabled')
+            }
+            checked={parametres.toasts_enabled ?? true}
+            onChange={async e => {
+              console.log('🔧 Toggle toasts:', e.target.checked)
+              const result = await updateParametres({
+                toasts_enabled: e.target.checked,
+              })
+              console.log('✅ Résultat updateParametres:', result)
+              if (!result.ok) {
+                console.error(
+                  '❌ Erreur mise à jour toasts_enabled:',
+                  result.error
+                )
+                show(t('errors.generic'), 'error')
+              }
+            }}
+          />
+        )}
       </div>
 
       <div className="edition-sections">
@@ -480,10 +506,10 @@ export default function Edition() {
         isOpen={imageQuotaModalOpen}
         onClose={() => setImageQuotaModalOpen(false)}
         contentType={
-          imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
+          _imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
         }
-        currentUsage={imageQuotaContent.currentUsage}
-        limit={imageQuotaContent.limit}
+        currentUsage={_imageQuotaContent.currentUsage}
+        limit={_imageQuotaContent.limit}
         period="total"
       />
     </div>

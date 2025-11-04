@@ -73,6 +73,33 @@ async function logSubscriptionEvent(
   }
 }
 
+// ✅ PHASE 2: Vérifier idempotence (empêcher double-traitement d'un même event)
+async function isEventAlreadyProcessed(
+  admin: ReturnType<typeof createClient>,
+  subscriptionId: string,
+  eventId: string
+): Promise<boolean> {
+  try {
+    const { data, error } = await admin
+      .from('abonnements')
+      .select('last_event_id')
+      .eq('stripe_subscription_id', subscriptionId)
+      .single()
+
+    if (error || !data) {
+      // Pas d'abonnement existant = event pas encore traité
+      return false
+    }
+
+    // Si last_event_id correspond à l'event actuel = déjà traité
+    return data.last_event_id === eventId
+  } catch (e) {
+    console.warn('isEventAlreadyProcessed failed:', e)
+    // En cas d'erreur, on suppose que l'event n'a pas été traité
+    return false
+  }
+}
+
 serve(async req => {
   if (req.method === 'OPTIONS')
     return new Response('ok', { headers: corsHeaders })
@@ -130,11 +157,28 @@ serve(async req => {
         )
 
         if (user_id && subscriptionId) {
+          // ✅ PHASE 2: Vérifier idempotence avant traitement
+          const alreadyProcessed = await isEventAlreadyProcessed(
+            admin,
+            subscriptionId,
+            event.id
+          )
+
+          if (alreadyProcessed) {
+            console.log(
+              `ℹ️ Event ${event.id} déjà traité pour subscription ${subscriptionId}, skipping`
+            )
+            return json(
+              { received: true, event_id: event.id, skipped: true },
+              200
+            )
+          }
+
           let sub: Stripe.Subscription | null = null
           try {
             sub = await stripe.subscriptions.retrieve(subscriptionId)
           } catch (e) {
-            console.warn('⚠️ Impossible de récupérer l’abonnement Stripe :', e)
+            console.warn("Impossible de récupérer l'abonnement Stripe:", e)
           }
 
           if (sub) {
@@ -177,6 +221,23 @@ serve(async req => {
         )
 
         if (user_id) {
+          // ✅ PHASE 2: Vérifier idempotence avant traitement
+          const alreadyProcessed = await isEventAlreadyProcessed(
+            admin,
+            sub.id,
+            event.id
+          )
+
+          if (alreadyProcessed) {
+            console.log(
+              `ℹ️ Event ${event.id} déjà traité pour subscription ${sub.id}, skipping`
+            )
+            return json(
+              { received: true, event_id: event.id, skipped: true },
+              200
+            )
+          }
+
           const fields = extractFieldsFromSub(sub)
           const { error } = await admin.from('abonnements').upsert(
             {

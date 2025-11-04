@@ -7,7 +7,7 @@
  */
 import { useState, useEffect } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth } from '@/hooks'
+import { useAuth, useToast, useI18n } from '@/hooks'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import {
   modernUploadImage,
@@ -28,6 +28,8 @@ const formatErr = e => {
 export default function useTachesEdition(reload = 0) {
   const [taches, setTaches] = useState([])
   const { user } = useAuth()
+  const { show } = useToast()
+  const { t } = useI18n()
 
   useEffect(() => {
     console.log('🔄 useTachesEdition: useEffect déclenché, reload =', reload)
@@ -55,42 +57,73 @@ export default function useTachesEdition(reload = 0) {
   }, [reload, user?.id])
 
   const toggleAujourdhui = async (id, current) => {
-    const { error } = await supabase
-      .from('taches')
-      .update({ aujourdhui: !current, fait: false })
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error) {
-      console.error(`❌ Erreur toggle aujourdhui : ${formatErr(error)}`)
-      return
-    }
-    setTaches(prev =>
-      prev.map(t =>
-        t.id === id ? { ...t, aujourdhui: !current, fait: false } : t
+    try {
+      const { data, error } = await supabase
+        .from('taches')
+        .update({ aujourdhui: !current, fait: false })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setTaches(prev =>
+        prev.map(t =>
+          t.id === id ? { ...t, aujourdhui: !current, fait: false } : t
+        )
       )
-    )
+      // Pas de toast pour le toggle checkbox (trop verbeux)
+      return { data, error: null }
+    } catch (error) {
+      console.error(`❌ Erreur toggle aujourdhui : ${formatErr(error)}`)
+      show(t('toasts.taskUpdateError'), 'error')
+      return { data: null, error }
+    }
   }
 
   const updateLabel = async (id, label) => {
-    const { error } = await supabase
-      .from('taches')
-      .update({ label })
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error)
-      return console.error(`❌ Erreur update label : ${formatErr(error)}`)
-    setTaches(prev => prev.map(t => (t.id === id ? { ...t, label } : t)))
+    try {
+      const { data, error } = await supabase
+        .from('taches')
+        .update({ label })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setTaches(prev => prev.map(t => (t.id === id ? { ...t, label } : t)))
+      show(t('toasts.taskRenamed'), 'success')
+      return { data, error: null }
+    } catch (error) {
+      console.error(`❌ Erreur update label : ${formatErr(error)}`)
+      show(t('toasts.taskUpdateError'), 'error')
+      return { data: null, error }
+    }
   }
 
   const updateCategorie = async (id, categorie) => {
-    const { error } = await supabase
-      .from('taches')
-      .update({ categorie })
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error)
-      return console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
-    setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
+    try {
+      const { data, error } = await supabase
+        .from('taches')
+        .update({ categorie })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
+      show(t('toasts.taskCategoryChanged'), 'success')
+      return { data, error: null }
+    } catch (error) {
+      console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
+      show(t('toasts.taskUpdateError'), 'error')
+      return { data: null, error }
+    }
   }
 
   // ➕ Ajout avec fichier (upload moderne + insert)
@@ -201,32 +234,55 @@ export default function useTachesEdition(reload = 0) {
   const deleteTache = async t => {
     const id = typeof t === 'string' ? t : t?.id
     const imagePath = t?.imagepath
+
     if (!id) {
       console.error('❌ Tâche invalide :', t)
-      return
+      show(t('toasts.invalidTask'), 'error')
+      return { data: null, error: new Error('Tâche invalide') }
     }
-    if (imagePath) {
-      const { error } = await deleteImageIfAny(imagePath)
-      if (error) console.warn('⚠️ Erreur suppression image :', error)
+
+    try {
+      if (imagePath) {
+        const { error } = await deleteImageIfAny(imagePath)
+        if (error)
+          console.warn('⚠️ Erreur suppression image :', formatErr(error))
+      }
+
+      const { error } = await supabase
+        .from('taches')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setTaches(prev => prev.filter(task => task.id !== id))
+      show(t('toasts.taskDeleted'), 'success')
+      return { data: null, error: null }
+    } catch (error) {
+      console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
+      show(t('toasts.taskDeleteError'), 'error')
+      return { data: null, error }
     }
-    const { error } = await supabase
-      .from('taches')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
-    if (error)
-      return console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
-    setTaches(prev => prev.filter(task => task.id !== id))
   }
 
   const resetEdition = async () => {
-    const { error } = await supabase
-      .from('taches')
-      .update({ aujourdhui: false })
-      .eq('user_id', user.id)
-    if (error)
-      return console.error(`❌ Erreur reset édition : ${formatErr(error)}`)
-    setTaches(prev => prev.map(t => ({ ...t, aujourdhui: false })))
+    try {
+      const { error } = await supabase
+        .from('taches')
+        .update({ aujourdhui: false })
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      setTaches(prev => prev.map(t => ({ ...t, aujourdhui: false })))
+      show(t('toasts.allTasksReset'), 'success')
+      return { error: null }
+    } catch (error) {
+      console.error(`❌ Erreur reset édition : ${formatErr(error)}`)
+      show(t('toasts.taskResetError'), 'error')
+      return { error }
+    }
   }
 
   return {

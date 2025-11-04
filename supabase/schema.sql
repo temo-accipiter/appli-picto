@@ -2,8 +2,10 @@
 -- PostgreSQL database dump
 --
 
+\restrict etU5mr3ZGjk5K9nXTNYVOosNJ8ZcNy3AMNFOMfYOb0EpXiTdFxYImCmkvNQElka
+
 -- Dumped from database version 17.6
--- Dumped by pg_dump version 17.5
+-- Dumped by pg_dump version 18.0
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1319,11 +1321,49 @@ $$;
 ALTER FUNCTION public.get_user_roles(p_user_id uuid) OWNER TO postgres;
 
 --
+-- Name: get_users_with_roles(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.get_users_with_roles() RETURNS TABLE(user_id uuid, email text, role_name text, is_active boolean, assigned_at timestamp with time zone, expires_at timestamp with time zone)
+    LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    p.id as user_id,
+    au.email,
+    r.name as role_name,
+    ur.is_active,
+    ur.assigned_at,
+    ur.expires_at
+  FROM profiles p
+  INNER JOIN auth.users au ON p.id = au.id
+  LEFT JOIN user_roles ur ON p.id = ur.user_id
+  LEFT JOIN roles r ON ur.role_id = r.id
+  WHERE ur.is_active = true
+    OR ur.is_active IS NULL
+  ORDER BY p.created_at DESC;
+END;
+$$;
+
+
+ALTER FUNCTION public.get_users_with_roles() OWNER TO postgres;
+
+--
+-- Name: FUNCTION get_users_with_roles(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION public.get_users_with_roles() IS '✅ Returns all users with their roles - SECURED with search_path';
+
+
+--
 -- Name: get_users_with_roles(integer, integer, text, text); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
 CREATE FUNCTION public.get_users_with_roles(page_num integer DEFAULT 1, page_limit integer DEFAULT 20, role_filter text DEFAULT 'all'::text, status_filter text DEFAULT 'all'::text) RETURNS TABLE(id uuid, email text, pseudo text, created_at timestamp with time zone, last_login timestamp with time zone, account_status text, is_online boolean, user_roles jsonb, total_count bigint)
     LANGUAGE plpgsql SECURITY DEFINER
+    SET search_path TO 'public', 'pg_temp'
     AS $$
   DECLARE
     offset_val INT;
@@ -3622,6 +3662,7 @@ CREATE TABLE public.parametres (
     confettis boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    toasts_enabled boolean DEFAULT true,
     CONSTRAINT parametres_id_is_one CHECK ((id = 1))
 );
 
@@ -3870,7 +3911,7 @@ ALTER TABLE public.role_quotas OWNER TO postgres;
 --
 
 CREATE TABLE public.role_quotas_backup_legacy (
-    id uuid,
+    id uuid NOT NULL,
     role_id uuid,
     quota_type text,
     quota_limit integer,
@@ -4506,6 +4547,14 @@ ALTER TABLE ONLY public.role_permissions
 
 
 --
+-- Name: role_quotas_backup_legacy role_quotas_backup_legacy_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.role_quotas_backup_legacy
+    ADD CONSTRAINT role_quotas_backup_legacy_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: role_quotas role_quotas_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -4744,24 +4793,10 @@ CREATE UNIQUE INDEX categories_user_value_unique ON public.categories USING btre
 
 
 --
--- Name: categories_value_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX categories_value_idx ON public.categories USING btree (value);
-
-
---
 -- Name: consentements_origin_created_idx; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX consentements_origin_created_idx ON public.consentements USING btree (origin, created_at DESC);
-
-
---
--- Name: consentements_ts_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX consentements_ts_idx ON public.consentements USING btree (ts);
 
 
 --
@@ -4835,24 +4870,10 @@ CREATE INDEX idx_consentements_user_ts ON public.consentements USING btree (user
 
 
 --
--- Name: idx_demo_cards_active; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_demo_cards_active ON public.demo_cards USING btree (is_active);
-
-
---
 -- Name: idx_demo_cards_position; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE INDEX idx_demo_cards_position ON public.demo_cards USING btree ("position");
-
-
---
--- Name: idx_demo_cards_type; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_demo_cards_type ON public.demo_cards USING btree (card_type);
 
 
 --
@@ -4975,13 +4996,6 @@ CREATE INDEX idx_user_assets_created ON public.user_assets USING btree (created_
 
 
 --
--- Name: idx_user_assets_deleted; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX idx_user_assets_deleted ON public.user_assets USING btree (deleted_at) WHERE (deleted_at IS NOT NULL);
-
-
---
 -- Name: idx_user_assets_sha256; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -5028,6 +5042,20 @@ CREATE INDEX idx_user_assets_version ON public.user_assets USING btree (user_id,
 --
 
 CREATE INDEX idx_user_prefs_tz ON public.user_prefs USING btree (timezone);
+
+
+--
+-- Name: idx_user_roles_assigned_by; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_user_roles_assigned_by ON public.user_roles USING btree (assigned_by);
+
+
+--
+-- Name: INDEX idx_user_roles_assigned_by; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON INDEX public.idx_user_roles_assigned_by IS '✅ Added: Foreign key index for JOIN optimization - Fixed 2025-01-30';
 
 
 --
@@ -5178,31 +5206,10 @@ CREATE INDEX recompenses_visible_en_demo_idx ON public.recompenses USING btree (
 
 
 --
--- Name: stations_label_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX stations_label_idx ON public.stations USING btree (label);
-
-
---
--- Name: stations_ligne_type_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX stations_ligne_type_idx ON public.stations USING btree (ligne, type);
-
-
---
 -- Name: stations_type_ligne_label_unique; Type: INDEX; Schema: public; Owner: postgres
 --
 
 CREATE UNIQUE INDEX stations_type_ligne_label_unique ON public.stations USING btree (type, ligne, label);
-
-
---
--- Name: stations_type_ligne_ordre_idx; Type: INDEX; Schema: public; Owner: postgres
---
-
-CREATE INDEX stations_type_ligne_ordre_idx ON public.stations USING btree (type, ligne, ordre);
 
 
 --
@@ -5864,24 +5871,10 @@ ALTER TABLE ONLY storage.s3_multipart_uploads_parts
 
 
 --
--- Name: image_metrics Admins can view all metrics; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Admins can view all metrics" ON public.image_metrics FOR SELECT USING (public.is_admin());
-
-
---
 -- Name: image_metrics Users can insert own metrics; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY "Users can insert own metrics" ON public.image_metrics FOR INSERT WITH CHECK ((auth.uid() = user_id));
-
-
---
--- Name: image_metrics Users can view own metrics; Type: POLICY; Schema: public; Owner: postgres
---
-
-CREATE POLICY "Users can view own metrics" ON public.image_metrics FOR SELECT USING ((auth.uid() = user_id));
+CREATE POLICY "Users can insert own metrics" ON public.image_metrics FOR INSERT TO authenticated WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
 
 
 --
@@ -5938,10 +5931,17 @@ CREATE POLICY categories_delete_own ON public.categories FOR DELETE TO authentic
 
 
 --
--- Name: categories categories_insert_unified; Type: POLICY; Schema: public; Owner: postgres
+-- Name: categories categories_insert_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY categories_insert_unified ON public.categories FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'category'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'category'::text, 'monthly'::text))));
+CREATE POLICY categories_insert_authenticated ON public.categories FOR INSERT TO authenticated WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
+
+
+--
+-- Name: POLICY categories_insert_authenticated ON categories; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON POLICY categories_insert_authenticated ON public.categories IS '✅ Optimized: Using (SELECT auth.uid()) - Fixed 2025-01-30';
 
 
 --
@@ -6045,10 +6045,10 @@ CREATE POLICY parametres_delete_admin_only ON public.parametres FOR DELETE TO au
 
 
 --
--- Name: parametres parametres_insert_all_users; Type: POLICY; Schema: public; Owner: postgres
+-- Name: parametres parametres_insert_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY parametres_insert_all_users ON public.parametres FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+CREATE POLICY parametres_insert_authenticated ON public.parametres FOR INSERT TO authenticated WITH CHECK (true);
 
 
 --
@@ -6059,10 +6059,10 @@ CREATE POLICY parametres_select_all_users ON public.parametres FOR SELECT TO aut
 
 
 --
--- Name: parametres parametres_update_all_users; Type: POLICY; Schema: public; Owner: postgres
+-- Name: parametres parametres_update_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY parametres_update_all_users ON public.parametres FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY parametres_update_authenticated ON public.parametres FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
 
 
 --
@@ -6140,10 +6140,17 @@ CREATE POLICY recompenses_delete_unified ON public.recompenses FOR DELETE TO aut
 
 
 --
--- Name: recompenses recompenses_insert_unified; Type: POLICY; Schema: public; Owner: postgres
+-- Name: recompenses recompenses_insert_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY recompenses_insert_unified ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'monthly'::text))));
+CREATE POLICY recompenses_insert_authenticated ON public.recompenses FOR INSERT TO authenticated WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
+
+
+--
+-- Name: POLICY recompenses_insert_authenticated ON recompenses; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON POLICY recompenses_insert_authenticated ON public.recompenses IS '✅ Optimized: Using (SELECT auth.uid()) - Fixed 2025-01-30';
 
 
 --
@@ -6254,10 +6261,17 @@ CREATE POLICY taches_delete_unified ON public.taches FOR DELETE TO authenticated
 
 
 --
--- Name: taches taches_insert_unified; Type: POLICY; Schema: public; Owner: postgres
+-- Name: taches taches_insert_authenticated; Type: POLICY; Schema: public; Owner: postgres
 --
 
-CREATE POLICY taches_insert_unified ON public.taches FOR INSERT TO authenticated WITH CHECK ((public.is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'total'::text) AND public.check_user_quota(( SELECT auth.uid() AS uid), 'task'::text, 'monthly'::text))));
+CREATE POLICY taches_insert_authenticated ON public.taches FOR INSERT TO authenticated WITH CHECK ((user_id = ( SELECT auth.uid() AS uid)));
+
+
+--
+-- Name: POLICY taches_insert_authenticated ON taches; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON POLICY taches_insert_authenticated ON public.taches IS '✅ Optimized: Using (SELECT auth.uid()) - Fixed 2025-01-30';
 
 
 --
@@ -6279,6 +6293,22 @@ CREATE POLICY taches_select_owner_or_admin ON public.taches FOR SELECT TO authen
 --
 
 CREATE POLICY taches_update_unified ON public.taches FOR UPDATE TO authenticated USING ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))) WITH CHECK ((public.is_admin() OR (user_id = ( SELECT auth.uid() AS uid))));
+
+
+--
+-- Name: image_metrics unified_image_metrics_select; Type: POLICY; Schema: public; Owner: postgres
+--
+
+CREATE POLICY unified_image_metrics_select ON public.image_metrics FOR SELECT USING (((EXISTS ( SELECT 1
+   FROM public.profiles
+  WHERE ((profiles.id = ( SELECT auth.uid() AS uid)) AND (profiles.is_admin = true)))) OR (user_id = ( SELECT auth.uid() AS uid))));
+
+
+--
+-- Name: POLICY unified_image_metrics_select ON image_metrics; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON POLICY unified_image_metrics_select ON public.image_metrics IS '✅ Optimized: Merged 2 permissive policies into 1 - Fixed 2025-01-30';
 
 
 --
@@ -6916,6 +6946,15 @@ GRANT ALL ON FUNCTION public.get_user_roles(p_user_id uuid) TO service_role;
 
 
 --
+-- Name: FUNCTION get_users_with_roles(); Type: ACL; Schema: public; Owner: postgres
+--
+
+GRANT ALL ON FUNCTION public.get_users_with_roles() TO anon;
+GRANT ALL ON FUNCTION public.get_users_with_roles() TO authenticated;
+GRANT ALL ON FUNCTION public.get_users_with_roles() TO service_role;
+
+
+--
 -- Name: FUNCTION get_users_with_roles(page_num integer, page_limit integer, role_filter text, status_filter text); Type: ACL; Schema: public; Owner: postgres
 --
 
@@ -7549,4 +7588,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA storage GRANT ALL ON TABLES
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict etU5mr3ZGjk5K9nXTNYVOosNJ8ZcNy3AMNFOMfYOb0EpXiTdFxYImCmkvNQElka
 

@@ -5,7 +5,6 @@ import {
   ModalAjout,
   SignedImage,
 } from '@/components'
-import { useToast } from '@/contexts'
 import { useI18n } from '@/hooks'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
@@ -24,7 +23,6 @@ export default function RecompensesEdition({
   const [errors, setErrors] = useState({})
   const [successIds, setSuccessIds] = useState(new Set())
 
-  const { show } = useToast()
   const { t } = useI18n()
 
   const validateLabel = label => {
@@ -40,15 +38,18 @@ export default function RecompensesEdition({
     setErrors(prev => ({ ...prev, [id]: '' }))
   }
 
-  const handleBlur = (id, value) => {
+  const handleBlur = async (id, value) => {
     const error = validateLabel(value)
     if (error) {
       setErrors(prev => ({ ...prev, [id]: error }))
       return
     }
 
-    onLabelChange(id, value)
-    show(t('edition.rewardModified'), 'success')
+    // Attendre le résultat de la mise à jour
+    const result = await onLabelChange(id, value)
+
+    // Le toast est déjà géré dans le hook useRecompenses.updateLabel
+    // On ne fait que gérer l'état local du composant
 
     setDrafts(prev => {
       const next = { ...prev }
@@ -62,14 +63,17 @@ export default function RecompensesEdition({
       return next
     })
 
-    setSuccessIds(prev => new Set([...prev, id]))
-    setTimeout(() => {
-      setSuccessIds(prev => {
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
-    }, 600)
+    // Afficher l'indicateur de succès seulement si pas d'erreur
+    if (!result?.error) {
+      setSuccessIds(prev => new Set([...prev, id]))
+      setTimeout(() => {
+        setSuccessIds(prev => {
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        })
+      }, 600)
+    }
   }
 
   return (

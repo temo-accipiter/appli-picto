@@ -6,9 +6,9 @@ export default function ModalQuota({
   isOpen,
   onClose,
   contentType,
-  currentUsage: _currentUsage,
+  currentUsage,
   limit,
-  period: _period = 'total', // 'total' | 'monthly'
+  period = 'total', // 'total' | 'monthly'
 }) {
   const { t } = useI18n()
 
@@ -21,6 +21,30 @@ export default function ModalQuota({
 
   const translationKey = typeMap[contentType]
   const label = t(`quota.${translationKey}`)
+
+  // Calculer le pourcentage
+  const percentage = limit > 0 ? Math.round((currentUsage / limit) * 100) : 0
+
+  // Message selon la période
+  const periodLabel = period === 'monthly' ? 'ce mois-ci' : 'au total'
+
+  // Message contextuel selon le niveau d'utilisation
+  const getContextMessage = () => {
+    if (percentage >= 100) {
+      return period === 'monthly'
+        ? `Vous avez utilisé toutes vos ${label} pour ce mois. Le quota se réinitialisera le mois prochain.`
+        : `Vous avez utilisé toutes vos ${label} disponibles dans votre forfait gratuit.`
+    }
+    if (percentage >= 90) {
+      return `Attention : vous approchez de la limite (${percentage}% utilisé).`
+    }
+    if (percentage >= 80) {
+      return `Vous avez utilisé ${percentage}% de votre quota de ${label} ${periodLabel}.`
+    }
+    return null
+  }
+
+  const contextMessage = getContextMessage()
 
   return (
     <Modal
@@ -36,13 +60,39 @@ export default function ModalQuota({
       ]}
     >
       <div className="modal__message">
-        <p>{t('quota.quotaExceededMessage')}</p>
-        <p>{t('quota.upgradeToUnlock')}</p>
         <p>
           <strong>
-            {t('quota.limit')}: {limit} {label}
+            {currentUsage} / {limit} {label} {periodLabel}
           </strong>
         </p>
+
+        {contextMessage && (
+          <p style={{ marginTop: '1rem', color: 'var(--muted-foreground)' }}>
+            {contextMessage}
+          </p>
+        )}
+
+        <p style={{ marginTop: '1rem' }}>{t('quota.quotaExceededMessage')}</p>
+
+        <p style={{ marginTop: '0.5rem', fontWeight: 600 }}>
+          {t('quota.upgradeToUnlock')}
+        </p>
+
+        {period === 'monthly' && percentage >= 100 && (
+          <p
+            style={{
+              marginTop: '1rem',
+              padding: '0.75rem',
+              background: 'rgba(59, 130, 246, 0.1)',
+              borderRadius: '8px',
+              fontSize: '0.875rem',
+            }}
+          >
+            💡 <strong>Astuce :</strong> Votre quota mensuel se réinitialisera
+            automatiquement le 1er du mois prochain. Ou passez à Premium pour
+            supprimer les limites !
+          </p>
+        )}
       </div>
     </Modal>
   )

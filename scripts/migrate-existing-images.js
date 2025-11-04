@@ -88,7 +88,7 @@ async function migrateImages(dryRun = true, limit = null) {
             width = bitmap.width
             height = bitmap.height
             bitmap.close()
-          } catch (e) {
+          } catch (_e) {
             console.warn(`  ⚠️ Dimensions non extraites (${asset.mime_type})`)
           }
         }

@@ -1,8 +1,13 @@
 // src/components/DebugRole.jsx
+import { useState } from 'react'
 import { usePermissions } from '@/contexts'
 import { useSimpleRole } from '@/hooks'
 
 export default function DebugRole() {
+  const [visible, setVisible] = useState(
+    () => localStorage.getItem('debug-role-visible') !== 'false'
+  )
+
   const {
     role: permissionsRole,
     ready,
@@ -15,7 +20,38 @@ export default function DebugRole() {
   const permissionsLoading = !ready || isUnknown
   const finalRole = simpleRole !== 'unknown' ? simpleRole : permissionsRole
 
+  const toggleVisible = () => {
+    setVisible(v => {
+      localStorage.setItem('debug-role-visible', !v)
+      return !v
+    })
+  }
+
   if (!import.meta.env.DEV) return null
+
+  if (!visible) {
+    return (
+      <button
+        onClick={toggleVisible}
+        style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          background: 'rgba(0,0,0,0.5)',
+          color: 'white',
+          border: 'none',
+          padding: '8px 10px',
+          borderRadius: '6px',
+          fontSize: '14px',
+          cursor: 'pointer',
+          zIndex: 9999,
+        }}
+        title="Afficher debug rôles"
+      >
+        🔍
+      </button>
+    )
+  }
 
   return (
     <div
@@ -33,7 +69,31 @@ export default function DebugRole() {
         maxWidth: 260,
       }}
     >
-      <div>🔍 Debug Rôles:</div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 6,
+        }}
+      >
+        <div>🔍 Debug Rôles:</div>
+        <button
+          onClick={toggleVisible}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: '16px',
+            padding: 0,
+            lineHeight: 1,
+          }}
+          title="Masquer"
+        >
+          ✕
+        </button>
+      </div>
       <div>Permissions: {permissionsLoading ? '⏳' : permissionsRole}</div>
       <div>Simple: {simpleLoading ? '⏳' : simpleRole}</div>
       <div>Final: {finalRole}</div>

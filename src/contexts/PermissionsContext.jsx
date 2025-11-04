@@ -138,25 +138,35 @@ export const PermissionsProvider = ({ children }) => {
     }
   }, [authReady, user])
 
-  // Chargement initial + sur changements d’auth
+  // Chargement initial + sur changements d'auth
   useEffect(() => {
     let mounted = true
+    let subscription = null
+
     ;(async () => {
       await load()
       if (!mounted) return
     })()
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async () => {
-      try {
-        await load()
-      } catch {
-        /* déjà loggé */
+    // ✅ CORRECTIF : Stocker la subscription immédiatement et cleanup proper
+    const { data } = supabase.auth.onAuthStateChange(
+      async (_event, _session) => {
+        if (!mounted) return // ⚠️ Ne pas exécuter si démonté
+        try {
+          await load()
+        } catch {
+          /* déjà loggé */
+        }
       }
-    })
+    )
+    subscription = data?.subscription
 
     return () => {
       mounted = false
-      sub?.subscription?.unsubscribe?.()
+      // ✅ Cleanup immédiat et synchrone du listener
+      if (subscription) {
+        subscription.unsubscribe()
+      }
     }
   }, [load])
 

@@ -10,7 +10,7 @@
  * Retourne toujours { deleted: true, skipped: true } pour compatibilité.
  */
 
-import { supabase } from '@/utils/supabaseClient'
+// import { supabase } from '@/utils/supabaseClient' // Unused for now (deduplication)
 
 export default async function deleteImageIfAny(imagePath) {
   if (!imagePath) return { deleted: false, skipped: true }

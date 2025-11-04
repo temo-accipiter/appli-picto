@@ -87,45 +87,35 @@
         {
           "policyname": "recompenses_delete_unified",
           "command": "DELETE",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
           "with_check": null
         },
         {
           "policyname": "recompenses_insert_unified",
           "command": "INSERT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": null,
           "with_check": "(is_admin() OR ((user_id = ( SELECT auth.uid() AS uid)) AND check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'total'::text) AND check_user_quota(( SELECT auth.uid() AS uid), 'reward'::text, 'monthly'::text)))"
         },
         {
           "policyname": "recompenses_select_demo",
           "command": "SELECT",
-          "roles": [
-            "anon"
-          ],
+          "roles": ["anon"],
           "using": "(visible_en_demo = true)",
           "with_check": null
         },
         {
           "policyname": "recompenses_select_unified",
           "command": "SELECT",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)) OR ((user_id IS NULL) AND (visible_en_demo = true)))",
           "with_check": null
         },
         {
           "policyname": "recompenses_update_unified",
           "command": "UPDATE",
-          "roles": [
-            "authenticated"
-          ],
+          "roles": ["authenticated"],
           "using": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
           "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
         }

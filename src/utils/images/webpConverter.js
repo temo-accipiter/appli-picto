@@ -33,7 +33,7 @@ export async function convertToWebP(file, options = {}) {
   const {
     targetSizeKB = TARGET_MAX_UI_SIZE_KB,
     fallbackSizeKB = FALLBACK_MAX_UI_SIZE_KB,
-    maxDimension = TARGET_DIMENSION,
+    maxDimension: _maxDimension = TARGET_DIMENSION,
   } = options
 
   // ─────────────────────────────────────────────────────────────

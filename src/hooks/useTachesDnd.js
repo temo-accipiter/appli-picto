@@ -1,4 +1,4 @@
-import { isAbortLike, useAuth, withAbortSafe } from '@/hooks'
+import { isAbortLike, useAuth, useToast, useI18n, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -18,6 +18,8 @@ export default function useTachesDnd(onChange) {
   const [taches, setTaches] = useState([])
   const [doneMap, setDone] = useState({})
   const { user } = useAuth()
+  const { show } = useToast()
+  const { t } = useI18n()
 
   const loadTaches = useCallback(
     async (retryCount = 0) => {
@@ -137,6 +139,7 @@ export default function useTachesDnd(onChange) {
       if (error) {
         console.error(`Erreur mise à jour tâche: ${formatErr(error)}`)
         if (import.meta.env.DEV) console.warn("Détails de l'erreur:", error)
+        show(t('toasts.taskUpdateError'), 'error')
         return
       }
 
@@ -145,6 +148,10 @@ export default function useTachesDnd(onChange) {
 
       const count = Object.values(updated).filter(Boolean).length
       onChange?.(count, taches.length)
+      // Toast de succès discret pour ne pas polluer l'UI en drag-and-drop
+      if (import.meta.env.DEV) {
+        console.log('✅ Tâche mise à jour avec succès')
+      }
     } catch (err) {
       if (isAbortLike(err)) {
         if (import.meta.env.DEV)
@@ -155,6 +162,7 @@ export default function useTachesDnd(onChange) {
         `Erreur inattendue lors de la mise à jour de la tâche: ${formatErr(err)}`
       )
       if (import.meta.env.DEV) console.warn("Détails de l'erreur:", err)
+      show(t('toasts.taskUpdateError'), 'error')
     }
   }
 
@@ -176,12 +184,14 @@ export default function useTachesDnd(onChange) {
       if (error) {
         console.error(`Erreur reset tâches: ${formatErr(error)}`)
         if (import.meta.env.DEV) console.warn("Détails de l'erreur:", error)
+        show(t('toasts.taskResetError'), 'error')
         return
       }
 
       const reset = Object.fromEntries(taches.map(t => [t.id, false]))
       setDone(reset)
       onChange?.(0, taches.length)
+      show(t('toasts.allTasksReset'), 'success')
     } catch (err) {
       if (isAbortLike(err)) {
         if (import.meta.env.DEV)
@@ -192,6 +202,7 @@ export default function useTachesDnd(onChange) {
         `Erreur inattendue lors du reset des tâches: ${formatErr(err)}`
       )
       if (import.meta.env.DEV) console.warn("Détails de l'erreur:", err)
+      show(t('toasts.taskResetError'), 'error')
     }
   }
 

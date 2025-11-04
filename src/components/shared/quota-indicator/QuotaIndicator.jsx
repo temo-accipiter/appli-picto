@@ -60,15 +60,34 @@ export default function QuotaIndicator({
         ? t('quota.rewardsThisMonth')
         : t('quota.categoriesThisMonth')
 
-  const { current, limit, remaining, percentage, isNearLimit, isAtLimit } = info
+  const {
+    current,
+    limit,
+    remaining,
+    percentage,
+    isNearLimit,
+    isAtLimit,
+    period,
+  } = info
+
+  // ✅ PHASE 5: Calculer niveau de warning (80-89% = warning, 90-99% = critical)
+  const isLimitWarning = percentage >= 90 && percentage < 100
+  const warningLevel = isAtLimit
+    ? 'at-limit'
+    : isLimitWarning
+      ? 'limit-warning'
+      : isNearLimit
+        ? 'near-limit'
+        : 'normal'
+
+  // ✅ PHASE 5: Message selon période (mensuel ou total)
+  const periodLabel = period === 'monthly' ? 'ce mois-ci' : 'au total'
 
   return (
     <div
-      className={`quota-indicator ${size} ${className} ${onClick ? 'clickable' : ''} ${
-        isAtLimit ? 'at-limit' : isNearLimit ? 'near-limit' : ''
-      }`}
+      className={`quota-indicator ${size} ${className} ${onClick ? 'clickable' : ''} ${warningLevel}`}
       onClick={onClick}
-      title={`${current}/${limit} ${contentLabel} utilisées`}
+      title={`${current}/${limit} ${contentLabel} utilisées ${periodLabel}`}
     >
       {showLabel && (
         <div className="quota-label">
@@ -83,7 +102,7 @@ export default function QuotaIndicator({
 
       <div className="quota-bar">
         <div
-          className={`quota-fill ${isAtLimit ? 'at-limit' : isNearLimit ? 'near-limit' : ''}`}
+          className={`quota-fill ${warningLevel}`}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
         {showPercentage && (
@@ -97,14 +116,34 @@ export default function QuotaIndicator({
         <span className="quota-limit">{limit}</span>
         {showRemaining && remaining > 0 && (
           <span className="quota-remaining">
-            ({remaining} restante{remaining > 1 ? 's' : ''})
+            ({remaining} restante{remaining > 1 ? 's' : ''}) {periodLabel}
           </span>
         )}
       </div>
 
-      {isAtLimit && (
-        <div className="quota-warning">
+      {/* ✅ PHASE 5: Warning à 90% */}
+      {isLimitWarning && !isAtLimit && (
+        <div className="quota-warning limit-warning">
           <span className="warning-icon">⚠️</span>
+          <span className="warning-text">
+            Attention : proche de la limite ({percentage}%)
+          </span>
+        </div>
+      )}
+
+      {/* ✅ PHASE 5: Info à 80% */}
+      {isNearLimit && !isLimitWarning && !isAtLimit && (
+        <div className="quota-info near-limit">
+          <span className="info-icon">ℹ️</span>
+          <span className="info-text">
+            Quota en cours d&apos;utilisation ({percentage}%)
+          </span>
+        </div>
+      )}
+
+      {isAtLimit && (
+        <div className="quota-warning at-limit">
+          <span className="warning-icon">🚫</span>
           <span className="warning-text">{t('quota.limitReached')}</span>
         </div>
       )}

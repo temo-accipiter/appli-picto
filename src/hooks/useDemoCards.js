@@ -1,5 +1,5 @@
 // src/hooks/useDemoCards.js
-import { isAbortLike, withAbortSafe } from '@/hooks'
+import { isAbortLike, withAbortSafe, useI18n } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '@/hooks' // pour savoir si visiteur
@@ -7,9 +7,11 @@ import { useAuth } from '@/hooks' // pour savoir si visiteur
 /**
  * Hook pour gérer les cartes de démonstration (visiteurs uniquement).
  * - Si utilisateur authentifié : ne retourne rien (tableaux vides), pas de fetch, pas de canal.
+ * - Traduit automatiquement les labels des cartes (clés i18n stockées en DB)
  */
 export default function useDemoCards() {
   const { user, authReady } = useAuth()
+  const { t, language } = useI18n()
 
   const [loading, setLoading] = useState(true)
   const [demoCards, setDemoCards] = useState([])
@@ -48,11 +50,40 @@ export default function useDemoCards() {
         return
       }
 
-      const cards = data || []
-      setDemoCards(cards)
+      // Mapper les labels français vers les clés i18n (sans modifier la DB)
+      const labelToKeyMap = {
+        'Se brosser les dents': 'demo.task1',
+        'Se brosser les cheveux': 'demo.task2',
+        "S'habiller": 'demo.task3',
+        'Bravo !': 'demo.reward1',
+      }
 
-      const tasks = cards.filter(card => card.card_type === 'task')
-      const rewards = cards.filter(card => card.card_type === 'reward')
+      // Traduire les labels (clés i18n → texte)
+      const translatedCards = (data || []).map(card => {
+        // Chercher la clé i18n correspondante au label
+        const i18nKey = card.label_key || labelToKeyMap[card.label]
+        const translatedLabel = i18nKey ? t(i18nKey) : card.label
+
+        if (import.meta.env.DEV) {
+          console.log('🔤 Traduction card:', {
+            original: card.label,
+            key: i18nKey,
+            translated: translatedLabel,
+            language,
+          })
+        }
+        return {
+          ...card,
+          label: translatedLabel,
+        }
+      })
+
+      setDemoCards(translatedCards)
+
+      const tasks = translatedCards.filter(card => card.card_type === 'task')
+      const rewards = translatedCards.filter(
+        card => card.card_type === 'reward'
+      )
 
       setDemoTasks(tasks)
       setDemoRewards(rewards)
@@ -62,9 +93,9 @@ export default function useDemoCards() {
       setError('Erreur lors du chargement des cartes de démonstration')
       setLoading(false)
     }
-  }, [isVisitor])
+  }, [isVisitor, t, language])
 
-  // Chargement initial seulement pour visiteurs
+  // Chargement initial seulement pour visiteurs + rechargement quand langue change
   useEffect(() => {
     if (!authReady) return
     if (!isVisitor) {
@@ -77,7 +108,7 @@ export default function useDemoCards() {
       return
     }
     fetchDemoCards()
-  }, [authReady, isVisitor, fetchDemoCards])
+  }, [authReady, isVisitor, fetchDemoCards, language])
 
   // Abonnement temps réel seulement pour visiteurs
   useEffect(() => {

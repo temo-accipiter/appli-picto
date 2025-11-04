@@ -9,7 +9,7 @@ import useAuth from './useAuth'
  * Gère les états : active, suspended, deletion_scheduled, pending_verification
  */
 export default function useAccountStatus() {
-  const { user } = useAuth()
+  const { user, authReady } = useAuth()
 
   const [loading, setLoading] = useState(true)
   const [accountStatus, setAccountStatus] = useState(null)
@@ -22,7 +22,8 @@ export default function useAccountStatus() {
 
   // Fonction pour récupérer l'état du compte
   const fetchAccountStatus = useCallback(async () => {
-    if (!user?.id) {
+    // ✅ CORRECTIF : Attendre que l'auth soit prête avant de charger
+    if (!authReady || !user?.id) {
       setAccountStatus(null)
       setLoading(false)
       return
@@ -63,20 +64,33 @@ export default function useAccountStatus() {
       setAccountStatus('active') // Fallback par défaut
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, authReady])
 
   // Charger l'état initial
   useEffect(() => {
     fetchAccountStatus()
   }, [fetchAccountStatus])
 
-  // Écouter les changements en temps réel
+  // ✅ CORRECTIF : Écouter les changements avec dépendances stables
   useEffect(() => {
-    if (!user?.id) return
+    if (!user?.id) {
+      // Cleanup si user disparaît
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+      return
+    }
 
+    // Cleanup du channel précédent
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current)
       channelRef.current = null
+    }
+
+    // ✅ Handler stable
+    const handleUpdate = () => {
+      fetchAccountStatus()
     }
 
     const channel = supabase
@@ -89,9 +103,7 @@ export default function useAccountStatus() {
           table: 'profiles',
           filter: `id=eq.${user.id}`,
         },
-        () => {
-          fetchAccountStatus()
-        }
+        handleUpdate
       )
       .subscribe()
 

@@ -1,8 +1,9 @@
-import { isAbortLike, withAbortSafe } from '@/hooks'
+import { isAbortLike, withAbortSafe, useAuth } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
 export default function useParametres(reload = 0) {
+  const { authReady } = useAuth()
   const [parametres, setParametres] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -93,15 +94,17 @@ export default function useParametres(reload = 0) {
   )
 
   useEffect(() => {
+    // ✅ CORRECTIF : Attendre que l'auth soit prête avant de charger
+    if (!authReady) return
     fetchParametres()
-  }, [reload, fetchParametres])
+  }, [reload, authReady, fetchParametres])
 
   // Fonction pour mettre à jour les paramètres
   const updateParametres = useCallback(
     async updates => {
       if (!parametres) {
         // Si pas de paramètres, créer avec les valeurs par défaut
-        const defaults = { confettis: true, ...updates }
+        const defaults = { confettis: true, toasts_enabled: true, ...updates }
         return await insertDefaults(defaults)
       }
 
