@@ -107,7 +107,7 @@ export async function recreateSupabaseClient() {
         channel.unsubscribe().catch(() => {})
       })
       supabase.realtime?.disconnect().catch(() => {})
-    } catch (e) {
+    } catch {
       // Ignore errors
     }
 

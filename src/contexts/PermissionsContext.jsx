@@ -142,27 +142,35 @@ export const PermissionsProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true
     let subscription = null
+    let debounceTimer = null
 
     ;(async () => {
       await load()
       if (!mounted) return
     })()
 
-    // ✅ CORRECTIF : Stocker la subscription immédiatement et cleanup proper
-    const { data } = supabase.auth.onAuthStateChange(
-      async (_event, _session) => {
-        if (!mounted) return // ⚠️ Ne pas exécuter si démonté
-        try {
-          await load()
-        } catch {
+    // ✅ CORRECTIF CRITIQUE : Débouncer les appels Supabase dans onAuthStateChange
+    // Bug documenté : https://github.com/supabase/auth-js/issues/762
+    // Async Supabase calls inside onAuthStateChange() cause getSession() to hang indefinitely
+    const { data } = supabase.auth.onAuthStateChange((_event, _session) => {
+      if (!mounted) return
+
+      // ✅ Débounce : Ne pas appeler load() immédiatement
+      // Attendre 100ms que le SDK se stabilise après le state change
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        if (!mounted) return
+        // ✅ Appel différé, hors du callback sync
+        load().catch(() => {
           /* déjà loggé */
-        }
-      }
-    )
+        })
+      }, 100)
+    })
     subscription = data?.subscription
 
     return () => {
       mounted = false
+      if (debounceTimer) clearTimeout(debounceTimer)
       // ✅ Cleanup immédiat et synchrone du listener
       if (subscription) {
         subscription.unsubscribe()

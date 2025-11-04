@@ -160,7 +160,7 @@ export function resetSupabaseClient(supabaseClient, options = {}) {
       channels.forEach(channel => {
         try {
           supabaseClient.removeChannel(channel)
-        } catch (e) {
+        } catch {
           // Ignore les erreurs de cleanup
         }
       })
@@ -175,7 +175,7 @@ export function resetSupabaseClient(supabaseClient, options = {}) {
           data.subscription.unsubscribe()
         }
         logHealth('info', 'Auth listeners cleaned up')
-      } catch (e) {
+      } catch {
         // Ignore
       }
     }

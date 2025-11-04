@@ -7,7 +7,7 @@
 import { checkSupabaseHealth, resetSupabaseClient } from './supabaseHealthCheck'
 
 const HEARTBEAT_INTERVAL = 60000 // Vérifier toutes les 60 secondes (réduit pour éviter faux positifs)
-const VISIBILITY_CHECK_DELAY = 5000 // Délai après retour de visibilité (augmenté à 5s)
+const _VISIBILITY_CHECK_DELAY = 5000 // Délai après retour de visibilité (augmenté à 5s) - DÉSACTIVÉ
 const MIN_CHECK_INTERVAL = 10000 // Minimum 10s entre deux checks (évite rafales)
 
 let heartbeatTimer = null

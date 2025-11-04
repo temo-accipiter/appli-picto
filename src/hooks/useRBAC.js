@@ -201,6 +201,7 @@ export default function useRBAC() {
     permissions.isVisitor,
     permissions.isAdmin,
     permissions.role,
+    permissions.user?.id,
     initialLoad,
   ])
 

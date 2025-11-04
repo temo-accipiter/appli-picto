@@ -313,7 +313,7 @@ export function AuthProvider({ children }) {
           ])
           sessionData = result.data
           sErr = result.error
-        } catch (timeoutError) {
+        } catch {
           if (import.meta.env.DEV) {
             console.warn('[Auth] getSession timeout, recreating SDK client...')
           }
