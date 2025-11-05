@@ -4,6 +4,7 @@ import {
   PersonalizationModal,
   SelectedRewardFloating,
   TachesDnd,
+  TimeTimer,
   TrainProgressBar,
 } from '@/components'
 import DebugRole from '@/tools/debug-role/DebugRole'
@@ -186,7 +187,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const selected = (Array.isArray(recompenses) ? recompenses : []).find(
     r => r?.selected === true || r?.selected === 1
   )
-  const { showTrain, showRecompense } = useDisplay()
+  const { showTrain, showRecompense, showTimeTimer } = useDisplay()
 
   // Pour les visiteurs, sélectionner automatiquement la première récompense
   const selectedReward = useMemo(() => {
@@ -271,21 +272,29 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
         </div>
       )}
 
-      <TachesDnd
-        items={taches}
-        doneMap={doneMap}
-        onReorder={ids => {
-          const newList = (ids ?? [])
-            .map(id => safeTaches.find(t => t?.id === id))
-            .filter(Boolean)
-          saveOrder(newList)
-        }}
-        onToggle={toggleDone}
-        onReset={() => {
-          resetAll()
-          setShowModalRecompense(false)
-        }}
-      />
+      <div className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}>
+        <TachesDnd
+          items={taches}
+          doneMap={doneMap}
+          onReorder={ids => {
+            const newList = (ids ?? [])
+              .map(id => safeTaches.find(t => t?.id === id))
+              .filter(Boolean)
+            saveOrder(newList)
+          }}
+          onToggle={toggleDone}
+          onReset={() => {
+            resetAll()
+            setShowModalRecompense(false)
+          }}
+        />
+
+        {showTimeTimer && (
+          <div className="tableau-magique__timer-container">
+            <TimeTimer compact={true} initialDuration={10} />
+          </div>
+        )}
+      </div>
 
       {showConfettis && !isDemoMode && (
         <Confetti width={width} height={height} />

@@ -18,6 +18,51 @@
   }
 }
 
+// Layout principal du tableau avec TimeTimer
+.tableau-magique {
+  &__content {
+    display: flex;
+    gap: $spacing-xl;
+    width: 100%;
+    transition: all $transition-base ease;
+
+    // Mode avec TimeTimer : disposition côte à côte
+    &--with-timer {
+      flex-wrap: wrap;
+      align-items: flex-start;
+
+      @media (min-width: 1024px) {
+        flex-wrap: nowrap;
+      }
+    }
+  }
+
+  &__timer-container {
+    flex-shrink: 0;
+    width: 100%;
+    animation: slide-up $transition-base ease;
+
+    @media (min-width: 1024px) {
+      width: 350px;
+      position: sticky;
+      top: $spacing-lg;
+    }
+  }
+}
+
+// Support pour prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .tableau-magique {
+    &__content {
+      transition: none;
+    }
+
+    &__timer-container {
+      animation: none;
+    }
+  }
+}
+
 .metro-line {
   margin-bottom: $spacing-xl;
   text-align: center;

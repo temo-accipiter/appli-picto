@@ -375,6 +375,8 @@
     "toastsDisabled": "🔕 Notifications disabled",
     "showTrain": "🚆 Show train",
     "showReward": "🎁 Show reward",
+    "showTimeTimer": "⏱ Show Time Timer",
+    "hideTimeTimer": "⏱ Hide Time Timer",
     "taskAdded": "Task added ✅",
     "taskRenamed": "Task renamed",
     "taskDeleted": "Task deleted",
@@ -445,5 +447,20 @@
     "categoryModifyError": "Error modifying category",
     "categoryDeleted": "Category deleted",
     "categoryDeleteError": "Unable to delete category"
+  },
+  "timeTimer": {
+    "title": "Time Timer",
+    "start": "Start",
+    "pause": "Pause",
+    "reset": "Reset",
+    "duration": "Duration",
+    "settings": "Settings",
+    "selectDuration": "Select a duration",
+    "durationSettings": "Duration settings",
+    "completed": "Time Timer completed!",
+    "running": "Time Timer running",
+    "paused": "Time Timer paused",
+    "minutes": "minutes",
+    "timeRemaining": "Time remaining"
   }
 }

@@ -7,6 +7,9 @@ export { default as TachesDnd } from './features/taches/taches-dnd/TachesDnd'
 export { default as TachesEdition } from './features/taches/taches-edition/TachesEdition'
 export { default as TrainProgressBar } from './features/taches/train-progress-bar/TrainProgressBar'
 
+// Time Timer
+export { default as TimeTimer } from './features/time-timer/TimeTimer'
+
 // Recompenses
 export { default as RecompensesEdition } from './features/recompenses/recompenses-edition/RecompensesEdition'
 export { default as SelectedRewardFloating } from './features/recompenses/selected-reward-floating/SelectedRewardFloating'
