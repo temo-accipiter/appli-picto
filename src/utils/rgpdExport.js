@@ -2,17 +2,17 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 
 /**
- * Construit et télécharge un export RGPD (ZIP)
- * - Données: profiles, taches, recompenses (filtrées par user)
- * - Images: URLs signées (avatars, images de tâches/récompenses)
+ * Build and download a GDPR export (ZIP)
+ * - Data: profiles, tasks, rewards (filtered by user)
+ * - Images: Signed URLs (avatars, task/reward images)
  *
- * @param {object} supabase - client supabase
- * @param {object} user     - user courant (id, email, user_metadata)
+ * @param {object} supabase - Supabase client
+ * @param {object} user     - Current user (id, email, user_metadata)
  */
 export async function exportUserDataZip(supabase, user) {
-  if (!user?.id) throw new Error('Utilisateur non connecté')
+  if (!user?.id) throw new Error('User not logged in')
 
-  // 1) Récupération des données
+  // 1) Data retrieval
   const [{ data: profile }, { data: taches }, { data: recompenses }] =
     await Promise.all([
       supabase
@@ -35,7 +35,7 @@ export async function exportUserDataZip(supabase, user) {
         .then(({ data }) => ({ data: data || [] })),
     ])
 
-  // 2) URL signée avatar
+  // 2) Signed avatar URL
   let avatarSignedUrl = null
   const avatarPath = user?.user_metadata?.avatar || profile?.avatar_url || null
   if (avatarPath) {
@@ -45,7 +45,7 @@ export async function exportUserDataZip(supabase, user) {
     if (!error) avatarSignedUrl = data?.signedUrl || null
   }
 
-  // 3) URLs signées pour les images des tâches/récompenses
+  // 3) Signed URLs for task/reward images
   async function signIfNeeded(filePath) {
     if (!filePath) return null
     const { data, error } = await supabase.storage
@@ -68,7 +68,7 @@ export async function exportUserDataZip(supabase, user) {
     }))
   )
 
-  // 4) Préparation payload JSON
+  // 4) Prepare JSON payload
   const now = new Date().toISOString()
   const payload = {
     export_version: 1,
@@ -81,19 +81,19 @@ export async function exportUserDataZip(supabase, user) {
     avatar_signed_url: avatarSignedUrl,
     taches: tachesWithUrls,
     recompenses: recompensesWithUrls,
-    // ajoute ici d'autres tables si besoin (consentements, etc.)
+    // Add other tables here if needed (consents, etc.)
   }
 
-  // 5) Construction ZIP
+  // 5) Build ZIP
   const zip = new JSZip()
   zip.file('export.json', JSON.stringify(payload, null, 2))
   const readme = [
-    'Export RGPD – {{NomSite}}',
-    `Généré le : ${now}`,
+    'GDPR Export – Picto App',
+    `Generated on: ${now}`,
     '',
-    '- Les images privées NE sont pas incluses physiquement dans ce ZIP.',
-    '- Elles sont accessibles via des URLs signées valables 1 heure (champ *_signed_url).',
-    '- Le fichier export.json contient toutes les données.',
+    '- Private images are NOT physically included in this ZIP.',
+    '- They are accessible via signed URLs valid for 1 hour (*_signed_url field).',
+    '- The export.json file contains all data.',
   ].join('\n')
   zip.file('README.txt', readme)
 
