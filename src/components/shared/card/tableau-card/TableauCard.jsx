@@ -116,7 +116,7 @@ function TableauCard({ tache, done, toggleDone }) {
   return (
     <div
       ref={setNodeRef}
-      className={`card-tache ${done ? 'done' : ''}`}
+      className={`tableau-card ${done ? 'done' : ''}`}
       style={style}
       {...attributes}
       {...listeners}
@@ -138,13 +138,16 @@ function TableauCard({ tache, done, toggleDone }) {
           />
         ))}
 
-      <Checkbox
-        id={`tache-fait-${tache.id}`}
-        checked={done}
-        onChange={handleCheck}
-        className="tableau-card__checkbox"
-        size="md"
-      />
+      {/* Wrapper pour isoler la checkbox des drag listeners */}
+      <div onPointerDown={e => e.stopPropagation()}>
+        <Checkbox
+          id={`tache-fait-${tache.id}`}
+          checked={done}
+          onChange={handleCheck}
+          className="tableau-card__checkbox"
+          size="md"
+        />
+      </div>
     </div>
   )
 }
