@@ -1,0 +1,51 @@
+// src/pages/time-timer/TimeTimerPage.scss
+@use '@/styles/abstracts' as *;
+
+.time-timer-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: $spacing-xl;
+  background: linear-gradient(to bottom, #f5f7fa 0%, #c3cfe2 100%);
+
+  &__header {
+    text-align: center;
+    margin-bottom: $spacing-xl;
+    animation: fade-in $transition-base ease;
+  }
+
+  &__title {
+    font-size: 2.5rem;
+    font-weight: $font-weight-bold;
+    color: $color-text;
+    margin: 0 0 $spacing-sm 0;
+
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+
+  &__subtitle {
+    font-size: $font-size-lg;
+    color: gray(600);
+    margin: 0;
+  }
+
+  &__content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: slide-up $transition-slow ease;
+  }
+}
+
+// Support pour prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .time-timer-page {
+    &__header,
+    &__content {
+      animation: none;
+    }
+  }
+}

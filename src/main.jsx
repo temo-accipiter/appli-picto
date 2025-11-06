@@ -140,6 +140,7 @@ import {
   ResetPassword,
   Signup,
   Tableau,
+  TimeTimerPage,
 } from '@/pages'
 
 // Routes : login/signup sous Layout pour afficher bannière cookies & footer
@@ -150,6 +151,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <HomeRedirect /> },
       { path: 'tableau', element: <Tableau /> },
+      { path: 'time-timer', element: <TimeTimerPage /> },
       {
         path: 'edition',
         element: (

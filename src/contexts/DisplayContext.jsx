@@ -44,6 +44,15 @@ export function DisplayProvider({ children }) {
       localStorage.setItem('showRecompense', showRecompense ? 'true' : 'false')
   }, [showRecompense, isVisitor])
 
+  const [showTimeTimer, setShowTimeTimer] = useState(() => {
+    if (loading) return localStorage.getItem('showTimeTimer') === 'true'
+    return isVisitor ? false : localStorage.getItem('showTimeTimer') === 'true'
+  })
+  useEffect(() => {
+    if (!isVisitor)
+      localStorage.setItem('showTimeTimer', showTimeTimer ? 'true' : 'false')
+  }, [showTimeTimer, isVisitor])
+
   return (
     <DisplayContext.Provider
       value={{
@@ -53,8 +62,10 @@ export function DisplayProvider({ children }) {
         setShowAutre,
         showRecompense,
         setShowRecompense,
-        loading, // expose l’alias si d’autres consommateurs l’utilisent
-        isVisitor, // utile à l’UI
+        showTimeTimer,
+        setShowTimeTimer,
+        loading, // expose l'alias si d'autres consommateurs l'utilisent
+        isVisitor, // utile à l'UI
       }}
     >
       {children}

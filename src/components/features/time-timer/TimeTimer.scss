@@ -1,0 +1,293 @@
+// src/components/features/time-timer/TimeTimer.scss
+@use '@/styles/abstracts' as *;
+
+.time-timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xl;
+  padding: $spacing-xl;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  border-radius: $radius-lg;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  // Mode plein écran
+  &--full {
+    min-height: 600px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  // Mode compact (pour affichage à côté d'autres composants)
+  &--compact {
+    max-width: 300px;
+    padding: $spacing-lg;
+    gap: $spacing-md;
+  }
+
+  // Container du cercle
+  &__circle-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 280px;
+
+    .time-timer--compact & {
+      max-width: 160px;
+    }
+  }
+
+  // SVG du cercle
+  &__circle {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+  }
+
+  // Cercle de fond
+  &__circle-bg {
+    opacity: 0.2;
+  }
+
+  // Cercle de progression
+  &__circle-progress {
+    transition: stroke 0.3s ease;
+
+    .time-timer--compact & {
+      stroke-width: 10;
+    }
+  }
+
+  // Affichage du temps au centre
+  &__time-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-xs;
+    text-align: center;
+  }
+
+  &__time-text {
+    font-size: 3rem;
+    font-weight: $font-weight-bold;
+    color: $color-text;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+
+    .time-timer--compact & {
+      font-size: 1.75rem;
+    }
+  }
+
+  &__duration-label {
+    font-size: $font-size-sm;
+    color: gray(600);
+    font-weight: $font-weight-medium;
+  }
+
+  // Contrôles
+  &__controls {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-md $spacing-lg;
+    border: none;
+    border-radius: $radius-md;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all $transition-base ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .time-timer--compact & {
+      padding: $spacing-sm $spacing-md;
+      font-size: $font-size-sm;
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &:focus-visible {
+      outline: 3px solid $color-info-primary;
+      outline-offset: 2px;
+    }
+
+    // Bouton principal (Play/Pause)
+    &--primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: $color-text-invert;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+      }
+    }
+
+    // Boutons secondaires (Reset, Settings)
+    &--secondary {
+      background: $color-bg;
+      color: $color-text;
+      border: 2px solid gray(300);
+
+      &:hover:not(:disabled) {
+        background: gray(100);
+        border-color: gray(400);
+      }
+    }
+  }
+
+  &__icon {
+    font-size: 1.25rem;
+    line-height: 1;
+
+    .time-timer--compact & {
+      font-size: 1rem;
+    }
+  }
+
+  // Panneau de réglages
+  &__settings {
+    width: 100%;
+    padding: $spacing-lg;
+    background: $color-bg;
+    border-radius: $radius-md;
+    border: 2px solid gray(200);
+    animation: slide-up $transition-base ease;
+  }
+
+  &__settings-title {
+    margin: 0 0 $spacing-md 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text;
+    text-align: center;
+  }
+
+  &__preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: $spacing-sm;
+
+    .time-timer--compact & {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  &__preset-btn {
+    padding: $spacing-md;
+    border: 2px solid gray(300);
+    border-radius: $radius-sm;
+    background: $color-bg;
+    color: $color-text;
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all $transition-fast ease;
+
+    &:hover {
+      background: gray(100);
+      border-color: $color-primary;
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    &:focus-visible {
+      outline: 3px solid $color-info-primary;
+      outline-offset: 2px;
+    }
+
+    &--active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: $color-text-invert;
+      border-color: transparent;
+      font-weight: $font-weight-bold;
+      animation: pop $transition-base ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+      }
+    }
+  }
+}
+
+// Classe utilitaire pour le contenu accessible uniquement aux lecteurs d'écran
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// Variables CSS pour les couleurs (accessibles depuis le JS)
+:root {
+  --color-success: #{$color-success};
+  --color-warning: #{$color-warning};
+  --color-danger: #{$color-error};
+  --color-gray-light: #{gray(200)};
+}
+
+// Support pour prefers-reduced-motion
+@media (prefers-reduced-motion: reduce) {
+  .time-timer {
+    &__circle-progress {
+      transition: none;
+    }
+
+    &__btn {
+      transition: none;
+
+      &:hover:not(:disabled) {
+        transform: none;
+      }
+    }
+
+    &__preset-btn {
+      transition: none;
+
+      &:hover {
+        transform: none;
+      }
+
+      &--active {
+        animation: none;
+      }
+    }
+
+    &__settings {
+      animation: none;
+    }
+  }
+}

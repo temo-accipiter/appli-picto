@@ -423,6 +423,8 @@
     "toastsDisabled": "🔕 Notifications désactivées",
     "showTrain": "🚆 Afficher le train",
     "showReward": "🎁 Afficher la récompense",
+    "showTimeTimer": "⏱ Afficher le Time Timer",
+    "hideTimeTimer": "⏱ Masquer le Time Timer",
     "taskAdded": "Tâche ajoutée ✅",
     "taskRenamed": "Tâche renommée",
     "taskDeleted": "Tâche supprimée",
@@ -493,5 +495,20 @@
     "categoryModifyError": "Erreur lors de la modification",
     "categoryDeleted": "Catégorie supprimée",
     "categoryDeleteError": "Impossible de supprimer la catégorie"
+  },
+  "timeTimer": {
+    "title": "Time Timer",
+    "start": "Démarrer",
+    "pause": "Pause",
+    "reset": "Réinitialiser",
+    "duration": "Durée",
+    "settings": "Réglages",
+    "selectDuration": "Choisis une durée",
+    "durationSettings": "Réglages de durée",
+    "completed": "Time Timer terminé !",
+    "running": "Time Timer en cours",
+    "paused": "Time Timer en pause",
+    "minutes": "minutes",
+    "timeRemaining": "Temps restant"
   }
 }
