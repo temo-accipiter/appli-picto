@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import './PortailRGPD.scss'
 
 import { supabase } from '@/utils/supabaseClient'
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
 import { exportUserDataZip } from '@/utils/rgpdExport'
 
@@ -11,20 +11,21 @@ export default function PortailRGPD() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { show: showToast } = useToast()
+  const { t } = useI18n()
   const [downloading, setDownloading] = useState(false)
 
   const handleExport = async () => {
     if (!user) {
-      showToast('Veuillez vous connecter pour exporter vos données.', 'error')
+      showToast(t('rgpd.loginRequired'), 'error')
       return
     }
     try {
       setDownloading(true)
       await exportUserDataZip(supabase, user)
-      showToast('Export RGPD généré ✅', 'success')
+      showToast(t('rgpd.exportSuccess'), 'success')
     } catch (e) {
       console.error(e)
-      showToast("Erreur lors de l'export RGPD", 'error')
+      showToast(t('rgpd.exportError'), 'error')
     } finally {
       setDownloading(false)
     }
@@ -37,76 +38,61 @@ export default function PortailRGPD() {
   return (
     <div className="rgpd-portal">
       <header className="rgpd-portal__header">
-        <h1>Portail RGPD</h1>
-        <p className="rgpd-portal__subtitle">
-          Téléchargez vos données, gérez vos consentements et retrouvez les
-          actions de rectification/suppression dans votre profil.
-        </p>
+        <h1>{t('rgpd.title')}</h1>
+        <p className="rgpd-portal__subtitle">{t('rgpd.subtitle')}</p>
       </header>
 
       <div className="rgpd-portal__grid">
         {/* Export des données */}
         <section className="rgpd-card" aria-labelledby="rgpd-export-title">
-          <h2 id="rgpd-export-title">Télécharger mes données</h2>
-          <p>
-            Obtenez un fichier ZIP contenant toutes vos données (export.json) et
-            des liens signés temporaires pour vos images privées.
-          </p>
+          <h2 id="rgpd-export-title">{t('rgpd.exportTitle')}</h2>
+          <p>{t('rgpd.exportDescription')}</p>
           <button
             className="btn"
             onClick={handleExport}
             disabled={downloading}
             aria-busy={downloading ? 'true' : 'false'}
           >
-            {downloading ? 'Préparation…' : 'Télécharger'}
+            {downloading ? t('rgpd.exportingButton') : t('rgpd.exportButton')}
           </button>
         </section>
 
         {/* Rectifier → Profil */}
         <section className="rgpd-card" aria-labelledby="rgpd-rectify-title">
-          <h2 id="rgpd-rectify-title">Rectifier mes données</h2>
-          <p>
-            Modifiez vos informations personnelles (pseudo, email, etc.)
-            directement dans votre profil.
-          </p>
+          <h2 id="rgpd-rectify-title">{t('rgpd.rectifyTitle')}</h2>
+          <p>{t('rgpd.rectifyDescription')}</p>
           <button
             className="btn"
             onClick={() => navigate('/profil')}
-            aria-label="Ouvrir la page Profil pour rectifier mes données"
+            aria-label={t('rgpd.rectifyAriaLabel')}
           >
-            Ouvrir mon profil
+            {t('rgpd.rectifyButton')}
           </button>
         </section>
 
         {/* Supprimer → Profil */}
         <section className="rgpd-card" aria-labelledby="rgpd-delete-title">
-          <h2 id="rgpd-delete-title">Supprimer mon compte</h2>
-          <p>
-            Supprimez définitivement votre compte et l’ensemble des données
-            associées depuis votre profil (confirmation requise).
-          </p>
+          <h2 id="rgpd-delete-title">{t('rgpd.deleteTitle')}</h2>
+          <p>{t('rgpd.deleteDescription')}</p>
           <button
             className="btn btn-danger"
             onClick={() => navigate('/profil')}
-            aria-label="Ouvrir la page Profil pour supprimer mon compte"
+            aria-label={t('rgpd.deleteAriaLabel')}
           >
-            Ouvrir mon profil
+            {t('rgpd.deleteButton')}
           </button>
         </section>
 
         {/* Consentements cookies */}
         <section className="rgpd-card" aria-labelledby="rgpd-consents-title">
-          <h2 id="rgpd-consents-title">Gérer mes consentements</h2>
-          <p>
-            Choisissez vos préférences de cookies (Accepter / Refuser /
-            Paramétrer). Vous pourrez revenir sur votre choix à tout moment.
-          </p>
+          <h2 id="rgpd-consents-title">{t('rgpd.consentsTitle')}</h2>
+          <p>{t('rgpd.consentsDescription')}</p>
           <button
             className="btn"
             onClick={openCookiePreferences}
-            aria-label="Ouvrir le centre de préférences cookies"
+            aria-label={t('rgpd.consentsAriaLabel')}
           >
-            Ouvrir les préférences cookies
+            {t('rgpd.consentsButton')}
           </button>
         </section>
       </div>

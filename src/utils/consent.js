@@ -1,17 +1,17 @@
 // src/utils/consent.js
-// Gestion CNIL – cookies et traceurs
-// - stockage local avec preuve (horodatage, version, choix)
-// - expiration automatique (6 mois max)
-// - preuve côté serveur (Supabase Edge Function / table consents)
-// - compatibilité avec ton code existant (événements)
+// CNIL compliance – cookies and trackers management
+// - Local storage with proof (timestamp, version, choices)
+// - Automatic expiration (6 months max)
+// - Server-side proof (Supabase Edge Function / consents table)
+// - Compatibility with existing code (events)
 
 const CONSENT_KEY = 'cookie_consent_v2'
 const CONSENT_VERSION = '1.0.0'
-const EXPIRY_DAYS = 180 // 6 mois
+const EXPIRY_DAYS = 180 // 6 months
 
 export function defaultChoices() {
   return {
-    necessary: true, // Toujours true, ne peut pas être désactivé
+    necessary: true, // Always true, cannot be disabled
     analytics: false,
     marketing: false,
   }
@@ -45,7 +45,7 @@ export function hasConsent(category) {
   const current = getConsent()
   if (!current) return false
 
-  // Les cookies nécessaires sont toujours autorisés
+  // Necessary cookies are always allowed
   if (category === 'necessary') return true
 
   return !!current.choices?.[category]
@@ -57,7 +57,7 @@ export function saveConsent(choices, mode = 'custom', extra = {}) {
     ts: nowIso(),
     mode,
     choices: {
-      necessary: true, // Toujours true
+      necessary: true, // Always true
       analytics: !!choices.analytics,
       marketing: !!choices.marketing,
     },
@@ -67,7 +67,7 @@ export function saveConsent(choices, mode = 'custom', extra = {}) {
   localStorage.setItem(CONSENT_KEY, JSON.stringify(payload))
   window.__consent = payload
 
-  // Déclencher l'événement de changement de consentement
+  // Trigger consent change event
   window.dispatchEvent(new CustomEvent('consent:changed', { detail: payload }))
 
   return payload
@@ -88,7 +88,7 @@ export function onConsent(category, cb) {
       try {
         cb()
       } catch {
-        // Gestion silencieuse des erreurs de callback
+        // Silent callback error handling
       }
       window.removeEventListener('consent:changed', handler)
     }
@@ -101,7 +101,7 @@ export async function tryLogServerConsent(record) {
   try {
     const base = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL
     if (!base) {
-      console.warn('❌ URL Supabase Functions non configurée')
+      console.warn('❌ Supabase Functions URL not configured')
       return
     }
 
@@ -118,22 +118,22 @@ export async function tryLogServerConsent(record) {
 
     const result = await response.json()
     if (import.meta.env.DEV) {
-      console.log('✅ Consentement loggé côté serveur:', result)
+      console.log('✅ Consent logged server-side:', result)
     }
   } catch (err) {
-    console.warn('❌ Échec log consentement côté serveur:', err)
-    // Ne pas bloquer l'utilisateur si le logging échoue
+    console.warn('❌ Failed to log consent server-side:', err)
+    // Don't block the user if logging fails
   }
 }
 
-// Fonction pour retirer le consentement
+// Function to revoke consent
 export function revokeConsent() {
   try {
     const previous = getConsent()
     localStorage.removeItem(CONSENT_KEY)
     delete window.__consent
 
-    // Déclencher les événements
+    // Trigger events
     window.dispatchEvent(new CustomEvent('consent:revoked'))
     window.dispatchEvent(
       new CustomEvent('consent:changed', {
@@ -143,7 +143,7 @@ export function revokeConsent() {
       })
     )
 
-    // Journal côté serveur (si l’URL Functions est configurée)
+    // Log server-side (if Functions URL is configured)
     tryLogServerConsent({
       ...(previous || {}),
       action: 'revoke',
@@ -152,19 +152,19 @@ export function revokeConsent() {
 
     return true
   } catch (err) {
-    console.error('❌ Erreur lors du retrait du consentement:', err)
+    console.error('❌ Error revoking consent:', err)
     return false
   }
 }
 
-// Fonction pour vérifier si le consentement a expiré
+// Function to check if consent has expired
 export function isConsentExpired() {
   const consent = getConsent()
   if (!consent) return true
   return isExpired(consent.ts)
 }
 
-// Fonction pour obtenir le statut détaillé du consentement
+// Function to get detailed consent status
 export function getConsentStatus() {
   const consent = getConsent()
   if (!consent) {
@@ -195,7 +195,7 @@ export function getConsentStatus() {
   }
 }
 
-// --- Compatibilité rétro (événements utilisés ailleurs) ---
+// --- Backward compatibility (events used elsewhere) ---
 if (typeof window !== 'undefined') {
   addEventListener('open-cookie-preferences', () => {
     dispatchEvent(new CustomEvent('cookie-preferences:open'))

@@ -1,4 +1,4 @@
-import { useAuth } from '@/hooks'
+import { useAuth, useI18n } from '@/hooks'
 import {
   defaultChoices,
   getConsent,
@@ -12,6 +12,7 @@ export default function CookiePreferences() {
   const [open, setOpen] = useState(false)
   const [choices, setChoices] = useState(defaultChoices())
   const { user } = useAuth()
+  const { t } = useI18n()
 
   useEffect(() => {
     const onOpen = () => setOpen(true)
@@ -71,11 +72,11 @@ export default function CookiePreferences() {
     >
       <div className="cookie-prefs__dialog" role="document">
         <header className="cookie-prefs__header">
-          <h2 id="cookie-prefs-title">Préférences de cookies et traceurs</h2>
+          <h2 id="cookie-prefs-title">{t('cookies.preferencesTitle')}</h2>
           <button
             className="icon"
             onClick={close}
-            aria-label="Fermer les préférences de cookies"
+            aria-label={t('cookies.close')}
           >
             ✕
           </button>
@@ -83,29 +84,21 @@ export default function CookiePreferences() {
 
         <div className="cookie-prefs__body">
           <div className="cookie-prefs__intro">
-            <p>
-              Vous pouvez gérer vos préférences pour chaque catégorie de cookies
-              et traceurs. Seuls les cookies strictement nécessaires sont
-              activés par défaut.
-            </p>
+            <p>{t('cookies.intro')}</p>
           </div>
 
           <fieldset className="cookie-prefs__fieldset">
             <legend className="cookie-prefs__legend">
               <span className="cookie-prefs__category cookie-prefs__category--necessary">
-                Cookies strictement nécessaires
+                {t('cookies.necessaryTitle')}
               </span>
             </legend>
             <div className="cookie-prefs__description">
-              <p>
-                Ces cookies sont essentiels au bon fonctionnement du site et ne
-                peuvent pas être désactivés. Ils ne collectent aucune
-                information personnelle.
-              </p>
+              <p>{t('cookies.necessaryDescription')}</p>
               <ul>
-                <li>Authentification et sécurité</li>
-                <li>Préférences utilisateur</li>
-                <li>Fonctionnalités de base</li>
+                <li>{t('cookies.necessaryFeature1')}</li>
+                <li>{t('cookies.necessaryFeature2')}</li>
+                <li>{t('cookies.necessaryFeature3')}</li>
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
@@ -116,7 +109,7 @@ export default function CookiePreferences() {
                 disabled
               />
               <label htmlFor="necessary-cookies">
-                Toujours actifs (obligatoires)
+                {t('cookies.alwaysActive')}
               </label>
             </div>
           </fieldset>
@@ -124,21 +117,16 @@ export default function CookiePreferences() {
           <fieldset className="cookie-prefs__fieldset">
             <legend className="cookie-prefs__legend">
               <span className="cookie-prefs__category cookie-prefs__category--analytics">
-                Mesure d&apos;audience et statistiques
+                {t('cookies.analyticsTitle')}
               </span>
             </legend>
             <div className="cookie-prefs__description">
-              <p>
-                Ces cookies nous permettent de mesurer le nombre de visiteurs et
-                d&apos;analyser l&apos;utilisation du site pour
-                l&apos;améliorer. Ils ne collectent pas d&apos;informations
-                personnelles identifiables.
-              </p>
+              <p>{t('cookies.analyticsDescription')}</p>
               <ul>
-                <li>Nombre de pages vues</li>
-                <li>Temps passé sur le site</li>
-                <li>Origine du trafic</li>
-                <li>Performance des pages</li>
+                <li>{t('cookies.analyticsFeature1')}</li>
+                <li>{t('cookies.analyticsFeature2')}</li>
+                <li>{t('cookies.analyticsFeature3')}</li>
+                <li>{t('cookies.analyticsFeature4')}</li>
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
@@ -149,7 +137,7 @@ export default function CookiePreferences() {
                 onChange={() => toggle('analytics')}
               />
               <label htmlFor="analytics-cookies">
-                Activer la mesure d&apos;audience
+                {t('cookies.enableAnalytics')}
               </label>
             </div>
           </fieldset>
@@ -157,19 +145,15 @@ export default function CookiePreferences() {
           <fieldset className="cookie-prefs__fieldset">
             <legend className="cookie-prefs__legend">
               <span className="cookie-prefs__category cookie-prefs__category--marketing">
-                Marketing et personnalisation
+                {t('cookies.marketingTitle')}
               </span>
             </legend>
             <div className="cookie-prefs__description">
-              <p>
-                Ces cookies permettent de vous proposer des contenus et
-                publicités personnalisés selon vos centres d&apos;intérêt et
-                votre utilisation du site.
-              </p>
+              <p>{t('cookies.marketingDescription')}</p>
               <ul>
-                <li>Publicités ciblées</li>
-                <li>Recommandations personnalisées</li>
-                <li>Suivi des campagnes publicitaires</li>
+                <li>{t('cookies.marketingFeature1')}</li>
+                <li>{t('cookies.marketingFeature2')}</li>
+                <li>{t('cookies.marketingFeature3')}</li>
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
@@ -180,21 +164,20 @@ export default function CookiePreferences() {
                 onChange={() => toggle('marketing')}
               />
               <label htmlFor="marketing-cookies">
-                Activer le marketing et la personnalisation
+                {t('cookies.enableMarketing')}
               </label>
             </div>
           </fieldset>
 
           <div className="cookie-prefs__info">
             <p>
-              <strong>Durée de conservation :</strong> Vos choix sont conservés
-              6 mois. Vous pourrez les modifier à tout moment via le lien en
-              pied de page.
+              <strong>{t('cookies.infoRetentionLabel')}</strong>{' '}
+              {t('cookies.infoRetention')}
             </p>
             <p>
-              <strong>Plus d&apos;informations :</strong>{' '}
+              <strong>{t('cookies.infoMoreLabel')}</strong>{' '}
               <a href="/politique-cookies" target="_blank" rel="noopener">
-                Consultez notre politique de cookies complète
+                {t('cookies.infoMoreLink')}
               </a>
             </p>
           </div>
@@ -207,21 +190,21 @@ export default function CookiePreferences() {
               onClick={refuseAll}
               aria-describedby="cookie-prefs-title"
             >
-              Tout refuser
+              {t('cookies.refuseAll')}
             </button>
             <button
               className="btn btn-outline"
               onClick={save}
               aria-describedby="cookie-prefs-title"
             >
-              Enregistrer mes choix
+              {t('cookies.saveMyChoices')}
             </button>
             <button
               className="btn"
               onClick={acceptAll}
               aria-describedby="cookie-prefs-title"
             >
-              Tout accepter
+              {t('cookies.acceptAll')}
             </button>
           </div>
         </footer>
