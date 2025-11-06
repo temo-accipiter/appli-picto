@@ -62,11 +62,19 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     }
   }
 
-  // Recharger les tâches quand on revient sur /tableau depuis /edition
+  // Recharger les tâches quand on revient sur /tableau depuis une autre page
+  const prevPathRef = useRef(null) // null au départ pour détecter le premier mount
   useEffect(() => {
-    if (location.pathname === '/tableau') {
+    const currentPath = location.pathname
+    const prevPath = prevPathRef.current
+
+    // Si on revient sur /tableau depuis une autre page (pas au premier mount)
+    if (currentPath === '/tableau' && prevPath !== null && prevPath !== '/tableau') {
+      console.log('🔄 Reload tableau depuis', prevPath)
       setReloadKey(prev => prev + 1)
     }
+
+    prevPathRef.current = currentPath
   }, [location.pathname])
 
   // Données selon le mode (démo ou personnel)
