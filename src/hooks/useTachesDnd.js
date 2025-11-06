@@ -14,7 +14,7 @@ const formatErr = e => {
   return parts.join(' ')
 }
 
-export default function useTachesDnd(onChange) {
+export default function useTachesDnd(onChange, reload = 0) {
   const [taches, setTaches] = useState([])
   const [doneMap, setDone] = useState({})
   const { user } = useAuth()
@@ -24,6 +24,8 @@ export default function useTachesDnd(onChange) {
   const loadTaches = useCallback(
     async (retryCount = 0) => {
       if (!user?.id) return
+
+      console.log('🔄 useTachesDnd: Loading tasks with aujourdhui=true')
 
       try {
         const { data, error, aborted } = await withAbortSafe(
@@ -83,6 +85,7 @@ export default function useTachesDnd(onChange) {
         }
 
         const rows = data || []
+        console.log(`✅ useTachesDnd: Loaded ${rows.length} tasks with aujourdhui=true`)
         setTaches(rows)
 
         const initDone = Object.fromEntries(
@@ -119,7 +122,7 @@ export default function useTachesDnd(onChange) {
 
   useEffect(() => {
     loadTaches()
-  }, [loadTaches])
+  }, [loadTaches, reload])
 
   const toggleDone = async (id, newDone) => {
     try {

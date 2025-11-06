@@ -75,11 +75,11 @@ $font-size-lg: 1.25rem;
 $font-size-xl: 1.5rem;
 $line-height-base: 1.5;
 
-// Breakpoints
-$breakpoint-sm: '576px';
-$breakpoint-md: '768px';
-$breakpoint-lg: '992px';
-$breakpoint-xl: '1200px';
+// Breakpoints (mobile-first min-width)
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
 
 // === OMBRES ===
 $box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);

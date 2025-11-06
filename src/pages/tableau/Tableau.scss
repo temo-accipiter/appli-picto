@@ -69,11 +69,14 @@
 
   .metro-svg {
     width: 100%;
-    max-width: rem(400);
     animation: moveMetro 6s linear infinite;
 
-    @include respond-to(xs) {
-      max-width: rem(260);
+    /* [Mobile-first] Base = mobile */
+    max-width: rem(260);
+
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      max-width: rem(400);
     }
   }
 
@@ -84,7 +87,6 @@
 
 .recompense-final {
   margin-top: rem(48);
-  padding: rem(24);
   text-align: center;
   background-color: gray(200);
   border-radius: $radius-lg;
@@ -95,33 +97,43 @@
     opacity $transition-base ease;
   opacity: 0.6;
   filter: grayscale(100%);
-  max-width: rem(300);
   margin-inline: auto;
 
+  /* [Mobile-first] Base = mobile */
+  padding: $spacing-lg;
+  max-width: rem(260);
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    padding: rem(24);
+    max-width: rem(300);
+  }
+
   img {
-    width: rem(150);
-    height: rem(150);
     object-fit: contain;
     margin-bottom: $spacing-md;
 
-    @include respond-to(xs) {
-      width: rem(100);
-      height: rem(100);
+    /* [Mobile-first] Base = mobile */
+    width: rem(100);
+    height: rem(100);
+
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      width: rem(150);
+      height: rem(150);
     }
   }
 
   h3 {
-    font-size: rem(22.4);
     margin-top: $spacing-xs;
 
-    @include respond-to(xs) {
-      font-size: rem(18);
-    }
-  }
+    /* [Mobile-first] Base = mobile */
+    font-size: rem(18);
 
-  @include respond-to(xs) {
-    padding: $spacing-lg;
-    max-width: rem(260);
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      font-size: rem(22.4);
+    }
   }
 
   &.active {

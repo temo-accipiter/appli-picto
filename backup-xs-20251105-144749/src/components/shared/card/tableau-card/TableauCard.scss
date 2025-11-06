@@ -20,16 +20,15 @@
     transform: scale(1.02);
   }
 
-  // 📱 Responsive mobile-first
-  /* Base = mobile (320px+) */
-  padding: $spacing-xs;
+  // 📱 Responsive
+  @include respond-to(xs) {
+    padding: $spacing-xs;
+  }
 
-  /* Tablet (576px+) */
   @include respond-to(sm) {
     padding: $spacing-sm;
   }
 
-  /* Desktop (768px+) */
   @include respond-to(md) {
     padding: $spacing-md;
   }

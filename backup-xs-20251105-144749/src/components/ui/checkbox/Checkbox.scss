@@ -10,6 +10,8 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    width: rem(20);
+    height: rem(20);
     border: rem(2) solid $color-primary;
     background-color: $color-bg;
     border-radius: $radius-sm;
@@ -19,16 +21,6 @@
     transition:
       background-color $transition-fast,
       border-color $transition-fast;
-
-    /* [Mobile-first] Base = mobile (petit) */
-    width: rem(16);
-    height: rem(16);
-
-    /* Desktop (576px+) = taille normale */
-    @include respond-to(sm) {
-      width: rem(20);
-      height: rem(20);
-    }
 
     &:checked {
       border-color: $color-primary;
@@ -40,15 +32,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -60%);
+      font-size: rem(14);
       color: $color-text-invert;
-
-      /* [Mobile-first] Base = mobile (petit) */
-      font-size: rem(12);
-
-      /* Desktop (576px+) = taille normale */
-      @include respond-to(sm) {
-        font-size: rem(14);
-      }
     }
 
     &:focus {
@@ -91,4 +76,15 @@
     }
   }
 
+  // ✅ Responsive (optionnel pour xs)
+  @include respond-to(xs) {
+    &__input {
+      width: rem(16);
+      height: rem(16);
+
+      &:checked::after {
+        font-size: rem(12);
+      }
+    }
+  }
 }

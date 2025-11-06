@@ -106,11 +106,3 @@
   white-space: nowrap;
   border: 0;
 }
-
-@mixin respond-to($breakpoint) {
-  @if $breakpoint == 'mobile' {
-    @media (max-width: 600px) {
-      @content;
-    }
-  }
-}

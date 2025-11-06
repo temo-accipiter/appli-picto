@@ -19,7 +19,7 @@ export default function useParametres(reload = 0) {
     )
   }
 
-  const fetchParametres = useCallback(async () => {
+  const fetchParametres = useCallback(async (autoInit = false) => {
     setLoading(true)
     setError(null)
 
@@ -34,7 +34,7 @@ export default function useParametres(reload = 0) {
     }
 
     if (error) {
-      // Important: si c’est un blocage CORS Safari, ne pas tenter l’insert par défaut.
+      // Important: si c'est un blocage CORS Safari, ne pas tenter l'insert par défaut.
       if (isCorsAccessControl(error)) {
         if (import.meta.env.DEV) {
           console.info(
@@ -54,10 +54,28 @@ export default function useParametres(reload = 0) {
       }
     }
 
-    // Pas d’erreur bloquante → data peut être null si la ligne n’existe pas
+    // Pas d'erreur bloquante → data peut être null si la ligne n'existe pas
     if (!data) {
-      setParametres(null)
-      setLoading(false)
+      if (autoInit) {
+        // Auto-initialiser avec les valeurs par défaut
+        if (import.meta.env.DEV) {
+          console.info('useParametres: row not found, auto-initializing defaults')
+        }
+        setLoading(false)
+
+        // Créer la row avec les defaults
+        const payload = { id: 1, confettis: true, toasts_enabled: true }
+        const { error: insertError } = await withAbortSafe(
+          supabase.from('parametres').upsert(payload, { onConflict: 'id' })
+        )
+
+        if (!insertError) {
+          setParametres(payload)
+        }
+      } else {
+        setParametres(null)
+        setLoading(false)
+      }
       return
     }
 
@@ -96,7 +114,8 @@ export default function useParametres(reload = 0) {
   useEffect(() => {
     // ✅ CORRECTIF : Attendre que l'auth soit prête avant de charger
     if (!authReady) return
-    fetchParametres()
+    // Auto-initialiser si la row n'existe pas
+    fetchParametres(true)
   }, [reload, authReady, fetchParametres])
 
   // Fonction pour mettre à jour les paramètres

@@ -38,7 +38,7 @@
     margin: 0 auto;
     height: rem(140);
     padding-inline: 0;
-    overflow: visible; // Allow labels to overflow vertically
+    overflow-x: visible;
 
     .metrosvg {
       width: 100%;
@@ -105,23 +105,15 @@
         top: 100%;
         left: 50%;
         transform: translateX(-50%) translateY(0.5rem);
+        font-size: $font-size-sm;
         font-weight: 600;
         color: var(--color-text);
         text-align: center;
+        max-width: rem(100);
         white-space: normal;
         line-height: 1.3;
         overflow: visible;
         display: block;
-
-        /* [Mobile-first] Base = mobile (plus petit pour éviter chevauchement) */
-        font-size: rem(10);
-        max-width: rem(60);
-
-        /* Desktop (576px+) = taille normale */
-        @include respond-to(sm) {
-          font-size: $font-size-sm;
-          max-width: rem(100);
-        }
       }
     }
 
@@ -134,14 +126,11 @@
         transform 0.6s ease-in-out;
 
       .train-icon {
+        width: rem(80);
         height: auto;
 
-        /* [Mobile-first] Base = mobile */
-        width: rem(60);
-
-        /* Desktop (576px+) */
-        @include respond-to(sm) {
-          width: rem(80);
+        @include respond-to(xs) {
+          width: rem(60);
         }
       }
     }
@@ -165,7 +154,10 @@
 
 .dot-logo.fixed-logo {
   position: absolute;
+  top: rem(39);
   right: rem(-28);
+  width: rem(56);
+  height: rem(56);
   z-index: 3;
 
   img {
@@ -174,15 +166,9 @@
     object-fit: contain;
   }
 
-  /* [Mobile-first] Base = mobile */
-  top: rem(-12);
-  width: rem(28);
-  height: rem(28);
-
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    top: rem(39);
-    width: rem(56);
-    height: rem(56);
+  @include respond-to(xs) {
+    top: rem(-12);
+    width: rem(28);
+    height: rem(28);
   }
 }
