@@ -25,7 +25,7 @@ export default function useTachesDnd(onChange, reload = 0) {
     async (retryCount = 0) => {
       if (!user?.id) return
 
-      console.log('🔄 useTachesDnd: Loading tasks with aujourdhui=true, reload=', reload)
+      console.log('🔄 useTachesDnd: Loading tasks with aujourdhui=true')
 
       try {
         const { data, error, aborted } = await withAbortSafe(
@@ -117,7 +117,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         }
       }
     },
-    [onChange, user?.id, reload]
+    [onChange, user?.id]
   )
 
   useEffect(() => {
