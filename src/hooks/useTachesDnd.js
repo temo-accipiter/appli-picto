@@ -14,7 +14,7 @@ const formatErr = e => {
   return parts.join(' ')
 }
 
-export default function useTachesDnd(onChange) {
+export default function useTachesDnd(onChange, reload = 0) {
   const [taches, setTaches] = useState([])
   const [doneMap, setDone] = useState({})
   const { user } = useAuth()
@@ -114,12 +114,12 @@ export default function useTachesDnd(onChange) {
         }
       }
     },
-    [onChange, user?.id]
+    [onChange, user?.id, reload]
   )
 
   useEffect(() => {
     loadTaches()
-  }, [loadTaches])
+  }, [loadTaches, reload])
 
   const toggleDone = async (id, newDone) => {
     try {

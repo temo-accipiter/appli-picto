@@ -21,11 +21,14 @@ import {
 import PropTypes from 'prop-types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
+import { useLocation } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
 import './Tableau.scss'
 
 export default function TableauGrille({ isDemo = false, onLineChange }) {
   const { t } = useI18n()
+  const location = useLocation()
+  const [reloadKey, setReloadKey] = useState(0)
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
   const [showConfettis, setShowConfettis] = useState(false)
@@ -59,6 +62,13 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     }
   }
 
+  // Recharger les tâches quand on revient sur /tableau depuis /edition
+  useEffect(() => {
+    if (location.pathname === '/tableau') {
+      setReloadKey(prev => prev + 1)
+    }
+  }, [location.pathname])
+
   // Données selon le mode (démo ou personnel)
   const { demoTasks: demoTaches, demoRewards: demoRecompenses } = useDemoCards()
   const { fallbackData, loading: fallbackLoading } = useFallbackData()
@@ -71,7 +81,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   } = useTachesDnd((done, total) => {
     setDoneCount(done)
     setTotalTaches(total)
-  })
+  }, reloadKey)
   const { recompenses: personalRecompensesRaw } = useRecompenses()
   const { parametres } = useParametres()
 
