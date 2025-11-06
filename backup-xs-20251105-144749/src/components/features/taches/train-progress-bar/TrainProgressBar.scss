@@ -126,14 +126,11 @@
         transform 0.6s ease-in-out;
 
       .train-icon {
+        width: rem(80);
         height: auto;
 
-        /* [Mobile-first] Base = mobile */
-        width: rem(60);
-
-        /* Desktop (576px+) */
-        @include respond-to(sm) {
-          width: rem(80);
+        @include respond-to(xs) {
+          width: rem(60);
         }
       }
     }
@@ -157,7 +154,10 @@
 
 .dot-logo.fixed-logo {
   position: absolute;
+  top: rem(39);
   right: rem(-28);
+  width: rem(56);
+  height: rem(56);
   z-index: 3;
 
   img {
@@ -166,15 +166,9 @@
     object-fit: contain;
   }
 
-  /* [Mobile-first] Base = mobile */
-  top: rem(-12);
-  width: rem(28);
-  height: rem(28);
-
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    top: rem(39);
-    width: rem(56);
-    height: rem(56);
+  @include respond-to(xs) {
+    top: rem(-12);
+    width: rem(28);
+    height: rem(28);
   }
 }

@@ -5,61 +5,44 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: rem(64);
   z-index: $z-modal;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 $spacing-lg;
   background-color: var(--color-bg);
   box-shadow: $box-shadow;
 
-  /* [Mobile-first] Base = mobile (320px+) */
-  flex-direction: column;
-  align-items: flex-start;
-  gap: $spacing-xs;
-  height: auto;
-  padding: $spacing-sm $spacing-md;
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    height: rem(64);
-    padding: 0 $spacing-lg;
-    gap: 0;
+  @include respond-to(xs) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-xs;
+    height: auto;
+    padding: $spacing-sm $spacing-md;
   }
 }
 
 .navbar-left {
   display: flex;
+  gap: $spacing-lg;
 
-  /* [Mobile-first] Base = mobile */
-  width: 100%;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: $spacing-md;
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
-    width: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: $spacing-lg;
+  @include respond-to(xs) {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
 .navbar-actions {
   display: flex;
   align-items: center;
+  gap: $spacing-md;
 
-  /* [Mobile-first] Base = mobile */
-  width: 100%;
-  justify-content: center;
-  gap: $spacing-sm;
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
-    width: auto;
-    justify-content: flex-end;
-    gap: $spacing-md;
+  @include respond-to(xs) {
+    width: 100%;
+    justify-content: center;
+    gap: $spacing-sm;
   }
 
   // Actions spécifiques aux visiteurs
@@ -124,12 +107,8 @@
         }
 
         span {
-          /* [Mobile-first] Base = mobile (caché pour gagner espace) */
-          display: none;
-
-          /* Desktop = afficher le texte */
-          @include respond-to(sm) {
-            display: inline;
+          @include respond-to(xs) {
+            display: none;
           }
         }
       }
