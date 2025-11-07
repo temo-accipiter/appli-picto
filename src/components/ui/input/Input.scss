@@ -26,6 +26,11 @@
   border-color: transparent;
 }
 
+.input-field__input:focus-visible {
+  outline: rem(2) solid $color-accent;
+  outline-offset: rem(2);
+}
+
 .input-field__input--error {
   outline: 2px solid #e63946;
   animation: error-glow 0.2s ease-in-out;

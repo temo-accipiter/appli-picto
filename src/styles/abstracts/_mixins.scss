@@ -75,7 +75,7 @@
   align-items: center;
 }
 
-/// Applique un style sur l’élément et ses états focus/hover/active
+/// Applique un style sur l'élément et ses états focus/hover/active
 /// @param {Boolean} $self Si true, inclut aussi la règle de base (&)
 @mixin on-event($self: false) {
   @if $self {
@@ -93,6 +93,16 @@
     &:focus-within {
       @content;
     }
+  }
+}
+
+/// Applique un focus state accessible (TSA-friendly)
+/// @param {Color} $color Couleur du focus (défaut: primary)
+@mixin focus-accessible($color: $color-primary) {
+  &:focus-visible {
+    outline: rem(2) solid $color;
+    outline-offset: rem(2);
+    @content;
   }
 }
 

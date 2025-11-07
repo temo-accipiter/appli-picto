@@ -10,4 +10,9 @@
   &:hover {
     background-color: #5a50f0;
   }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
 }

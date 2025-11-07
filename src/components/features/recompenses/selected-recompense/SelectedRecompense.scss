@@ -29,6 +29,11 @@
       transform: translateY(rem(-4));
       box-shadow: 0 rem(4) rem(12) rgba($color-text, 0.15);
     }
+
+    &:focus-visible {
+      outline: rem(2) solid $color-accent;
+      outline-offset: rem(2);
+    }
   }
 
   .label {

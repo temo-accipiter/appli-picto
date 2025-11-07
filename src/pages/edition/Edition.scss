@@ -200,4 +200,9 @@
   .chevron.open {
     transform: rotate(180deg);
   }
+
+  &:focus-visible {
+    outline: rem(2) solid $color-accent;
+    outline-offset: rem(2);
+  }
 }

@@ -34,6 +34,11 @@
         0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
     }
 
+    &:focus-visible {
+      outline: rem(2) solid $color-accent;
+      outline-offset: rem(2);
+    }
+
     &--error {
       border-color: $color-error;
     }
