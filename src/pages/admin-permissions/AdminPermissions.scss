@@ -56,7 +56,7 @@
       font-size: 0.95rem;
       font-weight: 500;
       color: var(--text-secondary);
-      transition: all 0.3s ease;
+      transition: all 0.15s ease;
       border-bottom: 3px solid transparent;
 
       &:hover {
@@ -240,7 +240,7 @@
                   right: 0;
                   bottom: 0;
                   background-color: #ccc;
-                  transition: 0.4s;
+                  transition: 0.15s;
                   border-radius: 24px;
 
                   &:before {
@@ -251,7 +251,7 @@
                     left: 3px;
                     bottom: 3px;
                     background-color: white;
-                    transition: 0.4s;
+                    transition: 0.15s;
                     border-radius: 50%;
                   }
                 }
@@ -369,7 +369,7 @@
       border: 2px solid var(--border-color);
       border-radius: 16px;
       padding: 1.5rem;
-      transition: all 0.3s ease;
+      transition: all 0.15s ease;
       position: relative;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -395,7 +395,7 @@
           var(--accent-color)
         );
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.15s ease;
       }
 
       &.admin-user {
@@ -556,7 +556,7 @@
           background: var(--bg-tertiary);
           border: 1px solid var(--border-color);
           border-radius: 20px;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
           position: relative;
           font-weight: 600;
           text-transform: uppercase;
@@ -727,7 +727,7 @@
         font-size: 0.8rem;
         font-weight: 500;
         border-radius: 6px;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         border: none;
         cursor: pointer;
         white-space: nowrap;
@@ -878,7 +878,7 @@
           background: var(--bg-tertiary);
           border: 1px solid var(--border-color);
           border-radius: 25px;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
           position: relative;
           font-weight: 600;
           text-transform: uppercase;
@@ -999,14 +999,14 @@
             height: 20px;
             border-radius: 50%;
             background: var(--bg-secondary);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
           }
 
           .role-name {
             font-weight: 600;
             color: var(--text-primary);
             font-size: 0.85rem;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
           }
         }
 
@@ -1049,7 +1049,7 @@
             color: var(--text-primary);
             font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
 
             &:hover:not(:disabled) {
               background: var(--bg-hover);
@@ -1074,7 +1074,7 @@
               color: var(--text-primary);
               font-size: 0.9rem;
               cursor: pointer;
-              transition: all 0.2s ease;
+              transition: all 0.15s ease;
               min-width: 40px;
 
               &:hover {
@@ -1236,7 +1236,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &.inactive {
           opacity: 0.6;
@@ -1385,7 +1385,7 @@
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     text-decoration: none;
 
     &:hover {
@@ -1572,7 +1572,7 @@
         font-size: 1.2rem;
         padding: 0.25rem;
         border-radius: 4px;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &.enabled {
           color: var(--success-color, #28a745);
@@ -1608,7 +1608,7 @@
         font-size: 0.9rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         margin: 0 0.25rem;
 
         &:hover:not(:disabled) {
@@ -1657,7 +1657,7 @@
   }
 
   .permission-row {
-    transition: background-color 0.2s ease;
+    transition: background-color 0.15s ease;
 
     &:hover {
       background: var(--bg-hover);
@@ -1692,7 +1692,7 @@
         font-size: 0.85rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &:hover {
           transform: translateY(-1px);
@@ -1934,7 +1934,7 @@
       gap: 6px;
       padding: 4px;
       border-radius: 4px;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.15s ease;
 
       &:hover {
         background: var(--background-secondary);
@@ -2061,7 +2061,7 @@
       padding: 10px 20px;
       font-size: 0.95rem;
       font-weight: 500;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
 
       &:hover {
         transform: translateY(-1px);
@@ -2103,7 +2103,7 @@
       background: var(--bg-primary);
       color: var(--border-color);
       font-size: 0.95rem;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
 
       &:focus {
         outline: none;
@@ -2150,7 +2150,7 @@
       background: var(--bg-primary);
       color: var(--text-primary);
       font-size: 0.95rem;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
 
       &:focus {
         outline: none;
@@ -2176,7 +2176,7 @@
         border-radius: 8px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -2252,7 +2252,7 @@
         background: var(--bg-primary);
         color: var(--text-primary);
         font-size: 0.95rem;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &:focus {
           outline: none;
@@ -2345,7 +2345,7 @@
       border-radius: 8px;
       margin-bottom: 1rem;
       overflow: hidden;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
 
       &:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -2676,7 +2676,7 @@
         gap: 1rem;
         padding: 1rem;
         border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.2s ease;
+        transition: background-color 0.15s ease;
 
         &:hover {
           background: var(--bg-secondary);

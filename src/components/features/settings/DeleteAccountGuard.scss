@@ -61,7 +61,7 @@
 .delete-guard :focus-visible {
   outline: 3px solid var(--focus, #94c5ff);
   outline-offset: 2px;
-  transition: outline-color 0.2s ease;
+  transition: outline-color 0.15s ease;
 }
 
 /* Espace harmonieux avec tes composants Input/Button */

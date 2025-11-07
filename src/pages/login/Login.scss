@@ -37,7 +37,7 @@
     border-radius: 0.5rem;
     cursor: pointer;
     font-size: 1rem;
-    transition: background 150ms ease-in-out;
+    transition: background 140ms ease-in-out;
 
     &:hover {
       background-color: #1565c0;
@@ -217,7 +217,7 @@
 
 .password-checklist__chev {
   display: inline-block;
-  transition: transform 200ms ease;
+  transition: transform 140ms ease;
 }
 .password-checklist__chev.is-open {
   transform: rotate(180deg);

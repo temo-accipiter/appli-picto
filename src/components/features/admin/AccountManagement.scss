@@ -103,7 +103,7 @@
     background: var(--muted);
     border-radius: 8px;
     border: 1px solid var(--border);
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
 
     &:hover {
       border-color: var(--primary);
@@ -219,7 +219,7 @@
         font-size: 0.875rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &:hover:not(:disabled) {
           background: var(--primary-dark);
@@ -311,7 +311,7 @@
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -368,7 +368,7 @@
           border-radius: 6px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
 
           &:hover:not(:disabled) {
             background: var(--muted-dark);

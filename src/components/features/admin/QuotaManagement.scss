@@ -118,7 +118,7 @@
         font-size: 0.75rem;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &:hover {
           background: var(--primary-dark);
@@ -214,7 +214,7 @@
           border-radius: 6px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
 
           &:hover {
             background: var(--primary-dark);
@@ -229,7 +229,7 @@
           border-radius: 6px;
           font-weight: 500;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
 
           &:hover {
             background: var(--muted-dark);

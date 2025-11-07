@@ -72,7 +72,7 @@
         align-items: center;
         gap: 6px;
         font-size: 0.9rem;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
 
         &:hover {
           background: rgba(255, 255, 255, 0.2);
@@ -109,7 +109,7 @@
         background: var(--bg-primary);
         color: var(--text-primary);
         font-size: 0.9rem;
-        transition: border-color 0.2s ease;
+        transition: border-color 0.15s ease;
 
         &:focus {
           outline: none;
@@ -139,7 +139,7 @@
         align-items: center;
         gap: 6px;
         font-size: 0.9rem;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         font-weight: 500;
 
         &:hover {
@@ -245,7 +245,7 @@
       grid-template-columns: 2fr 3fr 1fr;
       gap: 20px;
       align-items: center;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.15s ease;
 
       &:hover {
         background: var(--bg-tertiary);
@@ -337,7 +337,7 @@
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
           min-width: 32px;
           height: 32px;
 

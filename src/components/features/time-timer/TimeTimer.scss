@@ -54,7 +54,7 @@
 
   // Cercle de progression
   &__circle-progress {
-    transition: stroke 0.3s ease;
+    transition: stroke 0.15s ease;
 
     .time-timer--compact & {
       stroke-width: 10;

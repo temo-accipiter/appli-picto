@@ -47,7 +47,7 @@ while IFS=: read -r file line content; do
       ((CRITICAL++))
     fi
   fi
-done < <(grep -Rn -E "transition:.*(0\.[2-9]s|[1-9][0-9]{2,}ms)" "$SRC_DIR" --include="*.scss" || true)
+done < <(grep -Rn -E "transition:.*(0\.[2-9]s|1[5-9][1-9]ms|[2-9][0-9]{2,}ms)" "$SRC_DIR" --include="*.scss" || true)
 
 #############################################
 # 3. URGENT: Media queries max-width
