@@ -19,16 +19,16 @@
 
     main {
       flex: 1;
-      padding: $spacing-xl;
+      /* [Mobile-first] Base = mobile (320px+) */
+      padding: $spacing-md;
     }
 
+    /* Desktop (576px+) */
     @include respond-to(sm) {
-      margin-left: 0; // supprimer l’espace réservé à la sidebar sur mobile
-    }
+      margin-left: 0; // supprimer l'espace réservé à la sidebar sur mobile
 
-    @include respond-to(xs) {
       main {
-        padding: $spacing-md;
+        padding: $spacing-xl;
       }
     }
   }

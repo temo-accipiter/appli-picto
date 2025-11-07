@@ -4,13 +4,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: rem(40);
-  height: rem(40);
   border: none;
   border-radius: $radius-full;
   background-color: transparent;
   color: var(--color-text);
   cursor: pointer;
+
+  /* [Mobile-first] Base = mobile (320px+) */
+  width: rem(36);
+  height: rem(36);
 
   @include transition-smooth;
 
@@ -20,18 +22,22 @@
   }
 
   svg {
-    width: rem(24);
-    height: rem(24);
     display: block;
 
-    @include respond-to(xs) {
-      width: rem(20);
-      height: rem(20);
+    /* [Mobile-first] Base = mobile */
+    width: rem(20);
+    height: rem(20);
+
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      width: rem(24);
+      height: rem(24);
     }
   }
 
-  @include respond-to(xs) {
-    width: rem(36);
-    height: rem(36);
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    width: rem(40);
+    height: rem(40);
   }
 }

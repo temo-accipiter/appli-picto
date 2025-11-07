@@ -7,45 +7,54 @@
   justify-content: center;
   min-height: 60vh;
   text-align: center;
-  padding: $spacing-xl;
+
+  /* [Mobile-first] Base = mobile (320px+) */
+  padding: $spacing-lg;
 
   h1 {
-    font-size: $font-size-xl;
     margin-bottom: $spacing-md;
     color: var(--color-primary);
 
-    @include respond-to(xs) {
-      font-size: $font-size-lg;
-    }
+    /* [Mobile-first] Base = mobile */
+    font-size: $font-size-lg;
   }
 
   p {
-    font-size: $font-size-base;
     margin-bottom: $spacing-md;
     color: var(--color-text);
 
-    @include respond-to(xs) {
-      font-size: $font-size-sm;
-    }
+    /* [Mobile-first] Base = mobile */
+    font-size: $font-size-sm;
   }
 
   a {
-    font-size: $font-size-base;
     color: var(--color-primary);
     text-decoration: none;
+
+    /* [Mobile-first] Base = mobile */
+    font-size: $font-size-sm;
 
     @include on-event {
       text-decoration: underline;
     }
 
     @include transition-smooth;
-
-    @include respond-to(xs) {
-      font-size: $font-size-sm;
-    }
   }
 
-  @include respond-to(xs) {
-    padding: $spacing-lg;
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    padding: $spacing-xl;
+
+    h1 {
+      font-size: $font-size-xl;
+    }
+
+    p {
+      font-size: $font-size-base;
+    }
+
+    a {
+      font-size: $font-size-base;
+    }
   }
 }
