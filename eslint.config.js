@@ -102,4 +102,33 @@ export default defineConfig([
       'prettier/prettier': 'error',
     },
   },
+  // Configuration spécifique pour les Supabase Edge Functions (Deno)
+  {
+    files: ['**/supabase/functions/**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+      },
+      globals: {
+        Deno: 'readonly',
+        crypto: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      prettier: pluginPrettier,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...tsPlugin.configs.recommended.rules,
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
+      ],
+      'prettier/prettier': 'error',
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
 ])

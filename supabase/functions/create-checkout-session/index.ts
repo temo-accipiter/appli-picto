@@ -1,8 +1,14 @@
 // supabase/functions/create-checkout-session/index.ts
-// deno-lint-ignore-file no-explicit-any
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@14.25.0?target=deno'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.2'
+
+interface CheckoutPayload {
+  price_id?: string
+  success_url?: string
+  cancel_url?: string
+  portal_return_url?: string
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +17,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-function json(body: any, status = 200) {
+function json(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -96,9 +102,9 @@ serve(async (req: Request) => {
     return json({ error: 'Missing env vars' }, 500)
   }
 
-  let payload: any
+  let payload: CheckoutPayload
   try {
-    payload = await req.json()
+    payload = (await req.json()) as CheckoutPayload
   } catch {
     console.error('❌ Invalid JSON body')
     return json({ error: 'Invalid JSON body' }, 400)
@@ -238,8 +244,9 @@ serve(async (req: Request) => {
     )
 
     return json({ url: session.url, portal: false })
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('❌ create-checkout-session error:', e)
-    return json({ error: e?.message || String(e) }, 500)
+    const errorMessage = e instanceof Error ? e.message : String(e)
+    return json({ error: errorMessage }, 500)
   }
 })

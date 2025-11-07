@@ -1637,6 +1637,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/deno@npm:^2.5.0":
+  version: 2.5.0
+  resolution: "@types/deno@npm:2.5.0"
+  checksum: 10c0/3fa2d6e1b2f2d66011ba952b0fa8408329bd8c4165c7984bee821c29bbb0c3d69ac46fb70f5dc73687df5952db9197c1eb77080c3b08f479061bd7b8d2ee9505
+  languageName: node
+  linkType: hard
+
 "@types/estree@npm:1.0.8, @types/estree@npm:^1.0.0, @types/estree@npm:^1.0.6":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
@@ -2606,6 +2613,7 @@ __metadata:
     "@testing-library/jest-dom": "npm:^6.7.0"
     "@testing-library/react": "npm:^16.3.0"
     "@testing-library/user-event": "npm:^14.6.1"
+    "@types/deno": "npm:^2.5.0"
     "@types/node": "npm:^24.10.0"
     "@types/react": "npm:^19.0.10"
     "@types/react-dom": "npm:^19.0.4"

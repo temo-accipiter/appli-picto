@@ -117,7 +117,7 @@ serve(async req => {
     const safeIpHash =
       ip_hash && ip_hash.length >= 32 && ip_hash.length <= 128 ? ip_hash : null
 
-    const country = req.headers.get('cf-ipcountry') || null
+    const _country = req.headers.get('cf-ipcountry') || null
     const origin = bodyOrigin || req.headers.get('origin') || null
 
     // Préparation des données pour insertion (seulement les colonnes nécessaires)

@@ -68,7 +68,7 @@ async function removeAllInPrefix(
     return
   }
   if (!data || data.length === 0) return
-  const paths = data.map((f: any) => `${prefix}/${f.name}`)
+  const paths = data.map((f: { name: string }) => `${prefix}/${f.name}`)
   const { error: remErr } = await admin.storage.from(bucket).remove(paths)
   if (remErr)
     console.warn(`storage remove error ${bucket}/${prefix}`, remErr.message)

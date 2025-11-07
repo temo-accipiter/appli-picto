@@ -3,6 +3,7 @@
 ## Audit Terminé ✅
 
 **85 problèmes critiques détectés** :
+
 - 14 occurrences de `respond-to(xs)` dans 6 fichiers
 - 71 animations > 150ms (TSA accessibility)
 
@@ -11,6 +12,7 @@
 ### Ordre de Migration (du plus simple au plus complexe)
 
 #### 1. Layout.scss (1 occurrence) - 10min
+
 **Fichier** : [src/components/shared/layout/Layout.scss](src/components/shared/layout/Layout.scss)
 
 **Action** : Inverser la logique - styles mobile en base, desktop en @include respond-to(sm)
@@ -20,6 +22,7 @@
 ---
 
 #### 2. LangSelector.scss (2 occurrences) - 15min
+
 **Fichier** : [src/components/shared/lang-selector/LangSelector.scss](src/components/shared/lang-selector/LangSelector.scss)
 
 **Action** : Mobile-first pour le sélecteur de langue
@@ -29,6 +32,7 @@
 ---
 
 #### 3. ThemeToggle.scss (2 occurrences) - 15min
+
 **Fichier** : [src/components/shared/theme-toggle/ThemeToggle.scss](src/components/shared/theme-toggle/ThemeToggle.scss)
 
 **Action** : Mobile-first pour le toggle thème
@@ -38,6 +42,7 @@
 ---
 
 #### 4. TachesDnd.scss (2 occurrences) - 20min
+
 **Fichier** : [src/components/features/taches/taches-dnd/TachesDnd.scss](src/components/features/taches/taches-dnd/TachesDnd.scss)
 
 **Action** : Mobile-first pour la grille de tâches
@@ -47,6 +52,7 @@
 ---
 
 #### 5. SelectedRecompense.scss (3 occurrences) - 20min
+
 **Fichier** : [src/components/features/recompenses/selected-recompense/SelectedRecompense.scss](src/components/features/recompenses/selected-recompense/SelectedRecompense.scss)
 
 **Action** : Mobile-first pour la récompense sélectionnée
@@ -56,6 +62,7 @@
 ---
 
 #### 6. NotFound.scss (4 occurrences) - 20min
+
 **Fichier** : [src/pages/not-found/NotFound.scss](src/pages/not-found/NotFound.scss)
 
 **Action** : Mobile-first pour la page 404
@@ -69,16 +76,19 @@
 ## Phase 2 : Corriger Animations TSA (71 occurrences)
 
 ### Règle
+
 Toutes les animations doivent être ≤ 150ms pour l'accessibilité TSA (autisme).
 
 ### Fichiers à Corriger (par priorité)
 
 #### Haute Priorité (Composants UI de base)
+
 1. **Input.scss** (1 occurrence) - transition: 0.2s → 0.15s
 2. **Checkbox.scss** (si concerné)
 3. **Button.scss** (si concerné)
 
 #### Priorité Moyenne (Composants Shared)
+
 4. **Modal.scss** et variantes (3 occurrences)
 5. **QuotaIndicator.scss** (2 occurrences)
 6. **SignedImage.scss** (2 occurrences)
@@ -86,6 +96,7 @@ Toutes les animations doivent être ≤ 150ms pour l'accessibilité TSA (autisme
 8. **Forms/ItemForm.scss** (1 occurrence)
 
 #### Priorité Basse (Admin & Tools)
+
 9. **PermissionsDebug.scss** (5 occurrences)
 10. **QuotaManagement.scss** (4 occurrences)
 11. **AccountManagement.scss** (4 occurrences)

@@ -31,25 +31,32 @@ function extractFieldsFromSub(sub: Stripe.Subscription) {
     (typeof price?.product === 'string' ? price.product : null) ??
     null
 
+  const customer =
+    typeof sub.customer === 'string'
+      ? sub.customer
+      : ((sub.customer as Stripe.Customer | Stripe.DeletedCustomer)?.id ?? null)
+
+  const endedAt =
+    'ended_at' in sub && typeof sub.ended_at === 'number' ? sub.ended_at : null
+
+  const latestInvoice =
+    typeof sub.latest_invoice === 'string'
+      ? sub.latest_invoice
+      : ((sub.latest_invoice as Stripe.Invoice)?.id ?? null)
+
   return {
-    stripe_customer:
-      typeof sub.customer === 'string'
-        ? sub.customer
-        : ((sub.customer as any)?.id ?? null),
+    stripe_customer: customer,
     stripe_subscription_id: sub.id,
     status: sub.status ?? null,
     plan,
     price_id: price?.id ?? null,
     start_date: toIso(sub.start_date),
-    end_date: toIso((sub as any)?.ended_at ?? null),
+    end_date: toIso(endedAt),
     current_period_start: toIso(sub.current_period_start),
     current_period_end: toIso(sub.current_period_end),
     cancel_at: toIso(sub.cancel_at ?? null),
     cancel_at_period_end: sub.cancel_at_period_end ?? false,
-    latest_invoice:
-      typeof sub.latest_invoice === 'string'
-        ? sub.latest_invoice
-        : ((sub.latest_invoice as any)?.id ?? null),
+    latest_invoice: latestInvoice,
     raw_data: sub as unknown as Record<string, unknown>,
   }
 }
@@ -114,8 +121,9 @@ serve(async req => {
       sig,
       Deno.env.get('STRIPE_WEBHOOK_SECRET')!
     )
-  } catch (err: any) {
-    console.error('❌ Signature Stripe invalide :', err?.message)
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.error('❌ Signature Stripe invalide :', errorMessage)
     return json(
       { error: 'invalid signature', timestamp: new Date().toISOString() },
       400
@@ -133,14 +141,14 @@ serve(async req => {
         const session = event.data.object as Stripe.Checkout.Session
 
         const user_id =
-          (session.metadata as any)?.supabase_user_id ??
+          session.metadata?.supabase_user_id ??
           session.client_reference_id ??
           null
 
         const subscriptionId =
           typeof session.subscription === 'string'
             ? session.subscription
-            : (session.subscription as any)?.id
+            : ((session.subscription as Stripe.Subscription)?.id ?? null)
 
         // log réception
         queueMicrotask(() =>
@@ -210,7 +218,7 @@ serve(async req => {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
-        const user_id = (sub.metadata as any)?.supabase_user_id ?? null
+        const user_id = sub.metadata?.supabase_user_id ?? null
 
         queueMicrotask(() =>
           logSubscriptionEvent(admin, `webhook.${event.type}`, user_id, {
@@ -257,9 +265,10 @@ serve(async req => {
     }
 
     return json({ received: true, event_id: event.id }, 200)
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err)
     console.error('⚠️ Erreur webhook Stripe :', {
-      message: err?.message,
+      message: errorMessage,
       event_id: event.id,
       type: event.type,
     })

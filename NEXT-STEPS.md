@@ -28,6 +28,7 @@ M src/utils/consent.js
 ## Tests Manuels Recommandés AVANT de Continuer
 
 ### Test 1 : Navigation et Tâches
+
 1. Se connecter avec un compte test
 2. Aller sur `/edition`
 3. Créer 3 tâches et les cocher "Aujourd'hui"
@@ -42,6 +43,7 @@ M src/utils/consent.js
 12. ✅ Vérifier que la tâche décochée n'apparaît plus
 
 ### Test 2 : Train de Progression
+
 1. Sur `/tableau` avec tâches cochées "Aujourd'hui"
 2. Aller sur `/edition` → Personnalisation
 3. Activer le train
@@ -51,6 +53,7 @@ M src/utils/consent.js
 7. ✅ Vérifier que le train se déplace
 
 ### Test 3 : Responsive Mobile-First
+
 1. Ouvrir DevTools
 2. Passer en mode responsive
 3. Tester 320px, 375px, 576px, 768px, 992px, 1200px
@@ -62,6 +65,7 @@ M src/utils/consent.js
    - Edition (layout adaptatif)
 
 ### Test 4 : Build Production
+
 1. `yarn build` ✅ DÉJÀ FAIT
 2. `yarn preview`
 3. Tester les mêmes scénarios que ci-dessus
@@ -76,21 +80,25 @@ Si les tests manuels sont OK, continuer la migration composant par composant :
 #### Phase 1 : Composants Restants (6h)
 
 **1. Navbar (1h30)**
+
 - Migrer tous les `respond-to(xs)` vers mobile-first
 - Tester menu mobile 320px → 768px
 - Commit
 
 **2. Edition Layout (2h)**
+
 - Migrer grids et flexbox
 - Tester formulaires sur mobile
 - Commit
 
 **3. Modals (1h)**
+
 - Migrer tous les modals vers mobile-first
 - Tester sur petits écrans
 - Commit
 
 **4. Autres composants (1h30)**
+
 - Footer, UserMenu, etc.
 - Tester responsive complet
 - Commit
@@ -98,6 +106,7 @@ Si les tests manuels sont OK, continuer la migration composant par composant :
 #### Phase 2 : Tests Automatisés (4h)
 
 **Playwright + axe-core**
+
 - Installer `@axe-core/playwright`
 - Créer tests a11y automatisés
 - Créer tests responsive (viewports multiples)
@@ -124,6 +133,7 @@ Si les tests révèlent des problèmes :
 ### Option C : Tests de Charge et Performance
 
 Avant de continuer, tester :
+
 - Lighthouse score (Performance, A11y, Best Practices, SEO)
 - WebPageTest
 - Bundle analyzer (visualize bundle size)
