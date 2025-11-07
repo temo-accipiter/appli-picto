@@ -1,9 +1,11 @@
 # 🔄 Plan de Reset - Refactoring Mobile-First
 
 ## Décision
+
 Abandonner la branche `audit/mobile-first` actuelle et repartir de zéro avec une approche plus méthodique.
 
 ## Raisons
+
 - Trop de bugs introduits simultanément
 - Difficile d'isoler les problèmes
 - Mécanisme de synchronisation Edition↔Tableau trop complexe
@@ -12,18 +14,21 @@ Abandonner la branche `audit/mobile-first` actuelle et repartir de zéro avec un
 ## Étapes de Reset
 
 ### 1. Sauvegarder le travail utile
+
 ```bash
 # Créer une branche de sauvegarde
 git branch audit/mobile-first-BACKUP
 ```
 
 ### 2. Revenir sur main propre
+
 ```bash
 git checkout main
 git pull origin main
 ```
 
 ### 3. Créer nouvelle branche propre
+
 ```bash
 git checkout -b refactor/mobile-first-v2
 ```
@@ -31,11 +36,13 @@ git checkout -b refactor/mobile-first-v2
 ## Nouvelle Approche Recommandée
 
 ### Phase 1: Fix SCSS Critique SEULEMENT (1h)
+
 **Objectif**: Réparer les media queries cassées
 
 1. Fix breakpoints sans quotes
+
    ```scss
-   $breakpoint-sm: 576px;  // pas '576px'
+   $breakpoint-sm: 576px; // pas '576px'
    ```
 
 2. Supprimer mixin dupliqué
@@ -47,7 +54,9 @@ git checkout -b refactor/mobile-first-v2
 5. **STOP** - ne rien toucher d'autre!
 
 ### Phase 2: Test Manuel Complet (30min)
+
 Avant TOUTE autre modification:
+
 - [ ] Train visible et se déplace
 - [ ] Tâches cochables dans Tableau
 - [ ] Drag & drop fonctionne
@@ -57,6 +66,7 @@ Avant TOUTE autre modification:
 Si UN SEUL test échoue → investiguer AVANT de continuer
 
 ### Phase 3: Mobile-First Incrémental (par composant)
+
 **UN composant à la fois, avec test après chaque**
 
 1. Navbar (2h)
@@ -80,9 +90,11 @@ Si UN SEUL test échoue → investiguer AVANT de continuer
    - Commit
 
 ### Phase 4: Problème Sync Edition↔Tableau (2h)
+
 **Traiter SÉPARÉMENT en dernier**
 
 Options:
+
 1. Supabase Realtime (recommandé - propre)
 2. Reload manuel avec bouton
 3. Storage events
@@ -91,23 +103,26 @@ Options:
 ## Leçons Apprises
 
 ❌ **À NE PAS FAIRE**:
+
 - Modifier SCSS + JS en même temps
 - Introduire nouveau système (reload) pendant refactor
 - Commits trop gros avec multiples changements
 - Continuer à coder quand un test échoue
 
 ✅ **À FAIRE**:
+
 - Une modification à la fois
 - Test après chaque commit
 - Commits atomiques et réversibles
 - S'arrêter dès qu'un bug apparaît
 
 ## Estimation Nouvelle Approche
+
 - Phase 1 (critique): 1h
 - Phase 2 (tests): 30min
 - Phase 3 (mobile-first): 8h
 - Phase 4 (sync): 2h
-**Total: ~12h** (vs 20h+ actuellement passées avec bugs)
+  **Total: ~12h** (vs 20h+ actuellement passées avec bugs)
 
 ## Commandes de Reset
 

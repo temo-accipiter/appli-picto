@@ -121,7 +121,14 @@ export async function tryLogServerConsent(record) {
       console.log('✅ Consent logged server-side:', result)
     }
   } catch (err) {
-    console.warn('❌ Failed to log consent server-side:', err)
+    // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
+    if (import.meta.env.DEV && err.message?.includes('503')) {
+      console.debug(
+        'ℹ️ Edge function log-consent non disponible (normal en dev local)'
+      )
+    } else {
+      console.warn('❌ Failed to log consent server-side:', err)
+    }
     // Don't block the user if logging fails
   }
 }

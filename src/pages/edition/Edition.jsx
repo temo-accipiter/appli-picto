@@ -290,7 +290,14 @@ export default function Edition() {
     return catMatch && doneMatch
   })
 
-  const { showTrain, setShowTrain, showRecompense, setShowRecompense, showTimeTimer, setShowTimeTimer } = useDisplay()
+  const {
+    showTrain,
+    setShowTrain,
+    showRecompense,
+    setShowRecompense,
+    showTimeTimer,
+    setShowTimeTimer,
+  } = useDisplay()
 
   return (
     <div className="page-edition">
@@ -327,7 +334,11 @@ export default function Edition() {
         <Checkbox
           id="time-timer-toggle"
           className="time-timer-checkbox"
-          label={showTimeTimer ? t('edition.showTimeTimer') : t('edition.hideTimeTimer')}
+          label={
+            showTimeTimer
+              ? t('edition.showTimeTimer')
+              : t('edition.hideTimeTimer')
+          }
           checked={showTimeTimer}
           onChange={e => setShowTimeTimer(e.target.checked)}
         />

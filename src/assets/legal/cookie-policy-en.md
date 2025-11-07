@@ -25,12 +25,12 @@ A cookie is a file stored on your device (computer, mobile, etc.) that allows in
 
 ## 5) Purposes and legal bases
 
-| Purpose                      | Examples                                                                                            | Legal basis                       |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------- |
-| **Strictly necessary**       | Supabase authentication, security (anti-bots), load balancing, cart/subscription preservation      | Legitimate interest & technical necessity |
-| **Audience measurement**     | Google Analytics 4 (configured in privacy-friendly mode)                                            | Consent                           |
-| **Personalization**          | Interface preferences (theme, language), action history                                             | Consent                           |
-| **Marketing**                | Targeted advertising, personalized recommendations                                                  | Consent                           |
+| Purpose                  | Examples                                                                                      | Legal basis                               |
+| ------------------------ | --------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Strictly necessary**   | Supabase authentication, security (anti-bots), load balancing, cart/subscription preservation | Legitimate interest & technical necessity |
+| **Audience measurement** | Google Analytics 4 (configured in privacy-friendly mode)                                      | Consent                                   |
+| **Personalization**      | Interface preferences (theme, language), action history                                       | Consent                                   |
+| **Marketing**            | Targeted advertising, personalized recommendations                                            | Consent                                   |
 
 ## 6) Cookies/trackers used
 

@@ -30,10 +30,6 @@ export function useFallbackData() {
     const loadFallbackData = async () => {
       setLoading(true)
       try {
-        if (import.meta.env.DEV) {
-          console.log('🔄 useFallbackData: chargement des données de fallback…')
-        }
-
         // Tâches
         const { data: tasks, error: tasksError } = await supabase
           .from('taches')
@@ -83,21 +79,8 @@ export function useFallbackData() {
         // - Si utilisateur AUTHENTIFIÉ et que TOUT est vide et SANS erreur → pas de fallback
         if (!safe.meta.hasAny && !safe.meta.hasError) {
           setFallbackData(null)
-          if (import.meta.env.DEV) {
-            console.log(
-              'ℹ️ useFallbackData: rien à fallback (données vides) → null'
-            )
-          }
         } else {
           setFallbackData(safe)
-          if (import.meta.env.DEV) {
-            console.log('✅ useFallbackData: fallback prêt', {
-              tasks: safe.tasks.length,
-              rewards: safe.rewards.length,
-              categories: safe.categories.length,
-              hasError: safe.meta.hasError,
-            })
-          }
         }
       } catch (error) {
         if (cancelled) return

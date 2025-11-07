@@ -59,7 +59,9 @@ export default function useParametres(reload = 0) {
       if (autoInit) {
         // Auto-initialiser avec les valeurs par défaut
         if (import.meta.env.DEV) {
-          console.info('useParametres: row not found, auto-initializing defaults')
+          console.info(
+            'useParametres: row not found, auto-initializing defaults'
+          )
         }
         setLoading(false)
 

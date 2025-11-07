@@ -29,6 +29,7 @@ cat audit-scss-report.csv
 ```
 
 Le rapport CSV identifie :
+
 - ❌ **CRITICAL**: Bloquants (respond-to(xs), animations >150ms)
 - ⚠️ **URGENT**: Importantes (max-width, touch targets <48px)
 - ℹ️ **IMPORTANT**: À traiter (lazy loading, focus states)
@@ -37,12 +38,13 @@ Le rapport CSV identifie :
 
 Ouvrir `audit-scss-report.csv` dans un tableur :
 
-| Priorité | Catégorie | Fichier | Ligne | Problème | Contexte |
-|----------|-----------|---------|-------|----------|----------|
-| CRITICAL | respond-to(xs) | src/components/... | 42 | Breakpoint xs utilisé | @include respond-to('xs') |
-| CRITICAL | Animation lente | src/styles/... | 18 | Animation >150ms | transition: all 0.3s |
+| Priorité | Catégorie       | Fichier            | Ligne | Problème              | Contexte                  |
+| -------- | --------------- | ------------------ | ----- | --------------------- | ------------------------- |
+| CRITICAL | respond-to(xs)  | src/components/... | 42    | Breakpoint xs utilisé | @include respond-to('xs') |
+| CRITICAL | Animation lente | src/styles/...     | 18    | Animation >150ms      | transition: all 0.3s      |
 
 **Questions à se poser** :
+
 - Combien de `respond-to(xs)` ? (indique ampleur du travail)
 - Combien d'animations lentes ? (risque TSA)
 - Y a-t-il des touch targets <48px sur éléments critiques ? (utilisabilité)
@@ -76,6 +78,7 @@ yarn dev
 ```
 
 **⚠️ Si quelque chose casse** :
+
 ```bash
 # Restaurer depuis le backup
 cp -r backup-xs-YYYYMMDD-HHMMSS/src/* src/
@@ -89,6 +92,7 @@ git reset --hard HEAD~1
 Pour chaque fichier identifié dans le rapport :
 
 **AVANT** (incorrect) :
+
 ```scss
 .navbar {
   display: flex;
@@ -102,6 +106,7 @@ Pour chaque fichier identifié dans le rapport :
 ```
 
 **APRÈS** (mobile-first) :
+
 ```scss
 .navbar {
   // Base = mobile (320px+)
@@ -120,6 +125,7 @@ Pour chaque fichier identifié dans le rapport :
 #### Corriger les animations lentes
 
 **AVANT** :
+
 ```scss
 .button {
   transition: all 0.3s ease; // ❌ 300ms = trop lent pour TSA
@@ -127,6 +133,7 @@ Pour chaque fichier identifié dans le rapport :
 ```
 
 **APRÈS** :
+
 ```scss
 .button {
   transition: all 0.15s ease; // ✅ 150ms = TSA-safe
@@ -143,14 +150,14 @@ Pour chaque fichier identifié dans le rapport :
 
 ```scss
 // Animations TSA-optimized
-$anim-instant: 0.05s;   // Feedback immédiat
-$anim-fast: 0.15s;      // Par défaut (TSA-safe)
-$anim-normal: 0.25s;    // Cas exceptionnels
-$anim-slow: 0.4s;       // Transitions majeures uniquement
+$anim-instant: 0.05s; // Feedback immédiat
+$anim-fast: 0.15s; // Par défaut (TSA-safe)
+$anim-normal: 0.25s; // Cas exceptionnels
+$anim-slow: 0.4s; // Transitions majeures uniquement
 
 // Touch targets TSA-optimized
-$touch-target-min: 48px;      // Recommandé (Apple HIG / Material)
-$touch-target-compact: 44px;  // WCAG minimum (fallback)
+$touch-target-min: 48px; // Recommandé (Apple HIG / Material)
+$touch-target-compact: 44px; // WCAG minimum (fallback)
 ```
 
 ### 6. Ajouter les mixins TSA
@@ -195,11 +202,7 @@ Créer `src/styles/abstracts/_mixins-tsa.scss` :
 }
 
 /// Focus visible (WCAG 2.2)
-@mixin focus-visible(
-  $color: var(--color-primary),
-  $width: 3px,
-  $offset: 2px
-) {
+@mixin focus-visible($color: var(--color-primary), $width: 3px, $offset: 2px) {
   &:focus {
     outline: none; // Retirer outline par défaut
   }
@@ -223,15 +226,11 @@ Modifier `src/styles/abstracts/_mixins.scss` :
     @error "❌ 'xs' breakpoint interdit ! " +
            "Mobile = base (hors media query). " +
            "Supprimez @include respond-to('xs') et mettez les styles en base.";
-  }
-
-  @else if map.has-key(vars.$breakpoints, $breakpoint) {
+  } @else if map.has-key(vars.$breakpoints, $breakpoint) {
     @media (min-width: map.get(vars.$breakpoints, $breakpoint)) {
       @content;
     }
-  }
-
-  @else {
+  } @else {
     @error "Breakpoint '#{$breakpoint}' inconnu. " +
            "Breakpoints disponibles: #{map.keys(vars.$breakpoints)}";
   }
@@ -255,6 +254,7 @@ yarn dev
 ```
 
 **Checklist de test** :
+
 - [ ] Navbar s'affiche correctement sur mobile (DevTools 375px)
 - [ ] Navbar s'affiche correctement sur desktop (1920px)
 - [ ] Aucune animation ne dépasse 150ms
@@ -286,21 +286,22 @@ git push -u origin audit/mobile-first
 
 Utiliser ce tableau pour suivre l'avancement :
 
-| Étape | Durée | Statut | Date |
-|-------|-------|--------|------|
-| ÉTAPE 0: Audit | 3h | ⏳ | |
-| ÉTAPE 1: Corrections pré-migration | 6h | ⏳ | |
-| ÉTAPE 2: Tests automatisés | 8h | ⏳ | |
-| ÉTAPE 3: Variables & mixins | 4h | ⏳ | |
-| ÉTAPE 4: Composants UI | 10h | ⏳ | |
-| ÉTAPE 5: Cards | 8h | ⏳ | |
-| ÉTAPE 6: Layout & navigation | 6h | ⏳ | |
-| ÉTAPE 7: Pages | 12h | ⏳ | |
-| ÉTAPE 8: Optimisations | 8h | ⏳ | |
-| ÉTAPE 9: CI/CD | 4h | ⏳ | |
-| **TOTAL** | **80h** | | |
+| Étape                              | Durée   | Statut | Date |
+| ---------------------------------- | ------- | ------ | ---- |
+| ÉTAPE 0: Audit                     | 3h      | ⏳     |      |
+| ÉTAPE 1: Corrections pré-migration | 6h      | ⏳     |      |
+| ÉTAPE 2: Tests automatisés         | 8h      | ⏳     |      |
+| ÉTAPE 3: Variables & mixins        | 4h      | ⏳     |      |
+| ÉTAPE 4: Composants UI             | 10h     | ⏳     |      |
+| ÉTAPE 5: Cards                     | 8h      | ⏳     |      |
+| ÉTAPE 6: Layout & navigation       | 6h      | ⏳     |      |
+| ÉTAPE 7: Pages                     | 12h     | ⏳     |      |
+| ÉTAPE 8: Optimisations             | 8h      | ⏳     |      |
+| ÉTAPE 9: CI/CD                     | 4h      | ⏳     |      |
+| **TOTAL**                          | **80h** |        |      |
 
 Statuts :
+
 - ⏳ En attente
 - 🔄 En cours
 - ✅ Terminé

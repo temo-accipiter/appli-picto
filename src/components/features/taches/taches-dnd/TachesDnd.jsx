@@ -87,7 +87,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         )}
       </DragOverlay>
 
-      {showResetButton && (
+      {showResetButton && items.length > 0 && (
         <div className="reset-all-zone">
           <>
             <Button

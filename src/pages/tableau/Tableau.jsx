@@ -47,13 +47,6 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   // Détecter automatiquement le mode démo si pas spécifié
   const isDemoMode = isDemo || role === 'visitor'
 
-  // Debug pour vérifier le mode (une seule fois)
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log('🔍 Tableau - Mode démo:', { isDemo, role, isDemoMode })
-    }
-  }, [isDemo, role, isDemoMode])
-
   // Gérer le changement de ligne pour les visiteurs
   const handleLineChange = action => {
     if (isDemoMode && action === 'line_change') {
@@ -70,8 +63,11 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     const prevPath = prevPathRef.current
 
     // Si on revient sur /tableau depuis une autre page (pas au premier mount)
-    if (currentPath === '/tableau' && prevPath !== null && prevPath !== '/tableau') {
-      console.log('🔄 Reload tableau depuis', prevPath)
+    if (
+      currentPath === '/tableau' &&
+      prevPath !== null &&
+      prevPath !== '/tableau'
+    ) {
       setReloadKey(prev => prev + 1)
     }
 
@@ -131,7 +127,9 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const taches = useMemo(() => {
     if (isDemoMode) return demoTachesState
     const fallbackTasks = Array.isArray(fallbackData?.tasks)
-      ? fallbackData.tasks
+      ? fallbackData.tasks.filter(
+          t => t.aujourdhui === true || t.aujourdhui === 1
+        )
       : []
     return personalTaches.length > 0 ? personalTaches : fallbackTasks
   }, [isDemoMode, demoTachesState, personalTaches, fallbackData?.tasks])
@@ -290,7 +288,9 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
         </div>
       )}
 
-      <div className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}>
+      <div
+        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
+      >
         <TachesDnd
           items={taches}
           doneMap={doneMap}

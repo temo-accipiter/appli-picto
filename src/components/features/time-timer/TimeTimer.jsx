@@ -25,7 +25,7 @@ const PRESET_DURATIONS = [
 export default function TimeTimer({
   compact = false,
   initialDuration = 10,
-  onComplete
+  onComplete,
 }) {
   const { t } = useI18n()
   const [duration, setDuration] = useState(initialDuration) // Durée totale en minutes
@@ -39,7 +39,7 @@ export default function TimeTimer({
   const percentage = (timeLeft / (duration * 60)) * 100
 
   // Formater le temps restant en MM:SS
-  const formatTime = useCallback((seconds) => {
+  const formatTime = useCallback(seconds => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -61,7 +61,7 @@ export default function TimeTimer({
   }, [duration])
 
   // Changer la durée
-  const changeDuration = useCallback((newDuration) => {
+  const changeDuration = useCallback(newDuration => {
     setDuration(newDuration)
     setTimeLeft(newDuration * 60)
     setIsRunning(false)
@@ -170,7 +170,7 @@ export default function TimeTimer({
             strokeLinecap="round"
             transform={`rotate(-90 ${radius + 20} ${radius + 20})`}
             style={{
-              transition: isRunning ? 'stroke-dashoffset 1s linear' : 'none'
+              transition: isRunning ? 'stroke-dashoffset 1s linear' : 'none',
             }}
           />
         </svg>
@@ -185,9 +185,7 @@ export default function TimeTimer({
             {formatTime(timeLeft)}
           </span>
           {!compact && (
-            <span className="time-timer__duration-label">
-              / {duration} min
-            </span>
+            <span className="time-timer__duration-label">/ {duration} min</span>
           )}
         </div>
       </div>
@@ -235,7 +233,11 @@ export default function TimeTimer({
 
       {/* Panneau de réglages */}
       {showSettings && (
-        <div className="time-timer__settings" role="region" aria-label={t('timeTimer.durationSettings')}>
+        <div
+          className="time-timer__settings"
+          role="region"
+          aria-label={t('timeTimer.durationSettings')}
+        >
           <h3 className="time-timer__settings-title">
             {t('timeTimer.selectDuration')}
           </h3>
@@ -244,7 +246,9 @@ export default function TimeTimer({
               <button
                 key={preset.value}
                 className={`time-timer__preset-btn ${
-                  duration === preset.value ? 'time-timer__preset-btn--active' : ''
+                  duration === preset.value
+                    ? 'time-timer__preset-btn--active'
+                    : ''
                 }`}
                 onClick={() => changeDuration(preset.value)}
                 aria-pressed={duration === preset.value}

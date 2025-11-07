@@ -9,13 +9,13 @@
 
 ## 🚨 Corrections critiques vs V1
 
-| Problème V1 | Correction V2 | Priorité |
-|-------------|---------------|----------|
-| `respond-to(xs)` trompeur | Supprimer complètement, mobile = base | 🔴 Critique |
-| Animations ≤300ms | Réduire à ≤150ms (TSA-optimized) | 🔴 Critique |
-| Touch targets 44px | Augmenter à 48px (recommandé) | 🟠 Urgent |
-| Tests manuels uniquement | Playwright + axe-core automatisés | 🟠 Urgent |
-| Aucun CI/CD | Pipeline Lighthouse CI + stylelint | 🟡 Important |
+| Problème V1               | Correction V2                         | Priorité     |
+| ------------------------- | ------------------------------------- | ------------ |
+| `respond-to(xs)` trompeur | Supprimer complètement, mobile = base | 🔴 Critique  |
+| Animations ≤300ms         | Réduire à ≤150ms (TSA-optimized)      | 🔴 Critique  |
+| Touch targets 44px        | Augmenter à 48px (recommandé)         | 🟠 Urgent    |
+| Tests manuels uniquement  | Playwright + axe-core automatisés     | 🟠 Urgent    |
+| Aucun CI/CD               | Pipeline Lighthouse CI + stylelint    | 🟡 Important |
 
 ---
 
@@ -32,10 +32,10 @@
 // Réduit pour minimiser la distraction (utilisateurs autistes sensibles)
 // Source: Consensus ChatGPT + DeepSeek + recherche TSA UX
 
-$anim-instant: 0.05s;   // Feedback immédiat (click, focus)
-$anim-fast: 0.15s;      // Animation rapide (TSA-safe, non distrayant)
-$anim-normal: 0.25s;    // Animation normale (cas exceptionnels)
-$anim-slow: 0.4s;       // Animation lente (transitions majeures uniquement)
+$anim-instant: 0.05s; // Feedback immédiat (click, focus)
+$anim-fast: 0.15s; // Animation rapide (TSA-safe, non distrayant)
+$anim-normal: 0.25s; // Animation normale (cas exceptionnels)
+$anim-slow: 0.4s; // Animation lente (transitions majeures uniquement)
 
 // ⚠️ DEPRECATED (trop lent pour TSA)
 // $transition-base: 0.3s; // ❌ Remplacer par $anim-fast
@@ -46,8 +46,8 @@ $anim-slow: 0.4s;       // Animation lente (transitions majeures uniquement)
 // 48px recommandé (vs 44px WCAG minimum) pour utilisateurs avec motricité fine réduite
 // Source: Apple HIG, Material Design, Consensus ChatGPT
 
-$touch-target-min: 48px;      // Recommandé (confort TSA)
-$touch-target-compact: 44px;  // Minimum WCAG (si contrainte espace)
+$touch-target-min: 48px; // Recommandé (confort TSA)
+$touch-target-compact: 44px; // Minimum WCAG (si contrainte espace)
 
 //==============================================================================
 // 📱 BREAKPOINTS (mobile-first uniquement)
@@ -55,11 +55,15 @@ $touch-target-compact: 44px;  // Minimum WCAG (si contrainte espace)
 // ⚠️ PAS de breakpoint 'xs' : mobile = base par défaut (hors media query)
 
 $breakpoints: (
-  'sm': 576px,   // Large mobile / Petites tablettes
-  'md': 768px,   // Tablettes
-  'lg': 992px,   // Petits desktops
-  'xl': 1200px,  // Desktops standards
-  'xxl': 1400px  // Grands écrans
+  'sm': 576px,
+  // Large mobile / Petites tablettes
+  'md': 768px,
+  // Tablettes
+  'lg': 992px,
+  // Petits desktops
+  'xl': 1200px,
+  // Desktops standards
+  'xxl': 1400px, // Grands écrans
 ) !default;
 ```
 
@@ -92,7 +96,11 @@ $breakpoints: (
 /// @param {String} $property - Propriété à animer (transform, opacity, etc.)
 /// @param {Number} $duration - Durée (défaut: $anim-fast = 150ms)
 /// @param {String} $easing - Courbe d'easing (défaut: ease-out)
-@mixin tsa-animation($property: all, $duration: vars.$anim-fast, $easing: ease-out) {
+@mixin tsa-animation(
+  $property: all,
+  $duration: vars.$anim-fast,
+  $easing: ease-out
+) {
   transition: $property $duration $easing;
 
   // Respecter prefers-reduced-motion (WCAG 2.2)
@@ -112,13 +120,11 @@ $breakpoints: (
   @if $breakpoint == 'xs' {
     @error "❌ 'xs' breakpoint interdit ! Mobile = base (hors media query). " +
            "Supprimez @include respond-to('xs') et mettez les styles en base.";
-  }
-  @else if map.has-key(vars.$breakpoints, $breakpoint) {
+  } @else if map.has-key(vars.$breakpoints, $breakpoint) {
     @media (min-width: map.get(vars.$breakpoints, $breakpoint)) {
       @content;
     }
-  }
-  @else {
+  } @else {
     @error "⚠️ Breakpoint '#{$breakpoint}' non trouvé. Disponibles : #{map.keys(vars.$breakpoints)}";
   }
 }
@@ -138,7 +144,9 @@ $breakpoints: (
 
 /// Mixin range (entre deux breakpoints)
 @mixin respond-between($min, $max) {
-  @if map.has-key(vars.$breakpoints, $min) and map.has-key(vars.$breakpoints, $max) {
+  @if map.has-key(vars.$breakpoints, $min) and
+    map.has-key(vars.$breakpoints, $max)
+  {
     $min-value: map.get(vars.$breakpoints, $min);
     $max-value: map.get(vars.$breakpoints, $max);
     @media (min-width: $min-value) and (max-width: $max-value - 1px) {
@@ -278,6 +286,7 @@ echo "🔍 Ouvrir le rapport : cat $OUT | column -t -s ,"
 ```
 
 **Rendre exécutable** :
+
 ```bash
 chmod +x scripts/audit-scss.sh
 ```
@@ -299,14 +308,14 @@ cat audit-scss-report.csv | column -t -s ','
 
 **Analyser les priorités** :
 
-| Issue | Priorité | Action |
-|-------|----------|--------|
-| `respond-to(xs)` | 🔴 Critique | Corriger AVANT toute migration |
-| `animation>150ms` | 🔴 Critique | Remplacer par `$anim-fast` |
-| `media-max-width` | 🟠 Urgent | Lister pour migration |
-| `touch-target` | 🟠 Urgent | Appliquer mixin `touch-target()` |
-| `img-sans-lazy` | 🟡 Important | Ajouter `loading="lazy"` |
-| `focus-manquant` | 🟡 Important | Ajouter mixin `focus-visible()` |
+| Issue             | Priorité     | Action                           |
+| ----------------- | ------------ | -------------------------------- |
+| `respond-to(xs)`  | 🔴 Critique  | Corriger AVANT toute migration   |
+| `animation>150ms` | 🔴 Critique  | Remplacer par `$anim-fast`       |
+| `media-max-width` | 🟠 Urgent    | Lister pour migration            |
+| `touch-target`    | 🟠 Urgent    | Appliquer mixin `touch-target()` |
+| `img-sans-lazy`   | 🟡 Important | Ajouter `loading="lazy"`         |
+| `focus-manquant`  | 🟡 Important | Ajouter mixin `focus-visible()`  |
 
 ---
 
@@ -314,7 +323,7 @@ cat audit-scss-report.csv | column -t -s ','
 
 **Créer** : `audit-scss-plan.md`
 
-```markdown
+````markdown
 # Plan corrections audit SCSS
 
 ## 🔴 CRITIQUE - À corriger AVANT migration
@@ -322,15 +331,18 @@ cat audit-scss-report.csv | column -t -s ','
 ### respond-to(xs) (X occurrences)
 
 **Fichiers** :
+
 - `src/components/...` (ligne Y)
 - `src/pages/...` (ligne Z)
 
 **Action** :
+
 1. Supprimer `@include respond-to('xs') { ... }`
 2. Déplacer les styles en base (hors media query)
 3. Ajouter commentaire `// 📱 BASE MOBILE`
 
 **Exemple** :
+
 ```scss
 // ❌ AVANT
 .button {
@@ -345,26 +357,32 @@ cat audit-scss-report.csv | column -t -s ','
   padding: 8px;
 }
 ```
+````
 
 ### animation>150ms (X occurrences)
 
 **Fichiers** :
+
 - ...
 
 **Action** :
+
 1. Remplacer `transition: ... 0.3s` par `@include tsa-animation(...)`
 2. Ou utiliser variable `$anim-fast`
 
 ## 🟠 URGENT - À corriger pendant migration
 
 ### media-max-width (X occurrences)
+
 ...
 
 ## 🟡 IMPORTANT - À corriger après migration
 
 ### touch-target, img-sans-lazy, focus-manquant
+
 ...
-```
+
+````
 
 ---
 
@@ -430,9 +448,10 @@ done
 
 echo "✅ Correction terminée. Vérifiez manuellement les fichiers."
 echo "📁 Backups : *.backup"
-```
+````
 
 **Lancer** :
+
 ```bash
 chmod +x scripts/fix-respond-to-xs.sh
 ./scripts/fix-respond-to-xs.sh
@@ -485,6 +504,7 @@ echo "✅ Suggestions terminées. Appliquer manuellement."
 ```
 
 **Lancer** :
+
 ```bash
 chmod +x scripts/suggest-anim-fixes.sh
 ./scripts/suggest-anim-fixes.sh > anim-fixes-suggestions.txt
@@ -498,6 +518,7 @@ cat anim-fixes-suggestions.txt
 ```
 
 **Commits par composant** :
+
 ```bash
 # Après correction manuelle de Button.scss
 git add src/components/ui/button/Button.scss
@@ -511,6 +532,7 @@ git commit -m "fix(ui): reduce Button animation to 150ms (TSA-friendly)"
 ### 1.3 - Augmenter touch targets à 48px (2h)
 
 **Identifier composants interactifs** :
+
 ```bash
 # Lister classes interactives
 grep -Rn -E "\.(btn|button|icon|handle|checkbox)" src --include="*.scss" \
@@ -521,12 +543,13 @@ grep -Rn -E "\.(btn|button|icon|handle|checkbox)" src --include="*.scss" \
 **Appliquer mixin touch-target()** :
 
 **Exemple Button.scss** :
+
 ```scss
 @use '@styles/abstracts' as *;
 
 .button {
   // 📱 BASE MOBILE
-  @include touch-target(48px);  // ✅ Minimum 48×48px
+  @include touch-target(48px); // ✅ Minimum 48×48px
   padding: 12px 24px;
   font-size: 14px;
   // ...
@@ -534,6 +557,7 @@ grep -Rn -E "\.(btn|button|icon|handle|checkbox)" src --include="*.scss" \
 ```
 
 **Commits par composant** :
+
 ```bash
 git add src/components/ui/button/Button.scss
 git commit -m "feat(ui): enforce 48px touch target on Button (TSA-optimized)"
@@ -559,6 +583,7 @@ git commit -m "feat(ui): enforce 48px touch target on Button (TSA-optimized)"
 ### 2.1 - Setup Playwright (2h)
 
 **Installation** :
+
 ```bash
 yarn add -D @playwright/test
 npx playwright install
@@ -567,7 +592,7 @@ npx playwright install
 **Config** : `playwright.config.ts`
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -606,7 +631,7 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
-});
+})
 ```
 
 ---
@@ -616,54 +641,55 @@ export default defineConfig({
 **Créer tests snapshot** : `tests/e2e/visual-regression.spec.ts`
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 const pages = [
   { name: 'Tableau', url: '/tableau' },
   { name: 'Edition', url: '/edition' },
   { name: 'Profil', url: '/profil' },
-];
+]
 
 // Test sur 3 viewports
 test.describe('Visual Regression', () => {
   for (const page of pages) {
     test(`${page.name} - Mobile`, async ({ page: p }) => {
-      await p.goto(page.url);
-      await p.waitForLoadState('networkidle');
+      await p.goto(page.url)
+      await p.waitForLoadState('networkidle')
 
       // Screenshot baseline
       await expect(p).toHaveScreenshot(`${page.name}-mobile.png`, {
         fullPage: true,
         maxDiffPixels: 100, // Tolérance
-      });
-    });
+      })
+    })
 
     test(`${page.name} - Tablet`, async ({ page: p }) => {
-      await p.setViewportSize({ width: 768, height: 1024 });
-      await p.goto(page.url);
-      await p.waitForLoadState('networkidle');
+      await p.setViewportSize({ width: 768, height: 1024 })
+      await p.goto(page.url)
+      await p.waitForLoadState('networkidle')
 
       await expect(p).toHaveScreenshot(`${page.name}-tablet.png`, {
         fullPage: true,
         maxDiffPixels: 100,
-      });
-    });
+      })
+    })
 
     test(`${page.name} - Desktop`, async ({ page: p }) => {
-      await p.setViewportSize({ width: 1280, height: 800 });
-      await p.goto(page.url);
-      await p.waitForLoadState('networkidle');
+      await p.setViewportSize({ width: 1280, height: 800 })
+      await p.goto(page.url)
+      await p.waitForLoadState('networkidle')
 
       await expect(p).toHaveScreenshot(`${page.name}-desktop.png`, {
         fullPage: true,
         maxDiffPixels: 100,
-      });
-    });
+      })
+    })
   }
-});
+})
 ```
 
 **Générer baselines** :
+
 ```bash
 # Générer screenshots de référence (AVANT migration)
 yarn playwright test --update-snapshots
@@ -679,6 +705,7 @@ git commit -m "test: add visual regression baselines (pre-migration)"
 ### 2.3 - Tests accessibilité automatisés (3h)
 
 **Installation axe-core** :
+
 ```bash
 yarn add -D axe-playwright
 ```
@@ -686,23 +713,23 @@ yarn add -D axe-playwright
 **Tests a11y** : `tests/e2e/accessibility.spec.ts`
 
 ```typescript
-import { test, expect } from '@playwright/test';
-import { injectAxe, checkA11y } from 'axe-playwright';
+import { test, expect } from '@playwright/test'
+import { injectAxe, checkA11y } from 'axe-playwright'
 
 const pages = [
   { name: 'Tableau', url: '/tableau' },
   { name: 'Edition', url: '/edition' },
   { name: 'Profil', url: '/profil' },
-];
+]
 
 test.describe('Accessibility (WCAG 2.2 AA)', () => {
   for (const page of pages) {
     test(`${page.name} - axe-core`, async ({ page: p }) => {
-      await p.goto(page.url);
-      await p.waitForLoadState('networkidle');
+      await p.goto(page.url)
+      await p.waitForLoadState('networkidle')
 
       // Inject axe-core
-      await injectAxe(p);
+      await injectAxe(p)
 
       // Check WCAG 2.2 AA
       await checkA11y(p, null, {
@@ -711,32 +738,33 @@ test.describe('Accessibility (WCAG 2.2 AA)', () => {
         // Rules spécifiques TSA
         rules: {
           'color-contrast': { enabled: true }, // Contraste minimum
-          'focus-order': { enabled: true },    // Ordre focus logique
+          'focus-order': { enabled: true }, // Ordre focus logique
           'interactive-element-affordance': { enabled: true }, // Touch targets
         },
-      });
-    });
+      })
+    })
   }
-});
+})
 
 test.describe('Accessibility - Keyboard Navigation', () => {
   test('Tableau - Tab navigation', async ({ page }) => {
-    await page.goto('/tableau');
+    await page.goto('/tableau')
 
     // Simuler Tab
-    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab')
 
     // Vérifier focus visible
-    const focused = await page.locator(':focus');
-    await expect(focused).toHaveCSS('outline-width', '3px'); // Focus ring 3px
+    const focused = await page.locator(':focus')
+    await expect(focused).toHaveCSS('outline-width', '3px') // Focus ring 3px
 
     // Vérifier ordre logique (navbar → tâches → récompense)
     // ... tests spécifiques
-  });
-});
+  })
+})
 ```
 
 **Lancer tests a11y** :
+
 ```bash
 yarn playwright test accessibility.spec.ts
 
@@ -767,6 +795,7 @@ yarn playwright test accessibility.spec.ts
    - Commentaire `// 📱 BASE MOBILE` systématique
 
 2. **Animations : utiliser `$anim-fast` (150ms)**
+
    ```scss
    // ❌ AVANT
    transition: transform 0.3s ease;
@@ -776,6 +805,7 @@ yarn playwright test accessibility.spec.ts
    ```
 
 3. **Touch targets : mixin `@include touch-target(48px)`**
+
    ```scss
    .button {
      @include touch-target(48px);
@@ -783,6 +813,7 @@ yarn playwright test accessibility.spec.ts
    ```
 
 4. **Focus : mixin `@include focus-visible()`**
+
    ```scss
    .button {
      @include focus-visible(var(--color-primary), 3px);
@@ -790,6 +821,7 @@ yarn playwright test accessibility.spec.ts
    ```
 
 5. **Tests après chaque composant**
+
    ```bash
    # Après migration d'un composant
    yarn playwright test --grep="ComponentName"
@@ -896,10 +928,10 @@ jobs:
     "assert": {
       "preset": "lighthouse:recommended",
       "assertions": {
-        "categories:performance": ["error", {"minScore": 0.9}],
-        "categories:accessibility": ["error", {"minScore": 0.95}],
-        "interactive": ["error", {"maxNumericValue": 3000}],
-        "first-contentful-paint": ["error", {"maxNumericValue": 2000}]
+        "categories:performance": ["error", { "minScore": 0.9 }],
+        "categories:accessibility": ["error", { "minScore": 0.95 }],
+        "interactive": ["error", { "maxNumericValue": 3000 }],
+        "first-contentful-paint": ["error", { "maxNumericValue": 2000 }]
       }
     },
     "upload": {
@@ -914,6 +946,7 @@ jobs:
 ### 9.3 - Stylelint Config (1h)
 
 **Installation** :
+
 ```bash
 yarn add -D stylelint stylelint-config-standard-scss
 ```
@@ -939,6 +972,7 @@ yarn add -D stylelint stylelint-config-standard-scss
 ```
 
 **Lancer** :
+
 ```bash
 yarn stylelint "src/**/*.scss" --fix
 ```
@@ -947,16 +981,16 @@ yarn stylelint "src/**/*.scss" --fix
 
 ## 📊 Récapitulatif V2 vs V1
 
-| Aspect | V1 | V2 (corrigé) | Gain |
-|--------|-----|--------------|------|
-| Audit préalable | ❌ Aucun | ✅ Script auto | Sécurité ++ |
-| `respond-to(xs)` | ⚠️ Autorisé | ❌ Interdit (error) | Bug éliminé |
-| Animations TSA | 300ms max | 150ms max | UX TSA ++ |
-| Touch targets | 44px min | 48px recommandé | Confort ++ |
-| Tests visuels | ✅ Manuels | ✅ Playwright auto | Fiabilité ++ |
-| Tests a11y | ✅ Manuels | ✅ axe-core auto | WCAG garanti |
-| CI/CD | ❌ Aucun | ✅ GitHub Actions | Qualité ++ |
-| Durée | 60h | 80h | +20h (investissement rentable) |
+| Aspect           | V1          | V2 (corrigé)        | Gain                           |
+| ---------------- | ----------- | ------------------- | ------------------------------ |
+| Audit préalable  | ❌ Aucun    | ✅ Script auto      | Sécurité ++                    |
+| `respond-to(xs)` | ⚠️ Autorisé | ❌ Interdit (error) | Bug éliminé                    |
+| Animations TSA   | 300ms max   | 150ms max           | UX TSA ++                      |
+| Touch targets    | 44px min    | 48px recommandé     | Confort ++                     |
+| Tests visuels    | ✅ Manuels  | ✅ Playwright auto  | Fiabilité ++                   |
+| Tests a11y       | ✅ Manuels  | ✅ axe-core auto    | WCAG garanti                   |
+| CI/CD            | ❌ Aucun    | ✅ GitHub Actions   | Qualité ++                     |
+| Durée            | 60h         | 80h                 | +20h (investissement rentable) |
 
 ---
 
@@ -1000,16 +1034,19 @@ yarn lint
 ## 🆘 Support & Rollback
 
 ### Rollback complet
+
 ```bash
 git reset --hard mobile-first-start
 ```
 
 ### Rollback partiel (1 fichier)
+
 ```bash
 git checkout HEAD~1 -- src/path/to/file.scss
 ```
 
 ### Comparer visuel
+
 ```bash
 # Avant
 git checkout mobile-first-start

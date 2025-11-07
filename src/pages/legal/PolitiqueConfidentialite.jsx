@@ -6,7 +6,8 @@ export default function PolitiqueConfidentialite() {
   const { language } = useI18n()
   const content =
     language === 'en' ? PRIVACY_POLICY_EN_MD : POLITIQUE_CONFIDENTIALITE_MD
-  const title = language === 'en' ? 'Privacy Policy' : 'Politique de Confidentialité'
+  const title =
+    language === 'en' ? 'Privacy Policy' : 'Politique de Confidentialité'
 
   return <LegalMarkdown title={title} content={content} />
 }

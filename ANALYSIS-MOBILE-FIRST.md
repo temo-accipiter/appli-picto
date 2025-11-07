@@ -10,25 +10,27 @@
 
 ### 1. Breakpoints SCSS avec Guillemets (CRITIQUE)
 
-**Fichier**: [src/styles/abstracts/_variables.scss](src/styles/abstracts/_variables.scss#L79-L82)
+**Fichier**: [src/styles/abstracts/\_variables.scss](src/styles/abstracts/_variables.scss#L79-L82)
 
 ```scss
 // ACTUEL (CASSÉ)
-$breakpoint-sm: '576px';  // ❌ Les guillemets rendent TOUTES les media queries invalides
+$breakpoint-sm: '576px'; // ❌ Les guillemets rendent TOUTES les media queries invalides
 $breakpoint-md: '768px';
 $breakpoint-lg: '992px';
 $breakpoint-xl: '1200px';
 ```
 
 **Impact**: Toutes les media queries responsive ne fonctionnent pas. Le CSS généré est invalide :
+
 ```scss
 @media (min-width: '576px') { ... } // ❌ INVALIDE
 ```
 
 **Fix appliqué dans audit/mobile-first**:
+
 ```scss
 // CORRIGÉ
-$breakpoint-sm: 576px;  // ✅ Sans guillemets
+$breakpoint-sm: 576px; // ✅ Sans guillemets
 $breakpoint-md: 768px;
 $breakpoint-lg: 992px;
 $breakpoint-xl: 1200px;
@@ -36,9 +38,10 @@ $breakpoint-xl: 1200px;
 
 ### 2. Mixin respond-to Dupliqué
 
-**Fichier**: [src/styles/abstracts/_mixins.scss](src/styles/abstracts/_mixins.scss#L110-L116)
+**Fichier**: [src/styles/abstracts/\_mixins.scss](src/styles/abstracts/_mixins.scss#L110-L116)
 
 Le mixin `respond-to` est défini DEUX FOIS :
+
 - Lignes 19-37 : Version mobile-first correcte (min-width)
 - Lignes 110-116 : Version desktop-first incorrecte (max-width)
 
@@ -53,6 +56,7 @@ Le mixin `respond-to` est défini DEUX FOIS :
 **Objectif**: Synchroniser les tâches entre Edition et Tableau
 
 **Fichiers modifiés**:
+
 - [src/pages/tableau/Tableau.jsx](src/pages/tableau/Tableau.jsx)
 - [src/hooks/useTachesDnd.js](src/hooks/useTachesDnd.js)
 
@@ -88,14 +92,17 @@ const { ... } = useTachesDnd((done, total) => {
 // useTachesDnd.js
 export default function useTachesDnd(onChange, reload = 0) {
   // ...
-  const loadTaches = useCallback(async (retryCount = 0) => {
-    console.log('🔄 useTachesDnd: Loading tasks with aujourdhui=true')
-    // ... fetch logic
-  }, [onChange, user?.id])  // ❌ reload NOT in dependencies
+  const loadTaches = useCallback(
+    async (retryCount = 0) => {
+      console.log('🔄 useTachesDnd: Loading tasks with aujourdhui=true')
+      // ... fetch logic
+    },
+    [onChange, user?.id]
+  ) // ❌ reload NOT in dependencies
 
   useEffect(() => {
     loadTaches()
-  }, [loadTaches, reload])  // ✅ reload triggers effect
+  }, [loadTaches, reload]) // ✅ reload triggers effect
 }
 ```
 
@@ -213,6 +220,7 @@ Avant TOUTE autre modification, vérifier :
 **Traiter SÉPARÉMENT en dernier**
 
 **Options** :
+
 1. **Supabase Realtime** (recommandé - propre)
 2. Reload manuel avec bouton
 3. Storage events
@@ -260,8 +268,8 @@ git checkout -b refactor/mobile-first-v2
 
 ## Fichiers à Modifier en Phase 1
 
-1. [src/styles/abstracts/_variables.scss](src/styles/abstracts/_variables.scss#L79-L82) - Retirer guillemets
-2. [src/styles/abstracts/_mixins.scss](src/styles/abstracts/_mixins.scss#L110-L116) - Supprimer mixin dupliqué
+1. [src/styles/abstracts/\_variables.scss](src/styles/abstracts/_variables.scss#L79-L82) - Retirer guillemets
+2. [src/styles/abstracts/\_mixins.scss](src/styles/abstracts/_mixins.scss#L110-L116) - Supprimer mixin dupliqué
 
 ## État du Build Actuel (main)
 

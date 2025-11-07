@@ -32,10 +32,8 @@ export default function useTachesEdition(reload = 0) {
   const { t } = useI18n()
 
   useEffect(() => {
-    console.log('🔄 useTachesEdition: useEffect déclenché, reload =', reload)
     if (!user?.id) return
     ;(async () => {
-      console.log('📡 Fetching tâches depuis Supabase...')
       const { data, error } = await supabase
         .from('taches')
         .select('*')
@@ -51,7 +49,6 @@ export default function useTachesEdition(reload = 0) {
         aujourdhui: !!t.aujourdhui,
         fait: !!t.fait,
       }))
-      console.log(`✅ Tâches fetchées: ${norm.length} tâches`)
       setTaches(norm)
     })()
   }, [reload, user?.id])

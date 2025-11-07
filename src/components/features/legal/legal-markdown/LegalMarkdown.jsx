@@ -1,6 +1,8 @@
 import { replaceLegalPlaceholders } from '@/config/constants/legalConfig'
+import { useI18n } from '@/hooks'
 import { marked } from 'marked'
 import PropTypes from 'prop-types'
+import { useNavigate } from 'react-router-dom'
 import './LegalMarkdown.scss'
 
 // Config minimale pour un rendu sûr
@@ -11,10 +13,28 @@ marked.setOptions({
 export default function LegalMarkdown({ title, content }) {
   // Remplacement automatique de tous les placeholders
   const processedContent = replaceLegalPlaceholders(content)
+  const navigate = useNavigate()
+  const { t } = useI18n()
+
+  const handleBack = () => {
+    // Si l'historique existe, revenir en arrière, sinon aller à l'accueil
+    if (window.history.length > 1) {
+      navigate(-1)
+    } else {
+      navigate('/tableau')
+    }
+  }
 
   return (
     <article className="legal-content">
       <header className="legal-content__header">
+        <button
+          onClick={handleBack}
+          className="legal-content__back-button"
+          aria-label={t('actions.back')}
+        >
+          ← {t('actions.back')}
+        </button>
         <h1>{title}</h1>
       </header>
       <div
