@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .signed-image {
   display: flex;
   justify-content: center;
@@ -76,12 +78,19 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
+// [Mobile-first] Base = mobile
+.signed-image__img,
+.signed-image__placeholder,
+.signed-image__error {
+  border-radius: 6px;
+}
+
+/* Desktop (576px+) */
+@include respond-to(sm) {
   .signed-image__img,
   .signed-image__placeholder,
   .signed-image__error {
-    border-radius: 6px;
+    border-radius: 8px;
   }
 }
 

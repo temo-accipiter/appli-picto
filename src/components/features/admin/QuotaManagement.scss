@@ -1,4 +1,6 @@
 // src/components/admin/QuotaManagement.scss
+@use '@styles/abstracts' as *;
+
 .quota-management {
   padding: 24px;
   background: var(--background);
@@ -250,49 +252,96 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .quota-management {
+// [Mobile-first] Base = mobile
+.quota-management {
+  padding: 16px;
+
+  .quota-header {
+    margin-bottom: 24px;
+
+    h2 {
+      font-size: 1.25rem;
+    }
+  }
+
+  .role-section {
     padding: 16px;
 
+    .quota-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+
+      .quota-info {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .edit-button {
+        align-self: flex-end;
+      }
+    }
+  }
+
+  .quota-modal {
+    .modal-content {
+      width: 95%;
+      padding: 20px;
+
+      .modal-actions {
+        flex-direction: column;
+
+        .save-button,
+        .cancel-button {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    padding: 24px;
+
     .quota-header {
-      margin-bottom: 24px;
+      margin-bottom: 32px;
 
       h2 {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
       }
     }
 
     .role-section {
-      padding: 16px;
+      padding: 20px;
 
       .quota-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: unset;
 
         .quota-info {
-          flex-wrap: wrap;
-          gap: 8px;
+          flex-wrap: nowrap;
+          gap: 12px;
         }
 
         .edit-button {
-          align-self: flex-end;
+          align-self: auto;
         }
       }
     }
 
     .quota-modal {
       .modal-content {
-        width: 95%;
-        padding: 20px;
+        width: 90%;
+        max-width: 500px;
+        padding: 24px;
 
         .modal-actions {
-          flex-direction: column;
+          flex-direction: row;
 
           .save-button,
           .cancel-button {
-            width: 100%;
+            width: auto;
           }
         }
       }

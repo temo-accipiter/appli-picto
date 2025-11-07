@@ -1,5 +1,6 @@
 // src/components/features/admin/ImageAnalytics.scss
 // Styles dashboard analytics images (TSA-friendly : pastel, calm)
+@use '@styles/abstracts' as *;
 
 .image-analytics {
   padding: 2rem;
@@ -28,12 +29,14 @@
   }
 
   &__grid {
+    /* [Mobile-first] Base = mobile */
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
 
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
   }
 }

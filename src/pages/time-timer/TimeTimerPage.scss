@@ -15,13 +15,15 @@
   }
 
   &__title {
-    font-size: 2.5rem;
+    /* [Mobile-first] Base = mobile */
+    font-size: 2rem;
     font-weight: $font-weight-bold;
     color: $color-text;
     margin: 0 0 $spacing-sm 0;
 
-    @media (max-width: 768px) {
-      font-size: 2rem;
+    /* Desktop (576px+) */
+    @include respond-to(sm) {
+      font-size: 2.5rem;
     }
   }
 

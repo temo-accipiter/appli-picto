@@ -1,4 +1,6 @@
 // src/pages/admin/logs/Logs.scss
+@use '@styles/abstracts' as *;
+
 .logs-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -168,72 +170,127 @@
   margin-top: 2rem;
 }
 
-// Responsive
-@media (max-width: 1024px) {
-  .logs-table {
-    .logs-header,
-    .log-row {
-      grid-template-columns: 140px 100px 1fr 1.5fr;
-      gap: 0.75rem;
+// [Mobile-first] Base = mobile
+.logs-page {
+  padding: 1rem 0.5rem;
+
+  .floating-pencil--logs {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+.logs-filters {
+  .filter-buttons {
+    flex-direction: column;
+
+    button {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+
+  .filter-info {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+.logs-table {
+  .logs-header,
+  .log-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .logs-header {
+    display: none;
+  }
+
+  .log-row {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+
+    .log-timestamp,
+    .log-user,
+    .log-event {
+      &::before {
+        content: attr(data-label) ': ';
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
     }
   }
 }
 
-@media (max-width: 768px) {
+/* Desktop (576px+) */
+@include respond-to(sm) {
   .logs-page {
-    padding: 1rem 0.5rem;
+    padding: 2rem 1rem;
 
     .floating-pencil--logs {
-      bottom: 1rem;
-      right: 1rem;
+      bottom: 2rem;
+      right: 2rem;
     }
   }
 
   .logs-filters {
     .filter-buttons {
-      flex-direction: column;
+      flex-direction: row;
 
       button {
-        min-width: auto;
-        width: 100%;
+        min-width: 100px;
+        width: auto;
       }
     }
 
     .filter-info {
-      flex-direction: column;
-      gap: 1rem;
-      text-align: center;
+      flex-direction: row;
+      gap: unset;
+      text-align: left;
     }
   }
 
   .logs-table {
     .logs-header,
     .log-row {
-      grid-template-columns: 1fr;
-      gap: 0.5rem;
-      padding: 1rem;
+      grid-template-columns: 140px 100px 1fr 1.5fr;
+      gap: 0.75rem;
+      padding: 0.75rem;
     }
 
     .logs-header {
-      display: none; // Cache l'en-tête sur mobile
+      display: grid;
     }
 
     .log-row {
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
+      border: none;
+      border-radius: 0;
+      margin-bottom: 0;
 
       .log-timestamp,
       .log-user,
       .log-event {
         &::before {
-          content: attr(data-label) ': ';
-          font-weight: 600;
-          color: var(--text-secondary);
-          text-transform: uppercase;
-          font-size: 0.75rem;
+          content: none;
         }
       }
+    }
+  }
+}
+
+/* Desktop (1024px+) */
+@include respond-to(md) {
+  .logs-table {
+    .logs-header,
+    .log-row {
+      grid-template-columns: 180px 120px 1fr 2fr;
+      gap: 1rem;
     }
   }
 }

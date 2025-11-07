@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .permissions-debug {
   background: var(--bg-secondary);
   border: 2px solid var(--border-color);
@@ -436,49 +438,98 @@
   }
 }
 
-// Responsive design
-@media (max-width: 768px) {
-  .permissions-debug {
-    .debug-header {
-      flex-direction: column;
+// [Mobile-first] Base = mobile
+.permissions-debug {
+  .debug-header {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+
+    .header-left {
+      h3 {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .advanced-controls {
+    flex-direction: column;
+    gap: 16px;
+
+    .search-box {
+      min-width: 100%;
+    }
+
+    .bulk-actions {
+      justify-content: center;
+    }
+  }
+
+  .features-list {
+    .features-header,
+    .feature-row {
+      grid-template-columns: 1fr;
       gap: 16px;
       text-align: center;
 
+      .feature-name {
+        padding-left: 0;
+        justify-content: center;
+      }
+
+      .permissions-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+
+        .role-header {
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    .debug-header {
+      flex-direction: row;
+      gap: unset;
+      text-align: left;
+
       .header-left {
         h3 {
-          font-size: 1.2rem;
+          font-size: 1.4rem;
         }
       }
     }
 
     .advanced-controls {
-      flex-direction: column;
-      gap: 16px;
+      flex-direction: row;
+      gap: 20px;
 
       .search-box {
-        min-width: 100%;
+        min-width: 300px;
       }
 
       .bulk-actions {
-        justify-content: center;
+        justify-content: flex-start;
       }
     }
 
     .features-list {
       .features-header,
       .feature-row {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        text-align: center;
+        grid-template-columns: 2fr 3fr 1fr;
+        gap: 20px;
+        text-align: left;
 
         .feature-name {
-          padding-left: 0;
-          justify-content: center;
+          padding-left: 20px;
+          justify-content: flex-start;
         }
 
         .permissions-grid {
-          grid-template-columns: 1fr;
-          gap: 12px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 20px;
 
           .role-header {
             justify-content: center;

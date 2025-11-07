@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .signup-prompt-modal {
   background: var(--background);
   border-radius: 16px;
@@ -156,29 +158,53 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .signup-prompt-modal {
-    width: 95vw;
-    margin: 20px;
+// [Mobile-first] Base = mobile
+.signup-prompt-modal {
+  width: 95vw;
+  margin: 20px;
+
+  .modal-header {
+    padding: 20px 20px 16px;
+
+    .modal-title {
+      font-size: 1.3rem;
+    }
+  }
+
+  .modal-message,
+  .features-list,
+  .modal-actions {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .trial-info {
+    padding: 16px 20px 20px;
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    width: 90vw;
+    max-width: 500px;
+    margin: auto;
 
     .modal-header {
-      padding: 20px 20px 16px;
+      padding: 24px 24px 16px;
 
       .modal-title {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
       }
     }
 
     .modal-message,
     .features-list,
     .modal-actions {
-      padding-left: 20px;
-      padding-right: 20px;
+      padding-left: 24px;
+      padding-right: 24px;
     }
 
     .trial-info {
-      padding: 16px 20px 20px;
+      padding: 16px 24px 24px;
     }
   }
 }

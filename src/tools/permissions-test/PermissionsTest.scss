@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .permissions-test {
   background: var(--background);
   border: 2px solid var(--border);
@@ -138,25 +140,47 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .permissions-test {
-    margin: 16px;
-    padding: 20px;
+// [Mobile-first] Base = mobile
+.permissions-test {
+  margin: 16px;
+  padding: 20px;
+
+  .test-section {
+    .status-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .features-test {
+      .feature-test {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+
+        span:first-child {
+          min-width: auto;
+        }
+      }
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    margin: 20px;
+    padding: 24px;
 
     .test-section {
       .status-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
 
       .features-test {
         .feature-test {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 8px;
+          flex-direction: row;
+          align-items: center;
+          gap: 16px;
 
           span:first-child {
-            min-width: auto;
+            min-width: 120px;
           }
         }
       }

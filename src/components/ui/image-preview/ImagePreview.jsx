@@ -11,7 +11,7 @@ export default function ImagePreview({
 
   return (
     <div className={`image-preview image-preview--${size} ${className}`}>
-      <img src={url} alt={alt} className="image-preview__img" />
+      <img src={url} alt={alt} className="image-preview__img" loading="lazy" />
     </div>
   )
 }

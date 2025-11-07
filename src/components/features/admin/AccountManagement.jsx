@@ -199,7 +199,7 @@ export default function AccountManagement({ className = '' }) {
               <div className="user-info">
                 <div className="user-avatar">
                   {user.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.pseudo} />
+                    <img src={user.avatar_url} alt={user.pseudo} loading="lazy" />
                   ) : (
                     <div className="avatar-placeholder">
                       {user.pseudo?.charAt(0)?.toUpperCase() || '?'}

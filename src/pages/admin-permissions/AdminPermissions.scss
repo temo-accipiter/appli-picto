@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .admin-permissions-page {
   max-width: 1400px;
   margin: 0 auto;
@@ -1142,7 +1144,7 @@
   }
 
   // Responsive pour les utilisateurs
-  @media (max-width: 768px) {
+  @include respond-to-below(md) {
     .users-tab {
       .user-card {
         padding: 1rem;
@@ -1723,7 +1725,7 @@
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .admin-permissions-page {
     padding: 16px;
 
@@ -1793,7 +1795,7 @@
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .permissions-table-container {
     margin: 1rem 0;
   }
@@ -2019,7 +2021,7 @@
 }
 
 /* Responsive pour les contrôles de permissions */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .permission-actions {
     grid-template-columns: 1fr;
   }
@@ -2532,7 +2534,7 @@
 }
 
 /* Responsive pour l'historique */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .history-tab {
     .history-controls .filters-grid {
       grid-template-columns: 1fr;
@@ -2557,7 +2559,7 @@
 }
 
 /* Responsive pour le formulaire de fonctionnalités */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .permissions-header {
     flex-direction: column;
     gap: 1rem;
@@ -2728,7 +2730,7 @@
 }
 
 /* Responsive pour l'onglet Logs */
-@media (max-width: 768px) {
+@include respond-to-below(md) {
   .logs-tab {
     .logs-filters {
       .filter-buttons {

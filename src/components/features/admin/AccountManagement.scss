@@ -1,4 +1,6 @@
 // src/components/admin/AccountManagement.scss
+@use '@styles/abstracts' as *;
+
 .account-management {
   padding: 24px;
   background: var(--background);
@@ -394,48 +396,94 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .account-management {
-    padding: 16px;
+// [Mobile-first] Base = mobile
+.account-management {
+  padding: 16px;
+
+  .account-controls {
+    flex-direction: column;
+
+    .search-box,
+    .filter-select {
+      min-width: unset;
+    }
+  }
+
+  .user-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .user-info {
+      width: 100%;
+    }
+
+    .user-status {
+      align-self: flex-start;
+    }
+
+    .user-actions {
+      align-self: flex-end;
+    }
+  }
+
+  .account-modal {
+    .modal-content {
+      width: 95%;
+      padding: 20px;
+
+      .action-buttons {
+        flex-direction: column;
+
+        .status-button {
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    padding: 24px;
 
     .account-controls {
-      flex-direction: column;
+      flex-direction: row;
 
       .search-box,
       .filter-select {
-        min-width: unset;
+        min-width: 150px;
       }
     }
 
     .user-card {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
+      flex-direction: row;
+      align-items: center;
+      gap: 16px;
 
       .user-info {
-        width: 100%;
+        width: auto;
       }
 
       .user-status {
-        align-self: flex-start;
+        align-self: auto;
       }
 
       .user-actions {
-        align-self: flex-end;
+        align-self: auto;
       }
     }
 
     .account-modal {
       .modal-content {
-        width: 95%;
-        padding: 20px;
+        width: 90%;
+        max-width: 600px;
+        padding: 24px;
 
         .action-buttons {
-          flex-direction: column;
+          flex-direction: row;
 
           .status-button {
-            justify-content: center;
+            justify-content: flex-start;
           }
         }
       }

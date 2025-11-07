@@ -1,4 +1,6 @@
 // src/components/shared/QuotaIndicator.scss
+@use '@styles/abstracts' as *;
+
 .quota-indicator {
   display: flex;
   flex-direction: column;
@@ -251,31 +253,57 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .quota-indicator {
+// [Mobile-first] Base = mobile
+.quota-indicator {
+  &.large {
+    padding: 12px;
+    gap: 8px;
+
+    .quota-label {
+      font-size: 0.875rem;
+    }
+
+    .quota-details {
+      font-size: 0.875rem;
+    }
+  }
+
+  .quota-label {
+    .monthly-info {
+      display: none;
+    }
+  }
+
+  .quota-details {
+    .quota-remaining {
+      display: none;
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
     &.large {
-      padding: 12px;
-      gap: 8px;
+      padding: 16px;
+      gap: 10px;
 
       .quota-label {
-        font-size: 0.875rem;
+        font-size: 1rem;
       }
 
       .quota-details {
-        font-size: 0.875rem;
+        font-size: 1rem;
       }
     }
 
     .quota-label {
       .monthly-info {
-        display: none; // Masquer les infos mensuelles sur mobile
+        display: inline;
       }
     }
 
     .quota-details {
       .quota-remaining {
-        display: none; // Masquer les restantes sur mobile
+        display: inline;
       }
     }
   }

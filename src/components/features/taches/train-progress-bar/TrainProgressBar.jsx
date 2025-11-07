@@ -81,6 +81,7 @@ export default function TrainProgressBar({
             src="/src/assets/images/train.png"
             alt="Métro"
             className="train-icon"
+            loading="lazy"
           />
         </div>
 
@@ -89,6 +90,7 @@ export default function TrainProgressBar({
           <img
             src={`/src/assets/images/ligne/ligne${ligne}.png`}
             alt={`Ligne ${ligne}`}
+            loading="lazy"
           />
         </div>
       </div>

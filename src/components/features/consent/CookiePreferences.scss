@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .cookie-prefs {
   position: fixed;
   inset: 0;
@@ -220,16 +222,23 @@
 }
 
 .cookie-prefs__actions {
+  /* [Mobile-first] Base = mobile */
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  flex-wrap: wrap;
+  flex-direction: column;
 
-  @media (max-width: 640px) {
-    flex-direction: column;
+  .btn {
+    width: 100%;
+  }
+
+  /* Desktop (640px+) */
+  @media (min-width: 640px) {
+    flex-direction: row;
+    flex-wrap: wrap;
 
     .btn {
-      width: 100%;
+      width: auto;
     }
   }
 }
@@ -300,19 +309,42 @@
   }
 }
 
-@media (max-width: 768px) {
+/* [Mobile-first] Base = mobile */
+.cookie-prefs {
+  padding: 16px;
+}
+
+.cookie-prefs__dialog {
+  width: 100%;
+  max-height: 95vh;
+}
+
+.cookie-prefs__header,
+.cookie-prefs__body,
+.cookie-prefs__footer {
+  padding: 20px;
+}
+
+/* Desktop (576px+) */
+@include respond-to(sm) {
   .cookie-prefs {
-    padding: 16px;
+    padding: 20px;
   }
 
   .cookie-prefs__dialog {
-    width: 100%;
-    max-height: 95vh;
+    width: min(95vw, 800px);
+    max-height: 90vh;
   }
 
-  .cookie-prefs__header,
-  .cookie-prefs__body,
+  .cookie-prefs__header {
+    padding: 24px 24px 16px 24px;
+  }
+
+  .cookie-prefs__body {
+    padding: 24px;
+  }
+
   .cookie-prefs__footer {
-    padding: 20px;
+    padding: 20px 24px;
   }
 }

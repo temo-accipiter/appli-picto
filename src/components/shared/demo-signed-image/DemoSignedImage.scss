@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .demo-signed-image {
   object-fit: cover;
   border-radius: 8px;
@@ -64,14 +66,24 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
+// [Mobile-first] Base = mobile
+.demo-signed-image {
+  border-radius: 6px;
+}
+
+.demo-image-loading,
+.demo-image-error {
+  border-radius: 6px;
+}
+
+/* Desktop (576px+) */
+@include respond-to(sm) {
   .demo-signed-image {
-    border-radius: 6px;
+    border-radius: 8px;
   }
 
   .demo-image-loading,
   .demo-image-error {
-    border-radius: 6px;
+    border-radius: 8px;
   }
 }

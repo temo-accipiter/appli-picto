@@ -14,7 +14,7 @@
   }
 }
 
-/// Générateur de media query
+/// Générateur de media query (mobile-first)
 /// @param {String} $breakpoint sm | md | lg | xl
 @mixin respond-to($breakpoint) {
   @if $breakpoint == sm {
@@ -31,6 +31,29 @@
     }
   } @else if $breakpoint == xl {
     @media (min-width: $breakpoint-xl) {
+      @content;
+    }
+  }
+}
+
+/// Générateur de media query desktop-first (legacy support)
+/// @param {String} $breakpoint sm | md | lg | xl
+/// @deprecated Préférer mobile-first avec respond-to()
+@mixin respond-to-below($breakpoint) {
+  @if $breakpoint == sm {
+    @media (max-width: #{$breakpoint-sm - 1}) {
+      @content;
+    }
+  } @else if $breakpoint == md {
+    @media (max-width: #{$breakpoint-md - 1}) {
+      @content;
+    }
+  } @else if $breakpoint == lg {
+    @media (max-width: #{$breakpoint-lg - 1}) {
+      @content;
+    }
+  } @else if $breakpoint == xl {
+    @media (max-width: #{$breakpoint-xl - 1}) {
       @content;
     }
   }

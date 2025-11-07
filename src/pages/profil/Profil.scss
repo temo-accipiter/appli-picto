@@ -2,7 +2,8 @@
 @use 'sass:color';
 
 .profil {
-  padding: 2rem;
+  /* [Mobile-first] Base = mobile */
+  padding: 1rem;
 
   &__container {
     max-width: 600px;
@@ -10,6 +11,11 @@
     background-color: white;
     border-radius: 1rem;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
     padding: 2rem;
   }
 
@@ -100,10 +106,12 @@
 // Section abonnement
 .abonnement-section {
   margin: 1.5rem 0;
-  padding: 1.5rem;
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-color);
+
+  /* [Mobile-first] Base = mobile */
+  padding: 1rem;
 
   .abonnement-statut {
     margin-bottom: 1rem;
@@ -121,21 +129,17 @@
 
   button {
     width: 100%;
-    max-width: 300px;
-  }
-}
 
-// Responsive
-@media (max-width: 768px) {
-  .profil {
-    padding: 1rem;
+    /* [Mobile-first] Base = mobile */
+    max-width: 100%;
   }
 
-  .abonnement-section {
-    padding: 1rem;
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
+    padding: 1.5rem;
 
     button {
-      max-width: 100%;
+      max-width: 300px;
     }
   }
 }

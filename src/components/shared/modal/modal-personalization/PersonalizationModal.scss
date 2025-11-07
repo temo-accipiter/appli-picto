@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .personalization-modal {
   .personalization-content {
     text-align: center;
@@ -112,28 +114,52 @@
   }
 }
 
-// Responsive
-@media (max-width: 768px) {
-  .personalization-modal {
+// [Mobile-first] Base = mobile
+.personalization-modal {
+  .personalization-content {
+    padding: 15px;
+
+    .personalization-icon {
+      font-size: 3rem;
+    }
+
+    h3 {
+      font-size: 1.3rem;
+    }
+
+    .personalization-actions {
+      flex-direction: column;
+      align-items: center;
+
+      .primary-button,
+      .secondary-button {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  }
+
+  /* Desktop (576px+) */
+  @include respond-to(sm) {
     .personalization-content {
-      padding: 15px;
+      padding: 20px;
 
       .personalization-icon {
-        font-size: 3rem;
+        font-size: 4rem;
       }
 
       h3 {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
       }
 
       .personalization-actions {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        align-items: flex-start;
 
         .primary-button,
         .secondary-button {
-          width: 100%;
-          max-width: 200px;
+          width: auto;
+          max-width: none;
         }
       }
     }

@@ -1,4 +1,6 @@
 // src/pages/abonnement/Abonnement.scss
+@use '@styles/abstracts' as *;
+
 .abonnement-page {
   max-width: 800px;
   margin: 0 auto;
@@ -253,38 +255,89 @@
   margin-top: 2rem;
 }
 
-// Responsive
-@media (max-width: 768px) {
+// [Mobile-first] Base = mobile
+.abonnement-page {
+  padding: 1rem 0.5rem;
+
+  .floating-pencil--abonnement {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+.abonnement-status {
+  .status-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+
+    .status-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 2rem;
+    }
+  }
+}
+
+.abonnement-actions {
+  .action-buttons {
+    flex-direction: column;
+
+    button {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+}
+
+.abonnement-history {
+  .history-list {
+    .history-item {
+      .history-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+
+        .history-timestamp {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+}
+
+/* Desktop (576px+) */
+@include respond-to(sm) {
   .abonnement-page {
-    padding: 1rem 0.5rem;
+    padding: 2rem 1rem;
 
     .floating-pencil--abonnement {
-      bottom: 1rem;
-      right: 1rem;
+      bottom: 2rem;
+      right: 2rem;
     }
   }
 
   .abonnement-status {
     .status-header {
-      flex-direction: column;
-      text-align: center;
+      flex-direction: row;
+      text-align: left;
       gap: 1rem;
 
       .status-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        font-size: 2.5rem;
       }
     }
   }
 
   .abonnement-actions {
     .action-buttons {
-      flex-direction: column;
+      flex-direction: row;
 
       button {
-        min-width: auto;
-        width: 100%;
+        min-width: 200px;
+        width: auto;
       }
     }
   }
@@ -293,12 +346,12 @@
     .history-list {
       .history-item {
         .history-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 0.5rem;
+          flex-direction: row;
+          align-items: center;
+          gap: unset;
 
           .history-timestamp {
-            align-self: flex-end;
+            align-self: auto;
           }
         }
       }
