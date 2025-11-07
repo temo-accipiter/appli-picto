@@ -1,5 +1,6 @@
-// src/utils/supabaseVisibilityHandler.js
+// src/utils/supabaseVisibilityHandler.ts
 import { recreateSupabaseClient } from './supabaseClient'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
  * VERSION PRAGMATIQUE FINALE
@@ -12,15 +13,15 @@ const SDK_RECREATION_EVENT = 'supabase-client-recreated'
 const MIN_HIDDEN_DURATION = 5000 // 5s (Chrome suspend après ~5-10s)
 const HEALTH_CHECK_TIMEOUT = 3000 // 3s timeout
 
-let visibilityHandler = null
-let tabHiddenSince = null
+let visibilityHandler: (() => void) | null = null
+let tabHiddenSince: number | null = null
 let lastRecreationTime = 0
 const MIN_RECREATION_INTERVAL = 10000 // Minimum 10s entre recréations
 
 /**
  * Démarre l'écoute des changements de visibilité
  */
-export function startVisibilityHandler(supabaseClient) {
+export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
   if (!supabaseClient || typeof document === 'undefined') return
 
   stopVisibilityHandler()
@@ -69,9 +70,9 @@ export function startVisibilityHandler(supabaseClient) {
 
     try {
       const supabaseUrl =
-        supabaseClient.supabaseUrl || import.meta.env.VITE_SUPABASE_URL
+        (supabaseClient as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL
       const supabaseKey =
-        supabaseClient.supabaseKey || import.meta.env.VITE_SUPABASE_ANON_KEY
+        (supabaseClient as any).supabaseKey || import.meta.env.VITE_SUPABASE_ANON_KEY
 
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
@@ -100,7 +101,8 @@ export function startVisibilityHandler(supabaseClient) {
     } catch (apiError) {
       // API ne répond pas → Recréer
       if (import.meta.env.DEV) {
-        console.warn('[Visibility] ❌ API check failed:', apiError.message)
+        const errorMsg = apiError instanceof Error ? apiError.message : String(apiError)
+        console.warn('[Visibility] ❌ API check failed:', errorMsg)
         console.log('[Visibility] 🔄 Recreating SDK...')
       }
 
@@ -142,7 +144,7 @@ export function startVisibilityHandler(supabaseClient) {
 /**
  * Arrête l'écoute
  */
-export function stopVisibilityHandler() {
+export function stopVisibilityHandler(): void {
   if (visibilityHandler && typeof document !== 'undefined') {
     document.removeEventListener('visibilitychange', visibilityHandler)
     visibilityHandler = null

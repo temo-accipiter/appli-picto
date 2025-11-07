@@ -1,5 +1,6 @@
-// src/utils/supabaseClient.js
-import { createClient } from '@supabase/supabase-js'
+// src/utils/supabaseClient.ts
+import { createClient, type SupabaseClient, type Session } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
 
 // ⚠️ Point d'entrée unique du client Supabase pour TOUT le frontend.
 const url =
@@ -16,6 +17,8 @@ console.log('🔑 Supabase Key (first 20 chars):', key.substring(0, 20) + '...')
 
 let recreationInProgress = false
 
+type SupabaseClientType = SupabaseClient<Database, 'public'>
+
 // Configuration SDK simple (sans hacks qui cassent PostgREST)
 const clientConfig = {
   auth: {
@@ -28,12 +31,12 @@ const clientConfig = {
   },
   global: {
     // Timeout réduit pour détecter problèmes plus vite
-    fetch: async (url, options = {}) => {
+    fetch: async (input: RequestInfo | URL, options: RequestInit = {}) => {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000) // 5s max
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(input, {
           ...options,
           signal: controller.signal,
         })
@@ -41,7 +44,7 @@ const clientConfig = {
         return response
       } catch (error) {
         clearTimeout(timeout)
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           console.warn('[Supabase] Request timeout after 5s')
           throw new Error('Supabase timeout')
         }
@@ -52,11 +55,16 @@ const clientConfig = {
 }
 
 // Instance unique
-export let supabase = createClient(url, key, clientConfig)
+export let supabase: SupabaseClientType = createClient<Database>(url, key, clientConfig)
 
 // Exposer pour debug
 if (typeof window !== 'undefined') {
-  window.supabase = supabase
+  ;(window as any).supabase = supabase
+}
+
+interface RecreateResult {
+  client: SupabaseClientType
+  session: Session | null
 }
 
 /**
@@ -64,7 +72,7 @@ if (typeof window !== 'undefined') {
  *
  * @returns {Promise<object>} Le nouveau client + session restaurée
  */
-export async function recreateSupabaseClient() {
+export async function recreateSupabaseClient(): Promise<RecreateResult> {
   if (recreationInProgress) {
     if (import.meta.env.DEV) {
       console.log('[Supabase] ⏳ Recreation already in progress...')
@@ -88,7 +96,7 @@ export async function recreateSupabaseClient() {
     const storageKey = `sb-${url.split('//')[1].split('.')[0]}-auth-token`
     const savedSessionStr = localStorage.getItem(storageKey)
 
-    let savedSession = null
+    let savedSession: any = null
     if (savedSessionStr) {
       try {
         savedSession = JSON.parse(savedSessionStr)
@@ -104,29 +112,29 @@ export async function recreateSupabaseClient() {
     try {
       const oldChannels = supabase.realtime?.channels || {}
       Object.values(oldChannels).forEach(channel => {
-        channel.unsubscribe().catch(() => {})
+        void channel.unsubscribe()
       })
-      supabase.realtime?.disconnect().catch(() => {})
+      void supabase.realtime?.disconnect()
     } catch {
       // Ignore errors
     }
 
     // Détruire référence
-    supabase = null
+    supabase = null as any
 
     // Court délai
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // Créer nouveau client
-    supabase = createClient(url, key, clientConfig)
+    supabase = createClient<Database>(url, key, clientConfig)
 
     // Exposer
     if (typeof window !== 'undefined') {
-      window.supabase = supabase
+      ;(window as any).supabase = supabase
     }
 
     // 🔑 AMÉLIORATION : Restauration de session plus robuste
-    let session = null
+    let session: Session | null = null
     if (savedSession?.access_token && savedSession?.refresh_token) {
       try {
         // Essayer d'abord de restaurer directement
@@ -159,7 +167,8 @@ export async function recreateSupabaseClient() {
           }
         }
       } catch (e) {
-        console.warn('[Supabase] Session restoration failed:', e.message)
+        const errorMsg = e instanceof Error ? e.message : String(e)
+        console.warn('[Supabase] Session restoration failed:', errorMsg)
       }
     }
 

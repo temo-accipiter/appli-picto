@@ -1,4 +1,4 @@
-// src/utils/supabaseHealthCheck.js
+// src/utils/supabaseHealthCheck.ts
 /**
  * Détection et reset automatique d'un SDK Supabase gelé/corrompu
  *
@@ -7,6 +7,8 @@
  * - Promises non résolues causant gel de l'interface
  * - État corrompu après veille/inactivité prolongée
  */
+
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const HEALTH_CHECK_TIMEOUT = 8000 // 8s max pour une réponse (augmenté pour éviter faux positifs)
 const MAX_CONSECUTIVE_FAILURES = 3 // Nombre d'échecs avant reset (augmenté à 3 pour plus de tolérance)
@@ -19,11 +21,18 @@ let isHealthy = true
 let currentTimeout = HEALTH_CHECK_TIMEOUT
 
 // ✅ Logging pour debug (exposé sur window)
-const healthLogs = []
+interface HealthLogEntry {
+  timestamp: string
+  level: 'info' | 'warn' | 'error'
+  message: string
+  data: Record<string, any>
+}
+
+const healthLogs: HealthLogEntry[] = []
 const MAX_LOGS = 50
 
-function logHealth(level, message, data = {}) {
-  const entry = {
+function logHealth(level: 'info' | 'warn' | 'error', message: string, data: Record<string, any> = {}) {
+  const entry: HealthLogEntry = {
     timestamp: new Date().toISOString(),
     level, // 'info' | 'warn' | 'error'
     message,
@@ -39,7 +48,7 @@ function logHealth(level, message, data = {}) {
 
   // Exposer sur window pour debug
   if (typeof window !== 'undefined') {
-    window.__supabaseHealth = {
+    ;(window as any).__supabaseHealth = {
       logs: healthLogs,
       stats: {
         isHealthy,
@@ -57,21 +66,27 @@ function logHealth(level, message, data = {}) {
   }
 }
 
+interface HealthCheckResult {
+  healthy: boolean
+  error?: string
+  shouldReset?: boolean
+}
+
 /**
  * Vérifie si le SDK Supabase répond correctement
  * @param {Object} supabaseClient - Instance Supabase à tester
  * @returns {Promise<{healthy: boolean, error?: string}>}
  */
-export async function checkSupabaseHealth(supabaseClient) {
+export async function checkSupabaseHealth(supabaseClient: SupabaseClient): Promise<HealthCheckResult> {
   if (!supabaseClient) {
     logHealth('error', 'No Supabase client provided')
     return { healthy: false, error: 'no-client' }
   }
 
-  const withTimeout = (promise, ms) =>
+  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     Promise.race([
       promise,
-      new Promise((_, reject) =>
+      new Promise<T>((_, reject) =>
         setTimeout(() => reject(new Error('TIMEOUT')), ms)
       ),
     ])
@@ -88,8 +103,9 @@ export async function checkSupabaseHealth(supabaseClient) {
     }
 
     // Test 2: Petit select pour vérifier l'API REST
+    const queryPromise = supabaseClient.from('parametres').select('id').limit(1)
     const queryResult = await withTimeout(
-      supabaseClient.from('parametres').select('id').limit(1),
+      queryPromise as unknown as Promise<unknown>,
       currentTimeout
     )
 
@@ -120,7 +136,7 @@ export async function checkSupabaseHealth(supabaseClient) {
       HEALTH_CHECK_TIMEOUT * 3 // Max 24s
     )
 
-    const errorMsg = error?.message || String(error)
+    const errorMsg = error instanceof Error ? error.message : String(error)
 
     logHealth(
       'warn',
@@ -140,13 +156,17 @@ export async function checkSupabaseHealth(supabaseClient) {
   }
 }
 
+interface ResetOptions {
+  onBeforeReload?: () => void
+}
+
 /**
  * Reset l'état interne du SDK
  * @param {Object} supabaseClient - Instance à réinitialiser
  * @param {Object} options - Options de reset
  * @param {Function} options.onBeforeReload - Callback avant reload (pour toast)
  */
-export function resetSupabaseClient(supabaseClient, options = {}) {
+export function resetSupabaseClient(supabaseClient: SupabaseClient, options: ResetOptions = {}) {
   if (!supabaseClient) return
 
   try {
@@ -206,10 +226,17 @@ export function resetSupabaseClient(supabaseClient, options = {}) {
   }
 }
 
+interface HealthStats {
+  isHealthy: boolean
+  consecutiveFailures: number
+  lastCheckTime: number
+  timeSinceLastCheck: number
+}
+
 /**
  * Obtient les statistiques de santé
  */
-export function getHealthStats() {
+export function getHealthStats(): HealthStats {
   return {
     isHealthy,
     consecutiveFailures,
@@ -221,7 +248,7 @@ export function getHealthStats() {
 /**
  * Reset manuel des compteurs
  */
-export function resetHealthStats() {
+export function resetHealthStats(): void {
   consecutiveFailures = 0
   currentTimeout = HEALTH_CHECK_TIMEOUT
   isHealthy = true

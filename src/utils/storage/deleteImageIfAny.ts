@@ -12,7 +12,13 @@
 
 // import { supabase } from '@/utils/supabaseClient' // Unused for now (deduplication)
 
-export default async function deleteImageIfAny(imagePath) {
+interface DeleteImageResult {
+  deleted: boolean
+  skipped: boolean
+  error?: Error
+}
+
+export default async function deleteImageIfAny(imagePath: string | null | undefined): Promise<DeleteImageResult> {
   if (!imagePath) return { deleted: false, skipped: true }
 
   // ⚠️ NE PAS SUPPRIMER du Storage (déduplication)
