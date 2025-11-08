@@ -1,9 +1,17 @@
-// src/services/imageUploadService.js
+// src/services/imageUploadService.ts
 // Service d'upload d'images avec quotas et optimisations
 import { supabase } from '@/utils/supabaseClient'
 
 // Configuration des quotas d'images
-const IMAGE_CONFIG = {
+export interface ImageConfig {
+  maxSize: number
+  maxDimensions: { width: number; height: number }
+  allowedTypes: string[]
+  cacheControl: string
+  signedUrlTTL: number
+}
+
+export const IMAGE_CONFIG: ImageConfig = {
   maxSize: 50 * 1024, // 50 Ko max
   maxDimensions: { width: 256, height: 256 },
   allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
@@ -11,11 +19,45 @@ const IMAGE_CONFIG = {
   signedUrlTTL: 6 * 60 * 60, // 6 heures pour les URLs signées
 }
 
+export interface ValidationResult {
+  isValid: boolean
+  errors: string[]
+}
+
+export interface QuotaCheckResult {
+  canUpload: boolean
+  reason: string
+  role?: string
+  quotas?: Record<string, any>
+  stats?: Record<string, any>
+  error?: string
+}
+
+export interface UploadResult {
+  filePath: string
+  signedUrl?: string
+  success: boolean
+  fileSize: number
+}
+
+export interface DeleteResult {
+  success: boolean
+}
+
+export interface AssetsStats {
+  total_images: number
+  total_size: number
+  task_images: number
+  reward_images: number
+  task_images_size: number
+  reward_images_size: number
+}
+
 /**
  * Vérifie si un fichier image est valide
  */
-export function validateImageFile(file) {
-  const errors = []
+export function validateImageFile(file: File): ValidationResult {
+  const errors: string[] = []
 
   // Vérifier le type MIME
   if (!IMAGE_CONFIG.allowedTypes.includes(file.type)) {
@@ -40,11 +82,16 @@ export function validateImageFile(file) {
 /**
  * Redimensionne une image si nécessaire
  */
-export async function resizeImageIfNeeded(file) {
+export async function resizeImageIfNeeded(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
+
+    if (!ctx) {
+      reject(new Error('Impossible de créer le contexte canvas'))
+      return
+    }
 
     img.onload = () => {
       const { width, height } = IMAGE_CONFIG.maxDimensions
@@ -96,7 +143,10 @@ export async function resizeImageIfNeeded(file) {
 /**
  * Vérifie les quotas d'images pour un utilisateur
  */
-export async function checkImageQuota(userId, assetType) {
+export async function checkImageQuota(
+  userId: string,
+  assetType: string
+): Promise<QuotaCheckResult> {
   try {
     const { data, error } = await supabase.rpc('check_image_quota', {
       p_user_id: userId,
@@ -135,7 +185,7 @@ export async function checkImageQuota(userId, assetType) {
     return {
       canUpload: false,
       reason: 'error',
-      error: error.message,
+      error: error instanceof Error ? error.message : String(error),
     }
   }
 }
@@ -143,7 +193,11 @@ export async function checkImageQuota(userId, assetType) {
 /**
  * Upload une image avec vérification des quotas
  */
-export async function uploadImageWithQuota(file, assetType, userId) {
+export async function uploadImageWithQuota(
+  file: File,
+  assetType: string,
+  userId: string
+): Promise<UploadResult> {
   try {
     // 1. Validation du fichier
     const validation = validateImageFile(file)
@@ -168,7 +222,7 @@ export async function uploadImageWithQuota(file, assetType, userId) {
     const filePath = `${userId}/${assetType}s/${timestamp}-${cleanName}`
 
     // 5. Upload vers Supabase Storage avec cache agressif
-    const { data: _uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('images')
       .upload(filePath, processedFile, {
         cacheControl: IMAGE_CONFIG.cacheControl,
@@ -184,7 +238,7 @@ export async function uploadImageWithQuota(file, assetType, userId) {
       file_path: filePath,
       file_size: processedFile.size,
       mime_type: processedFile.type,
-      dimensions: `${processedFile.width || 'unknown'}x${processedFile.height || 'unknown'}`,
+      dimensions: `unknown x unknown`,
     })
 
     if (trackingError) {
@@ -200,7 +254,7 @@ export async function uploadImageWithQuota(file, assetType, userId) {
 
     if (signedUrlError) {
       console.warn('Erreur génération URL signée:', signedUrlError)
-      return { filePath, success: true }
+      return { filePath, success: true, fileSize: processedFile.size }
     }
 
     return {
@@ -218,7 +272,10 @@ export async function uploadImageWithQuota(file, assetType, userId) {
 /**
  * Supprime une image et met à jour les quotas
  */
-export async function deleteImageWithQuota(filePath, userId) {
+export async function deleteImageWithQuota(
+  filePath: string,
+  userId: string
+): Promise<DeleteResult> {
   try {
     // 1. Suppression du fichier dans Storage
     const { error: storageError } = await supabase.storage
@@ -248,7 +305,7 @@ export async function deleteImageWithQuota(filePath, userId) {
 /**
  * Obtient les statistiques d'assets d'un utilisateur
  */
-export async function getUserAssetsStats(userId) {
+export async function getUserAssetsStats(userId: string): Promise<AssetsStats> {
   try {
     const { data, error } = await supabase.rpc('get_user_assets_stats', {
       p_user_id: userId,
@@ -274,7 +331,7 @@ export async function getUserAssetsStats(userId) {
       }
       throw error
     }
-    return data
+    return data as AssetsStats
   } catch (error) {
     console.error('Erreur récupération stats assets:', error)
     // Retourner des stats par défaut en cas d'erreur

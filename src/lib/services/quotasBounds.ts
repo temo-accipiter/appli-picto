@@ -1,12 +1,19 @@
-// src/services/quotasBounds.js
+// src/services/quotasBounds.ts
 import { supabase } from '@/utils/supabaseClient'
+
+export interface MonthBounds {
+  start: string
+  end: string
+}
 
 /**
  * Récupère (start_utc, end_utc) du mois courant pour l'utilisateur,
  * calculés côté DB selon son fuseau (user_prefs.timezone).
  * Retourne { start: stringISO, end: stringISO }
  */
-export async function getMonthBoundsUtcForUser(userId) {
+export async function getMonthBoundsUtcForUser(
+  userId: string
+): Promise<MonthBounds | null> {
   if (!userId) return null
 
   const { data, error } = await supabase.rpc('get_user_month_bounds_utc', {

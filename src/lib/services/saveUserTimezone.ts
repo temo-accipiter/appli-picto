@@ -1,7 +1,7 @@
-// frontend/src/services/saveUserTimezone.js
+// frontend/src/services/saveUserTimezone.ts
 import { supabase } from '@/utils/supabaseClient'
 
-export async function saveUserTimezoneOnce() {
+export async function saveUserTimezoneOnce(): Promise<void> {
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Paris'
   const {
     data: { user },
