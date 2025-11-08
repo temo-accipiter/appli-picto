@@ -50,7 +50,7 @@ export default function SearchInput({
 
   return (
     <div className={`search-input ${className}`}>
-      <Search className="search-input__icon" size={18} />
+      <Search className="search-input__icon" size={18} aria-hidden="true" />
       <input
         type="text"
         className="search-input__field"

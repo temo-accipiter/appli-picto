@@ -279,9 +279,13 @@ export default function TableauGrille({
 
   return (
     <div className="tableau-magique">
+      {/* WCAG 2.4.6 - Structure sémantique avec h1 pour lecteurs d'écran */}
+      <h1 className="sr-only">{t('tableau.title')}</h1>
+
       <DebugRole />
       {showTrain && (
-        <>
+        <section aria-labelledby="progress-heading">
+          <h2 id="progress-heading" className="sr-only">{t('tableau.progress')}</h2>
           {isDemoMode ? (
             <TrainProgressBar
               total={totalTaches}
@@ -297,7 +301,7 @@ export default function TableauGrille({
               onLineChange={onLineChange}
             />
           )}
-        </>
+        </section>
       )}
 
       {/* Indicateur de chargement fallback */}
@@ -307,9 +311,11 @@ export default function TableauGrille({
         </div>
       )}
 
-      <div
+      <section
         className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
+        aria-labelledby="tasks-heading"
       >
+        <h2 id="tasks-heading" className="sr-only">{t('tasks.title')}</h2>
         <TachesDnd
           items={taches}
           doneMap={doneMap}
@@ -331,7 +337,7 @@ export default function TableauGrille({
             <TimeTimer compact={true} initialDuration={10} />
           </div>
         )}
-      </div>
+      </section>
 
       {showConfettis && !isDemoMode && (
         <Confetti width={width} height={height} />

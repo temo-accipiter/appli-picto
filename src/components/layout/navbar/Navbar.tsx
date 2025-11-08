@@ -46,7 +46,7 @@ export default function Navbar() {
               aria-label={t('nav.edition')}
               title={t('nav.edition')}
             >
-              <Pencil size={20} strokeWidth={2} />
+              <Pencil size={20} strokeWidth={2} aria-hidden="true" />
             </NavLink>
           </motion.div>
         )}
@@ -60,7 +60,7 @@ export default function Navbar() {
             aria-label={t('nav.tableau')}
             title={t('nav.tableau')}
           >
-            <LayoutDashboard size={20} strokeWidth={2} />
+            <LayoutDashboard size={20} strokeWidth={2} aria-hidden="true" />
           </NavLink>
         )}
       </div>
@@ -99,7 +99,7 @@ export default function Navbar() {
                   title={t('nav.personalization')}
                   onClick={() => setShowPersonalizationModal(true)}
                 >
-                  <Palette size={18} />
+                  <Palette size={18} aria-hidden="true" />
                   <span>{t('nav.personalization')}</span>
                 </button>
 
@@ -109,7 +109,7 @@ export default function Navbar() {
                   aria-label={t('nav.createAccount')}
                   title={t('nav.createAccount')}
                 >
-                  <UserPlus size={18} />
+                  <UserPlus size={18} aria-hidden="true" />
                   <span>{t('nav.createAccount')}</span>
                 </NavLink>
 
@@ -119,7 +119,7 @@ export default function Navbar() {
                   aria-label={t('nav.login')}
                   title={t('nav.login')}
                 >
-                  <Settings size={18} />
+                  <Settings size={18} aria-hidden="true" />
                   <span>{t('nav.login')}</span>
                 </NavLink>
               </>
@@ -132,7 +132,7 @@ export default function Navbar() {
                   aria-label={t('nav.signup')}
                   title={t('nav.signup')}
                 >
-                  <UserPlus size={18} />
+                  <UserPlus size={18} aria-hidden="true" />
                   <span>{t('nav.signup')}</span>
                 </NavLink>
 
@@ -142,7 +142,7 @@ export default function Navbar() {
                   aria-label={t('nav.login')}
                   title={t('nav.login')}
                 >
-                  <Settings size={18} />
+                  <Settings size={18} aria-hidden="true" />
                   <span>{t('nav.login')}</span>
                 </NavLink>
               </>

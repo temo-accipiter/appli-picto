@@ -21,29 +21,29 @@ export default function PersonalizationModal({
       className="personalization-modal"
     >
       <div className="personalization-content">
-        <div className="personalization-icon">🎯</div>
+        <div className="personalization-icon" aria-hidden="true">🎯</div>
 
         <h3>{t('personalizationModal.subtitle')}</h3>
 
         <div className="features-list">
           <div className="feature-item">
-            <span className="feature-icon">✏️</span>
+            <span className="feature-icon" aria-hidden="true">✏️</span>
             <span>{t('personalizationModal.feature1')}</span>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">🖼️</span>
+            <span className="feature-icon" aria-hidden="true">🖼️</span>
             <span>{t('personalizationModal.feature2')}</span>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">📊</span>
+            <span className="feature-icon" aria-hidden="true">📊</span>
             <span>{t('personalizationModal.feature3')}</span>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">🎉</span>
+            <span className="feature-icon" aria-hidden="true">🎉</span>
             <span>{t('personalizationModal.feature4')}</span>
           </div>
           <div className="feature-item">
-            <span className="feature-icon">⚙️</span>
+            <span className="feature-icon" aria-hidden="true">⚙️</span>
             <span>{t('personalizationModal.feature5')}</span>
           </div>
         </div>

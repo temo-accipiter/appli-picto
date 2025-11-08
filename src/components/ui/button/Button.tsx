@@ -5,10 +5,11 @@ type ButtonType = 'button' | 'submit' | 'reset'
 
 interface ButtonProps {
   onClick: () => void
-  label: string
+  label: string | React.ReactNode
   variant?: ButtonVariant
   disabled?: boolean
   type?: ButtonType
+  'aria-expanded'?: boolean
 }
 
 export default function Button({
@@ -17,6 +18,7 @@ export default function Button({
   variant = 'primary',
   disabled = false,
   type = 'button',
+  'aria-expanded': ariaExpanded,
 }: ButtonProps) {
   return (
     <button
@@ -25,6 +27,7 @@ export default function Button({
       onClick={onClick}
       disabled={disabled}
       aria-disabled={disabled}
+      aria-expanded={ariaExpanded}
     >
       <span className="btn__text">{label}</span>
     </button>

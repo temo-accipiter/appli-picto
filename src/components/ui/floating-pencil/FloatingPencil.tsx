@@ -30,7 +30,7 @@ export default function FloatingPencil({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
-      <Pencil size={20} strokeWidth={2} />
+      <Pencil size={20} strokeWidth={2} aria-hidden="true" />
     </motion.button>
   )
 }

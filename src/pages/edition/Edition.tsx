@@ -350,7 +350,12 @@ export default function Edition() {
 
   return (
     <div className="page-edition">
-      <div className="edition-buttons">
+      {/* WCAG 2.4.6 - Structure sémantique avec h1 */}
+      <h1 className="sr-only">{t('edition.title')}</h1>
+
+      <section aria-labelledby="settings-heading">
+        <h2 id="settings-heading" className="sr-only">{t('settings.title')}</h2>
+        <div className="edition-buttons">
         {parametres && (
           <Checkbox
             id="confettis"
@@ -417,21 +422,24 @@ export default function Edition() {
             }}
           />
         )}
-      </div>
+        </div>
+      </section>
 
       <div className="edition-sections">
         <Button
           label={
             <span className="button-label">
-              <ListChecks className="button-icon" size={18} />
+              <ListChecks className="button-icon" size={18} aria-hidden="true" />
               {t('tasks.title')}
               <ChevronDown
                 className={`chevron ${showTaches ? 'open' : ''}`}
                 size={16}
+                aria-hidden="true"
               />
             </span>
           }
           onClick={() => setShowTaches(prev => !prev)}
+          aria-expanded={showTaches}
         />
         {showTaches && (
           <div className="taches-edition">
@@ -468,15 +476,17 @@ export default function Edition() {
         <Button
           label={
             <span className="button-label">
-              <Gift className="button-icon" size={18} />
+              <Gift className="button-icon" size={18} aria-hidden="true" />
               {t('rewards.title')}
               <ChevronDown
                 className={`chevron ${showRecompenses ? 'open' : ''}`}
                 size={16}
+                aria-hidden="true"
               />
             </span>
           }
           onClick={() => setShowRecompenses(prev => !prev)}
+          aria-expanded={showRecompenses}
         />
         {showRecompenses && (
           <div className="recompenses-edition">
