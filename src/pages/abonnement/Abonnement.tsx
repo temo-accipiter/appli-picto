@@ -1,4 +1,4 @@
-// src/pages/abonnement/Abonnement.jsx
+// src/pages/abonnement/Abonnement.tsx
 import { Button, FloatingPencil } from '@/components'
 import { useToast } from '@/contexts'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
@@ -6,6 +6,18 @@ import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Abonnement.scss'
+
+interface SubscriptionLog {
+  id: string
+  timestamp: string
+  event_type: string
+  details: Record<string, unknown> | null
+}
+
+interface CheckoutResponse {
+  portal?: boolean
+  url?: string
+}
 
 export default function Abonnement() {
   const { user } = useAuth()
@@ -16,7 +28,7 @@ export default function Abonnement() {
 
   const [portalLoading, setPortalLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
-  const [userLogs, setUserLogs] = useState([])
+  const [userLogs, setUserLogs] = useState<SubscriptionLog[]>([])
   const [logsLoading, setLogsLoading] = useState(false)
 
   // Rediriger si pas d'abonnement actif
@@ -42,7 +54,7 @@ export default function Abonnement() {
           .limit(20)
 
         if (error) throw error
-        setUserLogs(data || [])
+        setUserLogs((data as SubscriptionLog[]) || [])
       } catch (error) {
         console.error('Erreur chargement logs utilisateur:', error)
         // Ne pas afficher d'erreur à l'utilisateur, c'est optionnel
@@ -86,7 +98,7 @@ export default function Abonnement() {
     try {
       const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
 
-      const { data, error } = await supabase.functions.invoke(
+      const { data, error } = await supabase.functions.invoke<CheckoutResponse>(
         'create-checkout-session',
         {
           body: {
@@ -144,7 +156,7 @@ export default function Abonnement() {
     }
   }
 
-  const formatDate = dateString => {
+  const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Non défini'
     return new Date(dateString).toLocaleDateString('fr-FR', {
       year: 'numeric',
@@ -153,7 +165,7 @@ export default function Abonnement() {
     })
   }
 
-  const formatTimestamp = timestamp => {
+  const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
@@ -163,7 +175,7 @@ export default function Abonnement() {
     })
   }
 
-  const formatEventType = eventType => {
+  const formatEventType = (eventType: string) => {
     return eventType
       .replace(/\./g, ' → ')
       .replace(/_/g, ' ')
