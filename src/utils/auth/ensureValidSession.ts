@@ -1,15 +1,20 @@
-// src/utils/auth/ensureValidSession.js
+// src/utils/auth/ensureValidSession.ts
 // Helper : S'assure que la session Supabase est valide avant opération critique
 
 import { supabase } from '@/utils/supabaseClient'
+import type { Session } from '@supabase/supabase-js'
+
+interface EnsureValidSessionOptions {
+  marginMinutes?: number
+}
 
 /**
  * Vérifie et refresh la session si nécessaire
  *
- * @param {Object} options - Options
- * @param {number} [options.marginMinutes=5] - Marge avant expiration pour refresh préventif
- * @returns {Promise<Session>} - Session valide
- * @throws {Error} - Si session invalide ou impossible à refresh
+ * @param options - Options
+ * @param options.marginMinutes - Marge avant expiration pour refresh préventif (défaut: 5)
+ * @returns Session valide
+ * @throws Error - Si session invalide ou impossible à refresh
  *
  * @example
  * try {
@@ -20,7 +25,9 @@ import { supabase } from '@/utils/supabaseClient'
  *   // Rediriger vers login ou afficher toast
  * }
  */
-export async function ensureValidSession(options = {}) {
+export async function ensureValidSession(
+  options: EnsureValidSessionOptions = {}
+): Promise<Session> {
   const { marginMinutes = 5 } = options
 
   try {
@@ -46,7 +53,7 @@ export async function ensureValidSession(options = {}) {
     }
 
     // Vérifier expiration (avec marge de sécurité)
-    const expiresAtMs = session.expires_at * 1000
+    const expiresAtMs = (session.expires_at ?? 0) * 1000
     const nowMs = Date.now()
     const marginMs = marginMinutes * 60 * 1000
     const timeUntilExpiryMs = expiresAtMs - nowMs
@@ -67,7 +74,7 @@ export async function ensureValidSession(options = {}) {
       try {
         // 🆕 Timeout 10s pour éviter blocage infini
         const refreshPromise = supabase.auth.refreshSession()
-        const timeoutPromise = new Promise((_, reject) =>
+        const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(
             () => reject(new Error('Timeout refresh session (10s)')),
             10000
@@ -125,9 +132,9 @@ export async function ensureValidSession(options = {}) {
 
 /**
  * Vérifie si l'utilisateur est authentifié (version simple)
- * @returns {Promise<boolean>}
+ * @returns Promise<boolean>
  */
-export async function isAuthenticated() {
+export async function isAuthenticated(): Promise<boolean> {
   try {
     const {
       data: { session },

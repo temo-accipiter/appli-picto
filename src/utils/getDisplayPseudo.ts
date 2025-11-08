@@ -1,5 +1,10 @@
-// src/utils/getDisplayPseudo.js
-export function getDisplayPseudo(user, dbPseudo) {
+// src/utils/getDisplayPseudo.ts
+import type { User } from '@supabase/supabase-js'
+
+export function getDisplayPseudo(
+  user: User | null | undefined,
+  dbPseudo?: string | null
+): string {
   const fromDb = (dbPseudo ?? '').trim()
   if (fromDb) return fromDb
 

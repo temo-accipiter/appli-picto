@@ -1,4 +1,4 @@
-// src/utils/validationRules.js
+// src/utils/validationRules.ts
 // Règles de validation/normalisation côté UI :
 // - Textes, e-mails, mots de passe, rôles, fonctionnalités
 // - Images : types MIME autorisés (alignés sur config), vérif en-tête, compression < TARGET_MAX_UI_SIZE_KO
@@ -7,36 +7,39 @@ import {
   ALLOWED_MIME_TYPES,
   TARGET_MAX_UI_SIZE_KO,
 } from '@/utils/images/config'
+import type { TFunction } from 'i18next'
+
+type ValidationResult = string
 
 /* =========================
  * Texte générique
  * ========================= */
-export const validateNotEmpty = label =>
+export const validateNotEmpty = (label: string | null | undefined): ValidationResult =>
   !String(label ?? '').trim() ? 'Le nom est requis' : ''
 
-export const noEdgeSpaces = label =>
+export const noEdgeSpaces = (label: string | null | undefined): ValidationResult =>
   String(label ?? '') !== String(label ?? '').trim()
     ? "Pas d'espace en début/fin"
     : ''
 
-export const noDoubleSpaces = label =>
+export const noDoubleSpaces = (label: string | null | undefined): ValidationResult =>
   /\s{2,}/.test(String(label ?? '')) ? 'Pas de doubles espaces' : ''
 
 /* =========================
  * Texte générique (i18n)
  * ========================= */
-export const makeValidateNotEmpty = t => label =>
+export const makeValidateNotEmpty = (t: TFunction) => (label: string | null | undefined): ValidationResult =>
   !String(label ?? '').trim() ? t('validation.nameRequired') : ''
 
-export const makeNoEdgeSpaces = t => label =>
+export const makeNoEdgeSpaces = (t: TFunction) => (label: string | null | undefined): ValidationResult =>
   String(label ?? '') !== String(label ?? '').trim()
     ? t('validation.noEdgeSpaces')
     : ''
 
-export const makeNoDoubleSpaces = t => label =>
+export const makeNoDoubleSpaces = (t: TFunction) => (label: string | null | undefined): ValidationResult =>
   /\s{2,}/.test(String(label ?? '')) ? t('validation.noDoubleSpaces') : ''
 
-export const validatePseudo = pseudo => {
+export const validatePseudo = (pseudo: string | null | undefined): ValidationResult => {
   const trimmed = String(pseudo ?? '').trim()
   if (!trimmed) return 'Le pseudo est requis.'
   if (trimmed.length > 30)
@@ -45,18 +48,19 @@ export const validatePseudo = pseudo => {
 }
 
 /* ➕ Normalisation finale (enregistrement) : supprime espaces doublons et bords */
-export const normalizeSpaces = s => (s ?? '').replace(/\s{2,}/g, ' ').trim()
+export const normalizeSpaces = (s: string | null | undefined): string =>
+  (s ?? '').replace(/\s{2,}/g, ' ').trim()
 
 /* =========================
  * Images (MÀJ → 100 Ko)
  * ========================= */
 
 // Presence
-export const validateImagePresence = file =>
+export const validateImagePresence = (file: File | null | undefined): ValidationResult =>
   !file ? 'Choisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)' : ''
 
 // Type MIME (aligné sur config) — on normalise image/jpg → image/jpeg
-export const validateImageType = file => {
+export const validateImageType = (file: File | null | undefined): ValidationResult => {
   if (!file) return 'Choisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)'
   const raw = String(file.type || '').toLowerCase()
   const type = raw === 'image/jpg' ? 'image/jpeg' : raw
@@ -68,10 +72,10 @@ export const validateImageType = file => {
 /* =========================
  * Images (i18n)
  * ========================= */
-export const makeValidateImagePresence = t => file =>
+export const makeValidateImagePresence = (t: TFunction) => (file: File | null | undefined): ValidationResult =>
   !file ? t('validation.chooseImage') : ''
 
-export const makeValidateImageType = t => file => {
+export const makeValidateImageType = (t: TFunction) => (file: File | null | undefined): ValidationResult => {
   if (!file) return t('validation.chooseImage')
   const raw = String(file.type || '').toLowerCase()
   const type = raw === 'image/jpg' ? 'image/jpeg' : raw
@@ -87,7 +91,7 @@ export const makeValidateImageType = t => file => {
  * WEBP: "RIFF" .... "WEBP"
  * SVG: type textuel (on se contente de MIME + signature XML/<svg> éventuelle)
  */
-export const validateImageHeader = async file => {
+export const validateImageHeader = async (file: File | null | undefined): Promise<ValidationResult> => {
   if (!file) return ''
   try {
     const buf = await file.slice(0, 16).arrayBuffer()
@@ -129,7 +133,7 @@ export const validateImageHeader = async file => {
   }
 }
 
-export const makeValidateImageHeader = t => async file => {
+export const makeValidateImageHeader = (t: TFunction) => async (file: File | null | undefined): Promise<ValidationResult> => {
   if (!file) return ''
   try {
     const buf = await file.slice(0, 16).arrayBuffer()
@@ -174,7 +178,8 @@ export const makeValidateImageHeader = t => async file => {
 export const compressionErrorMessage =
   'Impossible de compresser cette image sous 100 Ko.\nEssayez une image plus simple ou de meilleure qualité.'
 
-export const makeCompressionErrorMessage = t => t('validation.compressionError')
+export const makeCompressionErrorMessage = (t: TFunction): string =>
+  t('validation.compressionError')
 
 /**
  * Compression côté UI (progressive) pour pictos : cible = TARGET_MAX_UI_SIZE_KO.
@@ -183,9 +188,9 @@ export const makeCompressionErrorMessage = t => t('validation.compressionError')
  * - Sinon : redimensionne progressivement et ajuste la qualité (JPEG) ; PNG en dernier recours.
  */
 export const compressImageIfNeeded = async (
-  file,
-  maxSizeKo = TARGET_MAX_UI_SIZE_KO
-) => {
+  file: File | null | undefined,
+  maxSizeKo: number = TARGET_MAX_UI_SIZE_KO
+): Promise<File | null> => {
   if (
     !file ||
     String(file.type).toLowerCase() === 'image/svg+xml' ||
@@ -198,7 +203,7 @@ export const compressImageIfNeeded = async (
     const img = new Image()
     const reader = new FileReader()
     reader.onload = e => {
-      img.src = e.target.result
+      img.src = e.target?.result as string
     }
 
     img.onload = () => {
@@ -220,7 +225,7 @@ export const compressImageIfNeeded = async (
         { maxWidth: 128, maxHeight: 128, quality: 1, useJPEG: false },
       ]
 
-      const tryCompression = async (strategyIndex = 0) => {
+      const tryCompression = async (strategyIndex: number = 0): Promise<void> => {
         if (strategyIndex >= compressionStrategies.length) {
           resolve(null) // échec (trop lourd malgré tout)
           return
@@ -243,6 +248,10 @@ export const compressImageIfNeeded = async (
         canvas.width = width
         canvas.height = height
         const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          resolve(null)
+          return
+        }
         ctx.clearRect(0, 0, width, height)
         ctx.drawImage(img, 0, 0, width, height)
 
@@ -286,22 +295,23 @@ export const compressImageIfNeeded = async (
 /* =========================
  * Email
  * ========================= */
-export const validateEmail = (email = '') => {
+export const validateEmail = (email: string = ''): ValidationResult => {
   const e = String(email).trim()
-  if (!e) return 'L’e-mail est requis.'
-  if (/\s/.test(e)) return 'L’e-mail ne doit pas contenir d’espace.'
+  if (!e) return 'L'e-mail est requis.'
+  if (/\s/.test(e)) return 'L'e-mail ne doit pas contenir d'espace.'
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-  if (!re.test(e)) return 'Format d’e-mail invalide.'
+  if (!re.test(e)) return 'Format d'e-mail invalide.'
   return ''
 }
-export const normalizeEmail = (email = '') => String(email).trim().toLowerCase()
+export const normalizeEmail = (email: string = ''): string =>
+  String(email).trim().toLowerCase()
 
 /* =========================
  * Mot de passe (aligné Supabase)
  * ========================= */
 export const PASSWORD_MIN = 10
 
-export const validatePasswordStrength = (pw = '') => {
+export const validatePasswordStrength = (pw: string = ''): ValidationResult => {
   if (!pw) return 'Le mot de passe est requis.'
   if (pw.length < PASSWORD_MIN)
     return `Le mot de passe doit contenir au moins ${PASSWORD_MIN} caractères.`
@@ -309,30 +319,30 @@ export const validatePasswordStrength = (pw = '') => {
   if (!/[A-Z]/.test(pw)) return 'Ajoute au moins une lettre majuscule.'
   if (!/[0-9]/.test(pw)) return 'Ajoute au moins un chiffre.'
   if (!/[^A-Za-z0-9]/.test(pw)) return 'Ajoute au moins un symbole.'
-  if (/\s/.test(pw)) return 'Le mot de passe ne doit pas contenir d’espace.'
+  if (/\s/.test(pw)) return 'Le mot de passe ne doit pas contenir d'espace.'
   return ''
 }
 
 // Pour l'écran de Login : on ne bloque pas par complexité (compatibilité anciens comptes)
-export const validatePasswordNotEmpty = (pw = '') =>
+export const validatePasswordNotEmpty = (pw: string = ''): ValidationResult =>
   pw ? '' : 'Le mot de passe est requis.'
 
 // Version i18n de validatePasswordNotEmpty
 export const makeValidatePasswordNotEmpty =
-  t =>
-  (pw = '') =>
+  (t: TFunction) =>
+  (pw: string = ''): ValidationResult =>
     pw ? '' : t('auth.passwordRequired')
 
 // Règle "doit correspondre à..." (ex: confirmer le mot de passe)
 export const makeMatchRule =
-  (getOther, message = 'Les valeurs ne correspondent pas.') =>
-  value =>
+  (getOther: () => string, message: string = 'Les valeurs ne correspondent pas.') =>
+  (value: string): ValidationResult =>
     value === getOther() ? '' : message
 
 /* =========================
  * Rôles
  * ========================= */
-export const validateRoleName = (name = '') => {
+export const validateRoleName = (name: string = ''): ValidationResult => {
   const trimmed = name.trim()
   if (!trimmed) return 'Le nom du rôle est requis.'
   if (trimmed.length < 2) return 'Le nom doit faire au moins 2 caractères.'
@@ -343,7 +353,7 @@ export const validateRoleName = (name = '') => {
   return ''
 }
 
-export const validateRoleDisplayName = (displayName = '') => {
+export const validateRoleDisplayName = (displayName: string = ''): ValidationResult => {
   const trimmed = displayName.trim()
   if (!trimmed) return "Le nom d'affichage est requis."
   if (trimmed.length < 3)
@@ -353,19 +363,25 @@ export const validateRoleDisplayName = (displayName = '') => {
   return ''
 }
 
-export const validateRoleDescription = (description = '') => {
+export const validateRoleDescription = (description: string = ''): ValidationResult => {
   if (description && description.length > 200) {
     return 'La description ne peut pas dépasser 200 caractères.'
   }
   return ''
 }
 
+interface Role {
+  id: string
+  name: string
+  [key: string]: any
+}
+
 // Vérification de l'unicité du nom de rôle
 export const validateRoleNameUniqueness = (
-  name,
-  existingRoles,
-  currentRoleId = null
-) => {
+  name: string,
+  existingRoles: Role[],
+  currentRoleId: string | null = null
+): ValidationResult => {
   const trimmed = (name ?? '').trim()
   if (!trimmed) return ''
 
@@ -378,28 +394,28 @@ export const validateRoleNameUniqueness = (
 
 // Règles combinées pour la création d'un rôle
 export const createRoleValidationRules = {
-  name: (value, existingRoles) =>
+  name: (value: string, existingRoles: Role[]): string[] =>
     [
       validateRoleName(value),
       validateRoleNameUniqueness(value, existingRoles),
     ].filter(Boolean),
 
-  displayName: value => [validateRoleDisplayName(value)].filter(Boolean),
+  displayName: (value: string): string[] => [validateRoleDisplayName(value)].filter(Boolean),
 
-  description: value => [validateRoleDescription(value)].filter(Boolean),
+  description: (value: string): string[] => [validateRoleDescription(value)].filter(Boolean),
 }
 
 // Règles combinées pour la modification d'un rôle
 export const updateRoleValidationRules = {
-  displayName: value => [validateRoleDisplayName(value)].filter(Boolean),
+  displayName: (value: string): string[] => [validateRoleDisplayName(value)].filter(Boolean),
 
-  description: value => [validateRoleDescription(value)].filter(Boolean),
+  description: (value: string): string[] => [validateRoleDescription(value)].filter(Boolean),
 }
 
 /* =========================
  * Fonctionnalités (features)
  * ========================= */
-export const validateFeatureName = (name = '') => {
+export const validateFeatureName = (name: string = ''): ValidationResult => {
   const trimmed = name.trim()
   if (!trimmed) return 'Le nom technique est requis.'
   if (trimmed.length < 3) return 'Le nom doit faire au moins 3 caractères.'
@@ -410,7 +426,7 @@ export const validateFeatureName = (name = '') => {
   return ''
 }
 
-export const validateFeatureDisplayName = (displayName = '') => {
+export const validateFeatureDisplayName = (displayName: string = ''): ValidationResult => {
   const trimmed = displayName.trim()
   if (!trimmed) return "Le nom d'affichage est requis."
   if (trimmed.length < 3)
@@ -420,19 +436,25 @@ export const validateFeatureDisplayName = (displayName = '') => {
   return ''
 }
 
-export const validateFeatureDescription = (description = '') => {
+export const validateFeatureDescription = (description: string = ''): ValidationResult => {
   if (description && description.length > 500) {
     return 'La description ne peut pas dépasser 500 caractères.'
   }
   return ''
 }
 
+interface Feature {
+  id: string
+  name: string
+  [key: string]: any
+}
+
 // Vérification de l'unicité du nom de fonctionnalité
 export const validateFeatureNameUniqueness = (
-  name,
-  existingFeatures,
-  currentFeatureId = null
-) => {
+  name: string,
+  existingFeatures: Feature[],
+  currentFeatureId: string | null = null
+): ValidationResult => {
   const trimmed = (name ?? '').trim()
   if (!trimmed) return ''
 
@@ -445,13 +467,13 @@ export const validateFeatureNameUniqueness = (
 
 // Règles combinées pour la création d'une fonctionnalité
 export const createFeatureValidationRules = {
-  name: (value, existingFeatures) =>
+  name: (value: string, existingFeatures: Feature[]): string[] =>
     [
       validateFeatureName(value),
       validateFeatureNameUniqueness(value, existingFeatures),
     ].filter(Boolean),
 
-  displayName: value => [validateFeatureDisplayName(value)].filter(Boolean),
+  displayName: (value: string): string[] => [validateFeatureDisplayName(value)].filter(Boolean),
 
-  description: value => [validateFeatureDescription(value)].filter(Boolean),
+  description: (value: string): string[] => [validateFeatureDescription(value)].filter(Boolean),
 }

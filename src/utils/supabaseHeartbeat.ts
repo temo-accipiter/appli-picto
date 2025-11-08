@@ -1,34 +1,45 @@
-// src/utils/supabaseHeartbeat.js
+// src/utils/supabaseHeartbeat.ts
 /**
  * Health check périodique du SDK Supabase
  * Détecte et corrige automatiquement les états corrompus
  */
 
-import { checkSupabaseHealth, resetSupabaseClient } from './supabaseHealthCheck'
+import {
+  checkSupabaseHealth,
+  resetSupabaseClient,
+} from './supabaseHealthCheck'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 const HEARTBEAT_INTERVAL = 60000 // Vérifier toutes les 60 secondes (réduit pour éviter faux positifs)
 const _VISIBILITY_CHECK_DELAY = 5000 // Délai après retour de visibilité (augmenté à 5s) - DÉSACTIVÉ
 const MIN_CHECK_INTERVAL = 10000 // Minimum 10s entre deux checks (évite rafales)
 
-let heartbeatTimer = null
-let visibilityListener = null
+let heartbeatTimer: ReturnType<typeof setInterval> | null = null
+let visibilityListener: (() => void) | null = null
 let lastCheckTime = 0
 let isCheckRunning = false
 
+interface HeartbeatOptions {
+  showToast?: (message: string, type: string) => void
+}
+
 /**
  * Démarre le health check périodique
- * @param {Object} supabaseClient - Instance Supabase à surveiller
- * @param {Object} options - Options
- * @param {Function} options.showToast - Fonction pour afficher un toast (optionnel)
+ * @param supabaseClient - Instance Supabase à surveiller
+ * @param options - Options
+ * @param options.showToast - Fonction pour afficher un toast (optionnel)
  */
-export function startSupabaseHeartbeat(supabaseClient, options = {}) {
+export function startSupabaseHeartbeat(
+  supabaseClient: SupabaseClient,
+  options: HeartbeatOptions = {}
+): void {
   if (!supabaseClient) return
 
   // Arrêter l'ancien heartbeat s'il existe
   stopSupabaseHeartbeat()
 
   // Health check périodique avec debounce
-  const runCheck = async () => {
+  const runCheck = async (): Promise<void> => {
     const now = Date.now()
 
     // Éviter les checks en rafale (min 10s entre deux checks)
@@ -53,7 +64,7 @@ export function startSupabaseHeartbeat(supabaseClient, options = {}) {
         }
 
         // Callback pour afficher un toast avant reload
-        const onBeforeReload = () => {
+        const onBeforeReload = (): void => {
           if (options.showToast && typeof options.showToast === 'function') {
             options.showToast(
               'Connexion interrompue – reconnexion automatique en cours...',
@@ -94,7 +105,7 @@ export function startSupabaseHeartbeat(supabaseClient, options = {}) {
 /**
  * Arrête le health check périodique
  */
-export function stopSupabaseHeartbeat() {
+export function stopSupabaseHeartbeat(): void {
   if (heartbeatTimer) {
     clearInterval(heartbeatTimer)
     heartbeatTimer = null

@@ -1,6 +1,11 @@
-// src/utils/formatDateInTz.js
+// src/utils/formatDateInTz.ts
 // Formatte une date dans un fuseau donné (sans React).
-export function formatDateInTz(date, tz = 'Europe/Paris', options = {}) {
+
+export function formatDateInTz(
+  date: string | number | Date,
+  tz: string = 'Europe/Paris',
+  options: Intl.DateTimeFormatOptions = {}
+): string {
   const d =
     typeof date === 'string' || typeof date === 'number' ? new Date(date) : date
   return new Intl.DateTimeFormat(undefined, {

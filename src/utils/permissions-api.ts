@@ -1,5 +1,6 @@
-// src/utils/permissions-api.js
+// src/utils/permissions-api.ts
 import { supabase } from '@/utils/supabaseClient' // ⬅️ UNIFIÉ
+import type { PostgrestSingleResponse } from '@supabase/supabase-js'
 
 /* -------------------- RÔLES -------------------- */
 export const getRoles = async () => {
@@ -9,11 +10,11 @@ export const getRoles = async () => {
     .order('priority', { ascending: true })
 }
 
-export const createRole = async roleData => {
+export const createRole = async (roleData: Record<string, any>) => {
   return await supabase.from('roles').insert([roleData]).select().single()
 }
 
-export const updateRole = async (roleId, updates) => {
+export const updateRole = async (roleId: string, updates: Record<string, any>) => {
   return await supabase
     .from('roles')
     .update(updates)
@@ -22,7 +23,7 @@ export const updateRole = async (roleId, updates) => {
     .single()
 }
 
-export const deleteRole = async roleId => {
+export const deleteRole = async (roleId: string) => {
   return await supabase.from('roles').delete().eq('id', roleId)
 }
 
@@ -35,11 +36,14 @@ export const getFeatures = async () => {
     .order('name', { ascending: true })
 }
 
-export const createFeature = async featureData => {
+export const createFeature = async (featureData: Record<string, any>) => {
   return await supabase.from('features').insert([featureData]).select().single()
 }
 
-export const updateFeature = async (featureId, updates) => {
+export const updateFeature = async (
+  featureId: string,
+  updates: Record<string, any>
+) => {
   return await supabase
     .from('features')
     .update(updates)
@@ -48,7 +52,7 @@ export const updateFeature = async (featureId, updates) => {
     .single()
 }
 
-export const deleteFeature = async featureId => {
+export const deleteFeature = async (featureId: string) => {
   // Nettoyer les permissions liées avant de supprimer la feature
   const delPerms = await supabase
     .from('role_permissions')
@@ -67,7 +71,7 @@ export const getAllPermissions = async () => {
     `)
 }
 
-export const getRolePermissions = async roleId => {
+export const getRolePermissions = async (roleId: string) => {
   return await supabase
     .from('role_permissions')
     .select(
@@ -79,10 +83,18 @@ export const getRolePermissions = async roleId => {
     .eq('role_id', roleId)
 }
 
-export const updateRolePermissions = async (roleId, permissions) => {
-  if (!roleId) return { error: new Error('roleId requis') }
+interface PermissionData {
+  feature_id: string
+  can_access: boolean
+}
+
+export const updateRolePermissions = async (
+  roleId: string,
+  permissions: PermissionData[]
+) => {
+  if (!roleId) return { error: new Error('roleId requis'), data: null }
   if (!Array.isArray(permissions))
-    return { error: new Error('permissions doit être un tableau') }
+    return { error: new Error('permissions doit être un tableau'), data: null }
 
   // stratégie remplace-tout
   const del = await supabase
@@ -101,7 +113,7 @@ export const updateRolePermissions = async (roleId, permissions) => {
   return await supabase.from('role_permissions').insert(payload).select()
 }
 
-/* ------------------ “SELF” (scopées auth.uid()) ------------------ */
+/* ------------------ "SELF" (scopées auth.uid()) ------------------ */
 export const getMyPrimaryRole = async () => {
   // => [{ role_id, role_name, priority }] | []
   return await supabase.rpc('get_my_primary_role')
@@ -113,7 +125,29 @@ export const getMyPermissions = async () => {
 }
 
 /* ------------------- UTILISATEURS & RÔLES (admin) ------------------- */
-export const getUsersWithRoles = async (opts = {}) => {
+interface GetUsersOptions {
+  page?: number
+  limit?: number
+  roleFilter?: string
+  statusFilter?: string
+}
+
+interface PaginationInfo {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+interface GetUsersResult {
+  data: any[] | null
+  error: any
+  pagination: PaginationInfo
+}
+
+export const getUsersWithRoles = async (
+  opts: GetUsersOptions = {}
+): Promise<GetUsersResult> => {
   const page = Math.max(1, opts.page || 1)
   const limit = Math.max(1, Math.min(200, opts.limit || 20))
   const roleFilter = opts.roleFilter || 'all'
@@ -142,14 +176,14 @@ export const getUsersWithRoles = async (opts = {}) => {
   return { data, error: null, pagination: { page, limit, total, totalPages } }
 }
 
-export const assignRoleToUser = async (userId, roleId) => {
+export const assignRoleToUser = async (userId: string, roleId: string) => {
   // roleId attendu = UUID
   return await supabase
     .from('user_roles')
     .insert([{ user_id: userId, role_id: roleId, is_active: true }])
 }
 
-export const removeRoleFromUser = async (userId, roleId) => {
+export const removeRoleFromUser = async (userId: string, roleId: string) => {
   return await supabase
     .from('user_roles')
     .delete()
@@ -158,7 +192,7 @@ export const removeRoleFromUser = async (userId, roleId) => {
 }
 
 /* ------------------ HISTORIQUE (admin) ------------------ */
-export const getPermissionHistory = async (limit = 50) => {
+export const getPermissionHistory = async (limit: number = 50) => {
   return await supabase
     .from('permission_changes')
     .select(

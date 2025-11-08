@@ -1,15 +1,63 @@
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+import type { SupabaseClient, User } from '@supabase/supabase-js'
+
+interface Profile {
+  id: string
+  pseudo?: string
+  avatar_url?: string
+  [key: string]: any
+}
+
+interface Tache {
+  id: string
+  user_id: string
+  label: string
+  imagepath?: string
+  [key: string]: any
+}
+
+interface Recompense {
+  id: string
+  user_id: string
+  label: string
+  image?: string
+  [key: string]: any
+}
+
+interface TacheWithUrl extends Tache {
+  image_signed_url: string | null
+}
+
+interface RecompenseWithUrl extends Recompense {
+  image_signed_url: string | null
+}
+
+interface ExportPayload {
+  export_version: number
+  generated_at: string
+  user: {
+    id: string
+    email?: string
+  }
+  profile: Profile | null
+  avatar_signed_url: string | null
+  taches: TacheWithUrl[]
+  recompenses: RecompenseWithUrl[]
+}
 
 /**
  * Build and download a GDPR export (ZIP)
  * - Data: profiles, tasks, rewards (filtered by user)
  * - Images: Signed URLs (avatars, task/reward images)
  *
- * @param {object} supabase - Supabase client
- * @param {object} user     - Current user (id, email, user_metadata)
+ * @param supabase - Supabase client
+ * @param user - Current user (id, email, user_metadata)
  */
-export async function exportUserDataZip(supabase, user) {
+export async function exportUserDataZip(
+  supabase: SupabaseClient,
+  user: User
+): Promise<void> {
   if (!user?.id) throw new Error('User not logged in')
 
   // 1) Data retrieval
@@ -36,8 +84,9 @@ export async function exportUserDataZip(supabase, user) {
     ])
 
   // 2) Signed avatar URL
-  let avatarSignedUrl = null
-  const avatarPath = user?.user_metadata?.avatar || profile?.avatar_url || null
+  let avatarSignedUrl: string | null = null
+  const avatarPath =
+    user?.user_metadata?.avatar || profile?.avatar_url || null
   if (avatarPath) {
     const { data, error } = await supabase.storage
       .from('avatars')
@@ -46,7 +95,7 @@ export async function exportUserDataZip(supabase, user) {
   }
 
   // 3) Signed URLs for task/reward images
-  async function signIfNeeded(filePath) {
+  async function signIfNeeded(filePath: string | null | undefined): Promise<string | null> {
     if (!filePath) return null
     const { data, error } = await supabase.storage
       .from('images')
@@ -54,23 +103,25 @@ export async function exportUserDataZip(supabase, user) {
     return error ? null : data?.signedUrl || null
   }
 
-  const tachesWithUrls = await Promise.all(
-    (taches || []).map(async t => ({
+  const tachesWithUrls: TacheWithUrl[] = await Promise.all(
+    (taches || []).map(async (t: Tache): Promise<TacheWithUrl> => ({
       ...t,
       image_signed_url: await signIfNeeded(t.imagepath),
     }))
   )
 
-  const recompensesWithUrls = await Promise.all(
-    (recompenses || []).map(async r => ({
-      ...r,
-      image_signed_url: await signIfNeeded(r.image),
-    }))
+  const recompensesWithUrls: RecompenseWithUrl[] = await Promise.all(
+    (recompenses || []).map(
+      async (r: Recompense): Promise<RecompenseWithUrl> => ({
+        ...r,
+        image_signed_url: await signIfNeeded(r.image),
+      })
+    )
   )
 
   // 4) Prepare JSON payload
   const now = new Date().toISOString()
-  const payload = {
+  const payload: ExportPayload = {
     export_version: 1,
     generated_at: now,
     user: {

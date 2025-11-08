@@ -1,4 +1,4 @@
-// src/utils/consent.js
+// src/utils/consent.ts
 // CNIL compliance – cookies and trackers management
 // - Local storage with proof (timestamp, version, choices)
 // - Automatic expiration (6 months max)
@@ -9,7 +9,40 @@ const CONSENT_KEY = 'cookie_consent_v2'
 const CONSENT_VERSION = '1.0.0'
 const EXPIRY_DAYS = 180 // 6 months
 
-export function defaultChoices() {
+export type ConsentCategory = 'necessary' | 'analytics' | 'marketing'
+
+export interface ConsentChoices {
+  necessary: boolean
+  analytics: boolean
+  marketing: boolean
+}
+
+export interface ConsentRecord {
+  version: string
+  ts: string
+  mode: string
+  choices: ConsentChoices
+  [key: string]: any // Allow extra properties
+}
+
+export interface ConsentStatus {
+  hasConsent: boolean
+  isExpired: boolean
+  daysUntilExpiry: number
+  choices: ConsentChoices
+  mode: string | null
+  timestamp: string | null
+}
+
+export interface ConsentChangedEventDetail {
+  version?: string
+  ts?: string
+  mode?: string
+  choices: ConsentChoices
+  [key: string]: any
+}
+
+export function defaultChoices(): ConsentChoices {
   return {
     necessary: true, // Always true, cannot be disabled
     analytics: false,
@@ -17,22 +50,22 @@ export function defaultChoices() {
   }
 }
 
-function nowIso() {
+function nowIso(): string {
   return new Date().toISOString()
 }
 
-function isExpired(ts) {
+function isExpired(ts: string): boolean {
   const saved = new Date(ts)
   const now = new Date()
-  const diff = (now - saved) / (1000 * 60 * 60 * 24)
+  const diff = (now.getTime() - saved.getTime()) / (1000 * 60 * 60 * 24)
   return diff > EXPIRY_DAYS
 }
 
-export function getConsent() {
+export function getConsent(): ConsentRecord | null {
   try {
     const raw = localStorage.getItem(CONSENT_KEY)
     if (!raw) return null
-    const parsed = JSON.parse(raw)
+    const parsed = JSON.parse(raw) as ConsentRecord
     if (parsed?.version !== CONSENT_VERSION) return null
     if (!parsed.ts || isExpired(parsed.ts)) return null
     return parsed
@@ -41,7 +74,7 @@ export function getConsent() {
   }
 }
 
-export function hasConsent(category) {
+export function hasConsent(category: ConsentCategory): boolean {
   const current = getConsent()
   if (!current) return false
 
@@ -51,8 +84,12 @@ export function hasConsent(category) {
   return !!current.choices?.[category]
 }
 
-export function saveConsent(choices, mode = 'custom', extra = {}) {
-  const payload = {
+export function saveConsent(
+  choices: Partial<ConsentChoices>,
+  mode: string = 'custom',
+  extra: Record<string, any> = {}
+): ConsentRecord {
+  const payload: ConsentRecord = {
     version: CONSENT_VERSION,
     ts: nowIso(),
     mode,
@@ -65,7 +102,7 @@ export function saveConsent(choices, mode = 'custom', extra = {}) {
   }
 
   localStorage.setItem(CONSENT_KEY, JSON.stringify(payload))
-  window.__consent = payload
+  ;(window as any).__consent = payload
 
   // Trigger consent change event
   window.dispatchEvent(new CustomEvent('consent:changed', { detail: payload }))
@@ -73,7 +110,12 @@ export function saveConsent(choices, mode = 'custom', extra = {}) {
   return payload
 }
 
-export function onConsent(category, cb) {
+type ConsentCallback = () => void
+
+export function onConsent(
+  category: ConsentCategory,
+  cb: ConsentCallback
+): () => void {
   if (hasConsent(category)) {
     try {
       cb()
@@ -83,8 +125,9 @@ export function onConsent(category, cb) {
     return () => {}
   }
 
-  const handler = e => {
-    if (e?.detail?.choices?.[category]) {
+  const handler = (e: Event) => {
+    const customEvent = e as CustomEvent<ConsentChangedEventDetail>
+    if (customEvent?.detail?.choices?.[category]) {
       try {
         cb()
       } catch {
@@ -97,7 +140,9 @@ export function onConsent(category, cb) {
   return () => window.removeEventListener('consent:changed', handler)
 }
 
-export async function tryLogServerConsent(record) {
+export async function tryLogServerConsent(
+  record: Partial<ConsentRecord>
+): Promise<void> {
   try {
     const base = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL
     if (!base) {
@@ -122,7 +167,10 @@ export async function tryLogServerConsent(record) {
     }
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
-    if (import.meta.env.DEV && err.message?.includes('503')) {
+    if (
+      import.meta.env.DEV &&
+      (err as Error).message?.includes('503')
+    ) {
       console.debug(
         'ℹ️ Edge function log-consent non disponible (normal en dev local)'
       )
@@ -134,11 +182,11 @@ export async function tryLogServerConsent(record) {
 }
 
 // Function to revoke consent
-export function revokeConsent() {
+export function revokeConsent(): boolean {
   try {
     const previous = getConsent()
     localStorage.removeItem(CONSENT_KEY)
-    delete window.__consent
+    delete (window as any).__consent
 
     // Trigger events
     window.dispatchEvent(new CustomEvent('consent:revoked'))
@@ -165,14 +213,14 @@ export function revokeConsent() {
 }
 
 // Function to check if consent has expired
-export function isConsentExpired() {
+export function isConsentExpired(): boolean {
   const consent = getConsent()
   if (!consent) return true
   return isExpired(consent.ts)
 }
 
 // Function to get detailed consent status
-export function getConsentStatus() {
+export function getConsentStatus(): ConsentStatus {
   const consent = getConsent()
   if (!consent) {
     return {
@@ -188,7 +236,7 @@ export function getConsentStatus() {
   const now = new Date()
   const consentDate = new Date(consent.ts)
   const daysUntilExpiry = Math.ceil(
-    (EXPIRY_DAYS * 24 * 60 * 60 * 1000 - (now - consentDate)) /
+    (EXPIRY_DAYS * 24 * 60 * 60 * 1000 - (now.getTime() - consentDate.getTime())) /
       (24 * 60 * 60 * 1000)
   )
 
