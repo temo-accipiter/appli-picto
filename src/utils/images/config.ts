@@ -1,11 +1,11 @@
-// src/utils/images/config.js
+// src/utils/images/config.ts
 // Configuration globale système d'images (validation, compression, storage)
 
 // ═══════════════════════════════════════════════════════════════════════════
 // FORMATS AUTORISÉS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const ALLOWED_MIME_TYPES = [
+export const ALLOWED_MIME_TYPES: string[] = [
   'image/png',
   'image/jpeg',
   'image/jpg', // Normalisé automatiquement en image/jpeg

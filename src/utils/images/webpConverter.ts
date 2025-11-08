@@ -1,4 +1,4 @@
-// src/utils/images/webpConverter.js
+// src/utils/images/webpConverter.ts
 // Conversion WebP moderne avec compression progressive ≤ 20 KB
 
 import {
@@ -6,6 +6,22 @@ import {
   FALLBACK_MAX_UI_SIZE_KB,
   TARGET_DIMENSION,
 } from '@/utils/images/config'
+
+export interface ConversionOptions {
+  targetSizeKB?: number
+  fallbackSizeKB?: number
+  maxDimension?: number
+}
+
+interface CompressionStrategy {
+  dimension: number
+  quality: number
+}
+
+interface ImageDimensions {
+  width: number
+  height: number
+}
 
 /**
  * Convertit une image en WebP avec compression progressive
@@ -16,12 +32,12 @@ import {
  * 2. Réduire dimensions si nécessaire (160px, 128px, 96px)
  * 3. Fallback 30 KB si 20 KB impossible
  *
- * @param {File} file - Fichier image original
- * @param {Object} options - Options compression
- * @param {number} [options.targetSizeKB=20] - Taille cible en KB
- * @param {number} [options.fallbackSizeKB=30] - Taille fallback si échec
- * @param {number} [options.maxDimension=192] - Dimension max (px)
- * @returns {Promise<File|null>} - Fichier WebP compressé ou null si échec
+ * @param file - Fichier image original
+ * @param options - Options compression
+ * @param options.targetSizeKB - Taille cible en KB (défaut: 20)
+ * @param options.fallbackSizeKB - Taille fallback si échec (défaut: 30)
+ * @param options.maxDimension - Dimension max en px (défaut: 192)
+ * @returns Fichier WebP compressé ou null si échec
  *
  * @example
  * const webpFile = await convertToWebP(pngFile)
@@ -29,7 +45,10 @@ import {
  *   console.error('Compression échouée')
  * }
  */
-export async function convertToWebP(file, options = {}) {
+export async function convertToWebP(
+  file: File,
+  options: ConversionOptions = {}
+): Promise<File | null> {
   const {
     targetSizeKB = TARGET_MAX_UI_SIZE_KB,
     fallbackSizeKB = FALLBACK_MAX_UI_SIZE_KB,
@@ -57,7 +76,7 @@ export async function convertToWebP(file, options = {}) {
     const reader = new FileReader()
 
     reader.onload = e => {
-      img.src = e.target.result
+      img.src = e.target?.result as string
     }
 
     img.onload = () => {
@@ -68,7 +87,7 @@ export async function convertToWebP(file, options = {}) {
       // ─────────────────────────────────────────────────────────────
       // Stratégies de compression progressives
       // ─────────────────────────────────────────────────────────────
-      const strategies = [
+      const strategies: CompressionStrategy[] = [
         // Tentative 192px @ qualités décroissantes
         { dimension: 192, quality: 0.85 },
         { dimension: 192, quality: 0.75 },
@@ -87,7 +106,7 @@ export async function convertToWebP(file, options = {}) {
 
       let currentTargetKB = targetSizeKB
 
-      const tryCompression = async (strategyIndex = 0) => {
+      const tryCompression = async (strategyIndex: number = 0): Promise<void> => {
         if (strategyIndex >= strategies.length) {
           // ─────────────────────────────────────────────────────────────
           // Échec total → essayer avec fallback 30 KB
@@ -128,6 +147,11 @@ export async function convertToWebP(file, options = {}) {
         canvas.width = width
         canvas.height = height
         const ctx = canvas.getContext('2d')
+
+        if (!ctx) {
+          resolve(null)
+          return
+        }
 
         // Améliorer qualité rendu
         ctx.imageSmoothingEnabled = true
@@ -193,23 +217,23 @@ export async function convertToWebP(file, options = {}) {
 /**
  * Calcule le hash SHA-256 d'un fichier (déduplication)
  *
- * @param {File} file - Fichier à hasher
- * @returns {Promise<string>} - Hash SHA-256 en hexadécimal (64 caractères)
+ * @param file - Fichier à hasher
+ * @returns Hash SHA-256 en hexadécimal (64 caractères)
  *
  * @example
  * const hash = await calculateFileHash(file)
  * // hash = "3a5b2c1d..." (64 chars)
  */
-export async function calculateFileHash(file) {
+export async function calculateFileHash(file: File): Promise<string> {
   // Fallback pour environnements tests (jsdom n'a pas arrayBuffer())
-  let arrayBuffer
+  let arrayBuffer: ArrayBuffer
   if (typeof file.arrayBuffer === 'function') {
     arrayBuffer = await file.arrayBuffer()
   } else {
     // Fallback FileReader pour tests
-    arrayBuffer = await new Promise((resolve, reject) => {
+    arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
+      reader.onload = () => resolve(reader.result as ArrayBuffer)
       reader.onerror = reject
       reader.readAsArrayBuffer(file)
     })
@@ -226,20 +250,20 @@ export async function calculateFileHash(file) {
 /**
  * Extrait dimensions d'une image
  *
- * @param {File} file - Fichier image
- * @returns {Promise<{width: number, height: number}>}
+ * @param file - Fichier image
+ * @returns Promise<ImageDimensions>
  *
  * @example
  * const { width, height } = await getImageDimensions(file)
  * console.log(`Image : ${width}×${height}px`)
  */
-export async function getImageDimensions(file) {
+export async function getImageDimensions(file: File): Promise<ImageDimensions> {
   return new Promise((resolve, reject) => {
     const img = new Image()
     const reader = new FileReader()
 
     reader.onload = e => {
-      img.src = e.target.result
+      img.src = e.target?.result as string
     }
 
     img.onload = () => {

@@ -1,7 +1,13 @@
-// src/utils/images/imageValidator.js
+// src/utils/images/imageValidator.ts
 // Validation complète et unifiée des images (MIME type + magic bytes)
 
 import { ALLOWED_MIME_TYPES } from '@/utils/images/config'
+
+export interface ValidationResult {
+  valid: boolean
+  error: string | null
+  normalizedType: string | null
+}
 
 /**
  * Valide un fichier image (MIME type + magic bytes)
@@ -10,8 +16,8 @@ import { ALLOWED_MIME_TYPES } from '@/utils/images/config'
  * 1. Type MIME autorisé
  * 2. Magic bytes (signature fichier) pour détecter spoofing
  *
- * @param {File} file - Fichier à valider
- * @returns {Promise<{valid: boolean, error: string|null, normalizedType: string|null}>}
+ * @param file - Fichier à valider
+ * @returns Promise<ValidationResult>
  *
  * @example
  * const { valid, error } = await validateImageFile(file)
@@ -19,7 +25,9 @@ import { ALLOWED_MIME_TYPES } from '@/utils/images/config'
  *   console.error(error)
  * }
  */
-export async function validateImageFile(file) {
+export async function validateImageFile(
+  file: File | null | undefined
+): Promise<ValidationResult> {
   if (!file) {
     return {
       valid: false,

@@ -1,17 +1,33 @@
-// src/utils/storage/getSignedUrl.js
+// src/utils/storage/getSignedUrl.ts
 // Génère et met en cache une URL signée (temporaire) pour lire un objet Storage (bucket privé).
 // - getSignedImageUrl(path, { bucket='images', expiresIn=3600, forceRefresh=false })
 // - invalidateSignedImageUrl(path, bucket) pour purger le cache (ex: après remplacement d'image)
 
 import { supabase } from '@/utils/supabaseClient'
 
+interface CachedUrl {
+  url: string
+  exp: number
+}
+
+interface GetSignedUrlOptions {
+  bucket?: string
+  expiresIn?: number
+  forceRefresh?: boolean
+}
+
+export interface SignedUrlResult {
+  url: string | null
+  error: Error | null
+}
+
 // Cache en mémoire: clé `${bucket}/${path}` → { url, exp: timestamp_ms }
-const signedUrlCache = new Map()
+const signedUrlCache = new Map<string, CachedUrl>()
 
 export async function getSignedImageUrl(
-  path,
-  { bucket = 'images', expiresIn = 3600, forceRefresh = false } = {}
-) {
+  path: string | null | undefined,
+  { bucket = 'images', expiresIn = 3600, forceRefresh = false }: GetSignedUrlOptions = {}
+): Promise<SignedUrlResult> {
   if (!path) return { url: null, error: new Error('Chemin requis') }
   const key = `${bucket}/${path}`
   const now = Date.now()
@@ -49,7 +65,7 @@ export async function getSignedImageUrl(
 
     // Pour les autres buckets, utiliser createSignedUrl() normalement
     // Timeout de 5 secondes pour éviter de pendre indéfiniment
-    const timeoutPromise = new Promise((_, reject) =>
+    const timeoutPromise = new Promise<SignedUrlResult>((_, reject) =>
       setTimeout(() => reject(new Error('Timeout création URL signée')), 5000)
     )
 
@@ -60,7 +76,7 @@ export async function getSignedImageUrl(
     const { data, error } = await Promise.race([
       signedUrlPromise,
       timeoutPromise,
-    ]).catch(e => ({ data: null, error: e }))
+    ]).catch(e => ({ data: null, error: e as Error }))
 
     if (error || !data?.signedUrl) {
       return {
@@ -73,11 +89,14 @@ export async function getSignedImageUrl(
     signedUrlCache.set(key, { url, exp: now + safeExpires * 1000 })
     return { url, error: null }
   } catch (e) {
-    return { url: null, error: e }
+    return { url: null, error: e as Error }
   }
 }
 
-export function invalidateSignedImageUrl(path, bucket = 'images') {
+export function invalidateSignedImageUrl(
+  path: string | null | undefined,
+  bucket: string = 'images'
+): void {
   if (!path) return
   const key = `${bucket}/${path}`
   signedUrlCache.delete(key)

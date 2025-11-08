@@ -6,13 +6,18 @@
  */
 
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
-import { uploadImage } from '@/utils/storage/uploadImage'
+import { uploadImage, type UploadResult } from '@/utils/storage/uploadImage'
+
+interface ReplaceOptions {
+  userId: string
+  prefix?: string
+}
 
 export default async function replaceImageIfAny(
-  oldPath,
-  file,
-  { userId, prefix }
-) {
+  oldPath: string | null | undefined,
+  file: File | null | undefined,
+  { userId, prefix }: ReplaceOptions
+): Promise<UploadResult> {
   if (!file) return { path: oldPath || null, url: null, error: null }
 
   if (oldPath) {

@@ -1,5 +1,19 @@
-// src/utils/upload/uploadWithRetry.js
+// src/utils/upload/uploadWithRetry.ts
 // Retry automatique avec backoff exponentiel (réseau instable mobile 3G/4G)
+
+export interface UploadRetryOptions {
+  maxRetries?: number
+  baseDelay?: number
+  maxDelay?: number
+  onRetry?: (info: RetryInfo) => void
+}
+
+export interface RetryInfo {
+  attempt: number
+  maxRetries: number
+  delay: number
+  error: Error
+}
 
 /**
  * Exécute une fonction upload avec retry automatique
@@ -7,13 +21,13 @@
  * Backoff exponentiel : 1s → 2s → 5s
  * Utile pour connexions mobiles instables (3G/4G)
  *
- * @param {Function} uploadFn - Fonction async à exécuter (doit retourner Promise)
- * @param {Object} options - Options retry
- * @param {number} [options.maxRetries=2] - Nombre max de réessais (total: maxRetries + 1 tentatives)
- * @param {number} [options.baseDelay=1000] - Délai initial en ms
- * @param {number} [options.maxDelay=5000] - Délai maximum en ms
- * @param {Function} [options.onRetry=null] - Callback appelé avant chaque retry (pour UI)
- * @returns {Promise} - Résultat de uploadFn ou throw erreur finale
+ * @param uploadFn - Fonction async à exécuter (doit retourner Promise)
+ * @param options - Options retry
+ * @param options.maxRetries - Nombre max de réessais (total: maxRetries + 1 tentatives) (défaut: 2)
+ * @param options.baseDelay - Délai initial en ms (défaut: 1000)
+ * @param options.maxDelay - Délai maximum en ms (défaut: 5000)
+ * @param options.onRetry - Callback appelé avant chaque retry (pour UI)
+ * @returns Résultat de uploadFn ou throw erreur finale
  *
  * @example
  * const result = await uploadWithRetry(
@@ -26,7 +40,10 @@
  *   }
  * )
  */
-export async function uploadWithRetry(uploadFn, options = {}) {
+export async function uploadWithRetry<T>(
+  uploadFn: () => Promise<T>,
+  options: UploadRetryOptions = {}
+): Promise<T> {
   const {
     maxRetries = 2,
     baseDelay = 1000, // 1s
@@ -34,14 +51,14 @@ export async function uploadWithRetry(uploadFn, options = {}) {
     onRetry = null, // Callback pour UI (toast, progress)
   } = options
 
-  let lastError
+  let lastError: Error | undefined
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const result = await uploadFn()
       return result // ✅ Succès
     } catch (error) {
-      lastError = error
+      lastError = error as Error
 
       if (attempt < maxRetries) {
         // ─────────────────────────────────────────────────────────────
@@ -51,7 +68,7 @@ export async function uploadWithRetry(uploadFn, options = {}) {
 
         console.warn(
           `⚠️ Upload échoué (tentative ${attempt + 1}/${maxRetries + 1}), retry dans ${delay}ms...`,
-          error.message
+          (lastError as Error).message
         )
 
         // ─────────────────────────────────────────────────────────────
@@ -62,7 +79,7 @@ export async function uploadWithRetry(uploadFn, options = {}) {
             attempt: attempt + 1,
             maxRetries,
             delay,
-            error,
+            error: lastError,
           })
         }
 
@@ -78,5 +95,5 @@ export async function uploadWithRetry(uploadFn, options = {}) {
   // Tous les retries épuisés → erreur finale
   // ─────────────────────────────────────────────────────────────
   console.error('❌ Upload échoué après', maxRetries + 1, 'tentatives')
-  throw lastError
+  throw lastError!
 }

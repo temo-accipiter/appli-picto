@@ -1,4 +1,4 @@
-// src/utils/storage/modernUploadImage.js
+// src/utils/storage/modernUploadImage.ts
 // Upload moderne images privées Supabase Storage
 // Pipeline : HEIC → WebP → Hash → Dédup → Quota → Upload → Metrics
 
@@ -18,7 +18,65 @@ import {
 } from '@/utils/images/config'
 import { buildScopedPath, sanitizeFileName } from '@/utils/storage/uploadImage'
 import { invalidateImageCache } from '@/utils/serviceWorker/register'
-import { ensureValidSession } from '../auth/ensureValidSession.js'
+import { ensureValidSession } from '../auth/ensureValidSession'
+
+export type AssetType = 'task_image' | 'reward_image'
+export type ConversionMethod =
+  | 'none'
+  | 'heic_to_jpeg_then_webp'
+  | 'heic_to_jpeg_only'
+  | 'fallback_original'
+  | 'client_webp'
+  | 'svg_unchanged'
+
+export interface UploadMetrics {
+  originalSize: number
+  compressedSize: number
+  conversionMs: number | null
+  uploadMs: number | null
+  result: 'success' | 'failed' | 'fallback_original'
+  errorMessage: string | null
+  mimeTypeOriginal: string
+  mimeTypeFinal: string
+  conversionMethod: ConversionMethod
+}
+
+export interface ProgressInfo {
+  step: string
+  progress: number
+  message?: string
+}
+
+export interface ModernUploadOptions {
+  userId: string
+  assetType?: AssetType
+  prefix?: string
+  onProgress?: ((info: ProgressInfo) => void) | null
+}
+
+export interface UploadResult {
+  path: string | null
+  url: string | null
+  assetId: string | null
+  width: number | null
+  height: number | null
+  isDuplicate: boolean
+  error: Error | null
+  version?: number
+}
+
+interface DuplicateCheckResult {
+  exists: boolean
+  asset_id?: string
+  file_path?: string
+  width?: number
+  height?: number
+}
+
+interface QuotaCheckResult {
+  can_upload: boolean
+  reason?: string
+}
 
 /**
  * Upload moderne d'une image privée (Supabase Storage)
@@ -33,50 +91,33 @@ import { ensureValidSession } from '../auth/ensureValidSession.js'
  * 7. Upload avec retry (réseau instable)
  * 8. Enregistrement user_assets + metrics
  * 9. Génération signed URL (TTL 24h)
- *
- * @param {File} file - Fichier image original
- * @param {Object} options - Options upload
- * @param {string} options.userId - ID utilisateur (requis)
- * @param {string} [options.assetType='task_image'] - Type asset ('task_image' | 'reward_image')
- * @param {string} [options.prefix='misc'] - Préfixe chemin ('taches', 'recompenses', 'misc')
- * @param {Function} [options.onProgress=null] - Callback progression (pour UI)
- * @returns {Promise<{path, url, assetId, width, height, isDuplicate, error}>}
- *
- * @example
- * const result = await modernUploadImage(file, {
- *   userId: user.id,
- *   assetType: 'task_image',
- *   prefix: 'taches',
- *   onProgress: ({ step, progress }) => console.log(step, progress)
- * })
  */
-export async function modernUploadImage(file, options = {}) {
+export async function modernUploadImage(
+  file: File | null | undefined,
+  options: ModernUploadOptions
+): Promise<UploadResult> {
   const {
     userId,
-    assetType = 'task_image', // 'task_image' | 'reward_image'
-    prefix = 'misc', // Préfixe chemin : 'taches', 'recompenses', 'misc'
-    onProgress = null, // Callback progression (pour UI)
+    assetType = 'task_image',
+    prefix = 'misc',
+    onProgress = null,
   } = options
 
   // Métriques (monitoring)
-  const metrics = {
-    originalSize: file.size,
-    compressedSize: file.size,
+  const metrics: UploadMetrics = {
+    originalSize: file?.size || 0,
+    compressedSize: file?.size || 0,
     conversionMs: null,
     uploadMs: null,
     result: 'success',
     errorMessage: null,
-    mimeTypeOriginal: file.type,
-    mimeTypeFinal: file.type,
+    mimeTypeOriginal: file?.type || '',
+    mimeTypeFinal: file?.type || '',
     conversionMethod: 'none',
   }
 
-  const _startTime = Date.now() // Pour futures métriques si nécessaire
-
   try {
-    // ─────────────────────────────────────────────────────────────
-    // 🆕 0️⃣ VÉRIFICATION SESSION (préventif bugs intermittents)
-    // ─────────────────────────────────────────────────────────────
+    // 0️⃣ VÉRIFICATION SESSION
     try {
       await ensureValidSession({ marginMinutes: 5 })
     } catch (sessionError) {
@@ -86,9 +127,7 @@ export async function modernUploadImage(file, options = {}) {
       )
     }
 
-    // ─────────────────────────────────────────────────────────────
     // 1️⃣ VALIDATION ENTRÉE
-    // ─────────────────────────────────────────────────────────────
     if (!file) {
       throw new Error('Aucun fichier fourni')
     }
@@ -101,23 +140,19 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'validation', progress: 5 })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 2️⃣ VALIDATION FICHIER (MIME + MAGIC BYTES)
-    // ─────────────────────────────────────────────────────────────
+    // 2️⃣ VALIDATION FICHIER
     const validation = await validateImageFile(file)
 
     if (!validation.valid) {
-      throw new Error(validation.error)
+      throw new Error(validation.error || 'Validation échouée')
     }
 
     if (onProgress) {
       onProgress({ step: 'validation', progress: 10 })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 3️⃣ CONVERSION HEIC → JPEG (si iPhone)
-    // ─────────────────────────────────────────────────────────────
-    let processedFile = file
+    // 3️⃣ CONVERSION HEIC → JPEG
+    let processedFile: File = file
     const conversionStart = Date.now()
 
     if (isHEIC(file)) {
@@ -131,16 +166,13 @@ export async function modernUploadImage(file, options = {}) {
       }
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 4️⃣ CONVERSION → WEBP ≤ 20 KB (sauf SVG)
-    // ─────────────────────────────────────────────────────────────
+    // 4️⃣ CONVERSION → WEBP
     if (processedFile.type !== 'image/svg+xml') {
       const webpFile = await convertToWebP(processedFile, {
         targetSizeKB: TARGET_MAX_UI_SIZE_KB,
       })
 
       if (!webpFile) {
-        // Fallback : accepter original si < 100 KB
         if (processedFile.size <= 100 * 1024) {
           console.warn('⚠️ Compression WebP échouée → upload original')
           metrics.conversionMethod =
@@ -172,18 +204,14 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'compression', progress: 40 })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 5️⃣ CALCUL HASH SHA-256 (déduplication)
-    // ─────────────────────────────────────────────────────────────
+    // 5️⃣ CALCUL HASH
     const fileHash = await calculateFileHash(processedFile)
 
     if (onProgress) {
       onProgress({ step: 'hash', progress: 50 })
     }
 
-    // ─────────────────────────────────────────────────────────────
     // 6️⃣ VÉRIFICATION DUPLICATION
-    // ─────────────────────────────────────────────────────────────
     console.log('🔍 [STEP 6] Vérification duplication...')
     const { data: duplicateCheck, error: dupError } = await supabase.rpc(
       'check_duplicate_image',
@@ -195,33 +223,32 @@ export async function modernUploadImage(file, options = {}) {
 
     if (dupError) {
       console.error('❌ [STEP 6] Erreur vérification duplication:', dupError)
-      // Continue malgré erreur (non bloquant)
     }
 
     console.log('✅ [STEP 6] Duplication check OK:', duplicateCheck)
 
-    if (duplicateCheck?.exists) {
+    const dupCheck = duplicateCheck as DuplicateCheckResult | null
+
+    if (dupCheck?.exists) {
       console.log('♻️ Image identique trouvée → vérification existence fichier')
 
-      // 🔍 Vérifier que le fichier existe réellement dans Storage
       const { data: fileExists } = await supabase.storage
         .from(PRIVATE_BUCKET)
-        .list(duplicateCheck.file_path.split('/').slice(0, -1).join('/'), {
-          search: duplicateCheck.file_path.split('/').pop(),
+        .list(dupCheck.file_path!.split('/').slice(0, -1).join('/'), {
+          search: dupCheck.file_path!.split('/').pop(),
         })
 
       if (fileExists && fileExists.length > 0) {
         console.log('✅ Fichier existe dans Storage → réutilisation')
 
-        // Log metric duplication
         await logMetrics(userId, assetType, metrics)
 
         return {
-          path: duplicateCheck.file_path,
-          url: null, // Généré plus tard si besoin
-          assetId: duplicateCheck.asset_id,
-          width: duplicateCheck.width,
-          height: duplicateCheck.height,
+          path: dupCheck.file_path!,
+          url: null,
+          assetId: dupCheck.asset_id!,
+          width: dupCheck.width || null,
+          height: dupCheck.height || null,
           isDuplicate: true,
           error: null,
         }
@@ -230,13 +257,10 @@ export async function modernUploadImage(file, options = {}) {
           '⚠️ Fichier supprimé du Storage → soft-delete asset + re-upload'
         )
 
-        // Soft-delete l'ancien asset pour éviter conflit hash
         await supabase
           .from('user_assets')
           .update({ deleted_at: new Date().toISOString() })
-          .eq('id', duplicateCheck.asset_id)
-
-        // Continuer avec l'upload normal ci-dessous
+          .eq('id', dupCheck.asset_id!)
       }
     }
 
@@ -244,9 +268,7 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'deduplication', progress: 60 })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 7️⃣ VÉRIFICATION QUOTA UTILISATEUR
-    // ─────────────────────────────────────────────────────────────
+    // 7️⃣ VÉRIFICATION QUOTA
     console.log('🔍 [STEP 7] Vérification quota...')
     const { data: quotaCheck, error: quotaError } = await supabase.rpc(
       'check_image_quota',
@@ -264,10 +286,12 @@ export async function modernUploadImage(file, options = {}) {
 
     console.log('✅ [STEP 7] Quota check OK:', quotaCheck)
 
-    if (!quotaCheck?.can_upload) {
-      const reason = quotaCheck?.reason || 'limite atteinte'
+    const quota = quotaCheck as QuotaCheckResult | null
 
-      const messages = {
+    if (!quota?.can_upload) {
+      const reason = quota?.reason || 'limite atteinte'
+
+      const messages: Record<string, string> = {
         task_image_limit_reached: 'Quota de tâches atteint',
         reward_image_limit_reached: 'Quota de récompenses atteint',
         total_storage_limit_reached: "Quota total d'images atteint",
@@ -281,16 +305,12 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'quota', progress: 70 })
     }
 
-    // ─────────────────────────────────────────────────────────────
     // 8️⃣ EXTRAIRE DIMENSIONS
-    // ─────────────────────────────────────────────────────────────
     console.log('🔍 [STEP 8] Extraction dimensions...')
     const { width, height } = await getImageDimensions(processedFile)
     console.log('✅ [STEP 8] Dimensions:', { width, height })
 
-    // ─────────────────────────────────────────────────────────────
-    // 9️⃣ UPLOAD SUPABASE STORAGE (avec retry)
-    // ─────────────────────────────────────────────────────────────
+    // 9️⃣ UPLOAD STORAGE
     console.log('🔍 [STEP 9] Préparation upload...')
     const fileName = sanitizeFileName(processedFile.name)
     const storagePath = buildScopedPath(userId, fileName, prefix)
@@ -303,7 +323,7 @@ export async function modernUploadImage(file, options = {}) {
         supabase.storage
           .from(PRIVATE_BUCKET)
           .upload(storagePath, processedFile, {
-            cacheControl: `${SIGNED_URL_TTL_SECONDS}`, // 24h
+            cacheControl: `${SIGNED_URL_TTL_SECONDS}`,
             upsert: false,
             contentType: processedFile.type,
           }),
@@ -336,9 +356,7 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'upload', progress: 85 })
     }
 
-    // ─────────────────────────────────────────────────────────────
     // 🔟 ENREGISTREMENT USER_ASSETS
-    // ─────────────────────────────────────────────────────────────
     console.log('🔍 [STEP 10] Enregistrement user_assets...')
     const { data: asset, error: dbError } = await supabase
       .from('user_assets')
@@ -359,7 +377,6 @@ export async function modernUploadImage(file, options = {}) {
     if (dbError) {
       console.error('❌ [STEP 10] Erreur enregistrement BDD:', dbError)
 
-      // Gérer erreur unicité (23505 - race condition déduplication)
       if (dbError.code === '23505') {
         console.warn('⚠️ Hash en conflit → récupération asset existant')
 
@@ -371,10 +388,8 @@ export async function modernUploadImage(file, options = {}) {
           .single()
 
         if (existing) {
-          // Cleanup fichier uploadé (duplication détectée après coup)
           await supabase.storage.from(PRIVATE_BUCKET).remove([storageData.path])
 
-          // Log metric
           await logMetrics(userId, assetType, metrics)
 
           return {
@@ -389,7 +404,6 @@ export async function modernUploadImage(file, options = {}) {
         }
       }
 
-      // Cleanup storage si BDD fail (orphelin)
       await supabase.storage.from(PRIVATE_BUCKET).remove([storageData.path])
 
       throw dbError
@@ -399,21 +413,16 @@ export async function modernUploadImage(file, options = {}) {
       onProgress({ step: 'database', progress: 95 })
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 1️⃣1️⃣ GÉNÉRATION SIGNED URL (TTL 24h)
-    // ─────────────────────────────────────────────────────────────
+    // 1️⃣1️⃣ GÉNÉRATION SIGNED URL
     const { data: signedData, error: signError } = await supabase.storage
       .from(PRIVATE_BUCKET)
       .createSignedUrl(storageData.path, SIGNED_URL_TTL_SECONDS)
 
     if (signError) {
       console.error('⚠️ Erreur génération signed URL:', signError)
-      // Non bloquant → URL générée plus tard si besoin
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // 1️⃣2️⃣ LOG METRICS (analytics)
-    // ─────────────────────────────────────────────────────────────
+    // 1️⃣2️⃣ LOG METRICS
     await logMetrics(userId, assetType, metrics)
 
     if (onProgress) {
@@ -433,39 +442,10 @@ export async function modernUploadImage(file, options = {}) {
     }
   } catch (error) {
     console.error('❌ Upload échoué:', error)
-    console.error('📊 Stack trace:', error.stack)
-
-    // 🆕 Diagnostic détaillé pour bugs intermittents
-    const diagnosticInfo = {
-      name: error.name,
-      message: error.message,
-      code: error.code,
-      userId: userId || 'UNDEFINED',
-      fileSize: file?.size || 'UNKNOWN',
-      timestamp: new Date().toISOString(),
-    }
-
-    // 🆕 Vérifier état session au moment de l'erreur
-    try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession()
-      diagnosticInfo.sessionValid = !!session
-      diagnosticInfo.sessionExpired = session?.expires_at
-        ? session.expires_at * 1000 < Date.now()
-        : null
-      diagnosticInfo.sessionError = sessionError?.message || null
-    } catch (sessionCheckError) {
-      diagnosticInfo.sessionCheckFailed = sessionCheckError.message
-    }
-
-    console.error('📊 Diagnostic complet:', diagnosticInfo)
 
     metrics.result = 'failed'
-    metrics.errorMessage = error.message
+    metrics.errorMessage = (error as Error).message
 
-    // Log metric échec
     try {
       await logMetrics(userId, assetType, metrics)
     } catch (metricError) {
@@ -479,18 +459,16 @@ export async function modernUploadImage(file, options = {}) {
       width: null,
       height: null,
       isDuplicate: false,
-      error,
+      error: error as Error,
     }
   }
 }
 
-/**
- * Log metrics upload (analytics)
- * @param {string} userId
- * @param {string} assetType
- * @param {Object} metrics
- */
-async function logMetrics(userId, assetType, metrics) {
+async function logMetrics(
+  userId: string,
+  assetType: AssetType,
+  metrics: UploadMetrics
+): Promise<void> {
   try {
     await supabase.from('image_metrics').insert({
       user_id: userId,
@@ -507,26 +485,21 @@ async function logMetrics(userId, assetType, metrics) {
     })
   } catch (error) {
     console.error('⚠️ Erreur log metrics:', error)
-    // Non bloquant
   }
 }
 
-/**
- * Remplace une image existante (incrémente version)
- * @param {string} assetId - ID asset à remplacer
- * @param {File} newFile - Nouveau fichier
- * @param {Object} options - Options (userId, onProgress)
- * @returns {Promise<{path, url, version, error}>}
- */
-export async function replaceImage(assetId, newFile, options = {}) {
+export async function replaceImage(
+  assetId: string,
+  newFile: File,
+  options: Partial<ModernUploadOptions>
+): Promise<UploadResult> {
   const { userId, onProgress } = options
 
   if (!userId) {
-    return { path: null, url: null, error: new Error('userId requis') }
+    return { path: null, url: null, assetId: null, width: null, height: null, isDuplicate: false, error: new Error('userId requis') }
   }
 
   try {
-    // Récupérer asset existant
     const { data: existingAsset, error: fetchError } = await supabase
       .from('user_assets')
       .select('*')
@@ -538,7 +511,6 @@ export async function replaceImage(assetId, newFile, options = {}) {
       throw new Error('Asset introuvable')
     }
 
-    // Upload nouvelle version
     const uploadResult = await modernUploadImage(newFile, {
       userId,
       assetType: existingAsset.asset_type,
@@ -551,27 +523,22 @@ export async function replaceImage(assetId, newFile, options = {}) {
       return uploadResult
     }
 
-    // Soft delete ancienne version
     await supabase
       .from('user_assets')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', assetId)
 
-    // Incrémenter version nouvel asset
     const newVersion = (existingAsset.version || 1) + 1
 
     await supabase
       .from('user_assets')
       .update({ version: newVersion })
-      .eq('id', uploadResult.assetId)
+      .eq('id', uploadResult.assetId!)
 
     console.log(
       `♻️ Image remplacée : v${existingAsset.version} → v${newVersion}`
     )
 
-    // ─────────────────────────────────────────────────────────────
-    // Invalider cache Service Worker (nouvelle version uploadée)
-    // ─────────────────────────────────────────────────────────────
     if (uploadResult.url) {
       await invalidateImageCache(uploadResult.url)
     }
@@ -582,6 +549,6 @@ export async function replaceImage(assetId, newFile, options = {}) {
     }
   } catch (error) {
     console.error('❌ Erreur remplacement image:', error)
-    return { path: null, url: null, error }
+    return { path: null, url: null, assetId: null, width: null, height: null, isDuplicate: false, error: error as Error }
   }
 }

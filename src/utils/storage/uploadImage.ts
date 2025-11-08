@@ -1,4 +1,4 @@
-// src/utils/storage/uploadImage.js
+// src/utils/storage/uploadImage.ts
 // Upload vers un bucket privé (Storage). Retourne le chemin et peut signer immédiatement si demandé.
 // - uploadImage(file, { userId, bucket='images', prefix='misc', upsert=false, contentType, sign=false, expiresIn=3600 })
 //   -> { path, url, error }
@@ -7,11 +7,31 @@ import { supabase } from '@/utils/supabaseClient'
 import { ALLOWED_MIME_TYPES, MAX_UPLOAD_BYTES } from '@/utils/images/config'
 import { getSignedImageUrl } from '@/utils/storage/getSignedUrl'
 
+export interface UploadResult {
+  path: string | null
+  url: string | null
+  error: Error | null
+}
+
+export interface UploadOptions {
+  userId: string
+  bucket?: string
+  prefix?: string
+  upsert?: boolean
+  contentType?: string
+  sign?: boolean
+  expiresIn?: number
+}
+
 /** Sanitize basique du nom de fichier (ASCII + tirets) */
-export function sanitizeFileName(name = '') {
-  const base = String(name).split('/').pop().split('\\').pop()
-  // src/utils/storage/uploadImage.js
-  const [raw, ext = ''] = base.split(/\.(?=[^.]+$)/) // split last dot
+export function sanitizeFileName(name: string = ''): string {
+  const base = String(name).split('/').pop()?.split('\\').pop() || ''
+  // src/utils/storage/uploadImage.ts
+  const lastDotIndex = base.lastIndexOf('.')
+  const [raw, ext = ''] = lastDotIndex >= 0
+    ? [base.slice(0, lastDotIndex), base.slice(lastDotIndex + 1)]
+    : [base, '']
+
   const safeBase = raw
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -24,7 +44,11 @@ export function sanitizeFileName(name = '') {
 }
 
 /** Construit un chemin scoping par user, avec préfixe (ex: taches, recompenses) */
-export function buildScopedPath(userId, fileName, prefix = 'misc') {
+export function buildScopedPath(
+  userId: string,
+  fileName: string,
+  prefix: string = 'misc'
+): string {
   const d = new Date()
   const y = d.getUTCFullYear()
   const m = String(d.getUTCMonth() + 1).padStart(2, '0')
@@ -39,7 +63,7 @@ export function buildScopedPath(userId, fileName, prefix = 'misc') {
  * Option `sign: true` pour obtenir une URL signée immédiatement.
  */
 export async function uploadImage(
-  file,
+  file: File | null | undefined,
   {
     userId,
     bucket = 'images',
@@ -48,8 +72,8 @@ export async function uploadImage(
     contentType,
     sign = false,
     expiresIn = 3600,
-  } = {}
-) {
+  }: Partial<UploadOptions> = {}
+): Promise<UploadResult> {
   if (!file)
     return { path: null, url: null, error: new Error('Aucun fichier fourni') }
   if (!userId)

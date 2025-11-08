@@ -1,4 +1,4 @@
-// src/utils/images/heicConverter.js
+// src/utils/images/heicConverter.ts
 // Conversion HEIC (iPhone) → JPEG pour compatibilité navigateur
 
 import heic2any from 'heic2any'
@@ -6,14 +6,14 @@ import heic2any from 'heic2any'
 /**
  * Convertit un fichier HEIC (iPhone) en JPEG
  *
- * @param {File} file - Fichier HEIC original
- * @returns {Promise<File>} - Fichier JPEG converti
- * @throws {Error} - Si la conversion échoue
+ * @param file - Fichier HEIC original
+ * @returns Fichier JPEG converti
+ * @throws Error - Si la conversion échoue
  *
  * @example
  * const jpegFile = await convertHEICtoJPEG(heicFile)
  */
-export async function convertHEICtoJPEG(file) {
+export async function convertHEICtoJPEG(file: File): Promise<File> {
   if (!isHEIC(file)) {
     return file // Pas HEIC → retour tel quel
   }
@@ -52,15 +52,15 @@ export async function convertHEICtoJPEG(file) {
 /**
  * Détecte si un fichier est au format HEIC/HEIF
  *
- * @param {File} file - Fichier à vérifier
- * @returns {boolean} - true si HEIC/HEIF
+ * @param file - Fichier à vérifier
+ * @returns true si HEIC/HEIF
  *
  * @example
  * if (isHEIC(file)) {
  *   file = await convertHEICtoJPEG(file)
  * }
  */
-export function isHEIC(file) {
+export function isHEIC(file: File): boolean {
   const type = file.type?.toLowerCase()
   const name = file.name?.toLowerCase()
 
