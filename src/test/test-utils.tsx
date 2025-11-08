@@ -1,4 +1,4 @@
-// src/test/test-utils.jsx
+// src/test/test-utils.tsx
 /**
  * 🧪 Test Utilities - Helpers pour tests React
  *
@@ -11,8 +11,8 @@
  * renderWithProviders(<MyComponent />)
  */
 
-import { render } from '@testing-library/react'
-import PropTypes from 'prop-types'
+import { render, type RenderOptions } from '@testing-library/react'
+import { type ReactElement, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import {
   AuthProvider,
@@ -23,9 +23,22 @@ import {
 } from '@/contexts'
 
 /**
+ * Mock User type pour tests
+ */
+export interface MockUser {
+  id: string
+  email: string
+  created_at: string
+}
+
+/**
  * Wrapper avec tous les providers
  */
-export function AllTheProviders({ children }) {
+interface AllTheProvidersProps {
+  children: ReactNode
+}
+
+export function AllTheProviders({ children }: AllTheProvidersProps) {
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -41,25 +54,24 @@ export function AllTheProviders({ children }) {
   )
 }
 
-AllTheProviders.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
 /**
  * Helper pour render avec providers
  *
- * @param {ReactElement} ui - Composant à tester
- * @param {Object} options - Options RTL
- * @returns {Object} - Résultat RTL + helper rerender
+ * @param ui - Composant à tester
+ * @param options - Options RTL
+ * @returns Résultat RTL + helper rerender
  */
-export function renderWithProviders(ui, options = {}) {
+export function renderWithProviders(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) {
   return render(ui, { wrapper: AllTheProviders, ...options })
 }
 
 /**
  * Mock user pour tests
  */
-export const mockTestUser = {
+export const mockTestUser: MockUser = {
   id: 'test-user-123',
   email: 'test@example.com',
   created_at: '2024-01-01T00:00:00Z',
@@ -68,7 +80,7 @@ export const mockTestUser = {
 /**
  * Mock admin user pour tests
  */
-export const mockAdminUser = {
+export const mockAdminUser: MockUser = {
   id: 'admin-user-456',
   email: 'admin@example.com',
   created_at: '2024-01-01T00:00:00Z',

@@ -1,4 +1,4 @@
-// src/test/mocks/server.js
+// src/test/mocks/server.ts
 /**
  * 🖥️ MSW Server - Tests Node.js (Vitest)
  *

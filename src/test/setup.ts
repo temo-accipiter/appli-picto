@@ -1,4 +1,4 @@
-// src/test/setup.js
+// src/test/setup.ts
 import '@testing-library/jest-dom'
 import { server } from './mocks/server'
 import { afterAll, afterEach, beforeAll } from 'vitest'
@@ -13,14 +13,15 @@ afterAll(() => server.close())
 // --- Mocks d'APIs navigateur utiles ---
 
 class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
+
 class IntersectionObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
 
 globalThis.ResizeObserver = globalThis.ResizeObserver || ResizeObserver
@@ -35,16 +36,18 @@ globalThis.matchMedia =
       matches: false,
       media: '',
       onchange: null,
-      addListener() {}, // deprecated, mais parfois appelé
-      removeListener() {},
-      addEventListener() {},
-      removeEventListener() {},
-      dispatchEvent() {},
+      addListener(): void {}, // deprecated, mais parfois appelé
+      removeListener(): void {},
+      addEventListener(): void {},
+      removeEventListener(): void {},
+      dispatchEvent(): boolean {
+        return false
+      },
     }
   }
 
 // scrollTo no-op (évite certaines erreurs)
-globalThis.scrollTo = globalThis.scrollTo || (() => {})
+globalThis.scrollTo = globalThis.scrollTo || ((): void => {})
 
 // --- Env Vite pour les tests ---
 // On étend l'existant au lieu de l'écraser
