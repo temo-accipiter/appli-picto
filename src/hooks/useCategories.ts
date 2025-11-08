@@ -1,60 +1,54 @@
 // src/hooks/useCategories.ts
-// Gestion des catégories compatible avec ton schéma/policies :
-// - SELECT : catégories de l'utilisateur + globales (user_id IS NULL)
-// - INSERT : ne renseigne pas user_id (trigger le fait via auth.uid())
-// - DELETE : par "value" (ton UI passe bien "value", pas "id")
-// - Logs d'erreur clairs + rechargement après mutation
+// Gestion des catégories compatible avec schéma/policies
 
 import { useEffect, useState, useCallback } from 'react'
-import type { PostgrestError } from '@supabase/supabase-js'
-import type { Categorie } from '@/types/global'
 import { supabase } from '@/utils/supabaseClient'
 import { useAuth, useI18n, useToast } from '@/hooks'
 
-// Log d'erreur "safe"
+interface Category {
+  id: string
+  label: string
+  value: string
+  user_id?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+interface CategoryInput {
+  label: string
+  value: string
+}
+
+interface UseCategoriesReturn {
+  categories: Category[]
+  loading: boolean
+  error: Error | null
+  addCategory: (cat: CategoryInput) => Promise<{ error: Error | null }>
+  updateCategory: (id: string, newLabel: string) => Promise<{ error: Error | null }>
+  deleteCategory: (value: string) => Promise<{ error: Error | null }>
+  refresh: () => Promise<void>
+}
+
 const formatErr = (e: unknown): string => {
-  const err = e as PostgrestError | Error
-  const m = String(err?.message ?? e)
+  const error = e as { message?: string; code?: string; details?: string; hint?: string }
+  const m = String(error?.message ?? e)
   const parts = [
     m,
-    'code' in err && err?.code ? `[${err.code}]` : '',
-    'details' in err && err?.details ? `— ${err.details}` : '',
-    'hint' in err && err?.hint ? `(hint: ${err.hint})` : '',
+    error?.code ? `[${error.code}]` : '',
+    error?.details ? `— ${error.details}` : '',
+    error?.hint ? `(hint: ${error.hint})` : '',
   ].filter(Boolean)
   return parts.join(' ')
 }
 
-interface CategoryPayload {
-  value: string
-  label: string
-}
-
-interface UseCategoriesReturn {
-  categories: Categorie[]
-  loading: boolean
-  error: Error | PostgrestError | null
-  addCategory: (
-    cat: CategoryPayload
-  ) => Promise<{ error: Error | PostgrestError | null }>
-  updateCategory: (
-    id: string,
-    newLabel: string
-  ) => Promise<{ error: Error | PostgrestError | null }>
-  deleteCategory: (
-    value: string
-  ) => Promise<{ error: Error | PostgrestError | null }>
-  refresh: () => Promise<void>
-}
-
-export default function useCategories(reload = 0): UseCategoriesReturn {
-  const [categories, setCategories] = useState<Categorie[]>([])
+export default function useCategories(reload: number = 0): UseCategoriesReturn {
+  const [categories, setCategories] = useState<Category[]>([])
   const { t } = useI18n()
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | PostgrestError | null>(null)
+  const [error, setError] = useState<Error | null>(null)
   const { user } = useAuth()
   const { show } = useToast()
 
-  // 📥 Fonction interne de fetch (sans useCallback pour simplifier les tests)
   const fetchCategoriesInternal = async () => {
     if (!user?.id) {
       setCategories([])
@@ -65,52 +59,36 @@ export default function useCategories(reload = 0): UseCategoriesReturn {
     setLoading(true)
     setError(null)
     try {
-      // ✅ Récupérer à la fois les catégories de l'utilisateur ET les globales
-      // Supabase JS: .or() s'applique au dernier filtre
-      const { data, error } = await supabase
+      const { data, error: err } = await supabase
         .from('categories')
         .select('*')
         .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('label', { ascending: true })
 
-      if (error) throw error
+      if (err) throw err
 
-      setCategories(Array.isArray(data) ? data : [])
+      setCategories(Array.isArray(data) ? (data as Category[]) : [])
     } catch (e) {
       console.error(`Erreur chargement catégories : ${formatErr(e)}`)
-      setError(e as Error | PostgrestError)
+      setError(e as Error)
     } finally {
       setLoading(false)
     }
   }
 
-  // 📥 Chargement initial (comme useTaches)
   useEffect(() => {
     fetchCategoriesInternal()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reload, user?.id])
 
-  const addCategory = async (
-    cat: CategoryPayload
-  ): Promise<{ error: Error | PostgrestError | null }> => {
-    // cat = { value, label } — user_id géré par trigger
+  const addCategory = async (cat: CategoryInput): Promise<{ error: Error | null }> => {
     try {
-      const { data, error } = await supabase
+      const { data, error: err } = await supabase
         .from('categories')
-        .insert([
-          {
-            label: cat.label,
-            value: cat.value,
-            // user_id: trigger a00_categories_set_user_id_before => auth.uid()
-          },
-        ])
+        .insert([{ label: cat.label, value: cat.value }])
         .select()
 
-      if (error) throw error
-
-      if (!data || data.length === 0) {
-        throw new Error('Insertion bloquée par les permissions (RLS)')
-      }
+      if (err) throw err
+      if (!data || data.length === 0) throw new Error('Insertion bloquée')
 
       await fetchCategoriesInternal()
       show(t('toasts.categoryAdded'), 'success')
@@ -118,44 +96,37 @@ export default function useCategories(reload = 0): UseCategoriesReturn {
     } catch (e) {
       console.error(`Erreur ajout catégorie : ${formatErr(e)}`)
       show(t('toasts.categoryAddError'), 'error')
-      return { error: e as Error | PostgrestError }
+      return { error: e as Error }
     }
   }
 
-  const updateCategory = async (
-    id: string,
-    newLabel: string
-  ): Promise<{ error: Error | PostgrestError | null }> => {
+  const updateCategory = async (id: string, newLabel: string): Promise<{ error: Error | null }> => {
     try {
-      const { error } = await supabase
+      const { error: err } = await supabase
         .from('categories')
         .update({ label: newLabel })
         .eq('id', id)
-        // garde-fou : on laisse aussi admin (policy le permet), sinon restreint à l'user
         .or(`user_id.eq.${user?.id},user_id.is.null`)
-      if (error) throw error
+      if (err) throw err
       await fetchCategoriesInternal()
       show(t('toasts.categoryModified'), 'success')
       return { error: null }
     } catch (e) {
       console.error(`Erreur modification catégorie : ${formatErr(e)}`)
       show(t('toasts.categoryModifyError'), 'error')
-      return { error: e as Error | PostgrestError }
+      return { error: e as Error }
     }
   }
 
-  const deleteCategory = async (
-    value: string
-  ): Promise<{ error: Error | PostgrestError | null }> => {
-    // ⚠️ Ton UI passe "value" (slug), pas "id"
+  const deleteCategory = async (value: string): Promise<{ error: Error | null }> => {
     try {
-      const { error } = await supabase
+      const { error: err } = await supabase
         .from('categories')
         .delete()
         .eq('value', value)
-        .eq('user_id', user?.id) // on ne supprime que les catégories de l'utilisateur
+        .eq('user_id', user?.id)
 
-      if (error) throw error
+      if (err) throw err
 
       await fetchCategoriesInternal()
       show(t('toasts.categoryDeleted'), 'success')
@@ -163,14 +134,13 @@ export default function useCategories(reload = 0): UseCategoriesReturn {
     } catch (e) {
       console.error(`Erreur suppression catégorie : ${formatErr(e)}`)
       show(t('toasts.categoryDeleteError'), 'error')
-      return { error: e as Error | PostgrestError }
+      return { error: e as Error }
     }
   }
 
-  // Exposer refresh avec useCallback pour stabilité de référence
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     return fetchCategoriesInternal()
-  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   return {
     categories,
