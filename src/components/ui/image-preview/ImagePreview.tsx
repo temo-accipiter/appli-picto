@@ -1,12 +1,20 @@
-import PropTypes from 'prop-types'
 import './ImagePreview.scss'
+
+type ImageSize = 'sm' | 'md' | 'lg'
+
+interface ImagePreviewProps {
+  url: string
+  alt?: string
+  className?: string
+  size?: ImageSize
+}
 
 export default function ImagePreview({
   url,
   alt = 'Aperçu',
   className = '',
-  size = 'md', // sm | md | lg
-}) {
+  size = 'md',
+}: ImagePreviewProps) {
   if (!url) return null
 
   return (
@@ -14,11 +22,4 @@ export default function ImagePreview({
       <img src={url} alt={alt} className="image-preview__img" loading="lazy" />
     </div>
   )
-}
-
-ImagePreview.propTypes = {
-  url: PropTypes.string.isRequired,
-  alt: PropTypes.string,
-  className: PropTypes.string,
-  size: PropTypes.oneOf(['sm', 'md', 'lg']),
 }

@@ -1,8 +1,15 @@
-import PropTypes from 'prop-types'
 import { motion, AnimatePresence } from 'framer-motion'
 import './Toast.scss'
 
-export default function Toast({ message, type = 'info', visible }) {
+type ToastType = 'info' | 'success' | 'error' | 'warning'
+
+interface ToastProps {
+  message: string
+  type?: ToastType
+  visible: boolean
+}
+
+export default function Toast({ message, type = 'info', visible }: ToastProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -20,10 +27,4 @@ export default function Toast({ message, type = 'info', visible }) {
       )}
     </AnimatePresence>
   )
-}
-
-Toast.propTypes = {
-  message: PropTypes.string.isRequired,
-  type: PropTypes.oneOf(['info', 'success', 'error']),
-  visible: PropTypes.bool.isRequired,
 }

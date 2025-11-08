@@ -1,6 +1,21 @@
+import React from 'react'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import './Select.scss'
+
+interface SelectOption {
+  value: string | number
+  label: string
+}
+
+interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> {
+  id: string
+  label?: string
+  value: string | number
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  options?: SelectOption[]
+  error?: string
+  placeholder?: string
+}
 
 export default function Select({
   id,
@@ -11,7 +26,7 @@ export default function Select({
   error = '',
   placeholder,
   ...rest
-}) {
+}: SelectProps) {
   const { t } = useI18n()
   const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
 
@@ -45,20 +60,4 @@ export default function Select({
       )}
     </div>
   )
-}
-
-Select.propTypes = {
-  id: PropTypes.string.isRequired,
-  label: PropTypes.string,
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  onChange: PropTypes.func.isRequired,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-        .isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ),
-  error: PropTypes.string,
-  placeholder: PropTypes.string,
 }

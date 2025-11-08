@@ -1,10 +1,18 @@
+import React, { useId, useMemo, useState } from 'react'
 import { useI18n } from '@/hooks'
 import { PASSWORD_MIN } from '@/utils'
-import PropTypes from 'prop-types'
-import React, { useId, useMemo, useState } from 'react'
 import './PasswordChecklist.scss'
 
-function getPasswordCriteria(pw = '') {
+interface PasswordCriteria {
+  lengthOK: boolean
+  lowerOK: boolean
+  upperOK: boolean
+  digitOK: boolean
+  symbolOK: boolean
+  noSpaceOK: boolean
+}
+
+function getPasswordCriteria(pw: string = ''): PasswordCriteria {
   return {
     lengthOK: pw.length >= PASSWORD_MIN,
     lowerOK: /[a-z]/.test(pw),
@@ -15,7 +23,12 @@ function getPasswordCriteria(pw = '') {
   }
 }
 
-function ChecklistItem({ ok, children }) {
+interface ChecklistItemProps {
+  ok: boolean
+  children: React.ReactNode
+}
+
+function ChecklistItem({ ok, children }: ChecklistItemProps) {
   return (
     <li
       className={`password-checklist__item ${ok ? 'is-ok' : 'is-ko'}`}
@@ -29,7 +42,11 @@ function ChecklistItem({ ok, children }) {
   )
 }
 
-function Checklist({ criteria }) {
+interface ChecklistProps {
+  criteria: PasswordCriteria
+}
+
+function Checklist({ criteria }: ChecklistProps) {
   const { t } = useI18n()
 
   return (
@@ -63,6 +80,14 @@ function Checklist({ criteria }) {
   )
 }
 
+interface PasswordChecklistProps {
+  password?: string
+  collapsible?: boolean
+  defaultOpen?: boolean
+  toggleLabel?: string
+  id?: string
+}
+
 /**
  * PasswordChecklist
  * Props:
@@ -78,7 +103,7 @@ export default function PasswordChecklist({
   defaultOpen = false,
   toggleLabel,
   id,
-}) {
+}: PasswordChecklistProps) {
   const { t } = useI18n()
   const [open, setOpen] = useState(defaultOpen)
   const autoId = useId()
@@ -118,31 +143,4 @@ export default function PasswordChecklist({
       </div>
     </>
   )
-}
-
-// PropTypes pour le composant principal
-PasswordChecklist.propTypes = {
-  password: PropTypes.string,
-  collapsible: PropTypes.bool,
-  defaultOpen: PropTypes.bool,
-  toggleLabel: PropTypes.string,
-  id: PropTypes.string,
-}
-
-// PropTypes pour le composant Checklist
-Checklist.propTypes = {
-  criteria: PropTypes.shape({
-    lengthOK: PropTypes.bool.isRequired,
-    lowerOK: PropTypes.bool.isRequired,
-    upperOK: PropTypes.bool.isRequired,
-    digitOK: PropTypes.bool.isRequired,
-    symbolOK: PropTypes.bool.isRequired,
-    noSpaceOK: PropTypes.bool.isRequired,
-  }).isRequired,
-}
-
-// PropTypes pour le composant ChecklistItem
-ChecklistItem.propTypes = {
-  ok: PropTypes.bool.isRequired,
-  children: PropTypes.node.isRequired,
 }
