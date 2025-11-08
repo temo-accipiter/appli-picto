@@ -84,19 +84,37 @@
   cursor: pointer;
   text-align: left;
   font-size: 15px;
-  &:hover,
+  &:hover {
+    background: #f3f6ff;
+  }
+
+  // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
     background: #f3f6ff;
-    outline: none;
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
   }
-  &.danger:hover,
-  &.danger:focus-visible {
+
+  &.danger:hover {
     background: #fff5f5;
   }
-  &.admin:hover,
+
+  &.danger:focus-visible {
+    background: #fff5f5;
+    outline: 2px solid #dc2626;
+    outline-offset: -2px;
+  }
+
+  &.admin:hover {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
   &.admin:focus-visible {
     background: #fef3c7;
     color: #92400e;
+    outline: 2px solid #d97706;
+    outline-offset: -2px;
   }
   .icon {
     width: 18px;

@@ -12,9 +12,15 @@ export default function GlobalLoader({
   message = 'Chargement...',
 }: GlobalLoaderProps) {
   return (
-    <div className="global-loader-overlay">
+    <div
+      className="global-loader-overlay"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+      aria-label="Chargement en cours"
+    >
       <div className="global-loader-content">
-        <div className="loader-bounce">
+        <div className="loader-bounce" aria-hidden="true">
           <div className="dot" />
           <div className="dot" />
           <div className="dot" />

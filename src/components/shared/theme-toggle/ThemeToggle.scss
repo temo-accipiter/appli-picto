@@ -16,9 +16,15 @@
 
   @include transition-smooth;
 
-  @include on-event {
+  &:hover {
     background-color: var(--color-hover);
     transform: scale(1.1);
+  }
+
+  // WCAG 2.4.7 - Focus visible accessible
+  &:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   svg {

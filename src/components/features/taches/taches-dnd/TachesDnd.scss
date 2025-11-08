@@ -59,9 +59,11 @@
     z-index: 2;
   }
 
-  // ✅ Supprimer focus persistant
-  &:focus {
-    outline: none;
+  // ✅ Focus visible accessible (WCAG 2.4.7)
+  &:focus-visible {
+    outline: 3px solid $color-accent;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 6px rgba($color-accent, 0.2);
   }
 
   span {

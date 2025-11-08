@@ -26,10 +26,16 @@
       padding: 0;
       cursor: pointer;
 
-      &:hover,
+      &:hover {
+        text-decoration: underline;
+      }
+
+      // WCAG 2.4.7 - Focus visible accessible
       &:focus-visible {
         text-decoration: underline;
-        outline: none;
+        outline: 2px solid currentColor;
+        outline-offset: 3px;
+        border-radius: 2px;
       }
     }
   }

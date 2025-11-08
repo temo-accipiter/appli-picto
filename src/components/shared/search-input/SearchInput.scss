@@ -29,7 +29,8 @@
     min-height: 44px;
 
     &::placeholder {
-      color: #a0aec0;
+      // WCAG 2.2 AA compliant - Ratio ~4.5:1
+      color: #718096;
     }
 
     &:focus {

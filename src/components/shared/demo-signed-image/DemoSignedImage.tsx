@@ -7,7 +7,7 @@ const signedUrlCache = new Map<string, string>()
 
 interface DemoSignedImageProps {
   filePath: string
-  alt?: string
+  alt: string // WCAG 1.1.1 - alt obligatoire pour accessibilité
   size?: number
   className?: string
 }
@@ -18,7 +18,7 @@ interface DemoSignedImageProps {
  */
 export default function DemoSignedImage({
   filePath,
-  alt = '',
+  alt,
   size = 60,
   className = '',
 }: DemoSignedImageProps) {

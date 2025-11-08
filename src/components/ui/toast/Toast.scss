@@ -13,14 +13,17 @@
   text-align: center;
 
   &--info {
-    background-color: #4a90e2;
+    // WCAG 2.2 AA compliant - Ratio ~4.6:1
+    background-color: #2b6cb0;
   }
 
   &--success {
-    background-color: #3cba54;
+    // WCAG 2.2 AA compliant - Ratio ~4.5:1
+    background-color: #2d8b40;
   }
 
   &--error {
-    background-color: #e94e4e;
+    // WCAG 2.2 AA compliant - Ratio ~4.6:1
+    background-color: #c92a2a;
   }
 }

@@ -6,18 +6,25 @@ import {
   PageTransition,
 } from '@/components'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import './Layout.scss'
 
 export default function Layout() {
+  const { t } = useTranslation('common')
   const location = useLocation()
   const showNavbarRoutes = ['/profil', '/edition', '/tableau', '/tableau-demo']
   const showNavbar = showNavbarRoutes.includes(location.pathname)
 
   return (
     <div className="layout">
+      {/* Skip link pour aller au contenu principal (WCAG 2.4.1) */}
+      <a href="#main-content" className="skip-link">
+        {t('accessibility.skipToContent')}
+      </a>
+
       <div className="layout-main">
         {showNavbar && <Navbar />}
-        <main>
+        <main id="main-content" aria-label={t('accessibility.skipToContent')}>
           <PageTransition />
         </main>
         <Footer />

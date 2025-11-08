@@ -12,14 +12,14 @@ import './SignedImage.scss'
 
 interface SignedImageProps {
   filePath?: string
-  alt?: string
+  alt: string // WCAG 1.1.1 - alt obligatoire pour accessibilité
   size?: number
   bucket?: string
 }
 
 export default function SignedImage({
   filePath,
-  alt = '',
+  alt,
   size = 60,
   bucket = 'images',
 }: SignedImageProps) {

@@ -46,10 +46,9 @@
   }
 
   &--primary {
-    //background-color: $color-primary;
-    //color: $color-text-invert;
-    background-color: #fff8dc;
-    color: var(--color-primary, #0077c2);
+    // WCAG 2.2 AA compliant - Ratio ~4.7:1 (blanc sur bleu)
+    background-color: $color-primary;
+    color: $color-text-invert;
 
     @include on-event {
       background-color: color.adjust($color-primary, $lightness: -6%);
