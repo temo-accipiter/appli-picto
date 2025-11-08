@@ -1,8 +1,12 @@
+import { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks'
-import PropTypes from 'prop-types'
 
-export default function ProtectedRoute({ children }) {
+interface ProtectedRouteProps {
+  children: ReactNode
+}
+
+export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user } = useAuth()
   const location = useLocation()
 
@@ -14,8 +18,4 @@ export default function ProtectedRoute({ children }) {
   }
 
   return children
-}
-
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
 }
