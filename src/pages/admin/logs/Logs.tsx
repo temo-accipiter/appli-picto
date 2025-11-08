@@ -1,4 +1,4 @@
-// src/pages/admin/logs/Logs.jsx
+// src/pages/admin/logs/Logs.tsx
 import { Button, FloatingPencil } from '@/components'
 import { usePermissions, useToast } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
@@ -6,14 +6,24 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Logs.scss'
 
+interface SubscriptionLog {
+  id: string
+  timestamp: string
+  user_id: string | null
+  event_type: string
+  details: Record<string, unknown>
+}
+
+type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'
+
 export default function Logs() {
   const { role: _role, isAdmin, loading: permissionsLoading } = usePermissions()
   const { show: showToast } = useToast()
   const navigate = useNavigate()
 
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState<SubscriptionLog[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState<FilterType>('all')
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
@@ -60,14 +70,14 @@ export default function Logs() {
         }
 
         if (reset) {
-          setLogs(data || [])
+          setLogs((data as SubscriptionLog[]) || [])
           setPage(0)
         } else {
-          setLogs(prev => [...prev, ...(data || [])])
+          setLogs(prev => [...prev, ...((data as SubscriptionLog[]) || [])])
         }
 
         setTotalCount(count || 0)
-        setHasMore((data || []).length === ITEMS_PER_PAGE)
+        setHasMore(((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE)
       } catch (error) {
         console.error('Erreur chargement logs:', error)
         showToast('Erreur lors du chargement des logs', 'error')
@@ -84,7 +94,7 @@ export default function Logs() {
     }
   }, [isAdmin, loadLogs])
 
-  const handleFilterChange = newFilter => {
+  const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter)
     loadLogs(true)
   }
@@ -95,7 +105,7 @@ export default function Logs() {
     loadLogs()
   }
 
-  const formatTimestamp = timestamp => {
+  const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
@@ -106,14 +116,14 @@ export default function Logs() {
     })
   }
 
-  const formatEventType = eventType => {
+  const formatEventType = (eventType: string) => {
     return eventType
       .replace(/\./g, ' → ')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase())
   }
 
-  const getUserInfo = userId => {
+  const getUserInfo = (userId: string | null) => {
     if (!userId) return 'Système'
     return userId.slice(0, 8) + '...'
   }
