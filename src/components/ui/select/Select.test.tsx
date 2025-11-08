@@ -2,7 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import Select from './Select'
 
-const mockOptions = [
+interface MockOption {
+  value: string
+  label: string
+}
+
+const mockOptions: MockOption[] = [
   { value: 'option1', label: 'Option 1' },
   { value: 'option2', label: 'Option 2' },
   { value: 'option3', label: 'Option 3' },
