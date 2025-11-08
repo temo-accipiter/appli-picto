@@ -1,8 +1,115 @@
-// src/data/legalConfig.js
+// src/data/legalConfig.ts
 // Configuration centralisée pour toutes les informations légales
 // À compléter avec vos vraies informations
 
-export const LEGAL_CONFIG = {
+interface CompanyInfo {
+  name: string
+  legalForm: string
+  siren: string
+  address: {
+    street: string
+    city: string
+    country: string
+  }
+  fullAddress: string
+}
+
+interface ContactInfo {
+  general: string
+  support: string
+  dpo: {
+    name: string
+    email: string
+  }
+}
+
+interface PublicationInfo {
+  responsible: string
+  email: string
+}
+
+interface DevelopmentInfo {
+  team: string
+  maintenance: string
+}
+
+interface MediationInfo {
+  name: string
+  url: string
+  contact: string
+}
+
+interface HostingInfo {
+  provider: string
+  company: string
+  website: string
+  location: string
+}
+
+interface UrlsInfo {
+  main: string
+  rgpd: string
+  cookies: string
+  privacy: string
+  terms: string
+  sales: string
+}
+
+interface VersionInfo {
+  current: string
+  lastUpdate: string
+}
+
+interface TransferInfo {
+  provider: string
+  country: string
+  legalBasis: string
+  safeguards: string[]
+  risks: string[]
+  userRights: string[]
+  dataTypes: string[]
+  retentionPeriod: string
+  optOutMechanism: string
+}
+
+interface TransfersInfo {
+  googleAnalytics: TransferInfo
+  stripe: TransferInfo
+  supabase: TransferInfo
+}
+
+interface SecurityInfo {
+  dataEncryption: {
+    inTransit: string
+    atRest: string
+    authentication: string
+  }
+  accessControl: {
+    principle: string
+    authentication: string
+    authorization: string
+  }
+  monitoring: {
+    logs: string
+    alerts: string
+    audits: string
+  }
+}
+
+interface LegalConfig {
+  company: CompanyInfo
+  contact: ContactInfo
+  publication: PublicationInfo
+  development: DevelopmentInfo
+  mediation: MediationInfo
+  hosting: HostingInfo
+  urls: UrlsInfo
+  version: VersionInfo
+  transfers: TransfersInfo
+  security: SecurityInfo
+}
+
+export const LEGAL_CONFIG: LegalConfig = {
   // Informations de l'entreprise
   company: {
     name: 'Appli Picto',
@@ -190,7 +297,7 @@ export const LEGAL_CONFIG = {
 }
 
 // Fonction utilitaire pour remplacer les placeholders dans le texte
-export function replaceLegalPlaceholders(text) {
+export function replaceLegalPlaceholders(text: string): string {
   if (!text) return text
 
   return (
@@ -274,14 +381,27 @@ export function replaceLegalPlaceholders(text) {
 // === FONCTIONS UTILITAIRES POUR LA CONFORMITÉ ===
 
 // Fonction pour obtenir les informations sur les transferts hors UE
-export function getTransfersInfo() {
+export function getTransfersInfo(): TransfersInfo {
   return LEGAL_CONFIG.transfers
 }
 
+interface ComplianceDetail {
+  provider: string
+  country: string
+  compliant: boolean
+  legalBasis: string
+}
+
+interface ComplianceReport {
+  total: number
+  compliant: number
+  details: ComplianceDetail[]
+}
+
 // Fonction pour vérifier la conformité des transferts
-export function checkTransfersCompliance() {
+export function checkTransfersCompliance(): ComplianceReport {
   const transfers = Object.values(LEGAL_CONFIG.transfers)
-  const compliance = {
+  const compliance: ComplianceReport = {
     total: transfers.length,
     compliant: 0,
     details: [],
@@ -305,8 +425,16 @@ export function checkTransfersCompliance() {
   return compliance
 }
 
+interface FullComplianceReport {
+  company: CompanyInfo
+  transfers: TransfersInfo
+  compliance: ComplianceReport
+  security: SecurityInfo
+  lastUpdate: string
+}
+
 // Fonction pour générer un rapport de conformité
-export function generateComplianceReport() {
+export function generateComplianceReport(): FullComplianceReport {
   return {
     company: LEGAL_CONFIG.company,
     transfers: getTransfersInfo(),

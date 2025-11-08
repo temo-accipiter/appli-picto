@@ -1,6 +1,6 @@
 // couleurs des lignes de metro
 
-export const COULEURS_LIGNES = {
+export const COULEURS_LIGNES: Record<number, string> = {
   1: '#FFBE00', // Jaune
   2: '#0055C8',
   3: '#6E6E00',

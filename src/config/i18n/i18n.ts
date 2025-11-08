@@ -10,7 +10,7 @@
  *   • Détecte et sauvegarde la langue préférée de l'utilisateur.
  *
  * Usage :
- *   Importer ce fichier au tout début de l'application (ex. dans main.jsx) :
+ *   Importer ce fichier au tout début de l'application (ex. dans main.tsx) :
  *     import '@/config/i18n/i18n'
  *
  * Fichiers JSON attendus :
@@ -22,18 +22,20 @@ import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import Backend from 'i18next-http-backend'
 
+type SupportedLanguage = 'fr' | 'en'
+
 // Détection de la langue préférée (localStorage > navigateur > fallback)
-const getInitialLanguage = () => {
+const getInitialLanguage = (): SupportedLanguage => {
   // 1. Vérifier le localStorage
   const savedLang = localStorage.getItem('lang')
   if (savedLang && ['fr', 'en'].includes(savedLang)) {
-    return savedLang
+    return savedLang as SupportedLanguage
   }
 
   // 2. Détecter la langue du navigateur
   const browserLang = navigator.language.split('-')[0]
   if (['fr', 'en'].includes(browserLang)) {
-    return browserLang
+    return browserLang as SupportedLanguage
   }
 
   // 3. Fallback sur le français
@@ -72,7 +74,7 @@ if (typeof document !== 'undefined') {
 }
 
 // Sauvegarder la langue choisie dans le localStorage
-i18n.on('languageChanged', lng => {
+i18n.on('languageChanged', (lng: string) => {
   localStorage.setItem('lang', lng)
   // Mettre à jour l'attribut lang de la page pour l'accessibilité et le calendrier
   document.documentElement.lang = lng

@@ -1,30 +1,31 @@
-// src/analytics/routePageViews.js
+// src/analytics/routePageViews.ts
 import { hasConsent } from '@/utils/consent'
 
 const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()
-const isValidGA = id => /^G-[A-Z0-9]{6,}$/.test(id)
+const isValidGA = (id: string): boolean => /^G-[A-Z0-9]{6,}$/.test(id)
 
-let lastHref = null
-let debounce = null
+let lastHref: string | null = null
+let debounce: ReturnType<typeof setTimeout> | null = null
 let fetchPatched = false
-const sentForHref = new Set() // anti-doublons auto-événements
+const sentForHref = new Set<string>() // anti-doublons auto-événements
 
-// Map Price → plan (complète ici si tu ajoutes d’autres offres)
-const PRICE_MAP = {
+// Map Price → plan (complète ici si tu ajoutes d'autres offres)
+const PRICE_MAP: Record<string, string> = {
   [(import.meta.env.VITE_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
   // 'price_ABCDEF...': 'monthly_pro',
 }
-const priceIdToPlanName = priceId => {
+
+const priceIdToPlanName = (priceId: string | undefined): string | undefined => {
   const k = (priceId || '').trim()
   return PRICE_MAP[k] || (k ? `price:${k.slice(0, 6)}…` : undefined)
 }
 
-const isReady = () =>
+const isReady = (): boolean =>
   isValidGA(GA_ID) &&
   hasConsent('analytics') &&
   typeof window.gtag === 'function'
 
-function sendPageView() {
+function sendPageView(): void {
   if (!isReady()) return
   const href = location.href
   if (href === lastHref) return
@@ -37,7 +38,7 @@ function sendPageView() {
   })
 }
 
-function sendAutoEvents() {
+function sendAutoEvents(): void {
   if (!isReady()) return
   const href = location.href
   if (sentForHref.has(href)) return
@@ -65,26 +66,28 @@ function sendAutoEvents() {
   sentForHref.add(href)
 }
 
-function onRouteChange() {
-  clearTimeout(debounce)
+function onRouteChange(): void {
+  if (debounce) clearTimeout(debounce)
   debounce = setTimeout(() => {
     sendPageView()
     sendAutoEvents()
   }, 60)
 }
 
-function patchHistory() {
-  if (window.__routePV_patched) return
-  window.__routePV_patched = true
+function patchHistory(): void {
+  if ((window as any).__routePV_patched) return
+  ;(window as any).__routePV_patched = true
   lastHref = location.href
 
   const _push = history.pushState
   const _replace = history.replaceState
-  history.pushState = function (...args) {
+  history.pushState = function (...args: Parameters<typeof history.pushState>) {
     _push.apply(this, args)
     onRouteChange()
   }
-  history.replaceState = function (...args) {
+  history.replaceState = function (
+    ...args: Parameters<typeof history.replaceState>
+  ) {
     _replace.apply(this, args)
     onRouteChange()
   }
@@ -92,13 +95,13 @@ function patchHistory() {
   addEventListener('hashchange', onRouteChange)
 }
 
-function patchFetchForCheckout() {
+function patchFetchForCheckout(): void {
   if (fetchPatched || typeof window.fetch !== 'function') return
   fetchPatched = true
   const orig = window.fetch
-  window.fetch = async (...args) => {
+  window.fetch = async (...args: Parameters<typeof window.fetch>) => {
     const [input, init] = args
-    const url = typeof input === 'string' ? input : input?.url || ''
+    const url = typeof input === 'string' ? input : (input as Request)?.url || ''
     const method = (init?.method || 'GET').toUpperCase()
     const res = await orig(...args)
 
@@ -110,7 +113,7 @@ function patchFetchForCheckout() {
         res?.ok &&
         isReady()
       ) {
-        let priceId
+        let priceId: string | undefined
         try {
           if (typeof init?.body === 'string') {
             const j = JSON.parse(init.body)
@@ -119,7 +122,8 @@ function patchFetchForCheckout() {
             priceId =
               init.body.get('priceId') ||
               init.body.get('price_id') ||
-              init.body.get('price')
+              init.body.get('price') ||
+              undefined
           }
         } catch {
           // Ignore parsing errors
@@ -142,13 +146,22 @@ function patchFetchForCheckout() {
   }
 }
 
-function boot() {
+interface ConsentChangedEvent extends CustomEvent {
+  detail?: {
+    choices?: {
+      analytics?: boolean
+    }
+  }
+}
+
+function boot(): void {
   patchHistory()
   patchFetchForCheckout()
-  // Le 1er page_view est déjà envoyé à l’init GA4 → ici seulement auto-événements initiaux
+  // Le 1er page_view est déjà envoyé à l'init GA4 → ici seulement auto-événements initiaux
   sendAutoEvents()
-  addEventListener('consent:changed', e => {
-    if (e?.detail?.choices?.analytics) {
+  addEventListener('consent:changed', (e: Event) => {
+    const event = e as ConsentChangedEvent
+    if (event?.detail?.choices?.analytics) {
       setTimeout(() => {
         sendPageView()
         sendAutoEvents()
