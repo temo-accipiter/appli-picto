@@ -2,11 +2,28 @@ import { getPermissionHistory } from '@/utils/permissions-api'
 import { Clock, Edit, History, Plus, Trash2, User } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
+type ChangeType = 'INSERT' | 'UPDATE' | 'DELETE'
+type TableName = 'roles' | 'features' | 'role_permissions' | 'user_roles'
+
+interface HistoryItem {
+  id: string
+  table_name: TableName
+  change_type: ChangeType
+  changed_at: string
+  changed_by: string | null
+  user_pseudo?: string | null
+  old_values: Record<string, any> | null
+  new_values: Record<string, any> | null
+}
+
+type ChangeTypeFilter = 'all' | ChangeType
+type TableFilter = 'all' | TableName
+
 export default function HistoryTab() {
-  const [history, setHistory] = useState([])
+  const [history, setHistory] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [changeTypeFilter, setChangeTypeFilter] = useState('all')
-  const [tableFilter, setTableFilter] = useState('all')
+  const [changeTypeFilter, setChangeTypeFilter] = useState<ChangeTypeFilter>('all')
+  const [tableFilter, setTableFilter] = useState<TableFilter>('all')
   const [limit, setLimit] = useState(50)
 
   // ✅ Déclarer loadHistory AVANT useEffect pour éviter la Temporal Dead Zone
@@ -33,7 +50,7 @@ export default function HistoryTab() {
     loadHistory()
   }, [loadHistory])
 
-  const getChangeTypeIcon = changeType => {
+  const getChangeTypeIcon = (changeType: ChangeType) => {
     switch (changeType) {
       case 'INSERT':
         return <Plus size={16} className="text-green-500" />
@@ -46,7 +63,7 @@ export default function HistoryTab() {
     }
   }
 
-  const getChangeTypeLabel = changeType => {
+  const getChangeTypeLabel = (changeType: ChangeType): string => {
     switch (changeType) {
       case 'INSERT':
         return 'Création'
@@ -59,37 +76,37 @@ export default function HistoryTab() {
     }
   }
 
-  const getTableDisplayName = tableName => {
-    const tableNames = {
+  const getTableDisplayName = (tableName: string): string => {
+    const tableNames: Record<TableName, string> = {
       roles: 'Rôles',
       features: 'Fonctionnalités',
       role_permissions: 'Permissions des rôles',
       user_roles: 'Attributions de rôles',
     }
-    return tableNames[tableName] || tableName
+    return tableNames[tableName as TableName] || tableName
   }
 
-  const getTableIcon = tableName => {
-    const icons = {
+  const getTableIcon = (tableName: string): string => {
+    const icons: Record<TableName, string> = {
       roles: '👤',
       features: '⚙️',
       role_permissions: '🔐',
       user_roles: '🔗',
     }
-    return icons[tableName] || '📋'
+    return icons[tableName as TableName] || '📋'
   }
 
-  const getTableColor = tableName => {
-    const colors = {
+  const getTableColor = (tableName: string): string => {
+    const colors: Record<TableName, string> = {
       roles: '#3B82F6', // Bleu
       features: '#10B981', // Vert
       role_permissions: '#F59E0B', // Orange
       user_roles: '#8B5CF6', // Violet
     }
-    return colors[tableName] || '#6B7280'
+    return colors[tableName as TableName] || '#6B7280'
   }
 
-  const formatDate = dateString => {
+  const formatDate = (dateString: string): string => {
     const date = new Date(dateString)
     return date.toLocaleString('fr-FR', {
       day: '2-digit',
@@ -107,7 +124,7 @@ export default function HistoryTab() {
     return changeTypeMatch && tableMatch
   })
 
-  const getChangeDescription = item => {
+  const getChangeDescription = (item: HistoryItem): string => {
     const tableName = getTableDisplayName(item.table_name)
     const changeType = getChangeTypeLabel(item.change_type)
 
@@ -150,7 +167,7 @@ export default function HistoryTab() {
             <select
               id="change-type-filter"
               value={changeTypeFilter}
-              onChange={e => setChangeTypeFilter(e.target.value)}
+              onChange={e => setChangeTypeFilter(e.target.value as ChangeTypeFilter)}
               className="form-select"
             >
               <option value="all">Tous les types</option>
@@ -165,7 +182,7 @@ export default function HistoryTab() {
             <select
               id="table-filter"
               value={tableFilter}
-              onChange={e => setTableFilter(e.target.value)}
+              onChange={e => setTableFilter(e.target.value as TableFilter)}
               className="form-select"
             >
               <option value="all">Tous les éléments</option>

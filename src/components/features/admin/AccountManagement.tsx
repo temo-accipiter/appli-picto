@@ -1,24 +1,56 @@
-// src/components/admin/AccountManagement.jsx
+// src/components/admin/AccountManagement.tsx
 import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
-import PropTypes from 'prop-types'
 import { useEffect, useState, useMemo } from 'react'
 import { useDebounce } from '@/hooks'
 import './AccountManagement.scss'
+
+type AccountStatus = 'active' | 'suspended' | 'deletion_scheduled' | 'pending_verification'
+
+interface UserRole {
+  is_active: boolean
+  roles: {
+    name: string
+    display_name: string
+    priority: number
+  }
+}
+
+interface User {
+  id: string
+  pseudo?: string
+  email: string
+  created_at: string
+  account_status: AccountStatus
+  avatar_url?: string
+  user_roles: UserRole[]
+  role: string
+  roleDisplay: string
+}
+
+interface StatusDisplay {
+  label: string
+  color: 'success' | 'error' | 'warning' | 'info' | 'default'
+  icon: string
+}
+
+interface AccountManagementProps {
+  className?: string
+}
 
 /**
  * Composant de gestion des comptes pour les administrateurs
  * Permet de visualiser et modifier les états des comptes utilisateurs
  */
-export default function AccountManagement({ className = '' }) {
+export default function AccountManagement({ className = '' }: AccountManagementProps) {
   const { can } = usePermissions()
 
   const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState([])
-  const [filter, setFilter] = useState('all')
+  const [users, setUsers] = useState<User[]>([])
+  const [filter, setFilter] = useState<'all' | AccountStatus>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
   // Charger les utilisateurs
@@ -43,8 +75,8 @@ export default function AccountManagement({ className = '' }) {
         if (error) throw error
 
         // Traiter les données pour avoir un format plus simple
-        const processedUsers = (data || []).map(user => {
-          const activeRole = user.user_roles.find(ur => ur.is_active)
+        const processedUsers: User[] = (data || []).map(user => {
+          const activeRole = user.user_roles.find((ur: UserRole) => ur.is_active)
           return {
             ...user,
             role: activeRole?.roles?.name || 'visitor',
@@ -79,7 +111,7 @@ export default function AccountManagement({ className = '' }) {
   }, [users, filter, debouncedSearchTerm])
 
   // Changer l'état d'un compte
-  const changeAccountStatus = async (userId, newStatus, reason = '') => {
+  const changeAccountStatus = async (userId: string, newStatus: AccountStatus, reason = '') => {
     setActionLoading(true)
     try {
       const { error } = await supabase.functions.invoke(
@@ -111,8 +143,8 @@ export default function AccountManagement({ className = '' }) {
 
       if (refreshError) throw refreshError
 
-      const processedUsers = (data || []).map(user => {
-        const activeRole = user.user_roles.find(ur => ur.is_active)
+      const processedUsers: User[] = (data || []).map(user => {
+        const activeRole = user.user_roles.find((ur: UserRole) => ur.is_active)
         return {
           ...user,
           role: activeRole?.roles?.name || 'visitor',
@@ -130,7 +162,7 @@ export default function AccountManagement({ className = '' }) {
   }
 
   // Obtenir l'affichage de l'état
-  const getStatusDisplay = status => {
+  const getStatusDisplay = (status: AccountStatus): StatusDisplay => {
     switch (status) {
       case 'active':
         return { label: 'Actif', color: 'success', icon: '✅' }
@@ -181,7 +213,7 @@ export default function AccountManagement({ className = '' }) {
         </div>
 
         <div className="filter-select">
-          <select value={filter} onChange={e => setFilter(e.target.value)}>
+          <select value={filter} onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}>
             <option value="all">Tous les états</option>
             <option value="active">Actifs</option>
             <option value="suspended">Suspendus</option>
@@ -339,8 +371,4 @@ export default function AccountManagement({ className = '' }) {
       )}
     </div>
   )
-}
-
-AccountManagement.propTypes = {
-  className: PropTypes.string,
 }

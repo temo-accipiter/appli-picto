@@ -1,22 +1,54 @@
-// src/components/admin/QuotaManagement.jsx
+// src/components/admin/QuotaManagement.tsx
 import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
-import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import './QuotaManagement.scss'
+
+interface Role {
+  id: string
+  name: string
+  display_name: string
+  priority: number
+}
+
+interface Quota {
+  id: string
+  role_id: string
+  quota_type: string
+  quota_limit: number
+  quota_period: string
+  roles: {
+    name: string
+    display_name: string
+  }
+}
+
+interface QuotaFormData {
+  quota_type: string
+  quota_limit: string
+  quota_period: string
+}
+
+interface QuotasByRole {
+  [roleName: string]: Quota[]
+}
+
+interface QuotaManagementProps {
+  className?: string
+}
 
 /**
  * Composant de gestion des quotas pour les administrateurs
  * Permet de visualiser et modifier les quotas des rôles
  */
-export default function QuotaManagement({ className = '' }) {
+export default function QuotaManagement({ className = '' }: QuotaManagementProps) {
   const { can } = usePermissions()
 
   const [loading, setLoading] = useState(true)
-  const [roles, setRoles] = useState([])
-  const [quotas, setQuotas] = useState([])
-  const [editingQuota, setEditingQuota] = useState(null)
-  const [formData, setFormData] = useState({
+  const [roles, setRoles] = useState<Role[]>([])
+  const [quotas, setQuotas] = useState<Quota[]>([])
+  const [editingQuota, setEditingQuota] = useState<Quota | null>(null)
+  const [formData, setFormData] = useState<QuotaFormData>({
     quota_type: '',
     quota_limit: '',
     quota_period: 'monthly',
@@ -62,17 +94,17 @@ export default function QuotaManagement({ className = '' }) {
   }, [can])
 
   // Grouper les quotas par rôle
-  const quotasByRole = quotas.reduce((acc, quota) => {
+  const quotasByRole: QuotasByRole = quotas.reduce((acc, quota) => {
     const roleName = quota.roles.name
     if (!acc[roleName]) {
       acc[roleName] = []
     }
     acc[roleName].push(quota)
     return acc
-  }, {})
+  }, {} as QuotasByRole)
 
   // Gérer l'édition d'un quota
-  const handleEditQuota = quota => {
+  const handleEditQuota = (quota: Quota) => {
     setEditingQuota(quota)
     setFormData({
       quota_type: quota.quota_type,
@@ -128,7 +160,7 @@ export default function QuotaManagement({ className = '' }) {
 
   // Créer un nouveau quota
   const _handleCreateQuota = async () => {
-    if (!formData.quota_type || !formData.quota_limit) return
+    if (!formData.quota_type || !formData.quota_limit || !editingQuota) return
 
     try {
       const { error } = await supabase.from('role_quotas').insert([
@@ -276,8 +308,4 @@ export default function QuotaManagement({ className = '' }) {
       )}
     </div>
   )
-}
-
-QuotaManagement.propTypes = {
-  className: PropTypes.string,
 }

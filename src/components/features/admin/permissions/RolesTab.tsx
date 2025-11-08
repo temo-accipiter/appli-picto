@@ -20,7 +20,33 @@ import {
   ToggleRight,
   Trash2,
 } from 'lucide-react'
-import PropTypes from 'prop-types'
+
+interface Role {
+  id: string
+  name: string
+  display_name: string
+  description?: string
+  priority: number
+  is_active: boolean
+}
+
+interface NewRole {
+  name: string
+  display_name: string
+  description: string
+}
+
+interface RolesTabProps {
+  roles: Role[]
+  newRole: NewRole
+  setNewRole: (role: NewRole) => void
+  editingRole: string | null
+  setEditingRole: (roleId: string | null) => void
+  handleCreateRole: () => void | Promise<void>
+  handleUpdateRole: (roleId: string, updates: Partial<Role>) => void | Promise<void>
+  handleDeleteRole: (roleId: string) => void | Promise<void>
+  handleToggleRole: (roleId: string, isActive: boolean) => void | Promise<void>
+}
 
 export default function RolesTab({
   roles,
@@ -32,7 +58,7 @@ export default function RolesTab({
   handleUpdateRole,
   handleDeleteRole,
   handleToggleRole,
-}) {
+}: RolesTabProps) {
   // Séparer les rôles système des rôles personnalisés
   const systemRoles = roles.filter(role => isSystemRole(role.name))
   const customRoles = roles.filter(role => !isSystemRole(role.name))
@@ -178,7 +204,6 @@ export default function RolesTab({
                       value={role.display_name}
                       onChange={value => {
                         // Mettre à jour temporairement l'état local
-                        const _updatedRole = { ...role, display_name: value }
                         setEditingRole(role.id)
                         // Ici on pourrait mettre à jour un état temporaire
                       }}
@@ -257,16 +282,4 @@ export default function RolesTab({
       </div>
     </div>
   )
-}
-
-RolesTab.propTypes = {
-  roles: PropTypes.array,
-  newRole: PropTypes.object,
-  setNewRole: PropTypes.func,
-  editingRole: PropTypes.string,
-  setEditingRole: PropTypes.func,
-  handleCreateRole: PropTypes.func,
-  handleUpdateRole: PropTypes.func,
-  handleDeleteRole: PropTypes.func,
-  handleToggleRole: PropTypes.func,
 }

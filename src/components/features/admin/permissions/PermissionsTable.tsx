@@ -1,7 +1,48 @@
 import { ButtonDelete } from '@/components'
 import { Edit, Save, Settings, X } from 'lucide-react'
-import PropTypes from 'prop-types'
 import { getPermissionDescription } from './permissionUtils'
+
+interface Feature {
+  id: string
+  name: string
+  display_name: string
+  description?: string
+}
+
+interface Role {
+  id: string
+  name: string
+  display_name: string
+  description?: string
+  priority: number
+  is_active?: boolean
+}
+
+interface Permission {
+  id: string
+  role_id: string
+  feature_id: string
+  can_access: boolean
+}
+
+interface PermissionsTableProps {
+  features: Feature[]
+  manageableRoles: Role[]
+  permissions: Permission[]
+  tempPermissions: Permission[]
+  editingPermissions: string | null
+  setEditingPermissions: (roleId: string | null) => void
+  handlePermissionChange: (
+    roleId: string,
+    featureId: string,
+    field: string,
+    value: boolean
+  ) => void
+  handleSavePermissions: (roleId: string) => void | Promise<void>
+  handleDeleteFeature: (feature: Feature) => void | Promise<void>
+  handleEditFeature: (feature: Feature) => void
+  initializeTempPermissions: (roleId: string) => void
+}
 
 export default function PermissionsTable({
   features,
@@ -15,7 +56,7 @@ export default function PermissionsTable({
   handleDeleteFeature,
   handleEditFeature,
   initializeTempPermissions,
-}) {
+}: PermissionsTableProps) {
   return (
     <div className="permissions-table-container">
       <table className="permissions-table">
@@ -157,18 +198,4 @@ export default function PermissionsTable({
       </table>
     </div>
   )
-}
-
-PermissionsTable.propTypes = {
-  features: PropTypes.array,
-  manageableRoles: PropTypes.array,
-  permissions: PropTypes.array,
-  tempPermissions: PropTypes.object,
-  editingPermissions: PropTypes.bool,
-  setEditingPermissions: PropTypes.func,
-  handlePermissionChange: PropTypes.func,
-  handleSavePermissions: PropTypes.func,
-  handleDeleteFeature: PropTypes.func,
-  handleEditFeature: PropTypes.func,
-  initializeTempPermissions: PropTypes.func,
 }

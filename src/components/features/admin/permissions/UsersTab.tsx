@@ -4,15 +4,61 @@ import {
   assignRoleToUser,
   getUsersWithRoles,
   removeRoleFromUser,
-  getRoles, // ← NEW: pour construire la map name -> id
+  getRoles,
 } from '@/utils/permissions-api'
 import { Crown, Shield, UserMinus, UserPlus, Users } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+interface Role {
+  id: string
+  name: string
+  display_name?: string
+}
+
+interface UserRole {
+  id: string
+  roles: Role
+}
+
+interface User {
+  id: string
+  pseudo?: string
+  email?: string
+  created_at: string
+  last_login?: string
+  is_admin: boolean
+  is_online: boolean
+  account_status: string
+  user_roles: UserRole[]
+}
+
+interface Pagination {
+  page: number
+  totalPages: number
+  total: number
+}
+
+interface Stats {
+  total: number
+  admins: number
+  withRoles: number
+  online: number
+}
+
+interface SelectedUser {
+  id: string
+  userName?: string
+  roleId?: string
+}
+
+interface RolesMap {
+  [key: string]: string
+}
+
 export default function UsersTab() {
-  const [users, setUsers] = useState([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null)
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showRemoveModal, setShowRemoveModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -21,11 +67,11 @@ export default function UsersTab() {
   const [currentPage, setCurrentPage] = useState(1)
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [pagination, setPagination] = useState(null)
-  const [stats, setStats] = useState(null)
+  const [pagination, setPagination] = useState<Pagination | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
 
   // NEW — map des rôles { name -> id } pour traduire 'visitor' / 'abonne' en UUID
-  const [rolesMap, setRolesMap] = useState(null)
+  const [rolesMap, setRolesMap] = useState<RolesMap | null>(null)
 
   // Charger les utilisateurs au montage et quand les filtres changent
   useEffect(() => {
@@ -37,8 +83,8 @@ export default function UsersTab() {
     ;(async () => {
       const { data, error } = await getRoles()
       if (!error && Array.isArray(data)) {
-        const map = Object.create(null)
-        data.forEach(r => {
+        const map: RolesMap = Object.create(null)
+        data.forEach((r: any) => {
           if (r?.name && r?.id) map[r.name] = r.id
         })
         setRolesMap(map)
@@ -72,12 +118,12 @@ export default function UsersTab() {
 
       // Calculer les statistiques
       if (data) {
-        const userStats = {
+        const userStats: Stats = {
           total: paginationData?.total || 0,
-          admins: data.filter(u => u.is_admin).length,
-          withRoles: data.filter(u => u.user_roles && u.user_roles.length > 0)
+          admins: data.filter((u: User) => u.is_admin).length,
+          withRoles: data.filter((u: User) => u.user_roles && u.user_roles.length > 0)
             .length,
-          online: data.filter(u => u.is_online).length,
+          online: data.filter((u: User) => u.is_online).length,
         }
         setStats(userStats)
       }
@@ -88,7 +134,7 @@ export default function UsersTab() {
     }
   }, [currentPage, roleFilter, statusFilter])
 
-  const handleAssignRole = async (userId, roleIdOrName) => {
+  const handleAssignRole = async (userId: string, roleIdOrName: string) => {
     try {
       // 👇 Compat : si on reçoit un NOM ('visitor'/'abonne'), on le mappe vers l'UUID
       let roleId = roleIdOrName
@@ -124,7 +170,7 @@ export default function UsersTab() {
     }
   }
 
-  const handleRemoveRole = async (userId, roleId) => {
+  const handleRemoveRole = async (userId: string, roleId: string) => {
     try {
       const { error } = await removeRoleFromUser(userId, roleId)
 
@@ -146,8 +192,8 @@ export default function UsersTab() {
     }
   }
 
-  const getRoleDisplayName = role => {
-    const roleNames = {
+  const getRoleDisplayName = (role: Role): string => {
+    const roleNames: Record<string, string> = {
       admin: 'Administrateur',
       abonne: 'Abonné',
       visitor: 'Visiteur',
@@ -155,7 +201,7 @@ export default function UsersTab() {
     return roleNames[role.name] || role.display_name || role.name
   }
 
-  const getRoleIcon = roleName => {
+  const getRoleIcon = (roleName: string) => {
     switch (roleName) {
       case 'admin':
         return <Shield size={16} className="text-red-500" />
@@ -528,7 +574,7 @@ export default function UsersTab() {
           isOpen={showRemoveModal}
           onClose={() => setShowRemoveModal(false)}
           onConfirm={() =>
-            handleRemoveRole(selectedUser.id, selectedUser.roleId)
+            handleRemoveRole(selectedUser.id, selectedUser.roleId!)
           }
           confirmLabel="Retirer le rôle"
           cancelLabel="Annuler"
