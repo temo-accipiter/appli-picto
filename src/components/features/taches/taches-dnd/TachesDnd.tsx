@@ -9,14 +9,37 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
+  closestCenter,
+  DragStartEvent,
+  DragEndEvent,
 } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
-import PropTypes from 'prop-types'
 import { memo, useCallback, useMemo, useState } from 'react'
 import './TachesDnd.scss'
+
+interface TacheItem {
+  id: string | number
+  label: string
+  fait: boolean | number
+  imagepath?: string
+  isDemo?: boolean
+}
+
+interface DoneMap {
+  [key: string]: boolean
+  [key: number]: boolean
+}
+
+interface ChecklistTachesDndProps {
+  items: TacheItem[]
+  onReorder: (ids: (string | number)[]) => void
+  onToggle: (id: string | number, newDone: boolean) => void
+  onReset: () => void
+  showResetButton?: boolean
+  doneMap?: DoneMap
+}
 
 const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   items,
@@ -25,9 +48,9 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   onReset,
   showResetButton = true,
   doneMap = {},
-}) {
+}: ChecklistTachesDndProps) {
   const { t } = useI18n()
-  const [activeId, setActiveId] = useState(null)
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
 
   const sensors = useSensors(
@@ -35,12 +58,12 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   )
 
   const handleDragStart = useCallback(
-    ({ active }) => setActiveId(active.id),
+    ({ active }: DragStartEvent) => setActiveId(active.id as string),
     []
   )
 
   const handleDragEnd = useCallback(
-    ({ active, over }) => {
+    ({ active, over }: DragEndEvent) => {
       if (over && active.id !== over.id) {
         const oldIndex = items.findIndex(t => t.id.toString() === active.id)
         const newIndex = items.findIndex(t => t.id.toString() === over.id)
@@ -56,6 +79,10 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
 
   // Mémoïser la liste des IDs pour SortableContext
   const sortableItems = useMemo(() => items.map(t => t.id.toString()), [items])
+
+  const activeTache = activeId
+    ? items.find(t => t.id.toString() === activeId)
+    : undefined
 
   return (
     <DndContext
@@ -78,9 +105,9 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       </SortableContext>
 
       <DragOverlay>
-        {activeId && (
+        {activeId && activeTache && (
           <TableauCard
-            tache={items.find(t => t.id.toString() === activeId)}
+            tache={activeTache}
             done={doneMap[activeId] || false}
             toggleDone={onToggle}
           />
@@ -89,23 +116,21 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
 
       {showResetButton && items.length > 0 && (
         <div className="reset-all-zone">
-          <>
-            <Button
-              label={t('tableau.reset')}
-              onClick={() => setShowConfirm(true)}
-            />
-            <ModalConfirm
-              isOpen={showConfirm}
-              onClose={() => setShowConfirm(false)}
-              confirmLabel={t('actions.confirm')}
-              onConfirm={() => {
-                setShowConfirm(false)
-                onReset()
-              }}
-            >
-              ❗ {t('edition.confirmResetAll')}
-            </ModalConfirm>
-          </>{' '}
+          <Button
+            label={t('tableau.reset')}
+            onClick={() => setShowConfirm(true)}
+          />
+          <ModalConfirm
+            isOpen={showConfirm}
+            onClose={() => setShowConfirm(false)}
+            confirmLabel={t('actions.confirm')}
+            onConfirm={() => {
+              setShowConfirm(false)
+              onReset()
+            }}
+          >
+            ❗ {t('edition.confirmResetAll')}
+          </ModalConfirm>
         </div>
       )}
     </DndContext>
@@ -113,20 +138,5 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
 })
 
 ChecklistTachesDnd.displayName = 'ChecklistTachesDnd'
-
-ChecklistTachesDnd.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      label: PropTypes.string.isRequired,
-      fait: PropTypes.oneOfType([PropTypes.bool, PropTypes.number]).isRequired,
-    })
-  ).isRequired,
-  showResetButton: PropTypes.bool,
-  onReorder: PropTypes.func.isRequired,
-  onToggle: PropTypes.func.isRequired,
-  onReset: PropTypes.func.isRequired,
-  doneMap: PropTypes.object,
-}
 
 export default ChecklistTachesDnd

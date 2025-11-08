@@ -10,9 +10,45 @@ import {
   SignedImage,
 } from '@/components'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import { useState } from 'react'
 import './TachesEdition.scss'
+
+interface CategoryOption {
+  value: string | number
+  label: string
+}
+
+interface TacheItem {
+  id: string | number
+  label: string
+  imagepath?: string
+  aujourdhui?: boolean | number
+  categorie?: string
+}
+
+interface TaskFormData {
+  label: string
+  categorie: string
+  image: File
+}
+
+interface ChecklistTachesEditionProps {
+  items: TacheItem[]
+  categories: CategoryOption[]
+  onToggleAujourdhui: (id: string | number, currentState: boolean | number | undefined) => void
+  onUpdateLabel: (id: string | number, label: string) => void
+  onUpdateCategorie: (id: string | number, categorie: string) => void
+  onDelete: (item: TacheItem) => void
+  resetEdition: () => void
+  onSubmitTask: (data: TaskFormData) => void
+  onAddCategory: (e: React.FormEvent, label: string) => Promise<void>
+  onDeleteCategory: (value: string | number) => Promise<void>
+  filterCategory: string
+  onChangeFilterCategory: (value: string) => void
+  filterDone: boolean
+  onChangeFilterDone: (checked: boolean) => void
+  onShowQuotaModal?: (type: string) => Promise<boolean>
+}
 
 export default function ChecklistTachesEdition({
   items,
@@ -30,19 +66,19 @@ export default function ChecklistTachesEdition({
   filterDone,
   onChangeFilterDone,
   onShowQuotaModal,
-}) {
-  const [errors, setErrors] = useState({})
-  const [drafts, setDrafts] = useState({})
-  const [successIds, setSuccessIds] = useState(new Set())
+}: ChecklistTachesEditionProps) {
+  const [errors, setErrors] = useState<Record<string | number, string>>({})
+  const [drafts, setDrafts] = useState<Record<string | number, string>>({})
+  const [successIds, setSuccessIds] = useState(new Set<string | number>())
   const [showConfirmReset, setShowConfirmReset] = useState(false)
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [newCatLabel, setNewCatLabel] = useState('')
-  const [catASupprimer, setCatASupprimer] = useState(null)
+  const [catASupprimer, setCatASupprimer] = useState<string | number | null>(null)
 
   const { t } = useI18n()
 
-  const validateLabel = label => {
+  const validateLabel = (label: string): string => {
     const trimmed = label.trim()
     if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
       return t('tasks.invalidName')
@@ -50,12 +86,12 @@ export default function ChecklistTachesEdition({
     return ''
   }
 
-  const handleChange = (id, value) => {
+  const handleChange = (id: string | number, value: string) => {
     setDrafts(prev => ({ ...prev, [id]: value }))
     setErrors(prev => ({ ...prev, [id]: '' }))
   }
 
-  const handleBlur = (id, value) => {
+  const handleBlur = (id: string | number, value: string) => {
     const error = validateLabel(value)
     if (error) {
       setErrors(prev => ({ ...prev, [id]: error }))
@@ -85,7 +121,7 @@ export default function ChecklistTachesEdition({
     }, 600)
   }
 
-  const handleAddCategory = async (e, categoryLabel = null) => {
+  const handleAddCategory = async (e: React.FormEvent, categoryLabel: string | null = null) => {
     e.preventDefault()
 
     // Utiliser le label passé en argument ou le state local
@@ -99,7 +135,7 @@ export default function ChecklistTachesEdition({
     setNewCatLabel('')
   }
 
-  const handleRemoveCategory = async value => {
+  const handleRemoveCategory = async (value: string | number) => {
     // Le toast est déjà géré dans le hook useCategories.deleteCategory
     await onDeleteCategory(value)
     setCatASupprimer(null)
@@ -216,7 +252,7 @@ export default function ChecklistTachesEdition({
         isOpen={!!catASupprimer}
         onClose={() => setCatASupprimer(null)}
         confirmLabel={t('actions.delete')}
-        onConfirm={() => handleRemoveCategory(catASupprimer)}
+        onConfirm={() => handleRemoveCategory(catASupprimer!)}
       >
         <>
           ❗ {t('edition.confirmDeleteCategory')}
@@ -227,22 +263,4 @@ export default function ChecklistTachesEdition({
       </ModalConfirm>
     </div>
   )
-}
-
-ChecklistTachesEdition.propTypes = {
-  items: PropTypes.array.isRequired,
-  categories: PropTypes.array.isRequired,
-  onToggleAujourdhui: PropTypes.func.isRequired,
-  onUpdateLabel: PropTypes.func.isRequired,
-  onUpdateCategorie: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  resetEdition: PropTypes.func.isRequired,
-  onSubmitTask: PropTypes.func.isRequired,
-  onAddCategory: PropTypes.func.isRequired,
-  onDeleteCategory: PropTypes.func.isRequired,
-  filterCategory: PropTypes.string.isRequired,
-  onChangeFilterCategory: PropTypes.func.isRequired,
-  filterDone: PropTypes.bool.isRequired,
-  onChangeFilterDone: PropTypes.func.isRequired,
-  onShowQuotaModal: PropTypes.func,
 }

@@ -6,9 +6,29 @@ import {
   SignedImage,
 } from '@/components'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import { useState } from 'react'
 import './RecompensesEdition.scss'
+
+interface RewardItem {
+  id: string | number
+  label: string
+  imagepath?: string
+  selected?: boolean | number
+}
+
+interface RewardFormData {
+  label: string
+  image: File
+}
+
+interface RecompensesEditionProps {
+  items: RewardItem[]
+  onDelete: (item: RewardItem) => void
+  onToggleSelect: (id: string | number, currentSelected: boolean) => void
+  onLabelChange: (id: string | number, label: string) => Promise<{ error?: any }>
+  onSubmitReward: (data: RewardFormData) => void
+  onShowQuotaModal?: (type: string) => Promise<boolean>
+}
 
 export default function RecompensesEdition({
   items,
@@ -17,15 +37,15 @@ export default function RecompensesEdition({
   onLabelChange,
   onSubmitReward,
   onShowQuotaModal,
-}) {
+}: RecompensesEditionProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const [drafts, setDrafts] = useState({})
-  const [errors, setErrors] = useState({})
-  const [successIds, setSuccessIds] = useState(new Set())
+  const [drafts, setDrafts] = useState<Record<string | number, string>>({})
+  const [errors, setErrors] = useState<Record<string | number, string>>({})
+  const [successIds, setSuccessIds] = useState(new Set<string | number>())
 
   const { t } = useI18n()
 
-  const validateLabel = label => {
+  const validateLabel = (label: string): string => {
     const trimmed = label.trim()
     if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
       return t('rewards.invalidName')
@@ -33,12 +53,12 @@ export default function RecompensesEdition({
     return ''
   }
 
-  const handleChange = (id, value) => {
+  const handleChange = (id: string | number, value: string) => {
     setDrafts(prev => ({ ...prev, [id]: value }))
     setErrors(prev => ({ ...prev, [id]: '' }))
   }
 
-  const handleBlur = async (id, value) => {
+  const handleBlur = async (id: string | number, value: string) => {
     const error = validateLabel(value)
     if (error) {
       setErrors(prev => ({ ...prev, [id]: error }))
@@ -140,13 +160,4 @@ export default function RecompensesEdition({
       />
     </div>
   )
-}
-
-RecompensesEdition.propTypes = {
-  items: PropTypes.array.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  onToggleSelect: PropTypes.func.isRequired,
-  onLabelChange: PropTypes.func.isRequired,
-  onSubmitReward: PropTypes.func.isRequired,
-  onShowQuotaModal: PropTypes.func,
 }
