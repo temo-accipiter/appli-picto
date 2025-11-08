@@ -4,6 +4,9 @@
 import type { User } from '@supabase/supabase-js'
 import type { Role, QuotaInfo, QuotaType } from './global'
 
+// Re-export types needed by hooks
+export type { Role, QuotaInfo, QuotaType } from './global'
+
 // ─────────────────────────────────────────────────────────────────
 // AuthContext
 // ─────────────────────────────────────────────────────────────────
