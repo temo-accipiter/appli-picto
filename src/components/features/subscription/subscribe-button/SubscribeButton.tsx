@@ -1,4 +1,4 @@
-// src/components/SubscribeButton.jsx
+// src/components/SubscribeButton.tsx
 import { Button } from '@/components'
 import { useToast } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
@@ -48,9 +48,4 @@ export default function SubscribeButton() {
       disabled={loading}
     />
   )
-}
-
-// PropTypes pour le composant SubscribeButton
-SubscribeButton.propTypes = {
-  // Aucune prop pour ce composant
 }

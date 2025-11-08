@@ -33,7 +33,7 @@ export default function CookiePreferences() {
   })
 
   const close = () => setOpen(false)
-  const toggle = key => setChoices(prev => ({ ...prev, [key]: !prev[key] }))
+  const toggle = (key: string) => setChoices(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
 
   const acceptAll = async () => {
     const payload = saveConsent(
@@ -211,9 +211,4 @@ export default function CookiePreferences() {
       </div>
     </div>
   )
-}
-
-// PropTypes pour le composant CookiePreferences
-CookiePreferences.propTypes = {
-  // Aucune prop pour ce composant
 }

@@ -7,15 +7,28 @@
  */
 
 import { SignedImage } from '@/components'
-import PropTypes from 'prop-types'
 import './SelectedRecompense.scss'
+
+interface Recompense {
+  id: string
+  label: string
+  imagepath?: string
+  selected?: boolean
+}
+
+interface SelectedRecompenseProps {
+  recompense: Recompense | null
+  done: number
+  total: number
+  onSelect: (id: string) => void
+}
 
 export default function SelectedRecompense({
   recompense,
   done,
   total,
   onSelect,
-}) {
+}: SelectedRecompenseProps) {
   if (!recompense) return null
 
   const isUnlocked = total > 0 && done === total
@@ -36,16 +49,4 @@ export default function SelectedRecompense({
       )}
     </div>
   )
-}
-
-SelectedRecompense.propTypes = {
-  recompense: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    imagepath: PropTypes.string,
-    selected: PropTypes.bool,
-  }),
-  done: PropTypes.number.isRequired,
-  total: PropTypes.number.isRequired,
-  onSelect: PropTypes.func.isRequired,
 }

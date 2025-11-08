@@ -1,7 +1,6 @@
 import { replaceLegalPlaceholders } from '@/config/constants/legalConfig'
 import { useI18n } from '@/hooks'
 import { marked } from 'marked'
-import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import './LegalMarkdown.scss'
 
@@ -10,7 +9,12 @@ marked.setOptions({
   breaks: true,
 })
 
-export default function LegalMarkdown({ title, content }) {
+interface LegalMarkdownProps {
+  title: string
+  content: string
+}
+
+export default function LegalMarkdown({ title, content }: LegalMarkdownProps) {
   // Remplacement automatique de tous les placeholders
   const processedContent = replaceLegalPlaceholders(content)
   const navigate = useNavigate()
@@ -45,9 +49,4 @@ export default function LegalMarkdown({ title, content }) {
       />
     </article>
   )
-}
-
-LegalMarkdown.propTypes = {
-  title: PropTypes.string.isRequired,
-  content: PropTypes.string.isRequired,
 }

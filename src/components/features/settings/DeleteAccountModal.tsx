@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types'
 import { useEffect, useMemo, useState } from 'react'
 import { Modal, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
@@ -8,11 +7,19 @@ import { makeValidatePasswordNotEmpty } from '@/utils'
 import Turnstile from 'react-turnstile'
 import './DeleteAccountGuard.scss'
 
+type Phase = 'login' | 'delete'
+
+interface DeleteAccountModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: (turnstileToken: string | null) => void | Promise<void>
+}
+
 export default function DeleteAccountModal({
   isOpen,
   onClose,
-  onConfirm, // function(turnstileTokenForDeletion)
-}) {
+  onConfirm,
+}: DeleteAccountModalProps) {
   const { t, language } = useI18n()
   const { user } = useAuth()
   const { show } = useToast()
@@ -27,9 +34,9 @@ export default function DeleteAccountModal({
   const [password, setPassword] = useState('')
 
   // Un seul widget Turnstile, 2 phases : 'login' puis 'delete'
-  const [phase, setPhase] = useState('login')
-  const [tokenLogin, setTokenLogin] = useState(null)
-  const [tokenDelete, setTokenDelete] = useState(null)
+  const [phase, setPhase] = useState<Phase>('login')
+  const [tokenLogin, setTokenLogin] = useState<string | null>(null)
+  const [tokenDelete, setTokenDelete] = useState<string | null>(null)
   const [widgetKey, setWidgetKey] = useState(0)
   const [busy, setBusy] = useState(false)
 
@@ -64,12 +71,12 @@ export default function DeleteAccountModal({
     validatePasswordNotEmpty,
   ])
 
-  const handleTurnstileSuccess = token => {
+  const handleTurnstileSuccess = (token: string) => {
     if (phase === 'login') setTokenLogin(token)
     else setTokenDelete(token)
   }
 
-  const reloadTurnstile = nextPhase => {
+  const reloadTurnstile = (nextPhase: Phase) => {
     setPhase(nextPhase)
     setWidgetKey(k => k + 1) // force un nouveau défi
     if (nextPhase === 'login') {
@@ -93,9 +100,9 @@ export default function DeleteAccountModal({
       // Étape A — réauthentification (token de phase "login")
       if (phase === 'login') {
         const { error: reauthErr } = await supabase.auth.signInWithPassword({
-          email: user?.email,
+          email: user?.email || '',
           password,
-          options: { captchaToken: tokenLogin },
+          options: { captchaToken: tokenLogin || undefined },
         })
         if (reauthErr) {
           show(t('profil.deleteModalErrorPassword'), 'error')
@@ -193,10 +200,4 @@ export default function DeleteAccountModal({
       </div>
     </Modal>
   )
-}
-
-DeleteAccountModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
 }

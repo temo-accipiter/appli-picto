@@ -1,25 +1,32 @@
-// src/components/settings/DeleteAccountGuard.jsx
+// src/components/settings/DeleteAccountGuard.tsx
 import { Button, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
 import useAuth from '@/hooks/useAuth'
 import { useI18n } from '@/hooks'
 import { supabase, validatePasswordNotEmpty } from '@/utils'
-import PropTypes from 'prop-types'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Turnstile from 'react-turnstile'
+import { InputWithValidationRef } from '@/components/shared/input-with-validation/InputWithValidation'
 import './DeleteAccountGuard.scss'
 
 const equalsRule =
-  (expected, msg) =>
+  (expected: string, msg: string) =>
   (val = '') =>
     String(val).trim() === expected ? '' : msg
 
+interface DeleteAccountGuardProps {
+  onConfirm: (params: { turnstileToken: string | null }) => Promise<void>
+  dangerWord?: string
+  turnstileSiteKey?: string
+  countdownSec?: number
+}
+
 export default function DeleteAccountGuard({
-  onConfirm, // async ({ turnstileToken }) => Promise<void>
+  onConfirm,
   dangerWord = 'SUPPRIMER',
   turnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY,
   countdownSec = 5,
-}) {
+}: DeleteAccountGuardProps) {
   const { user } = useAuth()
   const { show } = useToast()
   const { language } = useI18n()
@@ -28,14 +35,14 @@ export default function DeleteAccountGuard({
   const [password, setPassword] = useState('')
   const [totp, setTotp] = useState('')
   const [needsTotp, setNeedsTotp] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [left, setLeft] = useState(countdownSec)
 
-  const wordRef = useRef(null)
-  const pwRef = useRef(null)
-  const totpRef = useRef(null)
+  const wordRef = useRef<InputWithValidationRef>(null)
+  const pwRef = useRef<InputWithValidationRef>(null)
+  const totpRef = useRef<InputWithValidationRef>(null)
 
   useEffect(() => {
     let ignore = false
@@ -72,19 +79,23 @@ export default function DeleteAccountGuard({
 
   const reauthenticate = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: user?.email,
+      email: user?.email || '',
       password,
-      options: { captchaToken },
+      options: { captchaToken: captchaToken || undefined },
     })
-    if (!error && !data?.mfa?.type) return
+    if (!error && !data?.user?.factors) return
     if (needsTotp) {
       const { data: factors } = await supabase.auth.mfa.listFactors()
       const totpFactor = (factors?.totp || []).find(
         f => f.status === 'verified'
       )
+      if (!totpFactor) throw new Error('TOTP factor not found')
+
       const { data: challenge } = await supabase.auth.mfa.challenge({
         factorId: totpFactor.id,
       })
+      if (!challenge) throw new Error('MFA challenge failed')
+
       await supabase.auth.mfa.verify({
         factorId: totpFactor.id,
         challengeId: challenge.id,
@@ -93,7 +104,7 @@ export default function DeleteAccountGuard({
     }
   }
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     wordRef.current?.validateNow?.()
@@ -107,7 +118,7 @@ export default function DeleteAccountGuard({
       await onConfirm({ turnstileToken: captchaToken })
       show('Compte supprimé', 'success')
     } catch (err) {
-      const msg = err?.message || 'Erreur lors de la vérification.'
+      const msg = (err as Error)?.message || 'Erreur lors de la vérification.'
       setError(msg)
       show(msg, 'error')
       setCaptchaToken(null)
@@ -190,11 +201,4 @@ export default function DeleteAccountGuard({
       </p>
     </form>
   )
-}
-
-DeleteAccountGuard.propTypes = {
-  onConfirm: PropTypes.func.isRequired,
-  dangerWord: PropTypes.string,
-  turnstileSiteKey: PropTypes.string,
-  countdownSec: PropTypes.number,
 }

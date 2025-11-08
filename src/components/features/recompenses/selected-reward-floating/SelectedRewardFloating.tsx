@@ -1,10 +1,19 @@
-// src/components/selectedRewardFloating/SelectedRewardFloating.jsx
+// src/components/selectedRewardFloating/SelectedRewardFloating.tsx
 import { DemoSignedImage, EditionCard, SignedImage } from '@/components'
 import './SelectedRewardFloating.scss'
 
-import PropTypes from 'prop-types'
+interface Reward {
+  id: string
+  imagepath: string
+  label: string
+  isDemo?: boolean
+}
 
-export default function SelectedRewardFloating({ reward }) {
+interface SelectedRewardFloatingProps {
+  reward: Reward | null
+}
+
+export default function SelectedRewardFloating({ reward }: SelectedRewardFloatingProps) {
   if (!reward || !reward.id || !reward.imagepath) return null
 
   return (
@@ -37,13 +46,4 @@ export default function SelectedRewardFloating({ reward }) {
       />
     </div>
   )
-}
-
-SelectedRewardFloating.propTypes = {
-  reward: PropTypes.shape({
-    id: PropTypes.string.isRequired,
-    imagepath: PropTypes.string.isRequired,
-    label: PropTypes.string.isRequired,
-    isDemo: PropTypes.bool,
-  }).isRequired,
 }

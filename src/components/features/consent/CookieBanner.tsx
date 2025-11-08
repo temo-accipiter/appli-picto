@@ -101,8 +101,3 @@ export default function CookieBanner() {
     </div>
   )
 }
-
-// PropTypes pour le composant CookieBanner
-CookieBanner.propTypes = {
-  // Aucune prop pour ce composant
-}

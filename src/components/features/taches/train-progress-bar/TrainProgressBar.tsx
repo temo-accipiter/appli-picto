@@ -1,23 +1,35 @@
 import { Select } from '@/components'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import { useI18n, useStations } from '@/hooks'
-import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import './TrainProgressBar.scss'
+
+interface TrainProgressBarProps {
+  total: number
+  done: number
+  isDemo?: boolean
+  onLineChange?: (action: string) => void
+}
+
+interface Station {
+  label: string
+  left: string
+  isActive: boolean
+}
 
 export default function TrainProgressBar({
   total,
   done,
   isDemo = false,
   onLineChange,
-}) {
+}: TrainProgressBarProps) {
   const { t } = useI18n()
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
-  const couleur = COULEURS_LIGNES[ligne] || '#999'
+  const couleur = COULEURS_LIGNES[ligne as keyof typeof COULEURS_LIGNES] || '#999'
   const stationCount = total + 1
 
   const { stations: ligneStations, loading, error } = useStations(ligne)
-  const [currentStations, setCurrentStations] = useState([])
+  const [currentStations, setCurrentStations] = useState<Array<{ label: string }>>([])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)
@@ -31,7 +43,7 @@ export default function TrainProgressBar({
 
   if (error) return <p>{t('errors.generic')}</p>
 
-  const stations = Array.from({ length: stationCount }, (_, i) => ({
+  const stations: Station[] = Array.from({ length: stationCount }, (_, i) => ({
     label: currentStations[i % currentStations.length]?.label || '',
     left: `${(i / (stationCount - 1)) * 100}%`,
     isActive: i === done,
@@ -131,11 +143,4 @@ export default function TrainProgressBar({
       </div>
     </div>
   )
-}
-
-TrainProgressBar.propTypes = {
-  total: PropTypes.number.isRequired,
-  done: PropTypes.number.isRequired,
-  isDemo: PropTypes.bool,
-  onLineChange: PropTypes.func,
 }

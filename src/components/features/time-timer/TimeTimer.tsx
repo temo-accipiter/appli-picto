@@ -1,10 +1,14 @@
-// src/components/features/time-timer/TimeTimer.jsx
-import PropTypes from 'prop-types'
+// src/components/features/time-timer/TimeTimer.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/hooks'
 import './TimeTimer.scss'
 
-const PRESET_DURATIONS = [
+interface PresetDuration {
+  label: string
+  value: number
+}
+
+const PRESET_DURATIONS: PresetDuration[] = [
   { label: '1 min', value: 1 },
   { label: '5 min', value: 5 },
   { label: '10 min', value: 10 },
@@ -14,32 +18,38 @@ const PRESET_DURATIONS = [
   { label: '60 min', value: 60 },
 ]
 
+interface TimeTimerProps {
+  compact?: boolean
+  initialDuration?: number
+  onComplete?: () => void
+}
+
 /**
  * Composant TimeTimer - Affichage visuel du temps qui passe
  * Conçu pour les enfants autistes (TSA) avec design apaisant
  *
- * @param {boolean} compact - Mode compact pour affichage à côté d'autres composants
- * @param {number} initialDuration - Durée initiale en minutes (optionnel)
- * @param {function} onComplete - Callback appelé quand le timer se termine
+ * @param compact - Mode compact pour affichage à côté d'autres composants
+ * @param initialDuration - Durée initiale en minutes (optionnel)
+ * @param onComplete - Callback appelé quand le timer se termine
  */
 export default function TimeTimer({
   compact = false,
   initialDuration = 10,
   onComplete,
-}) {
+}: TimeTimerProps) {
   const { t } = useI18n()
   const [duration, setDuration] = useState(initialDuration) // Durée totale en minutes
   const [timeLeft, setTimeLeft] = useState(initialDuration * 60) // Temps restant en secondes
   const [isRunning, setIsRunning] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const intervalRef = useRef(null)
-  const audioRef = useRef(null)
+  const intervalRef = useRef<number | null>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   // Calculer le pourcentage restant pour l'affichage visuel
   const percentage = (timeLeft / (duration * 60)) * 100
 
   // Formater le temps restant en MM:SS
-  const formatTime = useCallback(seconds => {
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -61,7 +71,7 @@ export default function TimeTimer({
   }, [duration])
 
   // Changer la durée
-  const changeDuration = useCallback(newDuration => {
+  const changeDuration = useCallback((newDuration: number) => {
     setDuration(newDuration)
     setTimeLeft(newDuration * 60)
     setIsRunning(false)
@@ -75,7 +85,7 @@ export default function TimeTimer({
   // Effet pour gérer le décompte
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
-      intervalRef.current = setInterval(() => {
+      intervalRef.current = window.setInterval(() => {
         setTimeLeft(prev => {
           if (prev <= 1) {
             setIsRunning(false)
@@ -268,10 +278,4 @@ export default function TimeTimer({
       </div>
     </div>
   )
-}
-
-TimeTimer.propTypes = {
-  compact: PropTypes.bool,
-  initialDuration: PropTypes.number,
-  onComplete: PropTypes.func,
 }
