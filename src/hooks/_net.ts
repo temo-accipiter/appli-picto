@@ -54,7 +54,11 @@ interface AbortSafeResult<T> {
 }
 
 export async function withAbortSafe<T>(
-  promise: Promise<{ data: T | null; error: unknown }> | Promise<T>,
+  promise:
+    | Promise<{ data: T | null; error: unknown }>
+    | Promise<T>
+    | PromiseLike<{ data: T | null; error: unknown }>
+    | PromiseLike<T>,
   { onAbort }: AbortSafeOptions = {}
 ): Promise<AbortSafeResult<T>> {
   try {

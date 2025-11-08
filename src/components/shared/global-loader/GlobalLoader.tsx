@@ -1,11 +1,16 @@
-// src/components/shared/global-loader/GlobalLoader.jsx
+// src/components/shared/global-loader/GlobalLoader.tsx
 // Loader global affiché par le LoadingContext
 // Affiche un loader en plein écran avec un message optionnel
 
-import PropTypes from 'prop-types'
 import './GlobalLoader.scss'
 
-export default function GlobalLoader({ message = 'Chargement...' }) {
+interface GlobalLoaderProps {
+  message?: string
+}
+
+export default function GlobalLoader({
+  message = 'Chargement...',
+}: GlobalLoaderProps) {
   return (
     <div className="global-loader-overlay">
       <div className="global-loader-content">
@@ -18,8 +23,4 @@ export default function GlobalLoader({ message = 'Chargement...' }) {
       </div>
     </div>
   )
-}
-
-GlobalLoader.propTypes = {
-  message: PropTypes.string,
 }

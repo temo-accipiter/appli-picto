@@ -27,8 +27,3 @@ export default function Layout() {
     </div>
   )
 }
-
-// PropTypes pour le composant Layout
-Layout.propTypes = {
-  // Aucune prop pour ce composant
-}

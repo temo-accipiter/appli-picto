@@ -29,7 +29,6 @@ export default function Navbar() {
   const isTableau = location.pathname === '/tableau'
   const isEdition = location.pathname === '/edition'
   const isProfil = location.pathname === '/profil'
-  const _isTableauDemo = location.pathname === '/tableau-demo'
   const isAdminPermissions = location.pathname === '/admin/permissions'
 
   return (
@@ -159,9 +158,4 @@ export default function Navbar() {
       />
     </nav>
   )
-}
-
-// PropTypes pour le composant Navbar
-Navbar.propTypes = {
-  // Aucune prop pour ce composant
 }

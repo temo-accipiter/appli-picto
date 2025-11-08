@@ -1,8 +1,24 @@
-// src/components/modal/Modal.jsx
+// src/components/modal/Modal.tsx
 import { useEffect, useRef } from 'react'
-import PropTypes from 'prop-types'
+import type { ReactNode } from 'react'
 import { Button, ButtonClose } from '@/components'
 import './Modal.scss'
+
+type ButtonVariant = 'primary' | 'secondary' | 'default' | 'reset'
+
+interface ModalAction {
+  label: string
+  onClick: () => void
+  variant?: ButtonVariant
+}
+
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  children: ReactNode
+  actions?: ModalAction[]
+}
 
 export default function Modal({
   isOpen,
@@ -10,12 +26,12 @@ export default function Modal({
   title,
   children,
   actions = [],
-}) {
-  const modalRef = useRef(null)
+}: ModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
 
   // Gérer Échap et Entrée
   useEffect(() => {
-    const handleKey = e => {
+    const handleKey = (e: KeyboardEvent) => {
       if (!isOpen) return
 
       if (e.key === 'Escape') {
@@ -23,7 +39,10 @@ export default function Modal({
         onClose()
       } else if (e.key === 'Enter') {
         const active = document.activeElement
-        if (modalRef.current.contains(active) && active.tagName === 'BUTTON') {
+        if (
+          modalRef.current?.contains(active) &&
+          active instanceof HTMLButtonElement
+        ) {
           e.preventDefault()
           active.click()
         }
@@ -38,14 +57,14 @@ export default function Modal({
     if (isOpen) {
       document.body.style.overflow = 'hidden'
       // on cible le bouton "Confirmer" : dernier bouton dans .modal__actions
-      const confirmBtn = modalRef.current.querySelector(
+      const confirmBtn = modalRef.current?.querySelector(
         '.modal__actions button:last-of-type'
       )
-      if (confirmBtn) {
+      if (confirmBtn instanceof HTMLElement) {
         confirmBtn.focus()
       } else {
         // fallback : focus sur la boîte
-        modalRef.current.focus()
+        modalRef.current?.focus()
       }
     } else {
       document.body.style.overflow = ''
@@ -55,16 +74,16 @@ export default function Modal({
   // Focus-trap Tab / Shift+Tab
   useEffect(() => {
     if (!isOpen) return
-    const handleTab = e => {
+    const handleTab = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return
 
-      const focusable = modalRef.current.querySelectorAll(
+      const focusable = modalRef.current?.querySelectorAll(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       )
-      if (focusable.length === 0) return
+      if (!focusable || focusable.length === 0) return
 
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
+      const first = focusable[0] as HTMLElement
+      const last = focusable[focusable.length - 1] as HTMLElement
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault()
         last.focus()
@@ -112,18 +131,4 @@ export default function Modal({
       </div>
     </div>
   )
-}
-
-Modal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  title: PropTypes.string,
-  children: PropTypes.node.isRequired,
-  actions: PropTypes.arrayOf(
-    PropTypes.shape({
-      label: PropTypes.string.isRequired,
-      onClick: PropTypes.func.isRequired,
-      variant: PropTypes.oneOf(['primary', 'secondary', 'reset']),
-    })
-  ),
 }

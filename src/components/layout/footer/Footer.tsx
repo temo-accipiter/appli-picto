@@ -68,18 +68,8 @@ export default function Footer() {
         </ul>
       </nav>
       <p className="app-footer__copy">
-        © {new Date().getFullYear()}{' '}
-        {{
-          /*Votre marque*/
-        }.toString
-          ? ''
-          : ''}
+        © {new Date().getFullYear()}
       </p>
     </footer>
   )
-}
-
-// PropTypes pour le composant Footer
-Footer.propTypes = {
-  // Aucune prop pour ce composant
 }

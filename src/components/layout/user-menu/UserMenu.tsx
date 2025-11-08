@@ -15,6 +15,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import './UserMenu.scss'
 
+interface CheckoutResponse {
+  url?: string
+}
+
 export default function UserMenu() {
   const { user, signOut, authReady } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
@@ -24,8 +28,8 @@ export default function UserMenu() {
   const [dbPseudo, setDbPseudo] = useState('')
   const navigate = useNavigate()
   const location = useLocation()
-  const dialogRef = useRef(null)
-  const btnRef = useRef(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const checkingOutRef = useRef(false) // évite double-clic sur checkout
 
   // ⚠️ Garde-fou: si tout reste en "chargement" > 3s, on débloque l'UI
@@ -47,13 +51,9 @@ export default function UserMenu() {
     let cancelled = false
     const fetchDbPseudo = async () => {
       if (!user?.id) return
-      const { data, error, aborted } = await withAbortSafe(
-        supabase
-          .from('profiles')
-          .select('pseudo')
-          .eq('id', user.id)
-          .maybeSingle()
-      )
+      const { data, error, aborted } = await withAbortSafe<{
+        pseudo: string | null
+      }>(supabase.from('profiles').select('pseudo').eq('id', user.id).single())
       if (cancelled) return
       if (aborted || (error && isAbortLike(error))) return
       if (error) {
@@ -93,7 +93,7 @@ export default function UserMenu() {
     try {
       // 1) Appel direct via Supabase Functions (JWT auto) — safe abort
       const { data, error, aborted } = await withAbortSafe(
-        supabase.functions.invoke('create-checkout-session', {
+        supabase.functions.invoke<CheckoutResponse>('create-checkout-session', {
           body: {
             price_id: priceId,
             success_url: `${window.location.origin}/profil`,
@@ -139,15 +139,15 @@ export default function UserMenu() {
 
       alert('❌ Réponse Stripe inattendue')
     } catch (e) {
-      // pas d’exception “vivante” dans la console de Safari
-      console.error('Erreur checkout:', String(e?.message ?? e))
+      // pas d'exception "vivante" dans la console de Safari
+      console.error('Erreur checkout:', String((e as Error)?.message ?? e))
       alert('❌ Erreur lors de la redirection vers Stripe')
     } finally {
       checkingOutRef.current = false
     }
   }
 
-  const handleBackdropMouseDown = e => {
+  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setOpen(false)
   }
 
