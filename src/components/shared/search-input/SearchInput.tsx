@@ -1,8 +1,14 @@
-import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import { useDebounce } from '@/hooks'
 import { Search } from 'lucide-react'
 import './SearchInput.scss'
+
+interface SearchInputProps {
+  placeholder?: string
+  onSearch: (term: string) => void
+  delay?: number
+  className?: string
+}
 
 /**
  * SearchInput - Input de recherche avec debounce intégré
@@ -22,7 +28,7 @@ export default function SearchInput({
   onSearch,
   delay = 300,
   className = '',
-}) {
+}: SearchInputProps) {
   const [searchTerm, setSearchTerm] = useState('')
 
   // ✅ useDebounce retarde la mise à jour de debouncedSearch
@@ -64,11 +70,4 @@ export default function SearchInput({
       )}
     </div>
   )
-}
-
-SearchInput.propTypes = {
-  placeholder: PropTypes.string,
-  onSearch: PropTypes.func.isRequired,
-  delay: PropTypes.number,
-  className: PropTypes.string,
 }

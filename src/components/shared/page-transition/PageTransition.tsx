@@ -19,8 +19,3 @@ export default function PageTransition() {
     </AnimatePresence>
   )
 }
-
-// PropTypes pour le composant PageTransition
-PageTransition.propTypes = {
-  // Aucune prop pour ce composant
-}

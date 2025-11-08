@@ -1,6 +1,7 @@
-// src/components/AvatarProfil.jsx
-// Sélecteur d’avatar. Conserve l’API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
+// src/components/AvatarProfil.tsx
+// Sélecteur d'avatar. Conserve l'API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
 
+import { useRef, useState } from 'react'
 import { Button, ButtonDelete, SignedImage } from '@/components'
 import {
   compressImageIfNeeded,
@@ -9,20 +10,25 @@ import {
   validateImageType,
 } from '@/utils/validationRules'
 import { supabase } from '@/utils/supabaseClient'
-import PropTypes from 'prop-types'
-import { useRef, useState } from 'react'
 import './AvatarProfil.scss'
+
+interface AvatarProfilProps {
+  avatarPath?: string | null
+  pseudo?: string
+  onUpload?: (file: File) => void
+  onDelete?: () => void
+}
 
 export default function AvatarProfil({
   avatarPath,
   pseudo = '',
   onUpload,
   onDelete,
-}) {
+}: AvatarProfilProps) {
   const [imageError, setImageError] = useState('')
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = async e => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -143,9 +149,3 @@ export default function AvatarProfil({
   )
 }
 
-AvatarProfil.propTypes = {
-  avatarPath: PropTypes.string,
-  pseudo: PropTypes.string,
-  onUpload: PropTypes.func,
-  onDelete: PropTypes.func,
-}

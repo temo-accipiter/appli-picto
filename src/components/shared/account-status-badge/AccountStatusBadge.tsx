@@ -1,7 +1,15 @@
-// src/components/shared/AccountStatusBadge.jsx
+// src/components/shared/AccountStatusBadge.tsx
 import { useAccountStatus } from '@/hooks'
-import PropTypes from 'prop-types'
 import './AccountStatusBadge.scss'
+
+type BadgeSize = 'small' | 'medium' | 'large'
+
+interface AccountStatusBadgeProps {
+  showDescription?: boolean
+  size?: BadgeSize
+  className?: string
+  onClick?: (() => void) | null
+}
 
 /**
  * Composant pour afficher l'état du compte utilisateur
@@ -12,7 +20,7 @@ export default function AccountStatusBadge({
   size = 'medium',
   className = '',
   onClick = null,
-}) {
+}: AccountStatusBadgeProps) {
   const { accountStatus, loading, statusDisplay, canUseApp } =
     useAccountStatus()
 
@@ -34,7 +42,7 @@ export default function AccountStatusBadge({
   return (
     <div
       className={`account-status-badge ${color} ${size} ${className} ${onClick ? 'clickable' : ''}`}
-      onClick={onClick}
+      onClick={onClick || undefined}
       title={showDescription ? undefined : description}
     >
       <div className="status-icon">{icon}</div>
@@ -47,11 +55,4 @@ export default function AccountStatusBadge({
       )}
     </div>
   )
-}
-
-AccountStatusBadge.propTypes = {
-  showDescription: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  className: PropTypes.string,
-  onClick: PropTypes.func,
 }
