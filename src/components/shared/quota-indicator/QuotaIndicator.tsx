@@ -1,7 +1,19 @@
-// src/components/shared/QuotaIndicator.jsx
+// src/components/shared/QuotaIndicator.tsx
 import { useRBAC, useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import './QuotaIndicator.scss'
+
+type ContentType = 'task' | 'reward' | 'category'
+type QuotaSize = 'small' | 'medium' | 'large'
+
+interface QuotaIndicatorProps {
+  contentType?: ContentType
+  showLabel?: boolean
+  showPercentage?: boolean
+  showRemaining?: boolean
+  size?: QuotaSize
+  className?: string
+  onClick?: (() => void) | null
+}
 
 export default function QuotaIndicator({
   contentType = 'task',
@@ -11,7 +23,7 @@ export default function QuotaIndicator({
   size = 'medium',
   className = '',
   onClick = null,
-}) {
+}: QuotaIndicatorProps) {
   const { t } = useI18n()
   const {
     loading,
@@ -86,7 +98,7 @@ export default function QuotaIndicator({
   return (
     <div
       className={`quota-indicator ${size} ${className} ${onClick ? 'clickable' : ''} ${warningLevel}`}
-      onClick={onClick}
+      onClick={onClick || undefined}
       title={`${current}/${limit} ${contentLabel} utilisées ${periodLabel}`}
     >
       {showLabel && (
@@ -159,12 +171,3 @@ export default function QuotaIndicator({
   )
 }
 
-QuotaIndicator.propTypes = {
-  contentType: PropTypes.oneOf(['task', 'reward', 'category']),
-  showLabel: PropTypes.bool,
-  showPercentage: PropTypes.bool,
-  showRemaining: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  className: PropTypes.string,
-  onClick: PropTypes.func,
-}

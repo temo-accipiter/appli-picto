@@ -1,14 +1,22 @@
-import PropTypes from 'prop-types'
+import React, { ReactNode } from 'react'
 import { useI18n } from '@/hooks'
 import './EditionList.scss'
 
-export default function EditionList({
+interface EditionListProps<T> {
+  title?: string
+  children?: ReactNode
+  items: T[]
+  renderCard: (item: T, index: number) => ReactNode
+  emptyLabel?: string
+}
+
+export default function EditionList<T>({
   title,
   children,
   items,
   renderCard,
   emptyLabel,
-}) {
+}: EditionListProps<T>) {
   const { t } = useI18n()
   const defaultEmptyLabel = emptyLabel || t('editionList.noItems')
   return (
@@ -28,12 +36,4 @@ export default function EditionList({
       </div>
     </div>
   )
-}
-
-EditionList.propTypes = {
-  title: PropTypes.string,
-  children: PropTypes.node,
-  items: PropTypes.array.isRequired,
-  renderCard: PropTypes.func.isRequired,
-  emptyLabel: PropTypes.string,
 }

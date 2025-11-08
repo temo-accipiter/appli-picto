@@ -1,15 +1,24 @@
-// src/components/shared/image-quota-indicator/ImageQuotaIndicator.jsx
+// src/components/shared/image-quota-indicator/ImageQuotaIndicator.tsx
 // Composant pour afficher les quotas d'images (tâches/récompenses)
 import { useRBAC, useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import './ImageQuotaIndicator.scss'
 
+type AssetType = 'task_image' | 'reward_image'
+type QuotaSize = 'small' | 'medium' | 'large'
+
+interface ImageQuotaIndicatorProps {
+  assetType?: AssetType
+  showDetails?: boolean
+  size?: QuotaSize
+  className?: string
+}
+
 export default function ImageQuotaIndicator({
-  assetType = 'task_image', // 'task_image' ou 'reward_image'
+  assetType = 'task_image',
   showDetails = true,
   size = 'medium',
   className = '',
-}) {
+}: ImageQuotaIndicatorProps) {
   const { t } = useI18n()
   const { loading, isFree, getQuotaInfo } = useRBAC()
 
@@ -38,7 +47,7 @@ export default function ImageQuotaIndicator({
 
   const { current, limit, percentage, isNearLimit, isAtLimit } = info
 
-  const getAssetTypeLabel = type => {
+  const getAssetTypeLabel = (type: AssetType): string => {
     switch (type) {
       case 'task_image':
         return t('quota.taskImages') || 'Tâches'
@@ -80,9 +89,3 @@ export default function ImageQuotaIndicator({
   )
 }
 
-ImageQuotaIndicator.propTypes = {
-  assetType: PropTypes.oneOf(['task_image', 'reward_image']),
-  showDetails: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  className: PropTypes.string,
-}
