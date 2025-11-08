@@ -9,13 +9,18 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  KeyboardSensor, // WCAG 2.1.1 - Support clavier pour drag & drop
   useSensor,
   useSensors,
   closestCenter,
   DragStartEvent,
   DragEndEvent,
 } from '@dnd-kit/core'
-import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
+import {
+  SortableContext,
+  rectSortingStrategy,
+  sortableKeyboardCoordinates, // WCAG 2.1.1 - Coordonnées clavier
+} from '@dnd-kit/sortable'
 import { memo, useCallback, useMemo, useState } from 'react'
 import './TachesDnd.scss'
 
@@ -52,14 +57,26 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   const { t } = useI18n()
   const [activeId, setActiveId] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [announcement, setAnnouncement] = useState('') // WCAG 4.1.3 - Annonces lecteur d'écran
 
+  // WCAG 2.1.1 - Support souris ET clavier pour le drag & drop
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
   )
 
   const handleDragStart = useCallback(
-    ({ active }: DragStartEvent) => setActiveId(active.id as string),
-    []
+    ({ active }: DragStartEvent) => {
+      setActiveId(active.id as string)
+      const tache = items.find(t => t.id.toString() === active.id)
+      if (tache) {
+        // WCAG 4.1.3 - Annoncer le début du drag (fallback si traduction manquante)
+        setAnnouncement(`Déplacement de "${tache.label}"`)
+      }
+    },
+    [items]
   )
 
   const handleDragEnd = useCallback(
@@ -71,6 +88,14 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         const [moved] = newList.splice(oldIndex, 1)
         newList.splice(newIndex, 0, moved)
         onReorder(newList.map(t => t.id))
+
+        // WCAG 4.1.3 - Annoncer le résultat du réordonnancement
+        setAnnouncement(
+          `"${moved.label}" déplacé à la position ${newIndex + 1}`
+        )
+      } else {
+        // WCAG 4.1.3 - Annoncer l'annulation
+        setAnnouncement('Déplacement annulé')
       }
       setActiveId(null)
     },
@@ -85,14 +110,25 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
     : undefined
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
-        <div className="grid-taches">
+    <>
+      {/* WCAG 4.1.3 - Région d'annonces pour lecteur d'écran */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
+          <div className="grid-taches">
           {items.map(t => (
             <TableauCard
               key={t.id}
@@ -133,7 +169,8 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
           </ModalConfirm>
         </div>
       )}
-    </DndContext>
+      </DndContext>
+    </>
   )
 })
 

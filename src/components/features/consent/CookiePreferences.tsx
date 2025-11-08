@@ -5,7 +5,8 @@ import {
   saveConsent,
   tryLogServerConsent,
 } from '@/utils/consent'
-import { useEffect, useState } from 'react'
+import { X } from 'lucide-react' // WCAG - Icône SVG au lieu de caractère
+import { useEffect, useRef, useState } from 'react'
 import './CookiePreferences.scss'
 
 export default function CookiePreferences() {
@@ -13,9 +14,15 @@ export default function CookiePreferences() {
   const [choices, setChoices] = useState(defaultChoices())
   const { user } = useAuth()
   const { t } = useI18n()
+  const closeButtonRef = useRef<HTMLButtonElement>(null) // WCAG 2.4.3 - Focus management
+  const triggerElementRef = useRef<HTMLElement | null>(null) // WCAG 2.4.3 - Return focus
 
   useEffect(() => {
-    const onOpen = () => setOpen(true)
+    const onOpen = () => {
+      // Mémoriser l'élément qui a déclenché l'ouverture
+      triggerElementRef.current = document.activeElement as HTMLElement
+      setOpen(true)
+    }
     window.addEventListener('cookie-preferences:open', onOpen)
     return () => window.removeEventListener('cookie-preferences:open', onOpen)
   }, [])
@@ -25,6 +32,49 @@ export default function CookiePreferences() {
     setChoices(existing?.choices || defaultChoices())
   }, [open])
 
+  // WCAG 2.1.2 - Focus trap et gestion Escape
+  useEffect(() => {
+    if (!open) return
+
+    // Auto-focus sur le bouton close
+    const timeout = setTimeout(() => {
+      closeButtonRef.current?.focus()
+    }, 100)
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        close()
+      }
+
+      // Focus trap avec Tab
+      if (e.key === 'Tab') {
+        const focusables = Array.from(
+          document.querySelectorAll<HTMLElement>(
+            '.cookie-prefs__dialog button:not([disabled]), .cookie-prefs__dialog input:not([disabled]), .cookie-prefs__dialog a'
+          )
+        )
+
+        const firstFocusable = focusables[0]
+        const lastFocusable = focusables[focusables.length - 1]
+
+        if (e.shiftKey && document.activeElement === firstFocusable) {
+          e.preventDefault()
+          lastFocusable?.focus()
+        } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+          e.preventDefault()
+          firstFocusable?.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      clearTimeout(timeout)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [open])
+
   const baseExtra = () => ({
     user_id: user?.id || null,
     ua: navigator.userAgent,
@@ -32,7 +82,13 @@ export default function CookiePreferences() {
     app_version: '1.0.0',
   })
 
-  const close = () => setOpen(false)
+  const close = () => {
+    setOpen(false)
+    // WCAG 2.4.3 - Retourner le focus à l'élément déclencheur
+    setTimeout(() => {
+      triggerElementRef.current?.focus()
+    }, 100)
+  }
   const toggle = (key: string) =>
     setChoices(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
 
@@ -75,11 +131,12 @@ export default function CookiePreferences() {
         <header className="cookie-prefs__header">
           <h2 id="cookie-prefs-title">{t('cookies.preferencesTitle')}</h2>
           <button
+            ref={closeButtonRef}
             className="icon"
             onClick={close}
             aria-label={t('cookies.close')}
           >
-            ✕
+            <X size={20} aria-hidden="true" />
           </button>
         </header>
 
