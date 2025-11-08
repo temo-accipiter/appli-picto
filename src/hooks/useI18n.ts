@@ -25,7 +25,17 @@
 
 import { useTranslation } from 'react-i18next'
 
-export function useI18n() {
+type SupportedLanguage = 'fr' | 'en'
+
+interface UseI18nReturn {
+  t: (key: string, options?: object) => string
+  language: string
+  changeLanguage: (lng: string) => Promise<void>
+  isReady: boolean
+  languages: SupportedLanguage[]
+}
+
+export function useI18n(): UseI18nReturn {
   const { t, i18n, ready } = useTranslation()
 
   return {
@@ -36,7 +46,7 @@ export function useI18n() {
     language: i18n.language,
 
     // Changer de langue (avec sauvegarde auto dans localStorage via i18n.js)
-    changeLanguage: lng => i18n.changeLanguage(lng),
+    changeLanguage: (lng: string) => i18n.changeLanguage(lng),
 
     // Indique si les traductions sont chargées
     isReady: ready,

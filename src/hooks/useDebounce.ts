@@ -1,4 +1,4 @@
-// src/hooks/useDebounce.js
+// src/hooks/useDebounce.ts
 import { useEffect, useState } from 'react'
 
 /**
@@ -7,9 +7,9 @@ import { useEffect, useState } from 'react'
  * Utile pour les inputs de recherche, filtres, ou tout champ qui
  * déclenche des requêtes DB ou calculs coûteux.
  *
- * @param {*} value - Valeur à debouncer
- * @param {number} delay - Délai en millisecondes (défaut: 500ms)
- * @returns {*} Valeur debouncée (mise à jour après le délai)
+ * @param value - Valeur à debouncer
+ * @param delay - Délai en millisecondes (défaut: 500ms)
+ * @returns Valeur debouncée (mise à jour après le délai)
  *
  * @example
  * // Dans un composant de recherche
@@ -30,8 +30,8 @@ import { useEffect, useState } from 'react'
  *   item.label.toLowerCase().includes(debouncedFilter.toLowerCase())
  * )
  */
-export default function useDebounce(value, delay = 500) {
-  const [debouncedValue, setDebouncedValue] = useState(value)
+export default function useDebounce<T>(value: T, delay: number = 500): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
 
   useEffect(() => {
     // Créer un timer qui mettra à jour debouncedValue après le délai
