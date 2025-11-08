@@ -1,4 +1,4 @@
-// src/main.jsx
+// src/main.tsx
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -38,6 +38,28 @@ if (import.meta.env.PROD) {
       console.log('✅ Service Worker prêt pour cache images')
     }
   })
+}
+
+interface TestLegalCompliance {
+  testConfig: () => Promise<unknown>
+  testRGPD: () => Promise<unknown>
+  checkGA4: () => Promise<unknown>
+  testDocuments: () => Promise<Array<{ name: string; result: unknown }>>
+  help: () => void
+}
+
+interface WindowEnv {
+  GA4_ID: string | undefined
+  SUPABASE_URL: string | undefined
+  APP_ENV: string | undefined
+  APP_URL: string | undefined
+}
+
+declare global {
+  interface Window {
+    testLegalCompliance: TestLegalCompliance
+    env: WindowEnv
+  }
 }
 
 // Expose quelques helpers de test en DEV
@@ -219,7 +241,7 @@ const router = createBrowserRouter([
 // ⚠️ StrictMode désactivé temporairement - cause deadlock avec Supabase SDK
 // React StrictMode monte/démonte les composants 2x en dev, ce qui crée
 // des problèmes de concurrence avec le SDK Supabase (mutex bloqué)
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
     <AuthProvider>
       <PermissionsProvider>
