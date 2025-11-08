@@ -1,4 +1,4 @@
-// playwright.config.js
+// playwright.config.ts
 /**
  * 🎭 Configuration Playwright - Tests E2E
  *

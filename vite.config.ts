@@ -1,4 +1,4 @@
-// vite.config.js
+// vite.config.ts
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import { visualizer } from 'rollup-plugin-visualizer'
