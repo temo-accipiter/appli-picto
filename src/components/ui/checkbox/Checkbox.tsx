@@ -1,13 +1,17 @@
-import type { InputHTMLAttributes } from 'react'
+import type { InputHTMLAttributes, ChangeEvent } from 'react'
 import './Checkbox.scss'
 
 type CheckboxSize = 'sm' | 'md'
 
-interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'checked' | 'type' | 'size'> {
+interface CheckboxProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    'onChange' | 'checked' | 'type' | 'size'
+  > {
   id: string
   label?: string
   checked: boolean
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void
   error?: string
   className?: string
   size?: CheckboxSize

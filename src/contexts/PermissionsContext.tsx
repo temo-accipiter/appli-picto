@@ -52,7 +52,8 @@ function toPermissionMap(rows: unknown[] = []): Record<string, boolean> {
   for (const r of rows) {
     if (!r || typeof r !== 'object') continue
     const perm = r as GetMyPermissionsResponse
-    const rawName = perm.feature_name ?? perm.name ?? perm.feature ?? perm.code ?? ''
+    const rawName =
+      perm.feature_name ?? perm.name ?? perm.feature ?? perm.code ?? ''
     const key = String(rawName).trim()
     const allowed =
       typeof perm.can_access === 'boolean'
@@ -89,8 +90,7 @@ async function retryUntilStable<T>(
       return await fn()
     } catch (e) {
       lastErr = e as Error
-      const code =
-        (e as AuthError | PostgrestError)?.code || (e as Error)?.name
+      const code = (e as AuthError | PostgrestError)?.code || (e as Error)?.name
       if (!TRANSIENT_ERR_CODES.has(code)) break // erreur non transitoire → on stoppe
     }
   }
@@ -175,7 +175,6 @@ export function PermissionsProvider({ children }: PermissionsProviderProps) {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let debounceTimer: number | undefined
-
     ;(async () => {
       await load()
       if (!mounted) return

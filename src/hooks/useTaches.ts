@@ -1,5 +1,6 @@
 // src/hooks/useTaches.ts
 import { useEffect, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { Tache } from '@/types/global'
 import { supabase } from '@/utils/supabaseClient'
@@ -21,7 +22,7 @@ const formatErr = (e: unknown): string => {
 
 interface UseTachesReturn {
   taches: Tache[]
-  setTaches: React.Dispatch<React.SetStateAction<Tache[]>>
+  setTaches: Dispatch<SetStateAction<Tache[]>>
   toggleFait: (id: string, current: boolean) => Promise<void>
   resetFait: () => Promise<void>
   updatePosition: (

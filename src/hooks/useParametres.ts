@@ -81,7 +81,11 @@ export default function useParametres(reload = 0): UseParametresReturn {
         setLoading(false)
 
         // Créer la row avec les defaults
-        const payload: Partial<Parametre> = { id: 1, confettis: true, toasts_enabled: true }
+        const payload: Partial<Parametre> = {
+          id: 1,
+          confettis: true,
+          toasts_enabled: true,
+        }
         const { error: insertError } = await withAbortSafe(
           supabase.from('parametres').upsert(payload, { onConflict: 'id' })
         )
@@ -140,7 +144,11 @@ export default function useParametres(reload = 0): UseParametresReturn {
     async (updates: Partial<Parametre>): Promise<UpdateResult> => {
       if (!parametres) {
         // Si pas de paramètres, créer avec les valeurs par défaut
-        const defaults: Partial<Parametre> = { confettis: true, toasts_enabled: true, ...updates }
+        const defaults: Partial<Parametre> = {
+          confettis: true,
+          toasts_enabled: true,
+          ...updates,
+        }
         return await insertDefaults(defaults)
       }
 

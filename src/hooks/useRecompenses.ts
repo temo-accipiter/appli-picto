@@ -10,6 +10,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type { Recompense } from '@/types/global'
 import { supabase } from '@/utils/supabaseClient'
@@ -59,11 +60,13 @@ interface UseRecompensesReturn {
     onProgress?: ((progress: number) => void) | null
   ) => Promise<OperationResult>
   updateLabel: (id: string, label: string) => Promise<OperationResult>
-  deleteRecompense: (rec: Recompense | string) => Promise<{ error: Error | PostgrestError | null }>
+  deleteRecompense: (
+    rec: Recompense | string
+  ) => Promise<{ error: Error | PostgrestError | null }>
   selectRecompense: (id: string) => Promise<OperationResult>
   deselectAll: () => Promise<{ error: Error | PostgrestError | null }>
 
-  setRecompenses: React.Dispatch<React.SetStateAction<Recompense[]>>
+  setRecompenses: Dispatch<SetStateAction<Recompense[]>>
 }
 
 export default function useRecompenses(reload = 0): UseRecompensesReturn {
@@ -364,7 +367,9 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
   }
 
   // ⭐ Désélectionner toutes les récompenses
-  const deselectAll = async (): Promise<{ error: Error | PostgrestError | null }> => {
+  const deselectAll = async (): Promise<{
+    error: Error | PostgrestError | null
+  }> => {
     if (!user?.id) return { error: new Error('Utilisateur manquant') }
     try {
       setError(null)

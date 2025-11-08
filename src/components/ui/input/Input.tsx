@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import type { InputHTMLAttributes } from 'react'
+import type { InputHTMLAttributes, ChangeEvent } from 'react'
 import { useI18n } from '@/hooks'
 import './Input.scss'
 
-interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+interface InputProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   id: string
   label?: string
   value: string | number
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void
   placeholder?: string
   type?: string
   error?: string

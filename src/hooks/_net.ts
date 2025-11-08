@@ -24,7 +24,13 @@ interface PlainError {
 // 🆕 Make a plain, serializable error snapshot (avoids Safari inspector issues)
 export function toPlainError(e: unknown): PlainError {
   try {
-    const err = e as { message?: string; details?: string; hint?: string; code?: string; name?: string }
+    const err = e as {
+      message?: string
+      details?: string
+      hint?: string
+      code?: string
+      name?: string
+    }
     return {
       message: String(err?.message ?? e),
       details: err?.details ?? null,

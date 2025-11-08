@@ -33,9 +33,16 @@ interface UseCategoriesReturn {
   categories: Categorie[]
   loading: boolean
   error: Error | PostgrestError | null
-  addCategory: (cat: CategoryPayload) => Promise<{ error: Error | PostgrestError | null }>
-  updateCategory: (id: string, newLabel: string) => Promise<{ error: Error | PostgrestError | null }>
-  deleteCategory: (value: string) => Promise<{ error: Error | PostgrestError | null }>
+  addCategory: (
+    cat: CategoryPayload
+  ) => Promise<{ error: Error | PostgrestError | null }>
+  updateCategory: (
+    id: string,
+    newLabel: string
+  ) => Promise<{ error: Error | PostgrestError | null }>
+  deleteCategory: (
+    value: string
+  ) => Promise<{ error: Error | PostgrestError | null }>
   refresh: () => Promise<void>
 }
 

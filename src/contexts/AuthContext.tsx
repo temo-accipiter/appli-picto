@@ -2,7 +2,13 @@
 // Auth global robuste : annonce toujours authReady (succès ou échec),
 // et met à jour user depuis la session courante + onAuthStateChange.
 
-import { createContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import type { User, Session, AuthError } from '@supabase/supabase-js'
 import type { AuthContextValue } from '@/types/contexts'
 import { supabase, recreateSupabaseClient } from '@/utils/supabaseClient'
