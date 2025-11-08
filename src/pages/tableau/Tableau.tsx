@@ -1,7 +1,5 @@
 // src/pages/tableau/Tableau.tsx
 import {
-  ModalRecompense,
-  PersonalizationModal,
   SelectedRewardFloating,
   TachesDnd,
   TimeTimer,
@@ -25,6 +23,15 @@ import { useWindowSize } from 'react-use'
 
 // Lazy load Confetti (utilisé seulement quand toutes les tâches sont terminées)
 const Confetti = lazy(() => import('react-confetti'))
+
+// Lazy load des modales (affichées conditionnellement)
+const ModalRecompense = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalRecompense }))
+)
+const PersonalizationModal = lazy(() =>
+  import('@/components').then(m => ({ default: m.PersonalizationModal }))
+)
+
 import type { Tache, Recompense } from '@/types/global'
 import './Tableau.scss'
 
@@ -348,11 +355,13 @@ export default function TableauGrille({
       )}
 
       {showModalRecompense && selectedReward && (
-        <ModalRecompense
-          isOpen={true}
-          onClose={() => setShowModalRecompense(false)}
-          reward={selectedReward}
-        />
+        <Suspense fallback={null}>
+          <ModalRecompense
+            isOpen={true}
+            onClose={() => setShowModalRecompense(false)}
+            reward={selectedReward}
+          />
+        </Suspense>
       )}
 
       {showRecompense && selectedReward && doneCount < totalTaches && (
@@ -360,10 +369,12 @@ export default function TableauGrille({
       )}
 
       {/* Modal de personnalisation pour les visiteurs */}
-      <PersonalizationModal
-        isOpen={showPersonalizationModal}
-        onClose={() => setShowPersonalizationModal(false)}
-      />
+      <Suspense fallback={null}>
+        <PersonalizationModal
+          isOpen={showPersonalizationModal}
+          onClose={() => setShowPersonalizationModal(false)}
+        />
+      </Suspense>
     </div>
   )
 }

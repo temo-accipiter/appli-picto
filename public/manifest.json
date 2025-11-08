@@ -10,9 +10,9 @@
   "icons": [
     {
       "src": "/favicon.png",
-      "sizes": "any",
+      "sizes": "32x32",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "categories": ["education", "kids", "health"],

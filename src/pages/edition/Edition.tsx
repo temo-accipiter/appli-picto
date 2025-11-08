@@ -2,9 +2,6 @@
 import {
   Button,
   Checkbox,
-  ModalCategory,
-  ModalConfirm,
-  ModalQuota,
   RecompensesEdition,
   Separator,
   TachesEdition,
@@ -25,8 +22,19 @@ import type { Tache, Recompense } from '@/types/global'
 import { modernUploadImage } from '@/utils/storage/modernUploadImage'
 import { supabase } from '@/utils/supabaseClient'
 import { ChevronDown, Gift, ListChecks } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import './Edition.scss'
+
+// Lazy load des modales (affichées conditionnellement)
+const ModalCategory = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalCategory }))
+)
+const ModalConfirm = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalConfirm }))
+)
+const ModalQuota = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalQuota }))
+)
 
 type ContentType = 'task' | 'reward' | 'category'
 type QuotaPeriod = 'total' | 'monthly'
@@ -510,85 +518,90 @@ export default function Edition() {
         )}
       </div>
 
-      <ModalConfirm
-        isOpen={!!recompenseASupprimer}
-        onClose={() => setRecompenseASupprimer(null)}
-        confirmLabel={t('edition.confirmDeleteReward')}
-        onConfirm={() => {
-          if (recompenseASupprimer) {
-            deleteRecompense(recompenseASupprimer.id)
-            show(t('edition.rewardDeleted'), 'error')
-            setRecompenseASupprimer(null)
-            setTimeout(() => {
-              refreshQuotas()
-            }, 300)
-          }
-        }}
-      >
-        ❗ {t('edition.confirmDeleteReward')} &quot;
-        {recompenseASupprimer?.label}&quot; ?
-      </ModalConfirm>
+      <Suspense fallback={null}>
+        <ModalConfirm
+          isOpen={!!recompenseASupprimer}
+          onClose={() => setRecompenseASupprimer(null)}
+          confirmLabel={t('edition.confirmDeleteReward')}
+          onConfirm={() => {
+            if (recompenseASupprimer) {
+              deleteRecompense(recompenseASupprimer.id)
+              show(t('edition.rewardDeleted'), 'error')
+              setRecompenseASupprimer(null)
+              setTimeout(() => {
+                refreshQuotas()
+              }, 300)
+            }
+          }}
+        >
+          ❗ {t('edition.confirmDeleteReward')} &quot;
+          {recompenseASupprimer?.label}&quot; ?
+        </ModalConfirm>
 
-      <ModalConfirm
-        isOpen={!!tacheASupprimer}
-        onClose={() => setTacheASupprimer(null)}
-        confirmLabel={t('edition.confirmDeleteTask')}
-        onConfirm={() => {
-          if (tacheASupprimer) {
-            deleteTache(tacheASupprimer)
-            show(t('edition.taskDeleted'), 'error')
-            setTacheASupprimer(null)
-            setTimeout(() => {
-              refreshQuotas()
-            }, 300)
-          }
-        }}
-      >
-        ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}&quot;
-        ?
-      </ModalConfirm>
+        <ModalConfirm
+          isOpen={!!tacheASupprimer}
+          onClose={() => setTacheASupprimer(null)}
+          confirmLabel={t('edition.confirmDeleteTask')}
+          onConfirm={() => {
+            if (tacheASupprimer) {
+              deleteTache(tacheASupprimer)
+              show(t('edition.taskDeleted'), 'error')
+              setTacheASupprimer(null)
+              setTimeout(() => {
+                refreshQuotas()
+              }, 300)
+            }
+          }}
+        >
+          ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}&quot;
+          ?
+        </ModalConfirm>
+      </Suspense>
 
-      <ModalCategory
-        isOpen={manageCatOpen}
-        onClose={() => setManageCatOpen(false)}
-        categories={categories}
-        onDeleteCategory={value => setCatASupprimer(value)}
-        onAddCategory={handleAddCategoryWithQuota}
-        newCategory={newCatLabel}
-        onChangeNewCategory={setNewCatLabel}
-      />
+      <Suspense fallback={null}>
+        <ModalCategory
+          isOpen={manageCatOpen}
+          onClose={() => setManageCatOpen(false)}
+          categories={categories}
+          onDeleteCategory={value => setCatASupprimer(value)}
+          onAddCategory={handleAddCategoryWithQuota}
+          newCategory={newCatLabel}
+          onChangeNewCategory={setNewCatLabel}
+        />
 
-      <ModalConfirm
-        isOpen={!!catASupprimer}
-        onClose={() => setCatASupprimer(null)}
-        confirmLabel={t('edition.confirmDeleteCategory')}
-        onConfirm={() => {
-          if (catASupprimer) {
-            handleRemoveCategory(catASupprimer)
-          }
-        }}
-      >
-        <>
-          ❗ {t('edition.confirmDeleteCategory')} &quot;
-          {categories.find(c => c.value === catASupprimer)?.label}&quot; ?
-          <br />
-          {t('edition.categoryDeleteWarning')}
-        </>
-      </ModalConfirm>
+        <ModalConfirm
+          isOpen={!!catASupprimer}
+          onClose={() => setCatASupprimer(null)}
+          confirmLabel={t('edition.confirmDeleteCategory')}
+          onConfirm={() => {
+            if (catASupprimer) {
+              handleRemoveCategory(catASupprimer)
+            }
+          }}
+        >
+          <>
+            ❗ {t('edition.confirmDeleteCategory')} &quot;
+            {categories.find(c => c.value === catASupprimer)?.label}&quot; ?
+            <br />
+            {t('edition.categoryDeleteWarning')}
+          </>
+        </ModalConfirm>
+      </Suspense>
 
-      <ModalQuota
-        isOpen={quotaModalOpen}
-        onClose={() => setQuotaModalOpen(false)}
-        contentType={quotaModalContent.contentType}
-        currentUsage={quotaModalContent.currentUsage}
-        limit={quotaModalContent.limit}
-        period={quotaModalContent.period}
-      />
+      <Suspense fallback={null}>
+        <ModalQuota
+          isOpen={quotaModalOpen}
+          onClose={() => setQuotaModalOpen(false)}
+          contentType={quotaModalContent.contentType}
+          currentUsage={quotaModalContent.currentUsage}
+          limit={quotaModalContent.limit}
+          period={quotaModalContent.period}
+        />
 
-      {/* Modal pour quotas d'images */}
-      <ModalQuota
-        isOpen={imageQuotaModalOpen}
-        onClose={() => setImageQuotaModalOpen(false)}
+        {/* Modal pour quotas d'images */}
+        <ModalQuota
+          isOpen={imageQuotaModalOpen}
+          onClose={() => setImageQuotaModalOpen(false)}
         contentType={
           _imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
         }
@@ -596,6 +609,7 @@ export default function Edition() {
         limit={_imageQuotaContent.limit}
         period="total"
       />
+      </Suspense>
     </div>
   )
 }
