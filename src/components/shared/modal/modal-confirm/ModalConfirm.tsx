@@ -1,7 +1,16 @@
-// src/components/modal/modal-confirm/ModalConfirm.jsx
-import PropTypes from 'prop-types'
+// src/components/modal/modal-confirm/ModalConfirm.tsx
+import { ReactNode } from 'react'
 import { Modal } from '@/components'
 import { useI18n } from '@/hooks'
+
+interface ModalConfirmProps {
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  confirmLabel?: string
+  cancelLabel?: string
+  children: ReactNode
+}
 
 export default function ModalConfirm({
   isOpen,
@@ -10,7 +19,7 @@ export default function ModalConfirm({
   confirmLabel,
   cancelLabel,
   children,
-}) {
+}: ModalConfirmProps) {
   const { t } = useI18n()
   return (
     <Modal
@@ -25,7 +34,6 @@ export default function ModalConfirm({
             onConfirm()
           },
           variant: 'primary',
-          autoFocus: true,
         },
       ]}
     >
@@ -34,13 +42,4 @@ export default function ModalConfirm({
       </div>
     </Modal>
   )
-}
-
-ModalConfirm.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  confirmLabel: PropTypes.string,
-  cancelLabel: PropTypes.string,
-  children: PropTypes.node.isRequired,
 }

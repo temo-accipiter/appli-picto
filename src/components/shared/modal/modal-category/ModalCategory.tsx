@@ -1,14 +1,24 @@
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
 import { useI18n } from '@/hooks'
+import type { Categorie } from '@/types/global'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
   makeValidateNotEmpty,
 } from '@/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import PropTypes from 'prop-types'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './ModalCategory.scss'
+
+interface ModalCategoryProps {
+  isOpen: boolean
+  onClose: () => void
+  categories: Categorie[]
+  onDeleteCategory: (value: string) => void
+  onAddCategory: (e: React.FormEvent, category: string) => void
+  newCategory: string
+  onChangeNewCategory: (value: string) => void
+}
 
 export default function ModalCategory({
   isOpen,
@@ -18,10 +28,10 @@ export default function ModalCategory({
   onAddCategory,
   newCategory,
   onChangeNewCategory,
-}) {
+}: ModalCategoryProps) {
   const { t } = useI18n()
-  const inputRef = useRef(null)
-  const [visibleCats, setVisibleCats] = useState([])
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [visibleCats, setVisibleCats] = useState<Categorie[]>([])
 
   // Créer les fonctions de validation i18n avec useMemo
   const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
@@ -38,7 +48,7 @@ export default function ModalCategory({
       validateNotEmpty,
       noEdgeSpaces,
       noDoubleSpaces,
-      val => {
+      (val: string) => {
         const labelClean = val.trim().replace(/\s+/g, ' ').toLowerCase()
         const exists = categories.some(
           cat => cat.label.trim().toLowerCase() === labelClean
@@ -49,7 +59,7 @@ export default function ModalCategory({
     [validateNotEmpty, noEdgeSpaces, noDoubleSpaces, categories, t]
   )
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     const hasError = validationRules.some(rule => rule(newCategory))
@@ -65,7 +75,7 @@ export default function ModalCategory({
     }
   }
 
-  const handleDelete = value => {
+  const handleDelete = (value: string) => {
     onDeleteCategory(value) // Envoie le 'value' (slug) pas l'id
   }
 
@@ -119,14 +129,4 @@ export default function ModalCategory({
       </Modal>
     </>
   )
-}
-
-ModalCategory.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  categories: PropTypes.array.isRequired,
-  onDeleteCategory: PropTypes.func.isRequired,
-  onAddCategory: PropTypes.func.isRequired,
-  newCategory: PropTypes.string.isRequired,
-  onChangeNewCategory: PropTypes.func.isRequired,
 }

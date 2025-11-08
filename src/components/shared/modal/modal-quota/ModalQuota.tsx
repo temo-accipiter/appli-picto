@@ -1,6 +1,17 @@
 import { Modal } from '@/components'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
+
+type ContentType = 'task' | 'reward' | 'category'
+type Period = 'total' | 'monthly'
+
+interface ModalQuotaProps {
+  isOpen: boolean
+  onClose: () => void
+  contentType: ContentType
+  currentUsage: number
+  limit: number
+  period?: Period
+}
 
 export default function ModalQuota({
   isOpen,
@@ -8,12 +19,12 @@ export default function ModalQuota({
   contentType,
   currentUsage,
   limit,
-  period = 'total', // 'total' | 'monthly'
-}) {
+  period = 'total',
+}: ModalQuotaProps) {
   const { t } = useI18n()
 
   // Mapping des types de contenu vers les clés de traduction
-  const typeMap = {
+  const typeMap: Record<ContentType, string> = {
     task: 'tasks',
     reward: 'rewards',
     category: 'categories',
@@ -96,13 +107,4 @@ export default function ModalQuota({
       </div>
     </Modal>
   )
-}
-
-ModalQuota.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  contentType: PropTypes.oneOf(['task', 'reward', 'category']).isRequired,
-  currentUsage: PropTypes.number.isRequired,
-  limit: PropTypes.number.isRequired,
-  period: PropTypes.oneOf(['total', 'monthly']),
 }

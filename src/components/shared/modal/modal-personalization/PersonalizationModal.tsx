@@ -1,9 +1,16 @@
 import { Button, Modal } from '@/components'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
 import './PersonalizationModal.scss'
 
-export default function PersonalizationModal({ isOpen, onClose }) {
+interface PersonalizationModalProps {
+  isOpen: boolean
+  onClose: () => void
+}
+
+export default function PersonalizationModal({
+  isOpen,
+  onClose,
+}: PersonalizationModalProps) {
   const { t } = useI18n()
 
   return (
@@ -64,9 +71,4 @@ export default function PersonalizationModal({ isOpen, onClose }) {
       </div>
     </Modal>
   )
-}
-
-PersonalizationModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
 }

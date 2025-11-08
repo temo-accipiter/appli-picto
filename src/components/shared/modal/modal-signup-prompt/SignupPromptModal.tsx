@@ -2,9 +2,31 @@ import { Button, Modal } from '@/components'
 import { useI18n } from '@/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, Star, Users, X, Zap } from 'lucide-react'
-import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 import './SignupPromptModal.scss'
+
+type TriggerType = 'feature_restriction' | 'line_change' | 'unlimited_tasks'
+
+interface SignupPromptModalProps {
+  /** État d'ouverture de la modal */
+  isOpen: boolean
+  /** Callback de fermeture */
+  onClose: () => void
+  /** Titre personnalisé de la modal */
+  title?: string
+  /** Message personnalisé */
+  message?: string
+  /** Contexte de déclenchement pour personnaliser le message */
+  trigger?: TriggerType
+  /** Afficher la liste des fonctionnalités */
+  showFeatures?: boolean
+}
+
+interface Feature {
+  icon: ReactNode
+  title: string
+  description: string
+}
 
 /**
  * Modal de conversion réutilisable pour rediriger vers signup
@@ -15,9 +37,9 @@ export const SignupPromptModal = ({
   onClose,
   title,
   message,
-  trigger: _trigger = 'feature_restriction', // feature_restriction, line_change, unlimited_tasks
+  trigger: _trigger = 'feature_restriction',
   showFeatures = true,
-}) => {
+}: SignupPromptModalProps) => {
   const { t } = useI18n()
   const [isClosing, setIsClosing] = useState(false)
 
@@ -36,7 +58,7 @@ export const SignupPromptModal = ({
   const defaultTitle = t('quota.upgradeToUnlock')
   const defaultMessage = t('demo.signupPrompt')
 
-  const features = [
+  const features: Feature[] = [
     {
       icon: <Zap size={20} />,
       title: t('tasks.allTasks'),
@@ -134,23 +156,4 @@ export const SignupPromptModal = ({
       )}
     </AnimatePresence>
   )
-}
-
-SignupPromptModal.propTypes = {
-  /** État d'ouverture de la modal */
-  isOpen: PropTypes.bool.isRequired,
-  /** Callback de fermeture */
-  onClose: PropTypes.func.isRequired,
-  /** Titre personnalisé de la modal */
-  title: PropTypes.string,
-  /** Message personnalisé */
-  message: PropTypes.string,
-  /** Contexte de déclenchement pour personnaliser le message */
-  trigger: PropTypes.oneOf([
-    'feature_restriction',
-    'line_change',
-    'unlimited_tasks',
-  ]),
-  /** Afficher la liste des fonctionnalités */
-  showFeatures: PropTypes.bool,
 }

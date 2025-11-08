@@ -1,5 +1,13 @@
-import PropTypes from 'prop-types'
 import { Modal, ItemForm } from '@/components'
+import type { Categorie } from '@/types/global'
+
+interface ModalAjoutProps {
+  isOpen: boolean
+  onClose: () => void
+  includeCategory?: boolean
+  categories?: Categorie[]
+  onSubmit: () => void
+}
 
 export default function ModalAjout({
   isOpen,
@@ -7,7 +15,7 @@ export default function ModalAjout({
   includeCategory = false,
   categories = [],
   onSubmit,
-}) {
+}: ModalAjoutProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} actions={[]}>
       <ItemForm
@@ -17,12 +25,4 @@ export default function ModalAjout({
       />
     </Modal>
   )
-}
-
-ModalAjout.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  includeCategory: PropTypes.bool,
-  categories: PropTypes.array,
-  onSubmit: PropTypes.func.isRequired,
 }

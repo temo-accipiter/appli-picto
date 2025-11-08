@@ -1,9 +1,23 @@
 import { DemoSignedImage, Modal, SignedImage } from '@/components'
 import { useI18n } from '@/hooks'
-import PropTypes from 'prop-types'
+import type { Recompense } from '@/types/global'
 import './ModalRecompense.scss'
 
-export default function ModalRecompense({ isOpen, onClose, reward }) {
+interface RewardWithDemo extends Recompense {
+  isDemo?: boolean
+}
+
+interface ModalRecompenseProps {
+  isOpen: boolean
+  onClose: () => void
+  reward: RewardWithDemo
+}
+
+export default function ModalRecompense({
+  isOpen,
+  onClose,
+  reward,
+}: ModalRecompenseProps) {
   const { t } = useI18n()
 
   if (!reward) return null
@@ -35,10 +49,4 @@ export default function ModalRecompense({ isOpen, onClose, reward }) {
       </div>
     </Modal>
   )
-}
-
-ModalRecompense.propTypes = {
-  isOpen: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  reward: PropTypes.object.isRequired,
 }
