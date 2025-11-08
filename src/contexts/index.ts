@@ -1,4 +1,4 @@
-// src/contexts/index.js
+// src/contexts/index.ts
 export { AuthContext, AuthProvider } from './AuthContext'
 export { DisplayContext, DisplayProvider, useDisplay } from './DisplayContext'
 export {

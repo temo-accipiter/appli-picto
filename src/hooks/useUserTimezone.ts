@@ -1,11 +1,23 @@
-// src/hooks/useUserTimezone.js
+// src/hooks/useUserTimezone.ts
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useMemo, useState } from 'react'
 
-// Petite clé de cache localStorage par utilisateur
-const storageKey = userId => `tz:${userId}`
+interface TimezoneCache {
+  timezone: string
+  updated_at: string
+}
 
-function useUserTimezone() {
+interface UseUserTimezoneReturn {
+  timezone: string
+  loading: boolean
+  toLocal: (date: string | number | Date) => Date
+  format: (date: string | number | Date, options?: Intl.DateTimeFormatOptions) => string
+}
+
+// Petite clé de cache localStorage par utilisateur
+const storageKey = (userId: string) => `tz:${userId}`
+
+function useUserTimezone(): UseUserTimezoneReturn {
   const [timezone, setTimezone] = useState('Europe/Paris')
   const [loading, setLoading] = useState(true)
 
@@ -34,7 +46,7 @@ function useUserTimezone() {
       const cached = localStorage.getItem(storageKey(user.id))
       if (cached && !cancelled) {
         try {
-          const parsed = JSON.parse(cached)
+          const parsed: TimezoneCache = JSON.parse(cached)
           if (parsed?.timezone) setTimezone(parsed.timezone)
         } catch {
           /* ignore */
@@ -74,12 +86,12 @@ function useUserTimezone() {
   }, [])
 
   const helpers = useMemo(() => {
-    const toLocal = date =>
+    const toLocal = (date: string | number | Date): Date =>
       typeof date === 'string' || typeof date === 'number'
         ? new Date(date)
         : date
 
-    const format = (date, options = {}) => {
+    const format = (date: string | number | Date, options: Intl.DateTimeFormatOptions = {}): string => {
       const d =
         typeof date === 'string' || typeof date === 'number'
           ? new Date(date)

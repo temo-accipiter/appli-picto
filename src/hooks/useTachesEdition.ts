@@ -1,4 +1,4 @@
-// src/hooks/useTachesEdition.js
+// src/hooks/useTachesEdition.ts
 /**
  * Édition des tâches :
  * - Liste / toggle "aujourdhui" / update label & catégorie
@@ -14,19 +14,53 @@ import {
   replaceImage,
 } from '@/utils/storage/modernUploadImage'
 
-const formatErr = e => {
-  const m = String(e?.message ?? e)
+interface Tache {
+  id: string
+  user_id: string
+  label: string
+  fait: boolean
+  aujourdhui: boolean
+  imagepath: string | null
+  categorie: string | null
+  position: number
+  category_id?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+interface TacheFields {
+  label?: string
+  categorie?: string | null
+  aujourdhui?: boolean
+  position?: number
+}
+
+interface SupabaseError {
+  message?: string
+  code?: string
+  details?: string
+  hint?: string
+}
+
+interface OperationResult<T = unknown> {
+  data: T | null
+  error: Error | SupabaseError | null
+}
+
+const formatErr = (e: unknown): string => {
+  const error = e as SupabaseError & { message?: string }
+  const m = String(error?.message ?? e)
   const parts = [
     m,
-    e?.code ? `[${e.code}]` : '',
-    e?.details ? `— ${e.details}` : '',
-    e?.hint ? `(hint: ${e.hint})` : '',
+    error?.code ? `[${error.code}]` : '',
+    error?.details ? `— ${error.details}` : '',
+    error?.hint ? `(hint: ${error.hint})` : '',
   ].filter(Boolean)
   return parts.join(' ')
 }
 
-export default function useTachesEdition(reload = 0) {
-  const [taches, setTaches] = useState([])
+export default function useTachesEdition(reload: number = 0) {
+  const [taches, setTaches] = useState<Tache[]>([])
   const { user } = useAuth()
   const { show } = useToast()
   const { t } = useI18n()
@@ -48,18 +82,21 @@ export default function useTachesEdition(reload = 0) {
         ...t,
         aujourdhui: !!t.aujourdhui,
         fait: !!t.fait,
-      }))
+      })) as Tache[]
       setTaches(norm)
     })()
   }, [reload, user?.id])
 
-  const toggleAujourdhui = async (id, current) => {
+  const toggleAujourdhui = async (
+    id: string,
+    current: boolean
+  ): Promise<OperationResult<Tache>> => {
     try {
       const { data, error } = await supabase
         .from('taches')
         .update({ aujourdhui: !current, fait: false })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .select()
         .single()
 
@@ -71,21 +108,24 @@ export default function useTachesEdition(reload = 0) {
         )
       )
       // Pas de toast pour le toggle checkbox (trop verbeux)
-      return { data, error: null }
+      return { data: data as Tache, error: null }
     } catch (error) {
       console.error(`❌ Erreur toggle aujourdhui : ${formatErr(error)}`)
       show(t('toasts.taskUpdateError'), 'error')
-      return { data: null, error }
+      return { data: null, error: error as Error }
     }
   }
 
-  const updateLabel = async (id, label) => {
+  const updateLabel = async (
+    id: string,
+    label: string
+  ): Promise<OperationResult<Tache>> => {
     try {
       const { data, error } = await supabase
         .from('taches')
         .update({ label })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .select()
         .single()
 
@@ -93,21 +133,24 @@ export default function useTachesEdition(reload = 0) {
 
       setTaches(prev => prev.map(t => (t.id === id ? { ...t, label } : t)))
       show(t('toasts.taskRenamed'), 'success')
-      return { data, error: null }
+      return { data: data as Tache, error: null }
     } catch (error) {
       console.error(`❌ Erreur update label : ${formatErr(error)}`)
       show(t('toasts.taskUpdateError'), 'error')
-      return { data: null, error }
+      return { data: null, error: error as Error }
     }
   }
 
-  const updateCategorie = async (id, categorie) => {
+  const updateCategorie = async (
+    id: string,
+    categorie: string | null
+  ): Promise<OperationResult<Tache>> => {
     try {
       const { data, error } = await supabase
         .from('taches')
         .update({ categorie })
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
         .select()
         .single()
 
@@ -115,16 +158,20 @@ export default function useTachesEdition(reload = 0) {
 
       setTaches(prev => prev.map(t => (t.id === id ? { ...t, categorie } : t)))
       show(t('toasts.taskCategoryChanged'), 'success')
-      return { data, error: null }
+      return { data: data as Tache, error: null }
     } catch (error) {
       console.error(`❌ Erreur update catégorie : ${formatErr(error)}`)
       show(t('toasts.taskUpdateError'), 'error')
-      return { data: null, error }
+      return { data: null, error: error as Error }
     }
   }
 
   // ➕ Ajout avec fichier (upload moderne + insert)
-  const addTacheFromFile = async (file, fields = {}, onProgress = null) => {
+  const addTacheFromFile = async (
+    file: File,
+    fields: TacheFields = {},
+    onProgress: ((progress: number) => void) | null = null
+  ): Promise<OperationResult<Tache>> => {
     if (!user?.id)
       return { data: null, error: new Error('Utilisateur manquant') }
     try {
@@ -146,7 +193,7 @@ export default function useTachesEdition(reload = 0) {
         fait: false,
         imagepath: uploadResult.path,
         position: Number.isFinite(fields.position)
-          ? fields.position
+          ? fields.position!
           : taches.length,
       }
 
@@ -168,17 +215,21 @@ export default function useTachesEdition(reload = 0) {
 
       setTaches(prev => [
         ...prev,
-        { ...data, aujourdhui: !!data.aujourdhui, fait: !!data.fait },
+        { ...data, aujourdhui: !!data.aujourdhui, fait: !!data.fait } as Tache,
       ])
-      return { data, error: null }
+      return { data: data as Tache, error: null }
     } catch (e) {
       console.error(`❌ Erreur ajout tâche (upload) : ${formatErr(e)}`)
-      return { data: null, error: e }
+      return { data: null, error: e as Error }
     }
   }
 
   // ✏️ Remplacement d'image avec versioning
-  const updateTacheImage = async (id, file, onProgress = null) => {
+  const updateTacheImage = async (
+    id: string,
+    file: File,
+    onProgress: ((progress: number) => void) | null = null
+  ): Promise<OperationResult<Tache>> => {
     if (!user?.id)
       return { data: null, error: new Error('Utilisateur manquant') }
     try {
@@ -221,19 +272,22 @@ export default function useTachesEdition(reload = 0) {
           t.id === id ? { ...t, imagepath: replaceResult.path } : t
         )
       )
-      return { data, error: null }
+      return { data: data as Tache, error: null }
     } catch (e) {
       console.error(`❌ Erreur remplacement image tâche : ${formatErr(e)}`)
-      return { data: null, error: e }
+      return { data: null, error: e as Error }
     }
   }
 
-  const deleteTache = async t => {
-    const id = typeof t === 'string' ? t : t?.id
-    const imagePath = t?.imagepath
+  const deleteTache = async (
+    tache: string | Tache | { id?: string; imagepath?: string | null }
+  ): Promise<OperationResult<null>> => {
+    const id = typeof tache === 'string' ? tache : tache?.id
+    const imagePath =
+      typeof tache === 'object' && tache !== null ? tache.imagepath : undefined
 
     if (!id) {
-      console.error('❌ Tâche invalide :', t)
+      console.error('❌ Tâche invalide :', tache)
       show(t('toasts.invalidTask'), 'error')
       return { data: null, error: new Error('Tâche invalide') }
     }
@@ -249,7 +303,7 @@ export default function useTachesEdition(reload = 0) {
         .from('taches')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
 
       if (error) throw error
 
@@ -259,16 +313,16 @@ export default function useTachesEdition(reload = 0) {
     } catch (error) {
       console.error(`❌ Erreur suppression tâche : ${formatErr(error)}`)
       show(t('toasts.taskDeleteError'), 'error')
-      return { data: null, error }
+      return { data: null, error: error as Error }
     }
   }
 
-  const resetEdition = async () => {
+  const resetEdition = async (): Promise<{ error: Error | null }> => {
     try {
       const { error } = await supabase
         .from('taches')
         .update({ aujourdhui: false })
-        .eq('user_id', user.id)
+        .eq('user_id', user!.id)
 
       if (error) throw error
 
@@ -278,7 +332,7 @@ export default function useTachesEdition(reload = 0) {
     } catch (error) {
       console.error(`❌ Erreur reset édition : ${formatErr(error)}`)
       show(t('toasts.taskResetError'), 'error')
-      return { error }
+      return { error: error as Error }
     }
   }
 

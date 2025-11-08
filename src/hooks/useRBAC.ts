@@ -4,110 +4,98 @@
  *
  * Combine usePermissions + useQuotas + useEntitlements en une seule API cohérente.
  * Ce hook centralise TOUTES les vérifications d'accès, quotas et rôles.
- *
- * @returns {RBACValue} RBAC API
- * @returns {boolean} return.ready - True quand permissions ET quotas sont chargés
- * @returns {boolean} return.loading - True pendant le chargement
- * @returns {string} return.role - Rôle actuel ('visitor' | 'free' | 'abonne' | 'admin' | 'unknown')
- *
- * @returns {boolean} return.isVisitor - True si visiteur (non connecté)
- * @returns {boolean} return.isAdmin - True si administrateur
- * @returns {boolean} return.isUnknown - True si rôle inconnu (état transitoire)
- * @returns {boolean} return.isFree - True si compte gratuit
- * @returns {boolean} return.isSubscriber - True si abonné payant
- *
- * @returns {Function} return.can - Vérifie UNE permission : can('feature_name')
- * @returns {Function} return.canAll - Vérifie TOUTES les permissions : canAll(['f1', 'f2'])
- * @returns {Function} return.canAny - Vérifie AU MOINS UNE permission : canAny(['f1', 'f2'])
- *
- * @returns {Object} return.quotas - Limites par type (max_tasks, max_rewards, etc.)
- * @returns {Object} return.usage - Utilisation actuelle par type
- * @returns {Function} return.canCreate - Vérifie si création possible : canCreate('task')
- * @returns {Function} return.canCreateTask - Shortcut : peut créer une tâche ?
- * @returns {Function} return.canCreateReward - Shortcut : peut créer une récompense ?
- * @returns {Function} return.canCreateCategory - Shortcut : peut créer une catégorie ?
- * @returns {Function} return.getQuotaInfo - Infos quota : getQuotaInfo('task') → {limit, current, remaining, percentage, isAtLimit, isNearLimit}
- * @returns {Function} return.getMonthlyQuotaInfo - Infos quota mensuel (si applicable)
- * @returns {Function} return.refreshQuotas - Recharger manuellement les quotas
- *
- * @returns {Function} return.reload - Recharger permissions ET quotas
- *
- * @example
- * // Vérifier un rôle
- * const { isAdmin, isFree } = useRBAC()
- * if (isAdmin) { /* ... *\/ }
- *
- * @example
- * // Vérifier des permissions
- * const { can, canAll } = useRBAC()
- * if (can('edit_tasks')) { /* ... *\/ }
- * if (canAll(['edit_tasks', 'delete_tasks'])) { /* ... *\/ }
- *
- * @example
- * // Vérifier quotas
- * const { canCreateTask, getQuotaInfo } = useRBAC()
- * if (!canCreateTask()) {
- *   const info = getQuotaInfo('task')
- *   alert(`Limite atteinte : ${info.current}/${info.limit}`)
- * }
- *
- * Phase 2-3 - Refactoring RBAC
- * - Élimine la duplication entre useQuotas et useEntitlements
- * - API unifiée pour toutes les vérifications RBAC
- * - Single RPC call (get_usage_fast)
- * - Realtime updates pour free accounts
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { RealtimeChannel } from '@supabase/supabase-js'
-import type { RBACValue, QuotaType, QuotaInfo } from '@/types/contexts'
-import type { QuotaData, UsageData } from '@/types/global'
 import { usePermissions } from '@/contexts/PermissionsContext'
 import { supabase } from '@/utils/supabaseClient'
 import { ROLE } from '@/utils/roleUtils'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 
 const NEAR_LIMIT_RATIO = 0.8
 
-interface QuotaEntry {
+type ContentType = 'task' | 'reward' | 'category'
+type QuotaPeriod = 'total' | 'monthly'
+
+interface QuotaConfig {
   limit: number
-  period: 'monthly' | 'total'
+  period: QuotaPeriod
 }
 
-interface QuotasMap {
-  max_tasks?: QuotaEntry
-  max_rewards?: QuotaEntry
-  max_categories?: QuotaEntry
+interface QuotaMap {
+  max_tasks?: QuotaConfig
+  max_rewards?: QuotaConfig
+  max_categories?: QuotaConfig
 }
 
 interface UsageMap {
-  max_tasks: number
-  max_rewards: number
-  max_categories: number
-  monthly_tasks: number
-  monthly_rewards: number
-  monthly_categories: number
+  max_tasks?: number
+  max_rewards?: number
+  max_categories?: number
+  monthly_tasks?: number
+  monthly_rewards?: number
+  monthly_categories?: number
 }
 
-interface GetUsageFastResponse {
-  quotas: QuotaData[]
-  usage: UsageData
+interface QuotaInfo {
+  limit: number
+  current: number
+  remaining: number
+  percentage: number
+  period: QuotaPeriod
+  isAtLimit: boolean
+  isNearLimit: boolean
+}
+
+interface QuotaRow {
+  quota_type: string
+  quota_limit: number
+  quota_period: QuotaPeriod
+}
+
+interface UsageData {
+  tasks?: number
+  rewards?: number
+  categories?: number
+}
+
+interface GetUsageFastResult {
+  quotas?: QuotaRow[]
+  usage?: UsageData
   monthly_usage?: UsageData
 }
 
-export default function useRBAC(): RBACValue {
+interface UseRBACReturn {
+  ready: boolean
+  loading: boolean
+  role: string
+  isVisitor: boolean
+  isAdmin: boolean
+  isUnknown: boolean
+  isFree: boolean
+  isSubscriber: boolean
+  can: (featureName: string) => boolean
+  canAll: (featureNames: string[]) => boolean
+  canAny: (featureNames: string[]) => boolean
+  quotas: QuotaMap
+  usage: UsageMap
+  canCreate: (contentType: ContentType) => boolean
+  canCreateTask: () => boolean
+  canCreateReward: () => boolean
+  canCreateCategory: () => boolean
+  getQuotaInfo: (contentType: ContentType) => QuotaInfo | null
+  getMonthlyQuotaInfo: (contentType: ContentType) => QuotaInfo | null
+  refreshQuotas: () => void
+  reload: () => void
+}
+
+export default function useRBAC(): UseRBACReturn {
   const permissions = usePermissions()
 
   // État pour quotas/usage
   const [quotasLoading, setQuotasLoading] = useState(false)
-  const [quotas, setQuotas] = useState<QuotasMap>({})
-  const [usage, setUsage] = useState<UsageMap>({
-    max_tasks: 0,
-    max_rewards: 0,
-    max_categories: 0,
-    monthly_tasks: 0,
-    monthly_rewards: 0,
-    monthly_categories: 0,
-  })
+  const [quotas, setQuotas] = useState<QuotaMap>({})
+  const [usage, setUsage] = useState<UsageMap>({})
   const [initialLoad, setInitialLoad] = useState(true)
   const channelRef = useRef<RealtimeChannel | null>(null)
 
@@ -131,14 +119,7 @@ export default function useRBAC(): RBACValue {
       permissions.isAdmin
     ) {
       setQuotas({})
-      setUsage({
-        max_tasks: 0,
-        max_rewards: 0,
-        max_categories: 0,
-        monthly_tasks: 0,
-        monthly_rewards: 0,
-        monthly_categories: 0,
-      })
+      setUsage({})
       setQuotasLoading(false)
       setInitialLoad(false)
       return
@@ -153,14 +134,7 @@ export default function useRBAC(): RBACValue {
       } = await supabase.auth.getUser()
       if (!user?.id) {
         setQuotas({})
-        setUsage({
-          max_tasks: 0,
-          max_rewards: 0,
-          max_categories: 0,
-          monthly_tasks: 0,
-          monthly_rewards: 0,
-          monthly_categories: 0,
-        })
+        setUsage({})
         setQuotasLoading(false)
         setInitialLoad(false)
         return
@@ -172,14 +146,7 @@ export default function useRBAC(): RBACValue {
 
       if (error || !data) {
         setQuotas({})
-        setUsage({
-          max_tasks: 0,
-          max_rewards: 0,
-          max_categories: 0,
-          monthly_tasks: 0,
-          monthly_rewards: 0,
-          monthly_categories: 0,
-        })
+        setUsage({})
         setQuotasLoading(false)
         setInitialLoad(false)
         return
@@ -187,29 +154,22 @@ export default function useRBAC(): RBACValue {
 
       if (permissions.role !== ROLE.FREE) {
         setQuotas({})
-        setUsage({
-          max_tasks: 0,
-          max_rewards: 0,
-          max_categories: 0,
-          monthly_tasks: 0,
-          monthly_rewards: 0,
-          monthly_categories: 0,
-        })
+        setUsage({})
         setQuotasLoading(false)
         setInitialLoad(false)
         return
       }
 
-      const responseData = data as unknown as GetUsageFastResponse
-      const quotasData = responseData.quotas || []
-      const usageData = responseData.usage || ({} as UsageData)
+      const result = data as GetUsageFastResult
+      const quotasData = result.quotas || []
+      const usageData = result.usage || {}
       // ✅ PHASE 1: Récupérer monthly_usage depuis get_usage_fast()
-      const monthlyUsageData = responseData.monthly_usage || ({} as UsageData)
+      const monthlyUsageData = result.monthly_usage || {}
 
-      const quotasMap: QuotasMap = {}
+      const quotasMap: QuotaMap = {}
       quotasData.forEach(q => {
         // Mapper quota_type vers le format attendu (max_*)
-        const key =
+        const key: keyof QuotaMap | null =
           q.quota_type === 'task'
             ? 'max_tasks'
             : q.quota_type === 'reward'
@@ -221,7 +181,7 @@ export default function useRBAC(): RBACValue {
         if (key) {
           quotasMap[key] = {
             limit: q.quota_limit,
-            period: (q.quota_period as 'monthly' | 'total') || 'total',
+            period: q.quota_period, // 'monthly' ou 'total'
           }
         }
       })
@@ -255,14 +215,7 @@ export default function useRBAC(): RBACValue {
         message: (err as Error)?.message || 'Unknown error',
       })
       setQuotas({})
-      setUsage({
-        max_tasks: 0,
-        max_rewards: 0,
-        max_categories: 0,
-        monthly_tasks: 0,
-        monthly_rewards: 0,
-        monthly_categories: 0,
-      })
+      setUsage({})
       setQuotasLoading(false)
       setInitialLoad(false)
     }
@@ -341,11 +294,11 @@ export default function useRBAC(): RBACValue {
 
   // Helpers de vérification
   const canCreate = useCallback(
-    (contentType: QuotaType): boolean => {
+    (contentType: ContentType): boolean => {
       if (!isFreeAccount) return true
 
       // Mapper le type de contenu vers la clé de quota
-      const key =
+      const key: keyof QuotaMap | null =
         contentType === 'task'
           ? 'max_tasks'
           : contentType === 'reward'
@@ -357,13 +310,13 @@ export default function useRBAC(): RBACValue {
       if (!key || !quotas[key]) return true
 
       // ✅ PHASE 1: Utiliser le bon compteur selon quota_period
-      const quotaPeriod = quotas[key].period || 'total'
-      const limit = quotas[key].limit
+      const quotaPeriod = quotas[key]!.period || 'total'
+      const limit = quotas[key]!.limit
 
       let currentUsage: number
       if (quotaPeriod === 'monthly') {
         // Quotas mensuels : utiliser monthly_tasks/monthly_rewards/monthly_categories
-        const monthlyKey =
+        const monthlyKey: keyof UsageMap =
           contentType === 'task'
             ? 'monthly_tasks'
             : contentType === 'reward'
@@ -381,8 +334,8 @@ export default function useRBAC(): RBACValue {
   )
 
   const getQuotaInfo = useCallback(
-    (contentType: QuotaType): QuotaInfo | null => {
-      const key =
+    (contentType: ContentType): QuotaInfo | null => {
+      const key: keyof QuotaMap | null =
         contentType === 'task'
           ? 'max_tasks'
           : contentType === 'reward'
@@ -394,13 +347,13 @@ export default function useRBAC(): RBACValue {
       if (!key || !quotas[key]) return null
 
       // ✅ PHASE 1: Utiliser le bon compteur selon quota_period
-      const quotaPeriod = quotas[key].period || 'total'
-      const limit = quotas[key].limit
+      const quotaPeriod = quotas[key]!.period || 'total'
+      const limit = quotas[key]!.limit
 
       let current: number
       if (quotaPeriod === 'monthly') {
         // Quotas mensuels : utiliser monthly_tasks/monthly_rewards/monthly_categories
-        const monthlyKey =
+        const monthlyKey: keyof UsageMap =
           contentType === 'task'
             ? 'monthly_tasks'
             : contentType === 'reward'
@@ -419,6 +372,7 @@ export default function useRBAC(): RBACValue {
         current,
         remaining: Math.max(0, limit - current),
         percentage,
+        period: quotaPeriod, // Ajouter period pour que l'UI sache si c'est mensuel ou total
         isAtLimit: current >= limit,
         isNearLimit:
           current >= Math.floor(limit * NEAR_LIMIT_RATIO) && current < limit,
@@ -430,12 +384,12 @@ export default function useRBAC(): RBACValue {
   // ✅ PHASE 1: getMonthlyQuotaInfo() est maintenant un alias de getQuotaInfo()
   // getQuotaInfo() gère automatiquement les quotas mensuels ET totaux selon period
   const getMonthlyQuotaInfo = useCallback(
-    (contentType: QuotaType): QuotaInfo | null => {
+    (contentType: ContentType): QuotaInfo | null => {
       // Simplement appeler getQuotaInfo qui gère déjà les quotas mensuels
       const info = getQuotaInfo(contentType)
 
-      // Retourner null si pas de quota
-      if (!info) {
+      // Retourner null si pas de quota ou si le quota n'est pas mensuel
+      if (!info || info.period !== 'monthly') {
         return null
       }
 
@@ -445,7 +399,7 @@ export default function useRBAC(): RBACValue {
   )
 
   // API unifiée
-  const rbac = useMemo<RBACValue>(
+  const rbac = useMemo<UseRBACReturn>(
     () => ({
       // Permissions
       ready: permissions.ready && !quotasLoading,
@@ -457,25 +411,14 @@ export default function useRBAC(): RBACValue {
       isFree: isFreeAccount,
       isSubscriber: permissions.role === ROLE.ABONNE,
 
-      // Propriétés héritées de PermissionsContextValue
-      permissions: permissions.permissions,
-      error: permissions.error,
-
       // Fonctions permissions
       can: permissions.can,
       canAll: permissions.canAll,
       canAny: permissions.canAny,
 
       // Quotas
-      quotas: quotas as Record<string, { limit: number; period: string }>,
-      usage: {
-        max_tasks: usage.max_tasks,
-        max_rewards: usage.max_rewards,
-        max_categories: usage.max_categories,
-        monthly_tasks: usage.monthly_tasks,
-        monthly_rewards: usage.monthly_rewards,
-        monthly_categories: usage.monthly_categories,
-      },
+      quotas,
+      usage,
       canCreate,
       canCreateTask: () => canCreate('task'),
       canCreateReward: () => canCreate('reward'),
@@ -485,8 +428,8 @@ export default function useRBAC(): RBACValue {
       refreshQuotas: () => fetchQuotas(),
 
       // Reload
-      reload: async () => {
-        await permissions.reload()
+      reload: () => {
+        permissions.reload()
         fetchQuotas()
       },
     }),

@@ -1,20 +1,42 @@
-// src/utils/useFallbackData.js
-// Fallback data loader : utilisé seulement si on a VRAIMENT quelque chose à afficher
-// (ou en cas d'erreur réseau), sinon renvoie null pour laisser l'UI afficher "vide".
-//
-// Règles :
-// - Si pas d'utilisateur/auth non prêt → fallbackData = null
-// - Si requêtes OK ET 0 tâche + 0 récompense + 0 catégorie → fallbackData = null  (🔧 changement clé)
-// - Si on a des données (≥1) OU des erreurs → fallbackData = { ... } (permet à l'UI d'afficher ce qu'on a)
-// - loading reflète l'état de la requête fallback uniquement (pas l'état global de la page)
+// src/hooks/useFallbackData.ts
+// Fallback data loader
 
 import { AuthContext } from '@/contexts/AuthContext'
 import { supabase } from '@/utils/supabaseClient'
 import { useContext, useEffect, useState } from 'react'
 
-export function useFallbackData() {
-  const { user, authReady } = useContext(AuthContext)
-  const [fallbackData, setFallbackData] = useState(null) // null = pas de fallback à utiliser
+interface FallbackErrors {
+  tasks?: Error | null
+  rewards?: Error | null
+  categories?: Error | null
+  general?: unknown
+}
+
+interface FallbackMeta {
+  hasAny: boolean
+  hasError: boolean
+}
+
+interface FallbackDataType {
+  tasks: unknown[]
+  rewards: unknown[]
+  categories: unknown[]
+  errors: FallbackErrors
+  meta: FallbackMeta
+}
+
+interface UseFallbackDataReturn {
+  fallbackData: FallbackDataType | null
+  loading: boolean
+}
+
+export function useFallbackData(): UseFallbackDataReturn {
+  const authContext = useContext(AuthContext)
+  if (!authContext) {
+    throw new Error('useFallbackData must be used within an AuthProvider')
+  }
+  const { user, authReady } = authContext
+  const [fallbackData, setFallbackData] = useState<FallbackDataType | null>(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -55,14 +77,14 @@ export function useFallbackData() {
 
         if (cancelled) return
 
-        const safe = {
+        const safe: FallbackDataType = {
           tasks: tasks || [],
           rewards: rewards || [],
           categories: categories || [],
           errors: {
-            tasks: tasksError || null,
-            rewards: rewardsError || null,
-            categories: categoriesError || null,
+            tasks: tasksError as Error | null,
+            rewards: rewardsError as Error | null,
+            categories: categoriesError as Error | null,
           },
           meta: {
             // vrai si au moins une collection contient des éléments
@@ -85,7 +107,7 @@ export function useFallbackData() {
       } catch (error) {
         if (cancelled) return
         console.error('❌ useFallbackData: erreur:', error)
-        // En cas d’exception globale, on renvoie un fallback "vide" mais marqué en erreur
+        // En cas d'exception globale, on renvoie un fallback "vide" mais marqué en erreur
         setFallbackData({
           tasks: [],
           rewards: [],

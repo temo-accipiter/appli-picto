@@ -1,9 +1,33 @@
 // src/hooks/_net.ts
 
+interface PlainError {
+  message: string
+  details?: unknown
+  hint?: unknown
+  code?: string | null
+  name?: string | null
+}
+
+interface WithAbortSafeOptions {
+  onAbort?: (error: unknown) => void
+}
+
+interface WithAbortSafeResult<T> {
+  data: T | null
+  error: PlainError | null
+  aborted: boolean
+}
+
+interface SupabaseResponse<T> {
+  data: T | null
+  error: unknown
+}
+
 export function isAbortLike(err: unknown): boolean {
   if (!err) return false
-  if ((err as Error).name === 'AbortError') return true
-  const msg = String((err as Error).message || '').toLowerCase()
+  const error = err as { name?: string; message?: string }
+  if (error.name === 'AbortError') return true
+  const msg = String(error.message || '').toLowerCase()
   return (
     msg.includes('networkerror') ||
     msg.includes('the operation was aborted') ||
@@ -13,65 +37,43 @@ export function isAbortLike(err: unknown): boolean {
   )
 }
 
-interface PlainError {
-  message: string
-  details?: string | null
-  hint?: string | null
-  code?: string | null
-  name?: string | null
-}
-
 // 🆕 Make a plain, serializable error snapshot (avoids Safari inspector issues)
 export function toPlainError(e: unknown): PlainError {
   try {
-    const err = e as {
+    const error = e as {
       message?: string
-      details?: string
-      hint?: string
-      code?: string
-      name?: string
+      details?: unknown
+      hint?: unknown
+      code?: string | null
+      name?: string | null
     }
     return {
-      message: String(err?.message ?? e),
-      details: err?.details ?? null,
-      hint: err?.hint ?? null,
-      code: err?.code ?? null,
-      name: err?.name ?? null,
+      message: String(error?.message ?? e),
+      details: error?.details ?? null,
+      hint: error?.hint ?? null,
+      code: error?.code ?? null,
+      name: error?.name ?? null,
     }
   } catch {
     return { message: String(e) }
   }
 }
 
-interface AbortSafeOptions {
-  onAbort?: (error: unknown) => void
-}
-
-interface AbortSafeResult<T> {
-  data: T | null
-  error: PlainError | null
-  aborted: boolean
-}
-
 export async function withAbortSafe<T>(
-  promise:
-    | Promise<{ data: T | null; error: unknown }>
-    | Promise<T>
-    | PromiseLike<{ data: T | null; error: unknown }>
-    | PromiseLike<T>,
-  { onAbort }: AbortSafeOptions = {}
-): Promise<AbortSafeResult<T>> {
+  promise: Promise<T | SupabaseResponse<T>>,
+  { onAbort }: WithAbortSafeOptions = {}
+): Promise<WithAbortSafeResult<T>> {
   try {
     const out = await promise
     if (out && typeof out === 'object' && 'data' in out && 'error' in out) {
-      const result = out as { data: T | null; error: unknown }
-      if (result.error && isAbortLike(result.error)) {
-        onAbort?.(result.error)
+      const response = out as SupabaseResponse<T>
+      if (response.error && isAbortLike(response.error)) {
+        onAbort?.(response.error)
         return { data: null, error: null, aborted: true }
       }
       // 🆕 always return a plain error object (never the raw PostgrestError/DOMException)
-      const plainErr = result.error ? toPlainError(result.error) : null
-      return { data: result.data, error: plainErr, aborted: false }
+      const plainErr = response.error ? toPlainError(response.error) : null
+      return { data: response.data, error: plainErr, aborted: false }
     }
     return { data: out as T, error: null, aborted: false }
   } catch (e) {

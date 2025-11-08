@@ -1,12 +1,28 @@
-// src/contexts/DisplayContext.jsx
-import PropTypes from 'prop-types'
+// src/contexts/DisplayContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react'
 import { usePermissions } from './PermissionsContext'
 
-// ✅ on exporte maintenant le contexte nommément
-export const DisplayContext = createContext()
+interface DisplayContextValue {
+  showTrain: boolean
+  setShowTrain: (value: boolean) => void
+  showAutre: boolean
+  setShowAutre: (value: boolean) => void
+  showRecompense: boolean
+  setShowRecompense: (value: boolean) => void
+  showTimeTimer: boolean
+  setShowTimeTimer: (value: boolean) => void
+  loading: boolean
+  isVisitor: boolean
+}
 
-export function DisplayProvider({ children }) {
+interface DisplayProviderProps {
+  children: React.ReactNode
+}
+
+// ✅ on exporte maintenant le contexte nommément
+export const DisplayContext = createContext<DisplayContextValue | null>(null)
+
+export function DisplayProvider({ children }: DisplayProviderProps) {
   // Dans notre PermissionsContext refondu, on a `ready` au lieu de `loading`
   const { isVisitor, ready } = usePermissions()
   const loading = !ready // alias pour compat avec l'ancienne logique
@@ -73,10 +89,12 @@ export function DisplayProvider({ children }) {
   )
 }
 
-DisplayProvider.propTypes = { children: PropTypes.node.isRequired }
-
-export function useDisplay() {
-  return useContext(DisplayContext)
+export function useDisplay(): DisplayContextValue {
+  const context = useContext(DisplayContext)
+  if (!context) {
+    throw new Error('useDisplay must be used within a DisplayProvider')
+  }
+  return context
 }
 
 // ✅ Export par défaut homogène

@@ -1,4 +1,4 @@
-// src/pages/tableau/Tableau.jsx
+// src/pages/tableau/Tableau.tsx
 import {
   ModalRecompense,
   PersonalizationModal,
@@ -19,14 +19,31 @@ import {
   useSimpleRole,
   useTachesDnd,
 } from '@/hooks'
-import PropTypes from 'prop-types'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useLocation } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
+import type { Tache, Recompense } from '@/types/global'
 import './Tableau.scss'
 
-export default function TableauGrille({ isDemo = false, onLineChange }) {
+interface DemoTache extends Tache {
+  done?: boolean
+  isDemo: boolean
+}
+
+interface DemoRecompense extends Recompense {
+  isDemo?: boolean
+}
+
+interface TableauGrilleProps {
+  isDemo?: boolean
+  onLineChange?: (action: string) => void
+}
+
+export default function TableauGrille({
+  isDemo = false,
+  onLineChange,
+}: TableauGrilleProps) {
   const { t } = useI18n()
   const location = useLocation()
   const [reloadKey, setReloadKey] = useState(0)
@@ -48,7 +65,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const isDemoMode = isDemo || role === 'visitor'
 
   // Gérer le changement de ligne pour les visiteurs
-  const handleLineChange = action => {
+  const handleLineChange = (action: string) => {
     if (isDemoMode && action === 'line_change') {
       setShowPersonalizationModal(true)
     } else if (onLineChange) {
@@ -57,7 +74,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   }
 
   // Recharger les tâches quand on revient sur /tableau depuis une autre page
-  const prevPathRef = useRef(null) // null au départ pour détecter le premier mount
+  const prevPathRef = useRef<string | null>(null) // null au départ pour détecter le premier mount
   useEffect(() => {
     const currentPath = location.pathname
     const prevPath = prevPathRef.current
@@ -102,8 +119,8 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   const personalDoneMap = personalDoneMapRaw ?? {}
 
   // En mode démo, créer des fonctions de toggle temporaires
-  const [demoTachesState, setDemoTachesState] = useState([])
-  const [demoDoneMap, setDemoDoneMap] = useState({})
+  const [demoTachesState, setDemoTachesState] = useState<DemoTache[]>([])
+  const [demoDoneMap, setDemoDoneMap] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (isDemoMode) {
@@ -152,7 +169,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
 
   // Mémoïser les fonctions pour éviter re-renders inutiles de TachesDnd
   const toggleDone = useCallback(
-    (id, newDone) => {
+    (id: string, newDone: boolean) => {
       if (isDemoMode) {
         setDemoTachesState(prev => {
           const updated = prev.map(t =>
@@ -176,10 +193,12 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
   )
 
   const saveOrder = useCallback(
-    newList => {
+    (newList: Tache[]) => {
       if (isDemoMode) {
         // En mode démo, mettre à jour l'état local
-        setDemoTachesState(Array.isArray(newList) ? newList : [])
+        setDemoTachesState(
+          (Array.isArray(newList) ? newList : []) as DemoTache[]
+        )
       } else {
         personalSaveOrder(newList)
       }
@@ -214,7 +233,7 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
     return selected
   }, [isDemoMode, recompenses, selected])
 
-  const modalTimeoutRef = useRef(null)
+  const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // 🎯 Confettis + modal dynamique
   useEffect(() => {
@@ -294,10 +313,10 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
         <TachesDnd
           items={taches}
           doneMap={doneMap}
-          onReorder={ids => {
+          onReorder={(ids: string[]) => {
             const newList = (ids ?? [])
               .map(id => safeTaches.find(t => t?.id === id))
-              .filter(Boolean)
+              .filter((t): t is Tache => Boolean(t))
             saveOrder(newList)
           }}
           onToggle={toggleDone}
@@ -337,9 +356,4 @@ export default function TableauGrille({ isDemo = false, onLineChange }) {
       />
     </div>
   )
-}
-
-TableauGrille.propTypes = {
-  isDemo: PropTypes.bool,
-  onLineChange: PropTypes.func,
 }
