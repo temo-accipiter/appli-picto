@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { InputHTMLAttributes, ChangeEvent } from 'react'
+import { Eye, EyeOff } from 'lucide-react' // WCAG - Remplacement emoji par SVG
 import { useI18n } from '@/hooks'
 import './Input.scss'
 
@@ -76,7 +77,11 @@ export default function Input({
             }
             title={showPassword ? 'Masquer' : 'Afficher'}
           >
-            {showPassword ? '🙈' : '👁'}
+            {showPassword ? (
+              <EyeOff size={18} aria-hidden="true" />
+            ) : (
+              <Eye size={18} aria-hidden="true" />
+            )}
           </button>
         )}
       </div>

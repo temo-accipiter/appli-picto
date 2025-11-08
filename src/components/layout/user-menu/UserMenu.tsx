@@ -32,6 +32,7 @@ export default function UserMenu() {
   const dialogRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const checkingOutRef = useRef(false) // évite double-clic sur checkout
+  const menuItemsRef = useRef<HTMLButtonElement[]>([]) // WCAG 2.1.1 - Navigation clavier
 
   // ⚠️ Garde-fou: si tout reste en "chargement" > 3s, on débloque l'UI
   const [forceUnblock, setForceUnblock] = useState(false)
@@ -46,6 +47,57 @@ export default function UserMenu() {
 
   // Ferme le menu sur changement de route
   useEffect(() => setOpen(false), [location.pathname])
+
+  // WCAG 2.1.1 - Navigation clavier et gestion focus
+  useEffect(() => {
+    if (!open) return
+
+    // Focus sur le premier élément du menu à l'ouverture
+    const firstItem = menuItemsRef.current[0]
+    if (firstItem) {
+      firstItem.focus()
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const items = menuItemsRef.current.filter(Boolean)
+      const currentIndex = items.findIndex(item => item === document.activeElement)
+
+      switch (e.key) {
+        case 'Escape':
+          e.preventDefault()
+          setOpen(false)
+          btnRef.current?.focus() // Retour focus sur le bouton
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          if (currentIndex < items.length - 1) {
+            items[currentIndex + 1]?.focus()
+          } else {
+            items[0]?.focus() // Boucle vers le début
+          }
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          if (currentIndex > 0) {
+            items[currentIndex - 1]?.focus()
+          } else {
+            items[items.length - 1]?.focus() // Boucle vers la fin
+          }
+          break
+        case 'Home':
+          e.preventDefault()
+          items[0]?.focus()
+          break
+        case 'End':
+          e.preventDefault()
+          items[items.length - 1]?.focus()
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open])
 
   // Récupère pseudo DB (safe Safari/Firefox)
   useEffect(() => {
@@ -78,6 +130,10 @@ export default function UserMenu() {
   const displayPseudo = getDisplayPseudo(user, dbPseudo)
   const initials = displayPseudo?.[0]?.toUpperCase() || '🙂'
   const avatarPath = user?.user_metadata?.avatar || null
+  // WCAG 1.1.1 - Alt personnalisé avec le pseudo
+  const avatarAlt = displayPseudo
+    ? `Avatar de ${displayPseudo}`
+    : t('nav.profil')
 
   const handleCheckout = async () => {
     if (checkingOutRef.current) return
@@ -166,7 +222,7 @@ export default function UserMenu() {
           <SignedImage
             filePath={avatarPath}
             bucket="avatars"
-            alt={t('nav.profil')}
+            alt={avatarAlt}
             size={36}
           />
         ) : (
@@ -220,6 +276,7 @@ export default function UserMenu() {
 
             <nav className="user-menu-list" aria-label={t('nav.profil')}>
               <button
+                ref={el => el && (menuItemsRef.current[0] = el)}
                 className="user-menu-item"
                 onClick={() => navigate('/profil')}
               >
@@ -230,6 +287,7 @@ export default function UserMenu() {
               {/* Masquer le bouton d'abonnement pour les admins */}
               {!isAdmin && (
                 <button
+                  ref={el => el && (menuItemsRef.current[1] = el)}
                   className="user-menu-item"
                   onClick={
                     (loading || !authReady) && !forceUnblock
@@ -253,6 +311,7 @@ export default function UserMenu() {
 
               {isAdmin && (
                 <button
+                  ref={el => el && (menuItemsRef.current[1] = el)}
                   className="user-menu-item admin"
                   onClick={() => navigate('/admin/permissions')}
                 >
@@ -262,6 +321,7 @@ export default function UserMenu() {
               )}
 
               <button
+                ref={el => el && (menuItemsRef.current[2] = el)}
                 className="user-menu-item danger"
                 onClick={async () => {
                   await signOut()

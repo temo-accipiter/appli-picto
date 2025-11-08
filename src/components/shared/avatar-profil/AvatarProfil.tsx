@@ -104,13 +104,18 @@ export default function AvatarProfil({
     }
   }
 
+  // WCAG 1.1.1 - Alt personnalisé avec le pseudo
+  const avatarAlt = pseudo
+    ? `Avatar de ${pseudo}`
+    : 'Avatar utilisateur'
+
   return (
     <div className="avatar-container">
       {avatarPath ? (
         <SignedImage
           filePath={avatarPath}
           bucket="avatars"
-          alt="Avatar utilisateur"
+          alt={avatarAlt}
           size={80}
         />
       ) : (
@@ -124,12 +129,12 @@ export default function AvatarProfil({
         label="+"
         variant="default"
         className="avatar-upload-btn"
-        aria-label="Changer l’avatar"
-        title="Changer l’avatar"
+        aria-label="Changer l'avatar"
+        title="Changer l'avatar"
       />
 
       {avatarPath && (
-        <ButtonDelete onClick={onDelete} title="Supprimer l’avatar" />
+        <ButtonDelete onClick={onDelete} title="Supprimer l'avatar" />
       )}
 
       <input

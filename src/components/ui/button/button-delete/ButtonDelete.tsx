@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Trash2 } from 'lucide-react' // WCAG - Remplacement emoji par SVG
 import './ButtonDelete.scss'
 
 interface ButtonDeleteProps {
@@ -20,7 +21,7 @@ export default function ButtonDelete({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.15 }}
     >
-      🗑️
+      <Trash2 size={16} aria-hidden="true" />
     </motion.button>
   )
 }
