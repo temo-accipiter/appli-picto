@@ -1,3 +1,4 @@
+// src/pages/profil/Profil.tsx
 import {
   AvatarProfil,
   Button,
@@ -22,7 +23,7 @@ import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import './Profil.scss'
 
-function wait(ms) {
+function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
@@ -39,10 +40,12 @@ export default function Profil() {
   const [ville, setVille] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
-  const [captchaTokenReset, setCaptchaTokenReset] = useState(null)
+  const [captchaTokenReset, setCaptchaTokenReset] = useState<string | null>(
+    null
+  )
   const [captchaKey, setCaptchaKey] = useState(0)
   const [_isAdmin, setIsAdmin] = useState(false)
-  const [tempAvatarPath, setTempAvatarPath] = useState(null)
+  const [tempAvatarPath, setTempAvatarPath] = useState<string | null>(null)
   const [avatarKey, setAvatarKey] = useState(0)
 
   // même logique d'affichage que le UserMenu (DB > metadata > email)
@@ -92,7 +95,7 @@ export default function Profil() {
     checkAndInsertProfile()
   }, [user, showToast])
 
-  const handleSave = async e => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (import.meta.env.DEV) {
@@ -148,7 +151,7 @@ export default function Profil() {
     }
   }
 
-  const handleAvatarUpload = async file => {
+  const handleAvatarUpload = async (file: File) => {
     if (!user) return
 
     if (import.meta.env.DEV) {
@@ -270,14 +273,17 @@ export default function Profil() {
       showToast(t('profil.resetEmailSent'), 'success')
     } catch (err) {
       console.error('Erreur reset mdp :', err)
-      showToast(err?.message || t('errors.generic'), 'error')
+      showToast(
+        (err as Error)?.message || t('errors.generic'),
+        'error'
+      )
     } finally {
       setCaptchaTokenReset(null)
       setCaptchaKey(k => k + 1)
     }
   }
 
-  const handleDeleteAccount = async turnstileToken => {
+  const handleDeleteAccount = async (turnstileToken: string) => {
     const { error } = await supabase.functions.invoke('delete-account', {
       body: { turnstile: turnstileToken },
     })
@@ -369,7 +375,7 @@ export default function Profil() {
           </p>
         )}
 
-        {/* ⬇️ Bouton S’abonner retiré */}
+        {/* ⬇️ Bouton S'abonner retiré */}
         {/* {!loading && !isActive && <SubscribeButton />} */}
 
         <div className="profil-buttons">

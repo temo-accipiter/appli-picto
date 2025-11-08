@@ -1,3 +1,4 @@
+// src/pages/admin-permissions/AdminPermissions.tsx
 import {
   ImageAnalytics,
   InputWithValidation,
@@ -29,6 +30,60 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
 
+type TabType = 'permissions' | 'roles' | 'users' | 'history' | 'logs' | 'analytics'
+
+type CategoryType = 'affichage' | 'gestion' | 'systeme' | 'securite'
+
+interface NewRole {
+  name: string
+  display_name: string
+  description: string
+}
+
+interface ConfirmDeleteState {
+  isOpen: boolean
+  roleId: string | null
+  roleName: string
+}
+
+interface NewFeature {
+  name: string
+  display_name: string
+  description: string
+  category: CategoryType
+}
+
+interface ConfirmDeleteFeatureState {
+  isOpen: boolean
+  featureId: string | null
+  featureName: string
+}
+
+// Type guards and helper types
+type Role = {
+  id: string
+  name: string
+  display_name: string
+  description: string
+  is_active: boolean
+  priority: number
+}
+
+type Feature = {
+  id: string
+  name: string
+  display_name: string
+  description: string
+  category: string
+  is_active: boolean
+}
+
+type Permission = {
+  role_id: string
+  feature_id: string
+  can_access: boolean
+}
+
 export default function AdminPermissions() {
   // Permissions utilisateur (pour vérifier isAdmin)
   const { loading: permissionsLoading, ready, isAdmin } = usePermissions()
@@ -51,29 +106,31 @@ export default function AdminPermissions() {
 
   const loading = permissionsLoading || adminLoading
 
-  const [activeTab, setActiveTab] = useState('permissions')
+  const [activeTab, setActiveTab] = useState<TabType>('permissions')
 
   // États locaux pour les formulaires
-  const [editingRole, setEditingRole] = useState(null)
-  const [newRole, setNewRole] = useState({
+  const [editingRole, setEditingRole] = useState<Role | null>(null)
+  const [newRole, setNewRole] = useState<NewRole>({
     name: '',
     display_name: '',
     description: '',
   })
-  const [editingPermissions, setEditingPermissions] = useState(null)
+  const [editingPermissions, setEditingPermissions] = useState<string | null>(
+    null
+  )
 
   // État pour la confirmation de suppression
-  const [confirmDelete, setConfirmDelete] = useState({
+  const [confirmDelete, setConfirmDelete] = useState<ConfirmDeleteState>({
     isOpen: false,
     roleId: null,
     roleName: '',
   })
 
   // État local pour les permissions temporaires (modifications en cours)
-  const [tempPermissions, setTempPermissions] = useState([])
+  const [tempPermissions, setTempPermissions] = useState<Permission[]>([])
 
   // Nouveaux états pour la création de fonctionnalités
-  const [newFeature, setNewFeature] = useState({
+  const [newFeature, setNewFeature] = useState<NewFeature>({
     name: '',
     display_name: '',
     description: '',
@@ -82,15 +139,16 @@ export default function AdminPermissions() {
   const [showFeatureForm, setShowFeatureForm] = useState(false)
 
   // État pour l'édition de fonctionnalité
-  const [editingFeature, setEditingFeature] = useState(null)
+  const [editingFeature, setEditingFeature] = useState<Feature | null>(null)
   const [showEditFeatureForm, setShowEditFeatureForm] = useState(false)
 
   // État pour la confirmation de suppression de fonctionnalité
-  const [confirmDeleteFeature, setConfirmDeleteFeature] = useState({
-    isOpen: false,
-    featureId: null,
-    featureName: '',
-  })
+  const [confirmDeleteFeature, setConfirmDeleteFeature] =
+    useState<ConfirmDeleteFeatureState>({
+      isOpen: false,
+      featureId: null,
+      featureName: '',
+    })
 
   // Charger les données au montage du composant
   useEffect(() => {
@@ -167,7 +225,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer la mise à jour d'un rôle
-  const handleUpdateRole = async (roleId, updates) => {
+  const handleUpdateRole = async (roleId: string, updates: Partial<Role>) => {
     const result = await updateRole(roleId, updates)
     if (!result.error) {
       setEditingRole(null)
@@ -176,7 +234,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer la suppression d'un rôle
-  const handleDeleteRole = async roleId => {
+  const handleDeleteRole = async (roleId: string) => {
     const role = roles.find(r => r.id === roleId)
     if (role) {
       setConfirmDelete({
@@ -188,7 +246,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer l'activation/désactivation d'un rôle
-  const handleToggleRole = async (roleId, isActive) => {
+  const handleToggleRole = async (roleId: string, isActive: boolean) => {
     try {
       const result = await updateRole(roleId, { is_active: isActive })
       if (!result.error) {
@@ -214,17 +272,17 @@ export default function AdminPermissions() {
   }
 
   // Initialiser les permissions temporaires avec les permissions existantes
-  const initializeTempPermissions = roleId => {
+  const initializeTempPermissions = (roleId: string) => {
     const existingPermissions = permissions.filter(p => p.role_id === roleId)
     setTempPermissions(existingPermissions.map(p => ({ ...p })))
   }
 
   // Gérer le changement d'une permission (approche unifiée)
   const handlePermissionChange = (
-    roleId,
-    featureId,
-    permissionType,
-    checked
+    roleId: string,
+    featureId: string,
+    permissionType: string,
+    checked: boolean
   ) => {
     // Log de debug supprimé pour réduire le spam
 
@@ -241,7 +299,7 @@ export default function AdminPermissions() {
         can_access: false,
       }
       // Ajouter à la liste des permissions temporaires
-      setTempPermissions(prev => [...prev, permission])
+      setTempPermissions(prev => [...prev, permission!])
     }
 
     // Mettre à jour la permission existante
@@ -264,7 +322,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer la sauvegarde des permissions d'un rôle
-  const handleSavePermissions = async roleId => {
+  const handleSavePermissions = async (roleId: string) => {
     try {
       // Récupérer toutes les permissions pour ce rôle depuis l'état temporaire
       const rolePermissions = tempPermissions.filter(p => p.role_id === roleId)
@@ -326,7 +384,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer la suppression d'une fonctionnalité (nouvelle approche directe)
-  const handleDeleteFeature = feature => {
+  const handleDeleteFeature = (feature: Feature) => {
     // Gestion de la suppression de fonctionnalité
 
     // Ouvrir directement la modal de confirmation
@@ -340,7 +398,7 @@ export default function AdminPermissions() {
   }
 
   // Gérer la modification d'une fonctionnalité
-  const handleEditFeature = feature => {
+  const handleEditFeature = (feature: Feature) => {
     // Gestion de l'édition de fonctionnalité
 
     // Ouvrir le formulaire d'édition
@@ -552,7 +610,10 @@ export default function AdminPermissions() {
                   <select
                     value={newFeature.category}
                     onChange={e =>
-                      setNewFeature({ ...newFeature, category: e.target.value })
+                      setNewFeature({
+                        ...newFeature,
+                        category: e.target.value as CategoryType,
+                      })
                     }
                     className="form-select"
                   >
