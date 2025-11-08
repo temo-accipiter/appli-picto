@@ -1,5 +1,4 @@
-import { memo, useMemo } from 'react'
-import PropTypes from 'prop-types'
+import React, { memo, useMemo, ReactNode } from 'react'
 import {
   InputWithValidation,
   Select,
@@ -14,6 +13,28 @@ import {
   makeNoDoubleSpaces,
 } from '@/utils'
 import './BaseCard.scss'
+
+interface CategoryOption {
+  value: string
+  label: string
+}
+
+interface BaseCardProps {
+  image: string
+  label: string
+  editable?: boolean
+  onLabelChange?: (newLabel: string) => void
+  onBlur?: () => void
+  labelId: string | number
+  categorie?: string
+  onCategorieChange?: (newCategorie: string) => void
+  categorieOptions?: CategoryOption[]
+  onDelete?: () => void
+  checked?: boolean
+  onToggleCheck?: (checked: boolean) => void
+  className?: string
+  imageComponent?: ReactNode
+}
 
 const BaseCard = memo(function BaseCard({
   image,
@@ -30,7 +51,7 @@ const BaseCard = memo(function BaseCard({
   onToggleCheck,
   className = '',
   imageComponent,
-}) {
+}: BaseCardProps) {
   const { t } = useI18n()
 
   // Créer les fonctions de validation i18n avec useMemo
@@ -65,9 +86,9 @@ const BaseCard = memo(function BaseCard({
           <InputWithValidation
             id={`input-label-${labelId}`}
             value={label}
-            onValid={val => onLabelChange(val)}
+            onValid={val => onLabelChange?.(val)}
             rules={validationRules}
-            aria-label={t('card.name')}
+            ariaLabel={t('card.name')}
             onBlur={onBlur}
           />
         ) : (
@@ -77,14 +98,13 @@ const BaseCard = memo(function BaseCard({
         {categorieOptions.length > 0 && (
           <Select
             id={`base-categorie-${labelId}`}
-            value={categorie}
-            onChange={e => onCategorieChange(e.target.value)}
+            value={categorie || ''}
+            onChange={e => onCategorieChange?.(e.target.value)}
             options={
               Array.isArray(categorieOptions) && categorieOptions.length > 0
                 ? categorieOptions
                 : [{ value: '', label: t('card.noCategory') }]
             }
-            aria-label={t('card.category')}
           />
         )}
       </div>
@@ -93,22 +113,5 @@ const BaseCard = memo(function BaseCard({
 })
 
 BaseCard.displayName = 'BaseCard'
-
-BaseCard.propTypes = {
-  image: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  editable: PropTypes.bool,
-  onLabelChange: PropTypes.func,
-  onBlur: PropTypes.func,
-  labelId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  categorie: PropTypes.string,
-  onCategorieChange: PropTypes.func,
-  categorieOptions: PropTypes.array,
-  onDelete: PropTypes.func,
-  checked: PropTypes.bool,
-  onToggleCheck: PropTypes.func,
-  className: PropTypes.string,
-  imageComponent: PropTypes.node,
-}
 
 export default BaseCard

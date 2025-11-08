@@ -1,23 +1,29 @@
-// src/components/SignedImage.jsx
-// Affiche une image issue d’un bucket privé en générant une URL signée côté client.
+// src/components/SignedImage.tsx
+// Affiche une image issue d'un bucket privé en générant une URL signée côté client.
 // Props conservées : { filePath, alt = '', size = 60, bucket = 'images' }
 // Nouveautés :
 // - Si bucket === 'demo-images' (public), on construit une URL publique (pas de signature).
 // - Si la signature échoue avec le bucket fourni (ex. 'avatars'), on tente automatiquement 'images' en fallback.
 
-import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
 import { getSignedImageUrl } from '@/utils/storage/getSignedUrl'
 import { supabase } from '@/utils/supabaseClient'
 import './SignedImage.scss'
+
+interface SignedImageProps {
+  filePath?: string
+  alt?: string
+  size?: number
+  bucket?: string
+}
 
 export default function SignedImage({
   filePath,
   alt = '',
   size = 60,
   bucket = 'images',
-}) {
-  const [url, setUrl] = useState(null)
+}: SignedImageProps) {
+  const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const mountedRef = useRef(true)
@@ -73,7 +79,7 @@ export default function SignedImage({
         }
       }
 
-      // 4) Gestion d’erreur + mini retry
+      // 4) Gestion d'erreur + mini retry
       if (!cancelled && mountedRef.current) {
         setError(true)
         if (retryCount < 2) {
@@ -115,11 +121,4 @@ export default function SignedImage({
       )}
     </div>
   )
-}
-
-SignedImage.propTypes = {
-  filePath: PropTypes.string,
-  alt: PropTypes.string,
-  size: PropTypes.number,
-  bucket: PropTypes.string,
 }

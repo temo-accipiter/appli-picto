@@ -1,10 +1,16 @@
 import { supabase } from '@/utils/supabaseClient'
-import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
 import './DemoSignedImage.scss'
 
 // ⚡ cache en mémoire pour éviter les appels redondants
-const signedUrlCache = new Map()
+const signedUrlCache = new Map<string, string>()
+
+interface DemoSignedImageProps {
+  filePath: string
+  alt?: string
+  size?: number
+  className?: string
+}
 
 /**
  * Composant pour afficher les images de démonstration
@@ -15,8 +21,8 @@ export default function DemoSignedImage({
   alt = '',
   size = 60,
   className = '',
-}) {
-  const [url, setUrl] = useState(null)
+}: DemoSignedImageProps) {
+  const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
 
@@ -26,7 +32,7 @@ export default function DemoSignedImage({
     const cacheKey = `demo-images/${filePath}`
 
     if (signedUrlCache.has(cacheKey)) {
-      setUrl(signedUrlCache.get(cacheKey))
+      setUrl(signedUrlCache.get(cacheKey)!)
       return
     }
 
@@ -60,7 +66,7 @@ export default function DemoSignedImage({
         }
       } catch (err) {
         if (import.meta.env.DEV) {
-          console.warn('⚠️ Erreur DemoSignedImage:', err.message)
+          console.warn('⚠️ Erreur DemoSignedImage:', (err as Error).message)
           console.warn('⚠️ Chemin original:', filePath)
         }
         setError(true)
@@ -124,11 +130,4 @@ export default function DemoSignedImage({
       loading="lazy"
     />
   )
-}
-
-DemoSignedImage.propTypes = {
-  filePath: PropTypes.string.isRequired,
-  alt: PropTypes.string,
-  size: PropTypes.number,
-  className: PropTypes.string,
 }

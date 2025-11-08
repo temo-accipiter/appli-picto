@@ -8,23 +8,40 @@ import {
   makeValidateImageType,
   makeValidateNotEmpty,
 } from '@/utils'
-import PropTypes from 'prop-types'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { InputWithValidationRef } from '../input-with-validation/InputWithValidation'
 import './ItemForm.scss'
+
+interface CategoryOption {
+  value: string | number
+  label: string
+}
+
+interface ItemFormData {
+  label: string
+  categorie: string
+  image: File
+}
+
+interface ItemFormProps {
+  includeCategory?: boolean
+  categories?: CategoryOption[]
+  onSubmit: (data: ItemFormData) => void
+}
 
 export default function ItemForm({
   includeCategory = false,
   categories = [],
   onSubmit,
-}) {
+}: ItemFormProps) {
   const { t } = useI18n()
   const [label, setLabel] = useState('')
   const [categorie, setCategorie] = useState('none')
-  const [image, setImage] = useState(null)
-  const [previewUrl, setPreviewUrl] = useState(null)
+  const [image, setImage] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [imageError, setImageError] = useState('')
-  const confirmRef = useRef(null)
-  const labelRef = useRef(null)
+  const confirmRef = useRef<HTMLButtonElement>(null)
+  const labelRef = useRef<InputWithValidationRef>(null)
 
   // Créer les fonctions de validation i18n avec useMemo pour éviter les re-créations
   const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
@@ -40,8 +57,8 @@ export default function ItemForm({
 
   const cleanLabel = label.trim().replace(/\s+/g, ' ')
 
-  const handleImage = async e => {
-    const file = e.target.files[0]
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) {
       setImage(null)
       setPreviewUrl(null)
@@ -74,7 +91,7 @@ export default function ItemForm({
     setImageError('')
   }
 
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     labelRef.current?.validateNow?.()
 
@@ -135,16 +152,4 @@ export default function ItemForm({
       <Button ref={confirmRef} type="submit" label={t('actions.add')} />
     </form>
   )
-}
-
-ItemForm.propTypes = {
-  includeCategory: PropTypes.bool,
-  categories: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-        .isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ),
-  onSubmit: PropTypes.func.isRequired,
 }

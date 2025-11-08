@@ -11,12 +11,24 @@
 import { Checkbox, DemoSignedImage, SignedImage } from '@/components'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import PropTypes from 'prop-types'
 import React, { useCallback, useMemo, useRef } from 'react'
 import './TableauCard.scss'
 
+interface Tache {
+  id: string | number
+  label: string
+  imagepath?: string
+  isDemo?: boolean
+}
+
+interface TableauCardProps {
+  tache: Tache
+  done: boolean
+  toggleDone: (id: string | number, newDone: boolean) => void
+}
+
 // 🔊 Bip sonore quand une tâche est cochée
-function playBeep(audioCtx) {
+function playBeep(audioCtx: AudioContext): void {
   try {
     // Vérifier que l'AudioContext est dans un état valide
     if (audioCtx.state === 'suspended') {
@@ -50,12 +62,12 @@ function playBeep(audioCtx) {
     }
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('⚠️ Erreur lors de la création du son:', error.message)
+      console.warn('⚠️ Erreur lors de la création du son:', (error as Error).message)
     }
   }
 }
 
-function TableauCard({ tache, done, toggleDone }) {
+function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
   // Debug logs désactivés pour réduire le bruit dans la console
   // if (import.meta.env.DEV) {
   //   console.log('🔍 TableauCard reçoit:', { id: tache.id, label: tache.label, done })
@@ -73,20 +85,20 @@ function TableauCard({ tache, done, toggleDone }) {
     [transform, transition]
   )
   // — créer le contexte audio seulement quand nécessaire (après interaction utilisateur)
-  const audioCtxRef = useRef(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
 
-  const getAudioContext = useCallback(() => {
+  const getAudioContext = useCallback((): AudioContext | null => {
     if (!audioCtxRef.current) {
       try {
         audioCtxRef.current = new (window.AudioContext ||
-          window.webkitAudioContext)()
+          (window as any).webkitAudioContext)()
         // Si le contexte est suspendu, on le reprend
         if (audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume()
         }
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn('⚠️ Impossible de créer AudioContext:', error.message)
+          console.warn('⚠️ Impossible de créer AudioContext:', (error as Error).message)
         }
         return null
       }
@@ -104,7 +116,7 @@ function TableauCard({ tache, done, toggleDone }) {
         playBeep(audioCtx)
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn('⚠️ Erreur lors de la lecture audio:', error.message)
+          console.warn('⚠️ Erreur lors de la lecture audio:', (error as Error).message)
         }
       }
     }
@@ -150,17 +162,6 @@ function TableauCard({ tache, done, toggleDone }) {
       </div>
     </div>
   )
-}
-
-TableauCard.propTypes = {
-  tache: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    label: PropTypes.string.isRequired,
-    imagepath: PropTypes.string,
-    isDemo: PropTypes.bool,
-  }).isRequired,
-  done: PropTypes.bool.isRequired,
-  toggleDone: PropTypes.func.isRequired,
 }
 
 // ✅ Pour éviter les rerenders inutiles
