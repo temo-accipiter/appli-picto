@@ -1,16 +1,28 @@
-// src/contexts/LoadingContext.jsx
+// src/contexts/LoadingContext.tsx
 // Contexte de chargement global pour gérer l'état de chargement de l'application
 // - setLoading(true/false) pour afficher/masquer le loader
 // - setLoadingMessage(string) pour personnaliser le message
 
 import { createContext, useContext, useState, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import GlobalLoader from '@/components/shared/global-loader/GlobalLoader'
 
-// ✅ Export nommé pour permettre le ré-export dans contexts/index.js
-export const LoadingContext = createContext(null)
+interface LoadingContextValue {
+  isLoading: boolean
+  loadingMessage: string
+  setLoading: (loading: boolean, message?: string) => void
+  startLoading: (message?: string) => void
+  stopLoading: () => void
+  setLoadingMessage: (message: string) => void
+}
 
-export function LoadingProvider({ children }) {
+interface LoadingProviderProps {
+  children: React.ReactNode
+}
+
+// ✅ Export nommé pour permettre le ré-export dans contexts/index.js
+export const LoadingContext = createContext<LoadingContextValue | null>(null)
+
+export function LoadingProvider({ children }: LoadingProviderProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState('')
 
@@ -28,7 +40,7 @@ export function LoadingProvider({ children }) {
 
   // Fonction simplifiée pour activer/désactiver le chargement
   const setLoading = useCallback(
-    (loading, message = 'Chargement...') => {
+    (loading: boolean, message = 'Chargement...') => {
       if (loading) {
         startLoading(message)
       } else {
@@ -55,11 +67,7 @@ export function LoadingProvider({ children }) {
   )
 }
 
-LoadingProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
-export function useLoading() {
+export function useLoading(): LoadingContextValue {
   const context = useContext(LoadingContext)
   if (!context) {
     throw new Error('useLoading doit être utilisé dans un LoadingProvider')

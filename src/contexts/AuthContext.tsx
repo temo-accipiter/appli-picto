@@ -2,41 +2,42 @@
 // Auth global robuste : annonce toujours authReady (succès ou échec),
 // et met à jour user depuis la session courante + onAuthStateChange.
 
-import {
-  createContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
-import type { User, Session, AuthError } from '@supabase/supabase-js'
-import type { AuthContextValue } from '@/types/contexts'
+import type { User, Session } from '@supabase/supabase-js'
+import { createContext, useEffect, useMemo, useState } from 'react'
 import { supabase, recreateSupabaseClient } from '@/utils/supabaseClient'
 import {
   startVisibilityHandler,
   stopVisibilityHandler,
 } from '@/utils/supabaseVisibilityHandler'
 
-export const AuthContext = createContext<AuthContextValue | null>(null)
+interface AuthContextValue {
+  user: User | null
+  authReady: boolean
+  loading: boolean
+  error: Error | null
+  signOut: () => Promise<void>
+}
 
 interface AuthProviderProps {
-  children: ReactNode
+  children: React.ReactNode
 }
 
-interface ClientRecreatedEventDetail {
-  session: Session | null
+interface SupabaseClientRecreatedEvent extends CustomEvent {
+  detail: {
+    session: Session | null
+  }
 }
+
+export const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [authReady, setAuthReady] = useState<boolean>(false)
+  const [authReady, setAuthReady] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     let mounted = true
     let timeoutId: number | undefined
-    let authSubscription: { subscription: { unsubscribe: () => void } } | null =
-      null
 
     // ✅ CORRECTIF CRITIQUE : Gérer la reconnexion au retour de visibilité
     // Quand l'utilisateur change d'onglet, les Realtime channels se déconnectent
@@ -46,10 +47,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // ✅ CORRECTIF SDK DEADLOCK : Écouter la recréation du client
     // Quand le SDK entre en deadlock (après suspension d'onglet), le visibility handler
     // recrée le client et dispatch un événement custom pour rafraîchir les contextes
-    const handleClientRecreation = async (event: Event): Promise<void> => {
+    const handleClientRecreation = async (
+      event: Event
+    ) => {
       if (!mounted) return
 
-      const customEvent = event as CustomEvent<ClientRecreatedEventDetail>
+      const customEvent = event as SupabaseClientRecreatedEvent
       const { session } = customEvent.detail
       if (import.meta.env.DEV) {
         console.log(
@@ -61,13 +64,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null)
 
       // Rafraîchir les listeners
-      supabase.auth.onAuthStateChange((_event, newSession) => {
-        if (!mounted) return
-        setUser(newSession?.user ?? null)
-      })
+      const { data: sub } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          if (!mounted) return
+          setUser(newSession?.user ?? null)
+        }
+      )
 
       if (import.meta.env.DEV) {
         console.log('[Auth] ✅ Auth state refreshed after client recreation')
+      }
+
+      return () => {
+        sub?.subscription?.unsubscribe?.()
       }
     }
 
@@ -82,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         // 1) Lecture synchronisée de la session avec TIMEOUT pour éviter le blocage
         // Si getSession() ne répond pas en 5s (connexion morte), on continue quand même
         let sessionData: { session: Session | null } | null = null
-        let sErr: AuthError | null = null
+        let sErr: Error | null = null
 
         try {
           const result = await Promise.race([
@@ -92,7 +101,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             ),
           ])
           sessionData = result.data
-          sErr = result.error
+          sErr = result.error || null
         } catch {
           if (import.meta.env.DEV) {
             console.warn('[Auth] getSession timeout, recreating SDK client...')
@@ -142,7 +151,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         )
 
-        authSubscription = sub
+        return () => {
+          sub?.subscription?.unsubscribe?.()
+        }
       } catch (e) {
         if (import.meta.env.DEV)
           console.warn('[Auth] unexpected init error:', e)
@@ -157,9 +168,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return () => {
       mounted = false
       if (timeoutId) window.clearTimeout(timeoutId)
-      if (authSubscription) {
-        authSubscription.subscription?.unsubscribe?.()
-      }
       stopVisibilityHandler()
       window.removeEventListener(
         'supabase-client-recreated',

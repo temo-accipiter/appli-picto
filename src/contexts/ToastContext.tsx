@@ -1,4 +1,4 @@
-// src/contexts/ToastContext.jsx
+// src/contexts/ToastContext.tsx
 // Contexte de toasts : même comportement par défaut (2000ms) + options facultatives.
 // - show(message, type = 'info', options?: { duration?: number })
 // - hide() pour fermer manuellement
@@ -6,22 +6,40 @@
 // Aucune modification du composant <Toast /> ni de ses props.
 
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
-import PropTypes from 'prop-types'
 import Toast from '@/components/ui/toast/Toast'
 import { useParametres } from '@/hooks'
 
-// ✅ Export NOMMÉ pour permettre le ré-export dans contexts/index.js
-export const ToastContext = createContext(null)
+type ToastType = 'info' | 'success' | 'warning' | 'error'
 
-export function ToastProvider({ children, defaultDuration = 2000 }) {
+interface ToastState {
+  visible: boolean
+  message: string
+  type: ToastType
+}
+
+interface ToastContextValue {
+  show: (message: string, type?: ToastType, options?: { duration?: number }) => void
+  hide: () => void
+  showToast: (message: string, type?: ToastType, options?: { duration?: number }) => void
+}
+
+interface ToastProviderProps {
+  children: React.ReactNode
+  defaultDuration?: number
+}
+
+// ✅ Export NOMMÉ pour permettre le ré-export dans contexts/index.js
+export const ToastContext = createContext<ToastContextValue | null>(null)
+
+export function ToastProvider({ children, defaultDuration = 2000 }: ToastProviderProps) {
   const { parametres } = useParametres()
-  const [toast, setToast] = useState({
+  const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
     type: 'info',
   })
 
-  const timerRef = useRef(null)
+  const timerRef = useRef<number | null>(null)
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
@@ -39,7 +57,7 @@ export function ToastProvider({ children, defaultDuration = 2000 }) {
   // Possibilité de passer une durée spécifique : show(msg, 'success', { duration: 3000 })
   // Respecte le paramètre global toasts_enabled (par défaut: true)
   const show = useCallback(
-    (message, type = 'info', options = {}) => {
+    (message: string, type: ToastType = 'info', options: { duration?: number } = {}) => {
       // Vérifier si les toasts sont activés (par défaut: true si parametres est null/undefined)
       const toastsEnabled = parametres?.toasts_enabled ?? true
 
@@ -51,7 +69,7 @@ export function ToastProvider({ children, defaultDuration = 2000 }) {
       clearTimer()
       setToast({ visible: true, message, type })
       const duration = Math.max(1000, options.duration ?? defaultDuration)
-      timerRef.current = setTimeout(() => {
+      timerRef.current = window.setTimeout(() => {
         setToast(prev => ({ ...prev, visible: false }))
         timerRef.current = null
       }, duration)
@@ -60,7 +78,7 @@ export function ToastProvider({ children, defaultDuration = 2000 }) {
   )
 
   return (
-    <ToastContext.Provider value={{ show, hide }}>
+    <ToastContext.Provider value={{ show, hide, showToast: show }}>
       {children}
       <Toast
         visible={toast.visible}
@@ -71,13 +89,12 @@ export function ToastProvider({ children, defaultDuration = 2000 }) {
   )
 }
 
-ToastProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-  defaultDuration: PropTypes.number,
-}
-
-export function useToast() {
-  return useContext(ToastContext)
+export function useToast(): ToastContextValue {
+  const context = useContext(ToastContext)
+  if (!context) {
+    throw new Error('useToast must be used within a ToastProvider')
+  }
+  return context
 }
 
 export default ToastProvider
