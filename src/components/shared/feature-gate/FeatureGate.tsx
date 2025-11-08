@@ -1,0 +1,105 @@
+import type { ReactNode } from 'react'
+import { usePermissions } from '@/contexts/PermissionsContext'
+
+/**
+ * Composant FeatureGate pour contrôler l'affichage des fonctionnalités
+ * Enveloppez n'importe quel élément UI avec <FeatureGate feature="CONFETTI">...</FeatureGate>
+ */
+
+interface FeatureGateProps {
+  /** Nom de la fonctionnalité à vérifier */
+  feature?: string
+  /** Contenu à afficher si la fonctionnalité est accessible */
+  children: ReactNode
+  /** Contenu alternatif si la fonctionnalité n'est pas accessible */
+  fallback?: ReactNode
+  /** Liste de fonctionnalités à vérifier (alternative à feature) */
+  features?: string[]
+  /** Si true, toutes les fonctionnalités doivent être accessibles (AND), sinon au moins une (OR) */
+  requireAll?: boolean
+}
+
+export function FeatureGate({
+  feature,
+  children,
+  fallback = null,
+  requireAll = false,
+  features = [],
+}: FeatureGateProps) {
+  const { can, canAll, canAny, loading } = usePermissions()
+
+  // ⚠️ Éviter les vérifications de permissions pendant le chargement
+  // pour éviter les warnings dans la console
+  if (loading) {
+    // Pendant le chargement, afficher le contenu par défaut
+    // Cela évite les warnings "Fonctionnalité non trouvée"
+    // qui apparaissent avant que les permissions soient chargées
+    return <>{children}</>
+  }
+
+  // Si on a une liste de features
+  if (features.length > 0) {
+    const hasAccess = requireAll ? canAll(features) : canAny(features)
+    return <>{hasAccess ? children : fallback}</>
+  }
+
+  // Si on a une seule feature
+  if (feature) {
+    return <>{can(feature) ? children : fallback}</>
+  }
+
+  // Par défaut, afficher le contenu
+  return <>{children}</>
+}
+
+/**
+ * Composant FeatureGate pour les fonctionnalités premium
+ * Affiche automatiquement un fallback avec un message d'upgrade
+ */
+
+interface PremiumFeatureGateProps {
+  /** Nom de la fonctionnalité à vérifier */
+  feature: string
+  /** Contenu à afficher si la fonctionnalité est accessible */
+  children: ReactNode
+  /** Message personnalisé pour l'upgrade */
+  upgradeMessage?: string
+  /** Afficher le bouton d'upgrade */
+  showUpgradeButton?: boolean
+}
+
+export function PremiumFeatureGate({
+  feature,
+  children,
+  upgradeMessage = 'Cette fonctionnalité nécessite un abonnement premium',
+  showUpgradeButton = true,
+}: PremiumFeatureGateProps) {
+  const { can, isVisitor, loading } = usePermissions()
+
+  // ⚠️ Éviter les vérifications de permissions pendant le chargement
+  if (loading) {
+    // Pendant le chargement, afficher le contenu par défaut
+    // pour éviter les warnings dans la console
+    return <>{children}</>
+  }
+
+  if (can(feature)) {
+    return <>{children}</>
+  }
+
+  const fallback = (
+    <div className="premium-feature-fallback">
+      <p className="premium-message">{upgradeMessage}</p>
+      {showUpgradeButton && isVisitor && (
+        <button
+          className="upgrade-button"
+          onClick={() => (window.location.href = '/signup')}
+        >
+          S&apos;abonner
+        </button>
+      )}
+    </div>
+  )
+
+  return fallback
+}
