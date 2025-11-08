@@ -2,6 +2,12 @@
 import { recreateSupabaseClient } from './supabaseClient'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
+// Interface pour accéder aux propriétés internes du client Supabase
+interface SupabaseClientInternal extends SupabaseClient {
+  supabaseUrl?: string
+  supabaseKey?: string
+}
+
 /**
  * VERSION PRAGMATIQUE FINALE
  *
@@ -70,9 +76,11 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
     try {
       const supabaseUrl =
-        (supabaseClient as any).supabaseUrl || import.meta.env.VITE_SUPABASE_URL
+        (supabaseClient as SupabaseClientInternal).supabaseUrl ||
+        import.meta.env.VITE_SUPABASE_URL
       const supabaseKey =
-        (supabaseClient as any).supabaseKey || import.meta.env.VITE_SUPABASE_ANON_KEY
+        (supabaseClient as SupabaseClientInternal).supabaseKey ||
+        import.meta.env.VITE_SUPABASE_ANON_KEY
 
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
@@ -101,7 +109,8 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     } catch (apiError) {
       // API ne répond pas → Recréer
       if (import.meta.env.DEV) {
-        const errorMsg = apiError instanceof Error ? apiError.message : String(apiError)
+        const errorMsg =
+          apiError instanceof Error ? apiError.message : String(apiError)
         console.warn('[Visibility] ❌ API check failed:', errorMsg)
         console.log('[Visibility] 🔄 Recreating SDK...')
       }

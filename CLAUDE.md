@@ -107,6 +107,8 @@ Commit without running yarn check
 Deploy without testing yarn preview
 Modify database without updating types
 Upload images > 100KB (auto-compression enforced)
+Create markdown documentation files (\*.md) without explicit user request
+Generate README or analysis files proactively
 
 ## Architecture
 

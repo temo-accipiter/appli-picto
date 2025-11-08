@@ -1,6 +1,24 @@
 // src/utils/supabaseClient.ts
-import { createClient, type SupabaseClient, type Session } from '@supabase/supabase-js'
+import {
+  createClient,
+  type SupabaseClient,
+  type Session,
+} from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
+
+type SupabaseClientType = SupabaseClient<Database, 'public'>
+
+// Interface pour étendre Window avec supabase
+interface WindowWithSupabase extends Window {
+  supabase?: SupabaseClientType
+}
+
+// Interface pour la session sauvegardée dans localStorage
+interface SavedSession {
+  access_token?: string
+  refresh_token?: string
+  [key: string]: unknown
+}
 
 // ⚠️ Point d'entrée unique du client Supabase pour TOUT le frontend.
 const url =
@@ -17,8 +35,6 @@ console.log('🔑 Supabase Key (first 20 chars):', key.substring(0, 20) + '...')
 
 let recreationInProgress = false
 
-type SupabaseClientType = SupabaseClient<Database, 'public'>
-
 // Configuration SDK simple (sans hacks qui cassent PostgREST)
 const clientConfig = {
   auth: {
@@ -31,7 +47,10 @@ const clientConfig = {
   },
   global: {
     // Timeout réduit pour détecter problèmes plus vite
-    fetch: async (input: RequestInfo | URL, options: RequestInit = {}) => {
+    fetch: async (
+      input: string | URL | Request,
+      options: Record<string, unknown> = {}
+    ) => {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000) // 5s max
 
@@ -55,11 +74,15 @@ const clientConfig = {
 }
 
 // Instance unique
-export let supabase: SupabaseClientType = createClient<Database>(url, key, clientConfig)
+export let supabase: SupabaseClientType = createClient<Database>(
+  url,
+  key,
+  clientConfig
+)
 
 // Exposer pour debug
 if (typeof window !== 'undefined') {
-  ;(window as any).supabase = supabase
+  ;(window as WindowWithSupabase).supabase = supabase
 }
 
 interface RecreateResult {
@@ -96,10 +119,10 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     const storageKey = `sb-${url.split('//')[1].split('.')[0]}-auth-token`
     const savedSessionStr = localStorage.getItem(storageKey)
 
-    let savedSession: any = null
+    let savedSession: SavedSession | null = null
     if (savedSessionStr) {
       try {
-        savedSession = JSON.parse(savedSessionStr)
+        savedSession = JSON.parse(savedSessionStr) as SavedSession
         if (import.meta.env.DEV) {
           console.log('[Supabase] 💾 Session saved from localStorage')
         }
@@ -120,7 +143,7 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     }
 
     // Détruire référence
-    supabase = null as any
+    supabase = undefined as unknown as SupabaseClientType
 
     // Court délai
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -130,7 +153,7 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
     // Exposer
     if (typeof window !== 'undefined') {
-      ;(window as any).supabase = supabase
+      ;(window as WindowWithSupabase).supabase = supabase
     }
 
     // 🔑 AMÉLIORATION : Restauration de session plus robuste

@@ -49,26 +49,32 @@ interface RoleObject {
 }
 
 /** Vérifie si un rôle est un rôle système protégé */
-export const isSystemRole = (roleName: string): boolean => (SYSTEM_ROLES as readonly string[]).includes(roleName)
+export const isSystemRole = (roleName: string): boolean =>
+  (SYSTEM_ROLES as readonly string[]).includes(roleName)
 
 /** Vérifie si un rôle peut être supprimé */
-export const canDeleteRole = (roleName: string): boolean => !isSystemRole(roleName)
+export const canDeleteRole = (roleName: string): boolean =>
+  !isSystemRole(roleName)
 
 /** Vérifie si un rôle peut être modifié (nom, description, etc.) */
-export const canModifyRole = (roleName: string): boolean => !isSystemRole(roleName)
+export const canModifyRole = (roleName: string): boolean =>
+  !isSystemRole(roleName)
 
 /** Vérifie si un rôle peut être activé/désactivé */
-export const canToggleRole = (roleName: string): boolean => isSystemRole(roleName)
+export const canToggleRole = (roleName: string): boolean =>
+  isSystemRole(roleName)
 
 /** Filtre les rôles actifs pour l'affichage */
-export const getActiveRoles = (roles: RoleObject[]): RoleObject[] => roles.filter(role => role.is_active)
+export const getActiveRoles = (roles: RoleObject[]): RoleObject[] =>
+  roles.filter(role => role.is_active)
 
 /** Filtre les rôles actifs et non-système pour la sélection utilisateur */
 export const getAvailableRoles = (roles: RoleObject[]): RoleObject[] =>
   roles.filter(role => role.is_active && role.name !== ROLE.ADMIN)
 
 /** Obtient la priorité d'un rôle */
-export const getRolePriority = (roleName: string): number => SYSTEM_ROLE_PRIORITIES[roleName] || 0
+export const getRolePriority = (roleName: string): number =>
+  SYSTEM_ROLE_PRIORITIES[roleName] || 0
 
 /** Trie les rôles par priorité (décroissante) */
 export const sortRolesByPriority = (roles: RoleObject[]): RoleObject[] => {

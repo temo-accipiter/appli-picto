@@ -18,7 +18,9 @@ interface DeleteImageResult {
   error?: Error
 }
 
-export default async function deleteImageIfAny(imagePath: string | null | undefined): Promise<DeleteImageResult> {
+export default async function deleteImageIfAny(
+  imagePath: string | null | undefined
+): Promise<DeleteImageResult> {
   if (!imagePath) return { deleted: false, skipped: true }
 
   // ⚠️ NE PAS SUPPRIMER du Storage (déduplication)

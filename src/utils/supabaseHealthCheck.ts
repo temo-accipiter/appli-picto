@@ -25,13 +25,30 @@ interface HealthLogEntry {
   timestamp: string
   level: 'info' | 'warn' | 'error'
   message: string
-  data: Record<string, any>
+  data: Record<string, unknown>
+}
+
+interface SupabaseHealthStats {
+  logs: HealthLogEntry[]
+  stats: {
+    isHealthy: boolean
+    consecutiveFailures: number
+    lastCheckTime: number
+  }
+}
+
+interface WindowWithHealth extends Window {
+  __supabaseHealth?: SupabaseHealthStats
 }
 
 const healthLogs: HealthLogEntry[] = []
 const MAX_LOGS = 50
 
-function logHealth(level: 'info' | 'warn' | 'error', message: string, data: Record<string, any> = {}) {
+function logHealth(
+  level: 'info' | 'warn' | 'error',
+  message: string,
+  data: Record<string, unknown> = {}
+) {
   const entry: HealthLogEntry = {
     timestamp: new Date().toISOString(),
     level, // 'info' | 'warn' | 'error'
@@ -48,7 +65,7 @@ function logHealth(level: 'info' | 'warn' | 'error', message: string, data: Reco
 
   // Exposer sur window pour debug
   if (typeof window !== 'undefined') {
-    ;(window as any).__supabaseHealth = {
+    ;(window as WindowWithHealth).__supabaseHealth = {
       logs: healthLogs,
       stats: {
         isHealthy,
@@ -77,7 +94,9 @@ interface HealthCheckResult {
  * @param {Object} supabaseClient - Instance Supabase à tester
  * @returns {Promise<{healthy: boolean, error?: string}>}
  */
-export async function checkSupabaseHealth(supabaseClient: SupabaseClient): Promise<HealthCheckResult> {
+export async function checkSupabaseHealth(
+  supabaseClient: SupabaseClient
+): Promise<HealthCheckResult> {
   if (!supabaseClient) {
     logHealth('error', 'No Supabase client provided')
     return { healthy: false, error: 'no-client' }
@@ -166,7 +185,10 @@ interface ResetOptions {
  * @param {Object} options - Options de reset
  * @param {Function} options.onBeforeReload - Callback avant reload (pour toast)
  */
-export function resetSupabaseClient(supabaseClient: SupabaseClient, options: ResetOptions = {}) {
+export function resetSupabaseClient(
+  supabaseClient: SupabaseClient,
+  options: ResetOptions = {}
+) {
   if (!supabaseClient) return
 
   try {
