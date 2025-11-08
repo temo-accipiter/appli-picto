@@ -1,6 +1,16 @@
-import { Component } from 'react'
-import PropTypes from 'prop-types'
+import React, { Component, ErrorInfo, ReactNode } from 'react'
 import './ErrorBoundary.scss'
+
+interface ErrorBoundaryProps {
+  children: ReactNode
+  fallback?: ReactNode
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+  errorInfo: ErrorInfo | null
+}
 
 /**
  * ErrorBoundary - Composant qui attrape les erreurs React non gérées
@@ -13,8 +23,8 @@ import './ErrorBoundary.scss'
  *   <App />
  * </ErrorBoundary>
  */
-class ErrorBoundary extends Component {
-  constructor(props) {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = {
       hasError: false,
@@ -26,12 +36,12 @@ class ErrorBoundary extends Component {
     this.handleReset = this.handleReset.bind(this)
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     // Mise à jour de l'état pour afficher le fallback UI
     return { hasError: true, error }
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log de l'erreur pour debug
     console.error('🚨 ErrorBoundary a attrapé une erreur:', {
       error,
@@ -51,12 +61,12 @@ class ErrorBoundary extends Component {
     // }
   }
 
-  handleReload() {
+  handleReload(): void {
     // Recharger la page pour réinitialiser l'app
     window.location.reload()
   }
 
-  handleReset() {
+  handleReset(): void {
     // Réinitialiser l'état pour réessayer sans recharger
     this.setState({
       hasError: false,
@@ -65,7 +75,7 @@ class ErrorBoundary extends Component {
     })
   }
 
-  render() {
+  render(): ReactNode {
     if (this.state.hasError) {
       // Fallback UI personnalisé ou par défaut
       if (this.props.fallback) {
@@ -121,11 +131,6 @@ class ErrorBoundary extends Component {
 
     return this.props.children
   }
-}
-
-ErrorBoundary.propTypes = {
-  children: PropTypes.node.isRequired,
-  fallback: PropTypes.node,
 }
 
 export default ErrorBoundary

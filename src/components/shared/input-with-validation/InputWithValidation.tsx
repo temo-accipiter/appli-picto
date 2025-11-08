@@ -1,8 +1,27 @@
-import { Input } from '@/components'
-import PropTypes from 'prop-types'
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import { Input } from '@/components'
 
-const InputWithValidation = forwardRef(function InputWithValidation(
+type ValidationRule = (value: string) => string
+
+interface InputWithValidationProps {
+  id: string
+  value: string
+  onValid: (value: string) => void
+  rules: ValidationRule[]
+  ariaLabel?: string
+  successDuration?: number
+  onChange?: (value: string) => void
+  onBlur?: (value: string) => void
+  label?: string
+  placeholder?: string
+  type?: string
+}
+
+export interface InputWithValidationRef {
+  validateNow: () => void
+}
+
+const InputWithValidation = forwardRef<InputWithValidationRef, InputWithValidationProps>(function InputWithValidation(
   {
     id,
     value,
@@ -27,7 +46,7 @@ const InputWithValidation = forwardRef(function InputWithValidation(
     setDraft(value)
   }, [value])
 
-  const validate = text => {
+  const validate = (text: string): string => {
     for (const rule of rules) {
       const message = rule(text)
       if (message) return message
@@ -35,7 +54,7 @@ const InputWithValidation = forwardRef(function InputWithValidation(
     return ''
   }
 
-  const handleBlur = () => {
+  const handleBlur = (): void => {
     const err = validate(draft)
     if (err) {
       setError(err)
@@ -78,19 +97,5 @@ const InputWithValidation = forwardRef(function InputWithValidation(
     />
   )
 })
-
-InputWithValidation.propTypes = {
-  id: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
-  onValid: PropTypes.func.isRequired,
-  rules: PropTypes.arrayOf(PropTypes.func).isRequired,
-  ariaLabel: PropTypes.string,
-  successDuration: PropTypes.number,
-  onChange: PropTypes.func,
-  onBlur: PropTypes.func,
-  label: PropTypes.string,
-  placeholder: PropTypes.string,
-  type: PropTypes.string,
-}
 
 export default InputWithValidation
