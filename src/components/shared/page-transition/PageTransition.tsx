@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { memo } from 'react'
 import { useLocation, useOutlet } from 'react-router-dom'
 
-export default function PageTransition() {
+const PageTransition = memo(function PageTransition() {
   const location = useLocation()
   const outlet = useOutlet()
 
@@ -18,4 +19,6 @@ export default function PageTransition() {
       </motion.div>
     </AnimatePresence>
   )
-}
+})
+
+export default PageTransition

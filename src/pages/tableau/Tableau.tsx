@@ -19,10 +19,12 @@ import {
   useSimpleRole,
   useTachesDnd,
 } from '@/hooks'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Confetti from 'react-confetti'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
+
+// Lazy load Confetti (utilisé seulement quand toutes les tâches sont terminées)
+const Confetti = lazy(() => import('react-confetti'))
 import type { Tache, Recompense } from '@/types/global'
 import './Tableau.scss'
 
@@ -340,7 +342,9 @@ export default function TableauGrille({
       </section>
 
       {showConfettis && !isDemoMode && (
-        <Confetti width={width} height={height} />
+        <Suspense fallback={null}>
+          <Confetti width={width} height={height} />
+        </Suspense>
       )}
 
       {showModalRecompense && selectedReward && (

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { memo } from 'react'
 import './Toast.scss'
 
 type ToastType = 'info' | 'success' | 'error' | 'warning'
@@ -9,7 +10,7 @@ interface ToastProps {
   visible: boolean
 }
 
-export default function Toast({ message, type = 'info', visible }: ToastProps) {
+const Toast = memo(function Toast({ message, type = 'info', visible }: ToastProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -27,4 +28,6 @@ export default function Toast({ message, type = 'info', visible }: ToastProps) {
       )}
     </AnimatePresence>
   )
-}
+})
+
+export default Toast
