@@ -1,4 +1,4 @@
-// src/utils/testLegalConfig.js
+// src/utils/testLegalConfig.ts
 // Script de test pour vérifier la configuration légale
 
 import {
@@ -6,7 +6,27 @@ import {
   replaceLegalPlaceholders,
 } from '@/config/constants/legalConfig'
 
-export function testLegalConfiguration() {
+interface ComplianceResult {
+  configuration: boolean
+  documents: boolean
+  transfers: boolean
+  security: boolean
+  overall: boolean
+}
+
+interface DetailedReport {
+  timestamp: string
+  configuration: {
+    company: typeof LEGAL_CONFIG.company
+    contact: typeof LEGAL_CONFIG.contact
+    publication: typeof LEGAL_CONFIG.publication
+  }
+  transfers: typeof LEGAL_CONFIG.transfers
+  security: typeof LEGAL_CONFIG.security
+  compliance: ComplianceResult
+}
+
+export function testLegalConfiguration(): boolean {
   console.log('🧪 Test de la configuration légale...')
 
   // Test 1 : Vérification de la structure
@@ -114,7 +134,10 @@ export function testLegalConfiguration() {
 }
 
 // Fonction pour vérifier un document spécifique
-export function testDocumentPlaceholders(documentContent, documentName) {
+export function testDocumentPlaceholders(
+  documentContent: string,
+  documentName: string
+): boolean {
   console.log(`\n📄 Test du document: ${documentName}`)
 
   const processedContent = replaceLegalPlaceholders(documentContent)
@@ -135,10 +158,10 @@ export function testDocumentPlaceholders(documentContent, documentName) {
 }
 
 // Fonction pour vérifier la conformité RGPD globale
-export function testRGPDCompliance() {
+export function testRGPDCompliance(): ComplianceResult {
   console.log('\n🛡️ Test de conformité RGPD global...')
 
-  const compliance = {
+  const compliance: ComplianceResult = {
     configuration: false,
     documents: false,
     transfers: false,
@@ -183,8 +206,8 @@ export function testRGPDCompliance() {
 }
 
 // Fonction pour obtenir un rapport détaillé
-export function generateDetailedReport() {
-  const report = {
+export function generateDetailedReport(): DetailedReport {
+  const report: DetailedReport = {
     timestamp: new Date().toISOString(),
     configuration: {
       company: LEGAL_CONFIG.company,

@@ -1,4 +1,4 @@
-// src/test/mocks/data.js
+// src/test/mocks/data.ts
 /**
  * 📦 Données mock pour les tests
  *
@@ -9,7 +9,16 @@
 export const TEST_USER_ID = '123e4567-e89b-12d3-a456-426614174000'
 export const ADMIN_USER_ID = '223e4567-e89b-12d3-a456-426614174000'
 
-export const mockUsers = {
+interface MockUser {
+  id: string
+  email: string
+  created_at: string
+}
+
+export const mockUsers: {
+  testUser: MockUser
+  adminUser: MockUser
+} = {
   testUser: {
     id: TEST_USER_ID,
     email: 'test@example.com',
@@ -22,7 +31,19 @@ export const mockUsers = {
   },
 }
 
-export const mockTaches = [
+export interface MockTache {
+  id: string
+  label: string
+  fait: boolean
+  aujourdhui: boolean
+  position: number
+  imagepath: string | null
+  category_id: string | null
+  user_id: string
+  created_at: string
+}
+
+export const mockTaches: MockTache[] = [
   {
     id: '1',
     label: 'Brosser les dents',
@@ -58,7 +79,16 @@ export const mockTaches = [
   },
 ]
 
-export const mockRecompenses = [
+export interface MockRecompense {
+  id: string
+  label: string
+  imagepath: string | null
+  selected: boolean
+  user_id: string
+  created_at: string
+}
+
+export const mockRecompenses: MockRecompense[] = [
   {
     id: '1',
     label: 'Temps de jeu vidéo',
@@ -77,7 +107,15 @@ export const mockRecompenses = [
   },
 ]
 
-export const mockCategories = [
+export interface MockCategory {
+  id: string
+  name: string
+  color: string
+  user_id: string | null
+  created_at: string
+}
+
+export const mockCategories: MockCategory[] = [
   {
     id: '1',
     name: 'École',
@@ -101,7 +139,14 @@ export const mockCategories = [
   },
 ]
 
-export const mockParametres = [
+export interface MockParametre {
+  id: string
+  confettis: boolean
+  user_id: string
+  created_at: string
+}
+
+export const mockParametres: MockParametre[] = [
   {
     id: '1',
     confettis: true,
@@ -110,7 +155,24 @@ export const mockParametres = [
   },
 ]
 
-export const mockDemoCards = {
+export interface MockDemoTask {
+  id: string
+  label: string
+  fait: boolean
+  position: number
+  isDemo: true
+}
+
+export interface MockDemoReward {
+  id: string
+  label: string
+  isDemo: true
+}
+
+export const mockDemoCards: {
+  tasks: MockDemoTask[]
+  rewards: MockDemoReward[]
+} = {
   tasks: [
     {
       id: 'demo-1',
@@ -136,7 +198,14 @@ export const mockDemoCards = {
   ],
 }
 
-export const mockProfiles = [
+export interface MockProfile {
+  id: string
+  email: string
+  account_status: string
+  created_at: string
+}
+
+export const mockProfiles: MockProfile[] = [
   {
     id: 'test-user-123',
     email: 'test@example.com',
@@ -145,7 +214,16 @@ export const mockProfiles = [
   },
 ]
 
-export const mockAbonnements = [
+export interface MockAbonnement {
+  id: string
+  user_id: string
+  stripe_customer_id: string
+  stripe_subscription_id: string
+  status: string
+  created_at: string
+}
+
+export const mockAbonnements: MockAbonnement[] = [
   {
     id: '1',
     user_id: TEST_USER_ID,
@@ -156,7 +234,13 @@ export const mockAbonnements = [
   },
 ]
 
-export const mockStations = [
+export interface MockStation {
+  id: string
+  name: string
+  ligne: number
+}
+
+export const mockStations: MockStation[] = [
   { id: '1', name: 'Châtelet', ligne: 1 },
   { id: '2', name: 'Gare du Nord', ligne: 1 },
   { id: '3', name: 'République', ligne: 1 },

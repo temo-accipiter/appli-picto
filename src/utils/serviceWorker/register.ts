@@ -1,5 +1,10 @@
-// src/utils/serviceWorker/register.js
+// src/utils/serviceWorker/register.ts
 // Enregistrement et gestion Service Worker
+
+interface ServiceWorkerMessage {
+  type: 'INVALIDATE_IMAGE' | 'CLEAR_ALL_CACHE'
+  url?: string
+}
 
 /**
  * Enregistre le Service Worker (production uniquement)
@@ -12,7 +17,7 @@
  *   console.log('Service Worker prêt')
  * }
  */
-export async function registerServiceWorker() {
+export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) {
     console.warn('⚠️ Service Worker non supporté par ce navigateur')
     return null
@@ -54,16 +59,18 @@ export async function registerServiceWorker() {
  * @example
  * await invalidateImageCache(imageUrl)
  */
-export async function invalidateImageCache(url) {
+export async function invalidateImageCache(url: string): Promise<void> {
   if (!navigator.serviceWorker.controller) {
     console.warn('⚠️ Pas de Service Worker actif')
     return
   }
 
-  navigator.serviceWorker.controller.postMessage({
+  const message: ServiceWorkerMessage = {
     type: 'INVALIDATE_IMAGE',
     url,
-  })
+  }
+
+  navigator.serviceWorker.controller.postMessage(message)
 
   console.log('🗑️ Invalidation cache demandée:', url)
 }
@@ -74,15 +81,17 @@ export async function invalidateImageCache(url) {
  * @example
  * await clearAllCache()
  */
-export async function clearAllCache() {
+export async function clearAllCache(): Promise<void> {
   if (!navigator.serviceWorker.controller) {
     console.warn('⚠️ Pas de Service Worker actif')
     return
   }
 
-  navigator.serviceWorker.controller.postMessage({
+  const message: ServiceWorkerMessage = {
     type: 'CLEAR_ALL_CACHE',
-  })
+  }
+
+  navigator.serviceWorker.controller.postMessage(message)
 
   console.log('🗑️ Vidage total cache demandé')
 }

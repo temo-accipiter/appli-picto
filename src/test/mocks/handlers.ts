@@ -1,4 +1,4 @@
-// src/test/mocks/handlers.js
+// src/test/mocks/handlers.ts
 /**
  * 🎭 MSW Handlers - Mock Supabase REST API
  *
@@ -13,6 +13,12 @@
  */
 
 import { http, HttpResponse } from 'msw'
+import type {
+  MockTache,
+  MockRecompense,
+  MockCategory,
+  MockParametre,
+} from './data'
 import {
   mockTaches,
   mockRecompenses,
@@ -27,15 +33,15 @@ import {
 const SUPABASE_URL = 'http://localhost:54321'
 
 // État mutable pour simuler la base de données
-let tachesDb = [...mockTaches]
-let recompensesDb = [...mockRecompenses]
-let categoriesDb = [...mockCategories]
-let parametresDb = [...mockParametres]
+let tachesDb: MockTache[] = [...mockTaches]
+let recompensesDb: MockRecompense[] = [...mockRecompenses]
+let categoriesDb: MockCategory[] = [...mockCategories]
+let parametresDb: MockParametre[] = [...mockParametres]
 
 /**
  * 🔄 Reset de la DB mock (utile entre les tests)
  */
-export const resetMockDb = () => {
+export const resetMockDb = (): void => {
   tachesDb = [...mockTaches]
   recompensesDb = [...mockRecompenses]
   categoriesDb = [...mockCategories]
@@ -74,10 +80,16 @@ export const handlers = [
 
   // POST /rest/v1/taches - Insert tache
   http.post(`${SUPABASE_URL}/rest/v1/taches`, async ({ request }) => {
-    const newTache = await request.json()
-    const tache = {
+    const newTache = (await request.json()) as Partial<MockTache>
+    const tache: MockTache = {
       id: `tache-${Date.now()}`,
-      ...newTache,
+      label: newTache.label || '',
+      fait: newTache.fait || false,
+      aujourdhui: newTache.aujourdhui || false,
+      position: newTache.position || 0,
+      imagepath: newTache.imagepath || null,
+      category_id: newTache.category_id || null,
+      user_id: newTache.user_id || '',
       created_at: new Date().toISOString(),
     }
     tachesDb.push(tache)
@@ -92,7 +104,7 @@ export const handlers = [
   http.patch(`${SUPABASE_URL}/rest/v1/taches`, async ({ request }) => {
     const url = new URL(request.url)
     const id = url.searchParams.get('id')?.replace('eq.', '')
-    const updates = await request.json()
+    const updates = (await request.json()) as Partial<MockTache>
 
     const index = tachesDb.findIndex(t => t.id === id)
     if (index !== -1) {
@@ -134,10 +146,13 @@ export const handlers = [
   }),
 
   http.post(`${SUPABASE_URL}/rest/v1/recompenses`, async ({ request }) => {
-    const newRecompense = await request.json()
-    const recompense = {
+    const newRecompense = (await request.json()) as Partial<MockRecompense>
+    const recompense: MockRecompense = {
       id: `reward-${Date.now()}`,
-      ...newRecompense,
+      label: newRecompense.label || '',
+      imagepath: newRecompense.imagepath || null,
+      selected: newRecompense.selected || false,
+      user_id: newRecompense.user_id || '',
       created_at: new Date().toISOString(),
     }
     recompensesDb.push(recompense)
@@ -148,7 +163,7 @@ export const handlers = [
   http.patch(`${SUPABASE_URL}/rest/v1/recompenses`, async ({ request }) => {
     const url = new URL(request.url)
     const id = url.searchParams.get('id')?.replace('eq.', '')
-    const updates = await request.json()
+    const updates = (await request.json()) as Partial<MockRecompense>
 
     const index = recompensesDb.findIndex(r => r.id === id)
     if (index !== -1) {
@@ -201,10 +216,12 @@ export const handlers = [
   }),
 
   http.post(`${SUPABASE_URL}/rest/v1/categories`, async ({ request }) => {
-    const newCategory = await request.json()
-    const category = {
+    const newCategory = (await request.json()) as Partial<MockCategory>
+    const category: MockCategory = {
       id: `cat-${Date.now()}`,
-      ...newCategory,
+      name: newCategory.name || '',
+      color: newCategory.color || '#000000',
+      user_id: newCategory.user_id || null,
       created_at: new Date().toISOString(),
     }
     categoriesDb.push(category)
@@ -228,10 +245,11 @@ export const handlers = [
   }),
 
   http.post(`${SUPABASE_URL}/rest/v1/parametres`, async ({ request }) => {
-    const newParam = await request.json()
-    const param = {
+    const newParam = (await request.json()) as Partial<MockParametre>
+    const param: MockParametre = {
       id: `param-${Date.now()}`,
-      ...newParam,
+      confettis: newParam.confettis ?? true,
+      user_id: newParam.user_id || '',
       created_at: new Date().toISOString(),
     }
     parametresDb.push(param)
@@ -242,7 +260,7 @@ export const handlers = [
   http.patch(`${SUPABASE_URL}/rest/v1/parametres`, async ({ request }) => {
     const url = new URL(request.url)
     const userId = url.searchParams.get('user_id')?.replace('eq.', '')
-    const updates = await request.json()
+    const updates = (await request.json()) as Partial<MockParametre>
 
     const index = parametresDb.findIndex(p => p.user_id === userId)
     if (index !== -1) {
