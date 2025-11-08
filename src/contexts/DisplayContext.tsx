@@ -1,5 +1,11 @@
 // src/contexts/DisplayContext.tsx
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react'
 import { usePermissions } from './PermissionsContext'
 
 interface DisplayContextValue {
@@ -16,7 +22,7 @@ interface DisplayContextValue {
 }
 
 interface DisplayProviderProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 // ✅ on exporte maintenant le contexte nommément

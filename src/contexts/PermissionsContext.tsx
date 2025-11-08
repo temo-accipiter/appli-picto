@@ -12,6 +12,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { ROLE, normalizeRoleName } from '@/utils/roleUtils'
@@ -33,7 +34,7 @@ interface PermissionsContextValue {
 }
 
 interface PermissionsProviderProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 interface RolePayload {
@@ -58,7 +59,9 @@ interface RetryOptions {
   delays?: number[]
 }
 
-export const PermissionsContext = createContext<PermissionsContextValue | null>(null)
+export const PermissionsContext = createContext<PermissionsContextValue | null>(
+  null
+)
 
 // --- Utils --------------------------------------------------------------
 
@@ -66,7 +69,11 @@ function extractRoleName(payload: unknown): string {
   if (!payload) return ''
   const rolePayload = payload as RolePayload
   const candidate =
-    rolePayload.role_name ?? rolePayload.role ?? rolePayload.rolename ?? rolePayload.name ?? ''
+    rolePayload.role_name ??
+    rolePayload.role ??
+    rolePayload.rolename ??
+    rolePayload.name ??
+    ''
   return normalizeRoleName(candidate)
 }
 
@@ -74,7 +81,12 @@ function toPermissionMap(rows: unknown[] = []): Record<string, boolean> {
   const map = Object.create(null) as Record<string, boolean>
   for (const r of rows) {
     const permRow = r as PermissionRow
-    const rawName = permRow.feature_name ?? permRow.name ?? permRow.feature ?? permRow.code ?? ''
+    const rawName =
+      permRow.feature_name ??
+      permRow.name ??
+      permRow.feature ??
+      permRow.code ??
+      ''
     const key = String(rawName).trim()
     const allowed =
       typeof permRow.can_access === 'boolean'
@@ -192,7 +204,6 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
     let mounted = true
     let subscription: { unsubscribe: () => void } | null = null
     let debounceTimer: number | undefined
-
     ;(async () => {
       await load()
       if (!mounted) return

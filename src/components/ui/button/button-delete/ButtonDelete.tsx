@@ -6,7 +6,10 @@ interface ButtonDeleteProps {
   title?: string
 }
 
-export default function ButtonDelete({ onClick, title = 'Supprimer' }: ButtonDeleteProps) {
+export default function ButtonDelete({
+  onClick,
+  title = 'Supprimer',
+}: ButtonDeleteProps) {
   return (
     <motion.button
       className="button-delete"

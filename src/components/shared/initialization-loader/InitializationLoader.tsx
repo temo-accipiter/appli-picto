@@ -12,7 +12,9 @@ interface InitializationLoaderProps {
  * Loader global qui attend que AuthContext ET PermissionsContext soient prêts
  * avant d'afficher l'application. Cela évite les "sursauts" pendant le chargement initial.
  */
-export default function InitializationLoader({ children }: InitializationLoaderProps) {
+export default function InitializationLoader({
+  children,
+}: InitializationLoaderProps) {
   const { authReady } = useAuth()
   const { ready: permissionsReady } = usePermissions()
 

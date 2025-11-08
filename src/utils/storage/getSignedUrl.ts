@@ -26,7 +26,11 @@ const signedUrlCache = new Map<string, CachedUrl>()
 
 export async function getSignedImageUrl(
   path: string | null | undefined,
-  { bucket = 'images', expiresIn = 3600, forceRefresh = false }: GetSignedUrlOptions = {}
+  {
+    bucket = 'images',
+    expiresIn = 3600,
+    forceRefresh = false,
+  }: GetSignedUrlOptions = {}
 ): Promise<SignedUrlResult> {
   if (!path) return { url: null, error: new Error('Chemin requis') }
   const key = `${bucket}/${path}`

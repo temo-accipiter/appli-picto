@@ -11,7 +11,10 @@ interface UseUserTimezoneReturn {
   timezone: string
   loading: boolean
   toLocal: (date: string | number | Date) => Date
-  format: (date: string | number | Date, options?: Intl.DateTimeFormatOptions) => string
+  format: (
+    date: string | number | Date,
+    options?: Intl.DateTimeFormatOptions
+  ) => string
 }
 
 // Petite clé de cache localStorage par utilisateur
@@ -91,7 +94,10 @@ function useUserTimezone(): UseUserTimezoneReturn {
         ? new Date(date)
         : date
 
-    const format = (date: string | number | Date, options: Intl.DateTimeFormatOptions = {}): string => {
+    const format = (
+      date: string | number | Date,
+      options: Intl.DateTimeFormatOptions = {}
+    ): string => {
       const d =
         typeof date === 'string' || typeof date === 'number'
           ? new Date(date)

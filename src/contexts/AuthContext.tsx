@@ -3,7 +3,13 @@
 // et met à jour user depuis la session courante + onAuthStateChange.
 
 import type { User, Session } from '@supabase/supabase-js'
-import { createContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { supabase, recreateSupabaseClient } from '@/utils/supabaseClient'
 import {
   startVisibilityHandler,
@@ -19,7 +25,7 @@ interface AuthContextValue {
 }
 
 interface AuthProviderProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 interface SupabaseClientRecreatedEvent extends CustomEvent {
@@ -47,9 +53,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // ✅ CORRECTIF SDK DEADLOCK : Écouter la recréation du client
     // Quand le SDK entre en deadlock (après suspension d'onglet), le visibility handler
     // recrée le client et dispatch un événement custom pour rafraîchir les contextes
-    const handleClientRecreation = async (
-      event: Event
-    ) => {
+    const handleClientRecreation = async (event: Event) => {
       if (!mounted) return
 
       const customEvent = event as SupabaseClientRecreatedEvent

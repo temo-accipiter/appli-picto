@@ -273,10 +273,7 @@ export default function Profil() {
       showToast(t('profil.resetEmailSent'), 'success')
     } catch (err) {
       console.error('Erreur reset mdp :', err)
-      showToast(
-        (err as Error)?.message || t('errors.generic'),
-        'error'
-      )
+      showToast((err as Error)?.message || t('errors.generic'), 'error')
     } finally {
       setCaptchaTokenReset(null)
       setCaptchaKey(k => k + 1)

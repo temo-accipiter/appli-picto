@@ -496,7 +496,15 @@ export async function replaceImage(
   const { userId, onProgress } = options
 
   if (!userId) {
-    return { path: null, url: null, assetId: null, width: null, height: null, isDuplicate: false, error: new Error('userId requis') }
+    return {
+      path: null,
+      url: null,
+      assetId: null,
+      width: null,
+      height: null,
+      isDuplicate: false,
+      error: new Error('userId requis'),
+    }
   }
 
   try {
@@ -549,6 +557,14 @@ export async function replaceImage(
     }
   } catch (error) {
     console.error('❌ Erreur remplacement image:', error)
-    return { path: null, url: null, assetId: null, width: null, height: null, isDuplicate: false, error: error as Error }
+    return {
+      path: null,
+      url: null,
+      assetId: null,
+      width: null,
+      height: null,
+      isDuplicate: false,
+      error: error as Error,
+    }
   }
 }

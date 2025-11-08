@@ -4,10 +4,7 @@
  * Détecte et corrige automatiquement les états corrompus
  */
 
-import {
-  checkSupabaseHealth,
-  resetSupabaseClient,
-} from './supabaseHealthCheck'
+import { checkSupabaseHealth, resetSupabaseClient } from './supabaseHealthCheck'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 const HEARTBEAT_INTERVAL = 60000 // Vérifier toutes les 60 secondes (réduit pour éviter faux positifs)

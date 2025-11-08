@@ -7,7 +7,9 @@ interface FloatingPencilProps {
   className?: string
 }
 
-export default function FloatingPencil({ className = '' }: FloatingPencilProps) {
+export default function FloatingPencil({
+  className = '',
+}: FloatingPencilProps) {
   const navigate = useNavigate()
   const location = useLocation()
 

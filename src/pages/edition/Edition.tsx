@@ -98,7 +98,9 @@ export default function Edition() {
   // dans modernUploadImage() via check_image_quota() RPC
 
   // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
-  const handleQuotaCheck = async (contentType: ContentType): Promise<boolean> => {
+  const handleQuotaCheck = async (
+    contentType: ContentType
+  ): Promise<boolean> => {
     const allowed =
       contentType === 'task'
         ? canCreateTask()
@@ -187,7 +189,11 @@ export default function Edition() {
   const handleTacheAjoutee = () => triggerReload()
   const handleRecompenseAjoutee = () => triggerReload()
 
-  const handleSubmitTask = async ({ label, categorie, image }: TaskSubmitParams) => {
+  const handleSubmitTask = async ({
+    label,
+    categorie,
+    image,
+  }: TaskSubmitParams) => {
     if (!user?.id) {
       show(t('edition.errorUser'), 'error')
       return

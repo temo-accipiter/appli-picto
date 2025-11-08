@@ -85,8 +85,7 @@ export async function exportUserDataZip(
 
   // 2) Signed avatar URL
   let avatarSignedUrl: string | null = null
-  const avatarPath =
-    user?.user_metadata?.avatar || profile?.avatar_url || null
+  const avatarPath = user?.user_metadata?.avatar || profile?.avatar_url || null
   if (avatarPath) {
     const { data, error } = await supabase.storage
       .from('avatars')
@@ -95,7 +94,9 @@ export async function exportUserDataZip(
   }
 
   // 3) Signed URLs for task/reward images
-  async function signIfNeeded(filePath: string | null | undefined): Promise<string | null> {
+  async function signIfNeeded(
+    filePath: string | null | undefined
+  ): Promise<string | null> {
     if (!filePath) return null
     const { data, error } = await supabase.storage
       .from('images')
@@ -104,10 +105,12 @@ export async function exportUserDataZip(
   }
 
   const tachesWithUrls: TacheWithUrl[] = await Promise.all(
-    (taches || []).map(async (t: Tache): Promise<TacheWithUrl> => ({
-      ...t,
-      image_signed_url: await signIfNeeded(t.imagepath),
-    }))
+    (taches || []).map(
+      async (t: Tache): Promise<TacheWithUrl> => ({
+        ...t,
+        image_signed_url: await signIfNeeded(t.imagepath),
+      })
+    )
   )
 
   const recompensesWithUrls: RecompenseWithUrl[] = await Promise.all(

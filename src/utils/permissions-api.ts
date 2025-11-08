@@ -14,7 +14,10 @@ export const createRole = async (roleData: Record<string, any>) => {
   return await supabase.from('roles').insert([roleData]).select().single()
 }
 
-export const updateRole = async (roleId: string, updates: Record<string, any>) => {
+export const updateRole = async (
+  roleId: string,
+  updates: Record<string, any>
+) => {
   return await supabase
     .from('roles')
     .update(updates)

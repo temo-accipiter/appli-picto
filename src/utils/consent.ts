@@ -167,10 +167,7 @@ export async function tryLogServerConsent(
     }
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
-    if (
-      import.meta.env.DEV &&
-      (err as Error).message?.includes('503')
-    ) {
+    if (import.meta.env.DEV && (err as Error).message?.includes('503')) {
       console.debug(
         'ℹ️ Edge function log-consent non disponible (normal en dev local)'
       )
@@ -236,7 +233,8 @@ export function getConsentStatus(): ConsentStatus {
   const now = new Date()
   const consentDate = new Date(consent.ts)
   const daysUntilExpiry = Math.ceil(
-    (EXPIRY_DAYS * 24 * 60 * 60 * 1000 - (now.getTime() - consentDate.getTime())) /
+    (EXPIRY_DAYS * 24 * 60 * 60 * 1000 -
+      (now.getTime() - consentDate.getTime())) /
       (24 * 60 * 60 * 1000)
   )
 

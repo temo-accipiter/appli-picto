@@ -101,7 +101,8 @@ function patchFetchForCheckout(): void {
   const orig = window.fetch
   window.fetch = async (...args: Parameters<typeof window.fetch>) => {
     const [input, init] = args
-    const url = typeof input === 'string' ? input : (input as Request)?.url || ''
+    const url =
+      typeof input === 'string' ? input : (input as Request)?.url || ''
     const method = (init?.method || 'GET').toUpperCase()
     const res = await orig(...args)
 

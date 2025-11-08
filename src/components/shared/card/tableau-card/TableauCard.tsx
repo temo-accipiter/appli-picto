@@ -62,7 +62,10 @@ function playBeep(audioCtx: AudioContext): void {
     }
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.warn('⚠️ Erreur lors de la création du son:', (error as Error).message)
+      console.warn(
+        '⚠️ Erreur lors de la création du son:',
+        (error as Error).message
+      )
     }
   }
 }
@@ -98,7 +101,10 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
         }
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn('⚠️ Impossible de créer AudioContext:', (error as Error).message)
+          console.warn(
+            '⚠️ Impossible de créer AudioContext:',
+            (error as Error).message
+          )
         }
         return null
       }
@@ -116,7 +122,10 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
         playBeep(audioCtx)
       } catch (error) {
         if (import.meta.env.DEV) {
-          console.warn('⚠️ Erreur lors de la lecture audio:', (error as Error).message)
+          console.warn(
+            '⚠️ Erreur lors de la lecture audio:',
+            (error as Error).message
+          )
         }
       }
     }

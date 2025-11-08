@@ -121,8 +121,9 @@ export default function UsersTab() {
         const userStats: Stats = {
           total: paginationData?.total || 0,
           admins: data.filter((u: User) => u.is_admin).length,
-          withRoles: data.filter((u: User) => u.user_roles && u.user_roles.length > 0)
-            .length,
+          withRoles: data.filter(
+            (u: User) => u.user_roles && u.user_roles.length > 0
+          ).length,
           online: data.filter((u: User) => u.is_online).length,
         }
         setStats(userStats)

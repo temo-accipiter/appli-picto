@@ -43,7 +43,10 @@ interface RolesTabProps {
   editingRole: string | null
   setEditingRole: (roleId: string | null) => void
   handleCreateRole: () => void | Promise<void>
-  handleUpdateRole: (roleId: string, updates: Partial<Role>) => void | Promise<void>
+  handleUpdateRole: (
+    roleId: string,
+    updates: Partial<Role>
+  ) => void | Promise<void>
   handleDeleteRole: (roleId: string) => void | Promise<void>
   handleToggleRole: (roleId: string, isActive: boolean) => void | Promise<void>
 }

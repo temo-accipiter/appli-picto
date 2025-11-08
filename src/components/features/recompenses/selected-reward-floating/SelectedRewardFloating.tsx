@@ -13,7 +13,9 @@ interface SelectedRewardFloatingProps {
   reward: Reward | null
 }
 
-export default function SelectedRewardFloating({ reward }: SelectedRewardFloatingProps) {
+export default function SelectedRewardFloating({
+  reward,
+}: SelectedRewardFloatingProps) {
   if (!reward || !reward.id || !reward.imagepath) return null
 
   return (

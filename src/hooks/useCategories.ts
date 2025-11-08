@@ -24,13 +24,21 @@ interface UseCategoriesReturn {
   loading: boolean
   error: Error | null
   addCategory: (cat: CategoryInput) => Promise<{ error: Error | null }>
-  updateCategory: (id: string, newLabel: string) => Promise<{ error: Error | null }>
+  updateCategory: (
+    id: string,
+    newLabel: string
+  ) => Promise<{ error: Error | null }>
   deleteCategory: (value: string) => Promise<{ error: Error | null }>
   refresh: () => Promise<void>
 }
 
 const formatErr = (e: unknown): string => {
-  const error = e as { message?: string; code?: string; details?: string; hint?: string }
+  const error = e as {
+    message?: string
+    code?: string
+    details?: string
+    hint?: string
+  }
   const m = String(error?.message ?? e)
   const parts = [
     m,
@@ -80,7 +88,9 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
     fetchCategoriesInternal()
   }, [reload, user?.id])
 
-  const addCategory = async (cat: CategoryInput): Promise<{ error: Error | null }> => {
+  const addCategory = async (
+    cat: CategoryInput
+  ): Promise<{ error: Error | null }> => {
     try {
       const { data, error: err } = await supabase
         .from('categories')
@@ -100,7 +110,10 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
     }
   }
 
-  const updateCategory = async (id: string, newLabel: string): Promise<{ error: Error | null }> => {
+  const updateCategory = async (
+    id: string,
+    newLabel: string
+  ): Promise<{ error: Error | null }> => {
     try {
       const { error: err } = await supabase
         .from('categories')
@@ -118,7 +131,9 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
     }
   }
 
-  const deleteCategory = async (value: string): Promise<{ error: Error | null }> => {
+  const deleteCategory = async (
+    value: string
+  ): Promise<{ error: Error | null }> => {
     try {
       const { error: err } = await supabase
         .from('categories')

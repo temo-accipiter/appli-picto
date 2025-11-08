@@ -106,7 +106,9 @@ export async function convertToWebP(
 
       let currentTargetKB = targetSizeKB
 
-      const tryCompression = async (strategyIndex: number = 0): Promise<void> => {
+      const tryCompression = async (
+        strategyIndex: number = 0
+      ): Promise<void> => {
         if (strategyIndex >= strategies.length) {
           // ─────────────────────────────────────────────────────────────
           // Échec total → essayer avec fallback 30 KB

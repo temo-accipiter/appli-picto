@@ -25,11 +25,14 @@ export default function TrainProgressBar({
 }: TrainProgressBarProps) {
   const { t } = useI18n()
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
-  const couleur = COULEURS_LIGNES[ligne as keyof typeof COULEURS_LIGNES] || '#999'
+  const couleur =
+    COULEURS_LIGNES[ligne as keyof typeof COULEURS_LIGNES] || '#999'
   const stationCount = total + 1
 
   const { stations: ligneStations, loading, error } = useStations(ligne)
-  const [currentStations, setCurrentStations] = useState<Array<{ label: string }>>([])
+  const [currentStations, setCurrentStations] = useState<
+    Array<{ label: string }>
+  >([])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)

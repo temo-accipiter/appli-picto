@@ -3,7 +3,13 @@
 // - setLoading(true/false) pour afficher/masquer le loader
 // - setLoadingMessage(string) pour personnaliser le message
 
-import { createContext, useContext, useState, useCallback } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  type ReactNode,
+} from 'react'
 import GlobalLoader from '@/components/shared/global-loader/GlobalLoader'
 
 interface LoadingContextValue {
@@ -16,7 +22,7 @@ interface LoadingContextValue {
 }
 
 interface LoadingProviderProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 // ✅ Export nommé pour permettre le ré-export dans contexts/index.js

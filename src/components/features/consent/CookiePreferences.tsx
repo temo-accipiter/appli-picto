@@ -33,7 +33,8 @@ export default function CookiePreferences() {
   })
 
   const close = () => setOpen(false)
-  const toggle = (key: string) => setChoices(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
+  const toggle = (key: string) =>
+    setChoices(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))
 
   const acceptAll = async () => {
     const payload = saveConsent(

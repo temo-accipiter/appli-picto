@@ -297,10 +297,10 @@ export const compressImageIfNeeded = async (
  * ========================= */
 export const validateEmail = (email: string = ''): ValidationResult => {
   const e = String(email).trim()
-  if (!e) return 'L'e-mail est requis.'
-  if (/\s/.test(e)) return 'L'e-mail ne doit pas contenir d'espace.'
+  if (!e) return "L'e-mail est requis."
+  if (/\s/.test(e)) return "L'e-mail ne doit pas contenir d'espace."
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-  if (!re.test(e)) return 'Format d'e-mail invalide.'
+  if (!re.test(e)) return "Format d'e-mail invalide."
   return ''
 }
 export const normalizeEmail = (email: string = ''): string =>
@@ -319,7 +319,7 @@ export const validatePasswordStrength = (pw: string = ''): ValidationResult => {
   if (!/[A-Z]/.test(pw)) return 'Ajoute au moins une lettre majuscule.'
   if (!/[0-9]/.test(pw)) return 'Ajoute au moins un chiffre.'
   if (!/[^A-Za-z0-9]/.test(pw)) return 'Ajoute au moins un symbole.'
-  if (/\s/.test(pw)) return 'Le mot de passe ne doit pas contenir d'espace.'
+  if (/\s/.test(pw)) return "Le mot de passe ne doit pas contenir d'espace."
   return ''
 }
 

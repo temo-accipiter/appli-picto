@@ -25,7 +25,10 @@ interface RecompensesEditionProps {
   items: RewardItem[]
   onDelete: (item: RewardItem) => void
   onToggleSelect: (id: string | number, currentSelected: boolean) => void
-  onLabelChange: (id: string | number, label: string) => Promise<{ error?: any }>
+  onLabelChange: (
+    id: string | number,
+    label: string
+  ) => Promise<{ error?: any }>
   onSubmitReward: (data: RewardFormData) => void
   onShowQuotaModal?: (type: string) => Promise<boolean>
 }

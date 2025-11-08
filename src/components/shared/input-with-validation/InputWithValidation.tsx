@@ -21,7 +21,10 @@ export interface InputWithValidationRef {
   validateNow: () => void
 }
 
-const InputWithValidation = forwardRef<InputWithValidationRef, InputWithValidationProps>(function InputWithValidation(
+const InputWithValidation = forwardRef<
+  InputWithValidationRef,
+  InputWithValidationProps
+>(function InputWithValidation(
   {
     id,
     value,

@@ -5,7 +5,10 @@ interface ButtonCloseProps {
   ariaLabel?: string
 }
 
-export default function ButtonClose({ onClick, ariaLabel = 'Fermer' }: ButtonCloseProps) {
+export default function ButtonClose({
+  onClick,
+  ariaLabel = 'Fermer',
+}: ButtonCloseProps) {
   return (
     <button className="button-close" onClick={onClick} aria-label={ariaLabel}>
       ×

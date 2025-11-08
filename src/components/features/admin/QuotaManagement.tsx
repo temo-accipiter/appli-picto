@@ -41,7 +41,9 @@ interface QuotaManagementProps {
  * Composant de gestion des quotas pour les administrateurs
  * Permet de visualiser et modifier les quotas des rôles
  */
-export default function QuotaManagement({ className = '' }: QuotaManagementProps) {
+export default function QuotaManagement({
+  className = '',
+}: QuotaManagementProps) {
   const { can } = usePermissions()
 
   const [loading, setLoading] = useState(true)

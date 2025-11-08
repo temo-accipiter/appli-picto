@@ -35,7 +35,10 @@ interface TaskFormData {
 interface ChecklistTachesEditionProps {
   items: TacheItem[]
   categories: CategoryOption[]
-  onToggleAujourdhui: (id: string | number, currentState: boolean | number | undefined) => void
+  onToggleAujourdhui: (
+    id: string | number,
+    currentState: boolean | number | undefined
+  ) => void
   onUpdateLabel: (id: string | number, label: string) => void
   onUpdateCategorie: (id: string | number, categorie: string) => void
   onDelete: (item: TacheItem) => void
@@ -74,7 +77,9 @@ export default function ChecklistTachesEdition({
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [newCatLabel, setNewCatLabel] = useState('')
-  const [catASupprimer, setCatASupprimer] = useState<string | number | null>(null)
+  const [catASupprimer, setCatASupprimer] = useState<string | number | null>(
+    null
+  )
 
   const { t } = useI18n()
 
@@ -121,7 +126,10 @@ export default function ChecklistTachesEdition({
     }, 600)
   }
 
-  const handleAddCategory = async (e: React.FormEvent, categoryLabel: string | null = null) => {
+  const handleAddCategory = async (
+    e: React.FormEvent,
+    categoryLabel: string | null = null
+  ) => {
     e.preventDefault()
 
     // Utiliser le label passé en argument ou le state local

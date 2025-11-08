@@ -22,7 +22,8 @@ type TableFilter = 'all' | TableName
 export default function HistoryTab() {
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [changeTypeFilter, setChangeTypeFilter] = useState<ChangeTypeFilter>('all')
+  const [changeTypeFilter, setChangeTypeFilter] =
+    useState<ChangeTypeFilter>('all')
   const [tableFilter, setTableFilter] = useState<TableFilter>('all')
   const [limit, setLimit] = useState(50)
 
@@ -167,7 +168,9 @@ export default function HistoryTab() {
             <select
               id="change-type-filter"
               value={changeTypeFilter}
-              onChange={e => setChangeTypeFilter(e.target.value as ChangeTypeFilter)}
+              onChange={e =>
+                setChangeTypeFilter(e.target.value as ChangeTypeFilter)
+              }
               className="form-select"
             >
               <option value="all">Tous les types</option>

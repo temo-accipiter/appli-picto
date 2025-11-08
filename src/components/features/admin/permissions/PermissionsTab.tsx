@@ -33,7 +33,11 @@ interface PermissionsTabProps {
   tempPermissions: TempPermissions
   editingPermissions: boolean
   setEditingPermissions: (value: boolean) => void
-  handlePermissionChange: (roleId: string, featureId: string, value: boolean) => void
+  handlePermissionChange: (
+    roleId: string,
+    featureId: string,
+    value: boolean
+  ) => void
   handleSavePermissions: () => void | Promise<void>
   handleDeleteFeature: (featureId: string) => void | Promise<void>
   handleEditFeature: (feature: Feature) => void

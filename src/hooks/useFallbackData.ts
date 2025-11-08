@@ -36,7 +36,9 @@ export function useFallbackData(): UseFallbackDataReturn {
     throw new Error('useFallbackData must be used within an AuthProvider')
   }
   const { user, authReady } = authContext
-  const [fallbackData, setFallbackData] = useState<FallbackDataType | null>(null)
+  const [fallbackData, setFallbackData] = useState<FallbackDataType | null>(
+    null
+  )
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {

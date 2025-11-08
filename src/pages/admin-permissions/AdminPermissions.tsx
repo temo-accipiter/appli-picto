@@ -30,7 +30,13 @@ import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
 
-type TabType = 'permissions' | 'roles' | 'users' | 'history' | 'logs' | 'analytics'
+type TabType =
+  | 'permissions'
+  | 'roles'
+  | 'users'
+  | 'history'
+  | 'logs'
+  | 'analytics'
 
 type CategoryType = 'affichage' | 'gestion' | 'systeme' | 'securite'
 

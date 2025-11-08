@@ -5,7 +5,11 @@ import { useEffect, useState, useMemo } from 'react'
 import { useDebounce } from '@/hooks'
 import './AccountManagement.scss'
 
-type AccountStatus = 'active' | 'suspended' | 'deletion_scheduled' | 'pending_verification'
+type AccountStatus =
+  | 'active'
+  | 'suspended'
+  | 'deletion_scheduled'
+  | 'pending_verification'
 
 interface UserRole {
   is_active: boolean
@@ -42,7 +46,9 @@ interface AccountManagementProps {
  * Composant de gestion des comptes pour les administrateurs
  * Permet de visualiser et modifier les états des comptes utilisateurs
  */
-export default function AccountManagement({ className = '' }: AccountManagementProps) {
+export default function AccountManagement({
+  className = '',
+}: AccountManagementProps) {
   const { can } = usePermissions()
 
   const [loading, setLoading] = useState(true)
@@ -76,7 +82,9 @@ export default function AccountManagement({ className = '' }: AccountManagementP
 
         // Traiter les données pour avoir un format plus simple
         const processedUsers: User[] = (data || []).map(user => {
-          const activeRole = user.user_roles.find((ur: UserRole) => ur.is_active)
+          const activeRole = user.user_roles.find(
+            (ur: UserRole) => ur.is_active
+          )
           return {
             ...user,
             role: activeRole?.roles?.name || 'visitor',
@@ -111,7 +119,11 @@ export default function AccountManagement({ className = '' }: AccountManagementP
   }, [users, filter, debouncedSearchTerm])
 
   // Changer l'état d'un compte
-  const changeAccountStatus = async (userId: string, newStatus: AccountStatus, reason = '') => {
+  const changeAccountStatus = async (
+    userId: string,
+    newStatus: AccountStatus,
+    reason = ''
+  ) => {
     setActionLoading(true)
     try {
       const { error } = await supabase.functions.invoke(
@@ -213,7 +225,10 @@ export default function AccountManagement({ className = '' }: AccountManagementP
         </div>
 
         <div className="filter-select">
-          <select value={filter} onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}>
+          <select
+            value={filter}
+            onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}
+          >
             <option value="all">Tous les états</option>
             <option value="active">Actifs</option>
             <option value="suspended">Suspendus</option>

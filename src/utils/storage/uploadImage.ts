@@ -28,9 +28,10 @@ export function sanitizeFileName(name: string = ''): string {
   const base = String(name).split('/').pop()?.split('\\').pop() || ''
   // src/utils/storage/uploadImage.ts
   const lastDotIndex = base.lastIndexOf('.')
-  const [raw, ext = ''] = lastDotIndex >= 0
-    ? [base.slice(0, lastDotIndex), base.slice(lastDotIndex + 1)]
-    : [base, '']
+  const [raw, ext = ''] =
+    lastDotIndex >= 0
+      ? [base.slice(0, lastDotIndex), base.slice(lastDotIndex + 1)]
+      : [base, '']
 
   const safeBase = raw
     .normalize('NFKD')

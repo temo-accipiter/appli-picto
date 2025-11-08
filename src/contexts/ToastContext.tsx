@@ -5,7 +5,14 @@
 // - Respect du paramètre global toasts_enabled
 // Aucune modification du composant <Toast /> ni de ses props.
 
-import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+  type ReactNode,
+} from 'react'
 import Toast from '@/components/ui/toast/Toast'
 import { useParametres } from '@/hooks'
 
@@ -18,20 +25,31 @@ interface ToastState {
 }
 
 interface ToastContextValue {
-  show: (message: string, type?: ToastType, options?: { duration?: number }) => void
+  show: (
+    message: string,
+    type?: ToastType,
+    options?: { duration?: number }
+  ) => void
   hide: () => void
-  showToast: (message: string, type?: ToastType, options?: { duration?: number }) => void
+  showToast: (
+    message: string,
+    type?: ToastType,
+    options?: { duration?: number }
+  ) => void
 }
 
 interface ToastProviderProps {
-  children: React.ReactNode
+  children: ReactNode
   defaultDuration?: number
 }
 
 // ✅ Export NOMMÉ pour permettre le ré-export dans contexts/index.js
 export const ToastContext = createContext<ToastContextValue | null>(null)
 
-export function ToastProvider({ children, defaultDuration = 2000 }: ToastProviderProps) {
+export function ToastProvider({
+  children,
+  defaultDuration = 2000,
+}: ToastProviderProps) {
   const { parametres } = useParametres()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
@@ -57,7 +75,11 @@ export function ToastProvider({ children, defaultDuration = 2000 }: ToastProvide
   // Possibilité de passer une durée spécifique : show(msg, 'success', { duration: 3000 })
   // Respecte le paramètre global toasts_enabled (par défaut: true)
   const show = useCallback(
-    (message: string, type: ToastType = 'info', options: { duration?: number } = {}) => {
+    (
+      message: string,
+      type: ToastType = 'info',
+      options: { duration?: number } = {}
+    ) => {
       // Vérifier si les toasts sont activés (par défaut: true si parametres est null/undefined)
       const toastsEnabled = parametres?.toasts_enabled ?? true
 
