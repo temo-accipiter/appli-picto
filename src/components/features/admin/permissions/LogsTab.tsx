@@ -1,14 +1,24 @@
-// src/components/admin-permissions/LogsTab.jsx
+// src/components/admin-permissions/LogsTab.tsx
 import { Button } from '@/components'
 import { useToast } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
+interface SubscriptionLog {
+  id: string
+  timestamp: string
+  user_id: string | null
+  event_type: string
+  details: Record<string, any>
+}
+
+type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'
+
 export default function LogsTab() {
   const { show: showToast } = useToast()
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState<SubscriptionLog[]>([])
   const [loading, setLoading] = useState(true)
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState<FilterType>('all')
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
@@ -64,7 +74,7 @@ export default function LogsTab() {
     loadLogs(true)
   }, [loadLogs])
 
-  const handleFilterChange = newFilter => {
+  const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter)
     loadLogs(true)
   }
@@ -75,7 +85,7 @@ export default function LogsTab() {
     loadLogs()
   }
 
-  const formatTimestamp = timestamp => {
+  const formatTimestamp = (timestamp: string): string => {
     return new Date(timestamp).toLocaleString('fr-FR', {
       year: 'numeric',
       month: '2-digit',
@@ -86,14 +96,14 @@ export default function LogsTab() {
     })
   }
 
-  const formatEventType = eventType => {
+  const formatEventType = (eventType: string): string => {
     return eventType
       .replace(/\./g, ' → ')
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase())
   }
 
-  const getUserInfo = userId => {
+  const getUserInfo = (userId: string | null): string => {
     if (!userId) return 'Système'
     return userId.slice(0, 8) + '...'
   }

@@ -1,4 +1,4 @@
-// src/components/features/admin/ImageAnalytics.jsx
+// src/components/features/admin/ImageAnalytics.tsx
 // Dashboard analytics uploads images (7 derniers jours, admins uniquement)
 
 import { useEffect, useState } from 'react'
@@ -6,10 +6,20 @@ import { supabase } from '@/utils/supabaseClient'
 import { Loader } from '@/components'
 import './ImageAnalytics.scss'
 
+interface ImageStats {
+  total_uploads: number
+  success_count: number
+  failed_count: number
+  avg_compression_ratio: number
+  avg_conversion_ms: number
+  avg_upload_ms: number
+  total_storage_saved_mb: number
+}
+
 export default function ImageAnalytics() {
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState<ImageStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchStats() {
@@ -25,7 +35,7 @@ export default function ImageAnalytics() {
         setStats(data)
       } catch (e) {
         console.error('❌ Erreur stats images:', e)
-        setError(e.message)
+        setError((e as Error).message)
       } finally {
         setLoading(false)
       }

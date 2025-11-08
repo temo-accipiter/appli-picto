@@ -1,6 +1,44 @@
 import { Shield } from 'lucide-react'
-import PropTypes from 'prop-types'
 import PermissionsTable from './PermissionsTable'
+
+interface Feature {
+  id: string
+  name: string
+  display_name: string
+  description?: string
+}
+
+interface Role {
+  id: string
+  name: string
+  display_name: string
+  priority: number
+}
+
+interface Permission {
+  id: string
+  role_id: string
+  feature_id: string
+  can_access: boolean
+}
+
+interface TempPermissions {
+  [key: string]: boolean
+}
+
+interface PermissionsTabProps {
+  features: Feature[]
+  manageableRoles: Role[]
+  permissions: Permission[]
+  tempPermissions: TempPermissions
+  editingPermissions: boolean
+  setEditingPermissions: (value: boolean) => void
+  handlePermissionChange: (roleId: string, featureId: string, value: boolean) => void
+  handleSavePermissions: () => void | Promise<void>
+  handleDeleteFeature: (featureId: string) => void | Promise<void>
+  handleEditFeature: (feature: Feature) => void
+  initializeTempPermissions: () => void
+}
 
 export default function PermissionsTab({
   features,
@@ -14,7 +52,7 @@ export default function PermissionsTab({
   handleDeleteFeature,
   handleEditFeature,
   initializeTempPermissions,
-}) {
+}: PermissionsTabProps) {
   return (
     <div className="permissions-tab">
       {/* Note sur le rôle admin */}
@@ -52,18 +90,4 @@ export default function PermissionsTab({
       </div>
     </div>
   )
-}
-
-PermissionsTab.propTypes = {
-  features: PropTypes.array,
-  manageableRoles: PropTypes.array,
-  permissions: PropTypes.array,
-  tempPermissions: PropTypes.object,
-  editingPermissions: PropTypes.bool,
-  setEditingPermissions: PropTypes.func,
-  handlePermissionChange: PropTypes.func,
-  handleSavePermissions: PropTypes.func,
-  handleDeleteFeature: PropTypes.func,
-  handleEditFeature: PropTypes.func,
-  initializeTempPermissions: PropTypes.func,
 }
