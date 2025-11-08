@@ -5,6 +5,10 @@ import { InputWithValidation, Button, PasswordChecklist } from '@/components'
 import { supabase, validatePasswordStrength, makeMatchRule } from '@/utils'
 import './ResetPassword.scss'
 
+interface InputWithValidationRef {
+  validateNow?: () => void
+}
+
 export default function ResetPassword() {
   const navigate = useNavigate()
   const { user, loading } = useAuth()
@@ -16,15 +20,15 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [recoveryHandled, setRecoveryHandled] = useState(false)
 
-  const pwRef = useRef(null)
-  const confirmRef = useRef(null)
+  const pwRef = useRef<InputWithValidationRef>(null)
+  const confirmRef = useRef<InputWithValidationRef>(null)
 
   const fromEmailLink =
     typeof window !== 'undefined' &&
     window.location.hash.includes('access_token')
 
   useEffect(() => {
-    const extractAccessToken = hash => {
+    const extractAccessToken = (hash: string) => {
       const params = new URLSearchParams(hash.replace('#', ''))
       return params.get('access_token')
     }
@@ -69,7 +73,7 @@ export default function ResetPassword() {
     return <Navigate to="/login" replace />
   }
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 

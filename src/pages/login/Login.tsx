@@ -13,6 +13,10 @@ import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import './Login.scss'
 
+interface InputWithValidationRef {
+  validateNow?: () => void
+}
+
 export default function Login() {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -22,19 +26,19 @@ export default function Login() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   // refs pour forcer la validation si pas de blur
-  const emailRef = useRef(null)
-  const pwRef = useRef(null)
+  const emailRef = useRef<InputWithValidationRef>(null)
+  const pwRef = useRef<InputWithValidationRef>(null)
 
-  const handleLogin = async e => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    // force l’affichage des erreurs
+    // force l'affichage des erreurs
     emailRef.current?.validateNow?.()
     pwRef.current?.validateNow?.()
 

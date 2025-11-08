@@ -1,4 +1,4 @@
-// src/pages/forgot-password/ForgotPassword.jsx
+// src/pages/forgot-password/ForgotPassword.tsx
 import { useState, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { useToast } from '@/contexts'
@@ -9,6 +9,10 @@ import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import './ForgotPassword.scss'
 
+interface InputWithValidationRef {
+  validateNow?: () => void
+}
+
 export default function ForgotPassword() {
   const { t } = useI18n()
   const [email, setEmail] = useState('')
@@ -17,13 +21,13 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState(false)
 
   // ✅ Captcha Turnstile
-  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [captchaKey, setCaptchaKey] = useState(0) // forcer un refresh
 
   // Ref pour forcer la validation si pas de blur
-  const emailRef = useRef(null)
+  const emailRef = useRef<InputWithValidationRef>(null)
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     // Validation front (message FR immédiat)
@@ -56,7 +60,7 @@ export default function ForgotPassword() {
       show(t('auth.resetEmailSent'), 'success')
       setSuccess(true)
     } catch (err) {
-      console.error('Erreur envoi reset :', err?.message)
+      console.error('Erreur envoi reset :', (err as Error)?.message)
       show(t('errors.generic'), 'error')
     } finally {
       // invalider le token et régénérer le widget

@@ -14,6 +14,10 @@ import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import '../login/Login.scss'
 
+interface InputWithValidationRef {
+  validateNow?: () => void
+}
+
 export default function Signup() {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -22,16 +26,16 @@ export default function Signup() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const emailRef = useRef(null)
-  const pwRef = useRef(null)
-  const confirmRef = useRef(null)
+  const emailRef = useRef<InputWithValidationRef>(null)
+  const pwRef = useRef<InputWithValidationRef>(null)
+  const confirmRef = useRef<InputWithValidationRef>(null)
 
-  const handleSignup = async e => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')
