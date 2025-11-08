@@ -1,4 +1,4 @@
-// src/contexts/AuthContext.test.jsx
+// src/contexts/AuthContext.test.tsx
 /**
  * Tests simplifiés pour AuthContext
  *
@@ -13,6 +13,7 @@ import { render, screen, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 import { AuthContext, AuthProvider } from './AuthContext'
 import { useContext } from 'react'
+import type { User } from '@supabase/supabase-js'
 
 // ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
 const { mockSupabase } = vi.hoisted(() => ({
@@ -45,7 +46,7 @@ function TestConsumer() {
 }
 
 describe('AuthContext', () => {
-  let unsubscribeMock
+  let unsubscribeMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -63,7 +64,10 @@ describe('AuthContext', () => {
   describe('Initialisation', () => {
     it('doit initialiser avec une session existante', async () => {
       // Arrange
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser: Partial<User> = {
+        id: 'user-123',
+        email: 'test@example.com',
+      }
       mockSupabase.auth.getSession.mockResolvedValue({
         data: {
           session: {
@@ -141,7 +145,10 @@ describe('AuthContext', () => {
   describe('signOut', () => {
     it("doit déconnecter l'utilisateur", async () => {
       // Arrange
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser: Partial<User> = {
+        id: 'user-123',
+        email: 'test@example.com',
+      }
       mockSupabase.auth.getSession.mockResolvedValue({
         data: {
           session: {
@@ -184,7 +191,10 @@ describe('AuthContext', () => {
 
     it('doit gérer les erreurs de signOut', async () => {
       // Arrange
-      const mockUser = { id: 'user-123', email: 'test@example.com' }
+      const mockUser: Partial<User> = {
+        id: 'user-123',
+        email: 'test@example.com',
+      }
       mockSupabase.auth.getSession.mockResolvedValue({
         data: {
           session: {

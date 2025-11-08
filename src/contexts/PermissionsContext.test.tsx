@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { PermissionsProvider, usePermissions } from './PermissionsContext'
 import { AuthContext } from './AuthContext'
 import { supabase } from '@/utils/supabaseClient'
+import type { ReactNode } from 'react'
 
 // Mock Supabase
 vi.mock('@/utils/supabaseClient', () => ({
@@ -20,9 +21,15 @@ vi.mock('@/utils/supabaseClient', () => ({
 const mockAuthContext = {
   user: { id: 'test-user-id', email: 'test@example.com' },
   authReady: true,
+  error: null,
+  signOut: vi.fn(),
 }
 
-const wrapper = ({ children }) => (
+interface WrapperProps {
+  children: ReactNode
+}
+
+const wrapper = ({ children }: WrapperProps) => (
   <AuthContext.Provider value={mockAuthContext}>
     <PermissionsProvider>{children}</PermissionsProvider>
   </AuthContext.Provider>
@@ -35,7 +42,7 @@ describe('PermissionsContext - canAll & canAny', () => {
 
   describe('canAll', () => {
     it('retourne true si admin', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'admin' }, error: null })
         }
@@ -56,7 +63,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne true si toutes les permissions sont accordées', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'abonne' }, error: null })
         }
@@ -84,7 +91,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne false si une seule permission manque', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'free' }, error: null })
         }
@@ -115,9 +122,11 @@ describe('PermissionsContext - canAll & canAny', () => {
       const notReadyAuthContext = {
         user: null,
         authReady: false,
+        error: null,
+        signOut: vi.fn(),
       }
 
-      const notReadyWrapper = ({ children }) => (
+      const notReadyWrapper = ({ children }: WrapperProps) => (
         <AuthContext.Provider value={notReadyAuthContext}>
           <PermissionsProvider>{children}</PermissionsProvider>
         </AuthContext.Provider>
@@ -131,7 +140,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne true avec tableau vide', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'free' }, error: null })
         }
@@ -153,7 +162,7 @@ describe('PermissionsContext - canAll & canAny', () => {
 
   describe('canAny', () => {
     it('retourne true si admin', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'admin' }, error: null })
         }
@@ -174,7 +183,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne true si au moins une permission est accordée', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'free' }, error: null })
         }
@@ -202,7 +211,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne false si aucune permission accordée', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'free' }, error: null })
         }
@@ -230,9 +239,11 @@ describe('PermissionsContext - canAll & canAny', () => {
       const notReadyAuthContext = {
         user: null,
         authReady: false,
+        error: null,
+        signOut: vi.fn(),
       }
 
-      const notReadyWrapper = ({ children }) => (
+      const notReadyWrapper = ({ children }: WrapperProps) => (
         <AuthContext.Provider value={notReadyAuthContext}>
           <PermissionsProvider>{children}</PermissionsProvider>
         </AuthContext.Provider>
@@ -246,7 +257,7 @@ describe('PermissionsContext - canAll & canAny', () => {
     })
 
     it('retourne false avec tableau vide', async () => {
-      supabase.rpc.mockImplementation(fnName => {
+      supabase.rpc.mockImplementation((fnName: string) => {
         if (fnName === 'get_my_primary_role') {
           return Promise.resolve({ data: { role_name: 'free' }, error: null })
         }

@@ -1,4 +1,4 @@
-// src/contexts/ToastContext.test.jsx
+// src/contexts/ToastContext.test.tsx
 /**
  * Tests simplifiés pour ToastContext
  *
