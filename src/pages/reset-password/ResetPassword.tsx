@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import type { FormEvent } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth, useI18n } from '@/hooks'
 import { InputWithValidation, Button, PasswordChecklist } from '@/components'
@@ -73,7 +74,7 @@ export default function ResetPassword() {
     return <Navigate to="/login" replace />
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 

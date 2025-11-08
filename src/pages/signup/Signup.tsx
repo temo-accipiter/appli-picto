@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import type { FormEvent } from 'react'
 import { Navigate, Link } from 'react-router-dom'
 import {
   supabase,
@@ -35,7 +36,7 @@ export default function Signup() {
   const pwRef = useRef<InputWithValidationRef>(null)
   const confirmRef = useRef<InputWithValidationRef>(null)
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
     setSuccess('')

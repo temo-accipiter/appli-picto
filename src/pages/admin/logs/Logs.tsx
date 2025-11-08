@@ -77,7 +77,9 @@ export default function Logs() {
         }
 
         setTotalCount(count || 0)
-        setHasMore(((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE)
+        setHasMore(
+          ((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE
+        )
       } catch (error) {
         console.error('Erreur chargement logs:', error)
         showToast('Erreur lors du chargement des logs', 'error')

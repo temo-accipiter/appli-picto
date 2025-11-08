@@ -11,6 +11,7 @@ import { supabase } from '@/utils/supabaseClient'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import { Crown, LogOut, Shield, User } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import type { MouseEvent } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import './UserMenu.scss'
@@ -147,7 +148,7 @@ export default function UserMenu() {
     }
   }
 
-  const handleBackdropMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleBackdropMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setOpen(false)
   }
 

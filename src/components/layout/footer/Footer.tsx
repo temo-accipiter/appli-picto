@@ -67,9 +67,7 @@ export default function Footer() {
           </li>
         </ul>
       </nav>
-      <p className="app-footer__copy">
-        © {new Date().getFullYear()}
-      </p>
+      <p className="app-footer__copy">© {new Date().getFullYear()}</p>
     </footer>
   )
 }

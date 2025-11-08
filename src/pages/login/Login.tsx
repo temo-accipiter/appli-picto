@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import type { FormEvent } from 'react'
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/utils/supabaseClient'
 import { useAuth, useI18n } from '@/hooks'
@@ -34,7 +35,7 @@ export default function Login() {
   const emailRef = useRef<InputWithValidationRef>(null)
   const pwRef = useRef<InputWithValidationRef>(null)
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
 

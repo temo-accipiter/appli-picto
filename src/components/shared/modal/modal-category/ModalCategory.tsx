@@ -8,6 +8,7 @@ import {
 } from '@/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
 import './ModalCategory.scss'
 
 interface ModalCategoryProps {
@@ -15,7 +16,7 @@ interface ModalCategoryProps {
   onClose: () => void
   categories: Categorie[]
   onDeleteCategory: (value: string) => void
-  onAddCategory: (e: React.FormEvent, category: string) => void
+  onAddCategory: (e: FormEvent, category: string) => void
   newCategory: string
   onChangeNewCategory: (value: string) => void
 }
@@ -59,7 +60,7 @@ export default function ModalCategory({
     [validateNotEmpty, noEdgeSpaces, noDoubleSpaces, categories, t]
   )
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
     const hasError = validationRules.some(rule => rule(newCategory))

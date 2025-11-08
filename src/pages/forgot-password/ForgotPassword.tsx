@@ -1,5 +1,6 @@
 // src/pages/forgot-password/ForgotPassword.tsx
 import { useState, useRef } from 'react'
+import type { FormEvent } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { useToast } from '@/contexts'
 import { useI18n } from '@/hooks'
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
   // Ref pour forcer la validation si pas de blur
   const emailRef = useRef<InputWithValidationRef>(null)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
 
     // Validation front (message FR immédiat)
