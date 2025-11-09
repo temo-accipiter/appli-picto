@@ -30,10 +30,14 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
-  useToast: () => mockToast,
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuth: () => ({ user: mockUser }),
+    useToast: () => mockToast,
+  }
+})
 
 vi.mock('@/utils/storage/deleteImageIfAny', () => ({
   default: vi.fn(() => Promise.resolve({ deleted: true, error: null })),

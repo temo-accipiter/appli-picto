@@ -25,10 +25,14 @@ import { vi } from 'vitest'
 const mockUser = { id: 'test-user-123' }
 const mockToast = { show: vi.fn() }
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
-  useToast: () => mockToast,
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuth: () => ({ user: mockUser }),
+    useToast: () => mockToast,
+  }
+})
 
 vi.mock('@/utils/storage/deleteImageIfAny', () => ({
   default: vi.fn(() => Promise.resolve({ deleted: true, error: null })),

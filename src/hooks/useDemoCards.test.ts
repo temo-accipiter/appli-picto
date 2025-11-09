@@ -35,11 +35,15 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => mockAuth,
-  withAbortSafe: mockWithAbortSafe,
-  isAbortLike: mockIsAbortLike,
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuth: () => mockAuth,
+    withAbortSafe: mockWithAbortSafe,
+    isAbortLike: mockIsAbortLike,
+  }
+})
 
 describe('useDemoCards', () => {
   // Import dynamique du hook (après les mocks)

@@ -38,11 +38,15 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
-  withAbortSafe: mockWithAbortSafe,
-  isAbortLike: mockIsAbortLike,
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuth: () => ({ user: mockUser }),
+    withAbortSafe: mockWithAbortSafe,
+    isAbortLike: mockIsAbortLike,
+  }
+})
 
 vi.mock('@/hooks/useAuth', () => ({
   default: () => ({ user: mockUser }),

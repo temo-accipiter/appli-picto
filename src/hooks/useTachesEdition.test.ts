@@ -38,9 +38,13 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuth: () => ({ user: mockUser }),
+  }
+})
 
 vi.mock('@/utils/storage/uploadImage', () => ({
   uploadImage: mockUploadImage,
