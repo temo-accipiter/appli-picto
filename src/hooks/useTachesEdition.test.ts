@@ -22,6 +22,7 @@ const {
   mockUploadImage,
   mockReplaceImage,
   mockDeleteImage,
+  mockToast,
 } = vi.hoisted(() => ({
   mockSupabase: {
     from: vi.fn(),
@@ -32,6 +33,9 @@ const {
   mockUploadImage: vi.fn(),
   mockReplaceImage: vi.fn(),
   mockDeleteImage: vi.fn(),
+  mockToast: {
+    show: vi.fn(),
+  },
 }))
 
 vi.mock('@/utils/supabaseClient', () => ({
@@ -39,7 +43,9 @@ vi.mock('@/utils/supabaseClient', () => ({
 }))
 
 vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
+  useAuth: () => ({ user: mockUser, authReady: true }),
+  useToast: () => mockToast,
+  useI18n: () => ({ t: (key: string) => key }),
 }))
 
 vi.mock('@/utils/storage/uploadImage', () => ({

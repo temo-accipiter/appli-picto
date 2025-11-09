@@ -24,8 +24,14 @@ const mockUser = { id: TEST_USER_ID }
 const mockToast = { show: vi.fn() }
 const mockSetLoading = vi.fn()
 
+vi.mock('@/hooks', () => ({
+  useAuth: () => ({ user: mockUser, authReady: true }),
+  useI18n: () => ({ t: (key: string) => key }),
+  useToast: () => mockToast,
+}))
+
 vi.mock('@/hooks/useAuth', () => ({
-  default: () => ({ user: mockUser }),
+  default: () => ({ user: mockUser, authReady: true }),
 }))
 
 vi.mock('@/contexts', () => ({

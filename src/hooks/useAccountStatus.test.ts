@@ -39,13 +39,13 @@ vi.mock('@/utils/supabaseClient', () => ({
 }))
 
 vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
+  useAuth: () => ({ user: mockUser, authReady: true }),
   withAbortSafe: mockWithAbortSafe,
   isAbortLike: mockIsAbortLike,
 }))
 
 vi.mock('@/hooks/useAuth', () => ({
-  default: () => ({ user: mockUser }),
+  default: () => ({ user: mockUser, authReady: true }),
 }))
 
 describe('useAccountStatus', () => {
