@@ -25,8 +25,9 @@ const mockUser = { id: TEST_USER_ID }
 const mockToast = { show: vi.fn() }
 
 vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser }),
+  useAuth: () => ({ user: mockUser, authReady: true }),
   useToast: () => mockToast,
+  useI18n: () => ({ t: (key: string) => key }),
 }))
 
 vi.mock('@/utils/storage/deleteImageIfAny', () => ({

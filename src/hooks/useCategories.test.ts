@@ -30,8 +30,14 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
+vi.mock('@/hooks', () => ({
+  useAuth: () => ({ user: mockUser, authReady: true }),
+  useI18n: () => ({ t: (key: string) => key }),
+  useToast: () => mockToast,
+}))
+
 vi.mock('@/hooks/useAuth', () => ({
-  default: () => ({ user: mockUser }),
+  default: () => ({ user: mockUser, authReady: true }),
 }))
 
 vi.mock('@/contexts', () => ({

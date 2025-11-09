@@ -28,6 +28,7 @@ vi.mock('@/utils/supabaseClient', () => ({
 }))
 
 vi.mock('@/hooks', () => ({
+  useAuth: () => ({ authReady: true }),
   withAbortSafe: mockWithAbortSafe,
   isAbortLike: mockIsAbortLike,
 }))
