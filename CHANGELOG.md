@@ -9,6 +9,14 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/lang/fr/).
 
 ### Phase 4 - Infrastructure de tests (2025-11-09)
 
+#### Changed 🔄
+
+**CI/CD Temporary Adjustment**
+- Job E2E configuré avec `continue-on-error: true` (temporaire Phase 4 uniquement)
+- Job `check-all` modifié pour permettre l'échec de E2E sans bloquer le merge
+- ⚠️ TODO Phase 5 : Retirer ces exceptions une fois les tests E2E complets
+- Raison : Infrastructure mise en place, tests E2E seront écrits en Phase 5
+
 #### Added ✨
 
 **CI/CD GitHub Actions**
