@@ -31,7 +31,7 @@ export default function useAccountStatus() {
 
     setLoading(true)
     try {
-      const { data, error } = await withAbortSafe(
+      const { data, error, aborted } = await withAbortSafe(
         supabase
           .from('profiles')
           .select('account_status, deletion_scheduled_at')
@@ -39,7 +39,7 @@ export default function useAccountStatus() {
           .single()
       )
 
-      if (error && isAbortLike(error)) {
+      if (aborted || (error && isAbortLike(error))) {
         if (import.meta.env.DEV) console.debug('useAccountStatus: abort ignoré')
         setLoading(false)
         return
