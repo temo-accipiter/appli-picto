@@ -20,6 +20,33 @@ export default defineConfig({
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
       '**/tests/e2e/**', // Exclure les tests Playwright
     ],
+    // Configuration du coverage
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/.{idea,git,cache,output,temp}/**',
+        '**/tests/**',
+        '**/test/**',
+        '**/*.config.*',
+        '**/*.d.ts',
+        '**/src/main.jsx',
+        '**/src/test/**',
+        '**/src/types/**',
+      ],
+      // Seuils de couverture - Phase 4: objectif 80%
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+      // Exiger 100% de couverture sur les fichiers critiques
+      perFile: true,
+      all: true,
+    },
   },
   resolve: {
     alias: {

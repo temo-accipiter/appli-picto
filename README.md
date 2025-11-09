@@ -1,5 +1,10 @@
 # 🧩 Appli Picto – Dashboard pour enfants autistes
 
+[![CI](https://github.com/temo-accipiter/appli-picto/workflows/CI/badge.svg)](https://github.com/temo-accipiter/appli-picto/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/temo-accipiter/appli-picto/branch/main/graph/badge.svg)](https://codecov.io/gh/temo-accipiter/appli-picto)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-20.19.4-brightgreen.svg)](https://nodejs.org/)
+
 Un tableau de motivation interactif et personnalisable, conçu pour aider les enfants autistes à accomplir des tâches quotidiennes avec des pictogrammes, des récompenses et une interface apaisante.
 
 ---
@@ -82,6 +87,51 @@ yarn preview    # aperçu du build
 yarn lint       # vérifie le code avec ESLint
 yarn format     # formatte le code avec Prettier
 ```
+
+---
+
+## 🧪 Testing
+
+### Scripts de tests
+
+```bash
+# Tests unitaires
+yarn test                  # Lancer les tests Vitest
+yarn test:ui              # Interface UI des tests
+yarn test:coverage        # Tests avec coverage
+yarn test:coverage:open   # Ouvrir le rapport coverage
+
+# Tests E2E
+yarn test:e2e             # Tests Playwright
+yarn test:e2e:ui          # Mode UI interactif
+yarn test:e2e:headed      # Voir le navigateur
+yarn test:e2e:debug       # Mode debug
+yarn test:e2e:report      # Voir le rapport
+
+# Supabase Local
+yarn supabase:start       # Démarrer Supabase Docker
+yarn supabase:stop        # Arrêter Supabase
+yarn supabase:reset       # Reset DB + seed
+
+# Stripe Testing
+yarn stripe:listen        # Écouter webhooks localement
+```
+
+### Infrastructure de tests
+
+- ✅ **CI/CD** : GitHub Actions avec jobs parallélisés (5-8 min)
+- ✅ **Coverage** : Seuils à 80% (lines, functions, statements)
+- ✅ **Supabase Local** : Base de données Docker avec seed automatique
+- ✅ **Stripe Test Mode** : CLI pour webhooks locaux
+- ✅ **Helpers** : Auth, Database, Accessibility, Stripe mocks
+- ✅ **Playwright** : Tests E2E optimisés (4 workers, retry)
+
+### Documentation complète
+
+- 📖 [Supabase Local Setup](docs/supabase-local-setup.md)
+- 📖 [Stripe Testing Guide](docs/stripe-testing.md)
+- 📖 [CI/CD Configuration](docs/ci-cd-setup.md)
+- 📖 [Phase 4 - Fondations](docs/phase4-fondations.md)
 
 ---
 
