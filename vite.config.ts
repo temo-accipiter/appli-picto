@@ -5,11 +5,12 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import { imagetools } from 'vite-imagetools'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     imagetools({
@@ -27,7 +28,22 @@ export default defineConfig({
       gzipSize: true,
       brotliSize: true,
     }),
-  ],
+
+    // Sentry source maps upload (production uniquement)
+    mode === 'production' &&
+      process.env.VITE_SENTRY_DSN &&
+      sentryVitePlugin({
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        sourcemaps: {
+          assets: './dist/**',
+          ignore: ['node_modules'],
+          filesToDeleteAfterUpload: ['./dist/**/*.map'], // Nettoyer les source maps après upload
+        },
+        telemetry: false, // Désactiver la télémétrie Sentry
+      }),
+  ].filter(Boolean), // Filtrer les plugins conditionnels
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
@@ -82,4 +98,4 @@ export default defineConfig({
   },
   // (Optionnel, seulement si tu fais du SSR plus tard)
   // ssr: { noExternal: ['marked'] },
-})
+}))

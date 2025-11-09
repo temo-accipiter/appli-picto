@@ -10,7 +10,11 @@ interface ToastProps {
   visible: boolean
 }
 
-const Toast = memo(function Toast({ message, type = 'info', visible }: ToastProps) {
+const Toast = memo(function Toast({
+  message,
+  type = 'info',
+  visible,
+}: ToastProps) {
   return (
     <AnimatePresence>
       {visible && (

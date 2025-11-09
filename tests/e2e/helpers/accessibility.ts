@@ -46,14 +46,22 @@ export async function injectAxe(page: Page): Promise<void> {
  * @example
  * const results = await checkA11y(page)
  */
-export async function checkA11y(page: Page, options: A11yCheckOptions = {}): Promise<AxeResults> {
+export async function checkA11y(
+  page: Page,
+  options: A11yCheckOptions = {}
+): Promise<AxeResults> {
   const { wcagLevel = 'AA', tags = [], skipRules = [] } = options
 
   // S'assurer qu'Axe est injecté
   await injectAxe(page)
 
   // Construire les tags
-  const axeTags = [`wcag2${wcagLevel.toLowerCase()}`, 'wcag2aa', 'best-practice', ...tags]
+  const axeTags = [
+    `wcag2${wcagLevel.toLowerCase()}`,
+    'wcag2aa',
+    'best-practice',
+    ...tags,
+  ]
 
   // Exécuter l'analyse
   const results = await page.evaluate(
@@ -100,8 +108,10 @@ export async function expectNoA11yViolations(
 
   if (results.violations.length > 0) {
     const violationReport = results.violations
-      .map((violation) => {
-        const targets = violation.nodes.map((node) => node.target.join(' > ')).join('\n    ')
+      .map(violation => {
+        const targets = violation.nodes
+          .map(node => node.target.join(' > '))
+          .join('\n    ')
         return `
 ❌ ${violation.id}: ${violation.description}
    Impact: ${violation.impact}
@@ -129,7 +139,10 @@ export async function expectNoA11yViolations(
  * @example
  * await checkKeyboardNavigation(page, 5)
  */
-export async function checkKeyboardNavigation(page: Page, elementsToTab = 5): Promise<void> {
+export async function checkKeyboardNavigation(
+  page: Page,
+  elementsToTab = 5
+): Promise<void> {
   // Commencer au début de la page
   await page.keyboard.press('Tab')
 
@@ -179,7 +192,7 @@ export async function checkColorContrast(
       const [r, g, b] = rgb
         .match(/\d+/g)!
         .map(Number)
-        .map((val) => {
+        .map(val => {
           const s = val / 255
           return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
         })
@@ -210,8 +223,10 @@ export async function checkColorContrast(
  * @example
  * await expectToHaveAccessibleLabel(page.locator('button'))
  */
-export async function expectToHaveAccessibleLabel(locator: Locator): Promise<void> {
-  const accessibleName = await locator.evaluate((element) => {
+export async function expectToHaveAccessibleLabel(
+  locator: Locator
+): Promise<void> {
+  const accessibleName = await locator.evaluate(element => {
     // Récupérer le nom accessible via aria-label, aria-labelledby ou textContent
     const ariaLabel = element.getAttribute('aria-label')
     const ariaLabelledBy = element.getAttribute('aria-labelledby')
@@ -248,7 +263,10 @@ export async function expectToHaveAccessibleLabel(locator: Locator): Promise<voi
  * @example
  * await expectToHaveRole(page.locator('[data-testid="dialog"]'), 'dialog')
  */
-export async function expectToHaveRole(locator: Locator, expectedRole: string): Promise<void> {
+export async function expectToHaveRole(
+  locator: Locator,
+  expectedRole: string
+): Promise<void> {
   const role = await locator.getAttribute('role')
   expect(role).toBe(expectedRole)
 }
@@ -263,10 +281,16 @@ export async function expectToHaveRole(locator: Locator, expectedRole: string): 
  */
 export async function checkLandmarks(page: Page): Promise<void> {
   const landmarks = await page.evaluate(() => {
-    const landmarkRoles = ['banner', 'navigation', 'main', 'contentinfo', 'complementary']
+    const landmarkRoles = [
+      'banner',
+      'navigation',
+      'main',
+      'contentinfo',
+      'complementary',
+    ]
     const found: string[] = []
 
-    landmarkRoles.forEach((role) => {
+    landmarkRoles.forEach(role => {
       const elements = document.querySelectorAll(`[role="${role}"], ${role}`)
       if (elements.length > 0) {
         found.push(role)
@@ -304,8 +328,10 @@ export async function expectImageToHaveAlt(locator: Locator): Promise<void> {
  */
 export async function checkHeadingOrder(page: Page): Promise<void> {
   const headingLevels = await page.evaluate(() => {
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
-    return headings.map((h) => parseInt(h.tagName.substring(1)))
+    const headings = Array.from(
+      document.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    )
+    return headings.map(h => parseInt(h.tagName.substring(1)))
   })
 
   if (headingLevels.length === 0) return

@@ -35,10 +35,7 @@ export default defineConfig({
         ['github'],
         ['list'],
       ]
-    : [
-        ['html', { outputFolder: 'playwright-report' }],
-        ['list'],
-      ],
+    : [['html', { outputFolder: 'playwright-report' }], ['list']],
 
   // Options partagées pour tous les tests
   use: {

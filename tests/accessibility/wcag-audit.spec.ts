@@ -61,7 +61,7 @@ const auditResults: PageAuditResult[] = []
  */
 async function mockTurnstileCaptcha(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    (window as any).turnstile = {
+    ;(window as any).turnstile = {
       render: (_element: HTMLElement, options: any) => {
         if (options.onSuccess) {
           setTimeout(() => options.onSuccess('mock-turnstile-token-123'), 100)
@@ -74,8 +74,8 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
     }
   })
 
-  await page.route('**/challenges.cloudflare.com/**', (route) => route.abort())
-  await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }
 
 /**
@@ -97,10 +97,14 @@ async function auditPage(
   })
 
   // Compter les violations par niveau
-  const critical = results.violations.filter((v) => v.impact === 'critical').length
-  const serious = results.violations.filter((v) => v.impact === 'serious').length
-  const moderate = results.violations.filter((v) => v.impact === 'moderate').length
-  const minor = results.violations.filter((v) => v.impact === 'minor').length
+  const critical = results.violations.filter(
+    v => v.impact === 'critical'
+  ).length
+  const serious = results.violations.filter(v => v.impact === 'serious').length
+  const moderate = results.violations.filter(
+    v => v.impact === 'moderate'
+  ).length
+  const minor = results.violations.filter(v => v.impact === 'minor').length
 
   // Stocker les résultats
   auditResults.push({
@@ -117,7 +121,9 @@ async function auditPage(
   // Logger dans la console
   if (results.violations.length > 0) {
     console.log(`\n⚠️  ${title} - ${results.violations.length} violation(s)`)
-    console.log(`   Critical: ${critical}, Serious: ${serious}, Moderate: ${moderate}, Minor: ${minor}`)
+    console.log(
+      `   Critical: ${critical}, Serious: ${serious}, Moderate: ${moderate}, Minor: ${minor}`
+    )
   } else {
     console.log(`\n✅ ${title} - Aucune violation`)
   }
@@ -128,8 +134,8 @@ async function auditPage(
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
-  test('Page d\'accueil (/) - Pas de violations critiques', async ({ page }) => {
-    await auditPage(page, '/', 'Page d\'accueil')
+  test("Page d'accueil (/) - Pas de violations critiques", async ({ page }) => {
+    await auditPage(page, '/', "Page d'accueil")
 
     // Vérifier 0 violation critique/sérieuse
     const result = auditResults[auditResults.length - 1]
@@ -137,7 +143,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Login (/login) - Pas de violations critiques', async ({ page }) => {
+  test('Page Login (/login) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/login', 'Page Login')
 
@@ -146,7 +154,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Signup (/signup) - Pas de violations critiques', async ({ page }) => {
+  test('Page Signup (/signup) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/signup', 'Page Signup')
 
@@ -155,7 +165,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Forgot Password (/forgot-password) - Pas de violations critiques', async ({ page }) => {
+  test('Page Forgot Password (/forgot-password) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/forgot-password', 'Page Forgot Password')
 
@@ -164,7 +176,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Tableau (/tableau) - Dashboard enfant - Pas de violations critiques', async ({ page }) => {
+  test('Page Tableau (/tableau) - Dashboard enfant - Pas de violations critiques', async ({
+    page,
+  }) => {
     await auditPage(page, '/tableau', 'Page Tableau')
 
     const result = auditResults[auditResults.length - 1]
@@ -172,7 +186,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Mentions Légales (/mentions-legales) - Pas de violations critiques', async ({ page }) => {
+  test('Page Mentions Légales (/mentions-legales) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await auditPage(page, '/mentions-legales', 'Page Mentions Légales')
 
     const result = auditResults[auditResults.length - 1]
@@ -188,15 +204,23 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Politique de Confidentialité (/politique-confidentialite) - Pas de violations critiques', async ({ page }) => {
-    await auditPage(page, '/politique-confidentialite', 'Page Politique de Confidentialité')
+  test('Page Politique de Confidentialité (/politique-confidentialite) - Pas de violations critiques', async ({
+    page,
+  }) => {
+    await auditPage(
+      page,
+      '/politique-confidentialite',
+      'Page Politique de Confidentialité'
+    )
 
     const result = auditResults[auditResults.length - 1]
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
 
-  test('Page Accessibilité (/accessibilite) - Pas de violations critiques', async ({ page }) => {
+  test('Page Accessibilité (/accessibilite) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await auditPage(page, '/accessibilite', 'Page Accessibilité')
 
     const result = auditResults[auditResults.length - 1]
@@ -210,7 +234,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
-  test('Contraste des couleurs - Minimum 4.5:1 pour texte normal', async ({ page }) => {
+  test('Contraste des couleurs - Minimum 4.5:1 pour texte normal', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -220,23 +246,29 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
     })
 
     // Toutes les violations de contraste doivent être documentées
-    const contrastViolations = results.violations.filter((v) => v.id === 'color-contrast')
+    const contrastViolations = results.violations.filter(
+      v => v.id === 'color-contrast'
+    )
 
     if (contrastViolations.length > 0) {
       console.log('\n⚠️  Violations de contraste détectées :')
-      contrastViolations.forEach((v) => {
+      contrastViolations.forEach(v => {
         console.log(`   ${v.help}`)
-        v.nodes.forEach((node) => {
+        v.nodes.forEach(node => {
           console.log(`     - ${node.target}`)
         })
       })
     }
 
     // Pas de violation critique de contraste
-    expect(contrastViolations.filter((v) => v.impact === 'serious').length).toBe(0)
+    expect(contrastViolations.filter(v => v.impact === 'serious').length).toBe(
+      0
+    )
   })
 
-  test('Focus visible - Tous les éléments interactifs ont un indicateur de focus', async ({ page }) => {
+  test('Focus visible - Tous les éléments interactifs ont un indicateur de focus', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -245,14 +277,18 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
 
     // Vérifier que chaque élément focusé a un outline visible
     const focusableElements = await page.evaluate(() => {
-      const elements = document.querySelectorAll('button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      const elements = document.querySelectorAll(
+        'button, a, input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
       return elements.length
     })
 
     expect(focusableElements).toBeGreaterThan(0)
   })
 
-  test('Navigation clavier - Tab fonctionne sur tous les composants', async ({ page }) => {
+  test('Navigation clavier - Tab fonctionne sur tous les composants', async ({
+    page,
+  }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
@@ -263,11 +299,15 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
 
     // Vérifier qu'on peut naviguer entre les champs
     await page.keyboard.press('Tab')
-    const focusedEmail = await page.evaluate(() => document.activeElement?.getAttribute('type'))
+    const focusedEmail = await page.evaluate(() =>
+      document.activeElement?.getAttribute('type')
+    )
     expect(['email', 'text', 'password', null]).toContain(focusedEmail)
   })
 
-  test('ARIA labels - Tous les boutons/liens ont des labels clairs', async ({ page }) => {
+  test('ARIA labels - Tous les boutons/liens ont des labels clairs', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -276,16 +316,18 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
       tags: ['wcag2aa', 'wcag21aa', 'wcag22aa'],
     })
 
-    const ariaViolations = results.violations.filter((v) =>
-      v.id.includes('aria-') || v.id.includes('label')
+    const ariaViolations = results.violations.filter(
+      v => v.id.includes('aria-') || v.id.includes('label')
     )
 
     // Pas de violation ARIA critique
-    expect(ariaViolations.filter((v) => v.impact === 'critical').length).toBe(0)
-    expect(ariaViolations.filter((v) => v.impact === 'serious').length).toBe(0)
+    expect(ariaViolations.filter(v => v.impact === 'critical').length).toBe(0)
+    expect(ariaViolations.filter(v => v.impact === 'serious').length).toBe(0)
   })
 
-  test('Alt text - Toutes les images ont un texte alternatif', async ({ page }) => {
+  test('Alt text - Toutes les images ont un texte alternatif', async ({
+    page,
+  }) => {
     await page.goto('/tableau')
     await page.waitForLoadState('networkidle')
 
@@ -306,7 +348,9 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
     await checkHeadingOrder(page)
   })
 
-  test('Landmarks - header, main, nav correctement balisés', async ({ page }) => {
+  test('Landmarks - header, main, nav correctement balisés', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -327,7 +371,9 @@ test.describe('♿ Tests WCAG 2.2 AA Spécifiques', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('♿ Tests Animations - Conformité WCAG', () => {
-  test('Animations ≤ 150ms - Respect contrainte projet TSA', async ({ page }) => {
+  test('Animations ≤ 150ms - Respect contrainte projet TSA', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -336,14 +382,16 @@ test.describe('♿ Tests Animations - Conformité WCAG', () => {
       const allElements = document.querySelectorAll('*')
       const longTransitions: string[] = []
 
-      allElements.forEach((el) => {
+      allElements.forEach(el => {
         const styles = window.getComputedStyle(el)
         const transition = styles.transitionDuration
 
         if (transition && transition !== '0s') {
           const duration = parseFloat(transition) * 1000 // Convertir en ms
           if (duration > 150) {
-            longTransitions.push(`${el.tagName}.${el.className} - ${duration}ms`)
+            longTransitions.push(
+              `${el.tagName}.${el.className} - ${duration}ms`
+            )
           }
         }
       })
@@ -353,14 +401,16 @@ test.describe('♿ Tests Animations - Conformité WCAG', () => {
 
     if (transitions.length > 0) {
       console.log('\n⚠️  Animations > 150ms détectées :')
-      transitions.forEach((t) => console.log(`   ${t}`))
+      transitions.forEach(t => console.log(`   ${t}`))
     }
 
     // Pas d'animations > 150ms (contrainte TSA)
     expect(transitions.length).toBe(0)
   })
 
-  test('Pas de clignotement > 3 Hz - Prévention épilepsie', async ({ page }) => {
+  test('Pas de clignotement > 3 Hz - Prévention épilepsie', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -369,7 +419,9 @@ test.describe('♿ Tests Animations - Conformité WCAG', () => {
       rules: ['meta-refresh'], // Pas de rafraîchissement automatique
     })
 
-    const blinkViolations = results.violations.filter((v) => v.id === 'meta-refresh')
+    const blinkViolations = results.violations.filter(
+      v => v.id === 'meta-refresh'
+    )
     expect(blinkViolations.length).toBe(0)
 
     // Vérifier qu'il n'y a pas d'animations infinies rapides
@@ -377,7 +429,7 @@ test.describe('♿ Tests Animations - Conformité WCAG', () => {
       const allElements = document.querySelectorAll('*')
       const rapid: string[] = []
 
-      allElements.forEach((el) => {
+      allElements.forEach(el => {
         const styles = window.getComputedStyle(el)
         const animation = styles.animationDuration
 
@@ -396,7 +448,9 @@ test.describe('♿ Tests Animations - Conformité WCAG', () => {
     expect(rapidAnimations.length).toBe(0)
   })
 
-  test('prefers-reduced-motion - Respect des préférences utilisateur', async ({ page }) => {
+  test('prefers-reduced-motion - Respect des préférences utilisateur', async ({
+    page,
+  }) => {
     // Activer prefers-reduced-motion
     await page.emulateMedia({ reducedMotion: 'reduce' })
 
@@ -466,16 +520,18 @@ test.describe('♿ Tests Composants Interactifs', () => {
       tags: ['wcag2aa'],
     })
 
-    const formViolations = results.violations.filter((v) =>
-      v.id.includes('label') || v.id.includes('form')
+    const formViolations = results.violations.filter(
+      v => v.id.includes('label') || v.id.includes('form')
     )
 
     // Pas de violation critique de formulaire
-    expect(formViolations.filter((v) => v.impact === 'critical').length).toBe(0)
-    expect(formViolations.filter((v) => v.impact === 'serious').length).toBe(0)
+    expect(formViolations.filter(v => v.impact === 'critical').length).toBe(0)
+    expect(formViolations.filter(v => v.impact === 'serious').length).toBe(0)
   })
 
-  test('Navigation - Header et sidebar accessibles au clavier', async ({ page }) => {
+  test('Navigation - Header et sidebar accessibles au clavier', async ({
+    page,
+  }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
@@ -488,7 +544,7 @@ test.describe('♿ Tests Composants Interactifs', () => {
 // PARTIE 5 : TESTS LECTEURS D'ÉCRAN (ARIA)
 // ═════════════════════════════════════════════════════════════════════════════
 
-test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
+test.describe("♿ Tests Lecteurs d'Écran - ARIA", () => {
   test('Rôles ARIA corrects - button, link, dialog', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
@@ -498,12 +554,14 @@ test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
       tags: ['wcag2aa'],
     })
 
-    const ariaRoleViolations = results.violations.filter((v) =>
-      v.id.includes('aria-roles') || v.id.includes('aria-required')
+    const ariaRoleViolations = results.violations.filter(
+      v => v.id.includes('aria-roles') || v.id.includes('aria-required')
     )
 
     // Pas de violation ARIA critique
-    expect(ariaRoleViolations.filter((v) => v.impact === 'critical').length).toBe(0)
+    expect(ariaRoleViolations.filter(v => v.impact === 'critical').length).toBe(
+      0
+    )
   })
 
   test('aria-label sur icônes seules', async ({ page }) => {
@@ -515,7 +573,7 @@ test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
       const buttons = Array.from(document.querySelectorAll('button'))
       const iconOnly: string[] = []
 
-      buttons.forEach((btn) => {
+      buttons.forEach(btn => {
         const hasIcon = btn.querySelector('svg') !== null
         const hasText = btn.textContent?.trim().length > 0
         const hasAriaLabel = btn.hasAttribute('aria-label')
@@ -530,14 +588,14 @@ test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
 
     if (iconButtons.length > 0) {
       console.log('\n⚠️  Boutons icônes sans aria-label :')
-      iconButtons.forEach((btn) => console.log(`   ${btn}`))
+      iconButtons.forEach(btn => console.log(`   ${btn}`))
     }
 
     // Tous les boutons icônes doivent avoir un aria-label
     expect(iconButtons.length).toBe(0)
   })
 
-  test('aria-describedby pour messages d\'aide', async ({ page }) => {
+  test("aria-describedby pour messages d'aide", async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
 
@@ -546,7 +604,7 @@ test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
       rules: ['aria-valid-attr-value'],
     })
 
-    const describedByViolations = results.violations.filter((v) =>
+    const describedByViolations = results.violations.filter(v =>
       v.id.includes('aria-valid-attr-value')
     )
 
@@ -560,7 +618,9 @@ test.describe('♿ Tests Lecteurs d\'Écran - ARIA', () => {
 
     // Vérifier que les zones de notifications utilisent aria-live
     const liveRegions = await page.evaluate(() => {
-      const regions = document.querySelectorAll('[aria-live], [role="status"], [role="alert"]')
+      const regions = document.querySelectorAll(
+        '[aria-live], [role="status"], [role="alert"]'
+      )
       return regions.length
     })
 
@@ -585,9 +645,15 @@ test.afterAll(async () => {
  */
 function generateAuditReport(): AuditReport {
   const totalViolations = auditResults.reduce((sum, r) => sum + r.violations, 0)
-  const criticalViolations = auditResults.reduce((sum, r) => sum + r.critical, 0)
+  const criticalViolations = auditResults.reduce(
+    (sum, r) => sum + r.critical,
+    0
+  )
   const seriousViolations = auditResults.reduce((sum, r) => sum + r.serious, 0)
-  const moderateViolations = auditResults.reduce((sum, r) => sum + r.moderate, 0)
+  const moderateViolations = auditResults.reduce(
+    (sum, r) => sum + r.moderate,
+    0
+  )
   const minorViolations = auditResults.reduce((sum, r) => sum + r.minor, 0)
 
   let summary = '✅ WCAG 2.2 AA - Conformité parfaite'
@@ -759,7 +825,7 @@ async function saveHtmlReport(report: AuditReport): Promise<void> {
       <h2>📄 Résultats par Page</h2>
       ${report.pages
         .map(
-          (page) => `
+          page => `
         <div class="page-result ${page.critical > 0 ? 'has-critical' : page.violations > 0 ? 'has-violations' : ''}">
           <div class="page-title">
             ${page.title}
@@ -823,7 +889,12 @@ async function saveHtmlReport(report: AuditReport): Promise<void> {
 </body>
 </html>`
 
-  const reportPath = path.join(process.cwd(), 'tests', 'accessibility', 'report.html')
+  const reportPath = path.join(
+    process.cwd(),
+    'tests',
+    'accessibility',
+    'report.html'
+  )
   await fs.writeFile(reportPath, html, 'utf-8')
 
   console.log(`\n✅ Rapport HTML généré : ${reportPath}`)

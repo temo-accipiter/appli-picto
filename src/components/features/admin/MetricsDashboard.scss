@@ -1,0 +1,241 @@
+/**
+ * MetricsDashboard - Styles
+ */
+
+.metrics-dashboard {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary, #333);
+    margin: 0;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .last-update {
+      font-size: 0.875rem;
+      color: var(--text-secondary, #666);
+    }
+
+    .btn-refresh {
+      background: var(--color-primary, #6B4FBB);
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+        background: var(--color-primary-dark, #5a3fa0);
+      }
+    }
+  }
+
+  &__error {
+    background: #fee;
+    border: 2px solid #fcc;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+
+    p {
+      color: #c00;
+      margin-bottom: 1rem;
+    }
+
+    .btn-retry {
+      background: #c00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: #a00;
+      }
+    }
+  }
+
+  &__empty {
+    text-align: center;
+    color: var(--text-secondary, #666);
+    padding: 3rem;
+  }
+}
+
+// Sections de métriques
+.metrics-section {
+  margin-bottom: 3rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary, #333);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+  }
+
+  &--health {
+    h2 {
+      color: #10b981;
+      border-bottom-color: #10b981;
+    }
+  }
+}
+
+// Grille de métriques
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+// Carte de métrique
+.metric-card {
+  background: white;
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  &:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &__icon {
+    font-size: 2.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    flex: 1;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary, #666);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  &__value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #333);
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: var(--text-tertiary, #999);
+  }
+
+  // Variantes de couleur
+  &--good {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+
+    .metric-card__value {
+      color: #10b981;
+    }
+  }
+
+  &--warning {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fff 0%, #fffbeb 100%);
+
+    .metric-card__value {
+      color: #f59e0b;
+    }
+  }
+
+  &--error {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fff 0%, #fef2f2 100%);
+
+    .metric-card__value {
+      color: #ef4444;
+    }
+  }
+
+  &--highlight {
+    border-color: var(--color-primary, #6B4FBB);
+    background: linear-gradient(135deg, #fff 0%, #f5f3ff 100%);
+
+    .metric-card__value {
+      color: var(--color-primary, #6B4FBB);
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 1024px) {
+  .metrics-dashboard {
+    padding: 1.5rem;
+
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-dashboard {
+    padding: 1rem;
+
+    &__title {
+      font-size: 1.5rem;
+    }
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    padding: 1rem;
+
+    &__value {
+      font-size: 2rem;
+    }
+  }
+}

@@ -41,6 +41,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authReady, setAuthReady] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
+  // 🆕 Synchroniser l'utilisateur avec Sentry
+  useEffect(() => {
+    if (!import.meta.env.VITE_SENTRY_DSN) return
+
+    import('@/config/sentry')
+      .then(({ setSentryUser }) => {
+        if (user) {
+          setSentryUser({
+            id: user.id,
+            email: user.email,
+            role: user.user_metadata?.role || 'user',
+          })
+        } else {
+          setSentryUser(null)
+        }
+      })
+      .catch(() => {
+        // Sentry non disponible
+      })
+  }, [user])
+
   useEffect(() => {
     let mounted = true
     let timeoutId: number | undefined

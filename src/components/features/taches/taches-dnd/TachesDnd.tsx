@@ -129,46 +129,46 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       >
         <SortableContext items={sortableItems} strategy={rectSortingStrategy}>
           <div className="grid-taches">
-          {items.map(t => (
+            {items.map(t => (
+              <TableauCard
+                key={t.id}
+                tache={t}
+                done={doneMap[t.id] || false}
+                toggleDone={onToggle}
+              />
+            ))}
+          </div>
+        </SortableContext>
+
+        <DragOverlay>
+          {activeId && activeTache && (
             <TableauCard
-              key={t.id}
-              tache={t}
-              done={doneMap[t.id] || false}
+              tache={activeTache}
+              done={doneMap[activeId] || false}
               toggleDone={onToggle}
             />
-          ))}
-        </div>
-      </SortableContext>
+          )}
+        </DragOverlay>
 
-      <DragOverlay>
-        {activeId && activeTache && (
-          <TableauCard
-            tache={activeTache}
-            done={doneMap[activeId] || false}
-            toggleDone={onToggle}
-          />
+        {showResetButton && items.length > 0 && (
+          <div className="reset-all-zone">
+            <Button
+              label={t('tableau.reset')}
+              onClick={() => setShowConfirm(true)}
+            />
+            <ModalConfirm
+              isOpen={showConfirm}
+              onClose={() => setShowConfirm(false)}
+              confirmLabel={t('actions.confirm')}
+              onConfirm={() => {
+                setShowConfirm(false)
+                onReset()
+              }}
+            >
+              ❗ {t('edition.confirmResetAll')}
+            </ModalConfirm>
+          </div>
         )}
-      </DragOverlay>
-
-      {showResetButton && items.length > 0 && (
-        <div className="reset-all-zone">
-          <Button
-            label={t('tableau.reset')}
-            onClick={() => setShowConfirm(true)}
-          />
-          <ModalConfirm
-            isOpen={showConfirm}
-            onClose={() => setShowConfirm(false)}
-            confirmLabel={t('actions.confirm')}
-            onConfirm={() => {
-              setShowConfirm(false)
-              onReset()
-            }}
-          >
-            ❗ {t('edition.confirmResetAll')}
-          </ModalConfirm>
-        </div>
-      )}
       </DndContext>
     </>
   )

@@ -99,7 +99,9 @@ export const mockStripeSubscriptionActive: Stripe.Subscription = {
   test_clock: null,
   transfer_data: null,
   trial_end: null,
-  trial_settings: { end_behavior: { missing_payment_method: 'create_invoice' } },
+  trial_settings: {
+    end_behavior: { missing_payment_method: 'create_invoice' },
+  },
   trial_start: null,
 }
 
@@ -319,7 +321,9 @@ export function mockStripeAPI() {
       create: vi.fn().mockResolvedValue(mockStripeCustomer),
       retrieve: vi.fn().mockResolvedValue(mockStripeCustomer),
       update: vi.fn().mockResolvedValue(mockStripeCustomer),
-      del: vi.fn().mockResolvedValue({ id: mockStripeCustomer.id, deleted: true }),
+      del: vi
+        .fn()
+        .mockResolvedValue({ id: mockStripeCustomer.id, deleted: true }),
     },
     subscriptions: {
       create: vi.fn().mockResolvedValue(mockStripeSubscriptionActive),

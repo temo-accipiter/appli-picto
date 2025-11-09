@@ -9,6 +9,7 @@ import {
   Loader,
   ProtectedRoute,
   InitializationLoader,
+  WebVitals,
 } from '@/components'
 import {
   AuthProvider,
@@ -23,6 +24,19 @@ import { supabase } from '@/utils/supabaseClient'
 // i18n + styles
 import '@/config/i18n/i18n'
 import '@/styles/main.scss'
+
+// Sentry error tracking (initialisé avant tout)
+import { initSentry } from '@/config/sentry'
+import { setupGlobalErrorHandlers } from '@/config/sentry/globalHandlers'
+
+initSentry({
+  enablePerformance: import.meta.env.PROD, // Performance monitoring en production uniquement
+  enableReplay: false, // Session replay désactivé par défaut (RGPD)
+  tracesSampleRate: 0.1, // 10% des transactions
+})
+
+// Activer les handlers d'erreurs globales
+setupGlobalErrorHandlers()
 
 // Consentement / analytics (chargé seulement si nécessaire)
 import { setupConsentBridges } from '@/config/analytics'
@@ -153,6 +167,7 @@ import {
   HomeRedirect,
   Login,
   Logs,
+  Metrics,
   MentionsLegales,
   NotFound,
   PolitiqueConfidentialite,
@@ -214,6 +229,14 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: 'admin/metrics',
+        element: (
+          <ProtectedRoute>
+            <Metrics />
+          </ProtectedRoute>
+        ),
+      },
 
       // Auth
       { path: 'login', element: <Login /> },
@@ -243,6 +266,7 @@ const router = createBrowserRouter([
 // des problèmes de concurrence avec le SDK Supabase (mutex bloqué)
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
+    <WebVitals />
     <AuthProvider>
       <PermissionsProvider>
         <DisplayProvider>

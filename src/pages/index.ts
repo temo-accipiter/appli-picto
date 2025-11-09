@@ -8,6 +8,7 @@ export const Signup = lazy(() => import('./signup/Signup'))
 export const Profil = lazy(() => import('./profil/Profil'))
 export const Abonnement = lazy(() => import('./abonnement/Abonnement'))
 export const Logs = lazy(() => import('./admin/logs/Logs'))
+export const Metrics = lazy(() => import('./admin/metrics/Metrics'))
 export const ResetPassword = lazy(
   () => import('./reset-password/ResetPassword')
 )

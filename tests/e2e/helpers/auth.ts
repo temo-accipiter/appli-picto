@@ -61,7 +61,9 @@ export async function login(
   await page.getByLabel(/mot de passe|password/i).fill(credentials.password)
 
   // Soumettre le formulaire
-  await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+  await page
+    .getByRole('button', { name: /se connecter|connexion|login/i })
+    .click()
 
   if (waitForRedirect) {
     // Attendre la redirection (généralement vers /tableau ou /edition)
@@ -81,7 +83,10 @@ export async function login(
  * @example
  * await loginAs(page, 'abonne')
  */
-export async function loginAs(page: Page, userRole: keyof typeof TEST_USERS): Promise<void> {
+export async function loginAs(
+  page: Page,
+  userRole: keyof typeof TEST_USERS
+): Promise<void> {
   const user = TEST_USERS[userRole]
   if (!user) {
     throw new Error(`User role "${userRole}" not found in TEST_USERS`)
@@ -99,11 +104,15 @@ export async function loginAs(page: Page, userRole: keyof typeof TEST_USERS): Pr
  */
 export async function logout(page: Page): Promise<void> {
   // Chercher le bouton de déconnexion (peut être dans un menu)
-  const logoutButton = page.getByRole('button', { name: /déconnexion|logout|sign out/i })
+  const logoutButton = page.getByRole('button', {
+    name: /déconnexion|logout|sign out/i,
+  })
 
   // Si le bouton n'est pas visible, essayer d'ouvrir le menu utilisateur
   if (!(await logoutButton.isVisible())) {
-    const userMenu = page.getByRole('button', { name: /profil|compte|account|menu/i })
+    const userMenu = page.getByRole('button', {
+      name: /profil|compte|account|menu/i,
+    })
     if (await userMenu.isVisible()) {
       await userMenu.click()
     }
@@ -130,7 +139,9 @@ export async function expectToBeLoggedIn(page: Page): Promise<void> {
 
   // Vérifier qu'un élément caractéristique d'un utilisateur connecté est présent
   // (peut varier selon l'application)
-  const userIndicator = page.locator('[data-testid="user-menu"], [aria-label*="profil" i]')
+  const userIndicator = page.locator(
+    '[data-testid="user-menu"], [aria-label*="profil" i]'
+  )
   await expect(userIndicator).toBeVisible({ timeout: 5000 })
 }
 
@@ -159,32 +170,32 @@ export async function expectToBeLoggedOut(page: Page): Promise<void> {
  * @example
  * await loginViaAPI(page, TEST_USERS.free)
  */
-export async function loginViaAPI(page: Page, credentials: LoginCredentials): Promise<void> {
+export async function loginViaAPI(
+  page: Page,
+  credentials: LoginCredentials
+): Promise<void> {
   // Injecter un script pour se connecter via l'API Supabase
   await page.goto('/')
 
-  await page.evaluate(
-    async ({ email, password }) => {
-      // Utiliser le client Supabase global (si disponible)
-      const { supabase } = window as any
+  await page.evaluate(async ({ email, password }) => {
+    // Utiliser le client Supabase global (si disponible)
+    const { supabase } = window as any
 
-      if (!supabase) {
-        throw new Error('Supabase client not available')
-      }
+    if (!supabase) {
+      throw new Error('Supabase client not available')
+    }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
 
-      if (error) {
-        throw new Error(`Login failed: ${error.message}`)
-      }
+    if (error) {
+      throw new Error(`Login failed: ${error.message}`)
+    }
 
-      return data
-    },
-    credentials
-  )
+    return data
+  }, credentials)
 
   // Attendre que l'authentification soit effective
   await page.waitForTimeout(1000)

@@ -60,7 +60,9 @@ export default function UserMenu() {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const items = menuItemsRef.current.filter(Boolean)
-      const currentIndex = items.findIndex(item => item === document.activeElement)
+      const currentIndex = items.findIndex(
+        item => item === document.activeElement
+      )
 
       switch (e.key) {
         case 'Escape':

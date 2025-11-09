@@ -30,14 +30,18 @@ async function createTestTasks(page: Page, count = 3): Promise<void> {
   // Créer N tâches
   for (let i = 1; i <= count; i++) {
     // Cliquer sur le bouton "Ajouter une tâche"
-    const addButton = page.locator('button', { hasText: /ajouter.*tâche/i }).first()
+    const addButton = page
+      .locator('button', { hasText: /ajouter.*tâche/i })
+      .first()
     await addButton.click()
 
     // Remplir le formulaire
     await page.locator('input[name="label"]').fill(`Tâche ${i}`)
 
     // Sauvegarder
-    const saveButton = page.locator('button', { hasText: /enregistrer|sauvegarder/i }).first()
+    const saveButton = page
+      .locator('button', { hasText: /enregistrer|sauvegarder/i })
+      .first()
     await saveButton.click()
 
     // Attendre que la tâche soit créée
@@ -50,8 +54,10 @@ async function createTestTasks(page: Page, count = 3): Promise<void> {
  */
 async function getTaskOrder(page: Page): Promise<string[]> {
   return await page.evaluate(() => {
-    const cards = Array.from(document.querySelectorAll('[data-task-label], .tableau-card'))
-    return cards.map((card) => {
+    const cards = Array.from(
+      document.querySelectorAll('[data-task-label], .tableau-card')
+    )
+    return cards.map(card => {
       const label =
         card.getAttribute('data-task-label') ||
         card.querySelector('.card-label')?.textContent?.trim() ||
@@ -78,7 +84,9 @@ test.afterEach(async () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
-  test('Réorganiser 3 tâches - Ordre mis à jour visuellement et en DB', async ({ page }) => {
+  test('Réorganiser 3 tâches - Ordre mis à jour visuellement et en DB', async ({
+    page,
+  }) => {
     // Créer un utilisateur de test
     const user = await createTestUser({ role: 'free' })
     await loginAs(page, user.email, user.password)
@@ -95,12 +103,14 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
     expect(initialOrder).toEqual(['Tâche 1', 'Tâche 2', 'Tâche 3'])
 
     // Drag tâche 1 vers position 3
-    const task1 = page.locator('[data-task-label="Tâche 1"]').or(
-      page.locator('.tableau-card').filter({ hasText: 'Tâche 1' })
-    ).first()
-    const task3 = page.locator('[data-task-label="Tâche 3"]').or(
-      page.locator('.tableau-card').filter({ hasText: 'Tâche 3' })
-    ).first()
+    const task1 = page
+      .locator('[data-task-label="Tâche 1"]')
+      .or(page.locator('.tableau-card').filter({ hasText: 'Tâche 1' }))
+      .first()
+    const task3 = page
+      .locator('[data-task-label="Tâche 3"]')
+      .or(page.locator('.tableau-card').filter({ hasText: 'Tâche 3' }))
+      .first()
 
     // Effectuer le drag-and-drop
     await task1.dragTo(task3)
@@ -130,10 +140,12 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
 
     // Vérifier les transitions CSS
     const transitions = await page.evaluate(() => {
-      const cards = Array.from(document.querySelectorAll('.tableau-card, [data-task-card]'))
+      const cards = Array.from(
+        document.querySelectorAll('.tableau-card, [data-task-card]')
+      )
       const longTransitions: string[] = []
 
-      cards.forEach((card) => {
+      cards.forEach(card => {
         const styles = window.getComputedStyle(card)
         const transition = styles.transitionDuration
 
@@ -205,11 +217,15 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
       // L'ordre devrait avoir changé (Tâche 1 devrait être plus bas)
       expect(newOrder).not.toEqual(initialOrder)
     } else {
-      console.log('⚠️  Impossible de focus une tâche avec Tab - feature peut-être non implémentée')
+      console.log(
+        '⚠️  Impossible de focus une tâche avec Tab - feature peut-être non implémentée'
+      )
     }
   })
 
-  test('Drag-and-drop - Annonces ARIA pour lecteurs d\'écran', async ({ page }) => {
+  test("Drag-and-drop - Annonces ARIA pour lecteurs d'écran", async ({
+    page,
+  }) => {
     const user = await createTestUser({ role: 'free' })
     await loginAs(page, user.email, user.password)
 
@@ -222,7 +238,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
       const regions = document.querySelectorAll(
         '[aria-live], [role="status"], [role="alert"]'
       )
-      return Array.from(regions).map((r) => ({
+      return Array.from(regions).map(r => ({
         role: r.getAttribute('role'),
         ariaLive: r.getAttribute('aria-live'),
         content: r.textContent?.trim(),
@@ -235,7 +251,9 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     expect(liveRegions.length).toBeGreaterThan(0)
   })
 
-  test('Drag-and-drop - Attributs ARIA corrects (aria-grabbed, aria-dropeffect)', async ({ page }) => {
+  test('Drag-and-drop - Attributs ARIA corrects (aria-grabbed, aria-dropeffect)', async ({
+    page,
+  }) => {
     const user = await createTestUser({ role: 'free' })
     await loginAs(page, user.email, user.password)
 
@@ -245,8 +263,10 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
 
     // Vérifier que les tâches ont des attributs ARIA appropriés
     const ariaAttributes = await page.evaluate(() => {
-      const cards = Array.from(document.querySelectorAll('.tableau-card, [data-task-card]'))
-      return cards.map((card) => ({
+      const cards = Array.from(
+        document.querySelectorAll('.tableau-card, [data-task-card]')
+      )
+      return cards.map(card => ({
         role: card.getAttribute('role'),
         ariaGrabbed: card.getAttribute('aria-grabbed'),
         ariaDropeffect: card.getAttribute('aria-dropeffect'),
@@ -257,7 +277,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     console.log('Attributs ARIA des cartes :', ariaAttributes)
 
     // Les cartes devraient avoir un tabindex pour être accessibles au clavier
-    const hasTabindex = ariaAttributes.some((attr) => attr.tabindex !== null)
+    const hasTabindex = ariaAttributes.some(attr => attr.tabindex !== null)
     expect(hasTabindex).toBe(true)
   })
 })
@@ -267,7 +287,9 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
-  test('Feedback visuel pendant drag - Ombre, opacité, zone de drop', async ({ page }) => {
+  test('Feedback visuel pendant drag - Ombre, opacité, zone de drop', async ({
+    page,
+  }) => {
     const user = await createTestUser({ role: 'free' })
     await loginAs(page, user.email, user.password)
 
@@ -281,17 +303,25 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
 
     if (task1Box) {
       // Démarrer le drag (mousedown)
-      await page.mouse.move(task1Box.x + task1Box.width / 2, task1Box.y + task1Box.height / 2)
+      await page.mouse.move(
+        task1Box.x + task1Box.width / 2,
+        task1Box.y + task1Box.height / 2
+      )
       await page.mouse.down()
       await page.waitForTimeout(200)
 
       // Déplacer la souris
-      await page.mouse.move(task1Box.x + task1Box.width / 2, task1Box.y + task1Box.height + 50)
+      await page.mouse.move(
+        task1Box.x + task1Box.width / 2,
+        task1Box.y + task1Box.height + 50
+      )
       await page.waitForTimeout(200)
 
       // Vérifier l'indicateur visuel (overlay, opacité, etc.)
       const dragOverlay = await page.evaluate(() => {
-        const overlay = document.querySelector('[data-dnd-overlay], .drag-overlay')
+        const overlay = document.querySelector(
+          '[data-dnd-overlay], .drag-overlay'
+        )
         return overlay !== null
       })
 
@@ -304,7 +334,7 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     // Vérifier les styles CSS pendant le drag
     // (Difficile à tester précisément, mais on peut vérifier qu'il n'y a pas d'erreurs)
     const consoleErrors: string[] = []
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text())
       }
@@ -314,7 +344,9 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     expect(consoleErrors.length).toBe(0)
   })
 
-  test('Accessibilité du drag-and-drop - Pas de violations WCAG', async ({ page }) => {
+  test('Accessibilité du drag-and-drop - Pas de violations WCAG', async ({
+    page,
+  }) => {
     const user = await createTestUser({ role: 'free' })
     await loginAs(page, user.email, user.password)
 
