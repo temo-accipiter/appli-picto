@@ -43,6 +43,16 @@ describe('useParametres', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockIsAbortLike.mockReturnValue(false)
+
+    // Configurer le mock Supabase de manière persistante pour tous les appels
+    mockSupabase.from.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn(),
+        }),
+      }),
+      upsert: vi.fn(),
+    })
   })
 
   describe('Chargement des paramètres', () => {
@@ -60,14 +70,6 @@ describe('useParametres', () => {
         aborted: false,
       })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-      })
-
       // Act
       const { result } = renderHook(() => useParametres())
 
@@ -81,19 +83,18 @@ describe('useParametres', () => {
 
     it("doit gérer le cas où aucun paramètre n'existe (null)", async () => {
       // Arrange
-      mockWithAbortSafe.mockResolvedValue({
-        data: null,
-        error: null,
-        aborted: false,
-      })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-      })
+      mockWithAbortSafe
+        // Premier appel SELECT retourne null
+        .mockResolvedValueOnce({
+          data: null,
+          error: null,
+          aborted: false,
+        })
+        // Deuxième appel UPSERT (auto-init) - on simule un échec pour garder parametres à null
+        .mockResolvedValueOnce({
+          error: { message: 'Not allowed' },
+          aborted: false,
+        })
 
       // Act
       const { result } = renderHook(() => useParametres())
@@ -112,14 +113,6 @@ describe('useParametres', () => {
         data: null,
         error: null,
         aborted: true, // ✅ Abort
-      })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
       })
 
       // Act
@@ -145,14 +138,6 @@ describe('useParametres', () => {
         aborted: false,
       })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-      })
-
       // Act
       const { result } = renderHook(() => useParametres())
 
@@ -174,14 +159,6 @@ describe('useParametres', () => {
         data: null,
         error: pgError,
         aborted: false,
-      })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
       })
 
       // Act
@@ -207,7 +184,12 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-        // Mock upsert
+        // Mock UPSERT auto-init (on laisse échouer)
+        .mockResolvedValueOnce({
+          error: { message: 'Auto-init blocked' },
+          aborted: false,
+        })
+        // Mock upsert manuel
         .mockResolvedValueOnce({
           error: null,
           aborted: false,
@@ -218,15 +200,6 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-        upsert: vi.fn(),
-      })
 
       // Act
       const { result } = renderHook(() => useParametres())
@@ -259,20 +232,16 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-        // Mock upsert error
+        // Mock UPSERT auto-init (on laisse échouer pour ne pas créer de paramètres)
+        .mockResolvedValueOnce({
+          error: { message: 'Auto-init blocked' },
+          aborted: false,
+        })
+        // Mock upsert error pour l'appel manuel à insertDefaults
         .mockResolvedValueOnce({
           error: insertError,
           aborted: false,
         })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-        upsert: vi.fn(),
-      })
 
       // Act
       const { result } = renderHook(() => useParametres())
@@ -314,15 +283,6 @@ describe('useParametres', () => {
           aborted: false,
         })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-        upsert: vi.fn(),
-      })
-
       // Act
       const { result } = renderHook(() => useParametres())
 
@@ -352,7 +312,12 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-        // Mock upsert (create)
+        // Mock UPSERT auto-init (on laisse échouer)
+        .mockResolvedValueOnce({
+          error: { message: 'Auto-init blocked' },
+          aborted: false,
+        })
+        // Mock upsert manuel (create)
         .mockResolvedValueOnce({
           error: null,
           aborted: false,
@@ -363,15 +328,6 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-        upsert: vi.fn(),
-      })
 
       // Act
       const { result } = renderHook(() => useParametres())
@@ -410,15 +366,6 @@ describe('useParametres', () => {
           aborted: false,
         })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-        upsert: vi.fn(),
-      })
-
       // Act
       const { result } = renderHook(() => useParametres())
 
@@ -456,14 +403,6 @@ describe('useParametres', () => {
           error: null,
           aborted: false,
         })
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn(),
-          }),
-        }),
-      })
 
       // Act
       const { result } = renderHook(() => useParametres())
