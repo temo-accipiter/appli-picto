@@ -47,7 +47,7 @@ async function waitForPageStable(page: Page): Promise<void> {
  * Helper pour mocker la réponse de l'Edge Function create-checkout-session
  */
 async function mockCheckoutSession(page: Page, mockUrl: string): Promise<void> {
-  await page.route('**/functions/v1/create-checkout-session', async (route) => {
+  await page.route('**/functions/v1/create-checkout-session', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -63,7 +63,7 @@ async function mockCheckoutSession(page: Page, mockUrl: string): Promise<void> {
  * Helper pour mocker le portail Stripe (utilisateur déjà abonné)
  */
 async function mockBillingPortal(page: Page, mockUrl: string): Promise<void> {
-  await page.route('**/functions/v1/create-checkout-session', async (route) => {
+  await page.route('**/functions/v1/create-checkout-session', async route => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -93,11 +93,14 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/login')
     await page.getByLabel(/email|e-mail/i).fill(email)
     await page.getByLabel(/mot de passe|password/i).fill(password)
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await waitForPageStable(page)
 
     // 3. Mocker la réponse Stripe Checkout
-    const mockStripeUrl = 'https://checkout.stripe.com/c/pay/cs_test_mock123456789'
+    const mockStripeUrl =
+      'https://checkout.stripe.com/c/pay/cs_test_mock123456789'
     await mockCheckoutSession(page, mockStripeUrl)
 
     // 4. Naviguer vers page profil
@@ -106,10 +109,14 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
     // 5. Chercher et cliquer sur le bouton "S'abonner" ou équivalent
     // Il peut être dans un composant SubscribeButton ou dans une section d'upgrade
-    const subscribeButton = page.locator('button', { hasText: /s'abonner|passer à premium|upgrade/i }).first()
+    const subscribeButton = page
+      .locator('button', { hasText: /s'abonner|passer à premium|upgrade/i })
+      .first()
 
     // Si le bouton n'est pas directement visible, chercher dans les modals de quotas
-    const isButtonVisible = await subscribeButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const isButtonVisible = await subscribeButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (!isButtonVisible) {
       // Peut-être faut-il déclencher une modal de quota d'abord
@@ -119,8 +126,12 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
       // Essayer de créer une tâche pour déclencher la modal de quota
       // (l'utilisateur a déjà 3 tâches, limite free = 5 selon helpers)
-      const addTaskButton = page.getByRole('button', { name: /ajouter|nouvelle tâche/i }).first()
-      const isAddTaskVisible = await addTaskButton.isVisible({ timeout: 2000 }).catch(() => false)
+      const addTaskButton = page
+        .getByRole('button', { name: /ajouter|nouvelle tâche/i })
+        .first()
+      const isAddTaskVisible = await addTaskButton
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
 
       if (isAddTaskVisible) {
         // Créer des tâches jusqu'à la limite
@@ -134,13 +145,21 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
         await page.waitForTimeout(1000)
 
         // Vérifier qu'une modal de quota apparaît
-        const quotaModal = page.locator('[role="dialog"]', { hasText: /quota|limite/i })
-        const isQuotaModalVisible = await quotaModal.isVisible({ timeout: 2000 }).catch(() => false)
+        const quotaModal = page.locator('[role="dialog"]', {
+          hasText: /quota|limite/i,
+        })
+        const isQuotaModalVisible = await quotaModal
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
 
         if (isQuotaModalVisible) {
           // Chercher le bouton upgrade dans la modal
-          const upgradeButton = quotaModal.locator('button', { hasText: /premium|upgrade|s'abonner/i }).first()
-          const isUpgradeVisible = await upgradeButton.isVisible({ timeout: 2000 }).catch(() => false)
+          const upgradeButton = quotaModal
+            .locator('button', { hasText: /premium|upgrade|s'abonner/i })
+            .first()
+          const isUpgradeVisible = await upgradeButton
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)
 
           if (isUpgradeVisible) {
             await upgradeButton.click()
@@ -158,7 +177,7 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     // Avec notre mock, la page devrait tenter de naviguer vers mockStripeUrl
     // On va intercepter la navigation
     let redirected = false
-    page.on('response', async (response) => {
+    page.on('response', async response => {
       const url = response.url()
       if (url.includes('create-checkout-session')) {
         const body = await response.json().catch(() => null)
@@ -188,7 +207,8 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
   test('Paiement réussi - Mise à jour DB et quotas', async ({ page }) => {
     // 1. Créer utilisateur gratuit
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     // 2. Vérifier l'état initial (rôle free, quotas limités)
@@ -227,7 +247,9 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/login')
     await page.getByLabel(/email|e-mail/i).fill(email)
     await page.getByLabel(/mot de passe|password/i).fill(password)
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await waitForPageStable(page)
 
     // 7. Vérifier qu'un badge/indicateur "Premium" ou "Abonné" est visible
@@ -235,8 +257,12 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await waitForPageStable(page)
 
     // Chercher un indicateur de statut premium
-    const premiumIndicator = page.locator('text=/premium|abonné|actif/i').first()
-    const isPremiumVisible = await premiumIndicator.isVisible({ timeout: 5000 }).catch(() => false)
+    const premiumIndicator = page
+      .locator('text=/premium|abonné|actif/i')
+      .first()
+    const isPremiumVisible = await premiumIndicator
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
 
     // Si pas trouvé sur la page profil, essayer sur /abonnement
     if (!isPremiumVisible) {
@@ -244,7 +270,9 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
       await waitForPageStable(page)
 
       // Vérifier le statut sur la page abonnement
-      const statusElement = page.locator('[class*="status"]', { hasText: /actif|active/i }).first()
+      const statusElement = page
+        .locator('[class*="status"]', { hasText: /actif|active/i })
+        .first()
       await expect(statusElement).toBeVisible({ timeout: 5000 })
     }
 
@@ -289,11 +317,13 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/login')
     await page.getByLabel(/email|e-mail/i).fill(email)
     await page.getByLabel(/mot de passe|password/i).fill(password)
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await waitForPageStable(page)
 
     // 6. Mocker un échec de paiement lors du clic sur "S'abonner"
-    await page.route('**/functions/v1/create-checkout-session', async (route) => {
+    await page.route('**/functions/v1/create-checkout-session', async route => {
       await route.fulfill({
         status: 400,
         contentType: 'application/json',
@@ -309,24 +339,36 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/profil')
     await waitForPageStable(page)
 
-    const subscribeButton = page.locator('button', { hasText: /s'abonner/i }).first()
-    const isVisible = await subscribeButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const subscribeButton = page
+      .locator('button', { hasText: /s'abonner/i })
+      .first()
+    const isVisible = await subscribeButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isVisible) {
       await subscribeButton.click()
       await page.waitForTimeout(1000)
 
       // Vérifier qu'un message d'erreur est affiché
-      const errorMessage = page.locator('text=/erreur|error|échec|failed/i').first()
-      const isErrorVisible = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false)
+      const errorMessage = page
+        .locator('text=/erreur|error|échec|failed/i')
+        .first()
+      const isErrorVisible = await errorMessage
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
 
       // Le message peut être dans un toast/notification
       expect(isErrorVisible).toBe(true)
     }
 
     // 8. Vérifier qu'on peut réessayer (bouton toujours disponible)
-    const retryButton = page.locator('button', { hasText: /s'abonner|réessayer/i }).first()
-    const canRetry = await retryButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const retryButton = page
+      .locator('button', { hasText: /s'abonner|réessayer/i })
+      .first()
+    const canRetry = await retryButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
     expect(canRetry).toBe(true)
 
     // 9. Vérifier accessibilité
@@ -341,7 +383,8 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
   test('Upgrade plan - Quotas augmentés après paiement', async ({ page }) => {
     // 1. Créer utilisateur gratuit avec données proches de la limite
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     // 2. Vérifier les quotas initiaux (free = 5 tâches max selon helpers)
@@ -368,7 +411,9 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/login')
     await page.getByLabel(/email|e-mail/i).fill(email)
     await page.getByLabel(/mot de passe|password/i).fill(password)
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await waitForPageStable(page)
 
     // 6. Naviguer vers la page d'édition
@@ -376,8 +421,12 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await waitForPageStable(page)
 
     // 7. Vérifier qu'on peut créer de nouvelles tâches (plus de blocage)
-    const addTaskButton = page.getByRole('button', { name: /ajouter|nouvelle/i }).first()
-    const isAddVisible = await addTaskButton.isVisible({ timeout: 3000 }).catch(() => false)
+    const addTaskButton = page
+      .getByRole('button', { name: /ajouter|nouvelle/i })
+      .first()
+    const isAddVisible = await addTaskButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (isAddVisible) {
       // Créer une nouvelle tâche
@@ -385,15 +434,21 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
       await page.waitForTimeout(1000)
 
       // Vérifier qu'aucune modal de quota ne s'affiche
-      const quotaModal = page.locator('[role="dialog"]', { hasText: /quota|limite/i })
-      const isQuotaModalVisible = await quotaModal.isVisible({ timeout: 1000 }).catch(() => false)
+      const quotaModal = page.locator('[role="dialog"]', {
+        hasText: /quota|limite/i,
+      })
+      const isQuotaModalVisible = await quotaModal
+        .isVisible({ timeout: 1000 })
+        .catch(() => false)
       expect(isQuotaModalVisible).toBe(false)
     }
 
     // 8. Vérifier le compteur de quotas (devrait afficher les nouveaux quotas)
     // Chercher un indicateur comme "X/100 tâches" au lieu de "X/10 tâches"
     const quotaIndicator = page.locator('text=/\\d+\\s*\\/\\s*\\d+/i').first()
-    const quotaText = await quotaIndicator.textContent({ timeout: 3000 }).catch(() => null)
+    const quotaText = await quotaIndicator
+      .textContent({ timeout: 3000 })
+      .catch(() => null)
 
     if (quotaText) {
       // Extraire les chiffres
@@ -411,13 +466,17 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await waitForPageStable(page)
 
     const premiumBadge = page.locator('text=/premium|abonné|pro/i').first()
-    const isBadgeVisible = await premiumBadge.isVisible({ timeout: 3000 }).catch(() => false)
+    const isBadgeVisible = await premiumBadge
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     // Si pas sur profil, essayer /abonnement
     if (!isBadgeVisible) {
       await page.goto('/abonnement')
       await waitForPageStable(page)
-      const statusBadge = page.locator('[class*="status"]', { hasText: /actif/i }).first()
+      const statusBadge = page
+        .locator('[class*="status"]', { hasText: /actif/i })
+        .first()
       await expect(statusBadge).toBeVisible({ timeout: 5000 })
     }
 
@@ -449,7 +508,9 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     await page.goto('/login')
     await page.getByLabel(/email|e-mail/i).fill(email)
     await page.getByLabel(/mot de passe|password/i).fill(password)
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await waitForPageStable(page)
 
     // 4. Naviguer vers la page abonnement
@@ -462,11 +523,13 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
     // 6. Cliquer sur "Annuler l'abonnement"
     const cancelButton = page.locator('button', { hasText: /annuler/i }).first()
-    const isCancelVisible = await cancelButton.isVisible({ timeout: 3000 }).catch(() => false)
+    const isCancelVisible = await cancelButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (isCancelVisible) {
       // Accepter la modal de confirmation avec page.on('dialog')
-      page.on('dialog', async (dialog) => {
+      page.on('dialog', async dialog => {
         expect(dialog.type()).toBe('confirm')
         expect(dialog.message()).toContain(/annuler|abonnement/i)
         await dialog.accept()
@@ -478,7 +541,7 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
       // Le bouton devrait rediriger vers le portail Stripe
       // On vérifie que la redirection a été tentée
       let portalRedirected = false
-      page.on('response', async (response) => {
+      page.on('response', async response => {
         const url = response.url()
         if (url.includes('create-checkout-session')) {
           const body = await response.json().catch(() => null)
@@ -494,10 +557,16 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
     // 7. Simuler le webhook customer.subscription.deleted
     // Annuler l'abonnement en DB
-    await client.from('abonnements').update({ status: 'canceled' }).eq('user_id', userId)
+    await client
+      .from('abonnements')
+      .update({ status: 'canceled' })
+      .eq('user_id', userId)
 
     // Remettre le rôle à 'free'
-    await client.from('user_roles').update({ role: 'free' }).eq('user_id', userId)
+    await client
+      .from('user_roles')
+      .update({ role: 'free' })
+      .eq('user_id', userId)
 
     // 8. Recharger la page et vérifier le retour au plan free
     await page.reload()
@@ -508,7 +577,9 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
     // 9. Vérifier qu'on n'a plus le badge Premium
     const premiumBadge = page.locator('text=/premium|abonné/i').first()
-    const isBadgeVisible = await premiumBadge.isVisible({ timeout: 2000 }).catch(() => false)
+    const isBadgeVisible = await premiumBadge
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
     expect(isBadgeVisible).toBe(false)
 
     // 10. Vérifier accessibilité

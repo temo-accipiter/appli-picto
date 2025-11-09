@@ -49,7 +49,7 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
   // Injecter un script qui mock le captcha Turnstile
   await page.addInitScript(() => {
     // Mock du widget Turnstile
-    (window as any).turnstile = {
+    ;(window as any).turnstile = {
       render: (element: HTMLElement, options: any) => {
         // Appeler immédiatement onSuccess avec un token mocké
         if (options.onSuccess) {
@@ -64,8 +64,8 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
   })
 
   // Bloquer les appels au CDN Turnstile pour éviter les erreurs
-  await page.route('**/challenges.cloudflare.com/**', (route) => route.abort())
-  await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }
 
 /**
@@ -81,7 +81,9 @@ async function waitForPageStable(page: Page): Promise<void> {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('Auth E2E - Parcours Authentification', () => {
-  test('Signup utilisateur - Création compte et rôle par défaut', async ({ page }) => {
+  test('Signup utilisateur - Création compte et rôle par défaut', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Naviguer vers la page d'inscription
@@ -94,34 +96,45 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     const password = 'TestPassword123!'
 
     await page.getByLabel(/email|e-mail/i).fill(email)
-    await page.getByLabel(/^mot de passe|^password/i).first().fill(password)
+    await page
+      .getByLabel(/^mot de passe|^password/i)
+      .first()
+      .fill(password)
     await page.getByLabel(/confirmer|confirm/i).fill(password)
 
     // Attendre que le captcha soit mocké (100ms delay dans le mock)
     await page.waitForTimeout(200)
 
     // 3. Soumettre le formulaire
-    await page.getByRole('button', { name: /créer|inscription|signup|s'inscrire/i }).click()
+    await page
+      .getByRole('button', { name: /créer|inscription|signup|s'inscrire/i })
+      .click()
 
     // 4. Vérifier le message de succès
     // Note : Selon le code, après signup, l'utilisateur doit vérifier son email
     await page.waitForTimeout(2000)
 
     // Chercher un message de confirmation
-    const successMessage = page.locator('text=/vérifi|confirm|email|inscri/i').first()
-    const isSuccessVisible = await successMessage.isVisible({ timeout: 5000 }).catch(() => false)
+    const successMessage = page
+      .locator('text=/vérifi|confirm|email|inscri/i')
+      .first()
+    const isSuccessVisible = await successMessage
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
 
     // Si pas de message visible, vérifier qu'on n'a pas d'erreur
     if (!isSuccessVisible) {
       const errorMessage = page.locator('text=/erreur|error/i').first()
-      const hasError = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false)
+      const hasError = await errorMessage
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
       expect(hasError).toBe(false)
     }
 
     // 5. Vérifier que le compte a été créé en DB
     const client = getTestClient()
     const { data: users } = await client.auth.admin.listUsers()
-    const createdUser = users?.users.find((u) => u.email === email)
+    const createdUser = users?.users.find(u => u.email === email)
 
     expect(createdUser).toBeDefined()
     expect(createdUser?.email).toBe(email)
@@ -151,7 +164,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
   // TEST 2 : Login et redirection selon rôle RBAC
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Login et redirection - Utilisateur free vers /tableau', async ({ page }) => {
+  test('Login et redirection - Utilisateur free vers /tableau', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur free
@@ -167,7 +182,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     // Attendre le captcha mocké
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
 
     // 3. Vérifier redirection vers /tableau
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
@@ -198,7 +215,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
 
     // 3. Vérifier redirection vers /tableau
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
@@ -208,15 +227,21 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await waitForPageStable(page)
 
     // Chercher un indicateur de statut premium
-    const premiumIndicator = page.locator('text=/premium|abonné|actif/i').first()
-    const isPremiumVisible = await premiumIndicator.isVisible({ timeout: 3000 }).catch(() => false)
+    const premiumIndicator = page
+      .locator('text=/premium|abonné|actif/i')
+      .first()
+    const isPremiumVisible = await premiumIndicator
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     // Si pas trouvé sur profil, essayer /abonnement
     if (!isPremiumVisible) {
       await page.goto('/abonnement')
       await waitForPageStable(page)
 
-      const statusElement = page.locator('[class*="status"]', { hasText: /actif/i }).first()
+      const statusElement = page
+        .locator('[class*="status"]', { hasText: /actif/i })
+        .first()
       await expect(statusElement).toBeVisible({ timeout: 5000 })
     }
 
@@ -226,7 +251,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     console.log('✅ Test login abonné : Features premium visibles')
   })
 
-  test('Login et redirection - Admin vers dashboard avec accès admin panel', async ({ page }) => {
+  test('Login et redirection - Admin vers dashboard avec accès admin panel', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur admin
@@ -240,7 +267,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
 
     // 3. Vérifier redirection
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
@@ -254,8 +283,12 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     expect(page.url()).toContain('/admin/logs')
 
     // Vérifier qu'il y a du contenu admin (pas juste une page vide)
-    const adminContent = page.locator('h1, h2', { hasText: /log|admin|permission/i }).first()
-    const hasAdminContent = await adminContent.isVisible({ timeout: 3000 }).catch(() => false)
+    const adminContent = page
+      .locator('h1, h2', { hasText: /log|admin|permission/i })
+      .first()
+    const hasAdminContent = await adminContent
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
     expect(hasAdminContent).toBe(true)
 
     // 5. Vérifier qu'un utilisateur non-admin ne peut PAS accéder
@@ -284,7 +317,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 2. Vérifier qu'on est connecté
@@ -292,15 +327,23 @@ test.describe('Auth E2E - Parcours Authentification', () => {
 
     // 3. Se déconnecter
     // Le bouton de déconnexion peut être dans un menu utilisateur
-    const logoutButton = page.getByRole('button', { name: /déconnexion|logout|sign out/i }).first()
-    const isLogoutVisible = await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const logoutButton = page
+      .getByRole('button', { name: /déconnexion|logout|sign out/i })
+      .first()
+    const isLogoutVisible = await logoutButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (!isLogoutVisible) {
       // Essayer d'ouvrir le menu utilisateur
       const userMenu = page
-        .getByRole('button', { name: /profil|compte|account|menu|utilisateur/i })
+        .getByRole('button', {
+          name: /profil|compte|account|menu|utilisateur/i,
+        })
         .first()
-      const isMenuVisible = await userMenu.isVisible({ timeout: 2000 }).catch(() => false)
+      const isMenuVisible = await userMenu
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
 
       if (isMenuVisible) {
         await userMenu.click()
@@ -335,17 +378,22 @@ test.describe('Auth E2E - Parcours Authentification', () => {
   // TEST 4 : Reset password - Mot de passe oublié
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Reset password - Email envoyé et mot de passe mis à jour', async ({ page }) => {
+  test('Reset password - Email envoyé et mot de passe mis à jour', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur
-    const { email, password: oldPassword } = await createTestScenario('free-empty')
+    const { email, password: oldPassword } =
+      await createTestScenario('free-empty')
 
     // 2. Cliquer sur "Mot de passe oublié" depuis la page login
     await page.goto('/login')
     await waitForPageStable(page)
 
-    const forgotLink = page.locator('a', { hasText: /mot de passe oublié|forgot password/i })
+    const forgotLink = page.locator('a', {
+      hasText: /mot de passe oublié|forgot password/i,
+    })
     await forgotLink.click()
 
     // 3. Vérifier qu'on est sur /forgot-password
@@ -357,12 +405,18 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.waitForTimeout(200) // Captcha mocké
 
     // 5. Soumettre le formulaire
-    await page.getByRole('button', { name: /envoyer|send|réinitialiser/i }).click()
+    await page
+      .getByRole('button', { name: /envoyer|send|réinitialiser/i })
+      .click()
 
     // 6. Vérifier le message de succès
     await page.waitForTimeout(2000)
-    const successMessage = page.locator('text=/email|envoyé|sent|vérifi/i').first()
-    const isSuccessVisible = await successMessage.isVisible({ timeout: 5000 }).catch(() => false)
+    const successMessage = page
+      .locator('text=/email|envoyé|sent|vérifi/i')
+      .first()
+    const isSuccessVisible = await successMessage
+      .isVisible({ timeout: 5000 })
+      .catch(() => false)
     expect(isSuccessVisible).toBe(true)
 
     // 7. Simuler le clic sur le lien dans l'email
@@ -372,7 +426,7 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     // Créer un token de récupération mocké
     const client = getTestClient()
     const { data: users } = await client.auth.admin.listUsers()
-    const user = users?.users.find((u) => u.email === email)
+    const user = users?.users.find(u => u.email === email)
 
     if (!user) {
       throw new Error('User not found for reset password test')
@@ -393,15 +447,21 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/confirmer|confirm/i).fill(newPassword)
 
     // 9. Soumettre
-    const resetButton = page.getByRole('button', { name: /mettre à jour|update|réinitialiser/i })
-    const isResetVisible = await resetButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const resetButton = page.getByRole('button', {
+      name: /mettre à jour|update|réinitialiser/i,
+    })
+    const isResetVisible = await resetButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isResetVisible) {
       await resetButton.click()
       await page.waitForTimeout(2000)
 
       // Vérifier message de succès
-      const updateSuccess = page.locator('text=/mis à jour|updated|réussi/i').first()
+      const updateSuccess = page
+        .locator('text=/mis à jour|updated|réussi/i')
+        .first()
       const isUpdateSuccessVisible = await updateSuccess
         .isVisible({ timeout: 3000 })
         .catch(() => false)
@@ -422,7 +482,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
   // TEST 5 : Email verification
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Email verification - Compte vérifié après clic sur lien', async ({ page }) => {
+  test('Email verification - Compte vérifié après clic sur lien', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer un compte non vérifié
@@ -433,14 +495,17 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     const client = getTestClient()
 
     // Créer l'utilisateur avec email NON confirmé
-    const { data: authData, error: createError } = await client.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: false, // ⬅️ Email NON vérifié
-    })
+    const { data: authData, error: createError } =
+      await client.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: false, // ⬅️ Email NON vérifié
+      })
 
     if (createError || !authData.user) {
-      throw new Error(`Failed to create unverified user: ${createError?.message}`)
+      throw new Error(
+        `Failed to create unverified user: ${createError?.message}`
+      )
     }
 
     const userId = authData.user.id
@@ -459,7 +524,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForTimeout(2000)
 
     // 3. Vérifier qu'un message demande de vérifier l'email
@@ -479,7 +546,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
 
     // 6. Vérifier qu'on peut accéder au dashboard
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
@@ -502,7 +571,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
   // TEST 6 : Session persistence et refresh token
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Session persistence - Session persiste après rafraîchissement', async ({ page }) => {
+  test('Session persistence - Session persiste après rafraîchissement', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer et se connecter
@@ -515,7 +586,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 2. Vérifier qu'on est connecté
@@ -532,7 +605,7 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     // 5. Vérifier que le token est dans localStorage/cookies
     const hasAuthToken = await page.evaluate(() => {
       // Supabase stocke la session dans localStorage
-      const supabaseKey = Object.keys(localStorage).find((key) =>
+      const supabaseKey = Object.keys(localStorage).find(key =>
         key.includes('supabase.auth.token')
       )
       return !!supabaseKey && !!localStorage.getItem(supabaseKey)
@@ -560,7 +633,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     console.log('✅ Test session persistence : Session persiste après reload')
   })
 
-  test('Session expiration - Déconnexion automatique après expiration', async ({ page }) => {
+  test('Session expiration - Déconnexion automatique après expiration', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer et se connecter
@@ -573,7 +648,9 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 2. Vérifier qu'on est connecté
@@ -583,8 +660,8 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     await page.evaluate(() => {
       // Supprimer tous les tokens Supabase
       Object.keys(localStorage)
-        .filter((key) => key.includes('supabase'))
-        .forEach((key) => localStorage.removeItem(key))
+        .filter(key => key.includes('supabase'))
+        .forEach(key => localStorage.removeItem(key))
     })
 
     // 4. Rafraîchir la page
@@ -594,7 +671,8 @@ test.describe('Auth E2E - Parcours Authentification', () => {
     // 5. Vérifier qu'on est redirigé vers /login
     // Note : Selon la config de l'app, la redirection peut ne pas être immédiate
     const currentUrl = page.url()
-    const isOnProtectedPage = currentUrl.includes('/edition') || currentUrl.includes('/profil')
+    const isOnProtectedPage =
+      currentUrl.includes('/edition') || currentUrl.includes('/profil')
 
     if (isOnProtectedPage) {
       // Tenter d'accéder à une route protégée

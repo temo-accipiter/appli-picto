@@ -30,12 +30,16 @@ let testClient: SupabaseClient | null = null
  */
 export function getTestClient(): SupabaseClient {
   if (!testClient) {
-    testClient = createClient(SUPABASE_TEST_CONFIG.url, SUPABASE_TEST_CONFIG.serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    })
+    testClient = createClient(
+      SUPABASE_TEST_CONFIG.url,
+      SUPABASE_TEST_CONFIG.serviceRoleKey,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
   }
   return testClient
 }
@@ -53,18 +57,39 @@ export async function cleanupDatabase(): Promise<void> {
   const client = getTestClient()
 
   // Supprimer dans l'ordre inverse des dépendances
-  await client.from('recompenses').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await client.from('taches').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await client.from('categories').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await client.from('abonnements').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-  await client.from('parametres').delete().neq('user_id', '00000000-0000-0000-0000-000000000000')
-  await client.from('user_permissions').delete().neq('user_id', '00000000-0000-0000-0000-000000000000')
-  await client.from('user_roles').delete().neq('user_id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('recompenses')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('taches')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('categories')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('abonnements')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('parametres')
+    .delete()
+    .neq('user_id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('user_permissions')
+    .delete()
+    .neq('user_id', '00000000-0000-0000-0000-000000000000')
+  await client
+    .from('user_roles')
+    .delete()
+    .neq('user_id', '00000000-0000-0000-0000-000000000000')
 
   // Supprimer les images du storage
   const { data: files } = await client.storage.from('images').list()
   if (files && files.length > 0) {
-    const filePaths = files.map((file) => file.name)
+    const filePaths = files.map(file => file.name)
     await client.storage.from('images').remove(filePaths)
   }
 }
@@ -170,7 +195,10 @@ export async function seedUserData(
     })
   }
 
-  const { data: createdCategories } = await client.from('categories').insert(categoriesData).select()
+  const { data: createdCategories } = await client
+    .from('categories')
+    .insert(categoriesData)
+    .select()
 
   // Créer des tâches
   const tachesData = []
@@ -181,7 +209,8 @@ export async function seedUserData(
       fait: i % 2 === 0,
       aujourdhui: i < 3,
       position: i,
-      category_id: createdCategories?.[i % createdCategories.length]?.id || null,
+      category_id:
+        createdCategories?.[i % createdCategories.length]?.id || null,
     })
   }
 
@@ -220,12 +249,17 @@ export async function createTestSubscription(
     customer_id: `cus_test_${userId.substring(0, 8)}`,
     subscription_id: `sub_test_${userId.substring(0, 8)}`,
     status: status,
-    current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // +30 jours
+    current_period_end: new Date(
+      Date.now() + 30 * 24 * 60 * 60 * 1000
+    ).toISOString(), // +30 jours
   })
 
   // Mettre à jour le rôle vers 'abonne' si l'abonnement est actif
   if (status === 'active' || status === 'trialing') {
-    await client.from('user_roles').update({ role: 'abonne' }).eq('user_id', userId)
+    await client
+      .from('user_roles')
+      .update({ role: 'abonne' })
+      .eq('user_id', userId)
   }
 }
 

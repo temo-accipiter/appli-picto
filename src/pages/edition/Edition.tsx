@@ -362,74 +362,76 @@ export default function Edition() {
       <h1 className="sr-only">{t('edition.title')}</h1>
 
       <section aria-labelledby="settings-heading">
-        <h2 id="settings-heading" className="sr-only">{t('settings.title')}</h2>
+        <h2 id="settings-heading" className="sr-only">
+          {t('settings.title')}
+        </h2>
         <div className="edition-buttons">
-        {parametres && (
-          <Checkbox
-            id="confettis"
-            className="confettis-checkbox"
-            label={
-              parametres.confettis
-                ? t('edition.confettiEnabled')
-                : t('edition.confettiDisabled')
-            }
-            checked={!!parametres.confettis}
-            onChange={e => updateParametres({ confettis: e.target.checked })}
-          />
-        )}
-        <FeatureGate feature="trainprogressbar">
-          <Checkbox
-            id="train-toggle"
-            className="train-checkbox"
-            label={t('edition.showTrain')}
-            checked={showTrain}
-            onChange={e => setShowTrain(e.target.checked)}
-          />
-        </FeatureGate>
-        <Checkbox
-          id="recompense-toggle"
-          className="recompense-checkbox"
-          label={t('edition.showReward')}
-          checked={showRecompense}
-          onChange={e => setShowRecompense(e.target.checked)}
-        />
-        <Checkbox
-          id="time-timer-toggle"
-          className="time-timer-checkbox"
-          label={
-            showTimeTimer
-              ? t('edition.showTimeTimer')
-              : t('edition.hideTimeTimer')
-          }
-          checked={showTimeTimer}
-          onChange={e => setShowTimeTimer(e.target.checked)}
-        />
-        {parametres && (
-          <Checkbox
-            id="toasts-toggle"
-            className="toasts-checkbox"
-            label={
-              (parametres.toasts_enabled ?? true)
-                ? t('edition.toastsEnabled')
-                : t('edition.toastsDisabled')
-            }
-            checked={parametres.toasts_enabled ?? true}
-            onChange={async e => {
-              console.log('🔧 Toggle toasts:', e.target.checked)
-              const result = await updateParametres({
-                toasts_enabled: e.target.checked,
-              })
-              console.log('✅ Résultat updateParametres:', result)
-              if (!result.ok) {
-                console.error(
-                  '❌ Erreur mise à jour toasts_enabled:',
-                  result.error
-                )
-                show(t('errors.generic'), 'error')
+          {parametres && (
+            <Checkbox
+              id="confettis"
+              className="confettis-checkbox"
+              label={
+                parametres.confettis
+                  ? t('edition.confettiEnabled')
+                  : t('edition.confettiDisabled')
               }
-            }}
+              checked={!!parametres.confettis}
+              onChange={e => updateParametres({ confettis: e.target.checked })}
+            />
+          )}
+          <FeatureGate feature="trainprogressbar">
+            <Checkbox
+              id="train-toggle"
+              className="train-checkbox"
+              label={t('edition.showTrain')}
+              checked={showTrain}
+              onChange={e => setShowTrain(e.target.checked)}
+            />
+          </FeatureGate>
+          <Checkbox
+            id="recompense-toggle"
+            className="recompense-checkbox"
+            label={t('edition.showReward')}
+            checked={showRecompense}
+            onChange={e => setShowRecompense(e.target.checked)}
           />
-        )}
+          <Checkbox
+            id="time-timer-toggle"
+            className="time-timer-checkbox"
+            label={
+              showTimeTimer
+                ? t('edition.showTimeTimer')
+                : t('edition.hideTimeTimer')
+            }
+            checked={showTimeTimer}
+            onChange={e => setShowTimeTimer(e.target.checked)}
+          />
+          {parametres && (
+            <Checkbox
+              id="toasts-toggle"
+              className="toasts-checkbox"
+              label={
+                (parametres.toasts_enabled ?? true)
+                  ? t('edition.toastsEnabled')
+                  : t('edition.toastsDisabled')
+              }
+              checked={parametres.toasts_enabled ?? true}
+              onChange={async e => {
+                console.log('🔧 Toggle toasts:', e.target.checked)
+                const result = await updateParametres({
+                  toasts_enabled: e.target.checked,
+                })
+                console.log('✅ Résultat updateParametres:', result)
+                if (!result.ok) {
+                  console.error(
+                    '❌ Erreur mise à jour toasts_enabled:',
+                    result.error
+                  )
+                  show(t('errors.generic'), 'error')
+                }
+              }}
+            />
+          )}
         </div>
       </section>
 
@@ -437,7 +439,11 @@ export default function Edition() {
         <Button
           label={
             <span className="button-label">
-              <ListChecks className="button-icon" size={18} aria-hidden="true" />
+              <ListChecks
+                className="button-icon"
+                size={18}
+                aria-hidden="true"
+              />
               {t('tasks.title')}
               <ChevronDown
                 className={`chevron ${showTaches ? 'open' : ''}`}
@@ -553,8 +559,8 @@ export default function Edition() {
             }
           }}
         >
-          ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}&quot;
-          ?
+          ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}
+          &quot; ?
         </ModalConfirm>
       </Suspense>
 
@@ -602,13 +608,13 @@ export default function Edition() {
         <ModalQuota
           isOpen={imageQuotaModalOpen}
           onClose={() => setImageQuotaModalOpen(false)}
-        contentType={
-          _imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
-        }
-        currentUsage={_imageQuotaContent.currentUsage}
-        limit={_imageQuotaContent.limit}
-        period="total"
-      />
+          contentType={
+            _imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
+          }
+          currentUsage={_imageQuotaContent.currentUsage}
+          limit={_imageQuotaContent.limit}
+          period="total"
+        />
       </Suspense>
     </div>
   )

@@ -17,7 +17,15 @@ import {
   useSimpleRole,
   useTachesDnd,
 } from '@/hooks'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useLocation } from 'react-router-dom'
 import { useWindowSize } from 'react-use'
 
@@ -294,7 +302,9 @@ export default function TableauGrille({
       <DebugRole />
       {showTrain && (
         <section aria-labelledby="progress-heading">
-          <h2 id="progress-heading" className="sr-only">{t('tableau.progress')}</h2>
+          <h2 id="progress-heading" className="sr-only">
+            {t('tableau.progress')}
+          </h2>
           {isDemoMode ? (
             <TrainProgressBar
               total={totalTaches}
@@ -324,7 +334,9 @@ export default function TableauGrille({
         className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
         aria-labelledby="tasks-heading"
       >
-        <h2 id="tasks-heading" className="sr-only">{t('tasks.title')}</h2>
+        <h2 id="tasks-heading" className="sr-only">
+          {t('tasks.title')}
+        </h2>
         <TachesDnd
           items={taches}
           doneMap={doneMap}

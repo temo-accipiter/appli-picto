@@ -40,10 +40,13 @@ test.afterEach(async () => {
  */
 async function mockTurnstileCaptcha(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    (window as any).turnstile = {
+    ;(window as any).turnstile = {
       render: (element: HTMLElement, options: any) => {
         if (options.onSuccess) {
-          setTimeout(() => options.onSuccess('mock-turnstile-token-delete'), 100)
+          setTimeout(
+            () => options.onSuccess('mock-turnstile-token-delete'),
+            100
+          )
         }
         return 'mock-widget-id'
       },
@@ -53,8 +56,8 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
     }
   })
 
-  await page.route('**/challenges.cloudflare.com/**', (route) => route.abort())
-  await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }
 
 /**
@@ -70,8 +73,11 @@ async function waitForPageStable(page: Page): Promise<void> {
  * En tests E2E, on ne peut pas vraiment appeler l'Edge Function car elle nécessite
  * un environnement Supabase complet. On va mocker la réponse.
  */
-async function mockDeleteAccountFunction(page: Page, success = true): Promise<void> {
-  await page.route('**/functions/v1/delete-account', async (route) => {
+async function mockDeleteAccountFunction(
+  page: Page,
+  success = true
+): Promise<void> {
+  await page.route('**/functions/v1/delete-account', async route => {
     if (success) {
       await route.fulfill({
         status: 200,
@@ -93,7 +99,9 @@ async function mockDeleteAccountFunction(page: Page, success = true): Promise<vo
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('RGPD E2E - Suppression de Compte', () => {
-  test('Suppression compte - Données complètes effacées (CASCADE DELETE)', async ({ page }) => {
+  test('Suppression compte - Données complètes effacées (CASCADE DELETE)', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur avec données complètes
@@ -133,7 +141,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200) // Captcha mocké
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 4. Naviguer vers Paramètres/Profil → Supprimer mon compte
@@ -144,7 +154,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     const deleteButton = page
       .locator('button', { hasText: /supprimer.*compte|delete.*account/i })
       .first()
-    const isDeleteButtonVisible = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false)
+    const isDeleteButtonVisible = await deleteButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isDeleteButtonVisible) {
       console.warn('⚠️  Bouton "Supprimer mon compte" non trouvé sur /profil')
@@ -187,8 +199,12 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.waitForTimeout(200)
 
     // 9. Cliquer sur "Vérifier" (Phase 1)
-    const verifyButton = modal.locator('button', { hasText: /vérifier|verify/i }).first()
-    const isVerifyVisible = await verifyButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const verifyButton = modal
+      .locator('button', { hasText: /vérifier|verify/i })
+      .first()
+    const isVerifyVisible = await verifyButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isVerifyVisible) {
       await verifyButton.click()
@@ -196,7 +212,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
 
       // Un toast de succès devrait apparaître
       const successToast = page.locator('text=/vérifi|success|réussi/i').first()
-      const isToastVisible = await successToast.isVisible({ timeout: 3000 }).catch(() => false)
+      const isToastVisible = await successToast
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
 
       if (isToastVisible) {
         console.log('✓ Phase 1 (vérification) réussie')
@@ -214,7 +232,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await mockDeleteAccountFunction(page, true)
 
     const finalDeleteButton = modal
-      .locator('button', { hasText: /supprimer.*définitivement|delete.*final/i })
+      .locator('button', {
+        hasText: /supprimer.*définitivement|delete.*final/i,
+      })
       .first()
     const isFinalDeleteVisible = await finalDeleteButton
       .isVisible({ timeout: 2000 })
@@ -225,8 +245,12 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
       await page.waitForTimeout(2000)
 
       // Un toast de confirmation devrait apparaître
-      const confirmToast = page.locator('text=/supprimé|deleted|confirmé/i').first()
-      const isConfirmVisible = await confirmToast.isVisible({ timeout: 3000 }).catch(() => false)
+      const confirmToast = page
+        .locator('text=/supprimé|deleted|confirmé/i')
+        .first()
+      const isConfirmVisible = await confirmToast
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
 
       if (isConfirmVisible) {
         console.log('✓ Compte supprimé avec succès')
@@ -247,11 +271,15 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await client.auth.admin.deleteUser(userId)
 
     // Vérifier que l'utilisateur n'existe plus
-    const { data: deletedUser, error: userError } = await client.auth.admin.getUserById(userId)
+    const { data: deletedUser, error: userError } =
+      await client.auth.admin.getUserById(userId)
     expect(deletedUser?.user).toBeNull()
 
     // Vérifier que les tâches ont été supprimées
-    const { data: remainingTasks } = await client.from('taches').select('*').eq('user_id', userId)
+    const { data: remainingTasks } = await client
+      .from('taches')
+      .select('*')
+      .eq('user_id', userId)
     expect(remainingTasks?.length).toBe(0)
 
     // Vérifier que les récompenses ont été supprimées
@@ -269,7 +297,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
       .maybeSingle()
     expect(remainingSubscription).toBeNull()
 
-    console.log('✓ Toutes les données utilisateur ont été supprimées (CASCADE DELETE)')
+    console.log(
+      '✓ Toutes les données utilisateur ont été supprimées (CASCADE DELETE)'
+    )
 
     // 12. Vérifier qu'on est redirigé vers la page de connexion
     // Note : Cela dépend de l'implémentation. Après suppression, l'utilisateur est déconnecté
@@ -288,12 +318,18 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForTimeout(2000)
 
     // Vérifier qu'un message d'erreur s'affiche
-    const errorMessage = page.locator('text=/erreur|error|invalide|incorrect/i').first()
-    const isErrorVisible = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false)
+    const errorMessage = page
+      .locator('text=/erreur|error|invalide|incorrect/i')
+      .first()
+    const isErrorVisible = await errorMessage
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
     expect(isErrorVisible).toBe(true)
 
     console.log('✓ Connexion impossible avec compte supprimé')
@@ -304,7 +340,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     console.log('✅ Test RGPD : Suppression complète du compte réussie')
   })
 
-  test('Suppression compte avec abonnement - Annulation Stripe déclenchée', async ({ page }) => {
+  test('Suppression compte avec abonnement - Annulation Stripe déclenchée', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur avec abonnement actif
@@ -331,12 +369,14 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 4. Mocker l'Edge Function delete-account pour vérifier l'appel
     let deleteAccountCalled = false
-    await page.route('**/functions/v1/delete-account', async (route) => {
+    await page.route('**/functions/v1/delete-account', async route => {
       deleteAccountCalled = true
       await route.fulfill({
         status: 200,
@@ -361,7 +401,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
 
     expect(deletedSubscription).toBeNull()
 
-    console.log('✓ Abonnement supprimé en DB (Stripe serait annulé via webhook)')
+    console.log(
+      '✓ Abonnement supprimé en DB (Stripe serait annulé via webhook)'
+    )
 
     // Note : En production, l'Edge Function delete-account appelle l'API Stripe
     // pour annuler l'abonnement. Dans les tests, on vérifie juste que la logique
@@ -370,7 +412,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     console.log('✅ Test RGPD : Annulation abonnement lors de suppression')
   })
 
-  test('Suppression compte - Validation des contraintes de sécurité', async ({ page }) => {
+  test('Suppression compte - Validation des contraintes de sécurité', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur
@@ -384,7 +428,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 3. Ouvrir la modal de suppression
@@ -394,7 +440,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     const deleteButton = page
       .locator('button', { hasText: /supprimer.*compte|delete.*account/i })
       .first()
-    const isDeleteButtonVisible = await deleteButton.isVisible({ timeout: 3000 }).catch(() => false)
+    const isDeleteButtonVisible = await deleteButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isDeleteButtonVisible) {
       test.skip(true, 'Bouton supprimer compte non trouvé')
@@ -410,7 +458,9 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     // 4. Tester les validations de sécurité
 
     // a) Bouton désactivé si champs vides
-    const submitButton = modal.locator('button', { hasText: /vérifier|supprimer/i }).last()
+    const submitButton = modal
+      .locator('button', { hasText: /vérifier|supprimer/i })
+      .last()
     const isDisabled = await submitButton.isDisabled()
     expect(isDisabled).toBe(true)
 
@@ -441,8 +491,12 @@ test.describe('RGPD E2E - Suppression de Compte', () => {
     await page.waitForTimeout(1000)
 
     // Vérifier qu'un message d'erreur s'affiche
-    const errorMessage = page.locator('text=/erreur|error|incorrect|invalide/i').first()
-    const isErrorVisible = await errorMessage.isVisible({ timeout: 3000 }).catch(() => false)
+    const errorMessage = page
+      .locator('text=/erreur|error|incorrect|invalide/i')
+      .first()
+    const isErrorVisible = await errorMessage
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
     expect(isErrorVisible).toBe(true)
 
     console.log('✓ Erreur affichée avec mauvais mot de passe')

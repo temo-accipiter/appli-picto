@@ -55,10 +55,19 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       errorInfo,
     })
 
-    // Optionnel : Envoyer à un service de monitoring (Sentry, etc.)
-    // if (window.Sentry) {
-    //   window.Sentry.captureException(error, { contexts: { react: errorInfo } })
-    // }
+    // Envoyer à Sentry si disponible
+    if (import.meta.env.VITE_SENTRY_DSN) {
+      import('@/config/sentry')
+        .then(({ captureError }) => {
+          captureError(error, {
+            componentStack: errorInfo?.componentStack,
+            errorBoundary: true,
+          })
+        })
+        .catch(() => {
+          // Sentry n'est pas disponible, on continue
+        })
+    }
   }
 
   handleReload(): void {

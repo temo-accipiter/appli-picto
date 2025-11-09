@@ -39,10 +39,13 @@ test.afterEach(async () => {
  */
 async function mockTurnstileCaptcha(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    (window as any).turnstile = {
+    ;(window as any).turnstile = {
       render: (element: HTMLElement, options: any) => {
         if (options.onSuccess) {
-          setTimeout(() => options.onSuccess('mock-turnstile-token-quotas'), 100)
+          setTimeout(
+            () => options.onSuccess('mock-turnstile-token-quotas'),
+            100
+          )
         }
         return 'mock-widget-id'
       },
@@ -52,8 +55,8 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
     }
   })
 
-  await page.route('**/challenges.cloudflare.com/**', (route) => route.abort())
-  await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }
 
 /**
@@ -77,7 +80,9 @@ async function createMultipleTasks(
     const addButton = page
       .getByRole('button', { name: /ajouter|nouvelle|créer.*tâche/i })
       .first()
-    const isButtonVisible = await addButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const isButtonVisible = await addButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (!isButtonVisible) {
       console.warn('⚠️  Bouton ajouter tâche non trouvé')
@@ -89,7 +94,9 @@ async function createMultipleTasks(
 
     // Remplir le formulaire si nécessaire
     const taskNameInput = page.getByLabel(/nom|titre|label.*tâche/i).first()
-    const isInputVisible = await taskNameInput.isVisible({ timeout: 1000 }).catch(() => false)
+    const isInputVisible = await taskNameInput
+      .isVisible({ timeout: 1000 })
+      .catch(() => false)
 
     if (isInputVisible) {
       await taskNameInput.fill(`${baseName} ${i + 1}`)
@@ -108,7 +115,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur free avec quotas proches de la limite
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     // 2. Vérifier les quotas initiaux (3 tâches selon helpers)
@@ -127,7 +135,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 4. Naviguer vers la page d'édition
@@ -135,8 +145,12 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await waitForPageStable(page)
 
     // 5. Vérifier qu'un indicateur de quotas est visible
-    const quotaIndicator = page.locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i }).first()
-    const isQuotaVisible = await quotaIndicator.isVisible({ timeout: 3000 }).catch(() => false)
+    const quotaIndicator = page
+      .locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i })
+      .first()
+    const isQuotaVisible = await quotaIndicator
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (isQuotaVisible) {
       const quotaText = await quotaIndicator.textContent()
@@ -155,7 +169,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
         const tasksToCreate = limitNum - currentNum
 
         if (tasksToCreate > 0) {
-          console.log(`Création de ${tasksToCreate} tâches pour atteindre la limite...`)
+          console.log(
+            `Création de ${tasksToCreate} tâches pour atteindre la limite...`
+          )
 
           // Créer les tâches manuellement via DB pour aller plus vite
           const tasksData = []
@@ -179,16 +195,24 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     }
 
     // 6. Essayer de créer une tâche supplémentaire (devrait être bloqué)
-    const addButton = page.getByRole('button', { name: /ajouter|nouvelle.*tâche/i }).first()
-    const isAddButtonVisible = await addButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const addButton = page
+      .getByRole('button', { name: /ajouter|nouvelle.*tâche/i })
+      .first()
+    const isAddButtonVisible = await addButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isAddButtonVisible) {
       await addButton.click()
       await page.waitForTimeout(1000)
 
       // 7. Vérifier qu'une modal de quota s'affiche
-      const quotaModal = page.locator('[role="dialog"]', { hasText: /quota|limite/i })
-      const isModalVisible = await quotaModal.isVisible({ timeout: 3000 }).catch(() => false)
+      const quotaModal = page.locator('[role="dialog"]', {
+        hasText: /quota|limite/i,
+      })
+      const isModalVisible = await quotaModal
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
 
       if (isModalVisible) {
         console.log('✓ Modal de quota affichée')
@@ -198,7 +222,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
         expect(modalText).toMatch(/quota|limite|atteint/i)
 
         // Chercher un message explicatif
-        const limitMessage = quotaModal.locator('text=/limite atteinte|quota.*épuisé/i')
+        const limitMessage = quotaModal.locator(
+          'text=/limite atteinte|quota.*épuisé/i'
+        )
         const hasLimitMessage = await limitMessage
           .isVisible({ timeout: 2000 })
           .catch(() => false)
@@ -208,7 +234,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       } else {
         // Peut-être qu'un toast/notification s'affiche au lieu d'une modal
         const notification = page.locator('text=/quota|limite/i').first()
-        const isNotifVisible = await notification.isVisible({ timeout: 2000 }).catch(() => false)
+        const isNotifVisible = await notification
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
 
         if (isNotifVisible) {
           console.log('✓ Notification de quota affichée')
@@ -219,14 +247,18 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     }
 
     // 8. Vérifier qu'un lien/bouton "Passer à Premium" est visible
-    const upgradeButton = page.locator('a, button', { hasText: /premium|upgrade|s'abonner/i }).first()
-    const isUpgradeVisible = await upgradeButton.isVisible({ timeout: 3000 }).catch(() => false)
+    const upgradeButton = page
+      .locator('a, button', { hasText: /premium|upgrade|s'abonner/i })
+      .first()
+    const isUpgradeVisible = await upgradeButton
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (isUpgradeVisible) {
       console.log('✓ Bouton/lien "Passer à Premium" visible')
 
       // Vérifier accessibilité du bouton (focus, contraste)
-      const isFocusable = await upgradeButton.evaluate((el) => {
+      const isFocusable = await upgradeButton.evaluate(el => {
         return el.tabIndex >= 0 || el.tagName === 'A' || el.tagName === 'BUTTON'
       })
       expect(isFocusable).toBe(true)
@@ -244,11 +276,14 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
   // TEST 2 : Message upgrade affiché - Design et accessibilité
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Message upgrade - Design et accessibilité WCAG AA', async ({ page }) => {
+  test('Message upgrade - Design et accessibilité WCAG AA', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur free proche de la limite
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     // Créer des tâches pour atteindre presque la limite (8/10 par exemple)
@@ -278,7 +313,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 3. Aller sur /edition
@@ -286,15 +323,21 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await waitForPageStable(page)
 
     // 4. Déclencher l'affichage du message upgrade (cliquer sur ajouter une tâche)
-    const addButton = page.getByRole('button', { name: /ajouter|nouvelle.*tâche/i }).first()
-    const isButtonVisible = await addButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const addButton = page
+      .getByRole('button', { name: /ajouter|nouvelle.*tâche/i })
+      .first()
+    const isButtonVisible = await addButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isButtonVisible) {
       await addButton.click()
       await page.waitForTimeout(1000)
 
       // 5. Vérifier le design de la modal/message
-      const upgradeMessage = page.locator('[role="dialog"], [class*="modal"], [class*="quota"]').first()
+      const upgradeMessage = page
+        .locator('[role="dialog"], [class*="modal"], [class*="quota"]')
+        .first()
       const isMessageVisible = await upgradeMessage
         .isVisible({ timeout: 3000 })
         .catch(() => false)
@@ -315,13 +358,15 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
         const ctaButton = upgradeMessage
           .locator('a, button', { hasText: /premium|upgrade|voir.*plan/i })
           .first()
-        const isCTAVisible = await ctaButton.isVisible({ timeout: 2000 }).catch(() => false)
+        const isCTAVisible = await ctaButton
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
 
         if (isCTAVisible) {
           console.log('✓ CTA "Passer à Premium" visible')
 
           // c) Vérifier le contraste (WCAG AA : 4.5:1 minimum)
-          const contrast = await ctaButton.evaluate((el) => {
+          const contrast = await ctaButton.evaluate(el => {
             const styles = window.getComputedStyle(el)
             const color = styles.color
             const backgroundColor = styles.backgroundColor
@@ -331,9 +376,11 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
               const match = rgb.match(/\d+/g)
               if (!match) return 0
 
-              const [r, g, b] = match.map(Number).map((val) => {
+              const [r, g, b] = match.map(Number).map(val => {
                 const s = val / 255
-                return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+                return s <= 0.03928
+                  ? s / 12.92
+                  : Math.pow((s + 0.055) / 1.055, 2.4)
               })
 
               return 0.2126 * r + 0.7152 * g + 0.0722 * b
@@ -356,7 +403,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
           // d) Vérifier le focus clavier
           await ctaButton.focus()
-          const isFocused = await ctaButton.evaluate((el) => el === document.activeElement)
+          const isFocused = await ctaButton.evaluate(
+            el => el === document.activeElement
+          )
           expect(isFocused).toBe(true)
 
           console.log('✓ Bouton focusable au clavier')
@@ -385,7 +434,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur free avec 8/10 tâches
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     // Créer des tâches jusqu'à 8
@@ -424,14 +474,18 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 3. Aller sur /edition et vérifier les quotas avant upgrade
     await page.goto('/edition')
     await waitForPageStable(page)
 
-    const quotaIndicatorBefore = page.locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i }).first()
+    const quotaIndicatorBefore = page
+      .locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i })
+      .first()
     const quotaTextBefore = await quotaIndicatorBefore
       .textContent({ timeout: 3000 })
       .catch(() => null)
@@ -446,7 +500,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await waitForPageStable(page)
 
     // 6. Vérifier que les quotas ont été mis à jour
-    const quotaIndicatorAfter = page.locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i }).first()
+    const quotaIndicatorAfter = page
+      .locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i })
+      .first()
 
     // Note : L'indicateur de quotas peut ne plus être visible si l'utilisateur est premium
     // car le composant QuotaIndicator retourne null si !isFreeAccount
@@ -473,16 +529,24 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     }
 
     // 7. Créer une nouvelle tâche pour confirmer qu'il n'y a plus de blocage
-    const addButton = page.getByRole('button', { name: /ajouter|nouvelle.*tâche/i }).first()
-    const isAddButtonVisible = await addButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const addButton = page
+      .getByRole('button', { name: /ajouter|nouvelle.*tâche/i })
+      .first()
+    const isAddButtonVisible = await addButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isAddButtonVisible) {
       await addButton.click()
       await page.waitForTimeout(1000)
 
       // Vérifier qu'aucune modal de quota ne s'affiche
-      const quotaModal = page.locator('[role="dialog"]', { hasText: /quota|limite/i })
-      const isModalVisible = await quotaModal.isVisible({ timeout: 1000 }).catch(() => false)
+      const quotaModal = page.locator('[role="dialog"]', {
+        hasText: /quota|limite/i,
+      })
+      const isModalVisible = await quotaModal
+        .isVisible({ timeout: 1000 })
+        .catch(() => false)
       expect(isModalVisible).toBe(false)
 
       console.log('✓ Aucune modal de quota (upgrade réussi)')
@@ -493,14 +557,18 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await waitForPageStable(page)
 
     const premiumBadge = page.locator('text=/premium|abonné|pro/i').first()
-    const isBadgeVisible = await premiumBadge.isVisible({ timeout: 3000 }).catch(() => false)
+    const isBadgeVisible = await premiumBadge
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isBadgeVisible) {
       // Essayer sur /abonnement
       await page.goto('/abonnement')
       await waitForPageStable(page)
 
-      const statusBadge = page.locator('[class*="status"]', { hasText: /actif/i }).first()
+      const statusBadge = page
+        .locator('[class*="status"]', { hasText: /actif/i })
+        .first()
       await expect(statusBadge).toBeVisible({ timeout: 5000 })
 
       console.log('✓ Badge "Actif" affiché sur /abonnement')
@@ -518,11 +586,14 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
   // TEST 4 : Validation tracking usage - Temps réel
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Tracking usage - Compteur mis à jour en temps réel', async ({ page }) => {
+  test('Tracking usage - Compteur mis à jour en temps réel', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer utilisateur free avec 3 tâches
-    const { userId, email, password } = await createTestScenario('free-with-data')
+    const { userId, email, password } =
+      await createTestScenario('free-with-data')
     const client = getTestClient()
 
     const { count: initialCount } = await client
@@ -540,7 +611,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await page.getByLabel(/mot de passe|password/i).fill(password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 3. Aller sur /edition
@@ -548,8 +621,12 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await waitForPageStable(page)
 
     // 4. Lire le compteur initial
-    const quotaIndicator = page.locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i }).first()
-    const isQuotaVisible = await quotaIndicator.isVisible({ timeout: 3000 }).catch(() => false)
+    const quotaIndicator = page
+      .locator('[class*="quota"]', { hasText: /\d+\s*\/\s*\d+/i })
+      .first()
+    const isQuotaVisible = await quotaIndicator
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isQuotaVisible) {
       console.warn('⚠️  Indicateur de quotas non visible')
@@ -572,13 +649,17 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     console.log(`Compteur initial : ${currentBefore}/${limit}`)
 
     // 5. Créer une tâche via l'UI
-    const addButton = page.getByRole('button', { name: /ajouter|nouvelle.*tâche/i }).first()
+    const addButton = page
+      .getByRole('button', { name: /ajouter|nouvelle.*tâche/i })
+      .first()
     await addButton.click()
     await page.waitForTimeout(1000)
 
     // Remplir le formulaire si nécessaire
     const taskNameInput = page.getByLabel(/nom|titre|label.*tâche/i).first()
-    const isInputVisible = await taskNameInput.isVisible({ timeout: 1000 }).catch(() => false)
+    const isInputVisible = await taskNameInput
+      .isVisible({ timeout: 1000 })
+      .catch(() => false)
 
     if (isInputVisible) {
       await taskNameInput.fill('Tâche Test Tracking')
@@ -602,15 +683,23 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     }
 
     // 7. Supprimer une tâche
-    const deleteButton = page.locator('button[aria-label*="Supprimer"], button', { hasText: /supprimer|delete/i }).first()
-    const isDeleteVisible = await deleteButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const deleteButton = page
+      .locator('button[aria-label*="Supprimer"], button', {
+        hasText: /supprimer|delete/i,
+      })
+      .first()
+    const isDeleteVisible = await deleteButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isDeleteVisible) {
       await deleteButton.click()
       await page.waitForTimeout(1000)
 
       // Confirmer la suppression si modal
-      const confirmButton = page.locator('button', { hasText: /confirmer|oui|supprimer/i }).first()
+      const confirmButton = page
+        .locator('button', { hasText: /confirmer|oui|supprimer/i })
+        .first()
       const isConfirmVisible = await confirmButton
         .isVisible({ timeout: 1000 })
         .catch(() => false)
@@ -628,7 +717,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
         const [, currentAfterDelete] = afterDeleteMatch
         const currentAfterDeleteNum = parseInt(currentAfterDelete, 10)
 
-        console.log(`Compteur après suppression : ${currentAfterDelete}/${limit}`)
+        console.log(
+          `Compteur après suppression : ${currentAfterDelete}/${limit}`
+        )
 
         // Le compteur devrait être revenu à la valeur initiale
         expect(currentAfterDeleteNum).toBe(currentBeforeNum)
@@ -640,7 +731,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     await page.reload()
     await waitForPageStable(page)
 
-    const persistedQuotaText = await quotaIndicator.textContent({ timeout: 3000 })
+    const persistedQuotaText = await quotaIndicator.textContent({
+      timeout: 3000,
+    })
     console.log(`Compteur après rafraîchissement : ${persistedQuotaText}`)
 
     // Le compteur devrait être à jour (lecture DB)
@@ -648,14 +741,18 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     console.log('✓ Compteur persiste après rafraîchissement')
 
     // 10. Vérifier qu'une barre de progression visuelle existe
-    const progressBar = page.locator('[class*="quota-bar"], [class*="progress"]').first()
-    const isProgressVisible = await progressBar.isVisible({ timeout: 2000 }).catch(() => false)
+    const progressBar = page
+      .locator('[class*="quota-bar"], [class*="progress"]')
+      .first()
+    const isProgressVisible = await progressBar
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isProgressVisible) {
       console.log('✓ Barre de progression visuelle présente')
 
       // Vérifier que la barre a un style width proportionnel
-      const progressWidth = await progressBar.evaluate((el) => {
+      const progressWidth = await progressBar.evaluate(el => {
         const fillElement = el.querySelector('[class*="fill"]') || el
         return window.getComputedStyle(fillElement).width
       })
@@ -668,7 +765,9 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     const tasksToLimit = parseInt(limit, 10) - currentBeforeNum - 1
 
     if (tasksToLimit > 0 && tasksToLimit <= 3) {
-      console.log(`Création de ${tasksToLimit} tâches pour approcher la limite...`)
+      console.log(
+        `Création de ${tasksToLimit} tâches pour approcher la limite...`
+      )
 
       // Créer via DB pour aller plus vite
       const tasksData = []
@@ -688,8 +787,14 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       await waitForPageStable(page)
 
       // Chercher une alerte/warning
-      const warning = page.locator('[class*="warning"], [class*="alert"]', { hasText: /proche|attention|warning/i }).first()
-      const isWarningVisible = await warning.isVisible({ timeout: 2000 }).catch(() => false)
+      const warning = page
+        .locator('[class*="warning"], [class*="alert"]', {
+          hasText: /proche|attention|warning/i,
+        })
+        .first()
+      const isWarningVisible = await warning
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
 
       if (isWarningVisible) {
         console.log('✓ Alerte affichée proche de la limite')

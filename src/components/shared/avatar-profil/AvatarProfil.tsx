@@ -105,9 +105,7 @@ export default function AvatarProfil({
   }
 
   // WCAG 1.1.1 - Alt personnalisé avec le pseudo
-  const avatarAlt = pseudo
-    ? `Avatar de ${pseudo}`
-    : 'Avatar utilisateur'
+  const avatarAlt = pseudo ? `Avatar de ${pseudo}` : 'Avatar utilisateur'
 
   return (
     <div className="avatar-container">

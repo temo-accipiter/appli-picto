@@ -38,7 +38,7 @@ test.afterEach(async () => {
  */
 async function mockTurnstileCaptcha(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    (window as any).turnstile = {
+    ;(window as any).turnstile = {
       render: (element: HTMLElement, options: any) => {
         if (options.onSuccess) {
           setTimeout(() => options.onSuccess('mock-turnstile-token-admin'), 100)
@@ -51,8 +51,8 @@ async function mockTurnstileCaptcha(page: Page): Promise<void> {
     }
   })
 
-  await page.route('**/challenges.cloudflare.com/**', (route) => route.abort())
-  await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }
 
 /**
@@ -68,11 +68,14 @@ async function waitForPageStable(page: Page): Promise<void> {
 // ═════════════════════════════════════════════════════════════════════════════
 
 test.describe('Admin E2E - Gestion et Permissions', () => {
-  test('Gestion utilisateurs - Accès admin panel et liste utilisateurs', async ({ page }) => {
+  test('Gestion utilisateurs - Accès admin panel et liste utilisateurs', async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer un admin
-    const { email: adminEmail, password: adminPassword } = await createTestScenario('admin')
+    const { email: adminEmail, password: adminPassword } =
+      await createTestScenario('admin')
 
     // 2. Créer quelques utilisateurs de test (différents rôles)
     const testUsers = [
@@ -90,7 +93,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.getByLabel(/mot de passe|password/i).fill(adminPassword)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     console.log('✓ Admin connecté')
@@ -105,8 +110,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     console.log('✓ Accès admin panel OK')
 
     // 5. Chercher l'onglet "Users" ou "Utilisateurs"
-    const usersTab = page.locator('button, a', { hasText: /users|utilisateurs/i }).first()
-    const isUsersTabVisible = await usersTab.isVisible({ timeout: 3000 }).catch(() => false)
+    const usersTab = page
+      .locator('button, a', { hasText: /users|utilisateurs/i })
+      .first()
+    const isUsersTabVisible = await usersTab
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (isUsersTabVisible) {
       await usersTab.click()
@@ -115,8 +124,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       console.log('✓ Onglet Utilisateurs ouvert')
 
       // 6. Vérifier qu'une liste d'utilisateurs est affichée
-      const usersList = page.locator('[class*="user"], [class*="table"], tbody').first()
-      const isListVisible = await usersList.isVisible({ timeout: 3000 }).catch(() => false)
+      const usersList = page
+        .locator('[class*="user"], [class*="table"], tbody')
+        .first()
+      const isListVisible = await usersList
+        .isVisible({ timeout: 3000 })
+        .catch(() => false)
 
       if (isListVisible) {
         console.log('✓ Liste utilisateurs affichée')
@@ -137,8 +150,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       }
 
       // 7. Tester le filtrage/recherche (si disponible)
-      const searchInput = page.locator('input[type="search"], input[placeholder*="rechercher" i]').first()
-      const isSearchVisible = await searchInput.isVisible({ timeout: 2000 }).catch(() => false)
+      const searchInput = page
+        .locator('input[type="search"], input[placeholder*="rechercher" i]')
+        .first()
+      const isSearchVisible = await searchInput
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
 
       if (isSearchVisible) {
         // Rechercher par email
@@ -149,7 +166,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         const filteredRows = page.locator('tbody tr')
         const filteredCount = await filteredRows.count()
 
-        console.log(`✓ Filtrage : ${filteredCount} résultat(s) pour "${testUsers[0].email}"`)
+        console.log(
+          `✓ Filtrage : ${filteredCount} résultat(s) pour "${testUsers[0].email}"`
+        )
       }
 
       // 8. Cliquer sur un utilisateur pour voir les détails
@@ -163,7 +182,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         await page.waitForTimeout(1000)
 
         // Vérifier qu'un panneau de détails ou modal s'affiche
-        const detailsPanel = page.locator('[role="dialog"], [class*="detail"], [class*="modal"]').first()
+        const detailsPanel = page
+          .locator('[role="dialog"], [class*="detail"], [class*="modal"]')
+          .first()
         const isPanelVisible = await detailsPanel
           .isVisible({ timeout: 2000 })
           .catch(() => false)
@@ -185,13 +206,19 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     const logoutButton = page
       .getByRole('button', { name: /déconnexion|logout|sign out/i })
       .first()
-    const isLogoutVisible = await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const isLogoutVisible = await logoutButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (!isLogoutVisible) {
       const userMenu = page
-        .getByRole('button', { name: /profil|compte|account|menu|utilisateur/i })
+        .getByRole('button', {
+          name: /profil|compte|account|menu|utilisateur/i,
+        })
         .first()
-      const isMenuVisible = await userMenu.isVisible({ timeout: 2000 }).catch(() => false)
+      const isMenuVisible = await userMenu
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
       if (isMenuVisible) {
         await userMenu.click()
         await page.waitForTimeout(500)
@@ -209,7 +236,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.getByLabel(/mot de passe|password/i).fill(testUsers[0].password)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // Tenter d'accéder à /admin/permissions
@@ -222,11 +251,15 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
 
     if (isOnAdminPage) {
       // Vérifier qu'un message d'erreur s'affiche
-      const errorMessage = page.locator('text=/accès.*non.*autorisé|unauthorized|forbidden/i').first()
-      const isErrorVisible = await errorMessage.isVisible({ timeout: 2000 }).catch(() => false)
+      const errorMessage = page
+        .locator('text=/accès.*non.*autorisé|unauthorized|forbidden/i')
+        .first()
+      const isErrorVisible = await errorMessage
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
       expect(isErrorVisible).toBe(true)
 
-      console.log('✓ Utilisateur non-admin bloqué avec message d\'erreur')
+      console.log("✓ Utilisateur non-admin bloqué avec message d'erreur")
     } else {
       // Redirigé
       expect(currentUrl).toContain('/profil')
@@ -243,13 +276,19 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
   // TEST 2 : Modification permissions RBAC
   // ═════════════════════════════════════════════════════════════════════════════
 
-  test('Modification permissions - Changer le rôle d\'un utilisateur', async ({ page }) => {
+  test("Modification permissions - Changer le rôle d'un utilisateur", async ({
+    page,
+  }) => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer admin et utilisateur free
-    const { email: adminEmail, password: adminPassword } = await createTestScenario('admin')
-    const { userId: freeUserId, email: freeEmail, password: freePassword } =
-      await createTestScenario('free-empty')
+    const { email: adminEmail, password: adminPassword } =
+      await createTestScenario('admin')
+    const {
+      userId: freeUserId,
+      email: freeEmail,
+      password: freePassword,
+    } = await createTestScenario('free-empty')
 
     const client = getTestClient()
 
@@ -271,7 +310,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.getByLabel(/mot de passe|password/i).fill(adminPassword)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 4. Naviguer vers /admin/permissions
@@ -279,8 +320,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await waitForPageStable(page)
 
     // 5. Aller sur l'onglet Users
-    const usersTab = page.locator('button, a', { hasText: /users|utilisateurs/i }).first()
-    const isUsersTabVisible = await usersTab.isVisible({ timeout: 3000 }).catch(() => false)
+    const usersTab = page
+      .locator('button, a', { hasText: /users|utilisateurs/i })
+      .first()
+    const isUsersTabVisible = await usersTab
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isUsersTabVisible) {
       console.warn('⚠️  Onglet Utilisateurs non trouvé, test skip')
@@ -292,8 +337,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.waitForTimeout(1000)
 
     // 6. Chercher l'utilisateur free
-    const searchInput = page.locator('input[type="search"], input[placeholder*="rechercher" i]').first()
-    const isSearchVisible = await searchInput.isVisible({ timeout: 2000 }).catch(() => false)
+    const searchInput = page
+      .locator('input[type="search"], input[placeholder*="rechercher" i]')
+      .first()
+    const isSearchVisible = await searchInput
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (isSearchVisible) {
       await searchInput.fill(freeEmail)
@@ -301,14 +350,23 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     }
 
     // 7. Sélectionner l'utilisateur
-    const userRow = page.locator(`tr:has-text("${freeEmail}"), [data-email="${freeEmail}"]`).first()
-    const isRowVisible = await userRow.isVisible({ timeout: 3000 }).catch(() => false)
+    const userRow = page
+      .locator(`tr:has-text("${freeEmail}"), [data-email="${freeEmail}"]`)
+      .first()
+    const isRowVisible = await userRow
+      .isVisible({ timeout: 3000 })
+      .catch(() => false)
 
     if (!isRowVisible) {
-      console.warn('⚠️  Utilisateur non trouvé dans la liste, changement manuel du rôle')
+      console.warn(
+        '⚠️  Utilisateur non trouvé dans la liste, changement manuel du rôle'
+      )
 
       // Changer le rôle manuellement via DB
-      await client.from('user_roles').update({ role: 'abonne' }).eq('user_id', freeUserId)
+      await client
+        .from('user_roles')
+        .update({ role: 'abonne' })
+        .eq('user_id', freeUserId)
 
       console.log('✓ Rôle changé manuellement : free → abonne')
     } else {
@@ -316,7 +374,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       await page.waitForTimeout(1000)
 
       // 8. Chercher un sélecteur de rôle (dropdown, radio buttons, etc.)
-      const roleSelector = page.locator('select[name*="role"], select[aria-label*="rôle" i]').first()
+      const roleSelector = page
+        .locator('select[name*="role"], select[aria-label*="rôle" i]')
+        .first()
       const isSelectorVisible = await roleSelector
         .isVisible({ timeout: 2000 })
         .catch(() => false)
@@ -327,15 +387,21 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         await page.waitForTimeout(500)
 
         // Sauvegarder
-        const saveButton = page.locator('button', { hasText: /sauvegarder|save|enregistrer/i }).first()
-        const isSaveVisible = await saveButton.isVisible({ timeout: 2000 }).catch(() => false)
+        const saveButton = page
+          .locator('button', { hasText: /sauvegarder|save|enregistrer/i })
+          .first()
+        const isSaveVisible = await saveButton
+          .isVisible({ timeout: 2000 })
+          .catch(() => false)
 
         if (isSaveVisible) {
           await saveButton.click()
           await page.waitForTimeout(1000)
 
           // Vérifier un message de succès
-          const successMessage = page.locator('text=/modifié|updated|enregistré|saved/i').first()
+          const successMessage = page
+            .locator('text=/modifié|updated|enregistré|saved/i')
+            .first()
           const isSuccessVisible = await successMessage
             .isVisible({ timeout: 3000 })
             .catch(() => false)
@@ -346,7 +412,10 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         }
       } else {
         console.warn('⚠️  Sélecteur de rôle non trouvé, changement manuel')
-        await client.from('user_roles').update({ role: 'abonne' }).eq('user_id', freeUserId)
+        await client
+          .from('user_roles')
+          .update({ role: 'abonne' })
+          .eq('user_id', freeUserId)
       }
     }
 
@@ -365,11 +434,17 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     const logoutButton = page
       .getByRole('button', { name: /déconnexion|logout|sign out/i })
       .first()
-    const isLogoutVisible = await logoutButton.isVisible({ timeout: 2000 }).catch(() => false)
+    const isLogoutVisible = await logoutButton
+      .isVisible({ timeout: 2000 })
+      .catch(() => false)
 
     if (!isLogoutVisible) {
-      const userMenu = page.getByRole('button', { name: /profil|compte/i }).first()
-      const isMenuVisible = await userMenu.isVisible({ timeout: 2000 }).catch(() => false)
+      const userMenu = page
+        .getByRole('button', { name: /profil|compte/i })
+        .first()
+      const isMenuVisible = await userMenu
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
       if (isMenuVisible) {
         await userMenu.click()
         await page.waitForTimeout(500)
@@ -387,7 +462,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.getByLabel(/mot de passe|password/i).fill(freePassword)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 11. Vérifier que l'utilisateur a maintenant accès aux features premium
@@ -414,7 +491,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     // 12. Vérifier accessibilité
     await expectNoA11yViolations(page)
 
-    console.log('✅ Test permissions RBAC : Rôle modifié et permissions actives')
+    console.log(
+      '✅ Test permissions RBAC : Rôle modifié et permissions actives'
+    )
   })
 
   // ═════════════════════════════════════════════════════════════════════════════
@@ -425,7 +504,8 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await mockTurnstileCaptcha(page)
 
     // 1. Créer admin et quelques utilisateurs
-    const { email: adminEmail, password: adminPassword } = await createTestScenario('admin')
+    const { email: adminEmail, password: adminPassword } =
+      await createTestScenario('admin')
 
     await createTestScenario('free-empty')
     await createTestScenario('free-with-data')
@@ -443,14 +523,18 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.getByLabel(/mot de passe|password/i).fill(adminPassword)
     await page.waitForTimeout(200)
 
-    await page.getByRole('button', { name: /se connecter|connexion|login/i }).click()
+    await page
+      .getByRole('button', { name: /se connecter|connexion|login/i })
+      .click()
     await page.waitForURL(/\/(tableau|edition)/, { timeout: 10000 })
 
     // 3. Naviguer vers /admin/permissions et chercher l'onglet Analytics
     await page.goto('/admin/permissions')
     await waitForPageStable(page)
 
-    const analyticsTab = page.locator('button, a', { hasText: /analytics|statistiques/i }).first()
+    const analyticsTab = page
+      .locator('button, a', { hasText: /analytics|statistiques/i })
+      .first()
     const isAnalyticsVisible = await analyticsTab
       .isVisible({ timeout: 3000 })
       .catch(() => false)
@@ -459,8 +543,12 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       console.warn('⚠️  Onglet Analytics non trouvé, test des logs à la place')
 
       // Essayer l'onglet Logs
-      const logsTab = page.locator('button, a', { hasText: /logs|journaux/i }).first()
-      const isLogsVisible = await logsTab.isVisible({ timeout: 2000 }).catch(() => false)
+      const logsTab = page
+        .locator('button, a', { hasText: /logs|journaux/i })
+        .first()
+      const isLogsVisible = await logsTab
+        .isVisible({ timeout: 2000 })
+        .catch(() => false)
 
       if (isLogsVisible) {
         await logsTab.click()
@@ -491,7 +579,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         }
 
         // Tester le filtrage des logs
-        const filterButtons = page.locator('button[data-filter], select[name="filter"]')
+        const filterButtons = page.locator(
+          'button[data-filter], select[name="filter"]'
+        )
         const filterCount = await filterButtons.count()
 
         if (filterCount > 0) {
@@ -511,7 +601,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
 
       // 4. Vérifier les statistiques affichées
       // a) Nombre total d'utilisateurs
-      const totalUsers = page.locator('text=/total.*utilisateurs|total.*users/i').first()
+      const totalUsers = page
+        .locator('text=/total.*utilisateurs|total.*users/i')
+        .first()
       const isTotalUsersVisible = await totalUsers
         .isVisible({ timeout: 3000 })
         .catch(() => false)
@@ -538,7 +630,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       }
 
       // c) Graphiques (si existent)
-      const charts = page.locator('canvas, [class*="chart"], svg[class*="recharts"]')
+      const charts = page.locator(
+        'canvas, [class*="chart"], svg[class*="recharts"]'
+      )
       const chartsCount = await charts.count()
 
       if (chartsCount > 0) {
@@ -550,7 +644,9 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
       }
 
       // d) Tester l'export (CSV, PDF) si disponible
-      const exportButton = page.locator('button', { hasText: /export|télécharger|download/i }).first()
+      const exportButton = page
+        .locator('button', { hasText: /export|télécharger|download/i })
+        .first()
       const isExportVisible = await exportButton
         .isVisible({ timeout: 2000 })
         .catch(() => false)
@@ -563,13 +659,15 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         await page.waitForTimeout(500)
 
         // Vérifier qu'un téléchargement démarre ou une modal s'affiche
-        const downloadModal = page.locator('[role="dialog"]', { hasText: /export|format/i })
+        const downloadModal = page.locator('[role="dialog"]', {
+          hasText: /export|format/i,
+        })
         const isDownloadModalVisible = await downloadModal
           .isVisible({ timeout: 2000 })
           .catch(() => false)
 
         if (isDownloadModalVisible) {
-          console.log('✓ Modal d\'export affichée')
+          console.log("✓ Modal d'export affichée")
         }
       }
     }
