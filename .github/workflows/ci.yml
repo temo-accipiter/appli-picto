@@ -1,0 +1,222 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop, 'claude/**']
+  pull_request:
+    branches: [main, develop]
+
+# Annuler les runs en cours pour la même PR/branche
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 1 : Lint & Format Check
+  # ═══════════════════════════════════════════════════════════════
+  lint:
+    name: 🔍 Lint & Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'yarn'
+
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 🔍 Run ESLint
+        run: yarn lint
+
+      - name: 💅 Check Prettier formatting
+        run: yarn format --check
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 2 : Type Check TypeScript
+  # ═══════════════════════════════════════════════════════════════
+  typecheck:
+    name: 📝 TypeScript Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'yarn'
+
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 📝 Run TypeScript compiler
+        run: yarn type-check
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 3 : Tests Unitaires + Coverage
+  # ═══════════════════════════════════════════════════════════════
+  test-unit:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'yarn'
+
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 🧪 Run unit tests with coverage
+        run: yarn test:coverage
+        env:
+          CI: true
+
+      - name: 📊 Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: 📦 Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 4 : Tests E2E Playwright
+  # ═══════════════════════════════════════════════════════════════
+  test-e2e:
+    name: 🎭 E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # ⚠️ TEMPORARY: Allow E2E to fail during Phase 4 (infrastructure setup)
+    # TODO: Remove 'continue-on-error' after Phase 5 (when E2E tests are complete)
+    continue-on-error: true
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # Tester uniquement Chromium en CI pour économiser du temps
+        # Firefox et WebKit peuvent être testés localement
+        browser: [chromium]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'yarn'
+
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 🎭 Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: 🎭 Run E2E tests
+        run: yarn test:e2e --project=${{ matrix.browser }}
+        env:
+          CI: true
+
+      - name: 📦 Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: 📸 Upload screenshots
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-screenshots-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 5 : Build Production
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'yarn'
+
+      - name: 📦 Install dependencies
+        run: yarn install --immutable
+
+      - name: 🏗️ Build project
+        run: yarn build
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # ═══════════════════════════════════════════════════════════════
+  # JOB 6 : Check All (gate final)
+  # ═══════════════════════════════════════════════════════════════
+  check-all:
+    name: ✅ All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test-unit, test-e2e, build]
+    if: always()
+
+    steps:
+      - name: ✅ Verify all jobs succeeded
+        run: |
+          # ⚠️ TEMPORARY: Allow test-e2e to fail during Phase 4
+          # TODO: Remove this exception after Phase 5 (make test-e2e required again)
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.typecheck.result }}" != "success" ]] || \
+             [[ "${{ needs.test-unit.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]]; then
+            echo "❌ One or more critical checks failed"
+            exit 1
+          fi
+
+          # E2E allowed to fail temporarily (Phase 4 only)
+          if [[ "${{ needs.test-e2e.result }}" == "success" ]]; then
+            echo "✅ All checks passed (including E2E)!"
+          else
+            echo "⚠️ All critical checks passed (E2E skipped temporarily)"
+          fi

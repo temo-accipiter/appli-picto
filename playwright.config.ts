@@ -24,11 +24,21 @@ export default defineConfig({
   // Retry en cas d'échec
   retries: process.env.CI ? 2 : 0,
 
-  // Workers (parallélisme)
-  workers: process.env.CI ? 1 : undefined,
+  // Workers (parallélisme) - optimisé pour CI
+  workers: process.env.CI ? 4 : undefined,
 
-  // Reporter
-  reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
+  // Reporter - optimisé pour CI et local
+  reporter: process.env.CI
+    ? [
+        ['html', { outputFolder: 'playwright-report' }],
+        ['json', { outputFile: 'playwright-report/results.json' }],
+        ['github'],
+        ['list'],
+      ]
+    : [
+        ['html', { outputFolder: 'playwright-report' }],
+        ['list'],
+      ],
 
   // Options partagées pour tous les tests
   use: {
