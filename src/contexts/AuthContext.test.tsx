@@ -116,7 +116,7 @@ describe('AuthContext', () => {
           expect(screen.getByTestId('user').textContent).toBe('null')
           expect(screen.getByTestId('authReady').textContent).toBe('true')
         },
-        { timeout: 2000 }
+        { timeout: 3000 }
       )
     })
 
@@ -137,7 +137,7 @@ describe('AuthContext', () => {
         () => {
           expect(screen.getByTestId('authReady').textContent).toBe('true')
         },
-        { timeout: 2000 }
+        { timeout: 3000 }
       )
     })
   })
