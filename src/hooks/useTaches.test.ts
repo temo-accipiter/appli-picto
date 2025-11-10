@@ -257,7 +257,7 @@ describe('useTaches', () => {
       expect(result.current.taches[0].fait).toBe(false)
       expect(result.current.taches[1].fait).toBe(false)
       expect(mockToast.show).toHaveBeenCalledWith(
-        'Toutes les tâches ont été réinitialisées',
+        'toasts.allTasksReset',
         'success'
       )
     })
@@ -362,7 +362,7 @@ describe('useTaches', () => {
       // Assert
       expect(result.current.taches).toHaveLength(1)
       expect(result.current.taches[0].id).toBe('2')
-      expect(mockToast.show).toHaveBeenCalledWith('Tâche supprimée', 'success')
+      expect(mockToast.show).toHaveBeenCalledWith('toasts.taskDeleted', 'success')
     })
   })
 })
