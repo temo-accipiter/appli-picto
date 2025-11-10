@@ -30,11 +30,21 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser, authReady: true }),
-  useI18n: () => ({ t: (key: string) => key }),
-  useToast: () => mockToast,
-}))
+vi.mock('@/hooks', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/hooks')>()
+  return {
+    ...actual,
+    useAuth: vi.fn(() => ({
+      user: mockUser,
+      authReady: true
+    })),
+    useI18n: vi.fn(() => ({
+      t: (key: string) => key,
+      i18n: { language: 'fr' }
+    })),
+    useToast: vi.fn(() => mockToast)
+  }
+})
 
 vi.mock('@/hooks/useAuth', () => ({
   default: () => ({ user: mockUser, authReady: true }),
