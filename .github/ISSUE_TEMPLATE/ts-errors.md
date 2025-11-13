@@ -22,6 +22,7 @@ Corriger toutes les erreurs TypeScript de type **[TYPE D'ERREUR]** dans les fich
 ## 🔍 Types d'erreurs
 
 Liste des types d'erreurs rencontrées :
+
 - `TS2322`: Type 'X' is not assignable to type 'Y'
 - `TS2339`: Property 'X' does not exist on type 'Y'
 - `TS2345`: Argument of type 'X' is not assignable to parameter of type 'Y'
@@ -38,6 +39,7 @@ Liste des types d'erreurs rencontrées :
 ## 💡 Solutions suggérées
 
 ### Option 1: Corriger les types
+
 ```typescript
 // Avant
 const data: SomeType = response.data
@@ -47,13 +49,15 @@ const data = response.data as CorrectType
 ```
 
 ### Option 2: Rendre les props optionnelles
+
 ```typescript
 interface Props {
-  value?: string  // Au lieu de value: string
+  value?: string // Au lieu de value: string
 }
 ```
 
 ### Option 3: Utiliser des type guards
+
 ```typescript
 if (value !== undefined) {
   // value est maintenant de type défini
@@ -80,6 +84,7 @@ if (value !== undefined) {
 ---
 
 **Instructions pour le développeur** :
+
 1. Vérifier les erreurs avec `pnpm type-check`
 2. Corriger fichier par fichier
 3. Valider avec `pnpm check && pnpm test && pnpm build`

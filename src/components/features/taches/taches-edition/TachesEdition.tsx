@@ -228,7 +228,7 @@ export default function ChecklistTachesEdition({
         isOpen={modalTacheOpen}
         onClose={() => setModalTacheOpen(false)}
         includeCategory
-        categories={categories as any}
+        categories={categories as CategoryOption[]}
         onSubmit={(values: TaskFormData) => {
           onSubmitTask(values)
           setModalTacheOpen(false)
@@ -249,7 +249,7 @@ export default function ChecklistTachesEdition({
       <ModalCategory
         isOpen={manageCatOpen}
         onClose={() => setManageCatOpen(false)}
-        categories={categories as any}
+        categories={categories as CategoryOption[]}
         onDeleteCategory={value => setCatASupprimer(value)}
         onAddCategory={handleAddCategory}
         newCategory={newCatLabel}

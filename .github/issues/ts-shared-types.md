@@ -11,6 +11,7 @@ Corriger environ **~200 erreurs TypeScript** dans les composants partagés et UI
 ## 📂 Fichiers concernés
 
 ### Composants de carte
+
 - [ ] `src/components/shared/card/base-card/BaseCard.tsx` - ~5 erreurs
   - Type TFunction incompatible
   - Props optionnelles (`categorie`, `onDelete`)
@@ -20,12 +21,14 @@ Corriger environ **~200 erreurs TypeScript** dans les composants partagés et UI
   - `audioCtxRef.current` peut être null
 
 ### Composants d'image
+
 - [ ] `src/components/shared/signed-image/SignedImage.tsx` - Partiellement corrigé
   - Ajouter prop `style` optionnelle
 - [ ] `src/components/shared/avatar-profil/AvatarProfil.tsx` - ~2 erreurs
   - Prop `title` inexistante sur Button
 
 ### Formulaires et inputs
+
 - [ ] `src/components/shared/forms/ItemForm.tsx` - ~10 erreurs
   - Type TFunction incompatible (6 occurrences)
   - Type `string | null` non assignable
@@ -34,12 +37,14 @@ Corriger environ **~200 erreurs TypeScript** dans les composants partagés et UI
   - Props avec `undefined` au lieu de types stricts
 
 ### Autres composants shared
+
 - [ ] `src/components/shared/edition-list/EditionList.tsx` - Import React inutilisé
 - [ ] `src/components/shared/error-boundary/ErrorBoundary.tsx` - Import React inutilisé
 - [ ] `src/components/shared/index.ts` - ~8 erreurs
   - Modules introuvables (mauvais chemins d'import)
 
 ### UI components
+
 - [ ] `src/components/ui/button/Button.tsx` - Partiellement corrigé
   - Ajouter variant `danger`
   - Rendre `onClick` optionnel
@@ -65,6 +70,7 @@ Corriger environ **~200 erreurs TypeScript** dans les composants partagés et UI
 ## 💡 Solutions suggérées
 
 ### Pour les erreurs TFunction
+
 ```typescript
 // Importer le type correct
 import { type TFunction } from 'i18next'
@@ -73,14 +79,17 @@ import { type TFunction } from 'i18next'
 makeValidateNotEmpty(t as TFunction)
 
 // OU typer la fonction correctement
-const validateFn = (t: TFunction<'translation'>) => { /* ... */ }
+const validateFn = (t: TFunction<'translation'>) => {
+  /* ... */
+}
 ```
 
 ### Pour les props optionnelles avec exactOptionalPropertyTypes
+
 ```typescript
 // Définir comme optionnel dans l'interface
 interface Props {
-  className?: string  // Accepte string | undefined
+  className?: string // Accepte string | undefined
   style?: CSSProperties
 }
 
@@ -89,13 +98,15 @@ const { className = '' } = props
 ```
 
 ### Pour les imports manquants
+
 ```typescript
 // Vérifier que les fichiers existent
 // Corriger les chemins dans src/components/shared/index.ts
-export { default as Button } from '../ui/button/Button'  // Au lieu de './Button'
+export { default as Button } from '../ui/button/Button' // Au lieu de './Button'
 ```
 
 ### Pour React inutilisé
+
 ```typescript
 // Supprimer l'import si non utilisé
 // React 17+ n'a plus besoin de l'import pour JSX
@@ -121,6 +132,7 @@ export { default as Button } from '../ui/button/Button'  // Au lieu de './Button
 ---
 
 **Checklist de test** :
+
 - [ ] Toutes les pages chargent sans erreur
 - [ ] Formulaires fonctionnent (ajout/édition)
 - [ ] Images s'affichent correctement

@@ -11,6 +11,7 @@ Corriger environ **~150 erreurs TypeScript** dans les composants d'administratio
 ## 📂 Fichiers concernés
 
 ### Composants Admin principaux
+
 - [ ] `src/components/features/admin/AccountManagement.tsx` - ~4 erreurs
   - `pseudo` peut être null
   - `email` manquant dans profiles (récupérer depuis auth.users)
@@ -20,6 +21,7 @@ Corriger environ **~150 erreurs TypeScript** dans les composants d'administratio
   - Variable `handleCreateQuota` non utilisée
 
 ### Composants Permissions
+
 - [ ] `src/components/features/admin/permissions/HistoryTab.tsx` - ~10 erreurs
   - Type `change_type` devrait être `string` au lieu de `ChangeType`
   - Propriétés `display_name` inexistantes sur types Json
@@ -49,6 +51,7 @@ Corriger environ **~150 erreurs TypeScript** dans les composants d'administratio
 ## 💡 Solutions suggérées
 
 ### Pour les types Json de Supabase
+
 ```typescript
 // Au lieu de
 const value = data.field
@@ -61,18 +64,22 @@ const value = jsonData.field as string
 ```
 
 ### Pour les champs optionnels
+
 ```typescript
 // Rendre les interfaces plus permissives
 interface User {
-  pseudo?: string | null  // Au lieu de pseudo: string
+  pseudo?: string | null // Au lieu de pseudo: string
   email: string
 }
 ```
 
 ### Pour les variables inutilisées
+
 ```typescript
 // Préfixer avec underscore ou supprimer
-const _handleCreateQuota = () => { /* ... */ }
+const _handleCreateQuota = () => {
+  /* ... */
+}
 // ou ajouter
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ```
@@ -98,6 +105,7 @@ const _handleCreateQuota = () => { /* ... */ }
 ---
 
 **Checklist de test** :
+
 - [ ] Page Admin Permissions accessible
 - [ ] Gestion des comptes fonctionne
 - [ ] Métriques s'affichent correctement

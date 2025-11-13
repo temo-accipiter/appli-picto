@@ -26,7 +26,7 @@ export default function DeleteAccountModal({
 
   // Créer la fonction de validation i18n avec useMemo
   const validatePasswordNotEmpty = useMemo(
-    () => makeValidatePasswordNotEmpty(t as any),
+    () => makeValidatePasswordNotEmpty(t),
     [t]
   )
 

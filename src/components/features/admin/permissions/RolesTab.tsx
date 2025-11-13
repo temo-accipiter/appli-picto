@@ -93,9 +93,9 @@ export default function RolesTab({
             value={newRole.name}
             onChange={value => setNewRole({ ...newRole, name: value })}
             onValid={value => setNewRole({ ...newRole, name: value })}
-            rules={createRoleValidationRules.name(newRole.name, roles).map(
-              err => () => err
-            )}
+            rules={createRoleValidationRules
+              .name(newRole.name, roles)
+              .map(err => () => err)}
             ariaLabel="Nom du rôle"
           />
           <InputWithValidation
@@ -105,9 +105,9 @@ export default function RolesTab({
             value={newRole.display_name}
             onChange={value => setNewRole({ ...newRole, display_name: value })}
             onValid={value => setNewRole({ ...newRole, display_name: value })}
-            rules={createRoleValidationRules.displayName(newRole.display_name).map(
-              err => () => err
-            )}
+            rules={createRoleValidationRules
+              .displayName(newRole.display_name)
+              .map(err => () => err)}
             ariaLabel="Nom d'affichage du rôle"
           />
           <InputWithValidation
@@ -117,9 +117,9 @@ export default function RolesTab({
             value={newRole.description}
             onChange={value => setNewRole({ ...newRole, description: value })}
             onValid={value => setNewRole({ ...newRole, description: value })}
-            rules={createRoleValidationRules.description(newRole.description).map(
-              err => () => err
-            )}
+            rules={createRoleValidationRules
+              .description(newRole.description)
+              .map(err => () => err)}
             ariaLabel="Description du rôle"
           />
           <button
@@ -220,9 +220,9 @@ export default function RolesTab({
                         // Validation réussie, on peut sauvegarder
                         handleUpdateRole(role.id, { display_name: value })
                       }}
-                      rules={updateRoleValidationRules.displayName(
-                        role.display_name
-                      ).map(err => () => err)}
+                      rules={updateRoleValidationRules
+                        .displayName(role.display_name)
+                        .map(err => () => err)}
                       ariaLabel={`Modifier le nom d'affichage de ${role.display_name}`}
                     />
                     <button

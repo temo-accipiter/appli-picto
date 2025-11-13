@@ -81,22 +81,24 @@ export default function AccountManagement({
         if (error) throw error
 
         // Traiter les données pour avoir un format plus simple
-        const processedUsers: User[] = (data || []).map((user: any) => {
-          const activeRole = user.user_roles.find(
-            (ur: UserRole) => ur.is_active
-          )
-          return {
-            id: user.id,
-            pseudo: user.pseudo,
-            email: '', // profiles n'a pas de champ email
-            created_at: user.created_at,
-            account_status: user.account_status as AccountStatus,
-            avatar_url: user.avatar_url,
-            user_roles: user.user_roles,
-            role: activeRole?.roles?.name || 'visitor',
-            roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
+        const processedUsers: User[] = (data || []).map(
+          (user: Record<string, unknown>) => {
+            const activeRole = user.user_roles.find(
+              (ur: UserRole) => ur.is_active
+            )
+            return {
+              id: user.id,
+              pseudo: user.pseudo,
+              email: '', // profiles n'a pas de champ email
+              created_at: user.created_at,
+              account_status: user.account_status as AccountStatus,
+              avatar_url: user.avatar_url,
+              user_roles: user.user_roles,
+              role: activeRole?.roles?.name || 'visitor',
+              roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
+            }
           }
-        })
+        )
 
         setUsers(processedUsers)
       } catch (error) {
@@ -161,20 +163,24 @@ export default function AccountManagement({
 
       if (refreshError) throw refreshError
 
-      const processedUsers: User[] = (data || []).map((user: any) => {
-        const activeRole = user.user_roles.find((ur: UserRole) => ur.is_active)
-        return {
-          id: user.id,
-          pseudo: user.pseudo,
-          email: '',
-          created_at: user.created_at,
-          account_status: user.account_status as AccountStatus,
-          avatar_url: user.avatar_url,
-          user_roles: user.user_roles,
-          role: activeRole?.roles?.name || 'visitor',
-          roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
+      const processedUsers: User[] = (data || []).map(
+        (user: Record<string, unknown>) => {
+          const activeRole = user.user_roles.find(
+            (ur: UserRole) => ur.is_active
+          )
+          return {
+            id: user.id,
+            pseudo: user.pseudo,
+            email: '',
+            created_at: user.created_at,
+            account_status: user.account_status as AccountStatus,
+            avatar_url: user.avatar_url,
+            user_roles: user.user_roles,
+            role: activeRole?.roles?.name || 'visitor',
+            roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
+          }
         }
-      })
+      )
 
       setUsers(processedUsers)
       setSelectedUser(null)

@@ -70,6 +70,7 @@ pnpm check-bundle
 Utiliser les templates créés dans `.github/issues/` :
 
 1. **Issue Admin Types**
+
    ```bash
    # Créer depuis .github/issues/ts-admin-types.md
    gh issue create --title "[TS] Corriger erreurs TypeScript composants Admin" \
@@ -78,6 +79,7 @@ Utiliser les templates créés dans `.github/issues/` :
    ```
 
 2. **Issue Shared Types**
+
    ```bash
    gh issue create --title "[TS] Corriger erreurs TypeScript composants Shared" \
      --label "typescript,tech-debt,ui,shared" \
@@ -103,6 +105,7 @@ Utiliser les templates créés dans `.github/issues/` :
 ### Nouveau workflow : `.github/workflows/pnpm-ci.yml`
 
 Exécute automatiquement :
+
 - ✅ Lint (ESLint)
 - ✅ Format check (Prettier)
 - ✅ Tests (Vitest)
@@ -113,6 +116,7 @@ Exécute automatiquement :
 ### Nouveau script : `pnpm check-bundle`
 
 Vérifie que :
+
 - Aucun chunk JS > 1.6 MB
 - Affiche un résumé des tailles
 - Suggestions d'optimisation si échec
@@ -120,16 +124,19 @@ Vérifie que :
 ## 📊 Métriques
 
 ### Avant (Yarn)
+
 - Temps d'installation : ~45s
 - Temps de build : ~2m 30s
 - Taille node_modules : ~400 MB
 
 ### Après (pnpm)
+
 - Temps d'installation : ~25s (-44%)
 - Temps de build : ~28s (-81% !)
 - Taille node_modules : ~250 MB (-37%)
 
 ### Erreurs TypeScript
+
 - Avant : ~700 erreurs
 - Après corrections : ~600 erreurs
 - Corrigées : ~100 erreurs critiques
@@ -137,16 +144,19 @@ Vérifie que :
 ## 💡 Recommandations
 
 ### Court terme (avant merge)
+
 1. ✅ Merger la branche en l'état
 2. ✅ Créer les issues de suivi TypeScript
 3. ⚠️ Accepter temporairement le bundle > 1.6 MB
 
 ### Moyen terme (après merge)
+
 1. Corriger les erreurs TypeScript par catégorie (3-4 semaines)
 2. Optimiser le bundle principal (code splitting)
 3. Configurer `skipLibCheck: true` temporairement si besoin
 
 ### Long terme
+
 1. Atteindre 0 erreur TypeScript
 2. Bundle principal < 1 MB
 3. Coverage de tests > 80%

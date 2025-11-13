@@ -35,6 +35,7 @@ gh auth login
 ```
 
 Cela créera automatiquement 3 issues :
+
 - **[TS] Erreurs TypeScript - Composants Admin** (~150 erreurs)
 - **[TS] Erreurs TypeScript - Composants Shared** (~200 erreurs)
 - **[TS] Erreurs TypeScript - i18n (TFunction)** (~250 erreurs)
@@ -105,11 +106,13 @@ pnpm build
 ## 📊 Métriques de migration
 
 ### Performance
+
 - ⚡ Installation : 25s (Yarn: 45s) → **-44%**
 - ⚡ Build : 28s (Yarn: 2m30s) → **-81%**
 - 💾 node_modules : 250 MB (Yarn: 400 MB) → **-37%**
 
 ### Qualité du code
+
 - ✅ Lint : 0 erreur
 - ✅ Tests : Tous passent
 - ✅ Build : Réussi
@@ -117,6 +120,7 @@ pnpm build
 - ⚠️ Bundle : 1.70 MB (objectif : 1.60 MB)
 
 ### Fichiers modifiés
+
 - 45 fichiers changés
 - 10 074 insertions
 - 167 suppressions
@@ -128,12 +132,14 @@ pnpm build
 ## 🔗 Ressources
 
 ### Documentation
+
 - [MERGE_CHECKLIST.md](MERGE_CHECKLIST.md) - Checklist complète
 - [MIGRATION_PNPM.md](MIGRATION_PNPM.md) - Guide de migration détaillé
 - [INSTALL_INSTRUCTIONS.md](INSTALL_INSTRUCTIONS.md) - Instructions d'installation
 - [ROLLBACK.md](ROLLBACK.md) - Procédure de rollback si besoin
 
 ### Scripts
+
 - `pnpm check` - Lint + format
 - `pnpm test` - Tests unitaires
 - `pnpm build` - Build production
@@ -141,6 +147,7 @@ pnpm build
 - `pnpm type-check` - Vérification TypeScript
 
 ### CI/CD
+
 - Workflow : [.github/workflows/pnpm-ci.yml](.github/workflows/pnpm-ci.yml)
 - Script bundle : [scripts/check-bundle-size.js](scripts/check-bundle-size.js)
 - Script issues : [scripts/create-github-issues.sh](scripts/create-github-issues.sh)
@@ -181,6 +188,7 @@ Consulter [ROLLBACK.md](ROLLBACK.md) pour la procédure complète.
 ## 📞 Contact
 
 Si vous avez des questions ou rencontrez des problèmes :
+
 - Créer une issue sur GitHub
 - Consulter la documentation dans `docs/`
 - Vérifier [CLAUDE.md](CLAUDE.md) pour les conventions du projet

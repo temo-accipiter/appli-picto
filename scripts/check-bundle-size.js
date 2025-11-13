@@ -18,7 +18,9 @@ const MAX_CHUNK_SIZE_BYTES = MAX_CHUNK_SIZE_MB * 1024 * 1024
 console.log('🔍 Vérification de la taille des bundles...\n')
 
 if (!fs.existsSync(DIST_DIR)) {
-  console.error('❌ Le dossier dist/assets n\'existe pas. Lancez "pnpm build" d\'abord.')
+  console.error(
+    '❌ Le dossier dist/assets n\'existe pas. Lancez "pnpm build" d\'abord.'
+  )
   process.exit(1)
 }
 
@@ -36,7 +38,9 @@ jsFiles.forEach(file => {
   filesSizes.push({ file, size: stats.size, sizeMB })
 
   if (stats.size > MAX_CHUNK_SIZE_BYTES) {
-    console.error(`❌ ${file}: ${sizeMB.toFixed(2)} MB (> ${MAX_CHUNK_SIZE_MB} MB)`)
+    console.error(
+      `❌ ${file}: ${sizeMB.toFixed(2)} MB (> ${MAX_CHUNK_SIZE_MB} MB)`
+    )
     hasError = true
   } else if (sizeMB > 1.0) {
     console.warn(`⚠️  ${file}: ${sizeMB.toFixed(2)} MB`)
@@ -54,8 +58,13 @@ const totalSizeMB = totalSize / (1024 * 1024)
 console.log(`Taille totale: ${totalSizeMB.toFixed(2)} MB`)
 
 // Trouver le plus gros fichier
-const biggestFile = filesSizes.reduce((max, f) => f.size > max.size ? f : max, filesSizes[0])
-console.log(`Plus gros fichier: ${biggestFile.file} (${biggestFile.sizeMB.toFixed(2)} MB)`)
+const biggestFile = filesSizes.reduce(
+  (max, f) => (f.size > max.size ? f : max),
+  filesSizes[0]
+)
+console.log(
+  `Plus gros fichier: ${biggestFile.file} (${biggestFile.sizeMB.toFixed(2)} MB)`
+)
 
 if (hasError) {
   console.error('\n❌ Des chunks dépassent la limite de taille !')

@@ -433,7 +433,10 @@ export default function UsersTab() {
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => {
-                        setSelectedUser({ id: user.id, userName: user.pseudo || 'Sans pseudo' })
+                        setSelectedUser({
+                          id: user.id,
+                          userName: user.pseudo || 'Sans pseudo',
+                        })
                         setShowAssignModal(true)
                       }}
                       disabled={user.is_admin}

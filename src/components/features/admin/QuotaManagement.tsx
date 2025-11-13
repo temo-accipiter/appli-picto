@@ -161,7 +161,7 @@ export default function QuotaManagement({
   }
 
   // Créer un nouveau quota
-  const handleCreateQuota = async () => {
+  const _handleCreateQuota = async () => {
     if (!formData.quota_type || !formData.quota_limit || !editingQuota) return
 
     try {
