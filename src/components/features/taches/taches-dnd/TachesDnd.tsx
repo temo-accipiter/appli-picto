@@ -86,13 +86,15 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         const newIndex = items.findIndex(t => t.id.toString() === over.id)
         const newList = [...items]
         const [moved] = newList.splice(oldIndex, 1)
-        newList.splice(newIndex, 0, moved)
-        onReorder(newList.map(t => t.id))
+        if (moved) {
+          newList.splice(newIndex, 0, moved)
+          onReorder(newList.map(t => t.id))
 
-        // WCAG 4.1.3 - Annoncer le résultat du réordonnancement
-        setAnnouncement(
-          `"${moved.label}" déplacé à la position ${newIndex + 1}`
-        )
+          // WCAG 4.1.3 - Annoncer le résultat du réordonnancement
+          setAnnouncement(
+            `"${moved.label}" déplacé à la position ${newIndex + 1}`
+          )
+        }
       } else {
         // WCAG 4.1.3 - Annoncer l'annulation
         setAnnouncement('Déplacement annulé')

@@ -196,12 +196,12 @@ yarn test
 
 ## 📊 Comparaison des options
 
-| Option | Rapidité | Sécurité | Perte de modifications |
-|--------|----------|----------|------------------------|
-| **Option 1 (tag)** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ Aucune (état garanti) |
-| **Option 2 (manuel)** | ⭐⭐ | ⭐⭐⭐⭐ | ⚠️ Possible (si commits non poussés) |
-| **Option 3 (partiel)** | ⭐⭐⭐⭐ | ⭐⭐⭐ | ✅ Garde la config pnpm |
-| **Option 4 (nettoyage)** | ⭐ | ⭐⭐⭐⭐⭐ | ⚠️ Nettoie tout |
+| Option                   | Rapidité | Sécurité   | Perte de modifications               |
+| ------------------------ | -------- | ---------- | ------------------------------------ |
+| **Option 1 (tag)**       | ⭐⭐⭐   | ⭐⭐⭐⭐⭐ | ✅ Aucune (état garanti)             |
+| **Option 2 (manuel)**    | ⭐⭐     | ⭐⭐⭐⭐   | ⚠️ Possible (si commits non poussés) |
+| **Option 3 (partiel)**   | ⭐⭐⭐⭐ | ⭐⭐⭐     | ✅ Garde la config pnpm              |
+| **Option 4 (nettoyage)** | ⭐       | ⭐⭐⭐⭐⭐ | ⚠️ Nettoie tout                      |
 
 **Recommandation** : **Option 1** pour un rollback safe et rapide.
 
@@ -214,6 +214,7 @@ yarn test
 **Cause** : Yarn n'est pas installé ou pas dans le PATH.
 
 **Solution** :
+
 ```bash
 # Réinstaller Yarn via Corepack
 corepack enable
@@ -230,6 +231,7 @@ yarn --version
 ### Problème : yarn.lock corrompu après rollback
 
 **Solution** :
+
 ```bash
 # Restaurer yarn.lock depuis le tag
 git checkout v0.0.0-pre-pnpm-migration -- yarn.lock
@@ -244,6 +246,7 @@ yarn install
 ### Problème : .yarn/ manquant après rollback
 
 **Solution** :
+
 ```bash
 # Restaurer .yarn/ depuis le tag
 git checkout v0.0.0-pre-pnpm-migration -- .yarn
@@ -259,6 +262,7 @@ yarn install
 ### Problème : Conflits Git lors du checkout
 
 **Solution** :
+
 ```bash
 # Stash les modifications locales
 git stash
@@ -273,6 +277,7 @@ git stash pop
 ### Problème : Packages manquants après rollback
 
 **Solution** :
+
 ```bash
 # Nettoyer complètement
 rm -rf node_modules
@@ -311,7 +316,7 @@ Après rollback, vérifier que :
 
 Si vous devez faire un rollback, **documenter le problème** pour analyse :
 
-```bash
+````bash
 # Créer un fichier de rapport
 cat > PNPM_MIGRATION_ISSUE.md << 'EOF'
 # Problème rencontré lors de la migration pnpm
@@ -328,35 +333,42 @@ Phase 0.3 - Installation pnpm
 ## Commande qui a échoué
 ```bash
 [commande exacte]
-```
+````
 
 ## Logs d'erreur
+
 ```
 [copier les logs]
 ```
 
 ## Environnement
+
 - OS : [Linux/macOS/Windows]
 - Node.js : [version]
 - pnpm : [version]
 - Branche : [nom de la branche]
 
 ## Actions prises
+
 1. [décrire les tentatives de résolution]
 2. ...
 
 ## Solution de contournement
+
 Rollback vers Yarn 4.10.3 (Option [1/2/3/4])
 
 ## À investiguer
+
 - [points à analyser pour une future migration]
 
 EOF
 
 # Commiter le rapport
+
 git add PNPM_MIGRATION_ISSUE.md
 git commit -m "docs: add pnpm migration issue report"
-```
+
+````
 
 ---
 
@@ -374,7 +386,7 @@ pnpm install --loglevel debug > pnpm-install-debug.log 2>&1
 # Sauvegarder les logs pour analyse
 git add pnpm-debug.log pnpm-install-debug.log
 git commit -m "chore: save pnpm debug logs for analysis"
-```
+````
 
 ---
 

@@ -32,7 +32,7 @@ export default function ImageAnalytics() {
           throw error
         }
 
-        setStats(data)
+        setStats(data as ImageStats | null)
       } catch (e) {
         console.error('❌ Erreur stats images:', e)
         setError((e as Error).message)

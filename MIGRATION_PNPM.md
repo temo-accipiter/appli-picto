@@ -46,17 +46,17 @@ yarn install
 
 Les scripts suivants devront être adaptés pour pnpm :
 
-| Script | Commande actuelle | Action requise |
-|--------|------------------|----------------|
-| `check` | `yarn lint:fix && yarn format` | Remplacer `yarn` par `pnpm` |
-| `audit` | `yarn audit` | Remplacer `yarn audit` par `pnpm audit` |
-| `audit:fix` | `yarn audit fix` | Remplacer par `pnpm audit --fix` |
-| `verify` | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn` |
-| `verify:quick` | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn` |
-| `verify:ci` | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn` |
-| `context:update` | `yarn db:dump && yarn db:types` | Remplacer tous les `yarn` |
-| `clean:all` | `yarn clean && rm -rf yarn.lock` | Remplacer par `pnpm-lock.yaml` |
-| `postinstall` | `yarn db:types \|\| true` | Remplacer `yarn` par `pnpm` |
+| Script           | Commande actuelle                     | Action requise                          |
+| ---------------- | ------------------------------------- | --------------------------------------- |
+| `check`          | `yarn lint:fix && yarn format`        | Remplacer `yarn` par `pnpm`             |
+| `audit`          | `yarn audit`                          | Remplacer `yarn audit` par `pnpm audit` |
+| `audit:fix`      | `yarn audit fix`                      | Remplacer par `pnpm audit --fix`        |
+| `verify`         | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn`               |
+| `verify:quick`   | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn`               |
+| `verify:ci`      | `yarn type-check && yarn lint && ...` | Remplacer tous les `yarn`               |
+| `context:update` | `yarn db:dump && yarn db:types`       | Remplacer tous les `yarn`               |
+| `clean:all`      | `yarn clean && rm -rf yarn.lock`      | Remplacer par `pnpm-lock.yaml`          |
+| `postinstall`    | `yarn db:types \|\| true`             | Remplacer `yarn` par `pnpm`             |
 
 **Note** : Les scripts utilisant `dotenv -e .env -- sh -lc` n'ont PAS besoin d'être modifiés (ils n'utilisent pas yarn).
 
@@ -67,47 +67,58 @@ Les scripts suivants devront être adaptés pour pnpm :
 ### Dépendances à surveiller lors de la migration
 
 #### 1. React 19 (très récent)
+
 ```json
 "react": "^19.0.0",
 "react-dom": "^19.0.0"
 ```
+
 - **Risque** : Peer dependencies complexes
 - **Action** : Activer `auto-install-peers=true` dans `.npmrc`
 
 #### 2. @supabase/supabase-js (version fixée)
+
 ```json
 "@supabase/supabase-js": "2.45.0"
 ```
+
 - **Risque** : Version exacte sans `^` (volontaire)
 - **Action** : Vérifier que pnpm respecte cette contrainte
 
-#### 3. @dnd-kit/* (packages multiples)
+#### 3. @dnd-kit/\* (packages multiples)
+
 ```json
 "@dnd-kit/core": "^6.3.1",
 "@dnd-kit/sortable": "^10.0.0",
 "@dnd-kit/utilities": "^3.2.2"
 ```
+
 - **Risque** : Plusieurs packages interdépendants
 - **Action** : Tester le drag & drop après migration
 
 #### 4. React Router v7 (récent)
+
 ```json
 "react-router-dom": "^7.5.0"
 ```
+
 - **Risque** : Version majeure récente
 - **Action** : Vérifier la compatibilité du routage
 
 #### 5. Autres packages à surveiller
+
 - `@stripe/stripe-js@^7.8.0` (intégration paiement)
 - `@sentry/react@^10.23.0` (monitoring)
 - `framer-motion@^12.10.1` (animations)
 
 #### 6. Resolution à convertir
+
 ```json
 "resolutions": {
   "@modelcontextprotocol/sdk": "1.18.1"
 }
 ```
+
 - **Action** : Convertir en `pnpm.overrides` dans package.json
 
 ---
@@ -209,6 +220,7 @@ Par :
 ## 🚀 Prochaines étapes
 
 ### Phase 0.2 : Configuration
+
 1. Installer pnpm 9.15.0 globalement
 2. Créer `.npmrc` avec la configuration recommandée
 3. Modifier `package.json` :
@@ -217,6 +229,7 @@ Par :
    - Adapter les scripts yarn
 
 ### Phase 0.3 : Migration proprement dite
+
 1. Supprimer `node_modules/` et `.yarn/`
 2. Supprimer `yarn.lock`
 3. Lancer `pnpm install`
@@ -229,6 +242,7 @@ Par :
    ```
 
 ### Phase 0.4 : Validation
+
 1. Tester toutes les fonctionnalités critiques
 2. Vérifier les imports Supabase
 3. Tester le drag & drop (@dnd-kit)
@@ -242,13 +256,13 @@ Par :
 
 ### Différences Yarn PnP vs pnpm
 
-| Aspect | Yarn PnP | pnpm |
-|--------|----------|------|
-| **Structure** | Pas de `node_modules`, fichiers `.pnp.*` | `node_modules` avec liens symboliques |
-| **Performance** | Très rapide (pas de copie) | Rapide (hard links) |
-| **Compatibilité** | Nécessite support explicite | Compatible avec npm/yarn |
-| **Espace disque** | Économise l'espace | Économise l'espace (store global) |
-| **Debuggage** | Plus complexe | Plus simple (node_modules standard) |
+| Aspect            | Yarn PnP                                 | pnpm                                  |
+| ----------------- | ---------------------------------------- | ------------------------------------- |
+| **Structure**     | Pas de `node_modules`, fichiers `.pnp.*` | `node_modules` avec liens symboliques |
+| **Performance**   | Très rapide (pas de copie)               | Rapide (hard links)                   |
+| **Compatibilité** | Nécessite support explicite              | Compatible avec npm/yarn              |
+| **Espace disque** | Économise l'espace                       | Économise l'espace (store global)     |
+| **Debuggage**     | Plus complexe                            | Plus simple (node_modules standard)   |
 
 ### Avantages attendus de la migration
 
@@ -284,6 +298,7 @@ Par :
 ### Fichiers créés
 
 1. **`.npmrc`** - Configuration pnpm
+
    ```ini
    shamefully-hoist=true
    auto-install-peers=true
@@ -334,6 +349,7 @@ yarn install
 ### ⚠️ Point de non-retour : Fichiers Yarn supprimés
 
 Les fichiers suivants ont été **SUPPRIMÉS** :
+
 - ❌ `yarn.lock` (280 KB)
 - ❌ `.yarn/` (dossier complet : releases + sdks)
 - ❌ `.yarnrc.yml` (n'existait pas)
@@ -372,6 +388,7 @@ Les fichiers suivants ont été **SUPPRIMÉS** :
 **Actions requises de votre part** :
 
 1. **Récupérer la branche** :
+
    ```bash
    git fetch origin
    git checkout claude/prepare-yarn-pnpm-migration-011CV5yWmukVnBfKXMECFpo3
@@ -384,6 +401,7 @@ Les fichiers suivants ont été **SUPPRIMÉS** :
    - Valider toutes les fonctionnalités
 
 3. **Si OK** :
+
    ```bash
    git add pnpm-lock.yaml
    git commit -m "chore(pnpm): add pnpm-lock.yaml after successful migration"
@@ -419,6 +437,7 @@ Les fichiers suivants ont été **SUPPRIMÉS** :
 ### Rollback en cas de problème
 
 **Commande rapide** :
+
 ```bash
 git checkout v0.0.0-pre-pnpm-migration
 yarn install
@@ -428,11 +447,11 @@ yarn install
 
 ### Fichiers de documentation
 
-| Fichier | Taille | Description |
-|---------|--------|-------------|
-| `INSTALL_INSTRUCTIONS.md` | 10.5 KB | Guide d'installation pnpm |
-| `ROLLBACK.md` | 8.2 KB | Guide de rollback vers Yarn |
-| `MIGRATION_PNPM.md` | [ce fichier] | Documentation complète |
+| Fichier                   | Taille       | Description                 |
+| ------------------------- | ------------ | --------------------------- |
+| `INSTALL_INSTRUCTIONS.md` | 10.5 KB      | Guide d'installation pnpm   |
+| `ROLLBACK.md`             | 8.2 KB       | Guide de rollback vers Yarn |
+| `MIGRATION_PNPM.md`       | [ce fichier] | Documentation complète      |
 
 ---
 
@@ -441,6 +460,7 @@ yarn install
 **Statut** : Configuration prête, **INSTALLATION À TESTER EN LOCAL**
 
 **Prochaine étape** :
+
 1. **Vous** : Tester l'installation pnpm en local (suivre INSTALL_INSTRUCTIONS.md)
 2. **Si OK** : Commiter pnpm-lock.yaml et merger
 3. **Si problème** : Rollback (suivre ROLLBACK.md)

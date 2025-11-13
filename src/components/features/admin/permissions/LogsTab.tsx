@@ -10,7 +10,7 @@ interface SubscriptionLog {
   timestamp: string
   user_id: string | null
   event_type: string
-  details: Record<string, any>
+  details: string | number | boolean | null | { [key: string]: any } | any[]
 }
 
 type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'

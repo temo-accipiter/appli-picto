@@ -8,7 +8,7 @@ interface Role {
   id: string
   name: string
   display_name: string
-  priority: number
+  priority: number | null
 }
 
 interface Quota {
@@ -16,7 +16,7 @@ interface Quota {
   role_id: string
   quota_type: string
   quota_limit: number
-  quota_period: string
+  quota_period: string | null
   roles: {
     name: string
     display_name: string
@@ -111,7 +111,7 @@ export default function QuotaManagement({
     setFormData({
       quota_type: quota.quota_type,
       quota_limit: quota.quota_limit.toString(),
-      quota_period: quota.quota_period,
+      quota_period: quota.quota_period || 'monthly',
     })
   }
 
@@ -161,7 +161,7 @@ export default function QuotaManagement({
   }
 
   // Créer un nouveau quota
-  const _handleCreateQuota = async () => {
+  const handleCreateQuota = async () => {
     if (!formData.quota_type || !formData.quota_limit || !editingQuota) return
 
     try {

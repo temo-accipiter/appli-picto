@@ -3,7 +3,7 @@ import { recreateSupabaseClient } from './supabaseClient'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Interface pour accéder aux propriétés internes du client Supabase
-interface SupabaseClientInternal extends SupabaseClient {
+interface SupabaseClientInternal {
   supabaseUrl?: string
   supabaseKey?: string
 }

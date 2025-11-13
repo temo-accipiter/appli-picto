@@ -33,6 +33,7 @@
     "verify": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test && pnpm build:prod",
     "verify:quick": "pnpm type-check && pnpm lint && pnpm build",
     "verify:ci": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test:coverage && pnpm build:prod",
+    "check-bundle": "node scripts/check-bundle-size.js",
     "db:link": "dotenv -e .env -- sh -lc 'supabase link --project-ref \"$SUPABASE_PROJECT_REF\"'",
     "db:dump": "dotenv -e supabase/.env -- sh -lc 'PGPASSWORD=\"$SUPABASE_DB_PASSWORD\" PGSSLMODE=require pg_dump -h \"$SUPABASE_DB_HOST\" -p \"$SUPABASE_DB_PORT\" -U \"$SUPABASE_DB_USER\" -d \"$SUPABASE_DB_NAME\" --schema-only --schema=public --schema=storage -f supabase/schema.sql'",
     "db:types": "dotenv -e supabase/.env -- sh -lc 'mkdir -p src/types && supabase gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" > src/types/supabase.ts'",

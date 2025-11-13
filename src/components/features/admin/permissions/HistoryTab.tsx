@@ -8,13 +8,13 @@ type TableName = 'roles' | 'features' | 'role_permissions' | 'user_roles'
 
 interface HistoryItem {
   id: string
-  table_name: TableName
-  change_type: ChangeType
+  table_name: string
+  change_type: string
   changed_at: string
   changed_by: string | null
   user_pseudo?: string | null
-  old_values: Record<string, any> | null
-  new_values: Record<string, any> | null
+  old_values: string | number | boolean | null | { [key: string]: any } | any[]
+  new_values: string | number | boolean | null | { [key: string]: any } | any[]
 }
 
 type ChangeTypeFilter = 'all' | ChangeType
@@ -52,7 +52,7 @@ export default function HistoryTab() {
     loadHistory()
   }, [loadHistory])
 
-  const getChangeTypeIcon = (changeType: ChangeType) => {
+  const getChangeTypeIcon = (changeType: string) => {
     switch (changeType) {
       case 'INSERT':
         return <Plus size={16} className="text-green-500" />
@@ -65,7 +65,7 @@ export default function HistoryTab() {
     }
   }
 
-  const getChangeTypeLabel = (changeType: ChangeType): string => {
+  const getChangeTypeLabel = (changeType: string): string => {
     switch (changeType) {
       case 'INSERT':
         return 'Création'

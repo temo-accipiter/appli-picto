@@ -15,7 +15,7 @@ const equalsRule =
     String(val).trim() === expected ? '' : msg
 
 interface DeleteAccountGuardProps {
-  onConfirm: (params: { turnstileToken: string | null }) => Promise<void>
+  onConfirm: (params: { turnstileToken?: string }) => Promise<void>
   dangerWord?: string
   turnstileSiteKey?: string
   countdownSec?: number
@@ -81,7 +81,7 @@ export default function DeleteAccountGuard({
     const { data, error } = await supabase.auth.signInWithPassword({
       email: user?.email || '',
       password,
-      options: { captchaToken: captchaToken || undefined },
+      options: captchaToken ? { captchaToken } : undefined,
     })
     if (!error && !data?.user?.factors) return
     if (needsTotp) {
@@ -115,7 +115,9 @@ export default function DeleteAccountGuard({
     try {
       setLoading(true)
       await reauthenticate()
-      await onConfirm({ turnstileToken: captchaToken })
+      if (captchaToken) {
+        await onConfirm({ turnstileToken: captchaToken })
+      }
       show('Compte supprimé', 'success')
     } catch (err) {
       const msg = (err as Error)?.message || 'Erreur lors de la vérification.'

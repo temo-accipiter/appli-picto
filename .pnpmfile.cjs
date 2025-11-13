@@ -24,7 +24,10 @@ function readPackage(pkg, context) {
   if (pkg.peerDependencies?.['react-dom']) {
     const reactDomVersion = pkg.peerDependencies['react-dom']
 
-    if (reactDomVersion.startsWith('^18') || reactDomVersion.startsWith('18.')) {
+    if (
+      reactDomVersion.startsWith('^18') ||
+      reactDomVersion.startsWith('18.')
+    ) {
       context.log(`📦 Adapting ${pkg.name}: React DOM ^18 → ^18 || ^19`)
       pkg.peerDependencies['react-dom'] = '^18.0.0 || ^19.0.0'
     }
@@ -35,6 +38,6 @@ function readPackage(pkg, context) {
 
 module.exports = {
   hooks: {
-    readPackage
-  }
+    readPackage,
+  },
 }

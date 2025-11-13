@@ -101,7 +101,7 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
           audioCtxRef.current = new AudioContextConstructor()
         }
         // Si le contexte est suspendu, on le reprend
-        if (audioCtxRef.current.state === 'suspended') {
+        if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume()
         }
       } catch (error) {
@@ -160,7 +160,7 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
             filePath={tache.imagepath}
             bucket="images"
             alt={tache.label}
-            className="tableau-card__image img-size-lg"
+            size={100}
           />
         ))}
 

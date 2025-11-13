@@ -6,7 +6,7 @@ interface ModalAjoutProps {
   onClose: () => void
   includeCategory?: boolean
   categories?: Categorie[]
-  onSubmit: () => void
+  onSubmit: (data: any) => void
 }
 
 export default function ModalAjout({

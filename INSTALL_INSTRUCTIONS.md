@@ -188,6 +188,7 @@ git push origin claude/prepare-yarn-pnpm-migration-011CV5yWmukVnBfKXMECFpo3
 ### Structure node_modules
 
 **Avant (Yarn PnP)** :
+
 ```
 .yarn/
 ├── releases/
@@ -198,6 +199,7 @@ yarn.lock
 ```
 
 **Après (pnpm)** :
+
 ```
 node_modules/
 ├── .pnpm/           # Packages réels (hard links)
@@ -209,11 +211,11 @@ pnpm-lock.yaml
 
 ### Performances
 
-| Opération | Yarn PnP | pnpm |
-|-----------|----------|------|
-| Installation initiale | ~2 min | ~2-3 min |
-| Réinstallation (cache) | ~30s | ~20s |
-| Espace disque | ~500 MB | ~300 MB (store partagé) |
+| Opération              | Yarn PnP | pnpm                    |
+| ---------------------- | -------- | ----------------------- |
+| Installation initiale  | ~2 min   | ~2-3 min                |
+| Réinstallation (cache) | ~30s     | ~20s                    |
+| Espace disque          | ~500 MB  | ~300 MB (store partagé) |
 
 ---
 
@@ -243,18 +245,18 @@ head -20 pnpm-lock.yaml
 
 ## 📚 Commandes pnpm équivalentes
 
-| Yarn | pnpm | Description |
-|------|------|-------------|
-| `yarn` | `pnpm install` | Installer les dépendances |
-| `yarn add [pkg]` | `pnpm add [pkg]` | Ajouter une dépendance |
-| `yarn add -D [pkg]` | `pnpm add -D [pkg]` | Ajouter une dev dependency |
-| `yarn remove [pkg]` | `pnpm remove [pkg]` | Supprimer une dépendance |
-| `yarn upgrade [pkg]` | `pnpm update [pkg]` | Mettre à jour une dépendance |
-| `yarn dev` | `pnpm dev` | Lancer le script `dev` |
-| `yarn build` | `pnpm build` | Lancer le script `build` |
-| `yarn [script]` | `pnpm [script]` | Lancer n'importe quel script |
-| `yarn dlx [cmd]` | `pnpm dlx [cmd]` | Exécuter un package sans installer |
-| `yarn why [pkg]` | `pnpm why [pkg]` | Pourquoi un package est installé |
+| Yarn                 | pnpm                | Description                        |
+| -------------------- | ------------------- | ---------------------------------- |
+| `yarn`               | `pnpm install`      | Installer les dépendances          |
+| `yarn add [pkg]`     | `pnpm add [pkg]`    | Ajouter une dépendance             |
+| `yarn add -D [pkg]`  | `pnpm add -D [pkg]` | Ajouter une dev dependency         |
+| `yarn remove [pkg]`  | `pnpm remove [pkg]` | Supprimer une dépendance           |
+| `yarn upgrade [pkg]` | `pnpm update [pkg]` | Mettre à jour une dépendance       |
+| `yarn dev`           | `pnpm dev`          | Lancer le script `dev`             |
+| `yarn build`         | `pnpm build`        | Lancer le script `build`           |
+| `yarn [script]`      | `pnpm [script]`     | Lancer n'importe quel script       |
+| `yarn dlx [cmd]`     | `pnpm dlx [cmd]`    | Exécuter un package sans installer |
+| `yarn why [pkg]`     | `pnpm why [pkg]`    | Pourquoi un package est installé   |
 
 ---
 
@@ -263,6 +265,7 @@ head -20 pnpm-lock.yaml
 ### Problème : `pnpm: command not found`
 
 **Solution** :
+
 ```bash
 # Réinstaller pnpm
 npm install -g pnpm@9.15.0
@@ -274,6 +277,7 @@ npx pnpm@9.15.0 install
 ### Problème : Erreurs de peer dependencies
 
 **Solution** :
+
 ```bash
 # Forcer l'installation
 pnpm install --force
@@ -287,6 +291,7 @@ pnpm install --no-strict-peer-dependencies
 **Cause** : pnpm est plus strict que Yarn sur les dépendances fantômes.
 
 **Solution** :
+
 ```bash
 # Ajouter explicitement la dépendance manquante
 pnpm add [package-manquant]
@@ -297,6 +302,7 @@ pnpm add [package-manquant]
 ### Problème : Import fails pour @supabase/supabase-js
 
 **Solution** :
+
 ```bash
 # Vérifier que le package est bien installé
 pnpm list @supabase/supabase-js
@@ -308,6 +314,7 @@ pnpm install --force
 ### Problème : Build échoue avec "Cannot find module"
 
 **Solution** :
+
 ```bash
 # Nettoyer et réinstaller
 rm -rf node_modules .pnpm-store
@@ -324,6 +331,7 @@ pnpm build
 Si la migration pnpm ne fonctionne pas, consulter `ROLLBACK.md` pour revenir à Yarn.
 
 **Rollback rapide** :
+
 ```bash
 git checkout v0.0.0-pre-pnpm-migration
 yarn install

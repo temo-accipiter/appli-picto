@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import { ReactNode } from 'react'
 import { useI18n } from '@/hooks'
 import './EditionList.scss'
 

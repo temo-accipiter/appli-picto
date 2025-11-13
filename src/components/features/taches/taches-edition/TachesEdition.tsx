@@ -160,7 +160,7 @@ export default function ChecklistTachesEdition({
             key={t.id}
             imageComponent={
               <SignedImage
-                filePath={t.imagepath}
+                filePath={t.imagepath || ''}
                 bucket="images"
                 alt={t.label}
                 className="img-size-sm"
@@ -173,7 +173,7 @@ export default function ChecklistTachesEdition({
             onDelete={() => onDelete(t)}
             checked={!!t.aujourdhui}
             onToggleCheck={() => onToggleAujourdhui(t.id, t.aujourdhui)}
-            categorie={t.categorie}
+            categorie={t.categorie || ''}
             onCategorieChange={val => onUpdateCategorie(t.id, val)}
             categorieOptions={categories}
             className={[
@@ -228,8 +228,8 @@ export default function ChecklistTachesEdition({
         isOpen={modalTacheOpen}
         onClose={() => setModalTacheOpen(false)}
         includeCategory
-        categories={categories}
-        onSubmit={values => {
+        categories={categories as any}
+        onSubmit={(values: TaskFormData) => {
           onSubmitTask(values)
           setModalTacheOpen(false)
         }}
@@ -249,7 +249,7 @@ export default function ChecklistTachesEdition({
       <ModalCategory
         isOpen={manageCatOpen}
         onClose={() => setManageCatOpen(false)}
-        categories={categories}
+        categories={categories as any}
         onDeleteCategory={value => setCatASupprimer(value)}
         onAddCategory={handleAddCategory}
         newCategory={newCatLabel}
