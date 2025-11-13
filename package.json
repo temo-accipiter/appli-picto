@@ -5,14 +5,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "pnpm@9.15.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "build:analyze": "vite build --mode production && open dist/stats.html",
     "preview": "vite preview",
-    "check": "yarn lint:fix && yarn format",
+    "check": "pnpm lint:fix && pnpm format",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write .",
@@ -28,15 +28,15 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "audit": "yarn audit",
-    "audit:fix": "yarn audit fix",
-    "verify": "yarn type-check && yarn lint && yarn format:check && yarn test && yarn build:prod",
-    "verify:quick": "yarn type-check && yarn lint && yarn build",
-    "verify:ci": "yarn type-check && yarn lint && yarn format:check && yarn test:coverage && yarn build:prod",
+    "audit": "pnpm audit",
+    "audit:fix": "pnpm audit --fix",
+    "verify": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test && pnpm build:prod",
+    "verify:quick": "pnpm type-check && pnpm lint && pnpm build",
+    "verify:ci": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test:coverage && pnpm build:prod",
     "db:link": "dotenv -e .env -- sh -lc 'supabase link --project-ref \"$SUPABASE_PROJECT_REF\"'",
     "db:dump": "dotenv -e supabase/.env -- sh -lc 'PGPASSWORD=\"$SUPABASE_DB_PASSWORD\" PGSSLMODE=require pg_dump -h \"$SUPABASE_DB_HOST\" -p \"$SUPABASE_DB_PORT\" -U \"$SUPABASE_DB_USER\" -d \"$SUPABASE_DB_NAME\" --schema-only --schema=public --schema=storage -f supabase/schema.sql'",
     "db:types": "dotenv -e supabase/.env -- sh -lc 'mkdir -p src/types && supabase gen types typescript --project-id \"$SUPABASE_PROJECT_REF\" > src/types/supabase.ts'",
-    "context:update": "yarn db:dump && yarn db:types",
+    "context:update": "pnpm db:dump && pnpm db:types",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
     "supabase:status": "supabase status",
@@ -52,8 +52,8 @@
     "stats": "cloc src/ --exclude-dir=test,tests --by-file-by-lang",
     "stats:summary": "cloc src/ --exclude-dir=test,tests",
     "clean": "rm -rf node_modules dist coverage .vite",
-    "clean:all": "yarn clean && rm -rf yarn.lock",
-    "postinstall": "yarn db:types || true"
+    "clean:all": "pnpm clean && rm -rf pnpm-lock.yaml",
+    "postinstall": "pnpm db:types || true"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -120,6 +120,11 @@
   },
   "volta": {
     "node": "20.19.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@modelcontextprotocol/sdk": "1.18.1"
+    }
   },
   "resolutions": {
     "@modelcontextprotocol/sdk": "1.18.1"

@@ -1,4 +1,4 @@
-# ✅ Node / Yarn PnP
+# ✅ Node / Yarn PnP / pnpm
 .yarn/*
 !.yarn/plugins
 !.yarn/releases
@@ -7,6 +7,10 @@
 .pnp.*
 .yarnrc.yml
 .install-state.gz
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log
 
 # ✅ Logs
 *.log

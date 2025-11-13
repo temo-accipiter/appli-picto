@@ -267,13 +267,68 @@ Par :
 
 ---
 
-## 🎯 État actuel : Phase 0.1 TERMINÉE ✅
+## ✅ Phase 0.1 TERMINÉE (2025-11-13)
 
-- ✅ Tag de sauvegarde créé et pushé
-- ✅ Configuration Yarn analysée
-- ✅ Scripts identifiés
-- ✅ Dépendances problématiques listées
+- ✅ Tag de sauvegarde créé (`v0.0.0-pre-pnpm-migration`)
+- ✅ Configuration Yarn analysée (PnP, 9 scripts identifiés)
+- ✅ Dépendances problématiques listées (React 19, Supabase, etc.)
 - ✅ Configuration pnpm préparée
 - ✅ Documentation complète créée
 
-**Prochaine étape** : Phase 0.2 - Configuration (modification de package.json et création de .npmrc)
+**Commit** : `2be4898` - "docs: Phase 0.1 - Analyse et préparation migration pnpm"
+
+---
+
+## ✅ Phase 0.2 TERMINÉE (2025-11-13)
+
+### Fichiers créés
+
+1. **`.npmrc`** - Configuration pnpm
+   ```ini
+   shamefully-hoist=true
+   auto-install-peers=true
+   strict-peer-dependencies=false
+   public-hoist-pattern[]=*@supabase/*
+   public-hoist-pattern[]=*react*
+   public-hoist-pattern[]=*@stripe/*
+   public-hoist-pattern[]=*@dnd-kit/*
+   resolution-mode=highest
+   ```
+
+2. **`.pnpmfile.cjs`** - Hook pour adapter les peer dependencies React 18 → 19
+   - Adapte automatiquement les packages qui attendent React 18
+   - Permet la compatibilité avec React 19
+
+### Fichiers modifiés
+
+1. **`package.json`**
+   - ✅ `packageManager`: `yarn@4.10.3` → `pnpm@9.15.0`
+   - ✅ Section `pnpm.overrides` ajoutée (+ `resolutions` gardée pour compatibilité)
+   - ✅ 9 scripts adaptés (yarn → pnpm) :
+     - `check`, `audit`, `audit:fix`
+     - `verify`, `verify:quick`, `verify:ci`
+     - `context:update`, `clean:all`, `postinstall`
+
+2. **`.gitignore`**
+   - ✅ Ajout de `.pnpm-store/`
+   - ✅ Ajout de `.pnpm-debug.log`
+
+### État du projet
+
+- ⚠️ **Yarn toujours présent** : `yarn.lock` et `.yarn/` non supprimés
+- ⚠️ **pnpm non installé** : `pnpm install` pas encore exécuté
+- ✅ **Application fonctionnelle** : Toujours utilisable avec Yarn
+- ✅ **Configuration prête** : Tous les fichiers pnpm en place
+
+### Rollback Phase 0.2
+
+```bash
+git checkout v0.0.0-pre-pnpm-migration
+yarn install
+```
+
+---
+
+## 🎯 État actuel : Phase 0.2 TERMINÉE ✅
+
+**Prochaine étape** : Phase 0.3 - Installation pnpm (suppression Yarn + `pnpm install`)
