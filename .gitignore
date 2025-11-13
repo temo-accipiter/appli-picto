@@ -1,4 +1,9 @@
-# ✅ Node / Yarn PnP / pnpm
+# ✅ Node / pnpm (migration depuis Yarn PnP)
+# pnpm
+.pnpm-store/
+.pnpm-debug.log
+
+# Yarn (gardé pour rollback potentiel)
 .yarn/*
 !.yarn/plugins
 !.yarn/releases
@@ -7,10 +12,6 @@
 .pnp.*
 .yarnrc.yml
 .install-state.gz
-
-# pnpm
-.pnpm-store/
-.pnpm-debug.log
 
 # ✅ Logs
 *.log

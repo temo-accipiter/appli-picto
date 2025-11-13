@@ -329,6 +329,119 @@ yarn install
 
 ---
 
-## 🎯 État actuel : Phase 0.2 TERMINÉE ✅
+## ✅ Phase 0.3 EN COURS (2025-11-13)
 
-**Prochaine étape** : Phase 0.3 - Installation pnpm (suppression Yarn + `pnpm install`)
+### ⚠️ Point de non-retour : Fichiers Yarn supprimés
+
+Les fichiers suivants ont été **SUPPRIMÉS** :
+- ❌ `yarn.lock` (280 KB)
+- ❌ `.yarn/` (dossier complet : releases + sdks)
+- ❌ `.yarnrc.yml` (n'existait pas)
+- ❌ `.pnp.cjs` (n'existait pas)
+- ❌ `.pnp.loader.mjs` (n'existait pas)
+
+### Fichiers créés pour guidance
+
+1. **`INSTALL_INSTRUCTIONS.md`** (10.5 KB)
+   - Guide complet d'installation pnpm 9.15.0
+   - Instructions pas-à-pas avec validations
+   - Commandes de test et vérification
+   - Checklist complète de validation
+   - Dépannage et troubleshooting
+   - **→ SUIVRE CE GUIDE EN LOCAL**
+
+2. **`ROLLBACK.md`** (8.2 KB)
+   - 4 options de rollback vers Yarn
+   - Guide de dépannage détaillé
+   - Checklist post-rollback
+   - Documentation des problèmes
+   - **→ À UTILISER SI PROBLÈME**
+
+### État du projet
+
+- ⚠️ **Yarn supprimé** : Plus de yarn.lock ni .yarn/
+- ⚠️ **pnpm non installé** : `pnpm install` pas encore exécuté
+- ⚠️ **node_modules/ présent** : Installé avec Yarn (sera remplacé)
+- ✅ **Configuration pnpm prête** : .npmrc + .pnpmfile.cjs + package.json
+- ✅ **Tag de sauvegarde** : `v0.0.0-pre-pnpm-migration` disponible
+
+### ⚠️ IMPORTANT : Installation à faire EN LOCAL
+
+**Je ne peux PAS exécuter `pnpm install` depuis GitHub.**
+
+**Actions requises de votre part** :
+
+1. **Récupérer la branche** :
+   ```bash
+   git fetch origin
+   git checkout claude/prepare-yarn-pnpm-migration-011CV5yWmukVnBfKXMECFpo3
+   ```
+
+2. **Suivre INSTALL_INSTRUCTIONS.md** :
+   - Installer pnpm 9.15.0
+   - Exécuter `pnpm install`
+   - Tester l'application complètement
+   - Valider toutes les fonctionnalités
+
+3. **Si OK** :
+   ```bash
+   git add pnpm-lock.yaml
+   git commit -m "chore(pnpm): add pnpm-lock.yaml after successful migration"
+   git push
+   ```
+
+4. **Si problème** :
+   - Consulter ROLLBACK.md
+   - Revenir à `v0.0.0-pre-pnpm-migration`
+
+### Checklist de validation (à faire en local)
+
+- [ ] pnpm 9.15.0 installé : `pnpm --version`
+- [ ] `pnpm install` exécuté avec succès
+- [ ] `pnpm-lock.yaml` généré
+- [ ] `node_modules/` contient `.pnpm/` (structure pnpm)
+- [ ] **Tests de base** :
+  - [ ] `pnpm dev` démarre Vite
+  - [ ] `pnpm build` compile sans erreur
+  - [ ] `pnpm lint` passe
+  - [ ] `pnpm format` fonctionne
+  - [ ] `pnpm test` passe tous les tests
+- [ ] **Tests fonctionnels** :
+  - [ ] Navigation dans l'app
+  - [ ] Authentification Supabase
+  - [ ] CRUD tâches (create, read, update, delete)
+  - [ ] Upload d'images
+  - [ ] Drag & drop (@dnd-kit)
+  - [ ] Animations et confettis
+  - [ ] Paiements Stripe (si applicable)
+- [ ] **Aucune régression détectée**
+
+### Rollback en cas de problème
+
+**Commande rapide** :
+```bash
+git checkout v0.0.0-pre-pnpm-migration
+yarn install
+```
+
+**Guide complet** : Voir `ROLLBACK.md`
+
+### Fichiers de documentation
+
+| Fichier | Taille | Description |
+|---------|--------|-------------|
+| `INSTALL_INSTRUCTIONS.md` | 10.5 KB | Guide d'installation pnpm |
+| `ROLLBACK.md` | 8.2 KB | Guide de rollback vers Yarn |
+| `MIGRATION_PNPM.md` | [ce fichier] | Documentation complète |
+
+---
+
+## 🎯 État actuel : Phase 0.3 PRÉPARÉE ⚠️
+
+**Statut** : Configuration prête, **INSTALLATION À TESTER EN LOCAL**
+
+**Prochaine étape** :
+1. **Vous** : Tester l'installation pnpm en local (suivre INSTALL_INSTRUCTIONS.md)
+2. **Si OK** : Commiter pnpm-lock.yaml et merger
+3. **Si problème** : Rollback (suivre ROLLBACK.md)
+4. **Après validation** : Migration Next.js (Phase suivante)
