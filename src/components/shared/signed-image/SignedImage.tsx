@@ -15,6 +15,7 @@ interface SignedImageProps {
   alt: string // WCAG 1.1.1 - alt obligatoire pour accessibilité
   size?: number
   bucket?: string
+  className?: string
 }
 
 export default function SignedImage({
@@ -22,6 +23,7 @@ export default function SignedImage({
   alt,
   size = 60,
   bucket = 'images',
+  className,
 }: SignedImageProps) {
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
@@ -99,7 +101,7 @@ export default function SignedImage({
 
   return (
     <div
-      className="signed-image"
+      className={`signed-image ${className || ''}`}
       style={{ width: `${size}px`, height: `${size}px` }}
     >
       {url ? (

@@ -16,17 +16,17 @@ interface UserRole {
   roles: {
     name: string
     display_name: string
-    priority: number
+    priority: number | null
   }
 }
 
 interface User {
   id: string
-  pseudo?: string
+  pseudo?: string | null
   email: string
   created_at: string
   account_status: AccountStatus
-  avatar_url?: string
+  avatar_url?: string | null
   user_roles: UserRole[]
   role: string
   roleDisplay: string
@@ -81,12 +81,18 @@ export default function AccountManagement({
         if (error) throw error
 
         // Traiter les données pour avoir un format plus simple
-        const processedUsers: User[] = (data || []).map(user => {
+        const processedUsers: User[] = (data || []).map((user: any) => {
           const activeRole = user.user_roles.find(
             (ur: UserRole) => ur.is_active
           )
           return {
-            ...user,
+            id: user.id,
+            pseudo: user.pseudo,
+            email: '', // profiles n'a pas de champ email
+            created_at: user.created_at,
+            account_status: user.account_status as AccountStatus,
+            avatar_url: user.avatar_url,
+            user_roles: user.user_roles,
             role: activeRole?.roles?.name || 'visitor',
             roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
           }
@@ -155,10 +161,16 @@ export default function AccountManagement({
 
       if (refreshError) throw refreshError
 
-      const processedUsers: User[] = (data || []).map(user => {
+      const processedUsers: User[] = (data || []).map((user: any) => {
         const activeRole = user.user_roles.find((ur: UserRole) => ur.is_active)
         return {
-          ...user,
+          id: user.id,
+          pseudo: user.pseudo,
+          email: '',
+          created_at: user.created_at,
+          account_status: user.account_status as AccountStatus,
+          avatar_url: user.avatar_url,
+          user_roles: user.user_roles,
           role: activeRole?.roles?.name || 'visitor',
           roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
         }
@@ -248,7 +260,7 @@ export default function AccountManagement({
                   {user.avatar_url ? (
                     <img
                       src={user.avatar_url}
-                      alt={user.pseudo}
+                      alt={user.pseudo || 'Avatar'}
                       loading="lazy"
                     />
                   ) : (

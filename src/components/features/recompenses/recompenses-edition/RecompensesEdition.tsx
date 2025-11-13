@@ -110,7 +110,7 @@ export default function RecompensesEdition({
             key={r.id}
             imageComponent={
               <SignedImage
-                filePath={r.imagepath}
+                filePath={r.imagepath || ''}
                 bucket="images"
                 alt={r.label}
                 className="img-size-sm"
@@ -156,7 +156,7 @@ export default function RecompensesEdition({
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         includeCategory={false}
-        onSubmit={values => {
+        onSubmit={(values: RewardFormData) => {
           onSubmitReward(values)
           setModalOpen(false)
         }}

@@ -4,12 +4,14 @@ import type { ReactNode } from 'react'
 import { Button, ButtonClose } from '@/components'
 import './Modal.scss'
 
-type ButtonVariant = 'primary' | 'secondary' | 'default' | 'reset'
+type ButtonVariant = 'primary' | 'secondary' | 'default' | 'danger'
 
 interface ModalAction {
   label: string
   onClick: () => void
   variant?: ButtonVariant
+  disabled?: boolean
+  autoFocus?: boolean
 }
 
 interface ModalProps {
@@ -123,6 +125,7 @@ export default function Modal({
                 label={act.label}
                 onClick={act.onClick}
                 variant={act.variant}
+                disabled={act.disabled}
               />
             ))}
           </footer>

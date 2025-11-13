@@ -222,7 +222,7 @@ export const compressImageIfNeeded = async (
     String(file.type).toLowerCase() === 'image/svg+xml' ||
     file.size <= maxSizeKo * 1024
   ) {
-    return file
+    return file ?? null
   }
 
   return new Promise(resolve => {
@@ -260,6 +260,11 @@ export const compressImageIfNeeded = async (
         }
 
         const strategy = compressionStrategies[strategyIndex]
+        if (!strategy) {
+          resolve(null)
+          return
+        }
+
         const canvas = document.createElement('canvas')
 
         // Calcul dimensions
@@ -292,8 +297,8 @@ export const compressImageIfNeeded = async (
               tryCompression(strategyIndex + 1)
               return
             }
-            const extension = strategy.useJPEG ? 'jpg' : 'png'
-            const fileName = String(file.name || 'image').replace(
+            const extension = strategy?.useJPEG ? 'jpg' : 'png'
+            const fileName = String(file?.name || 'image').replace(
               /\.\w+$/,
               `.${extension}`
             )

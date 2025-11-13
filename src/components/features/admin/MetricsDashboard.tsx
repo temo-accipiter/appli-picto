@@ -68,11 +68,11 @@ export default function MetricsDashboard() {
         imageErrors,
       ] = await Promise.all([
         // Total utilisateurs
-        supabase.from('users').select('*', { count: 'exact', head: true }),
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
 
         // Nouveaux utilisateurs (7j)
         supabase
-          .from('users')
+          .from('profiles')
           .select('*', { count: 'exact', head: true })
           .gte('created_at', weekAgo),
 
@@ -122,8 +122,9 @@ export default function MetricsDashboard() {
         .size
 
       // Calculer taux de succès images
-      const totalImages = imageStats.data?.total_uploads || 0
-      const successImages = imageStats.data?.success_count || 0
+      const imageData = imageStats.data as Record<string, unknown> | null
+      const totalImages = (imageData?.total_uploads as number) || 0
+      const successImages = (imageData?.success_count as number) || 0
       const successRate =
         totalImages > 0 ? (successImages / totalImages) * 100 : 100
 
@@ -149,7 +150,7 @@ export default function MetricsDashboard() {
         images: {
           uploads_7d: totalImages,
           success_rate: Math.round(successRate * 10) / 10,
-          storage_saved_mb: imageStats.data?.total_storage_saved_mb || 0,
+          storage_saved_mb: (imageData?.total_storage_saved_mb as number) || 0,
         },
         errors: {
           webhooks_7d: webhookErrors.count || 0,
@@ -157,7 +158,7 @@ export default function MetricsDashboard() {
         },
         system: {
           health_score: Math.round(healthScore * 10) / 10,
-          avg_response_time: imageStats.data?.avg_upload_ms || 0,
+          avg_response_time: (imageData?.avg_upload_ms as number) || 0,
         },
       })
 

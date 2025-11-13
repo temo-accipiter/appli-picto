@@ -433,7 +433,7 @@ export default function UsersTab() {
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => {
-                        setSelectedUser({ id: user.id, userName: user.pseudo })
+                        setSelectedUser({ id: user.id, userName: user.pseudo || 'Sans pseudo' })
                         setShowAssignModal(true)
                       }}
                       disabled={user.is_admin}
@@ -453,12 +453,14 @@ export default function UsersTab() {
                         onClick={() => {
                           // Pour l'instant, on retire le premier rôle trouvé
                           const firstRole = user.user_roles[0]
-                          setSelectedUser({
-                            id: user.id,
-                            roleId: firstRole.roles.id,
-                            userName: user.pseudo,
-                          })
-                          setShowRemoveModal(true)
+                          if (firstRole) {
+                            setSelectedUser({
+                              id: user.id,
+                              roleId: firstRole.roles.id,
+                              userName: user.pseudo || 'Sans pseudo',
+                            })
+                            setShowRemoveModal(true)
+                          }
                         }}
                         disabled={user.is_admin}
                         title={

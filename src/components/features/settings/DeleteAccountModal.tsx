@@ -12,7 +12,7 @@ type Phase = 'login' | 'delete'
 interface DeleteAccountModalProps {
   isOpen: boolean
   onClose: () => void
-  onConfirm: (turnstileToken: string | null) => void | Promise<void>
+  onConfirm: (turnstileToken: string) => void | Promise<void>
 }
 
 export default function DeleteAccountModal({
@@ -26,7 +26,7 @@ export default function DeleteAccountModal({
 
   // Créer la fonction de validation i18n avec useMemo
   const validatePasswordNotEmpty = useMemo(
-    () => makeValidatePasswordNotEmpty(t),
+    () => makeValidatePasswordNotEmpty(t as any),
     [t]
   )
 
@@ -115,7 +115,7 @@ export default function DeleteAccountModal({
       }
 
       // Étape B — suppression (token distinct, même widget rechargé)
-      await onConfirm(tokenDelete)
+      await onConfirm(tokenDelete || '')
     } finally {
       setBusy(false)
     }

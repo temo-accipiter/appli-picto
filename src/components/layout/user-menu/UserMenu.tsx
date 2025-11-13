@@ -108,7 +108,9 @@ export default function UserMenu() {
       if (!user?.id) return
       const { data, error, aborted } = await withAbortSafe<{
         pseudo: string | null
-      }>(supabase.from('profiles').select('pseudo').eq('id', user.id).single())
+      }>(
+        supabase.from('profiles').select('pseudo').eq('id', user.id).single()
+      )
       if (cancelled) return
       if (aborted || (error && isAbortLike(error))) return
       if (error) {
@@ -278,7 +280,9 @@ export default function UserMenu() {
 
             <nav className="user-menu-list" aria-label={t('nav.profil')}>
               <button
-                ref={el => el && (menuItemsRef.current[0] = el)}
+                ref={el => {
+                  if (el) menuItemsRef.current[0] = el
+                }}
                 className="user-menu-item"
                 onClick={() => navigate('/profil')}
               >
@@ -289,7 +293,9 @@ export default function UserMenu() {
               {/* Masquer le bouton d'abonnement pour les admins */}
               {!isAdmin && (
                 <button
-                  ref={el => el && (menuItemsRef.current[1] = el)}
+                  ref={el => {
+                    if (el) menuItemsRef.current[1] = el
+                  }}
                   className="user-menu-item"
                   onClick={
                     (loading || !authReady) && !forceUnblock
@@ -313,7 +319,9 @@ export default function UserMenu() {
 
               {isAdmin && (
                 <button
-                  ref={el => el && (menuItemsRef.current[1] = el)}
+                  ref={el => {
+                    if (el) menuItemsRef.current[1] = el
+                  }}
                   className="user-menu-item admin"
                   onClick={() => navigate('/admin/permissions')}
                 >
@@ -323,11 +331,12 @@ export default function UserMenu() {
               )}
 
               <button
-                ref={el => el && (menuItemsRef.current[2] = el)}
+                ref={el => {
+                  if (el) menuItemsRef.current[2] = el
+                }}
                 className="user-menu-item danger"
-                onClick={async () => {
-                  await signOut()
-                  navigate('/login')
+                onClick={() => {
+                  signOut().then(() => navigate('/login'))
                 }}
               >
                 <LogOut className="icon" aria-hidden />

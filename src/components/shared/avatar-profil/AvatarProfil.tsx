@@ -122,16 +122,16 @@ export default function AvatarProfil({
         </div>
       )}
 
-      <Button
-        onClick={() => inputRef.current?.click()}
-        label="+"
-        variant="default"
-        className="avatar-upload-btn"
-        aria-label="Changer l'avatar"
-        title="Changer l'avatar"
-      />
+      <div style={{ position: 'absolute', bottom: '8px', right: '8px' }}>
+        <Button
+          onClick={() => inputRef.current?.click()}
+          label="+"
+          variant="default"
+          aria-label="Changer l'avatar"
+        />
+      </div>
 
-      {avatarPath && (
+      {avatarPath && onDelete && (
         <ButtonDelete onClick={onDelete} title="Supprimer l'avatar" />
       )}
 

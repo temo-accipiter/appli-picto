@@ -42,6 +42,7 @@ export const normalizeRoleName = (name: unknown): Role | string => {
 }
 
 interface RoleObject {
+  id?: string
   name: string
   is_active?: boolean
   display_name?: string

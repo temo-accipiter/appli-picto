@@ -1,4 +1,4 @@
-import React, { memo, useMemo, ReactNode } from 'react'
+import { memo, useMemo, ReactNode } from 'react'
 import {
   InputWithValidation,
   Select,
@@ -15,16 +15,16 @@ import {
 import './BaseCard.scss'
 
 interface CategoryOption {
-  value: string
+  value: string | number
   label: string
 }
 
 interface BaseCardProps {
-  image: string
+  image?: string
   label: string
   editable?: boolean
   onLabelChange?: (newLabel: string) => void
-  onBlur?: () => void
+  onBlur?: (val: string) => void
   labelId: string | number
   categorie?: string
   onCategorieChange?: (newCategorie: string) => void
@@ -89,7 +89,7 @@ const BaseCard = memo(function BaseCard({
             onValid={val => onLabelChange?.(val)}
             rules={validationRules}
             ariaLabel={t('card.name')}
-            onBlur={onBlur}
+            onBlur={val => onBlur?.(val)}
           />
         ) : (
           <span className="base-card__label">{label}</span>

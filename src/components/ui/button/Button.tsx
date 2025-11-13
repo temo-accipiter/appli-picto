@@ -1,12 +1,12 @@
-import React from 'react'
+import { ReactNode } from 'react'
 import './Button.scss'
 
-type ButtonVariant = 'primary' | 'secondary' | 'default'
+type ButtonVariant = 'primary' | 'secondary' | 'default' | 'danger'
 type ButtonType = 'button' | 'submit' | 'reset'
 
 interface ButtonProps {
-  onClick: () => void
-  label: string | React.ReactNode
+  onClick?: () => void
+  label: string | ReactNode
   variant?: ButtonVariant
   disabled?: boolean
   type?: ButtonType

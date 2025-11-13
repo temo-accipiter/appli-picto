@@ -22,26 +22,23 @@ interface Permission {
   can_access: boolean
 }
 
-interface TempPermissions {
-  [key: string]: boolean
-}
-
 interface PermissionsTabProps {
   features: Feature[]
   manageableRoles: Role[]
   permissions: Permission[]
-  tempPermissions: TempPermissions
-  editingPermissions: boolean
-  setEditingPermissions: (value: boolean) => void
+  tempPermissions: Permission[]
+  editingPermissions: string | null
+  setEditingPermissions: (roleId: string | null) => void
   handlePermissionChange: (
     roleId: string,
     featureId: string,
+    field: string,
     value: boolean
   ) => void
-  handleSavePermissions: () => void | Promise<void>
-  handleDeleteFeature: (featureId: string) => void | Promise<void>
+  handleSavePermissions: (roleId: string) => void | Promise<void>
+  handleDeleteFeature: (feature: Feature) => void | Promise<void>
   handleEditFeature: (feature: Feature) => void
-  initializeTempPermissions: () => void
+  initializeTempPermissions: (roleId: string) => void
 }
 
 export default function PermissionsTab({
