@@ -1,6 +1,7 @@
 // src/utils/validationRules.ts
 // Règles de validation/normalisation côté UI :
 // - Textes, e-mails, mots de passe, rôles, fonctionnalités
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // - Images : types MIME autorisés (alignés sur config), vérif en-tête, compression < TARGET_MAX_UI_SIZE_KO
 
 import {

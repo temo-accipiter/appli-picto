@@ -176,13 +176,13 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     // 6. Vérifier la redirection (ou tentative de redirection vers Stripe)
     // Avec notre mock, la page devrait tenter de naviguer vers mockStripeUrl
     // On va intercepter la navigation
-    let redirected = false
+    let _redirected = false
     page.on('response', async response => {
       const url = response.url()
       if (url.includes('create-checkout-session')) {
         const body = await response.json().catch(() => null)
         if (body?.url) {
-          redirected = true
+          _redirected = true
           expect(body.url).toContain('checkout.stripe.com')
         }
       }
@@ -388,7 +388,7 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
     const client = getTestClient()
 
     // 2. Vérifier les quotas initiaux (free = 5 tâches max selon helpers)
-    const { data: initialTasks, count: initialCount } = await client
+    const { count: initialCount } = await client
       .from('taches')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
@@ -454,7 +454,7 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
       // Extraire les chiffres
       const match = quotaText.match(/(\d+)\s*\/\s*(\d+)/)
       if (match) {
-        const [, current, limit] = match
+        const [, _current, limit] = match
         const limitNum = parseInt(limit, 10)
         // Les quotas premium devraient être beaucoup plus élevés (40+ selon docs)
         expect(limitNum).toBeGreaterThanOrEqual(40)
@@ -540,13 +540,13 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
 
       // Le bouton devrait rediriger vers le portail Stripe
       // On vérifie que la redirection a été tentée
-      let portalRedirected = false
+      let _portalRedirected = false
       page.on('response', async response => {
         const url = response.url()
         if (url.includes('create-checkout-session')) {
           const body = await response.json().catch(() => null)
           if (body?.portal && body?.url) {
-            portalRedirected = true
+            _portalRedirected = true
             expect(body.url).toContain('billing.stripe.com')
           }
         }

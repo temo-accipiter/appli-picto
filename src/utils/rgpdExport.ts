@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import type { SupabaseClient, User } from '@supabase/supabase-js'

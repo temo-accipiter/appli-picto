@@ -3,6 +3,7 @@
 **Date :** 2025-11-09
 **Projet :** Appli-Picto
 **Références :**
+
 - Phase 1 - Audit des Tests Existants
 - Phase 2 - Cartographie des Parcours Utilisateurs
 
@@ -16,25 +17,25 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 
 ### Gaps Critiques Identifiés
 
-| Catégorie | Parcours Critiques | Couverture Actuelle | Gap | Priorité |
-|-----------|-------------------|---------------------|-----|----------|
-| **Paiements Stripe** | 5/5 | 0% | 🚨 **AUCUN TEST** | P0 |
-| **Authentification** | 6/6 | 17% (E2E manquants) | 🔴 **CRITIQUE** | P0 |
-| **Suppression Compte** | 1/1 | 0% | 🚨 **RGPD** | P0 |
-| **Admin** | 3/3 | 17% | 🔴 **CRITIQUE** | P0 |
-| **Quotas & RBAC** | 4/4 | 50% (E2E manquants) | 🟠 **IMPORTANT** | P1 |
-| **Drag-and-Drop** | 1/1 | 0% (E2E) | 🟠 **IMPORTANT** | P1 |
-| **Accessibilité** | Tous | Non testé | 🟠 **WCAG 2.2 AA** | P1 |
+| Catégorie              | Parcours Critiques | Couverture Actuelle | Gap                | Priorité |
+| ---------------------- | ------------------ | ------------------- | ------------------ | -------- |
+| **Paiements Stripe**   | 5/5                | 0%                  | 🚨 **AUCUN TEST**  | P0       |
+| **Authentification**   | 6/6                | 17% (E2E manquants) | 🔴 **CRITIQUE**    | P0       |
+| **Suppression Compte** | 1/1                | 0%                  | 🚨 **RGPD**        | P0       |
+| **Admin**              | 3/3                | 17%                 | 🔴 **CRITIQUE**    | P0       |
+| **Quotas & RBAC**      | 4/4                | 50% (E2E manquants) | 🟠 **IMPORTANT**   | P1       |
+| **Drag-and-Drop**      | 1/1                | 0% (E2E)            | 🟠 **IMPORTANT**   | P1       |
+| **Accessibilité**      | Tous               | Non testé           | 🟠 **WCAG 2.2 AA** | P1       |
 
 ### Objectifs Stratégiques
 
-| Objectif | Cible | Délai |
-|----------|-------|-------|
-| **Couverture globale** | 80% → 95% | Phase 5 |
-| **Tests E2E critiques** | 0% → 100% (37 parcours) | Phase 5 |
-| **CI/CD opérationnel** | 0% → 100% | Phase 4 |
-| **Accessibilité WCAG 2.2 AA** | 0% → 100% tests auto | Phase 6 |
-| **Temps exécution tests** | N/A → < 10 min (CI) | Phase 6 |
+| Objectif                      | Cible                   | Délai   |
+| ----------------------------- | ----------------------- | ------- |
+| **Couverture globale**        | 80% → 95%               | Phase 5 |
+| **Tests E2E critiques**       | 0% → 100% (37 parcours) | Phase 5 |
+| **CI/CD opérationnel**        | 0% → 100%               | Phase 4 |
+| **Accessibilité WCAG 2.2 AA** | 0% → 100% tests auto    | Phase 6 |
+| **Temps exécution tests**     | N/A → < 10 min (CI)     | Phase 6 |
 
 ---
 
@@ -55,6 +56,7 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 ```
 
 **Répartition cible :**
+
 - **Tests unitaires :** 150+ tests (60% du total)
 - **Tests intégration (MSW) :** 60 tests (25%)
 - **Tests API/Edge Functions :** 25 tests (10%)
@@ -72,17 +74,18 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 
 #### Justification
 
-| Critère | Playwright | Cypress | Verdict |
-|---------|-----------|---------|---------|
-| **Multi-browser** | ✅ Chromium, Firefox, WebKit | ⚠️ Chrome + Edge seulement | ✅ Playwright |
-| **Mobile testing** | ✅ Device emulation natif | ❌ Viewport seulement | ✅ Playwright |
-| **Traces & Debug** | ✅ Trace viewer, vidéo, screenshots | ✅ Time travel debugging | ⚖️ Équivalent |
-| **Performance** | ✅ Plus rapide (parallel) | ⚠️ Plus lent | ✅ Playwright |
-| **API testing** | ✅ Built-in (`request`) | ⚠️ Plugin externe | ✅ Playwright |
-| **Configuration** | ✅ Déjà configuré | ❌ Migration nécessaire | ✅ Playwright |
-| **Communauté** | ✅ Microsoft, très actif | ✅ Très actif | ⚖️ Équivalent |
+| Critère            | Playwright                          | Cypress                    | Verdict       |
+| ------------------ | ----------------------------------- | -------------------------- | ------------- |
+| **Multi-browser**  | ✅ Chromium, Firefox, WebKit        | ⚠️ Chrome + Edge seulement | ✅ Playwright |
+| **Mobile testing** | ✅ Device emulation natif           | ❌ Viewport seulement      | ✅ Playwright |
+| **Traces & Debug** | ✅ Trace viewer, vidéo, screenshots | ✅ Time travel debugging   | ⚖️ Équivalent |
+| **Performance**    | ✅ Plus rapide (parallel)           | ⚠️ Plus lent               | ✅ Playwright |
+| **API testing**    | ✅ Built-in (`request`)             | ⚠️ Plugin externe          | ✅ Playwright |
+| **Configuration**  | ✅ Déjà configuré                   | ❌ Migration nécessaire    | ✅ Playwright |
+| **Communauté**     | ✅ Microsoft, très actif            | ✅ Très actif              | ⚖️ Équivalent |
 
 **Avantages spécifiques Appli-Picto :**
+
 - ✅ Configuration déjà optimale (`playwright.config.ts`)
 - ✅ 3 tests E2E existants fonctionnels
 - ✅ Multi-browser critique pour accessibilité (Safari ITP, Firefox tracking)
@@ -90,6 +93,7 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 - ✅ API testing pour webhooks Stripe
 
 **Actions :**
+
 - ✅ **Conserver Playwright**
 - ⏩ Optimiser configuration pour Supabase local
 - ⏩ Ajouter fixtures pour auth + seed data
@@ -103,6 +107,7 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 #### Option 1 : Supabase Local avec Docker ✅ **RECOMMANDÉ (E2E)**
 
 **Avantages :**
+
 - ✅ Base de données PostgreSQL réelle (pas de mocks)
 - ✅ RLS policies testées (sécurité critique)
 - ✅ Realtime Supabase fonctionnel
@@ -111,6 +116,7 @@ Ce document définit la **stratégie complète de tests** pour Appli-Picto, avec
 - ✅ Isolation complète (pas d'interférence CI)
 
 **Inconvénients :**
+
 - ⚠️ Setup initial (~1-2 jours)
 - ⚠️ Temps démarrage Docker (~10s)
 - ⚠️ Seed data nécessaire pour chaque test suite
@@ -125,12 +131,12 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
-      - "54322:5432"
+      - '54322:5432'
 
   supabase-studio:
     image: supabase/studio:latest
     ports:
-      - "54323:3000"
+      - '54323:3000'
 
   supabase-auth:
     image: supabase/gotrue:latest
@@ -176,12 +182,14 @@ export default defineConfig({
 #### Option 2 : MSW (Mock Service Worker) ✅ **DÉJÀ EN PLACE (Unitaires)**
 
 **Avantages :**
+
 - ✅ Déjà configuré (`src/test/mocks/`)
 - ✅ Rapide (pas de réseau)
 - ✅ Isolation parfaite
 - ✅ Tests déterministes
 
 **Inconvénients :**
+
 - ❌ Ne teste pas RLS (sécurité)
 - ❌ Ne teste pas Realtime
 - ❌ Ne teste pas Edge Functions
@@ -193,6 +201,7 @@ export default defineConfig({
 **Problème :** Supabase ne supporte pas nativement les "shadow databases" comme Prisma. Nécessiterait scripting custom (create/destroy project par CI run) → complexité excessive.
 
 **Verdict :**
+
 - ✅ **E2E : Supabase Local (Docker)**
 - ✅ **Unitaires/Intégration : MSW (déjà en place)**
 
@@ -205,6 +214,7 @@ export default defineConfig({
 #### Option 1 : Stripe Test Mode + CLI ✅ **RECOMMANDÉ**
 
 **Avantages :**
+
 - ✅ API Stripe réelle en mode test (100% fidèle)
 - ✅ Webhooks locaux via `stripe listen --forward-to`
 - ✅ Checkout Sessions réelles
@@ -213,6 +223,7 @@ export default defineConfig({
 - ✅ Gratuit (mode test)
 
 **Inconvénients :**
+
 - ⚠️ Nécessite clés API test (env variables)
 - ⚠️ `stripe-cli` requis en CI
 - ⚠️ Latence réseau (mais acceptables en test)
@@ -266,7 +277,9 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxx # Généré par stripe listen
 
 ```typescript
 // tests/e2e/stripe-checkout.spec.ts
-test('should create checkout session and activate subscription', async ({ page }) => {
+test('should create checkout session and activate subscription', async ({
+  page,
+}) => {
   // 1. Login
   await page.goto('/login')
   await page.fill('input[name="email"]', 'test@example.com')
@@ -313,12 +326,14 @@ test('should create checkout session and activate subscription', async ({ page }
 #### Option 2 : stripe-mock ⚠️ **NON RECOMMANDÉ**
 
 **Problèmes :**
+
 - ❌ Incomplet (ne supporte pas tous endpoints)
 - ❌ Checkout Sessions limité
 - ❌ Pas de Billing Portal
 - ❌ Webhooks simplifiés (pas de retry)
 
 **Verdict :**
+
 - ✅ **Stripe Test Mode + stripe-cli**
 
 ---
@@ -329,11 +344,11 @@ test('should create checkout session and activate subscription', async ({ page }
 
 #### Comparaison
 
-| Outil | Intégration | Règles WCAG | CI-friendly | Verdict |
-|-------|-------------|-------------|-------------|---------|
-| **@axe-core/playwright** | ✅ Playwright | ✅ WCAG 2.2 AA/AAA | ✅ Oui | ✅ **RECOMMANDÉ** |
-| **jest-axe** | ⚠️ Vitest seulement | ✅ WCAG 2.2 | ✅ Oui | ⚖️ Complément |
-| **pa11y** | ❌ CLI séparé | ✅ WCAG 2.2 | ⚠️ Complexe | ❌ |
+| Outil                    | Intégration         | Règles WCAG        | CI-friendly | Verdict           |
+| ------------------------ | ------------------- | ------------------ | ----------- | ----------------- |
+| **@axe-core/playwright** | ✅ Playwright       | ✅ WCAG 2.2 AA/AAA | ✅ Oui      | ✅ **RECOMMANDÉ** |
+| **jest-axe**             | ⚠️ Vitest seulement | ✅ WCAG 2.2        | ✅ Oui      | ⚖️ Complément     |
+| **pa11y**                | ❌ CLI séparé       | ✅ WCAG 2.2        | ⚠️ Complexe | ❌                |
 
 **Implémentation :**
 
@@ -347,7 +362,9 @@ import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
 test.describe('Accessibility WCAG 2.2 AA', () => {
-  test('should not have accessibility violations on homepage', async ({ page }) => {
+  test('should not have accessibility violations on homepage', async ({
+    page,
+  }) => {
     await page.goto('/')
 
     const accessibilityScanResults = await new AxeBuilder({ page })
@@ -357,7 +374,9 @@ test.describe('Accessibility WCAG 2.2 AA', () => {
     expect(accessibilityScanResults.violations).toEqual([])
   })
 
-  test('should not have violations on drag-and-drop board', async ({ page }) => {
+  test('should not have violations on drag-and-drop board', async ({
+    page,
+  }) => {
     await page.goto('/tableau')
 
     const results = await new AxeBuilder({ page })
@@ -371,6 +390,7 @@ test.describe('Accessibility WCAG 2.2 AA', () => {
 ```
 
 **Règles testées automatiquement :**
+
 - Contraste couleurs (WCAG 2.2 AA : 4.5:1 texte, 3:1 UI)
 - Labels ARIA manquants
 - Landmarks HTML5
@@ -380,6 +400,7 @@ test.describe('Accessibility WCAG 2.2 AA', () => {
 - Structure headings (h1, h2, h3 logiques)
 
 **Actions :**
+
 - ⏩ Installer `@axe-core/playwright`
 - ⏩ Créer test suite accessibilité (1 test par page critique)
 - ⏩ Ajouter à CI (fail si violations)
@@ -393,6 +414,7 @@ test.describe('Accessibility WCAG 2.2 AA', () => {
 #### Option 1 : Playwright Screenshots ✅ **GRATUIT, RECOMMANDÉ**
 
 **Avantages :**
+
 - ✅ Gratuit
 - ✅ Intégré Playwright
 - ✅ Diff visuel automatique
@@ -400,6 +422,7 @@ test.describe('Accessibility WCAG 2.2 AA', () => {
 - ✅ CI-friendly
 
 **Inconvénients :**
+
 - ⚠️ Stockage screenshots (Git LFS ou artifacts)
 - ⚠️ Baseline manual (première exécution)
 - ⚠️ Pas de dashboard web
@@ -445,16 +468,19 @@ yarn test:e2e --update-snapshots
 #### Option 2 : Percy (Browserstack) ⚠️ **PAYANT (~$400/mois)**
 
 **Avantages :**
+
 - ✅ Dashboard web élégant
 - ✅ Review workflow (approve/reject)
 - ✅ Intégration GitHub (PR comments)
 - ✅ Baseline auto par branche
 
 **Inconvénients :**
+
 - ❌ Payant (gratuit limité à 5,000 screenshots/mois)
 - ⚠️ Vendor lock-in
 
 **Verdict :**
+
 - ✅ **Phase 6 : Playwright Screenshots (gratuit)**
 - 🟡 **Phase 7 (optionnel) : Migrer vers Percy si budget**
 
@@ -465,11 +491,13 @@ yarn test:e2e --update-snapshots
 ### Légende
 
 **Impact :**
+
 - 🔴 **Critique :** Bloquant production, perte données, non-conformité RGPD
 - 🟠 **Important :** Dégradation UX majeure, risque financier
 - 🟡 **Utile :** Amélioration qualité, confort développeur
 
 **Effort :**
+
 - 🟢 **Faible :** < 1 jour
 - 🟡 **Moyen :** 1-3 jours
 - 🔴 **Élevé :** > 3 jours
@@ -769,7 +797,9 @@ export const test = base.extend({
 import { test, expect } from './fixtures/auth'
 
 test.describe('Account Deletion (RGPD)', () => {
-  test('should delete account and all user data', async ({ authenticatedPage: page }) => {
+  test('should delete account and all user data', async ({
+    authenticatedPage: page,
+  }) => {
     const userId = await getUserId(page) // Helper
 
     // 1. Créer données test (tâches, récompenses, images)
@@ -826,7 +856,8 @@ test.describe('Account Deletion (RGPD)', () => {
     expect(images).toEqual([])
 
     // 11. Vérifier Auth : utilisateur supprimé
-    const { data: authUser, error } = await supabase.auth.admin.getUserById(userId)
+    const { data: authUser, error } =
+      await supabase.auth.admin.getUserById(userId)
     expect(error?.message).toContain('not found')
 
     // 12. Tentative login → erreur
@@ -834,10 +865,14 @@ test.describe('Account Deletion (RGPD)', () => {
     await page.fill('input[name="email"]', 'test@example.com')
     await page.fill('input[name="password"]', 'Test123!')
     await page.click('button[type="submit"]')
-    await expect(page.locator('text=Email ou mot de passe incorrect')).toBeVisible()
+    await expect(
+      page.locator('text=Email ou mot de passe incorrect')
+    ).toBeVisible()
   })
 
-  test('should cancel scheduled deletion', async ({ authenticatedPage: page }) => {
+  test('should cancel scheduled deletion', async ({
+    authenticatedPage: page,
+  }) => {
     // 1. Programmer suppression (30 jours)
     await page.goto('/profil')
     await page.click('button:has-text("Programmer la suppression")')
@@ -1035,10 +1070,7 @@ test('should reorder tasks via drag and drop', async ({ page }) => {
   expect(await tasks[1].textContent()).toBe('Tâche 2')
 
   // Drag Tâche 1 → position Tâche 3
-  await page.dragAndDrop(
-    '[data-testid="task-1"]',
-    '[data-testid="task-3"]'
-  )
+  await page.dragAndDrop('[data-testid="task-1"]', '[data-testid="task-3"]')
 
   // Attendre animation (300ms)
   await page.waitForTimeout(500)
@@ -1099,7 +1131,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     ports:
-      - "54322:5432"
+      - '54322:5432'
     volumes:
       - ./supabase/migrations:/docker-entrypoint-initdb.d
 
@@ -1111,7 +1143,7 @@ services:
       GOTRUE_DB_DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
       GOTRUE_SITE_URL: http://localhost:5173
     ports:
-      - "54321:9999"
+      - '54321:9999'
 ```
 
 **Script seed :**
@@ -1161,25 +1193,26 @@ INSERT INTO user_roles (user_id, role_name) VALUES
 
 ### Récapitulatif par Priorité
 
-| Priorité | Tâches | Temps Total | Ordre |
-|----------|--------|-------------|-------|
-| **P0** | 5 tâches | 8-12 jours | Phase 4 + Phase 5 |
-| **P1** | 5 tâches | 9-13 jours | Phase 6 |
-| **P2** | 3 tâches | 10-15 jours | Phase 7 (optionnel) |
-| **TOTAL** | 13 tâches | **27-40 jours** | 4 phases |
+| Priorité  | Tâches    | Temps Total     | Ordre               |
+| --------- | --------- | --------------- | ------------------- |
+| **P0**    | 5 tâches  | 8-12 jours      | Phase 4 + Phase 5   |
+| **P1**    | 5 tâches  | 9-13 jours      | Phase 6             |
+| **P2**    | 3 tâches  | 10-15 jours     | Phase 7 (optionnel) |
+| **TOTAL** | 13 tâches | **27-40 jours** | 4 phases            |
 
 ### Planning Détaillé
 
 #### Phase 4 : Fondations (P0) - **Semaines 1-2 (10 jours)**
 
-| Tâche | Jours | Dépendances | Bloquant |
-|-------|-------|-------------|----------|
-| P0-1 : CI/CD Setup | 1-2 | - | P0-2, P0-3, P0-4 |
-| P0-5 : Coverage Baseline | 0.5 | - | CI/CD |
-| P1-5 : Supabase Local | 1-2 | - | P0-2, P0-3, P0-4 |
-| **TOTAL PHASE 4** | **2.5-4.5 jours** | - | - |
+| Tâche                    | Jours             | Dépendances | Bloquant         |
+| ------------------------ | ----------------- | ----------- | ---------------- |
+| P0-1 : CI/CD Setup       | 1-2               | -           | P0-2, P0-3, P0-4 |
+| P0-5 : Coverage Baseline | 0.5               | -           | CI/CD            |
+| P1-5 : Supabase Local    | 1-2               | -           | P0-2, P0-3, P0-4 |
+| **TOTAL PHASE 4**        | **2.5-4.5 jours** | -           | -                |
 
 **Validation Phase 4 :**
+
 - ✅ CI/CD pipeline green
 - ✅ Coverage reporté (baseline 60%)
 - ✅ Docker Compose Supabase up
@@ -1188,14 +1221,15 @@ INSERT INTO user_roles (user_id, role_name) VALUES
 
 #### Phase 5 : Tests Critiques (P0) - **Semaines 3-5 (15 jours)**
 
-| Tâche | Jours | Dépendances | Bloquant |
-|-------|-------|-------------|----------|
-| P0-2 : Stripe E2E | 3-4 | CI/CD, Supabase local | Production |
-| P0-3 : Auth E2E | 2-3 | CI/CD, Supabase local | Production |
-| P0-4 : Delete Account E2E | 1-2 | CI/CD, Supabase local | RGPD |
-| **TOTAL PHASE 5** | **6-9 jours** | Phase 4 | - |
+| Tâche                     | Jours         | Dépendances           | Bloquant   |
+| ------------------------- | ------------- | --------------------- | ---------- |
+| P0-2 : Stripe E2E         | 3-4           | CI/CD, Supabase local | Production |
+| P0-3 : Auth E2E           | 2-3           | CI/CD, Supabase local | Production |
+| P0-4 : Delete Account E2E | 1-2           | CI/CD, Supabase local | RGPD       |
+| **TOTAL PHASE 5**         | **6-9 jours** | Phase 4               | -          |
 
 **Validation Phase 5 :**
+
 - ✅ 100% parcours Stripe testés (5/5)
 - ✅ 100% parcours Auth testés (6/6)
 - ✅ Suppression compte testée (RGPD)
@@ -1205,15 +1239,16 @@ INSERT INTO user_roles (user_id, role_name) VALUES
 
 #### Phase 6 : Tests Importants (P1) - **Semaines 6-7 (10 jours)**
 
-| Tâche | Jours | Dépendances | Bloquant |
-|-------|-------|-------------|----------|
-| P1-1 : Quotas E2E | 2-3 | Phase 5 | - |
-| P1-2 : Accessibilité | 2-3 | Phase 5 | WCAG compliance |
-| P1-3 : Drag-and-Drop E2E | 1-2 | Phase 5 | - |
-| P1-4 : Admin E2E | 1-2 | Phase 5 | - |
-| **TOTAL PHASE 6** | **6-10 jours** | Phase 5 | - |
+| Tâche                    | Jours          | Dépendances | Bloquant        |
+| ------------------------ | -------------- | ----------- | --------------- |
+| P1-1 : Quotas E2E        | 2-3            | Phase 5     | -               |
+| P1-2 : Accessibilité     | 2-3            | Phase 5     | WCAG compliance |
+| P1-3 : Drag-and-Drop E2E | 1-2            | Phase 5     | -               |
+| P1-4 : Admin E2E         | 1-2            | Phase 5     | -               |
+| **TOTAL PHASE 6**        | **6-10 jours** | Phase 5     | -               |
 
 **Validation Phase 6 :**
+
 - ✅ Quotas testés (blocage + upgrade)
 - ✅ 0 violations WCAG 2.2 AA
 - ✅ Drag-and-drop fonctionnel
@@ -1223,14 +1258,15 @@ INSERT INTO user_roles (user_id, role_name) VALUES
 
 #### Phase 7 : Optimisations (P2) - **Semaines 8-10 (optionnel)**
 
-| Tâche | Jours | Dépendances | Bloquant |
-|-------|-------|-------------|----------|
-| P2-1 : Visual Regression | 2-3 | Phase 6 | - |
-| P2-2 : Performance | 3-5 | Phase 6 | - |
-| P2-3 : Mobile Natif | 5-7 | Phase 6 | - |
-| **TOTAL PHASE 7** | **10-15 jours** | Phase 6 | - |
+| Tâche                    | Jours           | Dépendances | Bloquant |
+| ------------------------ | --------------- | ----------- | -------- |
+| P2-1 : Visual Regression | 2-3             | Phase 6     | -        |
+| P2-2 : Performance       | 3-5             | Phase 6     | -        |
+| P2-3 : Mobile Natif      | 5-7             | Phase 6     | -        |
+| **TOTAL PHASE 7**        | **10-15 jours** | Phase 6     | -        |
 
 **Validation Phase 7 :**
+
 - ✅ Screenshots baseline créés
 - ✅ Lighthouse score > 90
 - ✅ Mobile iOS/Android testés
@@ -1241,30 +1277,30 @@ INSERT INTO user_roles (user_id, role_name) VALUES
 
 ### Décisions Techniques
 
-| # | Décision | Recommandation | Alternatives | Validation Requise |
-|---|----------|----------------|--------------|-------------------|
-| **DT-1** | Framework E2E | ✅ Playwright (conservé) | Cypress, TestCafe | ❌ Déjà validé |
-| **DT-2** | Supabase Testing | ✅ Local Docker + MSW | Shadow DB, Mocks only | ✅ **OUI** |
-| **DT-3** | Stripe Testing | ✅ Test Mode + CLI | stripe-mock, MSW only | ✅ **OUI** |
-| **DT-4** | Accessibilité | ✅ @axe-core/playwright | jest-axe, pa11y | ❌ Technique |
-| **DT-5** | Régression Visuelle | ✅ Playwright Screenshots | Percy (payant) | ✅ **OUI** (Phase 7) |
+| #        | Décision            | Recommandation            | Alternatives          | Validation Requise   |
+| -------- | ------------------- | ------------------------- | --------------------- | -------------------- |
+| **DT-1** | Framework E2E       | ✅ Playwright (conservé)  | Cypress, TestCafe     | ❌ Déjà validé       |
+| **DT-2** | Supabase Testing    | ✅ Local Docker + MSW     | Shadow DB, Mocks only | ✅ **OUI**           |
+| **DT-3** | Stripe Testing      | ✅ Test Mode + CLI        | stripe-mock, MSW only | ✅ **OUI**           |
+| **DT-4** | Accessibilité       | ✅ @axe-core/playwright   | jest-axe, pa11y       | ❌ Technique         |
+| **DT-5** | Régression Visuelle | ✅ Playwright Screenshots | Percy (payant)        | ✅ **OUI** (Phase 7) |
 
 ### Décisions Budgétaires
 
-| # | Outil | Coût | Bénéfice | Décision | Validation |
-|---|-------|------|----------|----------|-----------|
-| **DB-1** | Percy (Visual) | ~$400/mois | Dashboard + PR comments | 🟡 Phase 7 | ✅ **OUI** |
-| **DB-2** | Codecov Pro | ~$10/mois | Coverage trends | 🟢 Gratuit OK | ❌ |
-| **DB-3** | Stripe Test | Gratuit | API réelle | ✅ Gratuit | ❌ |
+| #        | Outil          | Coût       | Bénéfice                | Décision      | Validation |
+| -------- | -------------- | ---------- | ----------------------- | ------------- | ---------- |
+| **DB-1** | Percy (Visual) | ~$400/mois | Dashboard + PR comments | 🟡 Phase 7    | ✅ **OUI** |
+| **DB-2** | Codecov Pro    | ~$10/mois  | Coverage trends         | 🟢 Gratuit OK | ❌         |
+| **DB-3** | Stripe Test    | Gratuit    | API réelle              | ✅ Gratuit    | ❌         |
 
 ### Décisions Organisationnelles
 
-| # | Décision | Impact | Validation |
-|---|----------|--------|-----------|
-| **DO-1** | Bloquer merge si tests fail | 🔴 Critique | ✅ **OUI** |
-| **DO-2** | Seuils coverage minimum | 80% statements | ✅ **OUI** |
-| **DO-3** | Exécution Phase 7 (P2) | Budget + temps | ✅ **OUI** |
-| **DO-4** | Ordre phases (4 → 5 → 6) | Logique dépendances | ❌ Validé |
+| #        | Décision                    | Impact              | Validation |
+| -------- | --------------------------- | ------------------- | ---------- |
+| **DO-1** | Bloquer merge si tests fail | 🔴 Critique         | ✅ **OUI** |
+| **DO-2** | Seuils coverage minimum     | 80% statements      | ✅ **OUI** |
+| **DO-3** | Exécution Phase 7 (P2)      | Budget + temps      | ✅ **OUI** |
+| **DO-4** | Ordre phases (4 → 5 → 6)    | Logique dépendances | ❌ Validé  |
 
 ---
 
@@ -1304,11 +1340,13 @@ graph TD
 ```
 
 **Bloquants identifiés :**
+
 - Phase 5 dépend de Phase 4 (CI/CD + Docker)
 - Phase 6 dépend de Phase 5 (parcours critiques couverts)
 - Phase 7 dépend de Phase 6 (stabilité)
 
 **Parallélisation possible :**
+
 - Phase 4 : CI/CD + Docker + Coverage en parallèle
 - Phase 5 : Stripe + Auth + Delete en séquentiel (partagent setup)
 - Phase 6 : Quotas + Accessibilité + DnD + Admin en parallèle
@@ -1319,35 +1357,39 @@ graph TD
 
 ### KPIs Cibles
 
-| Métrique | Baseline | Phase 4 | Phase 5 | Phase 6 | Phase 7 |
-|----------|----------|---------|---------|---------|---------|
-| **Coverage global** | 39% | 65% | 80% | 85% | 90% |
-| **Tests E2E critiques** | 5% (2/37) | 5% | 100% (37/37) | 100% | 100% |
-| **Tests E2E total** | 3 tests | 3 | 20 | 30 | 40 |
-| **Violations WCAG** | ? | ? | ? | 0 | 0 |
-| **Temps CI** | N/A | < 5 min | < 8 min | < 10 min | < 12 min |
-| **Flaky tests** | ? | < 2% | < 1% | < 0.5% | 0% |
+| Métrique                | Baseline  | Phase 4 | Phase 5      | Phase 6  | Phase 7  |
+| ----------------------- | --------- | ------- | ------------ | -------- | -------- |
+| **Coverage global**     | 39%       | 65%     | 80%          | 85%      | 90%      |
+| **Tests E2E critiques** | 5% (2/37) | 5%      | 100% (37/37) | 100%     | 100%     |
+| **Tests E2E total**     | 3 tests   | 3       | 20           | 30       | 40       |
+| **Violations WCAG**     | ?         | ?       | ?            | 0        | 0        |
+| **Temps CI**            | N/A       | < 5 min | < 8 min      | < 10 min | < 12 min |
+| **Flaky tests**         | ?         | < 2%    | < 1%         | < 0.5%   | 0%       |
 
 ### Gates de Qualité
 
 **Phase 4 :**
+
 - ✅ CI/CD green sur PR test
 - ✅ Coverage > 60%
 - ✅ Docker up en < 30s
 
 **Phase 5 :**
+
 - ✅ 100% parcours Stripe testés
 - ✅ 100% parcours Auth testés
 - ✅ Delete Account RGPD testé
 - ✅ Coverage > 80%
 
 **Phase 6 :**
+
 - ✅ 0 violations WCAG 2.2 AA
 - ✅ Quotas testés (blocage + upgrade)
 - ✅ Drag-and-drop fonctionnel
 - ✅ Coverage > 85%
 
 **Phase 7 :**
+
 - ✅ Screenshots baseline créés
 - ✅ Lighthouse > 90
 - ✅ Mobile iOS + Android testés
@@ -1357,19 +1399,23 @@ graph TD
 ## 🔄 Plan de Révision
 
 **Après Phase 4 :**
+
 - Revue setup CI/CD
 - Ajustement seuils coverage si nécessaire
 
 **Après Phase 5 :**
+
 - Revue tests critiques
 - Validation métier (parcours Stripe)
 - Go/No-Go production
 
 **Après Phase 6 :**
+
 - Audit WCAG complet
 - Décision Phase 7 (budget)
 
 **Après Phase 7 :**
+
 - Audit final
 - Documentation maintenance
 
@@ -1388,6 +1434,7 @@ graph TD
 ### Templates de Tests
 
 Tous les templates seront créés dans `tests/e2e/templates/` :
+
 - `auth-flow.template.ts`
 - `stripe-flow.template.ts`
 - `accessibility.template.ts`

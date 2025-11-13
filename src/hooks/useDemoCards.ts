@@ -113,8 +113,16 @@ export default function useDemoCards(): UseDemoCardsReturn {
     setError(null)
 
     try {
-      const { data, error: fetchError, aborted } = await withAbortSafe(
-        supabase.from('demo_cards').select('*').eq('is_active', true).order('position')
+      const {
+        data,
+        error: fetchError,
+        aborted,
+      } = await withAbortSafe(
+        supabase
+          .from('demo_cards')
+          .select('*')
+          .eq('is_active', true)
+          .order('position')
       )
 
       if (aborted || (fetchError && isAbortLike(fetchError))) {
@@ -220,8 +228,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
     const active = demoCards.filter(card => card.is_active).length
     const inactive = total - active
     const tasks = demoCards.filter(card => card.card_type === 'task').length
-    const rewards = demoCards.filter(card => card.card_type === 'reward')
-      .length
+    const rewards = demoCards.filter(card => card.card_type === 'reward').length
 
     return { total, active, inactive, tasks, rewards }
   }, [demoCards])

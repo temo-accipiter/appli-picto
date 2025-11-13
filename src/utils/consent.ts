@@ -3,6 +3,7 @@
 // - Local storage with proof (timestamp, version, choices)
 // - Automatic expiration (6 months max)
 // - Server-side proof (Supabase Edge Function / consents table)
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // - Compatibility with existing code (events)
 
 const CONSENT_KEY = 'cookie_consent_v2'

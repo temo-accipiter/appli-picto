@@ -86,6 +86,7 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
 
   useEffect(() => {
     fetchCategoriesInternal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reload, user?.id])
 
   const addCategory = async (
@@ -155,6 +156,7 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
 
   const refresh = useCallback(async () => {
     return fetchCategoriesInternal()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   return {

@@ -40,16 +40,12 @@ const PersonalizationModal = lazy(() =>
   import('@/components').then(m => ({ default: m.PersonalizationModal }))
 )
 
-import type { Tache, Recompense } from '@/types/global'
+import type { Tache } from '@/types/global'
 import './Tableau.scss'
 
 interface DemoTache extends Tache {
   done?: boolean
   isDemo: boolean
-}
-
-interface DemoRecompense extends Recompense {
-  isDemo?: boolean
 }
 
 interface TableauGrilleProps {
@@ -250,7 +246,7 @@ export default function TableauGrille({
     return selected
   }, [isDemoMode, recompenses, selected])
 
-  const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const modalTimeoutRef = useRef<number | null>(null)
 
   // 🎯 Confettis + modal dynamique
   useEffect(() => {

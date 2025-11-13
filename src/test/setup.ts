@@ -2,6 +2,45 @@
 import '@testing-library/jest-dom'
 import { server } from './mocks/server'
 import { afterAll, afterEach, beforeAll } from 'vitest'
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+// ========================================
+// i18next Setup (Mock translations)
+// ========================================
+i18n.use(initReactI18next).init({
+  lng: 'fr',
+  fallbackLng: 'fr',
+  ns: ['translation'],
+  defaultNS: 'translation',
+  debug: false,
+  interpolation: {
+    escapeValue: false,
+  },
+  resources: {
+    fr: {
+      translation: {
+        // Mock minimal des clés utilisées dans les tests
+        'common.loading': 'Chargement...',
+        'common.save': 'Enregistrer',
+        'common.cancel': 'Annuler',
+        'common.delete': 'Supprimer',
+        'edition.title': 'Édition',
+        'edition.confettiEnabled': 'Confettis activés',
+        'edition.confettiDisabled': 'Confettis désactivés',
+        'edition.showReward': 'Afficher récompense',
+        'edition.showTimeTimer': 'Afficher Time Timer',
+        'edition.hideTimeTimer': 'Masquer Time Timer',
+        'edition.showTrain': 'Afficher train',
+        'edition.toastsEnabled': 'Notifications activées',
+        'edition.toastsDisabled': 'Notifications désactivées',
+        'settings.title': 'Paramètres',
+        'tasks.title': 'Tâches',
+        'rewards.title': 'Récompenses',
+      },
+    },
+  },
+})
 
 // ========================================
 // MSW Server Setup (Mock HTTP requests)

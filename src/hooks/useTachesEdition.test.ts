@@ -26,6 +26,17 @@ const {
 } = vi.hoisted(() => ({
   mockSupabase: {
     from: vi.fn(),
+    auth: {
+      getSession: vi.fn().mockResolvedValue({
+        data: {
+          session: {
+            access_token: 'mock-token',
+            user: { id: 'test-user-123' },
+          },
+        },
+        error: null,
+      }),
+    },
   },
   mockUser: {
     id: 'test-user-123',
@@ -48,13 +59,13 @@ vi.mock('@/hooks', () => ({
   useI18n: () => ({ t: (key: string) => key }),
 }))
 
-vi.mock('@/utils/storage/uploadImage', () => ({
-  uploadImage: mockUploadImage,
+vi.mock('@/utils/storage/modernUploadImage', () => ({
+  modernUploadImage: mockUploadImage,
+  replaceImage: mockReplaceImage,
 }))
 
-vi.mock('@/utils/storage/replaceImageIfAny', () => ({
-  default: mockReplaceImage,
-}))
+// Note: replaceImage est exporté depuis modernUploadImage
+// On le mock via la même fonction mockReplaceImage
 
 vi.mock('@/utils/storage/deleteImageIfAny', () => ({
   default: mockDeleteImage,
@@ -142,8 +153,13 @@ describe('useTachesEdition', () => {
         }),
         update: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
+                }),
+              }),
             }),
           }),
         }),
@@ -182,8 +198,13 @@ describe('useTachesEdition', () => {
         }),
         update: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
+                }),
+              }),
             }),
           }),
         }),
@@ -223,8 +244,13 @@ describe('useTachesEdition', () => {
         }),
         update: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue({
-              error: null,
+            eq: vi.fn().mockReturnValue({
+              select: vi.fn().mockReturnValue({
+                single: vi.fn().mockResolvedValue({
+                  data: null,
+                  error: null,
+                }),
+              }),
             }),
           }),
         }),
@@ -306,6 +332,8 @@ describe('useTachesEdition', () => {
       expect(mockUploadImage).toHaveBeenCalledWith(mockFile, {
         userId: 'test-user-123',
         prefix: 'taches',
+        assetType: 'task_image',
+        onProgress: null,
       })
       expect(result.current.taches).toHaveLength(1)
       expect(result.current.taches[0].label).toBe('Nouvelle tâche')
@@ -332,27 +360,44 @@ describe('useTachesEdition', () => {
         error: null,
       })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockResolvedValue({
-              data: mockTaches,
-              error: null,
-            }),
-          }),
-        }),
-        update: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: { id: '1', imagepath: 'images/replaced-task.jpg' },
+      mockSupabase.from.mockImplementation(table => {
+        if (table === 'taches') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                order: vi.fn().mockResolvedValue({
+                  data: mockTaches,
                   error: null,
                 }),
               }),
             }),
-          }),
-        }),
+            update: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  select: vi.fn().mockReturnValue({
+                    single: vi.fn().mockResolvedValue({
+                      data: { id: '1', imagepath: 'images/replaced-task.jpg' },
+                      error: null,
+                    }),
+                  }),
+                }),
+              }),
+            }),
+          }
+        } else if (table === 'user_assets') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockReturnValue({
+                eq: vi.fn().mockReturnValue({
+                  single: vi.fn().mockResolvedValue({
+                    data: { id: 'asset-123' },
+                    error: null,
+                  }),
+                }),
+              }),
+            }),
+          }
+        }
       })
 
       // Act
@@ -367,11 +412,10 @@ describe('useTachesEdition', () => {
       })
 
       // Assert
-      expect(mockReplaceImage).toHaveBeenCalledWith(
-        'images/old-task.jpg',
-        mockFile,
-        { userId: 'test-user-123', prefix: 'taches' }
-      )
+      expect(mockReplaceImage).toHaveBeenCalledWith('asset-123', mockFile, {
+        userId: 'test-user-123',
+        onProgress: null,
+      })
       expect(result.current.taches[0].imagepath).toBe(
         'images/replaced-task.jpg'
       )

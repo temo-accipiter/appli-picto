@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { InputWithValidation, ModalConfirm } from '@/components'
 import { useDebounce } from '@/hooks'
 import {

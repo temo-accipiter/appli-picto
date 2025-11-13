@@ -10,6 +10,7 @@
  * IMPORTANT : Ces tests utilisent Supabase Local et vérifient le comportement UI.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { test, expect, Page } from '@playwright/test'
 import {
   createTestScenario,

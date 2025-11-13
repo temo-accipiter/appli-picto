@@ -19,6 +19,7 @@ Le système de monitoring couvre 5 aspects principaux :
 ### Configuration
 
 **Fichiers:**
+
 - `src/config/sentry/index.ts` - Configuration principale
 - `src/config/sentry/globalHandlers.ts` - Handlers d'erreurs globales
 - `vite.config.ts` - Plugin Sentry pour upload de source maps
@@ -40,21 +41,25 @@ SENTRY_AUTH_TOKEN=sntrys_...
 ### Fonctionnalités
 
 ✅ **Privacy-first:**
+
 - Filtrage automatique des données sensibles (passwords, tokens, cookies)
 - User ID hashé (SHA-256 + salt)
 - Pas d'email envoyé par défaut
 
 ✅ **Capture automatique:**
+
 - Erreurs React (via ErrorBoundary)
 - Erreurs JavaScript non gérées (window.onerror)
 - Promesses rejetées non gérées (unhandledrejection)
 
 ✅ **Performance Monitoring (optionnel):**
+
 - Activé uniquement en production
 - Sample rate configurable (défaut: 10% des transactions)
 - Tracking des routes React Router
 
 ✅ **Source Maps:**
+
 - Upload automatique en production via Vite plugin
 - Nettoyage automatique après upload
 
@@ -91,6 +96,7 @@ setSentryUser({ id: '123', role: 'admin' })
 ### Configuration
 
 **Fichiers:**
+
 - `src/config/analytics/index.ts` - Initialisation GA4
 - `src/config/analytics/routePageViews.ts` - Tracking automatique des pages
 - `src/config/analytics/userProps.ts` - Propriétés utilisateur
@@ -134,26 +140,29 @@ VITE_GA_SALT=salt-random-pour-hash
 ### Configuration
 
 **Fichiers:**
+
 - `src/components/shared/web-vitals/WebVitals.tsx`
 
 **Dépendance:**
+
 ```bash
 yarn add web-vitals
 ```
 
 ### Métriques collectées
 
-| Métrique | Seuil Good | Seuil Poor | Description |
-|----------|-----------|-----------|-------------|
-| **LCP** | ≤ 2.5s | > 4s | Temps de chargement du plus grand élément |
-| **FID/INP** | ≤ 100ms / 200ms | > 300ms / 500ms | Latence de la première interaction |
-| **CLS** | ≤ 0.1 | > 0.25 | Stabilité visuelle (layout shifts) |
-| **FCP** | ≤ 1.8s | > 3s | Temps avant le premier rendu |
-| **TTFB** | ≤ 800ms | > 1.8s | Temps de réponse serveur |
+| Métrique    | Seuil Good      | Seuil Poor      | Description                               |
+| ----------- | --------------- | --------------- | ----------------------------------------- |
+| **LCP**     | ≤ 2.5s          | > 4s            | Temps de chargement du plus grand élément |
+| **FID/INP** | ≤ 100ms / 200ms | > 300ms / 500ms | Latence de la première interaction        |
+| **CLS**     | ≤ 0.1           | > 0.25          | Stabilité visuelle (layout shifts)        |
+| **FCP**     | ≤ 1.8s          | > 3s            | Temps avant le premier rendu              |
+| **TTFB**    | ≤ 800ms         | > 1.8s          | Temps de réponse serveur                  |
 
 ### Destinations
 
 Les métriques sont envoyées à :
+
 1. **Google Analytics 4** (événements custom)
 2. **Sentry** (si performance monitoring activé)
 3. **Console** (en développement)
@@ -171,6 +180,7 @@ Le composant `<WebVitals />` est monté automatiquement dans `main.tsx`.
 **Emplacement:** `supabase/functions/monitoring-alerts/`
 
 **Fonctionnalités:**
+
 - ✅ Détection d'erreurs critiques (webhooks, images)
 - ✅ Surveillance des quotas dépassés
 - ✅ Health check système
@@ -257,6 +267,7 @@ POST /monitoring-alerts
 **Emplacement:** `supabase/functions/weekly-report/`
 
 **Contenu du rapport:**
+
 - 👥 Utilisateurs (total, nouveaux, actifs)
 - 💳 Abonnements (actifs, nouveaux, annulés)
 - 🖼️ Images (uploads, compression, stockage)
@@ -319,6 +330,7 @@ curl -X POST https://tklcztqoqvnialaqfcjm.supabase.co/functions/v1/weekly-report
 ### Page: /admin/metrics
 
 **Composants:**
+
 - `src/components/features/admin/MetricsDashboard.tsx`
 - `src/pages/admin/metrics/Metrics.tsx`
 
@@ -329,25 +341,30 @@ curl -X POST https://tklcztqoqvnialaqfcjm.supabase.co/functions/v1/weekly-report
 ### Métriques affichées
 
 **Santé Système:**
+
 - Score de santé (0-100%)
 - Temps de réponse moyen
 
 **Utilisateurs:**
+
 - Total utilisateurs
 - Nouveaux (7j)
 - Actifs (7j)
 
 **Abonnements:**
+
 - Actifs
 - Nouveaux (7j)
 - Annulés (7j)
 
 **Images:**
+
 - Uploads (7j)
 - Taux de succès
 - Stockage économisé
 
 **Erreurs:**
+
 - Erreurs webhooks (7j)
 - Erreurs images (7j)
 
@@ -437,6 +454,7 @@ yarn supabase db push
 https://sentry.io/organizations/YOUR_ORG/projects/
 
 **Filtres utiles:**
+
 - Environnement: `production`
 - Niveau: `error`, `warning`
 - User: Rechercher par rôle
@@ -446,6 +464,7 @@ https://sentry.io/organizations/YOUR_ORG/projects/
 https://analytics.google.com/
 
 **Rapports utiles:**
+
 - Events > `page_view`, `start_checkout`, `subscription_success`
 - Events > `web-vitals-*` (LCP, FID, CLS, etc.)
 - User Properties > `customer_tier`, `plan_name`
@@ -544,6 +563,7 @@ https://appli-picto.fr/admin/metrics
 ## Support
 
 Pour toute question ou problème, consulter :
+
 - `/docs/SUPABASE_HEALTH_CHECK.md` - Health check système
 - `/supabase/functions/monitoring-alerts/README.md` - Guide alertes
 - GitHub Issues : https://github.com/temo-accipiter/appli-picto/issues

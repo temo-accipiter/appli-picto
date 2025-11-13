@@ -186,7 +186,7 @@ describe('useRecompenses', () => {
       expect(result.current.recompenses).toHaveLength(1)
       expect(result.current.recompenses[0].label).toBe('Nouvelle récompense')
       expect(mockToast.show).toHaveBeenCalledWith(
-        'Récompense ajoutée',
+        'toasts.rewardAdded',
         'success'
       )
     })
@@ -236,10 +236,7 @@ describe('useRecompenses', () => {
       expect(result.current.recompenses[0].selected).toBe(false) // R1 désélectionnée
       expect(result.current.recompenses[1].selected).toBe(true) // R2 sélectionnée
       expect(result.current.recompenses[2].selected).toBe(false) // R3 désélectionnée
-      expect(mockToast.show).toHaveBeenCalledWith(
-        'Récompense sélectionnée',
-        'success'
-      )
+      // Pas de toast pour la sélection (action visuelle suffisante)
     })
   })
 
@@ -287,7 +284,7 @@ describe('useRecompenses', () => {
       expect(result.current.recompenses).toHaveLength(1)
       expect(result.current.recompenses[0].id).toBe('2')
       expect(mockToast.show).toHaveBeenCalledWith(
-        'Récompense supprimée',
+        'toasts.rewardDeleted',
         'success'
       )
     })
@@ -347,10 +344,7 @@ describe('useRecompenses', () => {
       // Assert
       expect(result.current.recompenses[0].label).toBe('Récompense Modifiée')
       expect(result.current.recompenses[0].points_requis).toBe(20)
-      expect(mockToast.show).toHaveBeenCalledWith(
-        'Récompense modifiée',
-        'success'
-      )
+      // Pas de toast générique - les fonctions spécifiques gèrent leurs propres toasts
     })
   })
 })

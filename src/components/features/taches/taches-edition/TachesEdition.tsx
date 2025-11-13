@@ -10,7 +10,7 @@ import {
   SignedImage,
 } from '@/components'
 import { useI18n } from '@/hooks'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import './TachesEdition.scss'
 
 interface CategoryOption {

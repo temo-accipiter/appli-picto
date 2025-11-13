@@ -24,6 +24,7 @@ yarn supabase:start
 ```
 
 Cette commande va :
+
 - Télécharger les images Docker nécessaires (première fois seulement)
 - Démarrer tous les services Supabase (Auth, Database, Storage, etc.)
 - Créer une base de données PostgreSQL locale
@@ -78,11 +79,11 @@ Le fichier `supabase/seed.sql` contient des données de test prédéfinies :
 
 ### Utilisateurs de test
 
-| Email | Mot de passe | Rôle | Description |
-|-------|--------------|------|-------------|
-| `test-free@appli-picto.test` | `TestPassword123!` | `free` | Utilisateur gratuit avec quotas limités |
-| `test-abonne@appli-picto.test` | `TestPassword123!` | `abonne` | Utilisateur avec abonnement actif |
-| `test-admin@appli-picto.test` | `TestPassword123!` | `admin` | Administrateur |
+| Email                          | Mot de passe       | Rôle     | Description                             |
+| ------------------------------ | ------------------ | -------- | --------------------------------------- |
+| `test-free@appli-picto.test`   | `TestPassword123!` | `free`   | Utilisateur gratuit avec quotas limités |
+| `test-abonne@appli-picto.test` | `TestPassword123!` | `abonne` | Utilisateur avec abonnement actif       |
+| `test-admin@appli-picto.test`  | `TestPassword123!` | `admin`  | Administrateur                          |
 
 ### Données créées automatiquement
 
@@ -127,7 +128,7 @@ Utiliser les helpers d'authentification :
 ```typescript
 import { loginAs } from '@/tests/e2e/helpers/auth'
 
-test('se connecter en tant qu\'abonné', async ({ page }) => {
+test("se connecter en tant qu'abonné", async ({ page }) => {
   await loginAs(page, 'abonne')
   // L'utilisateur est maintenant connecté
 })
@@ -140,6 +141,7 @@ L'interface web Supabase Studio est disponible sur :
 **http://localhost:54323**
 
 Vous pouvez :
+
 - Voir les tables et leurs données
 - Exécuter des requêtes SQL
 - Gérer les utilisateurs Auth
@@ -153,18 +155,19 @@ Tous les emails envoyés en local sont capturés par **Inbucket** :
 **http://localhost:54324**
 
 Utile pour :
+
 - Tester les emails de confirmation
 - Tester les emails de reset password
 - Voir le contenu des emails sans les envoyer réellement
 
 ## 🔄 Scripts disponibles
 
-| Script | Description |
-|--------|-------------|
-| `yarn supabase:start` | Démarrer Supabase Local |
-| `yarn supabase:stop` | Arrêter Supabase Local |
-| `yarn supabase:status` | Voir l'état des services |
-| `yarn supabase:reset` | Réinitialiser la DB + seed |
+| Script                 | Description                |
+| ---------------------- | -------------------------- |
+| `yarn supabase:start`  | Démarrer Supabase Local    |
+| `yarn supabase:stop`   | Arrêter Supabase Local     |
+| `yarn supabase:status` | Voir l'état des services   |
+| `yarn supabase:reset`  | Réinitialiser la DB + seed |
 
 ## 🐛 Dépannage
 

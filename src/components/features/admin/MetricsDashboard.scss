@@ -32,7 +32,7 @@
     }
 
     .btn-refresh {
-      background: var(--color-primary, #6B4FBB);
+      background: var(--color-primary, #6b4fbb);
       border: none;
       border-radius: 8px;
       padding: 0.5rem 1rem;
@@ -191,11 +191,11 @@
   }
 
   &--highlight {
-    border-color: var(--color-primary, #6B4FBB);
+    border-color: var(--color-primary, #6b4fbb);
     background: linear-gradient(135deg, #fff 0%, #f5f3ff 100%);
 
     .metric-card__value {
-      color: var(--color-primary, #6B4FBB);
+      color: var(--color-primary, #6b4fbb);
     }
   }
 }

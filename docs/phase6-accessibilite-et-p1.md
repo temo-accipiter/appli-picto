@@ -15,12 +15,14 @@ Phase 6 implémente l'audit complet d'accessibilité WCAG 2.2 AA et les tests dr
 ## 🎯 Objectifs
 
 ### Objectifs Principaux
+
 - ✅ **Audit WCAG 2.2 AA complet** sur toutes les pages
 - ✅ **Tests drag-and-drop** avec accessibilité clavier
 - ⏳ **Coverage ≥ 80%** (à vérifier après résolution Yarn)
 - ✅ **Rapport HTML** d'accessibilité généré automatiquement
 
 ### Objectifs Secondaires (BONUS)
+
 - ⏸️ Tests de régression visuelle (non implémentés - BONUS)
 - ⏸️ Snapshots Playwright (non implémentés - BONUS)
 
@@ -35,6 +37,7 @@ Phase 6 implémente l'audit complet d'accessibilité WCAG 2.2 AA et les tests dr
 #### Tests Implémentés
 
 ##### 1. Audit des Pages Principales (9 pages)
+
 - ✅ Page d'accueil (`/`)
 - ✅ Page Login (`/login`)
 - ✅ Page Signup (`/signup`)
@@ -46,11 +49,13 @@ Phase 6 implémente l'audit complet d'accessibilité WCAG 2.2 AA et les tests dr
 - ✅ Page Accessibilité (`/accessibilite`)
 
 **Critères** :
+
 - 0 violation critique
 - 0 violation sérieuse
 - Warnings documentés
 
 ##### 2. Tests WCAG 2.2 AA Spécifiques
+
 - ✅ **Contraste des couleurs** : Minimum 4.5:1 pour texte normal, 3:1 pour large
 - ✅ **Focus visible** : Tous les éléments interactifs ont un indicateur de focus
 - ✅ **Navigation clavier** : Tab fonctionne sur tous les composants
@@ -60,17 +65,20 @@ Phase 6 implémente l'audit complet d'accessibilité WCAG 2.2 AA et les tests dr
 - ✅ **Landmarks** : header, main, nav correctement balisés
 
 ##### 3. Tests Animations
+
 - ✅ **Animations ≤ 150ms** : Respect contrainte TSA
 - ✅ **Pas de clignotement > 3 Hz** : Prévention épilepsie
 - ✅ **prefers-reduced-motion** : Respect des préférences utilisateur
 
 ##### 4. Tests Composants Interactifs
+
 - ✅ Boutons - Labels accessibles
 - ✅ Liens - Labels accessibles
 - ✅ Formulaires - Tous les champs labellisés
 - ✅ Navigation - Header et sidebar accessibles au clavier
 
 ##### 5. Tests Lecteurs d'Écran (ARIA)
+
 - ✅ Rôles ARIA corrects (button, link, dialog)
 - ✅ aria-label sur icônes seules
 - ✅ aria-describedby pour messages d'aide
@@ -81,6 +89,7 @@ Phase 6 implémente l'audit complet d'accessibilité WCAG 2.2 AA et les tests dr
 **Emplacement** : `tests/accessibility/report.html`
 
 Le rapport HTML est généré automatiquement après l'exécution des tests et contient :
+
 - 📊 Statistiques globales (violations par niveau)
 - 📄 Résultats par page
 - 📋 Recommandations priorisées
@@ -97,19 +106,23 @@ Le rapport HTML est généré automatiquement après l'exécution des tests et c
 #### Tests Implémentés
 
 ##### 1. Réorganisation par Drag-and-Drop
+
 - ✅ Réorganiser 3 tâches - Ordre visuel + persistance DB
 - ✅ Animations fluides ≤ 150ms
 
 ##### 2. Accessibilité Clavier
+
 - ✅ Réorganiser avec clavier (Tab, Espace, Flèches)
 - ✅ Annonces ARIA pour lecteurs d'écran
 - ✅ Attributs ARIA corrects (aria-grabbed, aria-dropeffect)
 
 ##### 3. Feedback Visuel
+
 - ✅ Indicateur visuel pendant drag (ombre, opacité, zone de drop)
 - ✅ Pas de violations WCAG
 
 **Note** : La fonctionnalité drag-and-drop utilise `@dnd-kit` et est déjà très bien implémentée avec :
+
 - Support clavier natif (KeyboardSensor)
 - Annonces ARIA automatiques
 - Conformité WCAG 2.1.1 et 4.1.3
@@ -128,12 +141,14 @@ https://repo.yarnpkg.com/4.10.3/packages/yarnpkg-cli/bin/yarn.js
 ```
 
 **Recommandations** :
+
 1. Résoudre le problème Yarn/Corepack
 2. Exécuter `yarn test:coverage`
 3. Si coverage < 80%, créer tests unitaires ciblés pour les composants moins couverts
 4. Objectif : Atteindre 80%+ de couverture globale
 
 **Commande** :
+
 ```bash
 yarn test:coverage
 yarn test:coverage:open
@@ -146,12 +161,14 @@ yarn test:coverage:open
 ### Bibliothèques Utilisées
 
 #### axe-core (via CDN)
+
 - **Version** : 4.10.2
 - **Source** : `https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js`
 - **Usage** : Audit automatisé WCAG
 - **Note** : Injecté dynamiquement via `injectAxe()` helper
 
 #### Helpers Existants
+
 - **Fichier** : `tests/e2e/helpers/accessibility.ts`
 - **Fonctions** :
   - `injectAxe(page)` - Injecter axe-core
@@ -169,12 +186,12 @@ yarn test:coverage:open
 
 ### Objectifs WCAG 2.2 AA
 
-| Critère | Niveau | Objectif | Statut |
-|---------|--------|----------|--------|
-| **Violations Critiques** | Bloquant | 0 | ✅ À vérifier |
-| **Violations Sérieuses** | Bloquant | 0 | ✅ À vérifier |
-| **Violations Modérées** | Warning | Documentées | ✅ À vérifier |
-| **Violations Mineures** | Info | Documentées | ✅ À vérifier |
+| Critère                  | Niveau   | Objectif    | Statut        |
+| ------------------------ | -------- | ----------- | ------------- |
+| **Violations Critiques** | Bloquant | 0           | ✅ À vérifier |
+| **Violations Sérieuses** | Bloquant | 0           | ✅ À vérifier |
+| **Violations Modérées**  | Warning  | Documentées | ✅ À vérifier |
+| **Violations Mineures**  | Info     | Documentées | ✅ À vérifier |
 
 ### Niveaux de Conformité
 
@@ -264,6 +281,7 @@ Les pages d'auth utilisent Cloudflare Turnstile. Les tests mockent automatiqueme
 ### Drag-and-Drop avec @dnd-kit
 
 L'implémentation existante est **déjà excellente** :
+
 - ✅ Support clavier natif
 - ✅ Annonces ARIA
 - ✅ Animations configurables
@@ -309,6 +327,7 @@ L'implémentation existante est **déjà excellente** :
 **Problème** : Impossible d'exécuter `yarn` en raison d'une erreur réseau Corepack.
 
 **Workaround** :
+
 ```bash
 # Utiliser npm directement (si package-lock.json existe)
 npm run test:coverage
@@ -326,6 +345,7 @@ yarn test:coverage
 Les tests drag-and-drop créent des utilisateurs et des tâches. Ils nécessitent donc Supabase Local ou un accès à la base de test.
 
 **Commande** :
+
 ```bash
 supabase start
 yarn test:e2e tests/e2e/drag-and-drop.spec.ts

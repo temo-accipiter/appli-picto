@@ -31,11 +31,12 @@ export const customAxe = configureAxe({
   },
 })
 
-// Types pour TypeScript
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveNoViolations(): R
-    }
+// Types pour TypeScript (Vitest)
+declare module 'vitest' {
+  interface Assertion {
+    toHaveNoViolations(): void
+  }
+  interface AsymmetricMatchersContaining {
+    toHaveNoViolations(): void
   }
 }

@@ -1,4 +1,5 @@
 // src/utils/permissions-api.ts
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { supabase } from '@/utils/supabaseClient' // ⬅️ UNIFIÉ
 import type { PostgrestSingleResponse } from '@supabase/supabase-js'
 

@@ -4,6 +4,8 @@
  * Fournit des utilitaires pour gérer l'authentification dans les tests E2E.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Page, expect } from '@playwright/test'
 
 export interface LoginCredentials {

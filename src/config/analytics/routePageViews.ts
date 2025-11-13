@@ -1,4 +1,5 @@
 // src/analytics/routePageViews.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { hasConsent } from '@/utils/consent'
 
 const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()

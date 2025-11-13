@@ -30,17 +30,20 @@ STRIPE_WEBHOOK_SECRET=whsec_test_1234567890abcdefghijklmnopqrstuvwxyz
 ### 3. Installer Stripe CLI
 
 **macOS** (Homebrew) :
+
 ```bash
 brew install stripe/stripe-cli/stripe
 ```
 
 **Windows** (Scoop) :
+
 ```bash
 scoop bucket add stripe https://github.com/stripe/scoop-stripe-cli.git
 scoop install stripe
 ```
 
 **Linux** :
+
 ```bash
 # Via script d'installation
 curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
@@ -64,7 +67,10 @@ Une page web s'ouvrira pour autoriser l'accès.
 Pour les tests unitaires, utiliser les **mocks Stripe** :
 
 ```typescript
-import { mockStripeAPI, mockStripeCheckoutSession } from '@/tests/helpers/stripe-mock'
+import {
+  mockStripeAPI,
+  mockStripeCheckoutSession,
+} from '@/tests/helpers/stripe-mock'
 
 describe('Stripe Integration', () => {
   it('should create checkout session', async () => {
@@ -117,6 +123,7 @@ Pour tester les webhooks en local :
 #### Étape 1 : Démarrer l'écoute des webhooks
 
 Terminal 1 :
+
 ```bash
 yarn stripe:listen
 ```
@@ -126,6 +133,7 @@ Vous obtiendrez un **webhook secret** (commence par `whsec_...`). Copiez-le dans
 #### Étape 2 : Démarrer votre serveur local
 
 Terminal 2 :
+
 ```bash
 # Démarrer Supabase Local (pour les edge functions)
 yarn supabase:start
@@ -137,6 +145,7 @@ yarn supabase:serve
 #### Étape 3 : Déclencher des événements de test
 
 Terminal 3 :
+
 ```bash
 # Simuler un checkout complété
 yarn stripe:trigger:checkout
@@ -205,19 +214,20 @@ import {
 
 ### Fonctions utiles
 
-| Helper | Description |
-|--------|-------------|
-| `mockStripeAPI()` | Mock complet de l'API Stripe |
-| `mockStripeCustomer` | Objet Customer mocké |
-| `mockStripeSubscriptionActive` | Abonnement actif mocké |
-| `mockStripeCheckoutSession` | Session checkout mockée |
-| `mockWebhookSubscriptionCreated` | Événement webhook mocké |
+| Helper                           | Description                  |
+| -------------------------------- | ---------------------------- |
+| `mockStripeAPI()`                | Mock complet de l'API Stripe |
+| `mockStripeCustomer`             | Objet Customer mocké         |
+| `mockStripeSubscriptionActive`   | Abonnement actif mocké       |
+| `mockStripeCheckoutSession`      | Session checkout mockée      |
+| `mockWebhookSubscriptionCreated` | Événement webhook mocké      |
 
 ## 📊 Stripe Dashboard de test
 
 **URL** : https://dashboard.stripe.com/test
 
 Vous pouvez :
+
 - ✅ Voir les paiements de test
 - ✅ Voir les abonnements créés
 - ✅ Déclencher manuellement des webhooks
@@ -226,11 +236,11 @@ Vous pouvez :
 
 ### Cartes de test utiles
 
-| Numéro | Description |
-|--------|-------------|
-| `4242 4242 4242 4242` | Paiement réussi |
-| `4000 0000 0000 0002` | Carte refusée |
-| `4000 0000 0000 9995` | Fonds insuffisants |
+| Numéro                | Description                        |
+| --------------------- | ---------------------------------- |
+| `4242 4242 4242 4242` | Paiement réussi                    |
+| `4000 0000 0000 0002` | Carte refusée                      |
+| `4000 0000 0000 9995` | Fonds insuffisants                 |
 | `4000 0025 0000 3155` | Authentification 3D Secure requise |
 
 **Dates d'expiration** : N'importe quelle date future (ex: 12/34)
@@ -238,10 +248,10 @@ Vous pouvez :
 
 ## 🔄 Scripts disponibles
 
-| Script | Description |
-|--------|-------------|
-| `yarn stripe:listen` | Écouter les webhooks localement |
-| `yarn stripe:trigger:checkout` | Simuler checkout.session.completed |
+| Script                             | Description                           |
+| ---------------------------------- | ------------------------------------- |
+| `yarn stripe:listen`               | Écouter les webhooks localement       |
+| `yarn stripe:trigger:checkout`     | Simuler checkout.session.completed    |
 | `yarn stripe:trigger:subscription` | Simuler customer.subscription.created |
 
 ## 🐛 Dépannage

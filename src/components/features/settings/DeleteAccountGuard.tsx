@@ -4,7 +4,7 @@ import { useToast } from '@/contexts'
 import useAuth from '@/hooks/useAuth'
 import { useI18n } from '@/hooks'
 import { supabase, validatePasswordNotEmpty } from '@/utils'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Turnstile from 'react-turnstile'
 import { InputWithValidationRef } from '@/components/shared/input-with-validation/InputWithValidation'
 import './DeleteAccountGuard.scss'
@@ -109,7 +109,7 @@ export default function DeleteAccountGuard({
     setError('')
     wordRef.current?.validateNow?.()
     pwRef.current?.validateNow?.()
-    needsTotp && totpRef.current?.validateNow?.()
+    if (needsTotp) totpRef.current?.validateNow?.()
     if (!allFieldsValid || left > 0) return
 
     try {

@@ -93,8 +93,13 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
   const getAudioContext = useCallback((): AudioContext | null => {
     if (!audioCtxRef.current) {
       try {
-        audioCtxRef.current = new (window.AudioContext ||
-          (window as any).webkitAudioContext)()
+        const AudioContextConstructor =
+          window.AudioContext ||
+          (window as Window & { webkitAudioContext?: typeof AudioContext })
+            .webkitAudioContext
+        if (AudioContextConstructor) {
+          audioCtxRef.current = new AudioContextConstructor()
+        }
         // Si le contexte est suspendu, on le reprend
         if (audioCtxRef.current.state === 'suspended') {
           audioCtxRef.current.resume()

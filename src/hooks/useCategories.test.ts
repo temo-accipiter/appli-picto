@@ -30,19 +30,19 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', async (importOriginal) => {
+vi.mock('@/hooks', async importOriginal => {
   const actual = await importOriginal<typeof import('@/hooks')>()
   return {
     ...actual,
     useAuth: vi.fn(() => ({
       user: mockUser,
-      authReady: true
+      authReady: true,
     })),
     useI18n: vi.fn(() => ({
       t: (key: string) => key,
-      i18n: { language: 'fr' }
+      i18n: { language: 'fr' },
     })),
-    useToast: vi.fn(() => mockToast)
+    useToast: vi.fn(() => mockToast),
   }
 })
 
@@ -109,11 +109,11 @@ describe('useCategories', () => {
     })
 
     it("doit retourner un tableau vide si pas d'utilisateur", async () => {
-      // Arrange - Mock user = null
-      vi.mock('@/hooks', () => ({
-        useAuth: () => ({ user: null }),
-        useToast: () => mockToast,
-      }))
+      // Arrange - Mock user = null dynamiquement
+      const useAuthMock = await import('@/hooks').then(mod => mod.useAuth)
+      if (vi.isMockFunction(useAuthMock)) {
+        useAuthMock.mockReturnValueOnce({ user: null, authReady: true })
+      }
 
       // Act
       const { result } = renderHook(() => useCategories())
@@ -233,8 +233,10 @@ describe('useCategories', () => {
           }),
         })
         .mockReturnValueOnce({
-          insert: vi.fn().mockResolvedValue({
-            error: { message: 'Duplicate key error', code: '23505' },
+          insert: vi.fn().mockReturnValue({
+            select: vi.fn().mockResolvedValue({
+              error: { message: 'Duplicate key error', code: '23505' },
+            }),
           }),
         })
 
@@ -255,7 +257,7 @@ describe('useCategories', () => {
       // Assert
       expect(response.error).toBeTruthy()
       expect(mockToast.show).toHaveBeenCalledWith(
-        "Erreur lors de l'ajout de la catégorie",
+        'toasts.categoryAddError',
         'error'
       )
     })

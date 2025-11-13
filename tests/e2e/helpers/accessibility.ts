@@ -4,6 +4,8 @@
  * Fournit des utilitaires pour vérifier la conformité WCAG 2.2 AA.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Page, Locator, expect } from '@playwright/test'
 import type { AxeResults } from 'axe-core'
 

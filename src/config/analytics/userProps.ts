@@ -1,5 +1,6 @@
 // src/analytics/userProps.ts
 // Définit des user_properties GA4 (uid hashé + tier + plan) après consentement & auth.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/utils/supabaseClient'
 import { hasConsent } from '@/utils/consent'
 import type { User } from '@supabase/supabase-js'

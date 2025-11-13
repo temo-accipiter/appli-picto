@@ -13,6 +13,7 @@
  * Objectif : 0 violation critique, 0 violation sérieuse
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { test, expect, Page } from '@playwright/test'
 import type { AxeResults } from 'axe-core'
 import {

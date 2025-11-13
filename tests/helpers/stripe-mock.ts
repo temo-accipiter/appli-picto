@@ -5,6 +5,7 @@
  * sans faire d'appels réels à l'API.
  */
 
+import { vi } from 'vitest'
 import type Stripe from 'stripe'
 
 /**

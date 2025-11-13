@@ -362,7 +362,10 @@ describe('useTaches', () => {
       // Assert
       expect(result.current.taches).toHaveLength(1)
       expect(result.current.taches[0].id).toBe('2')
-      expect(mockToast.show).toHaveBeenCalledWith('toasts.taskDeleted', 'success')
+      expect(mockToast.show).toHaveBeenCalledWith(
+        'toasts.taskDeleted',
+        'success'
+      )
     })
   })
 })

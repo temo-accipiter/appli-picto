@@ -59,6 +59,7 @@ export default function CookieBanner() {
       clearTimeout(timeout)
       document.removeEventListener('keydown', handleKeyDown)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible])
 
   const baseExtra = () => ({

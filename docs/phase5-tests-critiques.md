@@ -23,14 +23,14 @@
 
 ### 1. Fichiers de tests créés
 
-| Fichier | Tests | Statut | Scénarios couverts |
-|---------|-------|--------|-------------------|
-| `tests/e2e/stripe-payment.spec.ts` | 5 | ✅ | Checkout, paiement réussi/échoué, upgrade, cancel |
-| `tests/e2e/auth-flows.spec.ts` | 8 | ✅ | Signup, login (RBAC), logout, reset password, email verification, session persistence |
-| `tests/e2e/account-deletion.spec.ts` | 3 | ✅ | Suppression compte RGPD, annulation Stripe, validations sécurité |
-| `tests/e2e/quotas-upgrade.spec.ts` | 4 | ✅ | Limite atteinte, message upgrade, quotas augmentés, tracking temps réel |
-| `tests/e2e/admin-flows.spec.ts` | 3 | ✅ | Gestion utilisateurs, modification RBAC, analytics/logs |
-| **TOTAL** | **23** | ✅ | **19 minimum requis** |
+| Fichier                              | Tests  | Statut | Scénarios couverts                                                                    |
+| ------------------------------------ | ------ | ------ | ------------------------------------------------------------------------------------- |
+| `tests/e2e/stripe-payment.spec.ts`   | 5      | ✅     | Checkout, paiement réussi/échoué, upgrade, cancel                                     |
+| `tests/e2e/auth-flows.spec.ts`       | 8      | ✅     | Signup, login (RBAC), logout, reset password, email verification, session persistence |
+| `tests/e2e/account-deletion.spec.ts` | 3      | ✅     | Suppression compte RGPD, annulation Stripe, validations sécurité                      |
+| `tests/e2e/quotas-upgrade.spec.ts`   | 4      | ✅     | Limite atteinte, message upgrade, quotas augmentés, tracking temps réel               |
+| `tests/e2e/admin-flows.spec.ts`      | 3      | ✅     | Gestion utilisateurs, modification RBAC, analytics/logs                               |
+| **TOTAL**                            | **23** | ✅     | **19 minimum requis**                                                                 |
 
 ### 2. Documentation
 
@@ -282,24 +282,24 @@
 
 ### Tests E2E
 
-| Métrique | Valeur | Objectif | Statut |
-|----------|--------|----------|--------|
-| **Nombre de tests E2E** | 23 | 19 minimum | ✅ +21% |
-| **Couverture parcours P0** | 5/5 | 5/5 | ✅ 100% |
-| **Assertions a11y** | 23/23 tests | Tous les tests | ✅ 100% |
-| **Tests stables** | À valider en CI | 100% | ⏳ En attente |
-| **Temps exécution** | À mesurer | < 10 min | ⏳ En attente |
+| Métrique                   | Valeur          | Objectif       | Statut        |
+| -------------------------- | --------------- | -------------- | ------------- |
+| **Nombre de tests E2E**    | 23              | 19 minimum     | ✅ +21%       |
+| **Couverture parcours P0** | 5/5             | 5/5            | ✅ 100%       |
+| **Assertions a11y**        | 23/23 tests     | Tous les tests | ✅ 100%       |
+| **Tests stables**          | À valider en CI | 100%           | ⏳ En attente |
+| **Temps exécution**        | À mesurer       | < 10 min       | ⏳ En attente |
 
 ### Coverage (À mesurer après exécution)
 
 | Zone de code | Coverage actuel | Objectif | Statut |
-|--------------|----------------|----------|--------|
-| **Auth** | À mesurer | 80%+ | ⏳ |
-| **Stripe** | À mesurer | 80%+ | ⏳ |
-| **RGPD** | À mesurer | 80%+ | ⏳ |
-| **Quotas** | À mesurer | 80%+ | ⏳ |
-| **Admin** | À mesurer | 80%+ | ⏳ |
-| **Global** | ~39% (baseline) | 80%+ | ⏳ |
+| ------------ | --------------- | -------- | ------ |
+| **Auth**     | À mesurer       | 80%+     | ⏳     |
+| **Stripe**   | À mesurer       | 80%+     | ⏳     |
+| **RGPD**     | À mesurer       | 80%+     | ⏳     |
+| **Quotas**   | À mesurer       | 80%+     | ⏳     |
+| **Admin**    | À mesurer       | 80%+     | ⏳     |
+| **Global**   | ~39% (baseline) | 80%+     | ⏳     |
 
 > **Note** : Le coverage global sera mesuré après l'exécution complète des tests E2E en CI.
 
@@ -309,13 +309,13 @@
 
 ### Helpers créés/utilisés
 
-| Helper | Fichier | Usage |
-|--------|---------|-------|
-| `loginAs(page, role)` | `tests/e2e/helpers/auth.ts` | Connexion rapide avec rôle |
-| `createTestScenario(scenario)` | `tests/e2e/helpers/database.ts` | Création utilisateurs avec données |
-| `cleanupDatabase()` | `tests/e2e/helpers/database.ts` | Nettoyage complet DB |
-| `expectNoA11yViolations(page)` | `tests/e2e/helpers/accessibility.ts` | Vérification a11y automatique |
-| `mockTurnstileCaptcha(page)` | Inline dans tests | Mock captcha Cloudflare |
+| Helper                         | Fichier                              | Usage                              |
+| ------------------------------ | ------------------------------------ | ---------------------------------- |
+| `loginAs(page, role)`          | `tests/e2e/helpers/auth.ts`          | Connexion rapide avec rôle         |
+| `createTestScenario(scenario)` | `tests/e2e/helpers/database.ts`      | Création utilisateurs avec données |
+| `cleanupDatabase()`            | `tests/e2e/helpers/database.ts`      | Nettoyage complet DB               |
+| `expectNoA11yViolations(page)` | `tests/e2e/helpers/accessibility.ts` | Vérification a11y automatique      |
+| `mockTurnstileCaptcha(page)`   | Inline dans tests                    | Mock captcha Cloudflare            |
 
 ### Mocks et stubs
 
@@ -343,7 +343,7 @@
 
 ```typescript
 await page.addInitScript(() => {
-  (window as any).turnstile = {
+  ;(window as any).turnstile = {
     render: (element, options) => {
       if (options.onSuccess) {
         setTimeout(() => options.onSuccess('mock-token'), 100)
@@ -356,7 +356,7 @@ await page.addInitScript(() => {
   }
 })
 
-await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
+await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 ```
 
 ### 3. Supabase Local Docker
@@ -366,6 +366,7 @@ await page.route('**/cloudflare.com/turnstile/**', (route) => route.abort())
 **Solution** : Les helpers utilisent `SUPABASE_TEST_URL` et `SUPABASE_TEST_SERVICE_KEY` qui pointent vers `http://localhost:54321`.
 
 **Prérequis pour exécuter les tests** :
+
 ```bash
 # Démarrer Supabase Local
 supabase start
@@ -381,7 +382,7 @@ yarn test:e2e
 **Solution** : Mocking via `page.route()` :
 
 ```typescript
-await page.route('**/functions/v1/create-checkout-session', async (route) => {
+await page.route('**/functions/v1/create-checkout-session', async route => {
   await route.fulfill({
     status: 200,
     contentType: 'application/json',
@@ -435,12 +436,12 @@ test.afterEach(async () => {
 
 ### Coverage à améliorer
 
-| Fichier/Composant | Coverage actuel | Objectif | Action |
-|-------------------|----------------|----------|--------|
-| `hooks/useEntitlements.js` | À mesurer | 80%+ | Tests unitaires additionnels |
-| `components/taches/taches-dnd/` | À mesurer | 60%+ | Tests E2E drag & drop |
-| `components/recompenses/` | À mesurer | 70%+ | Tests E2E CRUD récompenses |
-| `utils/imageCompression.js` | À mesurer | 80%+ | Tests unitaires + E2E upload |
+| Fichier/Composant               | Coverage actuel | Objectif | Action                       |
+| ------------------------------- | --------------- | -------- | ---------------------------- |
+| `hooks/useEntitlements.js`      | À mesurer       | 80%+     | Tests unitaires additionnels |
+| `components/taches/taches-dnd/` | À mesurer       | 60%+     | Tests E2E drag & drop        |
+| `components/recompenses/`       | À mesurer       | 70%+     | Tests E2E CRUD récompenses   |
+| `utils/imageCompression.js`     | À mesurer       | 80%+     | Tests unitaires + E2E upload |
 
 ---
 
@@ -531,17 +532,20 @@ test.afterEach(async () => {
 - **Infrastructure de tests** robuste et réutilisable
 
 **Points forts** :
+
 - Couverture complète des parcours business critiques
 - Mocking efficace (Stripe, Turnstile, Edge Functions)
 - Isolation des tests garantie (cleanup DB)
 - Documentation exhaustive
 
 **Axes d'amélioration** :
+
 - Exécuter les tests pour mesurer le coverage réel
 - Optimiser le temps d'exécution (parallélisation)
 - Ajouter tests P1/P2 en Phase 6
 
 **Impact business** :
+
 - Réduction du risque de régression sur les parcours critiques (paiements, auth, RGPD)
 - Conformité WCAG 2.2 AA garantie par les tests automatisés
 - Confiance accrue pour déployer en production

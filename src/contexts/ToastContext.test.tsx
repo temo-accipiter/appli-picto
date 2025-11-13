@@ -11,6 +11,48 @@
 import { render, screen, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { ToastProvider, useToast } from './ToastContext'
+import { AuthProvider } from './AuthContext'
+import type { ReactNode } from 'react'
+
+// ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
+const mockSupabase = vi.hoisted(() => ({
+  auth: {
+    getSession: vi
+      .fn()
+      .mockResolvedValue({ data: { session: null }, error: null }),
+    onAuthStateChange: vi.fn().mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } },
+    }),
+    signOut: vi.fn(),
+  },
+}))
+
+// Mock useParametres pour éviter les appels Supabase
+vi.mock('@/hooks', () => ({
+  useParametres: vi.fn(() => ({
+    parametres: { toasts_enabled: true },
+    loading: false,
+  })),
+}))
+
+vi.mock('@/utils/supabaseClient', () => ({
+  supabase: mockSupabase,
+  recreateSupabaseClient: vi.fn().mockResolvedValue({ session: null }),
+}))
+
+vi.mock('@/utils/supabaseVisibilityHandler', () => ({
+  startVisibilityHandler: vi.fn(),
+  stopVisibilityHandler: vi.fn(),
+}))
+
+// Helper pour wrapper avec AuthProvider
+function TestWrapper({ children }: { children: ReactNode }) {
+  return (
+    <AuthProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </AuthProvider>
+  )
+}
 
 // Composant de test simple
 function TestConsumer() {
@@ -46,9 +88,9 @@ describe('ToastContext', () => {
     it('doit fournir les fonctions show et hide', () => {
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <TestConsumer />
-        </ToastProvider>
+        </TestWrapper>
       )
 
       // Assert
@@ -59,9 +101,9 @@ describe('ToastContext', () => {
     it('doit rendre les enfants correctement', () => {
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <div data-testid="child">Test Child</div>
-        </ToastProvider>
+        </TestWrapper>
       )
 
       // Assert
@@ -74,9 +116,9 @@ describe('ToastContext', () => {
     it('doit appeler show() sans erreur', () => {
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <TestConsumer />
-        </ToastProvider>
+        </TestWrapper>
       )
 
       const showBtn = screen.getByTestId('call-show')
@@ -92,9 +134,9 @@ describe('ToastContext', () => {
     it('doit appeler hide() sans erreur', () => {
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <TestConsumer />
-        </ToastProvider>
+        </TestWrapper>
       )
 
       const showBtn = screen.getByTestId('call-show')
@@ -149,9 +191,9 @@ describe('ToastContext', () => {
 
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <TypeTestConsumer />
-        </ToastProvider>
+        </TestWrapper>
       )
 
       // Assert - tous les types devraient fonctionner
@@ -196,9 +238,9 @@ describe('ToastContext', () => {
 
       // Act
       render(
-        <ToastProvider>
+        <TestWrapper>
           <OptionsTestConsumer />
-        </ToastProvider>
+        </TestWrapper>
       )
 
       // Assert
@@ -215,9 +257,11 @@ describe('ToastContext', () => {
       // Act & Assert - ne devrait pas throw
       expect(() => {
         render(
-          <ToastProvider defaultDuration={3000}>
-            <TestConsumer />
-          </ToastProvider>
+          <AuthProvider>
+            <ToastProvider defaultDuration={3000}>
+              <TestConsumer />
+            </ToastProvider>
+          </AuthProvider>
         )
       }).not.toThrow()
 
@@ -226,7 +270,7 @@ describe('ToastContext', () => {
   })
 
   describe('useToast hook', () => {
-    it('doit retourner null si utilisé hors du Provider', () => {
+    it('doit lancer une erreur si utilisé hors du Provider', () => {
       // Arrange
       function OutsideConsumer() {
         const toast = useToast()
@@ -235,11 +279,17 @@ describe('ToastContext', () => {
         )
       }
 
-      // Act
-      render(<OutsideConsumer />)
+      // Spy sur console.error pour éviter le bruit dans les logs
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {})
 
-      // Assert
-      expect(screen.getByTestId('toast-value').textContent).toBe('null')
+      // Act & Assert
+      expect(() => {
+        render(<OutsideConsumer />)
+      }).toThrow('useToast must be used within a ToastProvider')
+
+      consoleErrorSpy.mockRestore()
     })
   })
 })

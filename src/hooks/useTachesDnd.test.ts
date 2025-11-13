@@ -16,20 +16,25 @@ import { renderHook, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
 
 // ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
-const { mockSupabase, mockUser, mockWithAbortSafe, mockIsAbortLike, mockToast } =
-  vi.hoisted(() => ({
-    mockSupabase: {
-      from: vi.fn(),
-    },
-    mockUser: {
-      id: 'test-user-123',
-    },
-    mockWithAbortSafe: vi.fn(),
-    mockIsAbortLike: vi.fn(() => false),
-    mockToast: {
-      show: vi.fn(),
-    },
-  }))
+const {
+  mockSupabase,
+  mockUser,
+  mockWithAbortSafe,
+  mockIsAbortLike,
+  mockToast,
+} = vi.hoisted(() => ({
+  mockSupabase: {
+    from: vi.fn(),
+  },
+  mockUser: {
+    id: 'test-user-123',
+  },
+  mockWithAbortSafe: vi.fn(),
+  mockIsAbortLike: vi.fn(() => false),
+  mockToast: {
+    show: vi.fn(),
+  },
+}))
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,

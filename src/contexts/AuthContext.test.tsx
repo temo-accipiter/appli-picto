@@ -16,7 +16,7 @@ import { useContext } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 // ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
-const { mockSupabase } = vi.hoisted(() => ({
+const { mockSupabase, mockRecreateSupabaseClient } = vi.hoisted(() => ({
   mockSupabase: {
     auth: {
       getSession: vi.fn(),
@@ -24,10 +24,18 @@ const { mockSupabase } = vi.hoisted(() => ({
       signOut: vi.fn(),
     },
   },
+  mockRecreateSupabaseClient: vi.fn(),
 }))
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
+  recreateSupabaseClient: mockRecreateSupabaseClient,
+}))
+
+// Mock du visibility handler
+vi.mock('@/utils/supabaseVisibilityHandler', () => ({
+  startVisibilityHandler: vi.fn(),
+  stopVisibilityHandler: vi.fn(),
 }))
 
 // Composant de test pour lire le contexte
@@ -58,6 +66,11 @@ describe('AuthContext', () => {
           unsubscribe: unsubscribeMock,
         },
       },
+    })
+
+    // Mock par défaut de recreateSupabaseClient
+    mockRecreateSupabaseClient.mockResolvedValue({
+      session: null,
     })
   })
 

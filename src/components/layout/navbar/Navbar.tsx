@@ -21,7 +21,7 @@ import './Navbar.scss'
 export default function Navbar() {
   const location = useLocation()
   const { user } = useAuth()
-  const { can: _can, isVisitor } = usePermissions()
+  const { can: _can, isVisitor, ready } = usePermissions()
   const { t } = useI18n() // 🌐 Hook i18n pour les traductions
   const [showPersonalizationModal, setShowPersonalizationModal] =
     useState(false)
@@ -30,6 +30,9 @@ export default function Navbar() {
   const isEdition = location.pathname === '/edition'
   const isProfil = location.pathname === '/profil'
   const isAdminPermissions = location.pathname === '/admin/permissions'
+
+  // 🔧 CORRECTIF : Détecter visitor même pendant le chargement
+  const isVisitorMode = !user && (isVisitor || !ready)
 
   return (
     <nav className="navbar">
@@ -90,7 +93,7 @@ export default function Navbar() {
 
           {/* Boutons de conversion pour les visiteurs */}
           <div className="visitor-buttons">
-            {isVisitor ? (
+            {isVisitorMode ? (
               // Boutons pour tous les visiteurs (tableau, tableau-demo, etc.)
               <>
                 <button

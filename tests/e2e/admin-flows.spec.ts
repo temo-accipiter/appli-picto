@@ -9,6 +9,7 @@
  * IMPORTANT : Ces tests vérifient également l'isolation des permissions (non-admin = 403).
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { test, expect, Page } from '@playwright/test'
 import {
   createTestScenario,

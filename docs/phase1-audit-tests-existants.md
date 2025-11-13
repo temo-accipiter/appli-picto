@@ -8,14 +8,14 @@
 
 ## 📋 Résumé Exécutif
 
-| Catégorie | État | Détails |
-|-----------|------|---------|
-| **Frameworks de test** | ✅ Présent | Vitest + Playwright + Testing Library |
-| **Tests unitaires** | ✅ Présent | 24 fichiers de tests Vitest |
-| **Tests E2E** | ✅ Présent | 3 fichiers de tests Playwright |
-| **Configuration test** | ✅ Présent | vitest.config.ts + playwright.config.ts |
-| **CI/CD** | ❌ Absent | Aucune configuration détectée |
-| **Couverture actuelle** | ⚠️ Non mesurée | Dépendances non installées |
+| Catégorie               | État           | Détails                                 |
+| ----------------------- | -------------- | --------------------------------------- |
+| **Frameworks de test**  | ✅ Présent     | Vitest + Playwright + Testing Library   |
+| **Tests unitaires**     | ✅ Présent     | 24 fichiers de tests Vitest             |
+| **Tests E2E**           | ✅ Présent     | 3 fichiers de tests Playwright          |
+| **Configuration test**  | ✅ Présent     | vitest.config.ts + playwright.config.ts |
+| **CI/CD**               | ❌ Absent      | Aucune configuration détectée           |
+| **Couverture actuelle** | ⚠️ Non mesurée | Dépendances non installées              |
 
 ---
 
@@ -24,24 +24,29 @@
 ### 1.1 Vitest (Tests Unitaires)
 
 **Package principal :**
+
 - `vitest` : ^3.2.4
 
 **Extensions et utilitaires :**
+
 - `@vitest/coverage-v8` : ^3.2.4
 - `jsdom` : ^26.1.0
 
 **Testing Library :**
+
 - `@testing-library/dom` : ^10.4.1
 - `@testing-library/jest-dom` : ^6.7.0
 - `@testing-library/react` : ^16.3.0
 - `@testing-library/user-event` : ^14.6.1
 
 **Mock Service Worker (MSW) :**
+
 - `msw` : ^2.11.5
 
 ### 1.2 Playwright (Tests E2E)
 
 **Package principal :**
+
 - `@playwright/test` : ^1.56.0
 
 ### 1.3 Autres Dépendances de Test
@@ -79,6 +84,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 **Fichier :** `vitest.config.ts`
 
 **Configuration clé :**
+
 - **Environment :** jsdom
 - **Setup files :** `./src/test/setup.ts`
 - **Globals :** true
@@ -89,6 +95,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
   - Fichiers de config webpack/vite/vitest/etc.
 
 **Alias de chemins :**
+
 - `@` → `src/`
 - `@styles` → `src/styles/`
 
@@ -97,6 +104,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 **Fichier :** `playwright.config.ts`
 
 **Configuration clé :**
+
 - **Test directory :** `./tests/e2e`
 - **Timeout :** 30s par test
 - **Parallélisme :** Activé (`fullyParallel: true`)
@@ -108,10 +116,12 @@ yarn test:e2e:report   # Afficher le rapport HTML
 - **Video :** `retain-on-failure`
 
 **Navigateurs testés :**
+
 - Desktop: Chromium, Firefox, WebKit
 - Mobile: Pixel 5 (Chrome), iPhone 12 (Safari)
 
 **Web Server :**
+
 - Command: `yarn dev`
 - Port: 5173
 - Timeout: 120s
@@ -122,6 +132,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 **Fichier :** `src/test/setup.ts`
 
 **Fonctionnalités :**
+
 - Import de `@testing-library/jest-dom`
 - Configuration MSW Server (Mock HTTP requests)
   - `beforeAll()` : démarrage du serveur
@@ -141,6 +152,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 ### 3.4 Mocks MSW
 
 **Fichiers :**
+
 - `src/test/mocks/server.ts` - Configuration serveur MSW
 - `src/test/mocks/handlers.ts` - Request handlers
 - `src/test/mocks/data.ts` - Données de test
@@ -152,6 +164,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 ### 4.1 Tests Unitaires Vitest (24 fichiers)
 
 #### Composants UI (5 tests)
+
 - `src/components/ui/button/Button.test.tsx`
 - `src/components/ui/checkbox/Checkbox.test.tsx`
 - `src/components/ui/input/Input.test.tsx`
@@ -159,11 +172,13 @@ yarn test:e2e:report   # Afficher le rapport HTML
 - `src/components/ui/toast/Toast.test.tsx`
 
 #### Contextes (3 tests)
+
 - `src/contexts/AuthContext.test.tsx`
 - `src/contexts/PermissionsContext.test.tsx`
 - `src/contexts/ToastContext.test.tsx`
 
 #### Hooks (12 tests)
+
 - `src/hooks/useAccountStatus.test.ts`
 - `src/hooks/useAdminPermissions.test.ts`
 - `src/hooks/useCategories.test.ts`
@@ -180,11 +195,13 @@ yarn test:e2e:report   # Afficher le rapport HTML
 - `src/hooks/useTachesEdition.test.ts`
 
 #### Pages (3 tests)
+
 - `src/pages/edition/Edition.test.tsx`
 - `src/pages/profil/Profil.test.tsx`
 - `src/pages/tableau/Tableau.test.tsx`
 
 #### Utilitaires (1 test)
+
 - `src/utils/images/webpConverter.test.ts`
 
 ### 4.2 Tests E2E Playwright (3 fichiers)
@@ -193,7 +210,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 - `tests/e2e/image-upload.spec.ts`
 - `tests/e2e/task-completion.spec.ts`
 
-### 4.3 Dossiers __tests__
+### 4.3 Dossiers **tests**
 
 ❌ **Aucun dossier `__tests__` détecté**
 
@@ -210,6 +227,7 @@ yarn test:e2e:report   # Afficher le rapport HTML
 ### 5.2 Autres CI/CD
 
 ❌ **Aucune configuration détectée pour :**
+
 - GitLab CI (`.gitlab-ci.yml`)
 - CircleCI (`.circleci/`)
 - Travis CI (`.travis.yml`)
@@ -221,9 +239,11 @@ yarn test:e2e:report   # Afficher le rapport HTML
 ### 6.1 Configuration
 
 ✅ **Package de couverture installé :**
+
 - `@vitest/coverage-v8` : ^3.2.4
 
 ✅ **Script de couverture configuré :**
+
 ```bash
 yarn test:coverage
 ```
@@ -246,42 +266,42 @@ yarn test:coverage
 
 ### 7.1 Composants UI
 
-| Composant | Test unitaire | Notes |
-|-----------|---------------|-------|
-| Button | ✅ | `Button.test.tsx` |
-| Checkbox | ✅ | `Checkbox.test.tsx` |
-| Input | ✅ | `Input.test.tsx` |
-| Select | ✅ | `Select.test.tsx` |
-| Toast | ✅ | `Toast.test.tsx` |
+| Composant | Test unitaire | Notes               |
+| --------- | ------------- | ------------------- |
+| Button    | ✅            | `Button.test.tsx`   |
+| Checkbox  | ✅            | `Checkbox.test.tsx` |
+| Input     | ✅            | `Input.test.tsx`    |
+| Select    | ✅            | `Select.test.tsx`   |
+| Toast     | ✅            | `Toast.test.tsx`    |
 
 **Taux de couverture composants UI :** ⚠️ Non mesuré (nécessite `yarn test:coverage`)
 
 ### 7.2 Contextes
 
-| Contexte | Test unitaire | Notes |
-|----------|---------------|-------|
-| AuthContext | ✅ | `AuthContext.test.tsx` |
-| PermissionsContext | ✅ | `PermissionsContext.test.tsx` |
-| ToastContext | ✅ | `ToastContext.test.tsx` |
-| DisplayContext | ❌ | Manquant |
+| Contexte           | Test unitaire | Notes                         |
+| ------------------ | ------------- | ----------------------------- |
+| AuthContext        | ✅            | `AuthContext.test.tsx`        |
+| PermissionsContext | ✅            | `PermissionsContext.test.tsx` |
+| ToastContext       | ✅            | `ToastContext.test.tsx`       |
+| DisplayContext     | ❌            | Manquant                      |
 
 **Contextes testés :** 3/4 (75%)
 
 ### 7.3 Hooks
 
-| Hook | Test unitaire | Test avec MSW | Notes |
-|------|---------------|---------------|-------|
-| useAccountStatus | ✅ | - | Sans appels réseau |
-| useAdminPermissions | ✅ | - | Sans appels réseau |
-| useCategories | ✅ | ✅ | Avec et sans MSW |
-| useDemoCards | ✅ | - | Sans appels réseau |
-| useParametres | ✅ | - | Sans appels réseau |
-| useRBAC | ✅ | - | Sans appels réseau |
-| useRecompenses | ✅ | ✅ | Avec et sans MSW |
-| useSubscriptionStatus | ✅ | - | Sans appels réseau |
-| useTaches | ✅ | ✅ | Avec et sans MSW |
-| useTachesDnd | ✅ | - | Sans appels réseau |
-| useTachesEdition | ✅ | - | Sans appels réseau |
+| Hook                  | Test unitaire | Test avec MSW | Notes              |
+| --------------------- | ------------- | ------------- | ------------------ |
+| useAccountStatus      | ✅            | -             | Sans appels réseau |
+| useAdminPermissions   | ✅            | -             | Sans appels réseau |
+| useCategories         | ✅            | ✅            | Avec et sans MSW   |
+| useDemoCards          | ✅            | -             | Sans appels réseau |
+| useParametres         | ✅            | -             | Sans appels réseau |
+| useRBAC               | ✅            | -             | Sans appels réseau |
+| useRecompenses        | ✅            | ✅            | Avec et sans MSW   |
+| useSubscriptionStatus | ✅            | -             | Sans appels réseau |
+| useTaches             | ✅            | ✅            | Avec et sans MSW   |
+| useTachesDnd          | ✅            | -             | Sans appels réseau |
+| useTachesEdition      | ✅            | -             | Sans appels réseau |
 
 **Hooks testés :** 11+ hooks (bonne couverture des hooks critiques)
 
@@ -289,11 +309,11 @@ yarn test:coverage
 
 ### 7.4 Pages
 
-| Page | Test unitaire | Test E2E | Notes |
-|------|---------------|----------|-------|
-| Edition | ✅ | ❌ | Test unitaire uniquement |
-| Profil | ✅ | ❌ | Test unitaire uniquement |
-| Tableau | ✅ | ✅ | Test unitaire + E2E (task-completion.spec.ts) |
+| Page    | Test unitaire | Test E2E | Notes                                         |
+| ------- | ------------- | -------- | --------------------------------------------- |
+| Edition | ✅            | ❌       | Test unitaire uniquement                      |
+| Profil  | ✅            | ❌       | Test unitaire uniquement                      |
+| Tableau | ✅            | ✅       | Test unitaire + E2E (task-completion.spec.ts) |
 
 **Pages testées (unitaires) :** 3 pages
 
@@ -301,11 +321,11 @@ yarn test:coverage
 
 ### 7.5 Tests E2E
 
-| Scénario | Fichier | Notes |
-|----------|---------|-------|
-| Mode visiteur (démo) | `demo-visitor.spec.ts` | ✅ |
-| Upload d'images | `image-upload.spec.ts` | ✅ |
-| Complétion de tâches | `task-completion.spec.ts` | ✅ |
+| Scénario             | Fichier                   | Notes |
+| -------------------- | ------------------------- | ----- |
+| Mode visiteur (démo) | `demo-visitor.spec.ts`    | ✅    |
+| Upload d'images      | `image-upload.spec.ts`    | ✅    |
+| Complétion de tâches | `task-completion.spec.ts` | ✅    |
 
 **Scénarios E2E couverts :** 3 scénarios critiques
 
@@ -313,10 +333,10 @@ yarn test:coverage
 
 ### 7.6 Utilitaires
 
-| Utilitaire | Test unitaire | Notes |
-|------------|---------------|-------|
-| webpConverter | ✅ | `webpConverter.test.ts` |
-| Autres utils | ❌ | Non testés |
+| Utilitaire    | Test unitaire | Notes                   |
+| ------------- | ------------- | ----------------------- |
+| webpConverter | ✅            | `webpConverter.test.ts` |
+| Autres utils  | ❌            | Non testés              |
 
 ---
 

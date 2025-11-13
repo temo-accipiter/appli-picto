@@ -8,7 +8,11 @@ global.Worker = class Worker {
   terminate() {}
   addEventListener() {}
   removeEventListener() {}
-} as any
+} as typeof Worker
+
+// Mock URL.createObjectURL et URL.revokeObjectURL (nécessaires pour heic2any et upload d'images)
+global.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/mock-url')
+global.URL.revokeObjectURL = vi.fn()
 
 // Mock matchMedia (bonus)
 Object.defineProperty(window, 'matchMedia', {

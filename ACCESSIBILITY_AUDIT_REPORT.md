@@ -1,4 +1,5 @@
 # 📋 RAPPORT D'AUDIT D'ACCESSIBILITÉ WCAG 2.2 AA
+
 ## Appli-Picto - Audit complet de conformité
 
 **Date**: 2025-11-08
@@ -12,20 +13,20 @@
 
 ### Score global de conformité
 
-| Critère WCAG | Score | Statut | Problèmes critiques |
-|--------------|-------|--------|---------------------|
-| **1.1.1 Contenu non textuel** | 75% | ⚠️ Non conforme | 2 |
-| **1.3.1 Info et relations** | 70% | ⚠️ Non conforme | 6 |
-| **1.4.3 Contraste (minimum)** | 82% | ⚠️ Non conforme | 5 |
-| **1.4.11 Contraste des éléments non textuels** | 78% | ⚠️ Non conforme | 3 |
-| **2.1.1 Clavier** | 70% | ⚠️ Non conforme | 4 |
-| **2.1.2 Pas de piège clavier** | 65% | ⚠️ Non conforme | 3 |
-| **2.4.1 Contournement de blocs** | 0% | 🔴 Échec | 1 |
-| **2.4.3 Parcours du focus** | 75% | ⚠️ Non conforme | 2 |
-| **2.4.6 En-têtes et étiquettes** | 60% | ⚠️ Non conforme | 5 |
-| **2.4.7 Visibilité du focus** | 65% | ⚠️ Non conforme | 23 |
-| **4.1.2 Nom, rôle et valeur** | 72% | ⚠️ Non conforme | 8 |
-| **4.1.3 Messages d'état** | 60% | ⚠️ Non conforme | 4 |
+| Critère WCAG                                   | Score | Statut          | Problèmes critiques |
+| ---------------------------------------------- | ----- | --------------- | ------------------- |
+| **1.1.1 Contenu non textuel**                  | 75%   | ⚠️ Non conforme | 2                   |
+| **1.3.1 Info et relations**                    | 70%   | ⚠️ Non conforme | 6                   |
+| **1.4.3 Contraste (minimum)**                  | 82%   | ⚠️ Non conforme | 5                   |
+| **1.4.11 Contraste des éléments non textuels** | 78%   | ⚠️ Non conforme | 3                   |
+| **2.1.1 Clavier**                              | 70%   | ⚠️ Non conforme | 4                   |
+| **2.1.2 Pas de piège clavier**                 | 65%   | ⚠️ Non conforme | 3                   |
+| **2.4.1 Contournement de blocs**               | 0%    | 🔴 Échec        | 1                   |
+| **2.4.3 Parcours du focus**                    | 75%   | ⚠️ Non conforme | 2                   |
+| **2.4.6 En-têtes et étiquettes**               | 60%   | ⚠️ Non conforme | 5                   |
+| **2.4.7 Visibilité du focus**                  | 65%   | ⚠️ Non conforme | 23                  |
+| **4.1.2 Nom, rôle et valeur**                  | 72%   | ⚠️ Non conforme | 8                   |
+| **4.1.3 Messages d'état**                      | 60%   | ⚠️ Non conforme | 4                   |
 
 **Score global moyen**: **67.8%** ⚠️ NON CONFORME
 
@@ -46,12 +47,12 @@
 
 ### Répartition par catégorie WCAG
 
-| Principe | Problèmes | % du total |
-|----------|-----------|------------|
-| **1. Perceptible** | 32 | 33% |
-| **2. Utilisable** | 42 | 44% |
-| **3. Compréhensible** | 8 | 8% |
-| **4. Robuste** | 14 | 15% |
+| Principe              | Problèmes | % du total |
+| --------------------- | --------- | ---------- |
+| **1. Perceptible**    | 32        | 33%        |
+| **2. Utilisable**     | 42        | 44%        |
+| **3. Compréhensible** | 8         | 8%         |
+| **4. Robuste**        | 14        | 15%        |
 
 ---
 
@@ -73,6 +74,7 @@
    - Correction: "Train de progression indiquant l'avancement"
 
 **Problèmes majeurs**: 15 icônes Lucide React sans `aria-hidden="true"`
+
 - Fichiers: Navbar, FloatingPencil, ThemeToggle, Edition, etc.
 - Impact: Verbosité excessive pour les lecteurs d'écran
 
@@ -103,6 +105,7 @@
    - Correction: #a0aec0 → #718096
 
 **Problèmes moyens**: 3 bordures input (#ccc, ratio 1.6:1)
+
 - Requis pour UI: 3:1
 - Correction: #ccc → #949494
 
@@ -115,6 +118,7 @@
 **Problèmes critiques identifiés**: 23
 
 **Pattern dangereux le plus fréquent**:
+
 ```scss
 &:focus {
   outline: none; // ❌ CRITIQUE - Sans alternative visible
@@ -124,11 +128,15 @@
 **Fichiers à corriger en priorité**:
 
 1. **TachesDnd.scss** (ligne 64)
+
    ```scss
-   &:focus { outline: none; } // Aucune alternative !
+   &:focus {
+     outline: none;
+   } // Aucune alternative !
    ```
 
 2. **PortailRGPD.scss** (ligne 59)
+
    ```scss
    &:focus-visible {
      filter: brightness(0.95); // Insuffisant
@@ -137,6 +145,7 @@
    ```
 
 3. **Footer.scss** (ligne 32)
+
    ```scss
    &:focus-visible {
      text-decoration: underline; // Insuffisant
@@ -145,6 +154,7 @@
    ```
 
 4. **UserMenu.scss** (ligne 90)
+
    ```scss
    &:focus-visible {
      background: #f3f6ff; // Contraste insuffisant
@@ -161,6 +171,7 @@
    ```
 
 **Éléments interactifs sans focus** (10 occurrences):
+
 - Navbar links, buttons (.nav-link, .nav-button)
 - ThemeToggle button
 - EditionCard delete button
@@ -169,6 +180,7 @@
 **Taux de conformité**: 65% (besoin de 100%)
 
 **Solution globale recommandée**: Utiliser le mixin `focus-accessible` existant ou créer:
+
 ```scss
 @mixin focus-visible($color: $color-accent, $width: 2px, $offset: 2px) {
   &:focus-visible {
@@ -187,11 +199,13 @@
 **Problèmes critiques identifiés**: 4
 
 1. **TachesDnd.tsx** - Drag & Drop sans support clavier
+
    ```typescript
    const sensors = useSensors(
      useSensor(PointerSensor) // ❌ Manque KeyboardSensor
    )
    ```
+
    - Correction: Ajouter `KeyboardSensor` de @dnd-kit
    - Touches: Space (saisir), Arrow keys (déplacer), Escape (annuler)
 
@@ -236,6 +250,7 @@
 **Problème critique identifié**: 1
 
 **Layout.tsx** - Absence de skip link
+
 - Impact: Utilisateurs clavier doivent passer toute la navbar
 - Correction:
   ```tsx
@@ -288,9 +303,12 @@
 4. **UploadProgress.tsx** - ✅ BON (a `role="status"` et `aria-live`)
 
 **Correction type**:
+
 ```tsx
 <div role="status" aria-live="polite" aria-busy="true">
-  <div className="loader-bounce" aria-hidden="true">...</div>
+  <div className="loader-bounce" aria-hidden="true">
+    ...
+  </div>
   <span className="sr-only">Chargement en cours...</span>
 </div>
 ```
@@ -346,29 +364,34 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 **Objectif**: Résoudre les 38 problèmes critiques
 
 #### 1.1 Accessibilité clavier (Priorité maximale)
+
 - [ ] Ajouter skip link dans Layout.tsx
 - [ ] Implémenter KeyboardSensor dans TachesDnd.tsx
 - [ ] Rendre TableauCard focusable (tabIndex="0")
 - [ ] Ajouter focus trap dans UserMenu, CookieBanner, CookiePreferences
 
 #### 1.2 Visibilité du focus (Priorité maximale)
+
 - [ ] Corriger les 23 problèmes de `outline: none`
 - [ ] Ajouter focus sur Navbar links et buttons
 - [ ] Ajouter focus sur ThemeToggle
 - [ ] Ajouter focus sur EditionCard delete button
 
 #### 1.3 Contraste des couleurs (Priorité haute)
+
 - [ ] Corriger Button.scss (#0077c2 → #005a92)
 - [ ] Corriger Toast.scss (3 couleurs)
 - [ ] Corriger Navbar.scss avatar fallback
 - [ ] Corriger SearchInput.scss placeholder
 
 #### 1.4 Textes alternatifs (Priorité haute)
+
 - [ ] Rendre `alt` obligatoire dans SignedImage.tsx
 - [ ] Corriger alt dans TrainProgressBar.tsx
 - [ ] Ajouter `aria-hidden="true"` aux 15 icônes Lucide
 
 #### 1.5 Messages d'état (Priorité haute)
+
 - [ ] Ajouter `role="status"` et `aria-live` à Loader.tsx
 - [ ] Ajouter `role="status"` et `aria-live` à GlobalLoader.tsx
 - [ ] Ajouter attributs ARIA à TrainProgressBar.tsx
@@ -380,6 +403,7 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 **Objectif**: Résoudre les 28 problèmes majeurs
 
 #### 2.1 Structure sémantique et ARIA
+
 - [ ] Ajouter h1 et hiérarchie de headings dans Tableau.tsx
 - [ ] Ajouter h1 et hiérarchie dans Edition.tsx
 - [ ] Ajouter labels accessibles à SearchInput.tsx
@@ -387,11 +411,13 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 - [ ] Utiliser `<article>` dans BaseCard.tsx
 
 #### 2.2 Navigation clavier avancée
+
 - [ ] Implémenter arrow keys dans UserMenu.tsx
 - [ ] Ajouter `aria-expanded` aux boutons pliables (Edition.tsx)
 - [ ] Améliorer navigation dans tables admin
 
 #### 2.3 Icônes et emojis
+
 - [ ] Remplacer emojis par icônes SVG (ButtonDelete, Input)
 - [ ] Ajouter `aria-hidden="true"` aux 6 emojis décoratifs
 
@@ -402,10 +428,12 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 **Objectif**: Résoudre les 30 problèmes moyens/mineurs
 
 #### 3.1 Bordures et contrastes secondaires
+
 - [ ] Corriger bordures input (#ccc → #949494)
 - [ ] Vérifier mode dark pour contraste variables CSS
 
 #### 3.2 Personnalisation et UX
+
 - [ ] Personnaliser alt des avatars avec pseudo
 - [ ] Améliorer messages d'erreur avec `aria-describedby`
 - [ ] Ajouter `<caption>` aux tableaux
@@ -429,6 +457,7 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 ### Tests automatisés avec jest-axe
 
 **Composants à tester en priorité**:
+
 1. Modal.tsx ✅ (référence)
 2. TimeTimer.tsx ✅ (référence)
 3. TachesDnd.tsx 🔴 (problèmes critiques)
@@ -441,17 +470,20 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 ### Tests manuels requis
 
 **Lecteurs d'écran**:
+
 - [ ] NVDA (Windows) - gratuit
 - [ ] JAWS (Windows) - payant
 - [ ] VoiceOver (macOS/iOS) - intégré
 - [ ] TalkBack (Android) - intégré
 
 **Navigation clavier**:
+
 - [ ] Tester tout le parcours utilisateur au clavier uniquement
 - [ ] Vérifier focus visible sur tous les éléments interactifs
 - [ ] Tester drag & drop avec Space + Arrow keys
 
 **Outils automatisés**:
+
 - [ ] axe DevTools (extension navigateur)
 - [ ] Lighthouse (Chrome DevTools)
 - [ ] WAVE (extension navigateur)
@@ -460,13 +492,13 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 
 ## 📈 ESTIMATION DE L'EFFORT
 
-| Phase | Durée estimée | Complexité |
-|-------|---------------|------------|
-| Phase 1 - Critiques | 1-2 jours | ⭐⭐⭐⭐ |
-| Phase 2 - Majeurs | 2-3 jours | ⭐⭐⭐ |
-| Phase 3 - Moyens/Mineurs | 1-2 jours | ⭐⭐ |
-| Phase 4 - Tests | 1-2 jours | ⭐⭐ |
-| **Total** | **5-9 jours** | **⭐⭐⭐** |
+| Phase                    | Durée estimée | Complexité |
+| ------------------------ | ------------- | ---------- |
+| Phase 1 - Critiques      | 1-2 jours     | ⭐⭐⭐⭐   |
+| Phase 2 - Majeurs        | 2-3 jours     | ⭐⭐⭐     |
+| Phase 3 - Moyens/Mineurs | 1-2 jours     | ⭐⭐       |
+| Phase 4 - Tests          | 1-2 jours     | ⭐⭐       |
+| **Total**                | **5-9 jours** | **⭐⭐⭐** |
 
 **Note**: Avec corrections automatisées par Claude Code, l'effort peut être réduit à 2-3 jours.
 
@@ -506,7 +538,10 @@ Les composants suivants sont **exemplaires** en termes d'accessibilité:
 ```tsx
 // Dans /src/utils/a11y.ts
 
-export const useFocusTrap = (ref: RefObject<HTMLElement>, isActive: boolean) => {
+export const useFocusTrap = (
+  ref: RefObject<HTMLElement>,
+  isActive: boolean
+) => {
   useEffect(() => {
     if (!isActive) return
 
@@ -572,15 +607,18 @@ export const useEscapeKey = (callback: () => void, isActive: boolean) => {
 ## 🎓 CONCLUSION ET RECOMMANDATIONS
 
 ### État actuel
+
 Le projet Appli-Picto présente un **score de conformité de 67.8%** au standard WCAG 2.2 AA, ce qui est **non conforme**. Cependant, de nombreux composants démontrent d'excellentes pratiques d'accessibilité (Modal, TimeTimer, Input, Checkbox).
 
 ### Points forts
+
 - ✅ Utilisation cohérente de composants accessibles (Modal, Toast, Input)
 - ✅ Gestion ARIA avancée dans TimeTimer
 - ✅ Structure de base solide avec labels et rôles
 - ✅ Bonne gestion du focus dans les composants de base
 
 ### Points à améliorer en priorité
+
 1. 🔴 Ajouter skip link (critère 2.4.1)
 2. 🔴 Corriger visibilité du focus (23 problèmes)
 3. 🔴 Implémenter support clavier pour drag & drop
@@ -588,6 +626,7 @@ Le projet Appli-Picto présente un **score de conformité de 67.8%** au standard
 5. 🔴 Corriger messages d'état (Loader, GlobalLoader)
 
 ### Objectif final
+
 Atteindre **95-100% de conformité WCAG 2.2 AA** dans les 5-9 jours avec une approche systématique et l'aide des corrections automatisées.
 
 ---

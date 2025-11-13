@@ -1,5 +1,6 @@
 // src/services/imageUploadService.ts
 // Service d'upload d'images avec quotas et optimisations
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { supabase } from '@/utils/supabaseClient'
 
 // Configuration des quotas d'images

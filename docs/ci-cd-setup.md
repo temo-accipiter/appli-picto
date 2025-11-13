@@ -5,6 +5,7 @@ Guide complet de configuration et utilisation du pipeline CI/CD.
 ## 📋 Vue d'ensemble
 
 Le projet utilise **GitHub Actions** pour :
+
 - ✅ Linter et formater le code
 - ✅ Vérifier les types TypeScript
 - ✅ Exécuter les tests unitaires avec coverage
@@ -17,10 +18,12 @@ Le projet utilise **GitHub Actions** pour :
 ### 1. CI Workflow (`.github/workflows/ci.yml`)
 
 **Déclenché sur** :
+
 - Push sur `main`, `develop`, ou branches `claude/**`
 - Pull Requests vers `main` ou `develop`
 
 **Jobs** :
+
 1. **Lint** : ESLint + Prettier
 2. **TypeCheck** : Vérification TypeScript
 3. **Unit Tests** : Tests Vitest + coverage
@@ -33,10 +36,12 @@ Le projet utilise **GitHub Actions** pour :
 ### 2. Deploy Workflow (`.github/workflows/deploy.yml`)
 
 **Déclenché sur** :
+
 - Pull Requests vers `main` → Déploiement preview
 - Push sur `main` → Déploiement production
 
 **Jobs** :
+
 - **Preview** : Déploie sur Cloudflare Pages (URL unique par PR)
 - **Production** : Déploie sur Cloudflare Pages + Supabase Functions
 
@@ -48,23 +53,23 @@ Aller sur **Settings → Secrets and variables → Actions → New repository se
 
 #### Pour le CI
 
-| Secret | Description | Exemple |
-|--------|-------------|---------|
+| Secret          | Description                        | Exemple     |
+| --------------- | ---------------------------------- | ----------- |
 | `CODECOV_TOKEN` | Token Codecov pour upload coverage | `abc123...` |
 
 #### Pour le déploiement
 
-| Secret | Description | Où le trouver |
-|--------|-------------|---------------|
-| `CLOUDFLARE_API_TOKEN` | Token API Cloudflare | Cloudflare Dashboard → API Tokens |
-| `CLOUDFLARE_ACCOUNT_ID` | ID du compte Cloudflare | Cloudflare Dashboard → Account ID |
-| `VITE_SUPABASE_URL` | URL Supabase production | Supabase Dashboard → Project Settings |
-| `VITE_SUPABASE_ANON_KEY` | Clé anon Supabase | Supabase Dashboard → API Settings |
-| `VITE_STRIPE_PUBLIC_KEY` | Clé publique Stripe prod | Stripe Dashboard → API Keys |
-| `VITE_STRIPE_PUBLIC_KEY_TEST` | Clé publique Stripe test | Stripe Dashboard → API Keys (test) |
-| `VITE_TURNSTILE_SITE_KEY` | Site key Turnstile | Cloudflare Dashboard → Turnstile |
-| `VITE_GA4_ID` | ID Google Analytics 4 | Google Analytics → Admin |
-| `SUPABASE_ACCESS_TOKEN` | Token Supabase pour déploiement | Supabase CLI → `supabase login` |
+| Secret                        | Description                     | Où le trouver                         |
+| ----------------------------- | ------------------------------- | ------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`        | Token API Cloudflare            | Cloudflare Dashboard → API Tokens     |
+| `CLOUDFLARE_ACCOUNT_ID`       | ID du compte Cloudflare         | Cloudflare Dashboard → Account ID     |
+| `VITE_SUPABASE_URL`           | URL Supabase production         | Supabase Dashboard → Project Settings |
+| `VITE_SUPABASE_ANON_KEY`      | Clé anon Supabase               | Supabase Dashboard → API Settings     |
+| `VITE_STRIPE_PUBLIC_KEY`      | Clé publique Stripe prod        | Stripe Dashboard → API Keys           |
+| `VITE_STRIPE_PUBLIC_KEY_TEST` | Clé publique Stripe test        | Stripe Dashboard → API Keys (test)    |
+| `VITE_TURNSTILE_SITE_KEY`     | Site key Turnstile              | Cloudflare Dashboard → Turnstile      |
+| `VITE_GA4_ID`                 | ID Google Analytics 4           | Google Analytics → Admin              |
+| `SUPABASE_ACCESS_TOKEN`       | Token Supabase pour déploiement | Supabase CLI → `supabase login`       |
 
 ### Créer le token Cloudflare API
 
@@ -107,6 +112,7 @@ Le coverage est automatiquement uploadé après chaque run de tests :
 ```
 
 Codecov ajoutera automatiquement un commentaire sur les PR avec :
+
 - Pourcentage de coverage global
 - Delta de coverage (vs main)
 - Fichiers non couverts
@@ -152,6 +158,7 @@ Settings → Branches → Add branch protection rule
 **Branch name pattern** : `main`
 
 Cocher :
+
 - ✅ **Require a pull request before merging**
   - Require approvals: 1
 - ✅ **Require status checks to pass before merging**
@@ -168,6 +175,7 @@ Cocher :
 ### Exception pour hotfix
 
 En cas d'urgence, les administrateurs peuvent bypass les checks :
+
 1. Créer une branche `hotfix/...`
 2. Push direct (bypass les checks)
 3. Fix immédiat
@@ -178,17 +186,20 @@ En cas d'urgence, les administrateurs peuvent bypass les checks :
 ### Voir l'état du CI
 
 **Badge dans README** :
+
 ```markdown
 ![CI](https://github.com/username/appli-picto/workflows/CI/badge.svg)
 ```
 
 **Sur GitHub** :
+
 - Actions tab → voir tous les runs
 - PR → Checks → détail de chaque job
 
 ### Voir le coverage
 
 **Badge Codecov** :
+
 ```markdown
 ![Coverage](https://codecov.io/gh/username/appli-picto/branch/main/graph/badge.svg)
 ```
@@ -196,6 +207,7 @@ En cas d'urgence, les administrateurs peuvent bypass les checks :
 ### Notifications
 
 GitHub notifie automatiquement :
+
 - ✅ CI passed
 - ❌ CI failed
 - 💬 Coverage comment sur PR
@@ -210,7 +222,7 @@ Le workflow utilise le cache Yarn :
 - uses: actions/setup-node@v4
   with:
     node-version: '20.19.4'
-    cache: 'yarn'  # ← Cache automatique
+    cache: 'yarn' # ← Cache automatique
 ```
 
 **Gain** : ~1-2 minutes par run
@@ -252,7 +264,7 @@ build ─────┘
 
 ```yaml
 # Augmenter le timeout dans playwright.config.ts
-timeout: 60000  # au lieu de 30000
+timeout: 60000 # au lieu de 30000
 ```
 
 ### Build qui échoue par manque de mémoire
@@ -266,6 +278,7 @@ env:
 ### Secrets non disponibles dans les PR de fork
 
 C'est normal pour des raisons de sécurité. Les secrets ne sont disponibles que pour :
+
 - Push sur des branches du repo principal
 - PR depuis des branches du repo principal (pas les forks)
 

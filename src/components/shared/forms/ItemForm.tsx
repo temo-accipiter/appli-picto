@@ -8,7 +8,7 @@ import {
   makeValidateImageType,
   makeValidateNotEmpty,
 } from '@/utils'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { InputWithValidationRef } from '../input-with-validation/InputWithValidation'
 import './ItemForm.scss'
 

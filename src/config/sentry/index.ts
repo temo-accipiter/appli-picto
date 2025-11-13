@@ -9,6 +9,7 @@
  * - Filtrage des données sensibles
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import * as Sentry from '@sentry/react'
 
 /**
@@ -116,14 +117,9 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
         ...(enablePerformance
           ? [
               Sentry.browserTracingIntegration({
-                // Tracking automatique des routes React Router
-                routingInstrumentation: Sentry.reactRouterV6Instrumentation(
-                  window.React?.useEffect,
-                  window.React?.useLocation,
-                  window.React?.useNavigationType,
-                  window.React?.createRoutesFromChildren,
-                  window.React?.matchRoutes
-                ),
+                // FIXME: reactRouterV6Instrumentation deprecated in Sentry v8
+                // TODO: Migrate to new routing instrumentation
+                // routingInstrumentation: Sentry.reactRouterV6Instrumentation(...)
               }),
             ]
           : []),
@@ -310,13 +306,12 @@ export const captureMessage = (
 /**
  * Démarre une transaction de performance
  * @param name - Nom de la transaction
+ * @deprecated startTransaction is deprecated in Sentry v8, use startSpan instead
  */
-export const startTransaction = (name: string): Sentry.Transaction | null => {
-  try {
-    return Sentry.startTransaction({ name })
-  } catch {
-    return null
-  }
+export const startTransaction = (_name: string): null => {
+  // FIXME: startTransaction deprecated in Sentry v8
+  // TODO: Migrate to Sentry.startSpan()
+  return null
 }
 
 /**

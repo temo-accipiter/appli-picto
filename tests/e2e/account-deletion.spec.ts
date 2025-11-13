@@ -11,6 +11,7 @@
  * IMPORTANT : Ces tests utilisent Supabase Local et ne font PAS d'appels à la prod.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { test, expect, Page } from '@playwright/test'
 import {
   createTestScenario,

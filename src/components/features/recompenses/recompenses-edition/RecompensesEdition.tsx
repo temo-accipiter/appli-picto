@@ -28,7 +28,7 @@ interface RecompensesEditionProps {
   onLabelChange: (
     id: string | number,
     label: string
-  ) => Promise<{ error?: any }>
+  ) => Promise<{ error?: Error }>
   onSubmitReward: (data: RewardFormData) => void
   onShowQuotaModal?: (type: string) => Promise<boolean>
 }

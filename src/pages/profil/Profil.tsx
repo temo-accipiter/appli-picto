@@ -17,7 +17,7 @@ import {
   normalizeSpaces,
   supabase,
 } from '@/utils'
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'

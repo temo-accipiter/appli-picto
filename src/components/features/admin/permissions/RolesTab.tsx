@@ -205,7 +205,7 @@ export default function RolesTab({
                       label="Nom d'affichage"
                       placeholder="Nouveau nom d'affichage"
                       value={role.display_name}
-                      onChange={value => {
+                      onChange={_value => {
                         // Mettre à jour temporairement l'état local
                         setEditingRole(role.id)
                         // Ici on pourrait mettre à jour un état temporaire
