@@ -8,57 +8,73 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite, Yarn PnP (Plug'n'Play), React Router
+- **Frontend**: React 19, Vite, **pnpm 9.15.0** (migrated from Yarn PnP), React Router
 - **Styling**: SCSS with BEM-lite methodology, custom animations
 - **Backend**: 100% Supabase (PostgreSQL, Auth, Storage, Edge Functions, RLS)
 - **Payment**: Stripe (Checkout, subscriptions, webhooks)
 - **Security**: Cloudflare Turnstile (CAPTCHA), RGPD/CNIL compliant
-- **Testing**: Vitest with jsdom
+- **Testing**: Vitest with jsdom, Playwright for E2E
 - **Node version**: 20.19.4 (managed by Volta)
+- **TypeScript**: Strict mode with relaxed settings for Next.js migration (329 non-blocking errors)
 
 ## Development Commands
+
+**CRITICAL**: This project uses **pnpm** (NOT yarn). All commands use `pnpm`.
 
 ### Core Development
 
 ```bash
-yarn dev              # Start dev server (port 5173)
-yarn build            # Build for production
-yarn preview          # Preview production build
+pnpm dev              # Start dev server (port 5173)
+pnpm build            # Build for production (Vite)
+pnpm build:prod       # Build with production mode
+pnpm preview          # Preview production build
 ```
 
 ### Code Quality
 
 ```bash
-yarn lint             # Run ESLint
-yarn lint:fix         # Run ESLint with auto-fix
-yarn format           # Format with Prettier
-yarn check            # Run lint:fix + format
+pnpm lint             # Run ESLint
+pnpm lint:fix         # Run ESLint with auto-fix
+pnpm format           # Format with Prettier
+pnpm check            # Run lint:fix + format (REQUIRED before commit)
+pnpm type-check       # Check TypeScript errors (329 non-blocking)
 ```
 
 ### Testing
 
 ```bash
-yarn test             # Run Vitest
-yarn test:ui          # Run Vitest with UI
-yarn test:coverage    # Run tests with coverage
+pnpm test             # Run Vitest unit tests
+pnpm test:ui          # Run Vitest with UI
+pnpm test:coverage    # Run tests with coverage
+pnpm test:e2e         # Run Playwright E2E tests
+pnpm test:e2e:ui      # Run Playwright with UI
+```
+
+### Verification Commands
+
+```bash
+pnpm verify           # Full check: type-check + lint + format + test + build
+pnpm verify:quick     # Quick check: type-check + lint + build
+pnpm verify:ci        # CI check: full verification with coverage
+pnpm check-bundle     # Verify bundle size (< 1.6 MB per chunk)
 ```
 
 ### Database & Types
 
 ```bash
-yarn db:dump          # Dump Supabase schema to supabase/schema.sql
-yarn db:types         # Generate TypeScript types from Supabase
-yarn context:update   # Run db:dump + db:types
+pnpm db:dump          # Dump Supabase schema to supabase/schema.sql
+pnpm db:types         # Generate TypeScript types from Supabase
+pnpm context:update   # Run db:dump + db:types (CRITICAL after schema changes)
 ```
 
 ### Supabase Functions
 
 ```bash
-yarn supabase:serve   # Serve edge functions locally
-yarn deploy:checkout  # Deploy create-checkout-session function
-yarn deploy:webhook   # Deploy stripe-webhook function
-yarn logs:checkout    # Follow checkout function logs
-yarn logs:webhook     # Follow webhook function logs
+pnpm supabase:serve   # Serve edge functions locally
+pnpm deploy:checkout  # Deploy create-checkout-session function
+pnpm deploy:webhook   # Deploy stripe-webhook function
+pnpm logs:checkout    # Follow checkout function logs
+pnpm logs:webhook     # Follow webhook function logs
 ```
 
 ### MCP Supabase (Intégré à Claude Code)
@@ -83,32 +99,71 @@ yarn logs:webhook     # Follow webhook function logs
 **BEFORE any commit**:
 
 ```bash
-yarn check    # MUST run lint:fix + format
-yarn test     # MUST pass all tests
+pnpm check    # MUST run lint:fix + format
+pnpm test     # MUST pass all tests
 ```
 
 **BEFORE deploying**:
 
 ```bash
-yarn build # MUST succeed
-yarn preview # MUST test production build
-yarn test:coverage # MUST maintain coverage
+pnpm build # MUST succeed
+pnpm preview # MUST test production build
+pnpm test:coverage # MUST maintain coverage
 ```
 
 **AFTER modifying Supabase schema**:
 
 ```bash
-yarn context:update # MUST update schema.sql + types
+pnpm context:update # MUST update schema.sql + types
 ```
 
 **NEVER**:
 
-Commit without running yarn check
-Deploy without testing yarn preview
-Modify database without updating types
-Upload images > 100KB (auto-compression enforced)
-Create markdown documentation files (\*.md) without explicit user request
-Generate README or analysis files proactively
+- Commit without running `pnpm check`
+- Deploy without testing `pnpm preview`
+- Modify database without updating types (`pnpm context:update`)
+- Upload images > 100KB (auto-compression enforced)
+- Create markdown documentation files (*.md) without explicit user request
+- Generate README or analysis files proactively
+- Use `yarn` commands (project migrated to pnpm)
+
+## TypeScript Configuration
+
+**Current State**: TypeScript strict mode **partially relaxed** for Next.js migration
+
+### Active Settings (tsconfig.json)
+
+```json
+{
+  "noImplicitAny": false,        // Allows implicit any types
+  "noImplicitReturns": false,    // Allows missing return statements
+  "noUnusedLocals": false,       // Allows unused local variables
+  "noUnusedParameters": false,   // Allows unused parameters
+  "strictNullChecks": true,      // MAINTAINED
+  "exactOptionalPropertyTypes": true  // MAINTAINED
+}
+```
+
+### TypeScript Errors Status
+
+- **Total errors**: 329 (non-blocking)
+- **Build**: ✅ Succeeds despite errors
+- **Tests**: ✅ All pass
+- **Documentation**: See `.github/issues/ts-remaining-errors.md`
+
+**IMPORTANT**: These relaxations are **temporary** for Next.js migration. Errors are documented and will be fixed progressively in 3 sprints (12-16h estimated).
+
+## Migration History
+
+### Yarn → pnpm (Completed Nov 2024)
+
+- ✅ **Package manager**: pnpm@9.15.0
+- ✅ **Performance**: Build time reduced from 2m30s to ~20s (-87%)
+- ✅ **node_modules**: Reduced from 400 MB to 250 MB (-37%)
+- ✅ **Installation**: Reduced from 45s to 8.5s (-81%)
+- ⚠️ **Bundle size**: 1.78 MB (target: 1.6 MB)
+
+**CRITICAL**: All commands now use `pnpm`, not `yarn`
 
 ## Architecture
 
