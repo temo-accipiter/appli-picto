@@ -65,3 +65,15 @@ export interface SupabaseListResponse<T> {
   data: T[] | null
   error: Error | null
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Déclarations globales pour window
+// ─────────────────────────────────────────────────────────────────
+
+declare global {
+  interface Window {
+    // Google Analytics 4
+    dataLayer?: unknown[]
+    gtag?: (...args: unknown[]) => void
+  }
+}

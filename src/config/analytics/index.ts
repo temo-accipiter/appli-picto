@@ -31,7 +31,7 @@ export function initGA4() {
   // DataLayer + gtag (après consentement uniquement)
   window.dataLayer = window.dataLayer || []
   window.gtag = function gtag() {
-    window.dataLayer.push(arguments)
+    window.dataLayer?.push(arguments)
   }
 
   // Configuration GA4 (privacy‑by‑default)

@@ -81,19 +81,20 @@ const sendToSentry = (metric: Metric): void => {
 
   import('@/config/sentry')
     .then(({ Sentry }) => {
-      const transaction = Sentry.startTransaction({
-        name: `web-vitals-${metric.name}`,
-        op: 'web-vital',
+      // Capturer la métrique comme événement au lieu de transaction
+      // startTransaction a été remplacé par startSpan dans Sentry v8+
+      Sentry.captureMessage(`web-vitals-${metric.name}`, {
+        level: 'info',
+        contexts: {
+          'web-vital': {
+            name: metric.name,
+            value: metric.value,
+            unit: metric.name === 'CLS' ? '' : 'millisecond',
+            rating: getRating(metric),
+            navigation_type: metric.navigationType,
+          },
+        },
       })
-
-      transaction.setMeasurement(
-        metric.name,
-        metric.value,
-        metric.name === 'CLS' ? '' : 'millisecond'
-      )
-      transaction.setTag('rating', getRating(metric))
-      transaction.setTag('navigation_type', metric.navigationType)
-      transaction.finish()
     })
     .catch(() => {
       // Sentry non disponible

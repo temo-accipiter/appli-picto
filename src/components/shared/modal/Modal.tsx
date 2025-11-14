@@ -20,6 +20,7 @@ interface ModalProps {
   title?: string
   children: ReactNode
   actions?: ModalAction[]
+  className?: string
 }
 
 export default function Modal({
@@ -28,6 +29,7 @@ export default function Modal({
   title,
   children,
   actions = [],
+  className = '',
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -103,7 +105,7 @@ export default function Modal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal"
+        className={`modal ${className}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
@@ -124,8 +126,8 @@ export default function Modal({
                 key={i}
                 label={act.label}
                 onClick={act.onClick}
-                variant={act.variant}
-                disabled={act.disabled}
+                variant={act.variant ?? undefined}
+                disabled={act.disabled ?? undefined}
               />
             ))}
           </footer>

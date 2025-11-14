@@ -134,11 +134,7 @@ export const SignupPromptModal = ({
 
             {/* CTA */}
             <div className="modal-actions">
-              <Button
-                onClick={handleSignup}
-                className="signup-button primary"
-                size="large"
-              >
+              <Button onClick={handleSignup} className="signup-button primary">
                 {t('demo.signupButton')}
               </Button>
 
