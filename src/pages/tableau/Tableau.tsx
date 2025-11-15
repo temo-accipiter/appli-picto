@@ -373,7 +373,7 @@ export default function TableauGrille({
       )}
 
       {showRecompense && (selectedReward as any) && doneCount < totalTaches && (
-        <SelectedRewardFloating reward={selectedReward} />
+        <SelectedRewardFloating reward={selectedReward as any} />
       )}
 
       {/* Modal de personnalisation pour les visiteurs */}
