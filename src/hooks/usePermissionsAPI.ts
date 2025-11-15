@@ -3,9 +3,13 @@ import { supabase } from '@/utils/supabaseClient'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 interface UsePermissionsAPIReturn {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getMyPrimaryRole: () => any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getMyPermissions: () => any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getFeatures: () => any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAllPermissions: () => any
   supabase: SupabaseClient
 }

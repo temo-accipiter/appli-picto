@@ -38,6 +38,7 @@ export default function useTachesDnd(onChange, reload = 0) {
             .select('*')
             .eq('user_id', user.id) // 🔐 visibilité sécurisée
             .eq('aujourdhui', true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .order('position', { ascending: true }) as any
         )
 
@@ -136,6 +137,7 @@ export default function useTachesDnd(onChange, reload = 0) {
           .from('taches')
           .update({ fait: newDone })
           .eq('id', id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .eq('user_id', user.id) as any
       )
 
@@ -183,6 +185,7 @@ export default function useTachesDnd(onChange, reload = 0) {
           .from('taches')
           .update({ fait: false })
           .eq('aujourdhui', true)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .eq('user_id', user.id) as any
       )
 
@@ -248,6 +251,7 @@ export default function useTachesDnd(onChange, reload = 0) {
                 .from('taches')
                 .update({ position: i + index })
                 .eq('id', t.id)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .eq('user_id', user.id) as any
             ).then(({ error, aborted }) => {
               if (aborted || (error && isAbortLike(error))) return

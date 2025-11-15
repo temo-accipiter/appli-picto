@@ -41,7 +41,12 @@ vi.mock('@/utils/supabaseVisibilityHandler', () => ({
 // Composant de test pour lire le contexte
 function TestConsumer() {
   const context = useContext(AuthContext)
-  const { user, authReady, error, signOut } = context || { user: null, authReady: false, error: null, signOut: () => {} }
+  const { user, authReady, error, signOut } = context || {
+    user: null,
+    authReady: false,
+    error: null,
+    signOut: () => {},
+  }
   return (
     <div>
       <div data-testid="user">{user ? user.id : 'null'}</div>

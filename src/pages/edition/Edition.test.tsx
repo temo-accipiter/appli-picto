@@ -217,10 +217,15 @@ describe('Edition - Test intégration', () => {
     })
 
     // Trouver la checkbox des confettis
-    const confettisCheckbox = screen
+    const confettisContainer = screen
       .getByText(/Confettis/)
       .closest('.confettis-checkbox')
-      .querySelector('input[type="checkbox"]')
+
+    if (!confettisContainer) throw new Error('confettisContainer not found')
+
+    const confettisCheckbox = confettisContainer.querySelector(
+      'input[type="checkbox"]'
+    ) as HTMLInputElement | null
 
     // Toggle les confettis
     if (!confettisCheckbox) throw new Error('confettisCheckbox not found')
@@ -229,7 +234,7 @@ describe('Edition - Test intégration', () => {
 
     // Attendre que l'état change
     await waitFor(() => {
-      expect(confettisCheckbox?.checked).toBe(!initialChecked)
+      expect(confettisCheckbox.checked).toBe(!initialChecked)
     })
   })
 

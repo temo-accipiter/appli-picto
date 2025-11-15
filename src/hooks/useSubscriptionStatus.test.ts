@@ -1,4 +1,5 @@
 // src/hooks/useSubscriptionStatus.test.js
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Tests pour le hook useSubscriptionStatus
  *

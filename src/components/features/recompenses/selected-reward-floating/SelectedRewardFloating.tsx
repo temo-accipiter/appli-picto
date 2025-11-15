@@ -4,7 +4,7 @@ import './SelectedRewardFloating.scss'
 
 interface Reward {
   id: string
-  imagepath: string
+  imagepath: string | null
   label: string
   isDemo?: boolean
 }

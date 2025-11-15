@@ -1,4 +1,5 @@
 // src/hooks/useCategories.msw.test.js
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ✨ Tests useCategories avec MSW (Mock Service Worker)
  *

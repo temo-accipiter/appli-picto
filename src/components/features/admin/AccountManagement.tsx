@@ -86,7 +86,7 @@ export default function AccountManagement({
             const userRoles = Array.isArray(user.user_roles)
               ? (user.user_roles as UserRole[])
               : []
-            const activeRole = userRoles.find((ur) => ur.is_active)
+            const activeRole = userRoles.find(ur => ur.is_active)
             return {
               id: user.id as string,
               pseudo: user.pseudo as string | null,
@@ -169,7 +169,7 @@ export default function AccountManagement({
           const userRoles = Array.isArray(user.user_roles)
             ? (user.user_roles as UserRole[])
             : []
-          const activeRole = userRoles.find((ur) => ur.is_active)
+          const activeRole = userRoles.find(ur => ur.is_active)
           return {
             id: user.id as string,
             pseudo: user.pseudo as string | null,

@@ -11,12 +11,8 @@ import {
 } from '@/components'
 import { useI18n } from '@/hooks'
 import React, { useState } from 'react'
+import type { Categorie } from '@/types/global'
 import './TachesEdition.scss'
-
-interface CategoryOption {
-  value: string | number
-  label: string
-}
 
 interface TacheItem {
   id: string | number
@@ -34,7 +30,7 @@ interface TaskFormData {
 
 interface ChecklistTachesEditionProps {
   items: TacheItem[]
-  categories: CategoryOption[]
+  categories: Categorie[]
   onToggleAujourdhui: (
     id: string | number,
     currentState: boolean | number | undefined
@@ -229,7 +225,7 @@ export default function ChecklistTachesEdition({
         onClose={() => setModalTacheOpen(false)}
         includeCategory
         categories={categories}
-        onSubmit={(values) => {
+        onSubmit={values => {
           onSubmitTask(values)
           setModalTacheOpen(false)
         }}

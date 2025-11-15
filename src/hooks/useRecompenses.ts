@@ -145,6 +145,7 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
 
       const { data, error } = await supabase
         .from('recompenses')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .insert([toInsert] as any)
         .select()
         .single()
@@ -180,7 +181,7 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
         userId: user.id,
         assetType: 'reward_image',
         prefix: 'recompenses',
-        onProgress: onProgress ? (info) => onProgress(info.progress) : null,
+        onProgress: onProgress ? info => onProgress(info.progress) : null,
       })
 
       if (uploadResult.error) throw uploadResult.error
@@ -272,7 +273,7 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
       // 🆕 Remplacer image avec versioning + invalidation cache
       const replaceResult = await replaceImage(asset.id, file, {
         userId: user.id,
-        onProgress: onProgress ? (info) => onProgress(info.progress) : null,
+        onProgress: onProgress ? info => onProgress(info.progress) : null,
       })
 
       if (replaceResult.error) throw replaceResult.error

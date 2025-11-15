@@ -80,7 +80,7 @@ export async function getSignedImageUrl(
     const { data, error } = (await Promise.race([
       signedUrlPromise,
       timeoutPromise,
-    ]).catch(e => ({ data: null, error: e as Error }))) as any
+    ]).catch(e => ({ data: null, error: e as Error }))) as any // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (error || !data?.signedUrl) {
       return {

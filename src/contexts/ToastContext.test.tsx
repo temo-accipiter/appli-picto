@@ -59,8 +59,12 @@ function TestConsumer() {
   const toast = useToast()
   return (
     <div>
-      <div data-testid="has-show">{toast && typeof toast.show === 'function' ? 'yes' : 'no'}</div>
-      <div data-testid="has-hide">{toast && typeof toast.hide === 'function' ? 'yes' : 'no'}</div>
+      <div data-testid="has-show">
+        {toast && typeof toast.show === 'function' ? 'yes' : 'no'}
+      </div>
+      <div data-testid="has-hide">
+        {toast && typeof toast.hide === 'function' ? 'yes' : 'no'}
+      </div>
       <button
         data-testid="call-show"
         onClick={() => toast?.show?.('Test message', 'info')}

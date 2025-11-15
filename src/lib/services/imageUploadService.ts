@@ -351,7 +351,7 @@ export async function getUserAssetsStats(userId: string): Promise<AssetsStats> {
       }
       throw error
     }
-    return data as AssetsStats
+    return data as unknown as AssetsStats
   } catch (error) {
     console.error('Erreur récupération stats assets:', error)
     // Retourner des stats par défaut en cas d'erreur

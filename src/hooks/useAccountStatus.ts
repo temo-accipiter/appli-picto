@@ -23,6 +23,7 @@ export default function useAccountStatus() {
   const [isScheduledForDeletion, setIsScheduledForDeletion] = useState(false)
   const [deletionDate, setDeletionDate] = useState<string | null>(null)
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const channelRef = useRef<any>(null)
 
   // Fonction pour récupérer l'état du compte
@@ -41,6 +42,7 @@ export default function useAccountStatus() {
           .from('profiles')
           .select('account_status, deletion_scheduled_at')
           .eq('id', user.id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .single() as any
       )
 

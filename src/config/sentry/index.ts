@@ -149,7 +149,9 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
       beforeSend(event, hint) {
         // Filtrer les données sensibles
         if (event.request) {
-          event.request.headers = sanitizeData(event.request.headers) as { [key: string]: string }
+          event.request.headers = sanitizeData(event.request.headers) as {
+            [key: string]: string
+          }
           event.request.cookies = {} as Record<string, string>
 
           // Nettoyer les query params sensibles

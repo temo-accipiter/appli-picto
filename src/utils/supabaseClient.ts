@@ -49,14 +49,14 @@ const clientConfig = {
     // Timeout réduit pour détecter problèmes plus vite
     fetch: async (
       input: string | URL | Request,
-      options?: RequestInit
+      options?: globalThis.RequestInit
     ) => {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000) // 5s max
 
       try {
         const response = await fetch(input, {
-          ...(options as RequestInit),
+          ...(options as globalThis.RequestInit),
           signal: controller.signal,
         })
         clearTimeout(timeout)
@@ -149,7 +149,11 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // Créer nouveau client
-    supabase = createClient<Database>(url, key, clientConfig) as SupabaseClientType
+    supabase = createClient<Database>(
+      url,
+      key,
+      clientConfig
+    ) as SupabaseClientType
 
     // Exposer
     if (typeof window !== 'undefined') {

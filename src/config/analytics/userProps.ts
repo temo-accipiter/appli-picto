@@ -19,7 +19,9 @@ const PRICE_MAP: Record<string, string> = {
   // 'price_ABCDEF...': 'monthly_pro',
 }
 
-const priceIdToPlanName = (priceId: string | undefined): string | undefined => {
+const priceIdToPlanName = (
+  priceId: string | null | undefined
+): string | undefined => {
   const k = (priceId || '').trim()
   return PRICE_MAP[k] || (k ? `price:${k.slice(0, 6)}…` : undefined)
 }
@@ -70,7 +72,9 @@ interface UserProperties {
 
 async function setUserProperties(props: UserProperties): Promise<void> {
   if (!isReady()) return
-  window.gtag('set', 'user_properties', props)
+  if (typeof window.gtag === 'function') {
+    window.gtag('set', 'user_properties', props)
+  }
 }
 
 export async function refreshGAUserProperties(): Promise<boolean> {
@@ -101,13 +105,11 @@ export async function refreshGAUserProperties(): Promise<boolean> {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent {
-  detail?: {
-    choices?: {
-      analytics?: boolean
-    }
+type ConsentChangedEvent = CustomEvent<{
+  choices?: {
+    analytics?: boolean
   }
-}
+}>
 
 function boot(): void {
   // Consentement obtenu → pousse les user_properties

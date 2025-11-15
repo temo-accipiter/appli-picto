@@ -2,14 +2,10 @@
 import { getPermissionHistory } from '@/utils/permissions-api'
 import { Clock, Edit, History, Plus, Trash2, User } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import type { Json } from '@/types/supabase'
 
 type ChangeType = 'INSERT' | 'UPDATE' | 'DELETE'
 type TableName = 'roles' | 'features' | 'role_permissions' | 'user_roles'
-
-interface HistoryValues {
-  display_name?: string
-  [key: string]: any
-}
 
 interface HistoryItem {
   id: string
@@ -18,8 +14,8 @@ interface HistoryItem {
   changed_at: string
   changed_by: string | null
   user_pseudo?: string | null
-  old_values: HistoryValues | null
-  new_values: HistoryValues | null
+  old_values: Json
+  new_values: Json
 }
 
 type ChangeTypeFilter = 'all' | ChangeType

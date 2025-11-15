@@ -17,7 +17,7 @@ import './TableauCard.scss'
 interface Tache {
   id: string | number
   label: string
-  imagepath?: string
+  imagepath?: string | null
   isDemo?: boolean
 }
 

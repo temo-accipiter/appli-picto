@@ -242,6 +242,7 @@ export default function Edition() {
         ...(imagePath && { imagepath: imagePath }),
         user_id: user.id,
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ] as any)
 
     if (insertError) {
@@ -364,7 +365,9 @@ export default function Edition() {
     toggleAujourdhui(String(id), !!currentState)
   }
 
-  const handleDeleteCategory = async (value: string | number): Promise<void> => {
+  const handleDeleteCategory = async (
+    value: string | number
+  ): Promise<void> => {
     await deleteCategory(String(value))
   }
 
@@ -372,11 +375,17 @@ export default function Edition() {
     return handleQuotaCheck(type as ContentType)
   }
 
-  const handleToggleSelectRecompense = (id: string | number, currentSelected: boolean) => {
+  const handleToggleSelectRecompense = (
+    id: string | number,
+    currentSelected: boolean
+  ) => {
     toggleSelectRecompense(String(id), currentSelected)
   }
 
-  const handleUpdateRewardLabel = async (id: string | number, label: string): Promise<{ error?: Error }> => {
+  const handleUpdateRewardLabel = async (
+    id: string | number,
+    label: string
+  ): Promise<{ error?: Error }> => {
     updateRewardLabel(String(id), label)
     return {}
   }
@@ -492,6 +501,7 @@ export default function Edition() {
               </div>
             )}
             <TachesEdition
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               items={visibleTaches as any}
               categories={categories}
               onToggleAujourdhui={handleToggleAujourdhui}
@@ -509,6 +519,7 @@ export default function Edition() {
                 show(t('edition.taskRenamed'), 'success')
               }}
               onUpdateCategorie={handleUpdateCategorie}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onDelete={t => setTacheASupprimer(t as any)}
             />
           </div>
@@ -539,7 +550,9 @@ export default function Edition() {
               </div>
             )}
             <RecompensesEdition
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               items={recompenses as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onDelete={r => setRecompenseASupprimer(r as any)}
               onToggleSelect={handleToggleSelectRecompense}
               onSubmitReward={handleSubmitReward}

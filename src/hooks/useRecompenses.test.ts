@@ -1,4 +1,5 @@
 // src/hooks/useRecompenses.test.js
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Tests pour le hook useRecompenses
  *

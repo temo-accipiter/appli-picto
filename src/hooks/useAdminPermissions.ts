@@ -20,17 +20,17 @@ type Role = {
   id: string
   name: string
   display_name: string
-  description: string
+  description: string | null
   is_active: boolean
-  priority: number
+  priority: number | null
 }
 
 type Feature = {
   id: string
   name: string
   display_name: string
-  description: string
-  category: string
+  description: string | null
+  category: string | null
   is_active: boolean
 }
 
@@ -74,7 +74,7 @@ export function useAdminPermissions() {
       setPermissions(permissionsRes.data || [])
     } catch (err) {
       console.error('❌ Erreur lors du chargement des données admin:', err)
-      setError(err)
+      setError(err instanceof Error ? err : new Error(String(err)))
     } finally {
       setLoading(false)
     }

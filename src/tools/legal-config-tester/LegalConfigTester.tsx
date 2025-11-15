@@ -18,7 +18,9 @@ import {
 import { useState } from 'react'
 
 interface TestResults {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   documents?: Array<{ name: string; result: any }>
   transfers?: {
     compliant: number
@@ -76,6 +78,7 @@ export default function LegalConfigTester() {
     } catch (error) {
       console.error('Erreur lors des tests:', error)
       setTestResults({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         error: (error as any)?.message || 'Erreur inconnue',
         timestamp: new Date().toISOString(),
       })
@@ -174,8 +177,8 @@ export default function LegalConfigTester() {
                     : 'status-warning'
                 }
               >
-                {testResults.transfers?.compliant}/{testResults.transfers?.total}{' '}
-                conformes
+                {testResults.transfers?.compliant}/
+                {testResults.transfers?.total} conformes
               </p>
               <button
                 className="btn btn-small"

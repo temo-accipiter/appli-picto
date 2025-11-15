@@ -70,17 +70,17 @@ type Role = {
   id: string
   name: string
   display_name: string
-  description: string
+  description: string | null
   is_active: boolean
-  priority: number
+  priority: number | null
 }
 
 type Feature = {
   id: string
   name: string
   display_name: string
-  description: string
-  category: string
+  description: string | null
+  category: string | null
   is_active: boolean
 }
 
@@ -260,7 +260,11 @@ export default function AdminPermissions() {
         await loadAllData()
       } else {
         console.error('❌ Erreur lors de la mise à jour du rôle:', result.error)
-        alert(`❌ Erreur lors de la mise à jour: ${(result.error as any)?.message || 'Erreur inconnue'}`)
+        const errorMessage =
+          result.error instanceof Error
+            ? result.error.message
+            : 'Erreur inconnue'
+        alert(`❌ Erreur lors de la mise à jour: ${errorMessage}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la mise à jour du rôle:', error)
@@ -381,7 +385,11 @@ export default function AdminPermissions() {
         // Fonctionnalité créée avec succès
       } else {
         console.error('❌ Erreur lors de la création:', result.error)
-        alert(`❌ Erreur lors de la création: ${(result.error as any)?.message || 'Erreur inconnue'}`)
+        const errorMessage =
+          result.error instanceof Error
+            ? result.error.message
+            : 'Erreur inconnue'
+        alert(`❌ Erreur lors de la création: ${errorMessage}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la création:', error)
@@ -445,7 +453,11 @@ export default function AdminPermissions() {
         // Fonctionnalité modifiée avec succès
       } else {
         console.error('❌ Erreur lors de la modification:', result.error)
-        alert(`❌ Erreur lors de la modification: ${(result.error as any)?.message || 'Erreur inconnue'}`)
+        const errorMessage =
+          result.error instanceof Error
+            ? result.error.message
+            : 'Erreur inconnue'
+        alert(`❌ Erreur lors de la modification: ${errorMessage}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la modification:', error)
@@ -475,7 +487,11 @@ export default function AdminPermissions() {
         // Fonctionnalité supprimée avec succès
       } else {
         console.error('❌ Erreur lors de la suppression:', result.error)
-        alert(`❌ Erreur lors de la suppression: ${(result.error as any)?.message || 'Erreur inconnue'}`)
+        const errorMessage =
+          result.error instanceof Error
+            ? result.error.message
+            : 'Erreur inconnue'
+        alert(`❌ Erreur lors de la suppression: ${errorMessage}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la suppression:', error)
@@ -575,10 +591,12 @@ export default function AdminPermissions() {
                     onValid={value =>
                       setNewFeature({ ...newFeature, name: value })
                     }
-                    rules={createFeatureValidationRules.name(
-                      newFeature.name,
-                      features
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.name(
+                        newFeature.name,
+                        features
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Nom technique de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -592,9 +610,11 @@ export default function AdminPermissions() {
                     onValid={value =>
                       setNewFeature({ ...newFeature, display_name: value })
                     }
-                    rules={createFeatureValidationRules.displayName(
-                      newFeature.display_name
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.displayName(
+                        newFeature.display_name
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Nom d'affichage de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -608,9 +628,11 @@ export default function AdminPermissions() {
                     onValid={value =>
                       setNewFeature({ ...newFeature, description: value })
                     }
-                    rules={createFeatureValidationRules.description(
-                      newFeature.description
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.description(
+                        newFeature.description
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Description de la fonctionnalité"
                   />
                   <select
@@ -659,10 +681,12 @@ export default function AdminPermissions() {
                     onValid={value =>
                       setEditingFeature({ ...editingFeature, name: value })
                     }
-                    rules={createFeatureValidationRules.name(
-                      editingFeature.name,
-                      features.filter(f => f.id !== editingFeature.id)
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.name(
+                        editingFeature.name,
+                        features.filter(f => f.id !== editingFeature.id)
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Nom technique de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -682,16 +706,18 @@ export default function AdminPermissions() {
                         display_name: value,
                       })
                     }
-                    rules={createFeatureValidationRules.displayName(
-                      editingFeature.display_name
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.displayName(
+                        editingFeature.display_name
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Nom d'affichage de la fonctionnalité"
                   />
                   <InputWithValidation
                     id="edit-feature-description"
                     label="Description"
                     placeholder="Description de la fonctionnalité"
-                    value={editingFeature.description}
+                    value={editingFeature.description || ''}
                     onChange={value =>
                       setEditingFeature({
                         ...editingFeature,
@@ -704,13 +730,15 @@ export default function AdminPermissions() {
                         description: value,
                       })
                     }
-                    rules={createFeatureValidationRules.description(
-                      editingFeature.description
-                    ) as any}
+                    rules={
+                      createFeatureValidationRules.description(
+                        editingFeature.description || ''
+                      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+                    }
                     ariaLabel="Description de la fonctionnalité"
                   />
                   <select
-                    value={editingFeature.category}
+                    value={editingFeature.category || ''}
                     onChange={e =>
                       setEditingFeature({
                         ...editingFeature,
@@ -754,13 +782,17 @@ export default function AdminPermissions() {
             <PermissionsTab
               features={features}
               manageableRoles={manageableRoles}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               permissions={permissions as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               tempPermissions={tempPermissions as any}
               editingPermissions={editingPermissions}
               setEditingPermissions={setEditingPermissions}
               handlePermissionChange={handlePermissionChange}
               handleSavePermissions={handleSavePermissions}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               handleDeleteFeature={handleDeleteFeature as any}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               handleEditFeature={handleEditFeature as any}
               initializeTempPermissions={initializeTempPermissions}
             />

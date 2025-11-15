@@ -85,6 +85,7 @@ export default function Login() {
       <h1>{t('nav.login')}</h1>
       <form onSubmit={handleLogin}>
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={emailRef as any}
           id="login-email"
           label={t('auth.email')}
@@ -95,6 +96,7 @@ export default function Login() {
         />
 
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={pwRef as any}
           id="login-password"
           label={t('auth.password')}

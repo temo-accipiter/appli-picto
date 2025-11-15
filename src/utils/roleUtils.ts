@@ -46,7 +46,8 @@ interface RoleObject {
   name: string
   is_active?: boolean
   display_name?: string
-  description?: string
+  description?: string | null
+  priority?: number | null
 }
 
 /** Vérifie si un rôle est un rôle système protégé */

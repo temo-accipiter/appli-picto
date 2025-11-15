@@ -68,6 +68,7 @@ export default function SupabaseTest() {
           '⚠️ Fonctions Edge non testées (fonction test-connection inexistante)'
       }
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       results.general = `❌ Erreur générale: ${(error as any)?.message || 'Erreur inconnue'}`
     }
 

@@ -52,7 +52,10 @@ export default function useStations(
           const remainingStations = stationsData.filter(
             (_, index) => index !== randomIndex
           )
-          const shuffledStations = [firstStation, ...remainingStations] as Station[]
+          const shuffledStations = [
+            firstStation,
+            ...remainingStations,
+          ] as Station[]
 
           setStations(shuffledStations)
         } else {

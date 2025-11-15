@@ -115,6 +115,7 @@ export default function Signup() {
 
       <form onSubmit={handleSignup}>
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={emailRef as any}
           id="signup-email"
           label={t('auth.email')}
@@ -125,6 +126,7 @@ export default function Signup() {
         />
 
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={pwRef as any}
           id="signup-password"
           label={t('auth.password')}
@@ -143,6 +145,7 @@ export default function Signup() {
         />
 
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={confirmRef as any}
           id="signup-confirm"
           label={t('auth.confirmPassword')}

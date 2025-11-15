@@ -122,6 +122,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
           .from('demo_cards')
           .select('*')
           .eq('is_active', true)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .order('position') as any
       )
 
@@ -345,6 +346,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
 
         const { error: upsertError } = await supabase
           .from('demo_cards')
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .upsert(updates as any)
 
         if (upsertError) {

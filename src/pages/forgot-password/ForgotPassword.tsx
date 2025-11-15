@@ -78,6 +78,7 @@ export default function ForgotPassword() {
 
       <form onSubmit={handleSubmit}>
         <InputWithValidation
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ref={emailRef as any}
           id="forgot-email"
           type="email"

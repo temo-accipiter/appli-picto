@@ -1,4 +1,5 @@
 // src/pages/profil/Profil.test.jsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * 🧪 Test d'intégration - Page Profil
  *

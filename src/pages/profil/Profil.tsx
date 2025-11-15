@@ -189,6 +189,7 @@ export default function Profil() {
         data,
         uploadError,
         path: data?.path,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         errorCode: (uploadError as any)?.statusCode,
         errorMessage: uploadError?.message,
       })
@@ -272,10 +273,13 @@ export default function Profil() {
       if (!user?.email) return
 
       const redirectTo = `${window.location.origin}/reset-password`
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email || '', {
-        redirectTo,
-        captchaToken: captchaTokenReset,
-      })
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        user.email || '',
+        {
+          redirectTo,
+          captchaToken: captchaTokenReset,
+        }
+      )
       if (error) throw error
       showToast(t('profil.resetEmailSent'), 'success')
     } catch (err) {

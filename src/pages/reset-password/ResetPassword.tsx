@@ -110,6 +110,7 @@ export default function ResetPassword() {
       ) : (
         <form onSubmit={handleSubmit} className="reset-form">
           <InputWithValidation
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ref={pwRef as any}
             id="new-password"
             label={t('auth.newPassword')}
@@ -128,6 +129,7 @@ export default function ResetPassword() {
           />
 
           <InputWithValidation
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ref={confirmRef as any}
             id="confirm-password"
             label={t('auth.confirmPassword')}

@@ -85,7 +85,7 @@ export default defineConfig({
 
   // Démarrer le serveur dev avant les tests
   webServer: {
-    command: 'yarn dev',
+    command: 'pnpm dev',
     port: 5173,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,

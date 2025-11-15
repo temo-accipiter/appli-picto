@@ -6,15 +6,16 @@ interface Feature {
   id: string
   name: string
   display_name: string
-  description?: string
+  description?: string | null
+  category?: string | null
 }
 
 interface Role {
   id: string
   name: string
   display_name: string
-  description?: string
-  priority: number
+  description?: string | null
+  priority: number | null
   is_active?: boolean
 }
 

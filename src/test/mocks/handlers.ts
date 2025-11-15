@@ -167,7 +167,10 @@ export const handlers = [
 
     const index = recompensesDb.findIndex(r => r.id === id)
     if (index !== -1) {
-      recompensesDb[index] = { ...recompensesDb[index], ...updates } as MockRecompense
+      recompensesDb[index] = {
+        ...recompensesDb[index],
+        ...updates,
+      } as MockRecompense
       return HttpResponse.json(recompensesDb[index], { status: 200 })
     }
 
@@ -264,7 +267,10 @@ export const handlers = [
 
     const index = parametresDb.findIndex(p => p.user_id === userId)
     if (index !== -1) {
-      parametresDb[index] = { ...parametresDb[index], ...updates } as MockParametre
+      parametresDb[index] = {
+        ...parametresDb[index],
+        ...updates,
+      } as MockParametre
       return HttpResponse.json(parametresDb[index], { status: 200 })
     }
 

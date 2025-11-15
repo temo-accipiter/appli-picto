@@ -1,0 +1,101 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - link "Skip to main content" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e5]:
+    - navigation [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button "Activer le thème sombre" [ref=e9] [cursor=pointer]:
+            - img [ref=e10]
+          - group "Sélecteur de langue" [ref=e12]:
+            - button "Passer le site en français" [ref=e13] [cursor=pointer]: 🇫🇷
+            - button "Switch site to English" [ref=e14] [cursor=pointer]: 🇬🇧
+        - generic [ref=e15]:
+          - button "Personalization" [ref=e16] [cursor=pointer]:
+            - img [ref=e17]
+            - generic [ref=e23]: Personalization
+          - link "Create account" [ref=e24] [cursor=pointer]:
+            - /url: /signup
+            - img [ref=e25]
+            - generic [ref=e28]: Create account
+          - link "Log in" [ref=e29] [cursor=pointer]:
+            - /url: /login
+            - img [ref=e30]
+            - generic [ref=e33]: Log in
+    - main "Skip to main content" [ref=e34]:
+      - generic [ref=e36]:
+        - heading "tableau.title" [level=1] [ref=e37]
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]: "🔍 Debug Rôles:"
+            - button "✕" [ref=e41] [cursor=pointer]
+          - generic [ref=e42]: "Permissions: visitor"
+          - generic [ref=e43]: "Simple: visitor"
+          - generic [ref=e44]: "Final: visitor"
+          - generic [ref=e45]: "ready: true — unknown: false"
+          - button "Recharger rôles" [ref=e46] [cursor=pointer]
+        - region "tableau.progress" [ref=e47]:
+          - heading "tableau.progress" [level=2] [ref=e48]
+          - generic [ref=e49]:
+            - generic [ref=e50]:
+              - img [ref=e51]
+              - img "Métro" [ref=e55]
+              - img "Ligne 1" [ref=e57]
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - generic [ref=e60]: Choose a line
+                - combobox "Choose a line" [ref=e61]:
+                  - option "— Select —"
+                  - option "Line 1" [selected]
+                  - option "Line 6"
+                  - option "Line 12"
+              - paragraph [ref=e62]: "Progress : 0 / 0 tasks"
+        - region "Tasks" [ref=e63]:
+          - heading "Tasks" [level=2] [ref=e64]
+          - status [ref=e65]
+          - status [ref=e67]
+    - contentinfo "Legal notices" [ref=e68]:
+      - navigation "Legal notices" [ref=e69]:
+        - list [ref=e70]:
+          - listitem [ref=e71]:
+            - link "Legal notices" [ref=e72] [cursor=pointer]:
+              - /url: /mentions-legales
+          - listitem [ref=e73]:
+            - link "Terms of use" [ref=e74] [cursor=pointer]:
+              - /url: /cgu
+          - listitem [ref=e75]:
+            - link "Terms of sale" [ref=e76] [cursor=pointer]:
+              - /url: /cgv
+          - listitem [ref=e77]:
+            - link "Privacy policy" [ref=e78] [cursor=pointer]:
+              - /url: /politique-confidentialite
+          - listitem [ref=e79]:
+            - link "Cookie policy" [ref=e80] [cursor=pointer]:
+              - /url: /politique-cookies
+          - listitem [ref=e81]:
+            - button "Customize" [ref=e82] [cursor=pointer]
+          - listitem [ref=e83]:
+            - button "Refuse" [ref=e84] [cursor=pointer]
+          - listitem [ref=e85]:
+            - link "Accessibility" [ref=e86] [cursor=pointer]:
+              - /url: /accessibilite
+          - listitem [ref=e87]:
+            - link "GDPR portal" [ref=e88] [cursor=pointer]:
+              - /url: /rgpd
+      - paragraph [ref=e89]: © 2025
+    - dialog "This site uses cookies to improve your experience" [ref=e90]:
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - heading "This site uses cookies to improve your experience" [level=2] [ref=e93]
+          - paragraph [ref=e94]: This site uses cookies to improve your experience
+          - paragraph [ref=e95]:
+            - link "Cookie policy" [ref=e96] [cursor=pointer]:
+              - /url: /politique-cookies
+        - group "This site uses cookies to improve your experience" [ref=e97]:
+          - button "Refuse" [ref=e98] [cursor=pointer]
+          - button "Customize" [ref=e99] [cursor=pointer]
+          - button "Accept" [ref=e100] [cursor=pointer]
+```

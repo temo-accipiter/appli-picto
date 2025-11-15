@@ -39,6 +39,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
     setError(null)
 
     const { data, error, aborted } = await withAbortSafe(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       supabase.from('parametres').select('*').eq('id', 1).maybeSingle() as any
     )
 
@@ -87,7 +88,10 @@ export default function useParametres(reload = 0): UseParametresReturn {
           toasts_enabled: true,
         }
         const { error: insertError } = await withAbortSafe(
-          supabase.from('parametres').upsert(payload, { onConflict: 'id' }) as any
+          supabase
+            .from('parametres')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .upsert(payload, { onConflict: 'id' }) as any
         )
 
         if (!insertError) {
@@ -110,6 +114,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
       const payload: Partial<Parametre> = { id: 1, ...defaults }
 
       const { error, aborted } = await withAbortSafe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         supabase.from('parametres').upsert(payload, { onConflict: 'id' }) as any
       )
 
@@ -155,6 +160,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
       const payload = { ...parametres, ...updates }
 
       const { error, aborted } = await withAbortSafe(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         supabase.from('parametres').upsert(payload, { onConflict: 'id' }) as any
       )
 

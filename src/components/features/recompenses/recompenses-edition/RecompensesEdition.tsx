@@ -156,7 +156,7 @@ export default function RecompensesEdition({
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         includeCategory={false}
-        onSubmit={(values) => {
+        onSubmit={values => {
           onSubmitReward(values)
           setModalOpen(false)
         }}

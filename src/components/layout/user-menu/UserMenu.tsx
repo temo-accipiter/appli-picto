@@ -108,7 +108,14 @@ export default function UserMenu() {
       if (!user?.id) return
       const { data, error, aborted } = await withAbortSafe<{
         pseudo: string | null
-      }>(supabase.from('profiles').select('pseudo').eq('id', user.id).single() as any)
+      }>(
+        supabase
+          .from('profiles')
+          .select('pseudo')
+          .eq('id', user.id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .single() as any
+      )
       if (cancelled) return
       if (aborted || (error && isAbortLike(error))) return
       if (error) {

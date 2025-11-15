@@ -153,11 +153,11 @@ function patchFetchForCheckout(): void {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent<{
+type ConsentChangedEvent = CustomEvent<{
   choices?: {
     analytics?: boolean
   }
-}> {}
+}>
 
 function boot(): void {
   patchHistory()

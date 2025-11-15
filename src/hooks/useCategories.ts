@@ -9,9 +9,9 @@ interface Category {
   id: string
   label: string
   value: string
-  user_id?: string | null
-  created_at?: string
-  updated_at?: string
+  user_id: string | null
+  created_at: string
+  updated_at: string
 }
 
 interface CategoryInput {

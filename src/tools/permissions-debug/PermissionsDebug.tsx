@@ -1,7 +1,8 @@
 import { usePermissions } from '@/contexts'
 import { Crown, Eye, EyeOff, Settings, Shield, User } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useDebounce } from '@/hooks'
+import { useAdminPermissions } from '@/hooks/useAdminPermissions'
 import './PermissionsDebug.scss'
 
 export const PermissionsDebug = () => {
@@ -9,29 +10,44 @@ export const PermissionsDebug = () => {
     role,
     can: _can,
     loading,
-    subscription: _subscription,
     isVisitor: _isVisitor,
-    isSubscriber: _isSubscriber,
     isAdmin,
-    permissions,
-    features,
   } = usePermissions()
+
+  const {
+    features,
+    permissions: adminPermissions,
+    loadAllData,
+  } = useAdminPermissions()
+
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
+  // Charger les données admin au montage
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllData()
+    }
+  }, [isAdmin, loadAllData])
+
   // Créer une structure de données pour l'affichage avec mémoïsation
   const featurePermissions = useMemo(() => {
-    if (!features || !permissions || !Array.isArray(permissions)) return []
+    if (!features || !adminPermissions || !Array.isArray(adminPermissions))
+      return []
 
     return features.map(feature => {
-      const featurePerms = permissions.filter(p => p.feature_id === feature.id)
-      const featurePermissionsMap = {}
+      const featurePerms = adminPermissions.filter(
+        (p: { feature_id: string }) => p.feature_id === feature.id
+      )
+      const featurePermissionsMap: Record<string, boolean> = {}
 
-      featurePerms.forEach(perm => {
-        const roleName = perm.role_name || 'unknown'
-        featurePermissionsMap[roleName] = perm.can_access
-      })
+      featurePerms.forEach(
+        (perm: { role_name?: string; can_access: boolean }) => {
+          const roleName = perm.role_name || 'unknown'
+          featurePermissionsMap[roleName] = perm.can_access
+        }
+      )
 
       return {
         name: feature.name,
@@ -40,7 +56,7 @@ export const PermissionsDebug = () => {
         permissions: featurePermissionsMap,
       }
     })
-  }, [features, permissions])
+  }, [features, adminPermissions])
 
   // Filtrer les features par recherche avec debounce et mémoïsation
   const filteredFeatures = useMemo(() => {

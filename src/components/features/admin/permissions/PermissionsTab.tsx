@@ -5,14 +5,16 @@ interface Feature {
   id: string
   name: string
   display_name: string
-  description?: string
+  description?: string | null
+  category?: string | null
 }
 
 interface Role {
   id: string
   name: string
   display_name: string
-  priority: number
+  priority: number | null
+  description?: string | null
 }
 
 interface Permission {

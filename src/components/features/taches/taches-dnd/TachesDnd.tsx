@@ -5,6 +5,7 @@
 
 import { Button, ModalConfirm, TableauCard } from '@/components'
 import { useI18n } from '@/hooks'
+import type { Tache } from '@/types/global'
 import {
   DndContext,
   DragOverlay,
@@ -28,7 +29,7 @@ interface TacheItem {
   id: string | number
   label: string
   fait: boolean | number
-  imagepath?: string
+  imagepath?: string | null
   isDemo?: boolean
 }
 
@@ -134,7 +135,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
             {items.map(t => (
               <TableauCard
                 key={t.id}
-                tache={t}
+                tache={t as unknown as Tache}
                 done={doneMap[t.id] || false}
                 toggleDone={onToggle}
               />
@@ -145,7 +146,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         <DragOverlay>
           {activeId && activeTache && (
             <TableauCard
-              tache={activeTache}
+              tache={activeTache as unknown as Tache}
               done={doneMap[activeId] || false}
               toggleDone={onToggle}
             />

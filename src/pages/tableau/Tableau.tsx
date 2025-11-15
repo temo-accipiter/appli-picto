@@ -40,12 +40,16 @@ const PersonalizationModal = lazy(() =>
   import('@/components').then(m => ({ default: m.PersonalizationModal }))
 )
 
-import type { Tache } from '@/types/global'
+import type { Tache, Recompense } from '@/types/global'
 import './Tableau.scss'
 
 interface DemoTache extends Tache {
   done?: boolean
   isDemo: boolean
+}
+
+interface RewardWithDemo extends Recompense {
+  isDemo?: boolean
 }
 
 interface TableauGrilleProps {
@@ -137,11 +141,14 @@ export default function TableauGrille({
 
   useEffect(() => {
     if (isDemoMode) {
-      const initialTaches = (demoTaches ?? []).map(t => ({
-        ...t,
-        done: false,
-        isDemo: true,
-      }))
+      const initialTaches = (demoTaches ?? []).map(
+        t =>
+          ({
+            ...t,
+            done: false,
+            isDemo: true,
+          }) as DemoTache
+      )
       setDemoTachesState(initialTaches)
       setTotalTaches(initialTaches.length)
       setDoneCount(0)
@@ -157,21 +164,23 @@ export default function TableauGrille({
   const taches = useMemo(() => {
     if (isDemoMode) return demoTachesState
     const fallbackTasks = Array.isArray(fallbackData?.tasks)
-      ? fallbackData.tasks.filter(
-          t => t.aujourdhui === true || t.aujourdhui === 1
+      ? (fallbackData.tasks as Tache[]).filter(
+          (t: Tache) => t.aujourdhui === true
         )
       : []
     return personalTaches.length > 0 ? personalTaches : fallbackTasks
   }, [isDemoMode, demoTachesState, personalTaches, fallbackData?.tasks])
 
-  const recompenses = useMemo(() => {
+  const recompenses: RewardWithDemo[] = useMemo(() => {
     if (isDemoMode) {
       return Array.isArray(demoRecompenses)
-        ? demoRecompenses.map(r => ({ ...r, isDemo: true }))
+        ? (demoRecompenses as unknown as Recompense[]).map(
+            (r: Recompense) => ({ ...r, isDemo: true }) as RewardWithDemo
+          )
         : []
     }
     const fallbackRewards = Array.isArray(fallbackData?.rewards)
-      ? fallbackData.rewards
+      ? (fallbackData.rewards as Recompense[])
       : []
     return personalRecompenses.length > 0
       ? personalRecompenses
@@ -182,7 +191,7 @@ export default function TableauGrille({
 
   // Mémoïser les fonctions pour éviter re-renders inutiles de TachesDnd
   const toggleDone = useCallback(
-    (id: string, newDone: boolean) => {
+    (id: string | number, newDone: boolean) => {
       if (isDemoMode) {
         setDemoTachesState(prev => {
           const updated = prev.map(t =>
@@ -233,7 +242,7 @@ export default function TableauGrille({
 
   // ⚠️ Sécurise l'accès à .find()
   const selected = (Array.isArray(recompenses) ? recompenses : []).find(
-    r => r?.selected === true || r?.selected === 1
+    r => r?.selected === true
   )
   const { showTrain, showRecompense, showTimeTimer } = useDisplay()
 
@@ -246,7 +255,7 @@ export default function TableauGrille({
     return selected
   }, [isDemoMode, recompenses, selected])
 
-  const modalTimeoutRef = useRef<number | null>(null)
+  const modalTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 🎯 Confettis + modal dynamique
   useEffect(() => {
@@ -288,7 +297,7 @@ export default function TableauGrille({
   }, [doneCount, totalTaches, isDemoMode])
 
   // ⚠️ Sécurise .find() lors du reorder
-  const safeTaches = Array.isArray(taches) ? taches : []
+  const safeTaches: Tache[] = Array.isArray(taches) ? (taches as Tache[]) : []
 
   return (
     <div className="tableau-magique">
@@ -334,9 +343,9 @@ export default function TableauGrille({
           {t('tasks.title')}
         </h2>
         <TachesDnd
-          items={taches}
+          items={safeTaches}
           doneMap={doneMap}
-          onReorder={(ids: string[]) => {
+          onReorder={(ids: (string | number)[]) => {
             const newList = (ids ?? [])
               .map(id => safeTaches.find(t => t?.id === id))
               .filter((t): t is Tache => Boolean(t))

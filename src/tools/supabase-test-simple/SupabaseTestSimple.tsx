@@ -51,6 +51,7 @@ export default function SupabaseTestSimple() {
         results.storage = `✅ Service de storage fonctionnel (Buckets: ${buckets.map(b => b.name).join(', ')})`
       }
     } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       results.general = `❌ Erreur générale: ${(error as any)?.message || 'Erreur inconnue'}`
     }
 

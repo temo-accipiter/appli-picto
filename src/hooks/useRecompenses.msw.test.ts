@@ -1,4 +1,5 @@
 // src/hooks/useRecompenses.msw.test.js
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * ✨ Tests useRecompenses avec MSW (Mock Service Worker)
  *
@@ -54,7 +55,9 @@ describe.skip('useRecompenses (avec MSW)', () => {
       await waitFor(
         () => {
           expect(result.current.recompenses).toHaveLength(2)
-          expect(result.current.recompenses[0]?.label).toBe('Temps de jeu vidéo')
+          expect(result.current.recompenses[0]?.label).toBe(
+            'Temps de jeu vidéo'
+          )
           expect(result.current.recompenses[1]?.label).toBe('Sortie au parc')
           expect(result.current.loading).toBe(false)
         },
