@@ -49,7 +49,7 @@ const getRating = (metric: Metric): 'good' | 'needs-improvement' | 'poor' => {
  * Envoie une métrique à Google Analytics 4
  */
 const sendToGA4 = (metric: Metric): void => {
-  if (!window.gtag || !import.meta.env.VITE_GA4_ID) return
+  if (!window.gtag || !process.env.NEXT_PUBLIC_GA4_ID) return
 
   const rating = getRating(metric)
 
@@ -66,7 +66,7 @@ const sendToGA4 = (metric: Metric): void => {
     navigation_type: metric.navigationType,
   })
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log(`📊 ${metric.name}: ${metric.value.toFixed(2)} (${rating})`, {
       delta: metric.delta,
       id: metric.id,
@@ -79,7 +79,7 @@ const sendToGA4 = (metric: Metric): void => {
  * Envoie une métrique à Sentry (si performance monitoring activé)
  */
 const sendToSentry = (metric: Metric): void => {
-  if (!import.meta.env.VITE_SENTRY_DSN) return
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return
 
   import('@/config/sentry')
     .then(({ Sentry }) => {
@@ -114,7 +114,7 @@ const handleMetric = (metric: Metric): void => {
   sendToSentry(metric)
 
   // Log en développement
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     const rating = getRating(metric)
     const emoji =
       rating === 'good' ? '✅' : rating === 'needs-improvement' ? '⚠️' : '❌'
@@ -147,7 +147,7 @@ export const useWebVitals = (): void => {
     // TTFB (Time to First Byte)
     onTTFB(handleMetric)
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('📊 Core Web Vitals tracking activé')
     }
   }, [])

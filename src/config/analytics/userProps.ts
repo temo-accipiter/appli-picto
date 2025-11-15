@@ -5,8 +5,8 @@ import { supabase } from '@/utils/supabaseClient'
 import { hasConsent } from '@/utils/consent'
 import type { User } from '@supabase/supabase-js'
 
-const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()
-const GA_SALT = (import.meta.env.VITE_GA_SALT || 'dev-salt-change-me').trim()
+const GA_ID = (process.env.NEXT_PUBLIC_GA4_ID || '').trim()
+const GA_SALT = (process.env.NEXT_PUBLIC_GA_SALT || 'dev-salt-change-me').trim()
 const isValidGA = (id: string): boolean => /^G-[A-Z0-9]{6,}$/.test(id)
 const isReady = (): boolean =>
   isValidGA(GA_ID) &&
@@ -15,7 +15,7 @@ const isReady = (): boolean =>
 
 // Map Price → plan (garde en phase avec routePageViews.ts)
 const PRICE_MAP: Record<string, string> = {
-  [(import.meta.env.VITE_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
+  [(process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
   // 'price_ABCDEF...': 'monthly_pro',
 }
 

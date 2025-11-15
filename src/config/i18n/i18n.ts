@@ -25,7 +25,13 @@ import Backend from 'i18next-http-backend'
 type SupportedLanguage = 'fr' | 'en'
 
 // Détection de la langue préférée (localStorage > navigateur > fallback)
+// Next.js SSR-safe: vérifier typeof window !== 'undefined'
 const getInitialLanguage = (): SupportedLanguage => {
+  // SSR: fallback sur français
+  if (typeof window === 'undefined') {
+    return 'fr'
+  }
+
   // 1. Vérifier le localStorage
   const savedLang = localStorage.getItem('lang')
   if (savedLang && ['fr', 'en'].includes(savedLang)) {
@@ -63,21 +69,27 @@ i18n
     interpolation: {
       escapeValue: false, // React échappe déjà les valeurs
     },
-    // Debugging en dev (optionnel)
-    debug: import.meta.env.DEV && import.meta.env.VITE_I18N_DEBUG === 'true',
+    // Debugging en dev (optionnel) - Next.js compatible
+    debug:
+      process.env.NODE_ENV === 'development' &&
+      process.env.NEXT_PUBLIC_I18N_DEBUG === 'true',
   })
 
-// Initialiser l'attribut lang au chargement
+// Initialiser l'attribut lang au chargement (SSR-safe)
 const initialLang = getInitialLanguage()
 if (typeof document !== 'undefined') {
   document.documentElement.lang = initialLang
 }
 
-// Sauvegarder la langue choisie dans le localStorage
+// Sauvegarder la langue choisie dans le localStorage (SSR-safe)
 i18n.on('languageChanged', (lng: string) => {
-  localStorage.setItem('lang', lng)
-  // Mettre à jour l'attribut lang de la page pour l'accessibilité et le calendrier
-  document.documentElement.lang = lng
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('lang', lng)
+    // Mettre à jour l'attribut lang de la page pour l'accessibilité et le calendrier
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lng
+    }
+  }
 })
 
 export default i18n
