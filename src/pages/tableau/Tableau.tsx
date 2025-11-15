@@ -141,7 +141,7 @@ export default function TableauGrille({
         ...t,
         done: false,
         isDemo: true,
-      }))
+      })) as DemoTache[]
       setDemoTachesState(initialTaches)
       setTotalTaches(initialTaches.length)
       setDoneCount(0)
@@ -158,7 +158,7 @@ export default function TableauGrille({
     if (isDemoMode) return demoTachesState
     const fallbackTasks = Array.isArray(fallbackData?.tasks)
       ? fallbackData.tasks.filter(
-          t => t.aujourdhui === true || t.aujourdhui === 1
+          (t: any) => t.aujourdhui === true || t.aujourdhui === 1
         )
       : []
     return personalTaches.length > 0 ? personalTaches : fallbackTasks
@@ -233,7 +233,7 @@ export default function TableauGrille({
 
   // ⚠️ Sécurise l'accès à .find()
   const selected = (Array.isArray(recompenses) ? recompenses : []).find(
-    r => r?.selected === true || r?.selected === 1
+    (r: any) => r?.selected === true || r?.selected === 1
   )
   const { showTrain, showRecompense, showTimeTimer } = useDisplay()
 
@@ -262,7 +262,7 @@ export default function TableauGrille({
 
         modalTimeoutRef.current = setTimeout(() => {
           setShowModalRecompense(false)
-        }, 5000)
+        }, 5000) as any
       } else {
         // Activer les confettis seulement si le paramètre global le permet
         const confettisEnabled = parametres?.confettis !== false
@@ -272,7 +272,7 @@ export default function TableauGrille({
 
         modalTimeoutRef.current = setTimeout(() => {
           setShowModalRecompense(false)
-        }, 13000)
+        }, 13000) as any
       }
     } else {
       setShowConfettis(false)
@@ -327,22 +327,22 @@ export default function TableauGrille({
       )}
 
       <section
-        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
+        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}` as any}
         aria-labelledby="tasks-heading"
       >
         <h2 id="tasks-heading" className="sr-only">
           {t('tasks.title')}
         </h2>
         <TachesDnd
-          items={taches}
+          items={taches as any}
           doneMap={doneMap}
-          onReorder={(ids: string[]) => {
+          onReorder={(ids: (string | number)[]) => {
             const newList = (ids ?? [])
-              .map(id => safeTaches.find(t => t?.id === id))
+              .map(id => safeTaches.find((t: any) => t?.id === id))
               .filter((t): t is Tache => Boolean(t))
             saveOrder(newList)
           }}
-          onToggle={toggleDone}
+          onToggle={(id: string | number, newDone: boolean) => toggleDone(String(id), newDone)}
           onReset={() => {
             resetAll()
             setShowModalRecompense(false)
@@ -356,7 +356,7 @@ export default function TableauGrille({
         )}
       </section>
 
-      {showConfettis && !isDemoMode && (
+      {(showConfettis as any) && !isDemoMode && (
         <Suspense fallback={null}>
           <Confetti width={width} height={height} />
         </Suspense>
@@ -367,12 +367,12 @@ export default function TableauGrille({
           <ModalRecompense
             isOpen={true}
             onClose={() => setShowModalRecompense(false)}
-            reward={selectedReward}
+            reward={selectedReward as any}
           />
         </Suspense>
       )}
 
-      {showRecompense && selectedReward && doneCount < totalTaches && (
+      {showRecompense && (selectedReward as any) && doneCount < totalTaches && (
         <SelectedRewardFloating reward={selectedReward} />
       )}
 
