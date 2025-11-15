@@ -135,6 +135,8 @@ export default function Profil() {
     })
     if (metaError) console.warn('⚠️ Mise à jour metadata échouée :', metaError)
 
+    if (!user?.id) return
+
     const { error } = await supabase
       .from('profiles')
       .update(payload)
@@ -267,6 +269,8 @@ export default function Profil() {
         showToast(t('profil.validateCaptcha'), 'error')
         return
       }
+      if (!user?.email) return
+
       const redirectTo = `${window.location.origin}/reset-password`
       const { error } = await supabase.auth.resetPasswordForEmail(user.email || '', {
         redirectTo,

@@ -99,11 +99,18 @@ export default function DeleteAccountModal({
 
       // Étape A — réauthentification (token de phase "login")
       if (phase === 'login') {
-        const { error: reauthErr } = await supabase.auth.signInWithPassword({
-          email: user?.email || '',
-          password,
-          ...(tokenLogin && { options: { captchaToken: tokenLogin } }),
-        })
+        const { error: reauthErr } = await supabase.auth.signInWithPassword(
+          tokenLogin
+            ? {
+                email: user?.email || '',
+                password,
+                options: { captchaToken: tokenLogin },
+              }
+            : {
+                email: user?.email || '',
+                password,
+              }
+        )
         if (reauthErr) {
           show(t('profil.deleteModalErrorPassword'), 'error')
           return

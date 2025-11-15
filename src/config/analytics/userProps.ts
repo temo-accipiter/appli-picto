@@ -46,7 +46,7 @@ async function getSessionUser(): Promise<User | null> {
 
 interface PlanInfo {
   status: string
-  plan?: string | undefined
+  plan?: string
 }
 
 async function getUserPlan(userId: string): Promise<PlanInfo | null> {
@@ -58,19 +58,18 @@ async function getUserPlan(userId: string): Promise<PlanInfo | null> {
     .maybeSingle()
   if (error) return null
   const status = data?.status || 'free'
-  const plan = data?.plan || priceIdToPlanName(data?.price_id ?? undefined)
-  return { status, plan }
+  const plan = data?.plan || priceIdToPlanName(data?.price_id)
+  return { status, ...(plan !== undefined && { plan }) }
 }
 
 interface UserProperties {
-  uid_hash?: string | undefined
+  uid_hash?: string
   customer_tier: string
-  plan_name?: string | undefined
+  plan_name?: string
 }
 
 async function setUserProperties(props: UserProperties): Promise<void> {
   if (!isReady()) return
-  if (typeof window.gtag !== 'function') return
   window.gtag('set', 'user_properties', props)
 }
 
@@ -81,9 +80,7 @@ export async function refreshGAUserProperties(): Promise<boolean> {
     const user = await getSessionUser()
     if (!user) {
       await setUserProperties({
-        uid_hash: undefined,
         customer_tier: 'anon',
-        plan_name: undefined,
       })
       return true
     }
@@ -96,7 +93,7 @@ export async function refreshGAUserProperties(): Promise<boolean> {
     await setUserProperties({
       uid_hash: uidHash,
       customer_tier: tier, // free | trialing | paid | canceled…
-      plan_name: planInfo?.plan,
+      ...(planInfo?.plan !== undefined && { plan_name: planInfo.plan }),
     })
     return true
   } catch {
@@ -104,11 +101,13 @@ export async function refreshGAUserProperties(): Promise<boolean> {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent<{
-  choices?: {
-    analytics?: boolean
+interface ConsentChangedEvent extends CustomEvent {
+  detail?: {
+    choices?: {
+      analytics?: boolean
+    }
   }
-}> {}
+}
 
 function boot(): void {
   // Consentement obtenu → pousse les user_properties

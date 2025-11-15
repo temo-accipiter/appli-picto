@@ -236,7 +236,7 @@ export async function modernUploadImage(
       const { data: fileExists } = await supabase.storage
         .from(PRIVATE_BUCKET)
         .list(dupCheck.file_path!.split('/').slice(0, -1).join('/'), {
-          ...(fileName && { search: fileName }),
+          ...(fileName !== undefined && { search: fileName }),
         })
 
       if (fileExists && fileExists.length > 0) {
@@ -522,10 +522,10 @@ export async function replaceImage(
 
     const uploadResult = await modernUploadImage(newFile, {
       userId,
-      assetType: existingAsset.asset_type as AssetType,
+      assetType: existingAsset.asset_type,
       prefix:
         existingAsset.asset_type === 'task_image' ? 'taches' : 'recompenses',
-      ...(onProgress && { onProgress }),
+      onProgress,
     })
 
     if (uploadResult.error) {

@@ -37,6 +37,17 @@ i18n.use(initReactI18next).init({
         'settings.title': 'Paramètres',
         'tasks.title': 'Tâches',
         'rewards.title': 'Récompenses',
+        // Profil page translations
+        'profil.myProfile': 'Mon Profil',
+        'profil.loading': 'Chargement...',
+        'profil.pseudo': 'Pseudo',
+        'profil.email': 'Email',
+        'profil.city': 'Ville',
+        'profil.birthdate': 'Date de naissance',
+        'profil.avatar': 'Avatar',
+        'profil.save': 'Enregistrer',
+        'profil.logout': 'Déconnexion',
+        'profil.deleteAccount': 'Supprimer mon compte',
       },
     },
   },
@@ -111,4 +122,45 @@ globalThis['import'].meta.env = {
     'http://localhost:54321/functions/v1',
   VITE_APP_URL: existingEnv.VITE_APP_URL || 'http://localhost:5173',
   VITE_APP_ENV: 'test',
+}
+
+// ========================================
+// Mock Supabase Realtime (Désactivation WebSocket)
+// ========================================
+// CRITICAL: Désactiver realtime dans les tests pour éviter les connexions WebSocket
+// qui causent des crashes du worker Vitest
+
+// Mock de WebSocket pour éviter les connexions réelles
+class MockWebSocket {
+  readyState = 0
+  onopen = null
+  onerror = null
+  onclose = null
+  onmessage = null
+
+  constructor() {
+    // Ne rien faire - pas de connexion réelle
+  }
+
+  send(): void {
+    // No-op
+  }
+
+  close(): void {
+    // No-op
+  }
+
+  addEventListener(): void {
+    // No-op
+  }
+
+  removeEventListener(): void {
+    // No-op
+  }
+}
+
+// Remplacer WebSocket globalement pour les tests
+if (typeof globalThis !== 'undefined') {
+  ;(globalThis as { WebSocket?: unknown }).WebSocket =
+    MockWebSocket as unknown as typeof WebSocket
 }

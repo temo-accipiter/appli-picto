@@ -1,4 +1,4 @@
-// src/hooks/useAdminPermissions.js
+// src/hooks/useAdminPermissions.ts
 // Hook pour la gestion administrative des permissions, rôles et fonctionnalités
 // À utiliser uniquement dans les composants admin
 
@@ -16,16 +16,40 @@ import {
   updateRolePermissions,
 } from '@/utils/permissions-api'
 
+type Role = {
+  id: string
+  name: string
+  display_name: string
+  description: string
+  is_active: boolean
+  priority: number
+}
+
+type Feature = {
+  id: string
+  name: string
+  display_name: string
+  description: string
+  category: string
+  is_active: boolean
+}
+
+type Permission = {
+  role_id: string
+  feature_id: string
+  can_access: boolean
+}
+
 /**
  * Hook personnalisé pour gérer l'administration des permissions
  * @returns {Object} Fonctions et états pour gérer roles, features et permissions
  */
 export function useAdminPermissions() {
   const [loading, setLoading] = useState(false)
-  const [roles, setRoles] = useState<any[]>([])
-  const [features, setFeatures] = useState<any[]>([])
-  const [permissions, setPermissions] = useState<any[]>([])
-  const [error, setError] = useState<any>(null)
+  const [roles, setRoles] = useState<Role[]>([])
+  const [features, setFeatures] = useState<Feature[]>([])
+  const [permissions, setPermissions] = useState<Permission[]>([])
+  const [error, setError] = useState<Error | null>(null)
 
   /**
    * Charge toutes les données: rôles, fonctionnalités et permissions

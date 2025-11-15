@@ -123,7 +123,7 @@ pnpm context:update # MUST update schema.sql + types
 - Deploy without testing `pnpm preview`
 - Modify database without updating types (`pnpm context:update`)
 - Upload images > 100KB (auto-compression enforced)
-- Create markdown documentation files (*.md) without explicit user request
+- Create markdown documentation files (\*.md) without explicit user request
 - Generate README or analysis files proactively
 - Use `yarn` commands (project migrated to pnpm)
 
@@ -135,12 +135,12 @@ pnpm context:update # MUST update schema.sql + types
 
 ```json
 {
-  "noImplicitAny": false,        // Allows implicit any types
-  "noImplicitReturns": false,    // Allows missing return statements
-  "noUnusedLocals": false,       // Allows unused local variables
-  "noUnusedParameters": false,   // Allows unused parameters
-  "strictNullChecks": true,      // MAINTAINED
-  "exactOptionalPropertyTypes": true  // MAINTAINED
+  "noImplicitAny": false, // Allows implicit any types
+  "noImplicitReturns": false, // Allows missing return statements
+  "noUnusedLocals": false, // Allows unused local variables
+  "noUnusedParameters": false, // Allows unused parameters
+  "strictNullChecks": true, // MAINTAINED
+  "exactOptionalPropertyTypes": true // MAINTAINED
 }
 ```
 

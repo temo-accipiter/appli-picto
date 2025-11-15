@@ -56,7 +56,7 @@ const clientConfig = {
 
       try {
         const response = await fetch(input, {
-          ...options,
+          ...(options as RequestInit),
           signal: controller.signal,
         })
         clearTimeout(timeout)

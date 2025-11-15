@@ -50,7 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (user) {
           setSentryUser({
             id: user.id,
-            email: user.email,
+            ...(user.email !== undefined && { email: user.email }),
             role: user.user_metadata?.role || 'user',
           })
         } else {

@@ -4,35 +4,43 @@ import { useState, useMemo } from 'react'
 import { useDebounce } from '@/hooks'
 import './PermissionsDebug.scss'
 
-interface FeaturePermission {
-  name: string
-  display_name: string
-  description?: string
-  permissions: Record<string, boolean>
-}
-
 export const PermissionsDebug = () => {
   const {
     role,
     can: _can,
     loading,
-    // subscription, // Not available in PermissionsContextValue
+    subscription: _subscription,
     isVisitor: _isVisitor,
-    // isSubscriber, // Not available in PermissionsContextValue
+    isSubscriber: _isSubscriber,
     isAdmin,
-    // permissions, // Not available in PermissionsContextValue
-    // features, // Not available in PermissionsContextValue
+    permissions,
+    features,
   } = usePermissions()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   // Créer une structure de données pour l'affichage avec mémoïsation
-  const featurePermissions = useMemo<FeaturePermission[]>(() => {
-    // Features and permissions not available in current context
-    return []
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const featurePermissions = useMemo(() => {
+    if (!features || !permissions || !Array.isArray(permissions)) return []
+
+    return features.map(feature => {
+      const featurePerms = permissions.filter(p => p.feature_id === feature.id)
+      const featurePermissionsMap = {}
+
+      featurePerms.forEach(perm => {
+        const roleName = perm.role_name || 'unknown'
+        featurePermissionsMap[roleName] = perm.can_access
+      })
+
+      return {
+        name: feature.name,
+        display_name: feature.display_name,
+        description: feature.description,
+        permissions: featurePermissionsMap,
+      }
+    })
+  }, [features, permissions])
 
   // Filtrer les features par recherche avec debounce et mémoïsation
   const filteredFeatures = useMemo(() => {

@@ -130,7 +130,7 @@ export async function exportUserDataZip(
     generated_at: now,
     user: {
       id: user.id,
-      email: user.email,
+      ...(user.email !== undefined && { email: user.email }),
     },
     profile: profile || null,
     avatar_signed_url: avatarSignedUrl,

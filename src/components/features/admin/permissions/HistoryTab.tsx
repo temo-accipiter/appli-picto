@@ -6,6 +6,11 @@ import { useCallback, useEffect, useState } from 'react'
 type ChangeType = 'INSERT' | 'UPDATE' | 'DELETE'
 type TableName = 'roles' | 'features' | 'role_permissions' | 'user_roles'
 
+interface HistoryValues {
+  display_name?: string
+  [key: string]: any
+}
+
 interface HistoryItem {
   id: string
   table_name: string
@@ -13,8 +18,8 @@ interface HistoryItem {
   changed_at: string
   changed_by: string | null
   user_pseudo?: string | null
-  old_values: string | number | boolean | null | { [key: string]: any } | any[]
-  new_values: string | number | boolean | null | { [key: string]: any } | any[]
+  old_values: HistoryValues | null
+  new_values: HistoryValues | null
 }
 
 type ChangeTypeFilter = 'all' | ChangeType

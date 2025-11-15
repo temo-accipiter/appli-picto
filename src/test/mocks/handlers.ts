@@ -367,4 +367,27 @@ export const handlers = [
       { status: 200 }
     )
   }),
+
+  // ========================================
+  // WEBSOCKET / REALTIME (Mock pour éviter crashes)
+  // ========================================
+  // CRITICAL: Intercepter les tentatives de connexion WebSocket
+  // pour éviter les crashes du worker Vitest
+
+  // GET /realtime/v1/websocket (HTTP et WS avec tous query params)
+  http.get(`${SUPABASE_URL}/realtime/v1/*`, () => {
+    // Retourner une réponse 200 pour satisfaire MSW
+    // Le mock WebSocket global dans setup.ts empêchera la connexion réelle
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  // Variantes WebSocket (ws://)
+  http.get('ws://localhost:54321/realtime/v1/*', () => {
+    return new HttpResponse(null, { status: 200 })
+  }),
+
+  // Fallback général pour toutes les routes realtime non capturées
+  http.all('*/realtime/*', () => {
+    return new HttpResponse(null, { status: 200 })
+  }),
 ]

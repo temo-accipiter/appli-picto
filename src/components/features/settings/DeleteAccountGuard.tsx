@@ -78,11 +78,18 @@ export default function DeleteAccountGuard({
   }, [allFieldsValid, left])
 
   const reauthenticate = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: user?.email || '',
-      password,
-      ...(captchaToken && { options: { captchaToken } }),
-    })
+    const { data, error } = await supabase.auth.signInWithPassword(
+      captchaToken
+        ? {
+            email: user?.email || '',
+            password,
+            options: { captchaToken },
+          }
+        : {
+            email: user?.email || '',
+            password,
+          }
+    )
     if (!error && !data?.user?.factors) return
     if (needsTotp) {
       const { data: factors } = await supabase.auth.mfa.listFactors()

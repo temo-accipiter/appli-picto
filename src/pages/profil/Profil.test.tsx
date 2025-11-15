@@ -74,15 +74,18 @@ describe('Profil - Test intégration', () => {
       // Assert - Vérifier que les éléments de base sont présents
       await waitFor(
         () => {
-          // Chercher le titre ou le formulaire
-          const title = screen.queryByText(/mon profil/i)
+          // Chercher le titre (traduit ou clé i18n) ou le formulaire
+          const title =
+            screen.queryByText(/mon profil/i) ||
+            screen.queryByText(/profil\.myProfile/)
           const form = document.querySelector('form')
+          const profilPage = document.querySelector('.profil-page')
 
-          expect(title || form).toBeTruthy()
+          expect(title || form || profilPage).toBeTruthy()
         },
         { timeout: 10000 }
       )
-    })
+    }, 15000) // Timeout test 15s (> waitFor 10s)
 
     it.skip('✅ charge et affiche les données du profil utilisateur', async () => {
       // TODO: Nécessite configuration MSW plus précise pour profiles

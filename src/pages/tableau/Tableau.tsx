@@ -141,7 +141,7 @@ export default function TableauGrille({
         ...t,
         done: false,
         isDemo: true,
-      })) as DemoTache[]
+      }))
       setDemoTachesState(initialTaches)
       setTotalTaches(initialTaches.length)
       setDoneCount(0)
@@ -158,7 +158,7 @@ export default function TableauGrille({
     if (isDemoMode) return demoTachesState
     const fallbackTasks = Array.isArray(fallbackData?.tasks)
       ? fallbackData.tasks.filter(
-          (t: any) => t.aujourdhui === true || t.aujourdhui === 1
+          t => t.aujourdhui === true || t.aujourdhui === 1
         )
       : []
     return personalTaches.length > 0 ? personalTaches : fallbackTasks
@@ -233,7 +233,7 @@ export default function TableauGrille({
 
   // ⚠️ Sécurise l'accès à .find()
   const selected = (Array.isArray(recompenses) ? recompenses : []).find(
-    (r: any) => r?.selected === true || r?.selected === 1
+    r => r?.selected === true || r?.selected === 1
   )
   const { showTrain, showRecompense, showTimeTimer } = useDisplay()
 
@@ -262,7 +262,7 @@ export default function TableauGrille({
 
         modalTimeoutRef.current = setTimeout(() => {
           setShowModalRecompense(false)
-        }, 5000) as any
+        }, 5000)
       } else {
         // Activer les confettis seulement si le paramètre global le permet
         const confettisEnabled = parametres?.confettis !== false
@@ -272,7 +272,7 @@ export default function TableauGrille({
 
         modalTimeoutRef.current = setTimeout(() => {
           setShowModalRecompense(false)
-        }, 13000) as any
+        }, 13000)
       }
     } else {
       setShowConfettis(false)
@@ -313,7 +313,7 @@ export default function TableauGrille({
               total={totalTaches}
               done={doneCount}
               isDemo={isDemo}
-              {...(onLineChange && { onLineChange })}
+              {...(onLineChange !== undefined && { onLineChange })}
             />
           )}
         </section>
@@ -327,22 +327,22 @@ export default function TableauGrille({
       )}
 
       <section
-        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}` as any}
+        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
         aria-labelledby="tasks-heading"
       >
         <h2 id="tasks-heading" className="sr-only">
           {t('tasks.title')}
         </h2>
         <TachesDnd
-          items={taches as any}
+          items={taches}
           doneMap={doneMap}
-          onReorder={(ids: (string | number)[]) => {
+          onReorder={(ids: string[]) => {
             const newList = (ids ?? [])
-              .map(id => safeTaches.find((t: any) => t?.id === id))
+              .map(id => safeTaches.find(t => t?.id === id))
               .filter((t): t is Tache => Boolean(t))
             saveOrder(newList)
           }}
-          onToggle={(id: string | number, newDone: boolean) => toggleDone(String(id), newDone)}
+          onToggle={toggleDone}
           onReset={() => {
             resetAll()
             setShowModalRecompense(false)
@@ -356,7 +356,7 @@ export default function TableauGrille({
         )}
       </section>
 
-      {(showConfettis as any) && !isDemoMode && (
+      {showConfettis && !isDemoMode && (
         <Suspense fallback={null}>
           <Confetti width={width} height={height} />
         </Suspense>
@@ -367,13 +367,13 @@ export default function TableauGrille({
           <ModalRecompense
             isOpen={true}
             onClose={() => setShowModalRecompense(false)}
-            reward={selectedReward as any}
+            reward={selectedReward}
           />
         </Suspense>
       )}
 
-      {showRecompense && (selectedReward as any) && doneCount < totalTaches && (
-        <SelectedRewardFloating reward={selectedReward as any} />
+      {showRecompense && selectedReward && doneCount < totalTaches && (
+        <SelectedRewardFloating reward={selectedReward} />
       )}
 
       {/* Modal de personnalisation pour les visiteurs */}

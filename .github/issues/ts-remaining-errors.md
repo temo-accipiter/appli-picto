@@ -15,31 +15,31 @@ Après avoir ajusté `tsconfig.json` pour permettre la migration vers Next.js, i
 
 ### Erreurs par type
 
-| Code d'erreur | Nombre | Description | Priorité |
-|--------------|--------|-------------|----------|
-| TS2339 | ~108 | Property does not exist on type (Supabase Json) | Moyenne |
-| TS2322 | ~72 | Type is not assignable to type | Moyenne |
-| TS2345 | ~41 | Argument not assignable to parameter | Moyenne |
-| TS18048 | ~21 | Variable possibly undefined | Haute |
-| TS7030 | ~28 | Not all code paths return a value | Basse |
-| TS18047 | ~13 | Variable possibly null | Haute |
-| TS2375 | ~8 | exactOptionalPropertyTypes incompatibility | Moyenne |
-| Autres | ~38 | Divers | Variable |
+| Code d'erreur | Nombre | Description                                     | Priorité |
+| ------------- | ------ | ----------------------------------------------- | -------- |
+| TS2339        | ~108   | Property does not exist on type (Supabase Json) | Moyenne  |
+| TS2322        | ~72    | Type is not assignable to type                  | Moyenne  |
+| TS2345        | ~41    | Argument not assignable to parameter            | Moyenne  |
+| TS18048       | ~21    | Variable possibly undefined                     | Haute    |
+| TS7030        | ~28    | Not all code paths return a value               | Basse    |
+| TS18047       | ~13    | Variable possibly null                          | Haute    |
+| TS2375        | ~8     | exactOptionalPropertyTypes incompatibility      | Moyenne  |
+| Autres        | ~38    | Divers                                          | Variable |
 
 ### Fichiers les plus impactés
 
-| Fichier | Erreurs | Type principal |
-|---------|---------|----------------|
-| `src/hooks/useRBAC.test.tsx` | 43 | Types Supabase, tests |
-| `src/pages/profil/Profil.test.tsx` | 25 | Tests |
-| `src/tools/legal-config-tester/LegalConfigTester.tsx` | 23 | Types implicites |
-| `src/hooks/useTachesDnd.ts` | 23 | Supabase queries |
-| `src/pages/admin-permissions/AdminPermissions.tsx` | 22 | Types Supabase Json |
-| `src/hooks/useParametres.test.ts` | 21 | Tests |
-| `src/pages/tableau/Tableau.tsx` | 18 | DemoTache types |
-| `src/pages/edition/Edition.tsx` | 16 | Callback types |
-| `src/hooks/useAdminPermissions.ts` | 14 | Supabase types |
-| `src/hooks/useAccountStatus.ts` | 12 | Supabase types |
+| Fichier                                               | Erreurs | Type principal        |
+| ----------------------------------------------------- | ------- | --------------------- |
+| `src/hooks/useRBAC.test.tsx`                          | 43      | Types Supabase, tests |
+| `src/pages/profil/Profil.test.tsx`                    | 25      | Tests                 |
+| `src/tools/legal-config-tester/LegalConfigTester.tsx` | 23      | Types implicites      |
+| `src/hooks/useTachesDnd.ts`                           | 23      | Supabase queries      |
+| `src/pages/admin-permissions/AdminPermissions.tsx`    | 22      | Types Supabase Json   |
+| `src/hooks/useParametres.test.ts`                     | 21      | Tests                 |
+| `src/pages/tableau/Tableau.tsx`                       | 18      | DemoTache types       |
+| `src/pages/edition/Edition.tsx`                       | 16      | Callback types        |
+| `src/hooks/useAdminPermissions.ts`                    | 14      | Supabase types        |
+| `src/hooks/useAccountStatus.ts`                       | 12      | Supabase types        |
 
 ## ✅ Configuration actuelle (tsconfig.json)
 
@@ -47,10 +47,10 @@ Après avoir ajusté `tsconfig.json` pour permettre la migration vers Next.js, i
 {
   "compilerOptions": {
     // Relaxations temporaires pour migration Next.js
-    "noImplicitAny": false,        // Permet any implicites
-    "noImplicitReturns": false,    // Permet retours manquants
-    "noUnusedLocals": false,       // Permet variables inutilisées
-    "noUnusedParameters": false,   // Permet paramètres inutilisés
+    "noImplicitAny": false, // Permet any implicites
+    "noImplicitReturns": false, // Permet retours manquants
+    "noUnusedLocals": false, // Permet variables inutilisées
+    "noUnusedParameters": false, // Permet paramètres inutilisés
 
     // Strictness maintenue
     "strict": true,
@@ -83,11 +83,13 @@ Après avoir ajusté `tsconfig.json` pour permettre la migration vers Next.js, i
 **Cible**: Propriétés inexistantes sur types Json
 
 Fichiers concernés:
+
 - `src/pages/admin-permissions/AdminPermissions.tsx`
 - `src/components/features/admin/permissions/HistoryTab.tsx`
 - `src/components/features/admin/permissions/LogsTab.tsx`
 
 Solutions:
+
 ```typescript
 // Option 1: Cast explicite
 const jsonData = data as Record<string, unknown>
@@ -111,6 +113,7 @@ const entry = data as HistoryEntry
 **Cible**: Type 'X' is not assignable to type 'Y'
 
 Principalement:
+
 - Types `string | null` vs `string`
 - `DemoTache[]` vs types attendus
 - `exactOptionalPropertyTypes` incompatibilités
@@ -118,6 +121,7 @@ Principalement:
 ### Phase 4: Tests (~100+ erreurs) - 2-3h
 
 Fichiers:
+
 - `useRBAC.test.tsx`, `Profil.test.tsx`, `useParametres.test.ts`
 - Principalement types mock Supabase
 
@@ -126,6 +130,7 @@ Solution rapide: Utiliser `as any` temporairement dans tests
 ### Phase 5: Réactiver strictness (1h)
 
 Une fois toutes les erreurs corrigées, réactiver dans `tsconfig.json`:
+
 ```json
 {
   "noImplicitAny": true,
@@ -138,17 +143,20 @@ Une fois toutes les erreurs corrigées, réactiver dans `tsconfig.json`:
 ## 📋 Checklist de progression
 
 ### Haute priorité (Phase 1)
+
 - [ ] Corriger null/undefined checks dans `useTachesDnd.ts` (~10 erreurs)
 - [ ] Corriger null/undefined checks dans `Tableau.tsx` (~8 erreurs)
 - [ ] Corriger null/undefined checks dans autres hooks (~16 erreurs)
 
 ### Moyenne priorité (Phases 2-3)
+
 - [ ] Typer propriétés Json dans AdminPermissions.tsx (~22 erreurs)
 - [ ] Typer propriétés Json dans HistoryTab.tsx (~10 erreurs)
 - [ ] Typer propriétés Json dans LogsTab.tsx (~3 erreurs)
 - [ ] Corriger assignations incompatibles (~72 erreurs)
 
 ### Basse priorité (Phase 4-5)
+
 - [ ] Typer les tests correctement (~100 erreurs)
 - [ ] Corriger retours manquants (~28 erreurs)
 - [ ] Nettoyer variables/paramètres inutilisés (~40 erreurs)
@@ -164,6 +172,7 @@ Une fois toutes les erreurs corrigées, réactiver dans `tsconfig.json`:
 **Total estimé**: 12-16 heures de travail
 
 Répartition recommandée:
+
 - Sprint 1 (1 semaine): Phase 1 (critiques)
 - Sprint 2 (1 semaine): Phase 2 (Supabase Json)
 - Sprint 3 (1 semaine): Phases 3-5 (finitions)
