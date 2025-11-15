@@ -232,10 +232,11 @@ export async function modernUploadImage(
     if (dupCheck?.exists) {
       console.log('♻️ Image identique trouvée → vérification existence fichier')
 
+      const fileName = dupCheck.file_path!.split('/').pop()
       const { data: fileExists } = await supabase.storage
         .from(PRIVATE_BUCKET)
         .list(dupCheck.file_path!.split('/').slice(0, -1).join('/'), {
-          search: dupCheck.file_path!.split('/').pop(),
+          ...(fileName && { search: fileName }),
         })
 
       if (fileExists && fileExists.length > 0) {

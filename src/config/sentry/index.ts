@@ -242,8 +242,8 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
 export const setSentryUser = (
   user: {
     id: string
-    email?: string
-    role?: string
+    email?: string | undefined
+    role?: string | undefined
   } | null
 ): void => {
   if (!user) {

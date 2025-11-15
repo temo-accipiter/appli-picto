@@ -63,9 +63,9 @@ async function getUserPlan(userId: string): Promise<PlanInfo | null> {
 }
 
 interface UserProperties {
-  uid_hash?: string
+  uid_hash?: string | undefined
   customer_tier: string
-  plan_name?: string
+  plan_name?: string | undefined
 }
 
 async function setUserProperties(props: UserProperties): Promise<void> {
