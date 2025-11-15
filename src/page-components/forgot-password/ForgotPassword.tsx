@@ -93,7 +93,7 @@ export default function ForgotPassword() {
         {/* ✅ Captcha Cloudflare Turnstile (clé depuis .env.local) */}
         <Turnstile
           key={captchaKey}
-          sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+          sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
           theme="light"

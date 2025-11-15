@@ -20,7 +20,7 @@ import {
   supabase,
 } from '@/utils'
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import './Profil.scss'
@@ -35,7 +35,7 @@ export default function Profil() {
 
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [pseudo, setPseudo] = useState('')
   const [dateNaissance, setDateNaissance] = useState('')
@@ -302,7 +302,7 @@ export default function Profil() {
     } else {
       showToast(t('profil.accountDeleted'), 'success')
       await signOut()
-      navigate('/signup')
+      router.push('/signup')
     }
   }
 
@@ -375,7 +375,7 @@ export default function Profil() {
             <Button
               type="button"
               label={`🔧 ${t('profil.manageSubscription')}`}
-              onClick={() => navigate('/abonnement')}
+              onClick={() => router.push('/abonnement')}
               variant="primary"
             />
           </div>

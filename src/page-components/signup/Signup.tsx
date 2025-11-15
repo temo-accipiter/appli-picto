@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, Link } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   supabase,
   validateEmail,
@@ -24,6 +25,7 @@ interface InputWithValidationRef {
 export default function Signup() {
   const { user } = useAuth()
   const { t } = useI18n()
+  const router = useRouter()
   const { show: showToast } = useToast()
 
   const [email, setEmail] = useState('')
@@ -109,7 +111,10 @@ export default function Signup() {
     setLoading(false)
   }
 
-  if (user) return <Navigate to="/tableau" replace />
+  if (user) {
+    router.push('/tableau')
+    return null
+  }
 
   return (
     <div className="signup-page">
@@ -158,7 +163,7 @@ export default function Signup() {
         />
 
         <Turnstile
-          sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+          sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
           theme="light"
@@ -178,7 +183,7 @@ export default function Signup() {
       <hr className="separator" />
 
       <p>
-        {t('nav.login')} <Link to="/login">{t('nav.login')}</Link>
+        {t('nav.login')} <Link href="/login">{t('nav.login')}</Link>
       </p>
     </div>
   )

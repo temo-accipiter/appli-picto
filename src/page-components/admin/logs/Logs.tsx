@@ -5,7 +5,7 @@ import { Button, FloatingPencil } from '@/components'
 import { usePermissions, useToast } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import './Logs.scss'
 
 interface SubscriptionLog {
@@ -21,7 +21,7 @@ type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'
 export default function Logs() {
   const { role: _role, isAdmin, loading: permissionsLoading } = usePermissions()
   const { show: showToast } = useToast()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [logs, setLogs] = useState<SubscriptionLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,10 +38,10 @@ export default function Logs() {
 
     if (!isAdmin) {
       showToast('Accès non autorisé', 'error')
-      navigate('/profil')
+      router.push('/profil')
       return
     }
-  }, [isAdmin, permissionsLoading, navigate, showToast])
+  }, [isAdmin, permissionsLoading, router, showToast])
 
   // Charger les logs
   const loadLogs = useCallback(
@@ -249,7 +249,7 @@ export default function Logs() {
       {/* Navigation */}
       <div className="logs-footer">
         <Button
-          onClick={() => navigate('/profil')}
+          onClick={() => router.push('/profil')}
           label="← Retour au profil"
           variant="secondary"
         />

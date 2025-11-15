@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate, Navigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import { useAuth, useI18n } from '@/hooks'
 import { InputWithValidation, Button, PasswordChecklist } from '@/components'
 import { supabase, validatePasswordStrength, makeMatchRule } from '@/utils'
@@ -13,7 +13,7 @@ interface InputWithValidationRef {
 }
 
 export default function ResetPassword() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user, loading } = useAuth()
   const { t } = useI18n()
 
@@ -73,7 +73,8 @@ export default function ResetPassword() {
   }, [fromEmailLink])
 
   if (!loading && recoveryHandled && !user) {
-    return <Navigate to="/login" replace />
+    router.push('/login')
+    return null
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -99,7 +100,7 @@ export default function ResetPassword() {
       setError(msg)
     } else {
       setSuccess(true)
-      setTimeout(() => navigate('/login'), 3000)
+      setTimeout(() => router.push('/login'), 3000)
     }
   }
 

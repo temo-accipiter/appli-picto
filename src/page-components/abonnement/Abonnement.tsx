@@ -6,7 +6,7 @@ import { useToast } from '@/contexts'
 import { useAuth, useSubscriptionStatus } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import './Abonnement.scss'
 
 interface SubscriptionLog {
@@ -26,7 +26,7 @@ export default function Abonnement() {
   const { isActive, subscription, loading, daysUntilExpiry, statusDisplay } =
     useSubscriptionStatus()
   const { show: showToast } = useToast()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   const [portalLoading, setPortalLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
@@ -37,9 +37,9 @@ export default function Abonnement() {
   useEffect(() => {
     if (!loading && !isActive) {
       showToast("Vous n'avez pas d'abonnement actif", 'info')
-      navigate('/profil')
+      router.push('/profil')
     }
-  }, [isActive, loading, navigate, showToast])
+  }, [isActive, loading, router, showToast])
 
   // Charger l'historique des logs de l'utilisateur
   useEffect(() => {
@@ -311,7 +311,7 @@ export default function Abonnement() {
       {/* Retour au profil */}
       <div className="abonnement-footer">
         <Button
-          onClick={() => navigate('/profil')}
+          onClick={() => router.push('/profil')}
           label="← Retour au profil"
           variant="secondary"
         />

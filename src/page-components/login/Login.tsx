@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react'
 import type { FormEvent } from 'react'
-import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
 import { supabase } from '@/utils/supabaseClient'
 import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
@@ -23,9 +24,9 @@ interface InputWithValidationRef {
 export default function Login() {
   const { user } = useAuth()
   const { t } = useI18n()
-  const navigate = useNavigate()
+  const router = useRouter()
   const { show: showToast } = useToast()
-  const location = useLocation()
+  const pathname = usePathname()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -72,14 +73,15 @@ export default function Login() {
       showToast(t('auth.invalidCredentials'), 'error')
     } else {
       showToast(t('auth.loginSuccess'), 'success')
-      navigate('/tableau')
+      router.push('/tableau')
     }
 
     setLoading(false)
   }
 
-  if (user && location.pathname !== '/reset-password') {
-    return <Navigate to="/tableau" replace />
+  if (user && pathname !== '/reset-password') {
+    router.push('/tableau')
+    return null
   }
 
   return (
@@ -109,7 +111,7 @@ export default function Login() {
         />
 
         <Turnstile
-          sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+          sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
           theme="light"
@@ -117,7 +119,7 @@ export default function Login() {
         />
 
         <p className="forgot-password">
-          <Link to="/forgot-password">{t('auth.forgotPassword')}</Link>
+          <Link href="/forgot-password">{t('auth.forgotPassword')}</Link>
         </p>
 
         <Button
@@ -132,7 +134,7 @@ export default function Login() {
       <hr />
 
       <p>
-        {t('nav.createAccount')} <Link to="/signup">{t('nav.signup')}</Link>
+        {t('nav.createAccount')} <Link href="/signup">{t('nav.signup')}</Link>
       </p>
     </div>
   )
