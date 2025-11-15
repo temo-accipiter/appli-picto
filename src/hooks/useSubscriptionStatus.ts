@@ -83,6 +83,8 @@ export function useSubscriptionStatus() {
       daysUntilExpiry:
         end && !isNaN(+end) ? Math.ceil((+end - Date.now()) / 86400000) : null,
       isExpiringSoon: !!end && end < in7d,
+      subscription: null as any, // TODO: Implement subscription data
+      statusDisplay: { label: status || 'Inconnu', icon: '', color: 'default' } as any,
     }
   }, [loading, status, isActive, isTrial, currentPeriodEnd])
 }

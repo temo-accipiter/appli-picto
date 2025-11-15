@@ -8,10 +8,10 @@ import { usePermissions } from '@/hooks'
 import './Metrics.scss'
 
 export default function Metrics() {
-  const { hasRole } = usePermissions()
+  const { isAdmin } = usePermissions()
 
   // Vérifier que l'utilisateur est admin
-  if (!hasRole('admin')) {
+  if (!isAdmin) {
     return (
       <div className="metrics-page">
         <div className="metrics-page__forbidden">
