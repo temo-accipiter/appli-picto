@@ -377,7 +377,7 @@ export default function Edition() {
   }
 
   const handleUpdateRewardLabel = async (id: string | number, label: string): Promise<{ error?: Error }> => {
-    updateRewardLabel(id, label)
+    updateRewardLabel(String(id), label)
     return {}
   }
 

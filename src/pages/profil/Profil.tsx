@@ -187,7 +187,7 @@ export default function Profil() {
         data,
         uploadError,
         path: data?.path,
-        errorCode: uploadError?.statusCode,
+        errorCode: (uploadError as any)?.statusCode,
         errorMessage: uploadError?.message,
       })
     }
@@ -268,7 +268,7 @@ export default function Profil() {
         return
       }
       const redirectTo = `${window.location.origin}/reset-password`
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email || '', {
         redirectTo,
         captchaToken: captchaTokenReset,
       })
