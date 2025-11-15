@@ -50,7 +50,7 @@ describe('useRBAC', () => {
   })
 
   it("expose toutes les propriétés de l'API unifiée", async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -102,7 +102,7 @@ describe('useRBAC', () => {
   })
 
   it('retourne les quotas pour free account', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -144,7 +144,7 @@ describe('useRBAC', () => {
   })
 
   it('canCreateTask retourne true si sous la limite', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -178,7 +178,7 @@ describe('useRBAC', () => {
   })
 
   it('canCreateTask retourne false si à la limite', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -213,7 +213,7 @@ describe('useRBAC', () => {
   })
 
   it('getQuotaInfo retourne les bonnes informations', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -256,7 +256,7 @@ describe('useRBAC', () => {
   })
 
   it('admin a toujours canCreateTask = true', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'admin' }, error: null })
       }
@@ -282,7 +282,7 @@ describe('useRBAC', () => {
   })
 
   it('subscriber a toujours canCreateTask = true', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'abonne' }, error: null })
       }
@@ -312,7 +312,7 @@ describe('useRBAC', () => {
   // ========================================================================
 
   it('canCreateTask utilise monthly_usage pour quotas mensuels', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -348,7 +348,7 @@ describe('useRBAC', () => {
   })
 
   it('canCreateTask retourne false si quota mensuel dépassé', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -383,7 +383,7 @@ describe('useRBAC', () => {
   })
 
   it('getQuotaInfo retourne period pour quotas mensuels', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -427,7 +427,7 @@ describe('useRBAC', () => {
   })
 
   it('getQuotaInfo retourne period=total pour quotas totaux', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -471,7 +471,7 @@ describe('useRBAC', () => {
   })
 
   it('getMonthlyQuotaInfo retourne null pour quotas totaux', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
@@ -507,7 +507,7 @@ describe('useRBAC', () => {
   })
 
   it('getMonthlyQuotaInfo retourne les infos pour quotas mensuels', async () => {
-    supabase.rpc.mockImplementation(fnName => {
+    ;(supabase.rpc as any).mockImplementation(fnName => {
       if (fnName === 'get_my_primary_role') {
         return Promise.resolve({ data: { role_name: 'free' }, error: null })
       }
