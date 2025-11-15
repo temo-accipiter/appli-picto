@@ -132,9 +132,9 @@ export default function HistoryTab() {
 
     switch (item.table_name) {
       case 'roles':
-        return `${changeType} du rôle "${item.new_values?.display_name || item.old_values?.display_name || 'Inconnu'}"`
+        return `${changeType} du rôle "${(item.new_values as any)?.display_name || (item.old_values as any)?.display_name || 'Inconnu'}"`
       case 'features':
-        return `${changeType} de la fonctionnalité "${item.new_values?.display_name || item.old_values?.display_name || 'Inconnu'}"`
+        return `${changeType} de la fonctionnalité "${(item.new_values as any)?.display_name || (item.old_values as any)?.display_name || 'Inconnu'}"`
       case 'role_permissions':
         return `${changeType} des permissions pour un rôle`
       case 'user_roles':

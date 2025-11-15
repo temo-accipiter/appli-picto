@@ -180,7 +180,7 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
 
         // Nettoyer les extras
         if (event.extra) {
-          event.extra = sanitizeData(event.extra) as Sentry.Extras
+          event.extra = sanitizeData(event.extra) as Record<string, any>
         }
 
         // Ignorer les erreurs non critiques
@@ -284,7 +284,7 @@ export const captureError = (
 ): void => {
   if (context) {
     Sentry.captureException(error, {
-      extra: sanitizeData(context) as Sentry.Extras,
+      extra: sanitizeData(context) as Record<string, any>,
     })
   } else {
     Sentry.captureException(error)
