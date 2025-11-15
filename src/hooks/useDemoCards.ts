@@ -203,7 +203,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         label: card.label,
         fait: false,
         position: card.position ?? 0,
-        imagepath: card.imagepath,
+        ...(card.imagepath !== undefined && { imagepath: card.imagepath }),
         category_id: null,
         isDemo: true as const,
       }))
@@ -217,7 +217,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         id: card.id,
         label: card.label,
         selected: false,
-        imagepath: card.imagepath,
+        ...(card.imagepath !== undefined && { imagepath: card.imagepath }),
         isDemo: true as const,
       }))
   }, [demoCards])
