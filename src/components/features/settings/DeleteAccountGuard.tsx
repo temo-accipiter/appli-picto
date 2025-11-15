@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/settings/DeleteAccountGuard.tsx
 import { Button, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'

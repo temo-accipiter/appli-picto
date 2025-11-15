@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * MetricsDashboard - Vue de synthèse des métriques clés
  *

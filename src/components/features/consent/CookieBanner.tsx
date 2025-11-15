@@ -1,3 +1,5 @@
+'use client'
+
 import { useAuth, useI18n } from '@/hooks'
 import { getConsent, saveConsent, tryLogServerConsent } from '@/utils/consent'
 import { useEffect, useRef, useState } from 'react'

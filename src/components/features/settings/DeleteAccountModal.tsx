@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useMemo, useState } from 'react'
 import { Modal, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'

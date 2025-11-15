@@ -1,3 +1,5 @@
+'use client'
+
 import { DemoSignedImage, Modal, SignedImage } from '@/components'
 import { useI18n } from '@/hooks'
 import type { Recompense } from '@/types/global'

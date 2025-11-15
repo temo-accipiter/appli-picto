@@ -1,3 +1,5 @@
+'use client'
+
 import { memo, ReactNode } from 'react'
 import { BaseCard } from '@/components'
 import './EditionCard.scss'

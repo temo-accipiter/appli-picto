@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/edition/Edition.tsx
 import {
   Button,

@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/admin/QuotaManagement.tsx
 import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'

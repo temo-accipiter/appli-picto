@@ -1,3 +1,5 @@
+'use client'
+
 /**
  *   Affiche une liste de tâches réordonnables par glisser-déposer
  *   avec possibilité de cocher/décocher chaque tâche et bouton de reset.

@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/shared/global-loader/GlobalLoader.tsx
 // Loader global affiché par le LoadingContext
 // Affiche un loader en plein écran avec un message optionnel

@@ -1,3 +1,5 @@
+'use client'
+
 import { Loader } from '@/components'
 import { usePermissions } from '@/contexts'
 import { Navigate } from 'react-router-dom'

@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/tableau/Tableau.test.jsx
 /**
  * 🧪 Test d'intégration - Page Tableau

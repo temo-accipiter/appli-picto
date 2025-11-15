@@ -1,3 +1,5 @@
+'use client'
+
 import { Select } from '@/components'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import { useI18n, useStations } from '@/hooks'

@@ -1,3 +1,5 @@
+'use client'
+
 import { Modal, ItemForm } from '@/components'
 import type { Categorie } from '@/types/global'
 

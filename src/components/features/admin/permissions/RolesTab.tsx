@@ -1,3 +1,5 @@
+'use client'
+
 import { InputWithValidation } from '@/components'
 import {
   canDeleteRole,

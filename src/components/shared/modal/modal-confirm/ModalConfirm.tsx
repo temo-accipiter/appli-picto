@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/modal/modal-confirm/ModalConfirm.tsx
 import { ReactNode } from 'react'
 import { Modal } from '@/components'

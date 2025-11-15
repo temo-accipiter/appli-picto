@@ -1,3 +1,5 @@
+'use client'
+
 import { LangSelector, SignedImage, ThemeToggle } from '@/components'
 import { usePermissions } from '@/contexts'
 import {

@@ -1,3 +1,5 @@
+'use client'
+
 import { LegalMarkdown } from '@/components'
 
 const content = `

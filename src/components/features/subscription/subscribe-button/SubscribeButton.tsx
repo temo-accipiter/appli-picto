@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/SubscribeButton.tsx
 import { Button } from '@/components'
 import { useToast } from '@/contexts'

@@ -1,3 +1,5 @@
+'use client'
+
 import { useAuth, useI18n } from '@/hooks'
 import {
   defaultChoices,

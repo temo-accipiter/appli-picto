@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/tableau/Tableau.tsx
 import {
   SelectedRewardFloating,

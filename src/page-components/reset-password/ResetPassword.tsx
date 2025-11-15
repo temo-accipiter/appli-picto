@@ -1,3 +1,5 @@
+'use client'
+
 import { useState, useEffect, useRef } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate, Navigate } from 'react-router-dom'

@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/features/time-timer/TimeTimer.tsx
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/hooks'

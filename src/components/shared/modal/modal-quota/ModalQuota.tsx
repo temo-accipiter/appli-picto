@@ -1,3 +1,5 @@
+'use client'
+
 import { Modal } from '@/components'
 import { useI18n } from '@/hooks'
 

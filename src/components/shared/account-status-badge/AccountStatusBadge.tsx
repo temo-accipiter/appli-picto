@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/shared/AccountStatusBadge.tsx
 import { useAccountStatus } from '@/hooks'
 import './AccountStatusBadge.scss'

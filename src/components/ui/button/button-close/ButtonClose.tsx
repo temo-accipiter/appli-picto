@@ -1,3 +1,5 @@
+'use client'
+
 import './ButtonClose.scss'
 
 interface ButtonCloseProps {

@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/profil/Profil.tsx
 import {
   AvatarProfil,

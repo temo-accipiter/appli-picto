@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/SignedImage.tsx
 // Affiche une image issue d'un bucket privé en générant une URL signée côté client.
 // Props conservées : { filePath, alt = '', size = 60, bucket = 'images' }

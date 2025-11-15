@@ -1,3 +1,5 @@
+'use client'
+
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import { Input } from '@/components'
 

@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/selectedRewardFloating/SelectedRewardFloating.tsx
 import { DemoSignedImage, EditionCard, SignedImage } from '@/components'
 import './SelectedRewardFloating.scss'

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useId, useMemo, useState } from 'react'
 import { useI18n } from '@/hooks'
 import { PASSWORD_MIN } from '@/utils'

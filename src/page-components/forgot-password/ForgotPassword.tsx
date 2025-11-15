@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/forgot-password/ForgotPassword.tsx
 import { useState, useRef } from 'react'
 import type { FormEvent } from 'react'

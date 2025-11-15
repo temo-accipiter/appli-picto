@@ -1,3 +1,5 @@
+'use client'
+
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
 import { useI18n } from '@/hooks'
 import {

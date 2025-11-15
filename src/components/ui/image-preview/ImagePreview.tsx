@@ -1,3 +1,5 @@
+'use client'
+
 import './ImagePreview.scss'
 
 type ImageSize = 'sm' | 'md' | 'lg'

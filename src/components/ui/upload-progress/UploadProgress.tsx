@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/ui/upload-progress/UploadProgress.tsx
 // Indicateur progression upload TSA-friendly (couleurs pastel, animations douces)
 

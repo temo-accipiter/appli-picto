@@ -1,3 +1,5 @@
+'use client'
+
 import { memo, useMemo, ReactNode } from 'react'
 import {
   InputWithValidation,

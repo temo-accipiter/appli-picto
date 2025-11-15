@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/admin-permissions/AdminPermissions.tsx
 import {
   ImageAnalytics,

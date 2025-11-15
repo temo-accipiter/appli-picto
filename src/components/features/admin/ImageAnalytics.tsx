@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/features/admin/ImageAnalytics.tsx
 // Dashboard analytics uploads images (7 derniers jours, admins uniquement)
 

@@ -1,3 +1,5 @@
+'use client'
+
 import { Button, ImagePreview, InputWithValidation, Select } from '@/components'
 import { useI18n } from '@/hooks'
 import {

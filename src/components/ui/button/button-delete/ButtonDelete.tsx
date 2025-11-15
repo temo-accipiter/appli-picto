@@ -1,3 +1,5 @@
+'use client'
+
 import { motion } from 'framer-motion'
 import { Trash2 } from 'lucide-react' // WCAG - Remplacement emoji par SVG
 import './ButtonDelete.scss'

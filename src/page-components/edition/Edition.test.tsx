@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/edition/Edition.test.jsx
 /**
  * 🧪 Test d'intégration - Page Edition

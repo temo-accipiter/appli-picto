@@ -1,3 +1,5 @@
+'use client'
+
 import { replaceLegalPlaceholders } from '@/config/constants/legalConfig'
 import { useI18n } from '@/hooks'
 import { marked } from 'marked'

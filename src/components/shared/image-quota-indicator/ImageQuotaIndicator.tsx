@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/shared/image-quota-indicator/ImageQuotaIndicator.tsx
 // Composant pour afficher les quotas d'images (tâches/récompenses)
 import { useRBAC, useI18n } from '@/hooks'

@@ -1,13 +1,13 @@
-// French legal documents
-export { default as MENTIONS_LEGALES_MD } from './legal/mentions-legales.md?raw'
-export { default as CGU_MD } from './legal/cgu.md?raw'
-export { default as CGV_MD } from './legal/cgv.md?raw'
-export { default as POLITIQUE_CONFIDENTIALITE_MD } from './legal/politique-confidentialite.md?raw'
-export { default as POLITIQUE_COOKIES_MD } from './legal/politique-cookies.md?raw'
-
-// English legal documents
-export { default as LEGAL_NOTICES_EN_MD } from './legal/legal-notices-en.md?raw'
-export { default as TERMS_OF_USE_EN_MD } from './legal/terms-of-use-en.md?raw'
-export { default as TERMS_OF_SALE_EN_MD } from './legal/terms-of-sale-en.md?raw'
-export { default as PRIVACY_POLICY_EN_MD } from './legal/privacy-policy-en.md?raw'
-export { default as COOKIE_POLICY_EN_MD } from './legal/cookie-policy-en.md?raw'
+// Re-export legal content (Next.js compatible)
+export {
+  MENTIONS_LEGALES_MD,
+  CGU_MD,
+  CGV_MD,
+  POLITIQUE_CONFIDENTIALITE_MD,
+  POLITIQUE_COOKIES_MD,
+  LEGAL_NOTICES_EN_MD,
+  TERMS_OF_USE_EN_MD,
+  TERMS_OF_SALE_EN_MD,
+  PRIVACY_POLICY_EN_MD,
+  COOKIE_POLICY_EN_MD,
+} from './legal-content'

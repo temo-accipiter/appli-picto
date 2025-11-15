@@ -1,3 +1,5 @@
+'use client'
+
 import { Button, Modal } from '@/components'
 import { useI18n } from '@/hooks'
 import { AnimatePresence, motion } from 'framer-motion'

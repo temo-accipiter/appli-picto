@@ -1,3 +1,5 @@
+'use client'
+
 import { useI18n } from '@/hooks'
 import { revokeConsent } from '@/utils/consent'
 import { Link } from 'react-router-dom'

@@ -1,3 +1,5 @@
+'use client'
+
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 import './DemoSignedImage.scss'

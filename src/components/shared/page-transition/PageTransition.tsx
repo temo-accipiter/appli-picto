@@ -1,3 +1,5 @@
+'use client'
+
 import { AnimatePresence, motion } from 'framer-motion'
 import { memo } from 'react'
 import { useLocation, useOutlet } from 'react-router-dom'

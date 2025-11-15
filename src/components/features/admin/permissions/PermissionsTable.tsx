@@ -1,3 +1,5 @@
+'use client'
+
 import { ButtonDelete } from '@/components'
 import { Edit, Save, Settings, X } from 'lucide-react'
 import { getPermissionDescription } from './permissionUtils'

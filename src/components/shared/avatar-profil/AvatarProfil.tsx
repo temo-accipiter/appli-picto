@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/AvatarProfil.tsx
 // Sélecteur d'avatar. Conserve l'API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
 

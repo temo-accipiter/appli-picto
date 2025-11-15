@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/time-timer/TimeTimerPage.tsx
 import { TimeTimer } from '@/components'
 import { useI18n } from '@/hooks'

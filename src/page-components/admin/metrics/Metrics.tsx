@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Page Admin : Metrics
  * Dashboard de métriques et monitoring

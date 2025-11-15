@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { useI18n } from '@/hooks'
 import './Select.scss'

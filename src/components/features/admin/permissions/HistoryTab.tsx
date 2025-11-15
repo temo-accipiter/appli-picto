@@ -1,3 +1,5 @@
+'use client'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getPermissionHistory } from '@/utils/permissions-api'
 import { Clock, Edit, History, Plus, Trash2, User } from 'lucide-react'

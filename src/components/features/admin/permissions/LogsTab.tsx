@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/admin-permissions/LogsTab.tsx
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components'

@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/admin/AccountManagement.tsx
 import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'

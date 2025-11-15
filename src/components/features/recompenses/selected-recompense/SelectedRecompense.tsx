@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Rôle :
  *   Affiche la récompense actuellement sélectionnée.

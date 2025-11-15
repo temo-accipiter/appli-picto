@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * Rôle :
  *   Affiche une carte représentant une tâche avec :

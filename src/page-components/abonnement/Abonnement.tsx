@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/abonnement/Abonnement.tsx
 import { Button, FloatingPencil } from '@/components'
 import { useToast } from '@/contexts'

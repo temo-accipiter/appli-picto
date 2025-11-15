@@ -1,3 +1,5 @@
+'use client'
+
 // src/pages/admin/logs/Logs.tsx
 import { Button, FloatingPencil } from '@/components'
 import { usePermissions, useToast } from '@/contexts'

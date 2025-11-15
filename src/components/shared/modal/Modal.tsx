@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/modal/Modal.tsx
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'

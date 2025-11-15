@@ -1,3 +1,5 @@
+'use client'
+
 // src/components/shared/QuotaIndicator.tsx
 import { useRBAC, useI18n } from '@/hooks'
 import './QuotaIndicator.scss'

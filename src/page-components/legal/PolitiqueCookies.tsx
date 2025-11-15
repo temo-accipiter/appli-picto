@@ -1,3 +1,5 @@
+'use client'
+
 import { LegalMarkdown } from '@/components'
 import { POLITIQUE_COOKIES_MD, COOKIE_POLICY_EN_MD } from '@/assets'
 import { useI18n } from '@/hooks'

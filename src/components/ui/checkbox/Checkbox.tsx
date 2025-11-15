@@ -1,3 +1,5 @@
+'use client'
+
 import type { InputHTMLAttributes, ChangeEvent } from 'react'
 import './Checkbox.scss'
 

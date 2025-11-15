@@ -1,3 +1,5 @@
+'use client'
+
 import { LegalMarkdown } from '@/components'
 import { CGU_MD, TERMS_OF_USE_EN_MD } from '@/assets'
 import { useI18n } from '@/hooks'
