@@ -3,10 +3,10 @@ import { supabase } from '@/utils/supabaseClient'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 interface UsePermissionsAPIReturn {
-  getMyPrimaryRole: () => ReturnType<typeof supabase.rpc<'get_my_primary_role'>>
-  getMyPermissions: () => ReturnType<typeof supabase.rpc<'get_my_permissions'>>
-  getFeatures: () => ReturnType<typeof supabase.from<'features'>>
-  getAllPermissions: () => ReturnType<typeof supabase.from<'role_permissions'>>
+  getMyPrimaryRole: () => any
+  getMyPermissions: () => any
+  getFeatures: () => any
+  getAllPermissions: () => any
   supabase: SupabaseClient
 }
 

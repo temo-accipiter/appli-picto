@@ -77,10 +77,10 @@ export async function getSignedImageUrl(
       .from(bucket)
       .createSignedUrl(path, safeExpires)
 
-    const { data, error } = await Promise.race([
+    const { data, error } = (await Promise.race([
       signedUrlPromise,
       timeoutPromise,
-    ]).catch(e => ({ data: null, error: e as Error }))
+    ]).catch(e => ({ data: null, error: e as Error }))) as any
 
     if (error || !data?.signedUrl) {
       return {

@@ -46,7 +46,7 @@ async function getSessionUser(): Promise<User | null> {
 
 interface PlanInfo {
   status: string
-  plan?: string
+  plan?: string | undefined
 }
 
 async function getUserPlan(userId: string): Promise<PlanInfo | null> {
@@ -58,18 +58,19 @@ async function getUserPlan(userId: string): Promise<PlanInfo | null> {
     .maybeSingle()
   if (error) return null
   const status = data?.status || 'free'
-  const plan = data?.plan || priceIdToPlanName(data?.price_id)
+  const plan = data?.plan || priceIdToPlanName(data?.price_id ?? undefined)
   return { status, plan }
 }
 
 interface UserProperties {
-  uid_hash?: string
+  uid_hash?: string | undefined
   customer_tier: string
-  plan_name?: string
+  plan_name?: string | undefined
 }
 
 async function setUserProperties(props: UserProperties): Promise<void> {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
   window.gtag('set', 'user_properties', props)
 }
 
@@ -103,13 +104,11 @@ export async function refreshGAUserProperties(): Promise<boolean> {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent {
-  detail?: {
-    choices?: {
-      analytics?: boolean
-    }
+interface ConsentChangedEvent extends CustomEvent<{
+  choices?: {
+    analytics?: boolean
   }
-}
+}> {}
 
 function boot(): void {
   // Consentement obtenu → pousse les user_properties

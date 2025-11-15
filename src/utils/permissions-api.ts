@@ -12,7 +12,7 @@ export const getRoles = async () => {
 }
 
 export const createRole = async (roleData: Record<string, any>) => {
-  return await supabase.from('roles').insert([roleData]).select().single()
+  return await supabase.from('roles').insert([roleData] as any).select().single()
 }
 
 export const updateRole = async (
@@ -41,7 +41,7 @@ export const getFeatures = async () => {
 }
 
 export const createFeature = async (featureData: Record<string, any>) => {
-  return await supabase.from('features').insert([featureData]).select().single()
+  return await supabase.from('features').insert([featureData] as any).select().single()
 }
 
 export const updateFeature = async (
@@ -174,7 +174,7 @@ export const getUsersWithRoles = async (
   }
 
   // Extraire le total_count de la première ligne (toutes les lignes ont le même total)
-  const total = data && data.length > 0 ? data[0].total_count : 0
+  const total = data && data.length > 0 ? ((data[0] as any)?.total_count || 0) : 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
 
   return { data, error: null, pagination: { page, limit, total, totalPages } }

@@ -15,14 +15,14 @@ export default function DebugRole() {
     error,
     reload,
   } = usePermissions()
-  const { role: simpleRole, loading: simpleLoading } = useSimpleRole()
+  const { role: simpleRole } = useSimpleRole()
 
   const permissionsLoading = !ready || isUnknown
   const finalRole = simpleRole !== 'unknown' ? simpleRole : permissionsRole
 
   const toggleVisible = () => {
     setVisible(v => {
-      localStorage.setItem('debug-role-visible', !v)
+      localStorage.setItem('debug-role-visible', String(!v))
       return !v
     })
   }
@@ -95,7 +95,7 @@ export default function DebugRole() {
         </button>
       </div>
       <div>Permissions: {permissionsLoading ? '⏳' : permissionsRole}</div>
-      <div>Simple: {simpleLoading ? '⏳' : simpleRole}</div>
+      <div>Simple: {simpleRole}</div>
       <div>Final: {finalRole}</div>
       <div style={{ marginTop: 6, opacity: 0.8 }}>
         ready: {String(ready)} — unknown: {String(isUnknown)}

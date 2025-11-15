@@ -4,6 +4,11 @@ import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useAuth from './useAuth'
 
+interface ProfileData {
+  account_status: string
+  deletion_scheduled_at: string | null
+}
+
 /**
  * Hook pour gérer les états de compte utilisateur
  * Gère les états : active, suspended, deletion_scheduled, pending_verification
@@ -12,13 +17,13 @@ export default function useAccountStatus() {
   const { user, authReady } = useAuth()
 
   const [loading, setLoading] = useState(true)
-  const [accountStatus, setAccountStatus] = useState(null)
+  const [accountStatus, setAccountStatus] = useState<string | null>(null)
   const [isSuspended, setIsSuspended] = useState(false)
   const [isPendingVerification, setIsPendingVerification] = useState(false)
   const [isScheduledForDeletion, setIsScheduledForDeletion] = useState(false)
-  const [deletionDate, setDeletionDate] = useState(null)
+  const [deletionDate, setDeletionDate] = useState<string | null>(null)
 
-  const channelRef = useRef(null)
+  const channelRef = useRef<any>(null)
 
   // Fonction pour récupérer l'état du compte
   const fetchAccountStatus = useCallback(async () => {
@@ -36,7 +41,7 @@ export default function useAccountStatus() {
           .from('profiles')
           .select('account_status, deletion_scheduled_at')
           .eq('id', user.id)
-          .single()
+          .single() as any
       )
 
       if (aborted || (error && isAbortLike(error))) {
@@ -52,12 +57,13 @@ export default function useAccountStatus() {
         return
       }
 
-      const status = data?.account_status || 'active'
+      const profileData = data as ProfileData | null
+      const status = profileData?.account_status || 'active'
       setAccountStatus(status)
       setIsSuspended(status === 'suspended')
       setIsPendingVerification(status === 'pending_verification')
       setIsScheduledForDeletion(status === 'deletion_scheduled')
-      setDeletionDate(data?.deletion_scheduled_at || null)
+      setDeletionDate(profileData?.deletion_scheduled_at || null)
       setLoading(false)
     } catch (err) {
       console.error('useAccountStatus: erreur inattendue', err)
@@ -119,7 +125,7 @@ export default function useAccountStatus() {
 
   // Fonction pour changer l'état du compte (admin seulement)
   const changeAccountStatus = useCallback(
-    async (newStatus, reason = null) => {
+    async (newStatus: string, reason: string | null = null) => {
       if (!user?.id) return false
 
       // Définir showToast à l'intérieur du callback

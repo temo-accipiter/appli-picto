@@ -388,8 +388,8 @@ describe('Profil - Test intégration', () => {
             const body = await request.json()
             return HttpResponse.json(
               {
-                id: body.id,
-                pseudo: body.pseudo,
+                id: (body as any)?.id,
+                pseudo: (body as any)?.pseudo,
                 date_naissance: null,
                 ville: null,
                 created_at: new Date().toISOString(),

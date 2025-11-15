@@ -1,7 +1,7 @@
 // src/data/index.js
 // Export centralisé de toutes les données
 
-export { default as colors } from './colors'
+export { COULEURS_LIGNES } from './colors'
 export {
   LEGAL_CONFIG,
   checkTransfersCompliance,

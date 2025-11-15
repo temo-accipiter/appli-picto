@@ -10,7 +10,7 @@ import { uploadImage, type UploadResult } from '@/utils/storage/uploadImage'
 
 interface ReplaceOptions {
   userId: string
-  prefix?: string
+  prefix?: string | undefined
 }
 
 export default async function replaceImageIfAny(
@@ -28,5 +28,8 @@ export default async function replaceImageIfAny(
     }
   }
 
-  return await uploadImage(file, { userId, prefix })
+  return await uploadImage(file, {
+    userId,
+    ...(prefix && { prefix }),
+  })
 }

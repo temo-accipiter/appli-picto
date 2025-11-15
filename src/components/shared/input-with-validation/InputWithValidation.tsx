@@ -77,8 +77,8 @@ const InputWithValidation = forwardRef<
   return (
     <Input
       id={id}
-      label={label}
-      placeholder={placeholder}
+      {...(label !== undefined && { label })}
+      {...(placeholder !== undefined && { placeholder })}
       type={type}
       value={draft}
       onChange={e => {

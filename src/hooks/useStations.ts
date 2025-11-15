@@ -38,7 +38,7 @@ export default function useStations(
         .order('ordre', { ascending: true })
 
       if (err) {
-        setError(err as Error)
+        setError(err as unknown as Error)
         setStations([])
       } else {
         // Mélange optimisé : seulement la première station aléatoire
@@ -52,7 +52,7 @@ export default function useStations(
           const remainingStations = stationsData.filter(
             (_, index) => index !== randomIndex
           )
-          const shuffledStations = [firstStation, ...remainingStations]
+          const shuffledStations = [firstStation, ...remainingStations] as Station[]
 
           setStations(shuffledStations)
         } else {

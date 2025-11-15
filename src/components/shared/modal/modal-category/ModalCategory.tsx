@@ -1,21 +1,25 @@
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
 import { useI18n } from '@/hooks'
-import type { Categorie } from '@/types/global'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
   makeValidateNotEmpty,
 } from '@/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 import './ModalCategory.scss'
+
+interface CategoryOption {
+  value: string | number
+  label: string
+}
 
 interface ModalCategoryProps {
   isOpen: boolean
   onClose: () => void
-  categories: Categorie[]
-  onDeleteCategory: (value: string) => void
+  categories: CategoryOption[]
+  onDeleteCategory: (value: string | number) => void
   onAddCategory: (e: FormEvent, category: string) => void
   newCategory: string
   onChangeNewCategory: (value: string) => void
@@ -31,8 +35,7 @@ export default function ModalCategory({
   onChangeNewCategory,
 }: ModalCategoryProps) {
   const { t } = useI18n()
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [visibleCats, setVisibleCats] = useState<Categorie[]>([])
+  const [visibleCats, setVisibleCats] = useState<CategoryOption[]>([])
 
   // Créer les fonctions de validation i18n avec useMemo
   const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
@@ -65,7 +68,6 @@ export default function ModalCategory({
 
     const hasError = validationRules.some(rule => rule(newCategory))
     if (hasError) {
-      inputRef.current?.blur()
       return
     }
 
@@ -76,8 +78,8 @@ export default function ModalCategory({
     }
   }
 
-  const handleDelete = (value: string) => {
-    onDeleteCategory(value) // Envoie le 'value' (slug) pas l'id
+  const handleDelete = (value: string | number) => {
+    onDeleteCategory(value)
   }
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function ModalCategory({
           <AnimatePresence>
             {visibleCats.map(cat => (
               <motion.li
-                key={cat.id} // ✅ utilise l'id
+                key={cat.value}
                 className="category-list__item"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -118,7 +120,6 @@ export default function ModalCategory({
         <form className="category-form" onSubmit={handleSubmit}>
           <InputWithValidation
             id="new-category"
-            ref={inputRef}
             value={newCategory}
             onChange={onChangeNewCategory}
             onValid={onChangeNewCategory}

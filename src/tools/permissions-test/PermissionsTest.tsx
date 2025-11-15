@@ -15,9 +15,11 @@ export const PermissionsTest = () => {
     canAny: _canAny,
     loading,
     isVisitor,
-    isSubscriber,
+    // isSubscriber, // Not available in PermissionsContextValue
     isAdmin,
   } = usePermissions()
+
+  const isSubscriber = role === 'abonne'
 
   if (loading) {
     return (

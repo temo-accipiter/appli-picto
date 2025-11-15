@@ -126,8 +126,8 @@ export default function Modal({
                 key={i}
                 label={act.label}
                 onClick={act.onClick}
-                variant={act.variant ?? undefined}
-                disabled={act.disabled ?? undefined}
+                {...(act.variant !== undefined && { variant: act.variant })}
+                {...(act.disabled !== undefined && { disabled: act.disabled })}
               />
             ))}
           </footer>

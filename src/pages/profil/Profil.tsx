@@ -97,6 +97,7 @@ export default function Profil() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user) return
 
     if (import.meta.env.DEV) {
       console.log('🔍 handleSave - Début sauvegarde profil', {
@@ -186,7 +187,7 @@ export default function Profil() {
         data,
         uploadError,
         path: data?.path,
-        errorCode: uploadError?.statusCode,
+        errorCode: (uploadError as any)?.statusCode,
         errorMessage: uploadError?.message,
       })
     }
@@ -237,6 +238,7 @@ export default function Profil() {
   }
 
   const handleAvatarDelete = async () => {
+    if (!user) return
     const avatarPath = user.user_metadata?.avatar
     if (!avatarPath) return
     const { error: deleteError } = await supabase.storage
@@ -259,13 +261,14 @@ export default function Profil() {
   }
 
   const resetPassword = async () => {
+    if (!user) return
     try {
       if (!captchaTokenReset) {
         showToast(t('profil.validateCaptcha'), 'error')
         return
       }
       const redirectTo = `${window.location.origin}/reset-password`
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email || '', {
         redirectTo,
         captchaToken: captchaTokenReset,
       })
@@ -383,7 +386,6 @@ export default function Profil() {
             sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
             onSuccess={token => setCaptchaTokenReset(token)}
             onExpire={() => setCaptchaTokenReset(null)}
-            options={{ refreshExpired: 'auto' }}
             theme="light"
             language={i18n.language}
           />

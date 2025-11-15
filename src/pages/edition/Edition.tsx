@@ -222,7 +222,7 @@ export default function Edition() {
           throw uploadResult.error
         }
 
-        imagePath = uploadResult.path
+        imagePath = uploadResult.path || ''
       } catch (error) {
         show(
           `${t('edition.errorImageUpload')}: ${(error as Error).message}`,
@@ -235,14 +235,14 @@ export default function Edition() {
     const { error: insertError } = await supabase.from('taches').insert([
       {
         label,
-        categorie,
+        ...(categorie && { categorie }),
         aujourdhui: false,
         fait: false,
         position: 0,
-        imagepath: imagePath,
+        ...(imagePath && { imagepath: imagePath }),
         user_id: user.id,
       },
-    ])
+    ] as any)
 
     if (insertError) {
       console.error('❌ Erreur insertion tâche:', {
@@ -356,6 +356,35 @@ export default function Edition() {
     setShowTimeTimer,
   } = useDisplay()
 
+  // Wrappers pour adapter les signatures de callback aux interfaces attendues
+  const handleToggleAujourdhui = (
+    id: string | number,
+    currentState: boolean | number | undefined
+  ) => {
+    toggleAujourdhui(String(id), !!currentState)
+  }
+
+  const handleDeleteCategory = async (value: string | number): Promise<void> => {
+    await deleteCategory(String(value))
+  }
+
+  const handleShowQuotaModal = async (type: string): Promise<boolean> => {
+    return handleQuotaCheck(type as ContentType)
+  }
+
+  const handleToggleSelectRecompense = (id: string | number, currentSelected: boolean) => {
+    toggleSelectRecompense(String(id), currentSelected)
+  }
+
+  const handleUpdateRewardLabel = async (id: string | number, label: string): Promise<{ error?: Error }> => {
+    updateRewardLabel(String(id), label)
+    return {}
+  }
+
+  const handleUpdateCategorie = (id: string | number, categorie: string) => {
+    updateCategorie(String(id), categorie || null)
+  }
+
   return (
     <div className="page-edition">
       {/* WCAG 2.4.6 - Structure sémantique avec h1 */}
@@ -463,24 +492,24 @@ export default function Edition() {
               </div>
             )}
             <TachesEdition
-              items={visibleTaches}
+              items={visibleTaches as any}
               categories={categories}
-              onToggleAujourdhui={toggleAujourdhui}
+              onToggleAujourdhui={handleToggleAujourdhui}
               resetEdition={resetEdition}
               onSubmitTask={handleSubmitTask}
               onAddCategory={handleAddCategoryWithQuota}
-              onDeleteCategory={deleteCategory}
+              onDeleteCategory={handleDeleteCategory}
               filterCategory={filterCategory}
               onChangeFilterCategory={setFilterCategory}
               filterDone={filterDone}
               onChangeFilterDone={setFilterDone}
-              onShowQuotaModal={handleQuotaCheck}
+              onShowQuotaModal={handleShowQuotaModal}
               onUpdateLabel={(id, label) => {
-                updateTaskLabel(id, label)
+                updateTaskLabel(String(id), label)
                 show(t('edition.taskRenamed'), 'success')
               }}
-              onUpdateCategorie={updateCategorie}
-              onDelete={t => setTacheASupprimer(t)}
+              onUpdateCategorie={handleUpdateCategorie}
+              onDelete={t => setTacheASupprimer(t as any)}
             />
           </div>
         )}
@@ -510,15 +539,12 @@ export default function Edition() {
               </div>
             )}
             <RecompensesEdition
-              items={recompenses}
-              onDelete={r => setRecompenseASupprimer(r)}
-              onToggleSelect={toggleSelectRecompense}
+              items={recompenses as any}
+              onDelete={r => setRecompenseASupprimer(r as any)}
+              onToggleSelect={handleToggleSelectRecompense}
               onSubmitReward={handleSubmitReward}
-              onShowQuotaModal={handleQuotaCheck}
-              onLabelChange={(id, label) => {
-                updateRewardLabel(id, label)
-                show(t('edition.rewardModified'), 'success')
-              }}
+              onShowQuotaModal={handleShowQuotaModal}
+              onLabelChange={handleUpdateRewardLabel}
             />
           </div>
         )}
@@ -569,7 +595,7 @@ export default function Edition() {
           isOpen={manageCatOpen}
           onClose={() => setManageCatOpen(false)}
           categories={categories}
-          onDeleteCategory={value => setCatASupprimer(value)}
+          onDeleteCategory={value => setCatASupprimer(String(value))}
           onAddCategory={handleAddCategoryWithQuota}
           newCategory={newCatLabel}
           onChangeNewCategory={setNewCatLabel}

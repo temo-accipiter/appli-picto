@@ -28,10 +28,10 @@ export interface ValidationResult {
 export interface QuotaCheckResult {
   canUpload: boolean
   reason: string
-  role?: string
-  quotas?: Record<string, any>
-  stats?: Record<string, any>
-  error?: string
+  role?: string | undefined
+  quotas?: Record<string, any> | undefined
+  stats?: Record<string, any> | undefined
+  error?: string | undefined
 }
 
 export interface UploadResult {
@@ -174,12 +174,17 @@ export async function checkImageQuota(
       throw error
     }
 
+    if (!data) {
+      throw new Error('Aucune donnée retournée par check_image_quota')
+    }
+
+    const quotaData = data as unknown as QuotaCheckResult
     return {
-      canUpload: data.can_upload,
-      reason: data.reason,
-      role: data.role,
-      quotas: data.quotas,
-      stats: data.stats,
+      canUpload: quotaData.canUpload,
+      reason: quotaData.reason,
+      role: quotaData.role,
+      quotas: quotaData.quotas,
+      stats: quotaData.stats,
     }
   } catch (error) {
     console.error('Erreur vérification quota image:', error)
@@ -332,7 +337,7 @@ export async function getUserAssetsStats(userId: string): Promise<AssetsStats> {
       }
       throw error
     }
-    return data as AssetsStats
+    return data as unknown as AssetsStats
   } catch (error) {
     console.error('Erreur récupération stats assets:', error)
     // Retourner des stats par défaut en cas d'erreur

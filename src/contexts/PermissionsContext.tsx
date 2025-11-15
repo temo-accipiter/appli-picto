@@ -171,12 +171,16 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
         ])
         if (rErr) {
           const error = rErr as { code?: string; name?: string }
-          error.code = error.code || error?.name
+          if (!error.code && error.name) {
+            error.code = error.name
+          }
           throw rErr
         }
         if (pErr) {
           const error = pErr as { code?: string; name?: string }
-          error.code = error.code || error?.name
+          if (!error.code && error.name) {
+            error.code = error.name
+          }
           throw pErr
         }
         return { roleRows, permRows }

@@ -158,7 +158,7 @@ export default function RolesTab({
               <div className="role-actions">
                 <button
                   className={`btn ${role.is_active ? 'btn-warning' : 'btn-success'}`}
-                  onClick={() => handleToggleRole(role.id, !role.is_active)}
+                  onClick={() => handleToggleRole(role.id || '', !role.is_active)}
                   title={
                     role.is_active ? 'Désactiver ce rôle' : 'Activer ce rôle'
                   }

@@ -1,12 +1,22 @@
 import { Modal, ItemForm } from '@/components'
-import type { Categorie } from '@/types/global'
+
+interface CategoryOption {
+  value: string | number
+  label: string
+}
+
+interface ItemFormData {
+  label: string
+  categorie: string
+  image: File
+}
 
 interface ModalAjoutProps {
   isOpen: boolean
   onClose: () => void
   includeCategory?: boolean
-  categories?: Categorie[]
-  onSubmit: (data: string) => void
+  categories?: CategoryOption[]
+  onSubmit: (data: ItemFormData) => void
 }
 
 export default function ModalAjout({

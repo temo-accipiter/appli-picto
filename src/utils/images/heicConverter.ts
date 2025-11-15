@@ -30,6 +30,10 @@ export async function convertHEICtoJPEG(file: File): Promise<File> {
     // Gérer cas où heic2any retourne Array de Blobs (multi-page HEIC)
     const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
 
+    if (!blob) {
+      throw new Error('Conversion HEIC failed: no blob returned')
+    }
+
     const convertedFile = new File(
       [blob],
       file.name.replace(/\.heic$/i, '.jpg'),

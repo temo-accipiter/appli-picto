@@ -1,6 +1,7 @@
 // src/test/setupAxe.ts
 // Configuration de jest-axe pour les tests d'accessibilité automatisés
 
+// @ts-expect-error - jest-axe is not installed yet
 import { configureAxe } from 'jest-axe'
 
 // Configuration personnalisée pour axe-core

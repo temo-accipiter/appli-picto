@@ -1,15 +1,15 @@
 // src/hooks/useSubscriptionStatus.js
-import { AuthContext } from '@/contexts/AuthContext'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient'
+import useAuth from './useAuth'
 
 const ACTIVE_SET = new Set(['trialing', 'active', 'past_due', 'paused'])
 
 export function useSubscriptionStatus() {
-  const { user, authReady } = useContext(AuthContext)
+  const { user, authReady } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState(null) // 'active' | 'trialing' | 'past_due' | 'paused' | null
-  const [currentPeriodEnd, setCurrentPeriodEnd] = useState(null)
+  const [status, setStatus] = useState<string | null>(null) // 'active' | 'trialing' | 'past_due' | 'paused' | null
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null)
 
   const runIdRef = useRef(0)
 
@@ -81,8 +81,10 @@ export function useSubscriptionStatus() {
       isTrial,
       currentPeriodEnd,
       daysUntilExpiry:
-        end && !isNaN(end) ? Math.ceil((+end - Date.now()) / 86400000) : null,
+        end && !isNaN(+end) ? Math.ceil((+end - Date.now()) / 86400000) : null,
       isExpiringSoon: !!end && end < in7d,
+      subscription: null as any, // TODO: Implement subscription data
+      statusDisplay: { label: status || 'Inconnu', icon: '', color: 'default' } as any,
     }
   }, [loading, status, isActive, isTrial, currentPeriodEnd])
 }

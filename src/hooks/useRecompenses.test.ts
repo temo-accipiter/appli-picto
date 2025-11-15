@@ -214,7 +214,7 @@ describe('useRecompenses', () => {
       })
 
       // Mock RPC select_recompense_atomic
-      mockSupabase.rpc = vi.fn().mockReturnValue({
+      ;(mockSupabase as any).rpc = vi.fn().mockReturnValue({
         maybeSingle: vi.fn().mockResolvedValue({
           data: { id: '2', label: 'Récompense 2', selected: true },
           error: null,

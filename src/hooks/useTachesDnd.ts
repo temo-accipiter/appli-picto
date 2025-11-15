@@ -2,7 +2,13 @@ import { isAbortLike, useAuth, useToast, useI18n, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
-// Sérialise proprement les erreurs (évite les soucis d’inspecteur Safari)
+interface Tache {
+  id: string | number
+  fait: boolean | number
+  [key: string]: unknown
+}
+
+// Sérialise proprement les erreurs (évite les soucis d'inspecteur Safari)
 const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
@@ -15,8 +21,8 @@ const formatErr = e => {
 }
 
 export default function useTachesDnd(onChange, reload = 0) {
-  const [taches, setTaches] = useState([])
-  const [doneMap, setDone] = useState({})
+  const [taches, setTaches] = useState<Tache[]>([])
+  const [doneMap, setDone] = useState<Record<string | number, boolean>>({})
   const { user } = useAuth()
   const { show } = useToast()
   const { t } = useI18n()
@@ -32,7 +38,7 @@ export default function useTachesDnd(onChange, reload = 0) {
             .select('*')
             .eq('user_id', user.id) // 🔐 visibilité sécurisée
             .eq('aujourdhui', true)
-            .order('position', { ascending: true })
+            .order('position', { ascending: true }) as any
         )
 
         // 1) Requête annulée (Firefox/Safari) → on sort sans bruit
@@ -122,13 +128,15 @@ export default function useTachesDnd(onChange, reload = 0) {
   }, [loadTaches, reload])
 
   const toggleDone = async (id, newDone) => {
+    if (!user?.id) return
+
     try {
       const { error, aborted } = await withAbortSafe(
         supabase
           .from('taches')
           .update({ fait: newDone })
           .eq('id', id)
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) as any
       )
 
       if (aborted || (error && isAbortLike(error))) {
@@ -167,13 +175,15 @@ export default function useTachesDnd(onChange, reload = 0) {
   }
 
   const resetAll = async () => {
+    if (!user?.id) return
+
     try {
       const { error, aborted } = await withAbortSafe(
         supabase
           .from('taches')
           .update({ fait: false })
           .eq('aujourdhui', true)
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) as any
       )
 
       if (aborted || (error && isAbortLike(error))) {
@@ -207,13 +217,13 @@ export default function useTachesDnd(onChange, reload = 0) {
   }
 
   const moveTask = (activeId, overId) => {
-    let newList = []
+    let newList: Tache[] = []
     setTaches(prev => {
       const oldIndex = prev.findIndex(t => t.id.toString() === activeId)
       const newIndex = prev.findIndex(t => t.id.toString() === overId)
       const arr = [...prev]
       const [moved] = arr.splice(oldIndex, 1)
-      arr.splice(newIndex, 0, moved)
+      if (moved) arr.splice(newIndex, 0, moved)
       newList = arr
       return arr
     })
@@ -221,6 +231,8 @@ export default function useTachesDnd(onChange, reload = 0) {
   }
 
   const saveOrder = async list => {
+    if (!user?.id) return
+
     try {
       // Mettre à jour l'état local immédiatement pour une UI fluide
       setTaches(list)
@@ -236,7 +248,7 @@ export default function useTachesDnd(onChange, reload = 0) {
                 .from('taches')
                 .update({ position: i + index })
                 .eq('id', t.id)
-                .eq('user_id', user.id)
+                .eq('user_id', user.id) as any
             ).then(({ error, aborted }) => {
               if (aborted || (error && isAbortLike(error))) return
               if (error) throw error

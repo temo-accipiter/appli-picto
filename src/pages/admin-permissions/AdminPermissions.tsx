@@ -260,7 +260,7 @@ export default function AdminPermissions() {
         await loadAllData()
       } else {
         console.error('❌ Erreur lors de la mise à jour du rôle:', result.error)
-        alert(`❌ Erreur lors de la mise à jour: ${result.error.message}`)
+        alert(`❌ Erreur lors de la mise à jour: ${(result.error as any)?.message || 'Erreur inconnue'}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la mise à jour du rôle:', error)
@@ -381,7 +381,7 @@ export default function AdminPermissions() {
         // Fonctionnalité créée avec succès
       } else {
         console.error('❌ Erreur lors de la création:', result.error)
-        alert(`❌ Erreur lors de la création: ${result.error.message}`)
+        alert(`❌ Erreur lors de la création: ${(result.error as any)?.message || 'Erreur inconnue'}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la création:', error)
@@ -445,7 +445,7 @@ export default function AdminPermissions() {
         // Fonctionnalité modifiée avec succès
       } else {
         console.error('❌ Erreur lors de la modification:', result.error)
-        alert(`❌ Erreur lors de la modification: ${result.error.message}`)
+        alert(`❌ Erreur lors de la modification: ${(result.error as any)?.message || 'Erreur inconnue'}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la modification:', error)
@@ -475,7 +475,7 @@ export default function AdminPermissions() {
         // Fonctionnalité supprimée avec succès
       } else {
         console.error('❌ Erreur lors de la suppression:', result.error)
-        alert(`❌ Erreur lors de la suppression: ${result.error.message}`)
+        alert(`❌ Erreur lors de la suppression: ${(result.error as any)?.message || 'Erreur inconnue'}`)
       }
     } catch (error) {
       console.error('❌ Erreur lors de la suppression:', error)
@@ -578,7 +578,7 @@ export default function AdminPermissions() {
                     rules={createFeatureValidationRules.name(
                       newFeature.name,
                       features
-                    )}
+                    ) as any}
                     ariaLabel="Nom technique de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -594,7 +594,7 @@ export default function AdminPermissions() {
                     }
                     rules={createFeatureValidationRules.displayName(
                       newFeature.display_name
-                    )}
+                    ) as any}
                     ariaLabel="Nom d'affichage de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -610,7 +610,7 @@ export default function AdminPermissions() {
                     }
                     rules={createFeatureValidationRules.description(
                       newFeature.description
-                    )}
+                    ) as any}
                     ariaLabel="Description de la fonctionnalité"
                   />
                   <select
@@ -662,7 +662,7 @@ export default function AdminPermissions() {
                     rules={createFeatureValidationRules.name(
                       editingFeature.name,
                       features.filter(f => f.id !== editingFeature.id)
-                    )}
+                    ) as any}
                     ariaLabel="Nom technique de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -684,7 +684,7 @@ export default function AdminPermissions() {
                     }
                     rules={createFeatureValidationRules.displayName(
                       editingFeature.display_name
-                    )}
+                    ) as any}
                     ariaLabel="Nom d'affichage de la fonctionnalité"
                   />
                   <InputWithValidation
@@ -706,7 +706,7 @@ export default function AdminPermissions() {
                     }
                     rules={createFeatureValidationRules.description(
                       editingFeature.description
-                    )}
+                    ) as any}
                     ariaLabel="Description de la fonctionnalité"
                   />
                   <select
@@ -754,14 +754,14 @@ export default function AdminPermissions() {
             <PermissionsTab
               features={features}
               manageableRoles={manageableRoles}
-              permissions={permissions}
-              tempPermissions={tempPermissions}
+              permissions={permissions as any}
+              tempPermissions={tempPermissions as any}
               editingPermissions={editingPermissions}
               setEditingPermissions={setEditingPermissions}
               handlePermissionChange={handlePermissionChange}
               handleSavePermissions={handleSavePermissions}
-              handleDeleteFeature={handleDeleteFeature}
-              handleEditFeature={handleEditFeature}
+              handleDeleteFeature={handleDeleteFeature as any}
+              handleEditFeature={handleEditFeature as any}
               initializeTempPermissions={initializeTempPermissions}
             />
           </div>
@@ -773,8 +773,11 @@ export default function AdminPermissions() {
             roles={roles}
             newRole={newRole}
             setNewRole={setNewRole}
-            editingRole={editingRole}
-            setEditingRole={setEditingRole}
+            editingRole={editingRole?.id || null}
+            setEditingRole={(roleId: string | null) => {
+              const role = roles.find(r => r.id === roleId) || null
+              setEditingRole(role)
+            }}
             handleCreateRole={handleCreateRole}
             handleUpdateRole={handleUpdateRole}
             handleDeleteRole={handleDeleteRole}

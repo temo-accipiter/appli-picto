@@ -131,6 +131,11 @@ export async function convertToWebP(
         }
 
         const strategy = strategies[strategyIndex]
+        if (!strategy) {
+          resolve(null)
+          return
+        }
+
         const canvas = document.createElement('canvas')
 
         // ─────────────────────────────────────────────────────────────

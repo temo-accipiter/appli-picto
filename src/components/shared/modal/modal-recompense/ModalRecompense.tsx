@@ -31,13 +31,13 @@ export default function ModalRecompense({
       <div className="modal-recompense">
         {reward.isDemo ? (
           <DemoSignedImage
-            filePath={reward.imagepath}
+            filePath={reward.imagepath || ''}
             alt={reward.label}
             className="img-size-md"
           />
         ) : (
           <SignedImage
-            filePath={reward.imagepath}
+            filePath={reward.imagepath || ''}
             bucket="images"
             alt={reward.label}
             className="img-size-md"

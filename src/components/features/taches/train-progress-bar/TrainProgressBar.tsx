@@ -26,7 +26,7 @@ export default function TrainProgressBar({
   const { t } = useI18n()
   const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
   const couleur =
-    COULEURS_LIGNES[ligne as keyof typeof COULEURS_LIGNES] || '#999'
+    COULEURS_LIGNES[ligne as unknown as keyof typeof COULEURS_LIGNES] || '#999'
   const stationCount = Number(total) + 1
 
   const { stations: ligneStations, loading, error } = useStations(ligne)

@@ -13,7 +13,7 @@ function injectScript(src) {
   return s
 }
 
-let gaScripts = []
+let gaScripts: HTMLScriptElement[] = []
 
 export function initGA4() {
   // Ne rien faire si pas d’ID ou déjà initialisé
@@ -83,7 +83,8 @@ export function setupConsentBridges() {
 
   // Écoute des changements de consentement
   window.addEventListener('consent:changed', e => {
-    const granted = !!e?.detail?.choices?.analytics
+    const event = e as CustomEvent<{ choices?: { analytics?: boolean } }>
+    const granted = !!event?.detail?.choices?.analytics
     if (granted) {
       initGA4()
     } else {

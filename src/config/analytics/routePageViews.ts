@@ -28,6 +28,8 @@ const isReady = (): boolean =>
 
 function sendPageView(): void {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
+
   const href = location.href
   if (href === lastHref) return
   lastHref = href
@@ -41,6 +43,8 @@ function sendPageView(): void {
 
 function sendAutoEvents(): void {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
+
   const href = location.href
   if (sentForHref.has(href)) return
   const path = location.pathname
@@ -113,7 +117,8 @@ function patchFetchForCheckout(): void {
         method === 'POST' &&
         /create-checkout-session/i.test(url) &&
         res?.ok &&
-        isReady()
+        isReady() &&
+        typeof window.gtag === 'function'
       ) {
         let priceId: string | undefined
         try {
@@ -122,9 +127,9 @@ function patchFetchForCheckout(): void {
             priceId = j.priceId || j.price_id || j.price
           } else if (init?.body instanceof FormData) {
             priceId =
-              init.body.get('priceId') ||
-              init.body.get('price_id') ||
-              init.body.get('price') ||
+              (init.body.get('priceId') as string | null) ||
+              (init.body.get('price_id') as string | null) ||
+              (init.body.get('price') as string | null) ||
               undefined
           }
         } catch {
@@ -148,13 +153,11 @@ function patchFetchForCheckout(): void {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent {
-  detail?: {
-    choices?: {
-      analytics?: boolean
-    }
+interface ConsentChangedEvent extends CustomEvent<{
+  choices?: {
+    analytics?: boolean
   }
-}
+}> {}
 
 function boot(): void {
   patchHistory()

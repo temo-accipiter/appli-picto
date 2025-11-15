@@ -81,7 +81,7 @@ export default function DeleteAccountGuard({
     const { data, error } = await supabase.auth.signInWithPassword({
       email: user?.email || '',
       password,
-      options: captchaToken ? { captchaToken } : undefined,
+      ...(captchaToken && { options: { captchaToken } }),
     })
     if (!error && !data?.user?.factors) return
     if (needsTotp) {

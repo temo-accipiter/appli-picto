@@ -17,8 +17,22 @@ import {
 } from '@/utils/testLegalConfig'
 import { useState } from 'react'
 
+interface TestResults {
+  config?: any
+  documents?: Array<{ name: string; result: any }>
+  transfers?: {
+    compliant: number
+    total: number
+  }
+  ga4?: {
+    isPrivacyCompliant: boolean
+  }
+  timestamp?: string
+  error?: string
+}
+
 export default function LegalConfigTester() {
-  const [testResults, setTestResults] = useState(null)
+  const [testResults, setTestResults] = useState<TestResults | null>(null)
   const [isTesting, setIsTesting] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
@@ -62,7 +76,7 @@ export default function LegalConfigTester() {
     } catch (error) {
       console.error('Erreur lors des tests:', error)
       setTestResults({
-        error: error.message,
+        error: (error as any)?.message || 'Erreur inconnue',
         timestamp: new Date().toISOString(),
       })
     } finally {
@@ -137,7 +151,7 @@ export default function LegalConfigTester() {
             <div className="test-section">
               <h5>Documents légaux</h5>
               <ul>
-                {testResults.documents.map((doc, index) => (
+                {testResults.documents?.map((doc, index) => (
                   <li
                     key={index}
                     className={doc.result ? 'status-ok' : 'status-error'}
@@ -154,13 +168,13 @@ export default function LegalConfigTester() {
               <h5>Transferts hors UE</h5>
               <p
                 className={
-                  testResults.transfers.compliant ===
-                  testResults.transfers.total
+                  testResults.transfers?.compliant ===
+                  testResults.transfers?.total
                     ? 'status-ok'
                     : 'status-warning'
                 }
               >
-                {testResults.transfers.compliant}/{testResults.transfers.total}{' '}
+                {testResults.transfers?.compliant}/{testResults.transfers?.total}{' '}
                 conformes
               </p>
               <button
@@ -176,12 +190,12 @@ export default function LegalConfigTester() {
               <h5>Google Analytics 4</h5>
               <p
                 className={
-                  testResults.ga4.isPrivacyCompliant
+                  testResults.ga4?.isPrivacyCompliant
                     ? 'status-ok'
                     : 'status-warning'
                 }
               >
-                {testResults.ga4.isPrivacyCompliant
+                {testResults.ga4?.isPrivacyCompliant
                   ? '✅ Mode respectueux activé'
                   : '⚠️ Vérification nécessaire'}
               </p>
@@ -189,7 +203,7 @@ export default function LegalConfigTester() {
 
             <p className="legal-config-tester__timestamp">
               Tests effectués le :{' '}
-              {new Date(testResults.timestamp).toLocaleString('fr-FR')}
+              {new Date(testResults.timestamp || '').toLocaleString('fr-FR')}
             </p>
           </div>
 

@@ -102,7 +102,7 @@ export default function DeleteAccountModal({
         const { error: reauthErr } = await supabase.auth.signInWithPassword({
           email: user?.email || '',
           password,
-          options: { captchaToken: tokenLogin || undefined },
+          ...(tokenLogin && { options: { captchaToken: tokenLogin } }),
         })
         if (reauthErr) {
           show(t('profil.deleteModalErrorPassword'), 'error')

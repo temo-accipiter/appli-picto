@@ -180,7 +180,7 @@ export default function useTachesEdition(reload: number = 0) {
         userId: user.id,
         assetType: 'task_image',
         prefix: 'taches',
-        onProgress,
+        onProgress: onProgress ? (info) => onProgress(info.progress) : null,
       })
 
       if (uploadResult.error) throw uploadResult.error
@@ -253,7 +253,7 @@ export default function useTachesEdition(reload: number = 0) {
       // 🆕 Remplacer image avec versioning + invalidation cache
       const replaceResult = await replaceImage(asset.id, file, {
         userId: user.id,
-        onProgress,
+        onProgress: onProgress ? (info) => onProgress(info.progress) : null,
       })
 
       if (replaceResult.error) throw replaceResult.error
