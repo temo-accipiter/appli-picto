@@ -122,7 +122,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
           .from('demo_cards')
           .select('*')
           .eq('is_active', true)
-          .order('position')
+          .order('position') as any
       )
 
       if (aborted || (fetchError && isAbortLike(fetchError))) {
