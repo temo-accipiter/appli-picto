@@ -110,7 +110,7 @@ export default function ResetPassword() {
       ) : (
         <form onSubmit={handleSubmit} className="reset-form">
           <InputWithValidation
-            ref={pwRef}
+            ref={pwRef as any}
             id="new-password"
             label={t('auth.newPassword')}
             type="password"
@@ -128,7 +128,7 @@ export default function ResetPassword() {
           />
 
           <InputWithValidation
-            ref={confirmRef}
+            ref={confirmRef as any}
             id="confirm-password"
             label={t('auth.confirmPassword')}
             type="password"

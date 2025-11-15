@@ -78,7 +78,7 @@ export default function ForgotPassword() {
 
       <form onSubmit={handleSubmit}>
         <InputWithValidation
-          ref={emailRef}
+          ref={emailRef as any}
           id="forgot-email"
           type="email"
           label={t('auth.email')}
@@ -93,7 +93,6 @@ export default function ForgotPassword() {
           sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
           onSuccess={token => setCaptchaToken(token)}
           onExpire={() => setCaptchaToken(null)}
-          options={{ refreshExpired: 'auto' }}
           theme="light"
           language={i18n.language}
         />

@@ -115,7 +115,7 @@ export default function Signup() {
 
       <form onSubmit={handleSignup}>
         <InputWithValidation
-          ref={emailRef}
+          ref={emailRef as any}
           id="signup-email"
           label={t('auth.email')}
           type="email"
@@ -125,7 +125,7 @@ export default function Signup() {
         />
 
         <InputWithValidation
-          ref={pwRef}
+          ref={pwRef as any}
           id="signup-password"
           label={t('auth.password')}
           type="password"
@@ -143,7 +143,7 @@ export default function Signup() {
         />
 
         <InputWithValidation
-          ref={confirmRef}
+          ref={confirmRef as any}
           id="signup-confirm"
           label={t('auth.confirmPassword')}
           type="password"

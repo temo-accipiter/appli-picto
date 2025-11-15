@@ -386,7 +386,6 @@ export default function Profil() {
             sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
             onSuccess={token => setCaptchaTokenReset(token)}
             onExpire={() => setCaptchaTokenReset(null)}
-            options={{ refreshExpired: 'auto' }}
             theme="light"
             language={i18n.language}
           />
