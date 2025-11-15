@@ -164,3 +164,36 @@ if (typeof globalThis !== 'undefined') {
   ;(globalThis as { WebSocket?: unknown }).WebSocket =
     MockWebSocket as unknown as typeof WebSocket
 }
+
+// ========================================
+// Mock Next.js Navigation Hooks
+// ========================================
+// CRITICAL: Mock Next.js hooks pour tests unitaires
+// useRouter, usePathname, useSearchParams nécessitent App Router context
+
+import { vi } from 'vitest'
+
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: vi.fn(() => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
+  })),
+  usePathname: vi.fn(() => '/'),
+  useSearchParams: vi.fn(() => new URLSearchParams()),
+  useParams: vi.fn(() => ({})),
+  redirect: vi.fn(),
+  notFound: vi.fn(),
+}))
+
+// Mock next/link
+vi.mock('next/link', () => ({
+  default: ({ children }: { children: unknown; href: string }) => {
+    return children
+  },
+}))
+

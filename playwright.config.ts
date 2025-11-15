@@ -39,8 +39,8 @@ export default defineConfig({
 
   // Options partagées pour tous les tests
   use: {
-    // URL de base
-    baseURL: 'http://localhost:5173',
+    // URL de base (Next.js dev server)
+    baseURL: 'http://localhost:3000',
 
     // Collecter trace en cas d'échec
     trace: 'on-first-retry',
@@ -83,10 +83,10 @@ export default defineConfig({
     },
   ],
 
-  // Démarrer le serveur dev avant les tests
+  // Démarrer le serveur dev avant les tests (Next.js)
   webServer: {
     command: 'pnpm dev',
-    port: 5173,
+    port: 3000,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },
