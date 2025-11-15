@@ -140,7 +140,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         return
       }
 
-      setDemoCards(data || [])
+      setDemoCards((data || []) as DemoCard[])
       setError(null)
       setLoading(false)
     } catch (err) {
@@ -202,7 +202,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         id: card.id,
         label: card.label,
         fait: false,
-        position: card.position,
+        position: card.position ?? 0,
         imagepath: card.imagepath,
         category_id: null,
         isDemo: true as const,
@@ -274,7 +274,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         }
 
         await fetchDemoCards()
-        return data
+        return data as DemoCard
       } catch (err) {
         console.error('Erreur inattendue création carte démo:', err)
         return null
@@ -302,7 +302,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
         }
 
         await fetchDemoCards()
-        return data
+        return data as DemoCard
       } catch (err) {
         console.error('Erreur inattendue mise à jour carte démo:', err)
         return null
@@ -345,7 +345,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
 
         const { error: upsertError } = await supabase
           .from('demo_cards')
-          .upsert(updates)
+          .upsert(updates as any)
 
         if (upsertError) {
           console.error('Erreur réorganisation cartes démo:', upsertError)

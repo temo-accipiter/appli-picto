@@ -135,12 +135,13 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
   const deleteCategory = async (
     value: string
   ): Promise<{ error: Error | null }> => {
+    if (!user?.id) return { error: new Error('User not authenticated') }
     try {
       const { error: err } = await supabase
         .from('categories')
         .delete()
         .eq('value', value)
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
 
       if (err) throw err
 
