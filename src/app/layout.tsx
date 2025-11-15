@@ -20,10 +20,6 @@ export const viewport: Viewport = {
   themeColor: '#5A9FB8',
 }
 
-// ⚠️ TEMPORAIRE: Force client-side rendering pour migration
-// À retirer après adaptation complète SSR des contexts
-export const dynamic = 'force-dynamic'
-
 export default function RootLayout({
   children,
 }: {
