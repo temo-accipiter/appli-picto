@@ -96,8 +96,7 @@ const nextConfig = {
       '@dnd-kit/sortable',
       '@dnd-kit/utilities',
     ],
-    // Enable instrumentation for Sentry
-    instrumentationHook: true,
+    // Note: instrumentationHook enabled by default in Next.js 16
   },
 
   // TypeScript config
