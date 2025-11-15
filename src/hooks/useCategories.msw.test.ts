@@ -149,8 +149,8 @@ describe.skip('useCategories (avec MSW)', () => {
               [
                 {
                   id: '99',
-                  value: body.value,
-                  label: body.label,
+                  value: (body as any)?.value,
+                  label: (body as any)?.label,
                   user_id: TEST_USER_ID,
                 },
               ],

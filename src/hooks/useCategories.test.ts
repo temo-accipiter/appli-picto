@@ -314,7 +314,7 @@ describe('useCategories', () => {
 
       // Assert
       await waitFor(() => {
-        expect(result.current.categories[0].label).toBe('Routine Modifiée')
+        expect(result.current.categories[0]?.label).toBe('Routine Modifiée')
         expect(mockToast.show).toHaveBeenCalledWith(
           'Catégorie modifiée',
           'success'
@@ -373,7 +373,7 @@ describe('useCategories', () => {
       // Assert
       await waitFor(() => {
         expect(result.current.categories).toHaveLength(1)
-        expect(result.current.categories[0].value).toBe('ecole')
+        expect(result.current.categories[0]?.value).toBe('ecole')
         expect(mockToast.show).toHaveBeenCalledWith(
           'Catégorie supprimée',
           'success'

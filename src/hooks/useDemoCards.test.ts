@@ -122,7 +122,7 @@ describe('useDemoCards', () => {
 
     it('ne doit PAS charger les cartes pour un utilisateur connecté', async () => {
       // Arrange
-      mockAuth.user = { id: 'test-user-123' } // Utilisateur connecté
+      mockAuth.user = { id: 'test-user-123' } as any // Utilisateur connecté
 
       mockWithAbortSafe.mockResolvedValue({
         data: [],

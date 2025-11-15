@@ -54,8 +54,8 @@ describe.skip('useRecompenses (avec MSW)', () => {
       await waitFor(
         () => {
           expect(result.current.recompenses).toHaveLength(2)
-          expect(result.current.recompenses[0].label).toBe('Temps de jeu vidéo')
-          expect(result.current.recompenses[1].label).toBe('Sortie au parc')
+          expect(result.current.recompenses[0]?.label).toBe('Temps de jeu vidéo')
+          expect(result.current.recompenses[1]?.label).toBe('Sortie au parc')
           expect(result.current.loading).toBe(false)
         },
         { timeout: 3000 }
@@ -139,7 +139,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
           async ({ request }) => {
             const body = await request.json()
             return HttpResponse.json(
-              [{ ...mockRecompenses[0], selected: body.selected }],
+              [{ ...mockRecompenses[0], selected: (body as any)?.selected }],
               { status: 200 }
             )
           }
@@ -215,8 +215,8 @@ describe.skip('useRecompenses (avec MSW)', () => {
               [
                 {
                   id: '3',
-                  label: body.label,
-                  imagepath: body.imagepath,
+                  label: (body as any)?.label,
+                  imagepath: (body as any)?.imagepath,
                   selected: false,
                   user_id: TEST_USER_ID,
                   created_at: new Date().toISOString(),
