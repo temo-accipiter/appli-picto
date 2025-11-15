@@ -22,11 +22,11 @@ interface SavedSession {
 
 // ⚠️ Point d'entrée unique du client Supabase pour TOUT le frontend.
 const url =
-  import.meta.env.VITE_SUPABASE_URL ??
+  process.env.NEXT_PUBLIC_SUPABASE_URL ??
   'https://tklcztqoqvnialaqfcjm.supabase.co'
 
 const key =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbGN6dHFvcXZuaWFsYXFmY2ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNTM0NDEsImV4cCI6MjA2ODgyOTQ0MX0.O2H1eyrlUaq1K6d92j5uAGn3xzOaS0xroa4MagPna68'
 
 // 🔍 DEBUG: Afficher quelle URL est utilisée
@@ -35,13 +35,16 @@ console.log('🔑 Supabase Key (first 20 chars):', key.substring(0, 20) + '...')
 
 let recreationInProgress = false
 
+// ⚠️ SSR-safe: Configuration différente selon l'environnement
+const isServer = typeof window === 'undefined'
+
 // Configuration SDK simple (sans hacks qui cassent PostgREST)
 const clientConfig = {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    // 🔑 CRITICAL: Stockage plus fiable
+    persistSession: !isServer,
+    autoRefreshToken: !isServer,
+    detectSessionInUrl: !isServer,
+    // 🔑 CRITICAL: Stockage plus fiable (client-side only)
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     storageKey: `sb-${url.split('//')[1].split('.')[0]}-auth-token`,
   },
@@ -73,15 +76,15 @@ const clientConfig = {
   },
 }
 
-// Instance unique
+// Instance unique (SSR-safe)
 export let supabase: SupabaseClientType = createClient<Database>(
   url,
   key,
   clientConfig
 ) as SupabaseClientType
 
-// Exposer pour debug
-if (typeof window !== 'undefined') {
+// Exposer pour debug (client-side only)
+if (!isServer) {
   ;(window as WindowWithSupabase).supabase = supabase
 }
 
@@ -96,8 +99,13 @@ interface RecreateResult {
  * @returns {Promise<object>} Le nouveau client + session restaurée
  */
 export async function recreateSupabaseClient(): Promise<RecreateResult> {
+  // ⚠️ SSR: Only run on client-side
+  if (typeof window === 'undefined') {
+    return { client: supabase, session: null }
+  }
+
   if (recreationInProgress) {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Supabase] ⏳ Recreation already in progress...')
     }
     // Attendre que l'autre recréation finisse
@@ -111,19 +119,19 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
   recreationInProgress = true
 
   try {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Supabase] 🔄 Recreating client...')
     }
 
     // 🔑 AMÉLIORATION : Sauvegarder TOUTES les données de session
     const storageKey = `sb-${url.split('//')[1].split('.')[0]}-auth-token`
-    const savedSessionStr = localStorage.getItem(storageKey)
+    const savedSessionStr = window.localStorage.getItem(storageKey)
 
     let savedSession: SavedSession | null = null
     if (savedSessionStr) {
       try {
         savedSession = JSON.parse(savedSessionStr) as SavedSession
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.log('[Supabase] 💾 Session saved from localStorage')
         }
       } catch (e) {
@@ -172,12 +180,12 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
         if (!error && data?.session) {
           session = data.session
-          if (import.meta.env.DEV) {
+          if (process.env.NODE_ENV === 'development') {
             console.log('[Supabase] ✅ Session restored successfully')
           }
         } else if (error) {
           // Si setSession échoue, essayer de refresh
-          if (import.meta.env.DEV) {
+          if (process.env.NODE_ENV === 'development') {
             console.log('[Supabase] Trying to refresh token...')
           }
 
@@ -188,7 +196,7 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
           if (!refreshError && refreshData?.session) {
             session = refreshData.session
-            if (import.meta.env.DEV) {
+            if (process.env.NODE_ENV === 'development') {
               console.log('[Supabase] ✅ Session refreshed successfully')
             }
           }
@@ -199,7 +207,7 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
       }
     }
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log(
         '[Supabase] ✅ Client recreated',
         session ? 'with session' : 'without session'

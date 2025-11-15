@@ -1,3 +1,5 @@
+'use client'
+
 // src/contexts/LoadingContext.tsx
 // Contexte de chargement global pour gérer l'état de chargement de l'application
 // - setLoading(true/false) pour afficher/masquer le loader

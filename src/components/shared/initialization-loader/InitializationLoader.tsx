@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react'
 import { Loader } from '@/components'
 import { useAuth } from '@/hooks'

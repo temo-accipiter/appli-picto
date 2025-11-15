@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * WebVitals - Tracking des Core Web Vitals
  *

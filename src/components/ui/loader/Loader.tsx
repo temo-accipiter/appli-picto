@@ -1,3 +1,5 @@
+'use client'
+
 import './Loader.scss'
 
 export default function Loader() {

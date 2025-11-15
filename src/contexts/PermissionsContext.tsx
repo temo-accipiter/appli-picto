@@ -1,3 +1,5 @@
+'use client'
+
 // src/contexts/PermissionsContext.tsx
 // Détection des rôles robuste + permissions.
 // - Attend que l'auth soit prête (AuthContext.authReady).

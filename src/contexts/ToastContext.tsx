@@ -1,3 +1,5 @@
+'use client'
+
 // src/contexts/ToastContext.tsx
 // Contexte de toasts : même comportement par défaut (2000ms) + options facultatives.
 // - show(message, type = 'info', options?: { duration?: number })

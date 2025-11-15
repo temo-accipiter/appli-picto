@@ -1,3 +1,5 @@
+'use client'
+
 // src/contexts/DisplayContext.tsx
 import {
   createContext,

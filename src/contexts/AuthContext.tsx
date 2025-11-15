@@ -1,3 +1,5 @@
+'use client'
+
 // src/contexts/AuthContext.tsx
 // Auth global robuste : annonce toujours authReady (succès ou échec),
 // et met à jour user depuis la session courante + onAuthStateChange.

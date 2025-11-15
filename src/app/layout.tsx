@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { ClientWrapper } from './client-wrapper'
 import '@/styles/main.scss'
 
 export const metadata: Metadata = {
@@ -19,6 +20,10 @@ export const viewport: Viewport = {
   themeColor: '#5A9FB8',
 }
 
+// ⚠️ TEMPORAIRE: Force client-side rendering pour migration
+// À retirer après adaptation complète SSR des contexts
+export const dynamic = 'force-dynamic'
+
 export default function RootLayout({
   children,
 }: {
@@ -30,7 +35,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://tklcztqoqvnialaqfcjm.supabase.co" />
       </head>
       <body>
-        {children}
+        <ClientWrapper>
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   )
