@@ -313,7 +313,7 @@ export default function TableauGrille({
               total={totalTaches}
               done={doneCount}
               isDemo={isDemo}
-              onLineChange={onLineChange}
+              {...(onLineChange && { onLineChange })}
             />
           )}
         </section>

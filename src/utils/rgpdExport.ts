@@ -39,7 +39,7 @@ interface ExportPayload {
   generated_at: string
   user: {
     id: string
-    email?: string
+    email?: string | undefined
   }
   profile: Profile | null
   avatar_signed_url: string | null

@@ -28,10 +28,10 @@ export interface ValidationResult {
 export interface QuotaCheckResult {
   canUpload: boolean
   reason: string
-  role?: string
-  quotas?: Record<string, any>
-  stats?: Record<string, any>
-  error?: string
+  role?: string | undefined
+  quotas?: Record<string, any> | undefined
+  stats?: Record<string, any> | undefined
+  error?: string | undefined
 }
 
 export interface UploadResult {

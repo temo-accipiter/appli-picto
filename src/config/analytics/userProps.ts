@@ -46,7 +46,7 @@ async function getSessionUser(): Promise<User | null> {
 
 interface PlanInfo {
   status: string
-  plan?: string
+  plan?: string | undefined
 }
 
 async function getUserPlan(userId: string): Promise<PlanInfo | null> {
