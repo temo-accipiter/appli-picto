@@ -9,12 +9,12 @@ export const PermissionsDebug = () => {
     role,
     can: _can,
     loading,
-    subscription: _subscription,
+    // subscription, // Not available in PermissionsContextValue
     isVisitor: _isVisitor,
-    isSubscriber: _isSubscriber,
+    // isSubscriber, // Not available in PermissionsContextValue
     isAdmin,
-    permissions,
-    features,
+    // permissions, // Not available in PermissionsContextValue
+    // features, // Not available in PermissionsContextValue
   } = usePermissions()
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -22,25 +22,10 @@ export const PermissionsDebug = () => {
 
   // Créer une structure de données pour l'affichage avec mémoïsation
   const featurePermissions = useMemo(() => {
-    if (!features || !permissions) return []
-
-    return features.map(feature => {
-      const featurePerms = permissions.filter(p => p.feature_id === feature.id)
-      const featurePermissionsMap = {}
-
-      featurePerms.forEach(perm => {
-        const roleName = perm.role_name || 'unknown'
-        featurePermissionsMap[roleName] = perm.can_access
-      })
-
-      return {
-        name: feature.name,
-        display_name: feature.display_name,
-        description: feature.description,
-        permissions: featurePermissionsMap,
-      }
-    })
-  }, [features, permissions])
+    // Features and permissions not available in current context
+    return []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Filtrer les features par recherche avec debounce et mémoïsation
   const filteredFeatures = useMemo(() => {
