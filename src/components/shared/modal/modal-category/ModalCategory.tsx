@@ -68,7 +68,6 @@ export default function ModalCategory({
 
     const hasError = validationRules.some(rule => rule(newCategory))
     if (hasError) {
-      inputRef.current?.blur()
       return
     }
 
@@ -79,8 +78,8 @@ export default function ModalCategory({
     }
   }
 
-  const handleDelete = (value: string) => {
-    onDeleteCategory(value) // Envoie le 'value' (slug) pas l'id
+  const handleDelete = (value: string | number) => {
+    onDeleteCategory(value)
   }
 
   useEffect(() => {
@@ -101,7 +100,7 @@ export default function ModalCategory({
           <AnimatePresence>
             {visibleCats.map(cat => (
               <motion.li
-                key={cat.id} // ✅ utilise l'id
+                key={cat.value}
                 className="category-list__item"
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}

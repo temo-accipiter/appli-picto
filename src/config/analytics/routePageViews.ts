@@ -127,9 +127,9 @@ function patchFetchForCheckout(): void {
             priceId = j.priceId || j.price_id || j.price
           } else if (init?.body instanceof FormData) {
             priceId =
-              init.body.get('priceId') ||
-              init.body.get('price_id') ||
-              init.body.get('price') ||
+              (init.body.get('priceId') as string | null) ||
+              (init.body.get('price_id') as string | null) ||
+              (init.body.get('price') as string | null) ||
               undefined
           }
         } catch {
@@ -153,13 +153,11 @@ function patchFetchForCheckout(): void {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent {
-  detail?: {
-    choices?: {
-      analytics?: boolean
-    }
+interface ConsentChangedEvent extends CustomEvent<{
+  choices?: {
+    analytics?: boolean
   }
-}
+}> {}
 
 function boot(): void {
   patchHistory()

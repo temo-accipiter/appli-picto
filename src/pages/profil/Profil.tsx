@@ -97,6 +97,7 @@ export default function Profil() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!user) return
 
     if (import.meta.env.DEV) {
       console.log('🔍 handleSave - Début sauvegarde profil', {
@@ -237,6 +238,7 @@ export default function Profil() {
   }
 
   const handleAvatarDelete = async () => {
+    if (!user) return
     const avatarPath = user.user_metadata?.avatar
     if (!avatarPath) return
     const { error: deleteError } = await supabase.storage
@@ -259,6 +261,7 @@ export default function Profil() {
   }
 
   const resetPassword = async () => {
+    if (!user) return
     try {
       if (!captchaTokenReset) {
         showToast(t('profil.validateCaptcha'), 'error')

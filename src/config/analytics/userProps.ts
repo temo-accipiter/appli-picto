@@ -58,7 +58,7 @@ async function getUserPlan(userId: string): Promise<PlanInfo | null> {
     .maybeSingle()
   if (error) return null
   const status = data?.status || 'free'
-  const plan = data?.plan || priceIdToPlanName(data?.price_id)
+  const plan = data?.plan || priceIdToPlanName(data?.price_id ?? undefined)
   return { status, plan }
 }
 
@@ -104,13 +104,11 @@ export async function refreshGAUserProperties(): Promise<boolean> {
   }
 }
 
-interface ConsentChangedEvent extends CustomEvent {
-  detail?: {
-    choices?: {
-      analytics?: boolean
-    }
+interface ConsentChangedEvent extends CustomEvent<{
+  choices?: {
+    analytics?: boolean
   }
-}
+}> {}
 
 function boot(): void {
   // Consentement obtenu → pousse les user_properties
