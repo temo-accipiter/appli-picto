@@ -148,8 +148,8 @@ export default function ItemForm({
         </div>
       )}
 
-      <ImagePreview url={previewUrl} alt={t('quota.images')} size="lg" />
-      <Button ref={confirmRef} type="submit" label={t('actions.add')} />
+      <ImagePreview url={previewUrl || ''} alt={t('quota.images')} size="lg" />
+      <Button type="submit" label={t('actions.add')} />
     </form>
   )
 }

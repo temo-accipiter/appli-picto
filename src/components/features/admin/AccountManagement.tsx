@@ -83,17 +83,18 @@ export default function AccountManagement({
         // Traiter les données pour avoir un format plus simple
         const processedUsers: User[] = (data || []).map(
           (user: Record<string, unknown>) => {
-            const activeRole = Array.isArray(user.user_roles)
-              ? user.user_roles.find((ur: UserRole) => ur.is_active)
-              : undefined
+            const userRoles = Array.isArray(user.user_roles)
+              ? (user.user_roles as UserRole[])
+              : []
+            const activeRole = userRoles.find((ur) => ur.is_active)
             return {
-              id: user.id,
-              pseudo: user.pseudo,
+              id: user.id as string,
+              pseudo: user.pseudo as string | null,
               email: '', // profiles n'a pas de champ email
-              created_at: user.created_at,
+              created_at: user.created_at as string,
               account_status: user.account_status as AccountStatus,
-              avatar_url: user.avatar_url,
-              user_roles: user.user_roles,
+              avatar_url: user.avatar_url as string | null,
+              user_roles: userRoles,
               role: activeRole?.roles?.name || 'visitor',
               roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
             }
@@ -165,17 +166,18 @@ export default function AccountManagement({
 
       const processedUsers: User[] = (data || []).map(
         (user: Record<string, unknown>) => {
-          const activeRole = Array.isArray(user.user_roles)
-            ? user.user_roles.find((ur: UserRole) => ur.is_active)
-            : undefined
+          const userRoles = Array.isArray(user.user_roles)
+            ? (user.user_roles as UserRole[])
+            : []
+          const activeRole = userRoles.find((ur) => ur.is_active)
           return {
-            id: user.id,
-            pseudo: user.pseudo,
+            id: user.id as string,
+            pseudo: user.pseudo as string | null,
             email: '',
-            created_at: user.created_at,
+            created_at: user.created_at as string,
             account_status: user.account_status as AccountStatus,
-            avatar_url: user.avatar_url,
-            user_roles: user.user_roles,
+            avatar_url: user.avatar_url as string | null,
+            user_roles: userRoles,
             role: activeRole?.roles?.name || 'visitor',
             roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
           }
