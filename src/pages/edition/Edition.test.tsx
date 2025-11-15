@@ -220,15 +220,15 @@ describe('Edition - Test intégration', () => {
     const confettisCheckbox = screen
       .getByText(/Confettis/)
       .closest('.confettis-checkbox')
-      .querySelector('input[type="checkbox"]')
+      ?.querySelector('input[type="checkbox"]') as HTMLInputElement | null
 
     // Toggle les confettis
-    const initialChecked = confettisCheckbox.checked
-    await user.click(confettisCheckbox)
+    const initialChecked = confettisCheckbox?.checked
+    if (confettisCheckbox) await user.click(confettisCheckbox)
 
     // Attendre que l'état change
     await waitFor(() => {
-      expect(confettisCheckbox.checked).toBe(!initialChecked)
+      expect(confettisCheckbox?.checked).toBe(!initialChecked)
     })
   })
 

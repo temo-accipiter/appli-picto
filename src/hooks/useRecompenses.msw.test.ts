@@ -288,7 +288,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
           async ({ request }) => {
             const body = await request.json()
             return HttpResponse.json(
-              [{ ...mockRecompenses[0], label: body.label }],
+              [{ ...mockRecompenses[0], label: (body as any)?.label }],
               { status: 200 }
             )
           }

@@ -51,7 +51,7 @@ describe('useTaches (avec MSW)', () => {
     await waitFor(
       () => {
         expect(result.current.taches).toHaveLength(3)
-        expect(result.current.taches[0].label).toBe('Brosser les dents')
+        expect(result.current.taches[0]?.label).toBe('Brosser les dents')
       },
       { timeout: 3000 }
     )
@@ -142,8 +142,8 @@ describe('useTaches (avec MSW)', () => {
 
     // Assert
     await waitFor(() => {
-      expect(result.current.taches[0].fait).toBe(true) // 1 → true
-      expect(result.current.taches[0].aujourdhui).toBe(false) // 0 → false
+      expect(result.current.taches[0]?.fait).toBe(true) // 1 → true
+      expect(result.current.taches[0]?.aujourdhui).toBe(false) // 0 → false
     })
   })
 })

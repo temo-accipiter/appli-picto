@@ -373,7 +373,7 @@ describe('useSubscriptionStatus', () => {
 
     it('doit gérer le cas où user=null', async () => {
       // Arrange
-      mockAuthContext.user = null
+      ;(mockAuthContext as any).user = null
       mockAuthContext.authReady = true
 
       mockSupabase.from.mockReturnValue({
