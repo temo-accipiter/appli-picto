@@ -70,6 +70,7 @@ interface UserProperties {
 
 async function setUserProperties(props: UserProperties): Promise<void> {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
   window.gtag('set', 'user_properties', props)
 }
 

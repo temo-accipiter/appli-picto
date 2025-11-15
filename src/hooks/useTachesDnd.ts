@@ -2,7 +2,13 @@ import { isAbortLike, useAuth, useToast, useI18n, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 
-// Sérialise proprement les erreurs (évite les soucis d’inspecteur Safari)
+interface Tache {
+  id: string | number
+  fait: boolean | number
+  [key: string]: unknown
+}
+
+// Sérialise proprement les erreurs (évite les soucis d'inspecteur Safari)
 const formatErr = e => {
   const m = String(e?.message ?? e)
   const parts = [
@@ -15,8 +21,8 @@ const formatErr = e => {
 }
 
 export default function useTachesDnd(onChange, reload = 0) {
-  const [taches, setTaches] = useState([])
-  const [doneMap, setDone] = useState({})
+  const [taches, setTaches] = useState<Tache[]>([])
+  const [doneMap, setDone] = useState<Record<string | number, boolean>>({})
   const { user } = useAuth()
   const { show } = useToast()
   const { t } = useI18n()
@@ -122,6 +128,8 @@ export default function useTachesDnd(onChange, reload = 0) {
   }, [loadTaches, reload])
 
   const toggleDone = async (id, newDone) => {
+    if (!user?.id) return
+
     try {
       const { error, aborted } = await withAbortSafe(
         supabase
@@ -167,6 +175,8 @@ export default function useTachesDnd(onChange, reload = 0) {
   }
 
   const resetAll = async () => {
+    if (!user?.id) return
+
     try {
       const { error, aborted } = await withAbortSafe(
         supabase
@@ -221,6 +231,8 @@ export default function useTachesDnd(onChange, reload = 0) {
   }
 
   const saveOrder = async list => {
+    if (!user?.id) return
+
     try {
       // Mettre à jour l'état local immédiatement pour une UI fluide
       setTaches(list)

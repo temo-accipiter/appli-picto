@@ -83,9 +83,9 @@ export default function AccountManagement({
         // Traiter les données pour avoir un format plus simple
         const processedUsers: User[] = (data || []).map(
           (user: Record<string, unknown>) => {
-            const activeRole = user.user_roles.find(
-              (ur: UserRole) => ur.is_active
-            )
+            const activeRole = Array.isArray(user.user_roles)
+              ? user.user_roles.find((ur: UserRole) => ur.is_active)
+              : undefined
             return {
               id: user.id,
               pseudo: user.pseudo,
@@ -165,9 +165,9 @@ export default function AccountManagement({
 
       const processedUsers: User[] = (data || []).map(
         (user: Record<string, unknown>) => {
-          const activeRole = user.user_roles.find(
-            (ur: UserRole) => ur.is_active
-          )
+          const activeRole = Array.isArray(user.user_roles)
+            ? user.user_roles.find((ur: UserRole) => ur.is_active)
+            : undefined
           return {
             id: user.id,
             pseudo: user.pseudo,

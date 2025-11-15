@@ -38,7 +38,7 @@ export default function useStations(
         .order('ordre', { ascending: true })
 
       if (err) {
-        setError(err as Error)
+        setError(err as unknown as Error)
         setStations([])
       } else {
         // Mélange optimisé : seulement la première station aléatoire

@@ -4,6 +4,11 @@ import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import useAuth from './useAuth'
 
+interface ProfileData {
+  account_status: string
+  deletion_scheduled_at: string | null
+}
+
 /**
  * Hook pour gérer les états de compte utilisateur
  * Gère les états : active, suspended, deletion_scheduled, pending_verification
@@ -52,12 +57,13 @@ export default function useAccountStatus() {
         return
       }
 
-      const status = data?.account_status || 'active'
+      const profileData = data as ProfileData | null
+      const status = profileData?.account_status || 'active'
       setAccountStatus(status)
       setIsSuspended(status === 'suspended')
       setIsPendingVerification(status === 'pending_verification')
       setIsScheduledForDeletion(status === 'deletion_scheduled')
-      setDeletionDate(data?.deletion_scheduled_at || null)
+      setDeletionDate(profileData?.deletion_scheduled_at || null)
       setLoading(false)
     } catch (err) {
       console.error('useAccountStatus: erreur inattendue', err)

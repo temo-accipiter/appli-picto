@@ -76,10 +76,10 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
     try {
       const supabaseUrl =
-        (supabaseClient as SupabaseClientInternal).supabaseUrl ||
+        (supabaseClient as unknown as SupabaseClientInternal).supabaseUrl ||
         import.meta.env.VITE_SUPABASE_URL
       const supabaseKey =
-        (supabaseClient as SupabaseClientInternal).supabaseKey ||
+        (supabaseClient as unknown as SupabaseClientInternal).supabaseKey ||
         import.meta.env.VITE_SUPABASE_ANON_KEY
 
       const controller = new AbortController()

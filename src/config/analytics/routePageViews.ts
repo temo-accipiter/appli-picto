@@ -28,6 +28,8 @@ const isReady = (): boolean =>
 
 function sendPageView(): void {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
+
   const href = location.href
   if (href === lastHref) return
   lastHref = href
@@ -41,6 +43,8 @@ function sendPageView(): void {
 
 function sendAutoEvents(): void {
   if (!isReady()) return
+  if (typeof window.gtag !== 'function') return
+
   const href = location.href
   if (sentForHref.has(href)) return
   const path = location.pathname
@@ -113,7 +117,8 @@ function patchFetchForCheckout(): void {
         method === 'POST' &&
         /create-checkout-session/i.test(url) &&
         res?.ok &&
-        isReady()
+        isReady() &&
+        typeof window.gtag === 'function'
       ) {
         let priceId: string | undefined
         try {
