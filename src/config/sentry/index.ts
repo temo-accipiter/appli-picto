@@ -149,8 +149,8 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
       beforeSend(event, hint) {
         // Filtrer les données sensibles
         if (event.request) {
-          event.request.headers = sanitizeData(event.request.headers)
-          event.request.cookies = '[Filtered]'
+          event.request.headers = sanitizeData(event.request.headers) as { [key: string]: string }
+          event.request.cookies = {} as Record<string, string>
 
           // Nettoyer les query params sensibles
           if (event.request.url) {
@@ -175,12 +175,12 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
 
         // Nettoyer les contextes
         if (event.contexts) {
-          event.contexts = sanitizeData(event.contexts)
+          event.contexts = sanitizeData(event.contexts) as Sentry.Contexts
         }
 
         // Nettoyer les extras
         if (event.extra) {
-          event.extra = sanitizeData(event.extra)
+          event.extra = sanitizeData(event.extra) as Sentry.Extras
         }
 
         // Ignorer les erreurs non critiques
@@ -284,7 +284,7 @@ export const captureError = (
 ): void => {
   if (context) {
     Sentry.captureException(error, {
-      extra: sanitizeData(context),
+      extra: sanitizeData(context) as Sentry.Extras,
     })
   } else {
     Sentry.captureException(error)

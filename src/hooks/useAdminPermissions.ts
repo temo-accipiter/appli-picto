@@ -22,10 +22,10 @@ import {
  */
 export function useAdminPermissions() {
   const [loading, setLoading] = useState(false)
-  const [roles, setRoles] = useState([])
-  const [features, setFeatures] = useState([])
-  const [permissions, setPermissions] = useState([])
-  const [error, setError] = useState(null)
+  const [roles, setRoles] = useState<any[]>([])
+  const [features, setFeatures] = useState<any[]>([])
+  const [permissions, setPermissions] = useState<any[]>([])
+  const [error, setError] = useState<any>(null)
 
   /**
    * Charge toutes les données: rôles, fonctionnalités et permissions

@@ -33,7 +33,7 @@ const getInitialLanguage = (): SupportedLanguage => {
   }
 
   // 2. Détecter la langue du navigateur
-  const browserLang = navigator.language.split('-')[0]
+  const browserLang = navigator.language.split('-')[0] || 'fr'
   if (['fr', 'en'].includes(browserLang)) {
     return browserLang as SupportedLanguage
   }
