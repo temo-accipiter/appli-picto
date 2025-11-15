@@ -66,10 +66,10 @@ const BaseCard = memo(function BaseCard({
         {imageComponent ? (
           imageComponent
         ) : (
-          <ImagePreview url={image} size="sm" />
+          <ImagePreview url={image || ''} size="sm" />
         )}
         <div className="base-card__actions">
-          <ButtonDelete onClick={onDelete} />
+          <ButtonDelete onClick={onDelete || (() => {})} />
 
           <Checkbox
             id={`base-checkbox-${labelId}`}
