@@ -1,13 +1,21 @@
 import { supabase } from '@/utils/supabaseClient'
 import { useState } from 'react'
 
+interface TestResults {
+  connection?: string
+  auth?: string
+  tables?: string
+  storage?: string
+  general?: string
+}
+
 export default function SupabaseTestSimple() {
-  const [testResults, setTestResults] = useState({})
+  const [testResults, setTestResults] = useState<TestResults>({})
   const [loading, setLoading] = useState(false)
 
   const runBasicTests = async () => {
     setLoading(true)
-    const results = {}
+    const results: TestResults = {}
 
     try {
       // Test 1: Connexion de base
@@ -43,7 +51,7 @@ export default function SupabaseTestSimple() {
         results.storage = `✅ Service de storage fonctionnel (Buckets: ${buckets.map(b => b.name).join(', ')})`
       }
     } catch (error) {
-      results.general = `❌ Erreur générale: ${error.message}`
+      results.general = `❌ Erreur générale: ${(error as any)?.message || 'Erreur inconnue'}`
     }
 
     setTestResults(results)
@@ -95,7 +103,7 @@ export default function SupabaseTestSimple() {
               <strong style={{ fontSize: '12px', textTransform: 'uppercase' }}>
                 {test}:
               </strong>
-              <span style={{ marginLeft: '8px' }}>{result}</span>
+              <span style={{ marginLeft: '8px' }}>{String(result)}</span>
             </div>
           ))}
         </div>

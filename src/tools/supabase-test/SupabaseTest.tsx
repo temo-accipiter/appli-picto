@@ -1,13 +1,22 @@
 import { supabase } from '@/utils/supabaseClient'
 import { useState } from 'react'
 
+interface TestResults {
+  connection?: string
+  tables?: string
+  auth?: string
+  storage?: string
+  functions?: string
+  general?: string
+}
+
 export default function SupabaseTest() {
-  const [testResults, setTestResults] = useState({})
+  const [testResults, setTestResults] = useState<TestResults>({})
   const [loading, setLoading] = useState(false)
 
   const runTests = async () => {
     setLoading(true)
-    const results = {}
+    const results: TestResults = {}
 
     try {
       // Test 1: Connexion de base
@@ -59,7 +68,7 @@ export default function SupabaseTest() {
           '⚠️ Fonctions Edge non testées (fonction test-connection inexistante)'
       }
     } catch (error) {
-      results.general = `❌ Erreur générale: ${error.message}`
+      results.general = `❌ Erreur générale: ${(error as any)?.message || 'Erreur inconnue'}`
     }
 
     setTestResults(results)
@@ -106,7 +115,7 @@ export default function SupabaseTest() {
                 borderRadius: '4px',
               }}
             >
-              <strong>{test}:</strong> {result}
+              <strong>{test}:</strong> {String(result)}
             </div>
           ))}
         </div>

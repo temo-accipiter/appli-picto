@@ -4,6 +4,13 @@ import { useState, useMemo } from 'react'
 import { useDebounce } from '@/hooks'
 import './PermissionsDebug.scss'
 
+interface FeaturePermission {
+  name: string
+  display_name: string
+  description?: string
+  permissions: Record<string, boolean>
+}
+
 export const PermissionsDebug = () => {
   const {
     role,
@@ -21,7 +28,7 @@ export const PermissionsDebug = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
   // Créer une structure de données pour l'affichage avec mémoïsation
-  const featurePermissions = useMemo(() => {
+  const featurePermissions = useMemo<FeaturePermission[]>(() => {
     // Features and permissions not available in current context
     return []
     // eslint-disable-next-line react-hooks/exhaustive-deps

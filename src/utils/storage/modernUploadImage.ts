@@ -522,10 +522,10 @@ export async function replaceImage(
 
     const uploadResult = await modernUploadImage(newFile, {
       userId,
-      assetType: existingAsset.asset_type,
+      assetType: existingAsset.asset_type as AssetType,
       prefix:
         existingAsset.asset_type === 'task_image' ? 'taches' : 'recompenses',
-      onProgress,
+      ...(onProgress && { onProgress }),
     })
 
     if (uploadResult.error) {

@@ -49,7 +49,7 @@ const clientConfig = {
     // Timeout réduit pour détecter problèmes plus vite
     fetch: async (
       input: string | URL | Request,
-      options?: Record<string, unknown>
+      options?: RequestInit
     ) => {
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 5000) // 5s max
