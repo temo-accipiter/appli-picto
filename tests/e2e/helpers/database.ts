@@ -119,7 +119,9 @@ export async function createTestUser(options: {
 
 // Implementation
 export async function createTestUser(
-  emailOrOptions: string | { role?: 'free' | 'abonne' | 'admin'; email?: string; password?: string },
+  emailOrOptions:
+    | string
+    | { role?: 'free' | 'abonne' | 'admin'; email?: string; password?: string },
   password?: string,
   role: 'free' | 'abonne' | 'admin' = 'free'
 ): Promise<string | { email: string; password: string; userId: string }> {

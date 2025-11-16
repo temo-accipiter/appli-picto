@@ -21,9 +21,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <LoadingProvider>
               <ToastProvider>
                 <InitializationLoader>
-                  <Suspense fallback={<Loader />}>
-                    {children}
-                  </Suspense>
+                  <Suspense fallback={<Loader />}>{children}</Suspense>
                 </InitializationLoader>
               </ToastProvider>
             </LoadingProvider>

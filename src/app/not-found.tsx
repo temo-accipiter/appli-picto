@@ -1,21 +1,22 @@
 import Link from 'next/link'
 
-
 // Force dynamic rendering (no prerendering) due to client-only dependencies in global providers
 export const dynamic = 'force-dynamic'
 
 export default function NotFound() {
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      fontFamily: 'system-ui, sans-serif',
-      padding: '2rem',
-      textAlign: 'center',
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        fontFamily: 'system-ui, sans-serif',
+        padding: '2rem',
+        textAlign: 'center',
+      }}
+    >
       <h1 style={{ fontSize: '4rem', marginBottom: '1rem', color: '#5A9FB8' }}>
         404
       </h1>

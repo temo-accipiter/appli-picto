@@ -32,7 +32,9 @@ export default function LegalMarkdown({ title, content }: LegalMarkdownProps) {
   }
 
   // Parse markdown de manière synchrone
-  const htmlContent = marked.parse(processedContent || '', { async: false }) as string
+  const htmlContent = marked.parse(processedContent || '', {
+    async: false,
+  }) as string
 
   return (
     <article className="legal-content">

@@ -3,10 +3,10 @@ import PolitiqueConfidentialite from '@/page-components/legal/PolitiqueConfident
 // Force dynamic rendering due to client-only dependencies
 export const dynamic = 'force-dynamic'
 
-
 export const metadata = {
   title: 'Politique de Confidentialité - Appli-Picto',
-  description: 'Politique de confidentialité et protection des données personnelles',
+  description:
+    'Politique de confidentialité et protection des données personnelles',
 }
 
 export default function PolitiqueConfidentialitePage() {

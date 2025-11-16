@@ -196,4 +196,3 @@ vi.mock('next/link', () => ({
     return children
   },
 }))
-

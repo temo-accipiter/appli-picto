@@ -62,6 +62,7 @@ vite.config.ts           # Vite bundler
 ```
 
 **Technologies:**
+
 - React 19 + React Router 7
 - Vite 6 (bundler)
 - @sentry/react
@@ -100,11 +101,12 @@ next.config.js           # Next.js config
 ```
 
 **Technologies:**
+
 - Next.js 16.0.3 + App Router
 - Turbopack (bundler)
 - @sentry/nextjs
 - @ducanh2912/next-pwa
-- process.env.NEXT_PUBLIC_* (env vars)
+- process.env.NEXT*PUBLIC*\* (env vars)
 
 ---
 
@@ -120,7 +122,7 @@ next.config.js           # Next.js config
 - ✅ Installation Next.js 16.0.3
 - ✅ Configuration `next.config.js`
   - SCSS support
-  - Env vars mapping (VITE_* → NEXT_PUBLIC_*)
+  - Env vars mapping (VITE*\* → NEXT_PUBLIC*\*)
   - Security headers
   - Image optimization (Supabase Storage)
   - Turbopack config
@@ -238,18 +240,21 @@ next.config.js           # Next.js config
 ### Environment Variables
 
 **Avant (Vite):**
+
 ```typescript
 import.meta.env.VITE_SUPABASE_URL
 import.meta.env.DEV
 ```
 
 **Après (Next.js):**
+
 ```typescript
 process.env.NEXT_PUBLIC_SUPABASE_URL
 process.env.NODE_ENV === 'development'
 ```
 
 **Mapping automatique** dans `next.config.js`:
+
 ```javascript
 env: {
   NEXT_PUBLIC_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
@@ -261,6 +266,7 @@ env: {
 ### Routing
 
 **Avant (React Router):**
+
 ```tsx
 import { useNavigate, Link, Navigate } from 'react-router-dom'
 
@@ -273,6 +279,7 @@ if (user) return <Navigate to="/tableau" replace />
 ```
 
 **Après (Next.js):**
+
 ```tsx
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -291,12 +298,14 @@ if (user) {
 ### SSR Safety
 
 **Avant:**
+
 ```typescript
 // ❌ Erreur SSR: window is not defined
 const savedLang = localStorage.getItem('lang')
 ```
 
 **Après:**
+
 ```typescript
 // ✅ SSR-safe
 if (typeof window !== 'undefined') {
@@ -401,11 +410,13 @@ export default function MyPageRoute() {
 ### Ajouter une variable d'environnement
 
 **1. Ajouter dans `.env`:**
+
 ```
 VITE_MY_NEW_VAR=value
 ```
 
 **2. Mapper dans `next.config.js`:**
+
 ```javascript
 env: {
   NEXT_PUBLIC_MY_NEW_VAR: process.env.VITE_MY_NEW_VAR,
@@ -413,6 +424,7 @@ env: {
 ```
 
 **3. Utiliser dans le code:**
+
 ```typescript
 const myVar = process.env.NEXT_PUBLIC_MY_NEW_VAR
 ```
@@ -420,16 +432,19 @@ const myVar = process.env.NEXT_PUBLIC_MY_NEW_VAR
 ### Debugging
 
 **Server logs:**
+
 ```bash
 pnpm dev
 # Logs apparaissent dans le terminal
 ```
 
 **Client logs:**
+
 - Ouvrir DevTools navigateur (F12)
 - Console tab
 
 **Next.js Info:**
+
 - Page errors: DevTools Console
 - Build errors: Terminal
 - Route info: Build output
@@ -443,6 +458,7 @@ pnpm dev
 **Cause:** Code s'exécute côté serveur (SSR)
 
 **Solution:**
+
 ```typescript
 if (typeof window !== 'undefined') {
   // Code utilisant window, localStorage, etc.
@@ -466,6 +482,7 @@ if (typeof window !== 'undefined') {
 ### Middleware ne protège pas les routes
 
 **Vérifier:**
+
 1. Cookies Supabase présents dans le navigateur
 2. Pattern `matcher` correct dans `middleware.ts`
 3. Cookies names (format: `sb-*-auth-token`)
@@ -473,6 +490,7 @@ if (typeof window !== 'undefined') {
 ### Images Supabase ne s'affichent pas
 
 **Vérifier:**
+
 1. `next.config.js` → `images.remotePatterns` contient Supabase hostname
 2. Signed URLs valides (pas expirées)
 3. RLS policies Supabase correctes
@@ -490,11 +508,13 @@ if (typeof window !== 'undefined') {
 **Objectif:** Identifier les Server Components potentiels
 
 **Avantage:**
+
 - Réduction bundle size
 - Amélioration SEO
 - Hydration plus rapide
 
 **Comment:**
+
 ```bash
 # Trouver composants sans hooks React
 grep -L "useState\|useEffect\|useContext" src/components/**/*.tsx
@@ -503,16 +523,19 @@ grep -L "useState\|useEffect\|useContext" src/components/**/*.tsx
 #### 2. **Static Site Generation (SSG)** (Impact: Élevé, Effort: Faible)
 
 **Pages candidates:**
+
 - Toutes les pages `/legal/*` (contenu statique)
 - `/time-timer` (outil statique)
 
 **Implémentation:**
+
 ```tsx
 // src/app/(public)/legal/mentions-legales/page.tsx
 export const dynamic = 'force-static' // ou 'error'
 ```
 
 **Avantage:**
+
 - Pages servies instantanément (CDN)
 - Pas de SSR cost
 - Meilleur SEO
@@ -522,19 +545,21 @@ export const dynamic = 'force-static' // ou 'error'
 **Actuellement:** Balises `<img>` classiques
 
 **Objectif:** Utiliser `next/image` pour:
+
 - Images statiques (`public/`)
 - Avatars
 
 **Avantage:**
+
 - Lazy loading automatique
 - Optimisation formats (WebP, AVIF)
 - Responsive images
 
 **Exemple:**
+
 ```tsx
 import Image from 'next/image'
-
-<Image
+;<Image
   src="/images/logo.png"
   alt="Logo"
   width={200}
@@ -548,11 +573,13 @@ import Image from 'next/image'
 **Actuellement:** Tout via Supabase Edge Functions
 
 **Opportunité:** Créer des API routes Next.js pour:
+
 - Agrégation de données
 - Caching côté serveur
 - BFF (Backend For Frontend)
 
 **Exemple:**
+
 ```typescript
 // src/app/api/stats/route.ts
 export async function GET() {
@@ -564,9 +591,11 @@ export async function GET() {
 #### 5. **Incremental Static Regeneration (ISR)** (Impact: Moyen, Effort: Faible)
 
 **Pages candidates:**
+
 - `/tableau` (régénérer toutes les 5 min)
 
 **Implémentation:**
+
 ```tsx
 export const revalidate = 300 // 5 minutes
 ```
@@ -574,11 +603,13 @@ export const revalidate = 300 // 5 minutes
 #### 6. **Bundle Analysis** (Impact: Élevé, Effort: Faible)
 
 **Installer:**
+
 ```bash
 pnpm add -D @next/bundle-analyzer
 ```
 
 **Configurer:**
+
 ```javascript
 // next.config.js
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -589,6 +620,7 @@ module.exports = withBundleAnalyzer(nextConfig)
 ```
 
 **Analyser:**
+
 ```bash
 ANALYZE=true pnpm build
 ```
@@ -598,11 +630,13 @@ ANALYZE=true pnpm build
 **Objectif:** Progressivement migrer vers RSC
 
 **Bénéfices:**
+
 - Zero bundle JavaScript pour composants serveur
 - Data fetching côté serveur (pas de waterfall)
 - Meilleure sécurité (secrets côté serveur)
 
 **Stratégie:**
+
 1. Identifier composants sans état local
 2. Migrer fetching data vers Server Components
 3. Utiliser `use server` pour Server Actions

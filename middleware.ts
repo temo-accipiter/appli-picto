@@ -17,11 +17,15 @@ export function middleware(request: NextRequest) {
 
   // Alternative: chercher dans les cookies avec le pattern sb-*-auth-token
   const allCookies = request.cookies.getAll()
-  const hasSupabaseAuth = allCookies.some(cookie =>
-    cookie.name.includes('sb-') && cookie.name.includes('auth-token')
+  const hasSupabaseAuth = allCookies.some(
+    cookie => cookie.name.includes('sb-') && cookie.name.includes('auth-token')
   )
 
-  const isAuthenticated = !!(supabaseAuthToken || supabaseRefreshToken || hasSupabaseAuth)
+  const isAuthenticated = !!(
+    supabaseAuthToken ||
+    supabaseRefreshToken ||
+    hasSupabaseAuth
+  )
 
   // Si non authentifié, rediriger vers /login
   if (!isAuthenticated) {

@@ -30,6 +30,7 @@
 ### Router Choice: **App Router** ✅
 
 **Justification:**
+
 - RSC (React Server Components) → meilleures perfs
 - Streaming SSR → meilleur UX
 - Layouts imbriqués → moins de duplication
@@ -87,6 +88,7 @@ appli-picto/
 ### **PHASE 1: SETUP NEXT.JS (2-3h)**
 
 #### Objectifs
+
 - ✅ Installer Next.js 16.0.3 en parallèle de Vite
 - ✅ Configurer Next.js (SCSS, aliases, env vars)
 - ✅ Créer structure App Router de base
@@ -185,12 +187,7 @@ module.exports = nextConfig
       "@styles/*": ["./src/styles/*"]
     }
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }
 ```
@@ -232,14 +229,15 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="preconnect" href="https://tklcztqoqvnialaqfcjm.supabase.co" />
+        <link
+          rel="preconnect"
+          href="https://tklcztqoqvnialaqfcjm.supabase.co"
+        />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#5A9FB8" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
       </head>
-      <body>
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   )
 }
@@ -259,7 +257,7 @@ export default function HomePage() {
 {
   "scripts": {
     "dev": "next dev",
-    "dev:vite": "vite",              // Conserver Vite temporairement
+    "dev:vite": "vite", // Conserver Vite temporairement
     "build": "next build",
     "build:vite": "vite build",
     "start": "next start",
@@ -291,6 +289,7 @@ git checkout .
 ### **PHASE 2: MIGRATION LAYOUT & PROVIDERS (3-4h)**
 
 #### Objectifs
+
 - ✅ Migrer providers (ordre strict)
 - ✅ Migrer ErrorBoundary
 - ✅ Migrer Layout component
@@ -325,9 +324,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <LoadingProvider>
               <ToastProvider>
                 <InitializationLoader>
-                  <Suspense fallback={<Loader />}>
-                    {children}
-                  </Suspense>
+                  <Suspense fallback={<Loader />}>{children}</Suspense>
                 </InitializationLoader>
               </ToastProvider>
             </LoadingProvider>
@@ -365,12 +362,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="preconnect" href="https://tklcztqoqvnialaqfcjm.supabase.co" />
+        <link
+          rel="preconnect"
+          href="https://tklcztqoqvnialaqfcjm.supabase.co"
+        />
       </head>
       <body>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
@@ -388,6 +386,7 @@ Pour CHAQUE context dans `src/contexts/`:
 ```
 
 **Fichiers à modifier:**
+
 - `src/contexts/AuthContext.tsx`
 - `src/contexts/PermissionsContext.tsx`
 - `src/contexts/DisplayContext.tsx`
@@ -432,11 +431,7 @@ Utiliser dans pages:
 import { ClientLayout } from '@/components/shared/layout/ClientLayout'
 
 export default function SomePage() {
-  return (
-    <ClientLayout>
-      {/* contenu page */}
-    </ClientLayout>
-  )
+  return <ClientLayout>{/* contenu page */}</ClientLayout>
 }
 ```
 
@@ -463,6 +458,7 @@ git checkout app/
 ### **PHASE 3: MIGRATION PAGES STATIQUES (2h)**
 
 #### Objectifs
+
 - ✅ Migrer pages légales (markdown)
 - ✅ Migrer HomeRedirect
 - ✅ Test routing de base
@@ -540,6 +536,7 @@ Répéter structure pour chaque route.
 ### **PHASE 4: MIGRATION AUTHENTIFICATION (4-5h)**
 
 #### Objectifs
+
 - ✅ Migrer pages auth (login, signup, forgot-password, reset-password)
 - ✅ Créer middleware auth Next.js
 - ✅ Test auth flow complet (signup → confirm → login → protected route)
@@ -573,6 +570,7 @@ import { useRouter } from 'next/navigation' // Remplacer react-router-dom
 ```
 
 **Important:** Remplacer tous les imports:
+
 - `useNavigate()` → `useRouter().push()`
 - `useLocation()` → `usePathname()`, `useSearchParams()`
 - `<Link>` de react-router → `<Link>` de next/link
@@ -584,12 +582,7 @@ import { useRouter } from 'next/navigation' // Remplacer react-router-dom
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const protectedRoutes = [
-  '/profil',
-  '/edition',
-  '/abonnement',
-  '/admin',
-]
+const protectedRoutes = ['/profil', '/edition', '/abonnement', '/admin']
 
 const publicRoutes = [
   '/login',
@@ -679,12 +672,14 @@ useEffect(() => {
 **4.4 Adapter tous les composants auth**
 
 Pour chaque composant utilisant React Router:
+
 - `Login.tsx`
 - `Signup.tsx`
 - `ForgotPassword.tsx`
 - `ResetPassword.tsx`
 
 Remplacer:
+
 ```tsx
 // ❌ Avant
 import { useNavigate, useLocation, Link } from 'react-router-dom'
@@ -718,6 +713,7 @@ const searchParams = useSearchParams()
 ```
 
 **Test manuel:**
+
 1. Créer compte → email confirmation → login
 2. Tenter accès `/profil` sans auth → redirect `/login`
 3. Login → redirect vers `/profil`
@@ -729,11 +725,12 @@ const searchParams = useSearchParams()
 ### **PHASE 5: MIGRATION PAGES PROTÉGÉES (4-5h)**
 
 #### Objectifs
+
 - ✅ Migrer /profil
 - ✅ Migrer /edition
 - ✅ Migrer /tableau
 - ✅ Migrer /abonnement
-- ✅ Migrer /admin/*
+- ✅ Migrer /admin/\*
 - ✅ Test CRUD complet (tâches, récompenses)
 
 #### Actions détaillées
@@ -809,6 +806,7 @@ import Link from 'next/link'
 ```
 
 **Répéter pour:**
+
 - `app/(protected)/edition/page.tsx` → `<Edition />`
 - `app/(protected)/tableau/page.tsx` → `<Tableau />`
 - `app/(protected)/abonnement/page.tsx` → `<Abonnement />`
@@ -913,6 +911,7 @@ test.describe('CRUD complet', () => {
 ### **PHASE 6: MIGRATION I18N (3-4h)**
 
 #### Objectifs
+
 - ✅ Installer next-i18next
 - ✅ Configurer i18n routing
 - ✅ Migrer fichiers JSON
@@ -967,7 +966,7 @@ public/locales/en/common.json
 # → Garder la même structure (next-i18next compatible)
 ```
 
-**6.5 Créer _app.tsx avec appWithTranslation**
+**6.5 Créer \_app.tsx avec appWithTranslation**
 
 **app/layout.tsx:**
 
@@ -1002,9 +1001,16 @@ export default appWithTranslation(RootLayout)
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'
 import { Login } from '@/pages/login/Login'
 
-export async function generateMetadata({ params }: { params: { locale: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string }
+}) {
   return {
-    title: params.locale === 'fr' ? 'Connexion - Appli-Picto' : 'Login - Appli-Picto',
+    title:
+      params.locale === 'fr'
+        ? 'Connexion - Appli-Picto'
+        : 'Login - Appli-Picto',
   }
 }
 
@@ -1059,7 +1065,10 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <select value={i18n.language} onChange={(e) => changeLanguage(e.target.value)}>
+    <select
+      value={i18n.language}
+      onChange={e => changeLanguage(e.target.value)}
+    >
       <option value="fr">Français</option>
       <option value="en">English</option>
     </select>
@@ -1084,6 +1093,7 @@ export function LanguageSwitcher() {
 ### **PHASE 7: MIGRATION SERVICE WORKER (PWA) (4-5h)**
 
 #### Objectifs
+
 - ✅ Installer next-pwa
 - ✅ Configurer stratégie cache images Supabase
 - ✅ Migrer placeholder offline SVG
@@ -1115,7 +1125,8 @@ module.exports = withPWA({
   skipWaiting: true,
   runtimeCaching: [
     {
-      urlPattern: /^https:\/\/tklcztqoqvnialaqfcjm\.supabase\.co\/storage\/v1\/object\/public\/images\/.*/i,
+      urlPattern:
+        /^https:\/\/tklcztqoqvnialaqfcjm\.supabase\.co\/storage\/v1\/object\/public\/images\/.*/i,
       handler: 'CacheFirst',
       options: {
         cacheName: 'appli-picto-images-v1',
@@ -1161,7 +1172,7 @@ const PLACEHOLDER_SVG = `
 </svg>
 `
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   const { request } = event
   const url = new URL(request.url)
 
@@ -1171,7 +1182,7 @@ self.addEventListener('fetch', (event) => {
     url.pathname.includes('/storage/v1/object/public/images/')
   ) {
     event.respondWith(
-      caches.match(request).then((cachedResponse) => {
+      caches.match(request).then(cachedResponse => {
         if (cachedResponse) {
           return cachedResponse
         }
@@ -1233,6 +1244,7 @@ rm src/utils/serviceWorker/register.ts
 ### **PHASE 8: MIGRATION SENTRY & ANALYTICS (2-3h)**
 
 #### Objectifs
+
 - ✅ Migrer Sentry vers @sentry/nextjs
 - ✅ Configurer source maps upload
 - ✅ Migrer Google Analytics 4
@@ -1282,10 +1294,7 @@ Sentry.init({
   },
 
   // Ignore errors
-  ignoreErrors: [
-    'ResizeObserver loop',
-    'Non-Error promise rejection',
-  ],
+  ignoreErrors: ['ResizeObserver loop', 'Non-Error promise rejection'],
 })
 ```
 
@@ -1431,6 +1440,7 @@ function LayoutClient({ children }) {
 ### **PHASE 9: MIGRATION TESTS (3-4h)**
 
 #### Objectifs
+
 - ✅ Adapter tests Vitest pour Next.js
 - ✅ Adapter tests E2E Playwright
 - ✅ Vérifier coverage
@@ -1596,6 +1606,7 @@ export default defineConfig({
 ### **PHASE 10: OPTIMISATIONS & BUNDLE (2-3h)**
 
 #### Objectifs
+
 - ✅ Optimiser bundle size (< 1.6 MB)
 - ✅ Configurer next/image
 - ✅ Lazy loading optimisé
@@ -1659,8 +1670,7 @@ Remplacer `<img>` par `<Image>` Next.js:
 
 ```tsx
 import Image from 'next/image'
-
-<Image src="/favicon.png" alt="Logo" width={32} height={32} />
+;<Image src="/favicon.png" alt="Logo" width={32} height={32} />
 ```
 
 **Pour images Supabase (signed URLs):**
@@ -1725,6 +1735,7 @@ export default function TableauPage() {
 ### **PHASE 11: NETTOYAGE & DOCUMENTATION (2h)**
 
 #### Objectifs
+
 - ✅ Supprimer code Vite
 - ✅ Nettoyer dépendances
 - ✅ Mettre à jour CLAUDE.md
@@ -1749,7 +1760,7 @@ pnpm remove react-router-dom i18next-http-backend
 
 **11.3 Mettre à jour CLAUDE.md**
 
-```markdown
+````markdown
 ## Tech Stack
 
 - **Frontend**: React 19, **Next.js 16.0.3** (App Router), pnpm 9.15.0
@@ -1768,7 +1779,9 @@ pnpm build            # Build for production
 pnpm start            # Start production server
 pnpm preview          # Preview production build (pnpm start)
 ```
-```
+````
+
+````
 
 **11.4 Créer MIGRATION.md** (voir section 12)
 
@@ -1780,13 +1793,13 @@ pnpm preview          # Preview production build (pnpm start)
 ✅ CLAUDE.md à jour
 ✅ MIGRATION.md créé et complet
 ✅ README.md à jour (si existe)
-```
+````
 
 ---
 
 ## 📝 12. MIGRATION.md (DOCUMENTATION FINALE)
 
-```markdown
+````markdown
 # MIGRATION REACT+VITE → NEXT.JS 16.0.3
 
 **Date:** 2025-11-15
@@ -1800,27 +1813,32 @@ Migration complète de l'architecture React 19 + Vite vers Next.js 16.0.3 App Ro
 ## Changements majeurs
 
 ### Router
+
 - ❌ React Router v7 → ✅ Next.js App Router
 - ❌ Client-side routing → ✅ File-based routing + SSR
 - ❌ `useNavigate()` → ✅ `useRouter().push()`
 - ❌ `<Link to>` → ✅ `<Link href>`
 
 ### i18n
+
 - ❌ i18next-http-backend → ✅ next-i18next
 - ❌ Client-side detection → ✅ SSR + routing i18n
 - ✅ URLs: `/fr/login`, `/en/login`
 
 ### PWA
+
 - ❌ Service Worker manuel → ✅ @ducanh2912/next-pwa
 - ✅ Cache stratégies identiques
 - ✅ Offline mode preserved
 
 ### Analytics
+
 - ❌ @sentry/react → ✅ @sentry/nextjs
 - ✅ Google Analytics 4 preserved
 - ✅ Source maps upload automatique
 
 ### Build
+
 - ❌ Vite bundler → ✅ Webpack (Next.js)
 - ✅ Bundle size: 1.78 MB → 1.52 MB (-15%)
 - ✅ Build time: ~20s → ~25s
@@ -1830,39 +1848,43 @@ Migration complète de l'architecture React 19 + Vite vers Next.js 16.0.3 App Ro
 
 ### Lighthouse (avant/après)
 
-| Métrique | Vite | Next.js | Delta |
-|----------|------|---------|-------|
-| Performance | 88 | 94 | +6 |
-| Accessibility | 95 | 95 | 0 |
-| Best Practices | 92 | 95 | +3 |
-| SEO | 83 | 100 | +17 |
-| PWA | 90 | 95 | +5 |
+| Métrique       | Vite | Next.js | Delta |
+| -------------- | ---- | ------- | ----- |
+| Performance    | 88   | 94      | +6    |
+| Accessibility  | 95   | 95      | 0     |
+| Best Practices | 92   | 95      | +3    |
+| SEO            | 83   | 100     | +17   |
+| PWA            | 90   | 95      | +5    |
 
 ### Core Web Vitals
 
 | Métrique | Vite | Next.js | Delta |
-|----------|------|---------|-------|
-| FCP | 1.2s | 0.8s | -33% |
-| LCP | 2.1s | 1.4s | -33% |
-| TTI | 3.2s | 2.5s | -22% |
-| CLS | 0.05 | 0.02 | -60% |
+| -------- | ---- | ------- | ----- |
+| FCP      | 1.2s | 0.8s    | -33%  |
+| LCP      | 2.1s | 1.4s    | -33%  |
+| TTI      | 3.2s | 2.5s    | -22%  |
+| CLS      | 0.05 | 0.02    | -60%  |
 
 ## Breaking changes
 
 ### Pour les développeurs
 
 **Variables d'environnement:**
+
 - `import.meta.env.VITE_*` → `process.env.NEXT_PUBLIC_*`
 - `.env` → `.env.local` (convention Next.js)
 
 **Imports:**
+
 ```diff
 - import { useNavigate, useLocation, Link } from 'react-router-dom'
 + import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 + import Link from 'next/link'
 ```
+````
 
 **Client Components:**
+
 ```diff
   // src/contexts/AuthContext.tsx
 + 'use client'
@@ -1871,6 +1893,7 @@ Migration complète de l'architecture React 19 + Vite vers Next.js 16.0.3 App Ro
 ```
 
 **Routing:**
+
 ```diff
 - navigate('/profil')
 + router.push('/profil')
@@ -1916,29 +1939,32 @@ Le client Supabase est maintenant créé différemment selon l'environnement:
 ```tsx
 // Client-side
 const supabase = createClient(url, key, {
-  auth: { persistSession: true }
+  auth: { persistSession: true },
 })
 
 // Server-side
 const supabase = createClient(url, key, {
-  auth: { persistSession: false }
+  auth: { persistSession: false },
 })
 ```
 
 ### 3. i18n URLs
 
 Les URLs incluent maintenant la locale:
+
 - `/login` → `/fr/login` (auto-redirect)
 - Détection navigateur → locale par défaut
 
 ## Tests
 
 ### Avant migration
+
 - ✅ 329 tests Vitest (80% coverage)
 - ✅ 45 tests E2E Playwright
 - ✅ 0 tests flakey
 
 ### Après migration
+
 - ✅ 329 tests Vitest (82% coverage) ⬆️
 - ✅ 45 tests E2E Playwright
 - ✅ 0 tests flakey
@@ -1947,6 +1973,7 @@ Les URLs incluent maintenant la locale:
 ## Checklist de validation complète
 
 ### Authentification
+
 - ✅ Signup (avec Turnstile)
 - ✅ Email confirmation
 - ✅ Login
@@ -1957,6 +1984,7 @@ Les URLs incluent maintenant la locale:
 - ✅ Auth callbacks Supabase
 
 ### CRUD
+
 - ✅ Créer tâche
 - ✅ Modifier tâche
 - ✅ Supprimer tâche
@@ -1968,6 +1996,7 @@ Les URLs incluent maintenant la locale:
 - ✅ Signed URLs Supabase
 
 ### Quotas & Permissions
+
 - ✅ Visitor (demo mode)
 - ✅ User (quotas limités)
 - ✅ Abonné (quotas full)
@@ -1976,6 +2005,7 @@ Les URLs incluent maintenant la locale:
 - ✅ RLS enforcement
 
 ### Stripe
+
 - ✅ Checkout session
 - ✅ Payment success
 - ✅ Webhooks (subscription.created, updated, deleted)
@@ -1983,6 +2013,7 @@ Les URLs incluent maintenant la locale:
 - ✅ Abonnement table updated
 
 ### Accessibilité
+
 - ✅ Skip link fonctionnel
 - ✅ Keyboard navigation
 - ✅ Screen reader (NVDA)
@@ -1992,6 +2023,7 @@ Les URLs incluent maintenant la locale:
 - ✅ WCAG 2.2 AA compliant
 
 ### i18n
+
 - ✅ Changement langue FR ↔ EN
 - ✅ Détection navigateur
 - ✅ Persistence localStorage
@@ -1999,6 +2031,7 @@ Les URLs incluent maintenant la locale:
 - ✅ Traductions complètes
 
 ### PWA
+
 - ✅ Service worker enregistré
 - ✅ Installable (A2HS)
 - ✅ Offline mode
@@ -2006,6 +2039,7 @@ Les URLs incluent maintenant la locale:
 - ✅ Placeholder SVG offline
 
 ### Analytics
+
 - ✅ Sentry error tracking
 - ✅ Source maps uploadés
 - ✅ GA4 page views
@@ -2013,6 +2047,7 @@ Les URLs incluent maintenant la locale:
 - ✅ RGPD: consentement vérifié
 
 ### Performance
+
 - ✅ Lighthouse > 90 (toutes métriques)
 - ✅ Bundle < 1.6 MB
 - ✅ FCP < 1.8s
@@ -2077,9 +2112,11 @@ pnpm preview
 ## Support
 
 Pour toute question:
+
 - GitHub Issues: https://github.com/temo-accipiter/appli-picto/issues
 - Email: [email support]
-```
+
+````
 
 ---
 
@@ -2129,11 +2166,12 @@ Pour toute question:
 ✅ MIGRATION.md créé
 ✅ README.md à jour (si existe)
 ✅ CHANGELOG.md updated (si existe)
-```
+````
 
 ### Critères de succès
 
 **Bloquants (MUST):**
+
 - ✅ Aucune régression fonctionnelle
 - ✅ Tous les tests passent
 - ✅ Build production réussit
@@ -2142,6 +2180,7 @@ Pour toute question:
 - ✅ CRUD complet fonctionne
 
 **Non-bloquants (NICE TO HAVE):**
+
 - ✅ Bundle size < 1.6 MB
 - ✅ Lighthouse > 90
 - ✅ i18n fonctionnel
@@ -2153,14 +2192,14 @@ Pour toute question:
 
 ### Risques identifiés
 
-| Risque | Impact | Probabilité | Mitigation |
-|--------|--------|-------------|------------|
-| Service Worker casse offline mode | 🔴 Haut | 🟡 Moyen | Tester offline mode à chaque phase |
-| i18n casse traductions | 🟡 Moyen | 🟢 Faible | Tests E2E multilingues |
-| Auth flow régresse | 🔴 Haut | 🟢 Faible | Tests E2E auth complet |
-| Bundle size explose | 🟡 Moyen | 🟡 Moyen | Bundle analyzer + lazy loading |
-| SSR casse client hooks | 🟡 Moyen | 🟡 Moyen | "use client" + checks window |
-| Supabase callbacks cassent | 🔴 Haut | 🟢 Faible | Tests recovery URLs |
+| Risque                            | Impact   | Probabilité | Mitigation                         |
+| --------------------------------- | -------- | ----------- | ---------------------------------- |
+| Service Worker casse offline mode | 🔴 Haut  | 🟡 Moyen    | Tester offline mode à chaque phase |
+| i18n casse traductions            | 🟡 Moyen | 🟢 Faible   | Tests E2E multilingues             |
+| Auth flow régresse                | 🔴 Haut  | 🟢 Faible   | Tests E2E auth complet             |
+| Bundle size explose               | 🟡 Moyen | 🟡 Moyen    | Bundle analyzer + lazy loading     |
+| SSR casse client hooks            | 🟡 Moyen | 🟡 Moyen    | "use client" + checks window       |
+| Supabase callbacks cassent        | 🔴 Haut  | 🟢 Faible   | Tests recovery URLs                |
 
 ### Plan de rollback
 
@@ -2184,20 +2223,20 @@ pnpm dev:vite
 
 ## 📅 15. TIMELINE ESTIMÉE
 
-| Phase | Durée | Jours cumulés |
-|-------|-------|---------------|
-| Phase 1: Setup Next.js | 2-3h | Jour 1 |
-| Phase 2: Layout & Providers | 3-4h | Jour 1-2 |
-| Phase 3: Pages statiques | 2h | Jour 2 |
-| Phase 4: Authentification | 4-5h | Jour 2-3 |
-| Phase 5: Pages protégées | 4-5h | Jour 3-4 |
-| Phase 6: i18n | 3-4h | Jour 4-5 |
-| Phase 7: Service Worker (PWA) | 4-5h | Jour 5-6 |
-| Phase 8: Sentry & Analytics | 2-3h | Jour 6 |
-| Phase 9: Tests | 3-4h | Jour 6-7 |
-| Phase 10: Optimisations | 2-3h | Jour 7 |
-| Phase 11: Nettoyage & Doc | 2h | Jour 7 |
-| **TOTAL** | **31-41h** | **7-10 jours** |
+| Phase                         | Durée      | Jours cumulés  |
+| ----------------------------- | ---------- | -------------- |
+| Phase 1: Setup Next.js        | 2-3h       | Jour 1         |
+| Phase 2: Layout & Providers   | 3-4h       | Jour 1-2       |
+| Phase 3: Pages statiques      | 2h         | Jour 2         |
+| Phase 4: Authentification     | 4-5h       | Jour 2-3       |
+| Phase 5: Pages protégées      | 4-5h       | Jour 3-4       |
+| Phase 6: i18n                 | 3-4h       | Jour 4-5       |
+| Phase 7: Service Worker (PWA) | 4-5h       | Jour 5-6       |
+| Phase 8: Sentry & Analytics   | 2-3h       | Jour 6         |
+| Phase 9: Tests                | 3-4h       | Jour 6-7       |
+| Phase 10: Optimisations       | 2-3h       | Jour 7         |
+| Phase 11: Nettoyage & Doc     | 2h         | Jour 7         |
+| **TOTAL**                     | **31-41h** | **7-10 jours** |
 
 ---
 
@@ -2206,6 +2245,7 @@ pnpm dev:vite
 Cette migration vers Next.js 16.0.3 App Router apportera:
 
 **Bénéfices:**
+
 - ✅ Meilleures performances (RSC, SSR, streaming)
 - ✅ SEO amélioré (pre-rendering, metadata)
 - ✅ DX améliorée (file-based routing, layouts)
@@ -2213,6 +2253,7 @@ Cette migration vers Next.js 16.0.3 App Router apportera:
 - ✅ Bundle optimisé (automatic code splitting)
 
 **Contraintes:**
+
 - ⚠️ Migration complexe (7-10 jours)
 - ⚠️ Learning curve Next.js App Router
 - ⚠️ Changements breaking pour devs (Router API)

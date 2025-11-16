@@ -29,10 +29,7 @@ const report = {
   errors: [] as Array<{ assetId: string; filePath: string; error: string }>,
 }
 
-async function migrateImages(
-  dryRun = true,
-  limit: number | null = null
-) {
+async function migrateImages(dryRun = true, limit: number | null = null) {
   console.log(`\n🚀 Migration images vers nouveau système`)
   console.log(`Mode : ${dryRun ? '🧪 DRY RUN (test)' : '🔴 LIVE (production)'}`)
 

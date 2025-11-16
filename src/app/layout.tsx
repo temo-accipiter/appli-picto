@@ -28,12 +28,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="preconnect" href="https://tklcztqoqvnialaqfcjm.supabase.co" />
+        <link
+          rel="preconnect"
+          href="https://tklcztqoqvnialaqfcjm.supabase.co"
+        />
       </head>
       <body>
-        <ClientWrapper>
-          {children}
-        </ClientWrapper>
+        <ClientWrapper>{children}</ClientWrapper>
       </body>
     </html>
   )

@@ -10,17 +10,21 @@ export default function GlobalError({
   return (
     <html lang="fr">
       <body>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          fontFamily: 'system-ui, sans-serif',
-          padding: '2rem',
-          textAlign: 'center',
-        }}>
-          <h1 style={{ fontSize: '2rem', marginBottom: '1rem', color: '#e74c3c' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '100vh',
+            fontFamily: 'system-ui, sans-serif',
+            padding: '2rem',
+            textAlign: 'center',
+          }}
+        >
+          <h1
+            style={{ fontSize: '2rem', marginBottom: '1rem', color: '#e74c3c' }}
+          >
             ⚠️ Une erreur est survenue
           </h1>
           <p style={{ fontSize: '1rem', color: '#666', marginBottom: '2rem' }}>

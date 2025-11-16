@@ -2,219 +2,219 @@
 
 ```yaml
 - generic [ref=e3]:
-  - link "Skip to main content" [ref=e4] [cursor=pointer]:
-    - /url: "#main-content"
-  - generic [ref=e5]:
-    - main "Skip to main content" [ref=e6]:
-      - article [ref=e8]:
-        - generic [ref=e9]:
-          - button "Back" [ref=e10] [cursor=pointer]: ← Back
-          - heading "Terms of Use" [level=1] [ref=e11]
-        - generic [ref=e12]:
-          - heading "Terms of Use" [level=1] [ref=e13]
-          - paragraph [ref=e14]:
-            - strong [ref=e15]: "Last updated: December 2024"
-          - heading "1. Purpose" [level=2] [ref=e16]
-          - paragraph [ref=e17]:
-            - text: These terms of use (ToU) govern the use of the
-            - strong [ref=e18]: Picto App
-            - text: service, accessible via the web and mobile application, published by
-            - strong [ref=e19]: Picto App
-            - text: .
-          - heading "2. Definitions" [level=2] [ref=e20]
-          - list [ref=e21]:
-            - listitem [ref=e22]:
-              - strong [ref=e23]: "Service:"
-              - text: The Picto App application for creating cards and managing tasks
-            - listitem [ref=e24]:
-              - strong [ref=e25]: "User:"
-              - text: Any person using the Service
-            - listitem [ref=e26]:
-              - strong [ref=e27]: "Account:"
-              - text: The user's personal space
-            - listitem [ref=e28]:
-              - strong [ref=e29]: "Content:"
-              - text: Cards, images and data created by the user
-          - heading "3. Access to the service" [level=2] [ref=e30]
-          - heading "3.1 Registration" [level=3] [ref=e31]
-          - list [ref=e32]:
-            - listitem [ref=e33]:
-              - text: Registration is
-              - strong [ref=e34]: free
-              - text: and requires creating a user account
-            - listitem [ref=e35]: The user must provide accurate and up-to-date information
-            - listitem [ref=e36]: The user agrees to maintain the confidentiality of their credentials
-          - heading "3.2 Access" [level=3] [ref=e37]
-          - list [ref=e38]:
-            - listitem [ref=e39]: The Service is accessible 24/7, except during maintenance
-            - listitem [ref=e40]: Access may be temporarily interrupted for technical reasons
-            - listitem [ref=e41]: Users are informed of scheduled maintenance
-          - heading "4. Use of the service" [level=2] [ref=e42]
-          - heading "4.1 Authorized use" [level=3] [ref=e43]
-          - list [ref=e44]:
-            - listitem [ref=e45]: Creating and managing personal cards
-            - listitem [ref=e46]: Organizing tasks and projects
-            - listitem [ref=e47]: Personal or legitimate professional use
-          - heading "4.2 Prohibited use" [level=3] [ref=e48]
-          - list [ref=e49]:
-            - listitem [ref=e50]: Use for illegal purposes or contrary to public morals
-            - listitem [ref=e51]: Unauthorized reproduction, distribution or modification of the Service
-            - listitem [ref=e52]: Hacking or unauthorized access attempts
-            - listitem [ref=e53]: Commercial use without explicit authorization
-          - heading "5. User obligations" [level=2] [ref=e54]
-          - heading "5.1 Compliance with laws" [level=3] [ref=e55]
-          - list [ref=e56]:
-            - listitem [ref=e57]: Respect applicable French and European legislation
-            - listitem [ref=e58]: Do not publish illegal, defamatory or offensive content
-            - listitem [ref=e59]: Respect intellectual property rights
-          - heading "5.2 Security" [level=3] [ref=e60]
-          - list [ref=e61]:
-            - listitem [ref=e62]: Maintain the confidentiality of credentials
-            - listitem [ref=e63]: Report any unauthorized use immediately
-            - listitem [ref=e64]: Do not share account with third parties
-          - heading "5.3 Content" [level=3] [ref=e65]
-          - list [ref=e66]:
-            - listitem [ref=e67]: Ensure the legality of created content
-            - listitem [ref=e68]: Respect the rights of third parties
-            - listitem [ref=e69]: Do not publish pornographic, violent or discriminatory content
-          - heading "6. Intellectual property" [level=2] [ref=e70]
-          - heading "6.1 Service" [level=3] [ref=e71]
-          - list [ref=e72]:
-            - listitem [ref=e73]: The Service and its source code are protected by copyright
-            - listitem [ref=e74]: All rights reserved to Picto App
-            - listitem [ref=e75]: The user acquires no property rights to the Service
-          - heading "6.2 User content" [level=3] [ref=e76]
-          - list [ref=e77]:
-            - listitem [ref=e78]: The user retains ownership of their content
-            - listitem [ref=e79]: The user grants a license to use to Picto App for the operation of the Service
-            - listitem [ref=e80]: Picto App undertakes not to use content for commercial purposes
-          - heading "7. Personal data" [level=2] [ref=e81]
-          - heading "7.1 Collection" [level=3] [ref=e82]
-          - list [ref=e83]:
-            - listitem [ref=e84]:
-              - text: Personal data is collected in accordance with our
-              - link "Privacy Policy" [ref=e85] [cursor=pointer]:
-                - /url: /privacy-policy
-            - listitem [ref=e86]: The user consents to the processing of their data for use of the Service
-          - heading "7.2 Cookies" [level=3] [ref=e87]
-          - list [ref=e88]:
-            - listitem [ref=e89]:
-              - text: The use of cookies is governed by our
-              - link "Cookie Policy" [ref=e90] [cursor=pointer]:
-                - /url: /cookie-policy
-            - listitem [ref=e91]: The user can manage their preferences via the GDPR portal
-          - heading "8. Liability" [level=2] [ref=e92]
-          - heading "8.1 Picto App" [level=3] [ref=e93]
-          - list [ref=e94]:
-            - listitem [ref=e95]: Strives to keep the Service operational
-            - listitem [ref=e96]: Cannot be held responsible for temporary interruptions
-            - listitem [ref=e97]: Limits its liability to proven direct damages
-          - heading "8.2 User" [level=3] [ref=e98]
-          - list [ref=e99]:
-            - listitem [ref=e100]: Is responsible for the use of their account
-            - listitem [ref=e101]: Is responsible for the content they create
-            - listitem [ref=e102]: Undertakes to indemnify Picto App in case of damages
-          - heading "9. Limitation of liability" [level=2] [ref=e103]
-          - heading "9.1 Exclusion" [level=3] [ref=e104]
-          - list [ref=e105]:
-            - listitem [ref=e106]: Picto App is not responsible for data loss
-            - listitem [ref=e107]: Picto App is not responsible for indirect damages
-            - listitem [ref=e108]: Liability is limited to the amount paid by the user
-          - heading "9.2 Force majeure" [level=3] [ref=e109]
-          - list [ref=e110]:
-            - listitem [ref=e111]: Picto App is not responsible in case of force majeure
-            - listitem [ref=e112]: Force majeure events suspend the performance of obligations
-          - heading "10. Termination" [level=2] [ref=e113]
-          - heading "10.1 By the user" [level=3] [ref=e114]
-          - list [ref=e115]:
-            - listitem [ref=e116]: The user can delete their account at any time
-            - listitem [ref=e117]: Deletion is final and irreversible
-            - listitem [ref=e118]: Data is deleted in accordance with our privacy policy
-          - heading "10.2 By Picto App" [level=3] [ref=e119]
-          - list [ref=e120]:
-            - listitem [ref=e121]: Picto App may suspend or terminate an account in case of non-compliance with the ToU
-            - listitem [ref=e122]: Termination is notified by email
-            - listitem [ref=e123]: The user can contest the decision
-          - heading "11. Modification of the ToU" [level=2] [ref=e124]
-          - heading "11.1 Procedure" [level=3] [ref=e125]
-          - list [ref=e126]:
-            - listitem [ref=e127]: Picto App reserves the right to modify these ToU
-            - listitem [ref=e128]: Modifications are notified to users
-            - listitem [ref=e129]: Continued use of the Service constitutes acceptance of the new ToU
-          - heading "11.2 Notification" [level=3] [ref=e130]
-          - list [ref=e131]:
-            - listitem [ref=e132]: Important modifications are notified by email
-            - listitem [ref=e133]: Modifications are published on the website
-            - listitem [ref=e134]: The user can refuse modifications by deleting their account
-          - heading "12. Applicable law and jurisdiction" [level=2] [ref=e135]
-          - heading "12.1 Applicable law" [level=3] [ref=e136]
-          - list [ref=e137]:
-            - listitem [ref=e138]: These ToU are subject to French law
-            - listitem [ref=e139]: In case of dispute, French law applies
-          - heading "12.2 Jurisdiction" [level=3] [ref=e140]
-          - list [ref=e141]:
-            - listitem [ref=e142]: French courts have sole jurisdiction
-            - listitem [ref=e143]: In case of dispute, mediation procedure is encouraged
-          - heading "13. Contact" [level=2] [ref=e144]
-          - heading "13.1 General questions" [level=3] [ref=e145]
-          - paragraph [ref=e146]:
-            - strong [ref=e147]: "Email:"
-            - text: "[Contact email to be completed]"
-          - heading "13.2 Technical support" [level=3] [ref=e148]
-          - paragraph [ref=e149]:
-            - strong [ref=e150]: "Via the application:"
-            - text: Support or help section
-          - heading "13.3 Complaints" [level=3] [ref=e151]
-          - paragraph [ref=e152]:
-            - strong [ref=e153]: "GDPR Portal:"
-            - text: "[Link to GDPR portal]"
-          - separator [ref=e154]
-          - paragraph [ref=e155]:
-            - strong [ref=e156]: "Version history:"
-          - list [ref=e157]:
-            - listitem [ref=e158]: 1.0 (December 2024) - First version
-          - separator [ref=e159]
-          - paragraph [ref=e160]:
-            - emphasis [ref=e161]: "Last updated: December 2024"
-    - contentinfo "Legal notices" [ref=e162]:
-      - navigation "Legal notices" [ref=e163]:
-        - list [ref=e164]:
-          - listitem [ref=e165]:
-            - link "Legal notices" [ref=e166] [cursor=pointer]:
-              - /url: /mentions-legales
-          - listitem [ref=e167]:
-            - link "Terms of use" [ref=e168] [cursor=pointer]:
-              - /url: /cgu
-          - listitem [ref=e169]:
-            - link "Terms of sale" [ref=e170] [cursor=pointer]:
-              - /url: /cgv
-          - listitem [ref=e171]:
-            - link "Privacy policy" [ref=e172] [cursor=pointer]:
-              - /url: /politique-confidentialite
-          - listitem [ref=e173]:
-            - link "Cookie policy" [ref=e174] [cursor=pointer]:
-              - /url: /politique-cookies
-          - listitem [ref=e175]:
-            - button "Customize" [ref=e176] [cursor=pointer]
-          - listitem [ref=e177]:
-            - button "Refuse" [ref=e178] [cursor=pointer]
-          - listitem [ref=e179]:
-            - link "Accessibility" [ref=e180] [cursor=pointer]:
-              - /url: /accessibilite
-          - listitem [ref=e181]:
-            - link "GDPR portal" [ref=e182] [cursor=pointer]:
-              - /url: /rgpd
-      - paragraph [ref=e183]: © 2025
-    - dialog "This site uses cookies to improve your experience" [ref=e184]:
-      - generic [ref=e185]:
-        - generic [ref=e186]:
-          - heading "This site uses cookies to improve your experience" [level=2] [ref=e187]
-          - paragraph [ref=e188]: This site uses cookies to improve your experience
-          - paragraph [ref=e189]:
-            - link "Cookie policy" [ref=e190] [cursor=pointer]:
-              - /url: /politique-cookies
-        - group "This site uses cookies to improve your experience" [ref=e191]:
-          - button "Refuse" [active] [ref=e192] [cursor=pointer]
-          - button "Customize" [ref=e193] [cursor=pointer]
-          - button "Accept" [ref=e194] [cursor=pointer]
+    - link "Skip to main content" [ref=e4] [cursor=pointer]:
+        - /url: '#main-content'
+    - generic [ref=e5]:
+        - main "Skip to main content" [ref=e6]:
+            - article [ref=e8]:
+                - generic [ref=e9]:
+                    - button "Back" [ref=e10] [cursor=pointer]: ← Back
+                    - heading "Terms of Use" [level=1] [ref=e11]
+                - generic [ref=e12]:
+                    - heading "Terms of Use" [level=1] [ref=e13]
+                    - paragraph [ref=e14]:
+                        - strong [ref=e15]: 'Last updated: December 2024'
+                    - heading "1. Purpose" [level=2] [ref=e16]
+                    - paragraph [ref=e17]:
+                        - text: These terms of use (ToU) govern the use of the
+                        - strong [ref=e18]: Picto App
+                        - text: service, accessible via the web and mobile application, published by
+                        - strong [ref=e19]: Picto App
+                        - text: .
+                    - heading "2. Definitions" [level=2] [ref=e20]
+                    - list [ref=e21]:
+                        - listitem [ref=e22]:
+                            - strong [ref=e23]: 'Service:'
+                            - text: The Picto App application for creating cards and managing tasks
+                        - listitem [ref=e24]:
+                            - strong [ref=e25]: 'User:'
+                            - text: Any person using the Service
+                        - listitem [ref=e26]:
+                            - strong [ref=e27]: 'Account:'
+                            - text: The user's personal space
+                        - listitem [ref=e28]:
+                            - strong [ref=e29]: 'Content:'
+                            - text: Cards, images and data created by the user
+                    - heading "3. Access to the service" [level=2] [ref=e30]
+                    - heading "3.1 Registration" [level=3] [ref=e31]
+                    - list [ref=e32]:
+                        - listitem [ref=e33]:
+                            - text: Registration is
+                            - strong [ref=e34]: free
+                            - text: and requires creating a user account
+                        - listitem [ref=e35]: The user must provide accurate and up-to-date information
+                        - listitem [ref=e36]: The user agrees to maintain the confidentiality of their credentials
+                    - heading "3.2 Access" [level=3] [ref=e37]
+                    - list [ref=e38]:
+                        - listitem [ref=e39]: The Service is accessible 24/7, except during maintenance
+                        - listitem [ref=e40]: Access may be temporarily interrupted for technical reasons
+                        - listitem [ref=e41]: Users are informed of scheduled maintenance
+                    - heading "4. Use of the service" [level=2] [ref=e42]
+                    - heading "4.1 Authorized use" [level=3] [ref=e43]
+                    - list [ref=e44]:
+                        - listitem [ref=e45]: Creating and managing personal cards
+                        - listitem [ref=e46]: Organizing tasks and projects
+                        - listitem [ref=e47]: Personal or legitimate professional use
+                    - heading "4.2 Prohibited use" [level=3] [ref=e48]
+                    - list [ref=e49]:
+                        - listitem [ref=e50]: Use for illegal purposes or contrary to public morals
+                        - listitem [ref=e51]: Unauthorized reproduction, distribution or modification of the Service
+                        - listitem [ref=e52]: Hacking or unauthorized access attempts
+                        - listitem [ref=e53]: Commercial use without explicit authorization
+                    - heading "5. User obligations" [level=2] [ref=e54]
+                    - heading "5.1 Compliance with laws" [level=3] [ref=e55]
+                    - list [ref=e56]:
+                        - listitem [ref=e57]: Respect applicable French and European legislation
+                        - listitem [ref=e58]: Do not publish illegal, defamatory or offensive content
+                        - listitem [ref=e59]: Respect intellectual property rights
+                    - heading "5.2 Security" [level=3] [ref=e60]
+                    - list [ref=e61]:
+                        - listitem [ref=e62]: Maintain the confidentiality of credentials
+                        - listitem [ref=e63]: Report any unauthorized use immediately
+                        - listitem [ref=e64]: Do not share account with third parties
+                    - heading "5.3 Content" [level=3] [ref=e65]
+                    - list [ref=e66]:
+                        - listitem [ref=e67]: Ensure the legality of created content
+                        - listitem [ref=e68]: Respect the rights of third parties
+                        - listitem [ref=e69]: Do not publish pornographic, violent or discriminatory content
+                    - heading "6. Intellectual property" [level=2] [ref=e70]
+                    - heading "6.1 Service" [level=3] [ref=e71]
+                    - list [ref=e72]:
+                        - listitem [ref=e73]: The Service and its source code are protected by copyright
+                        - listitem [ref=e74]: All rights reserved to Picto App
+                        - listitem [ref=e75]: The user acquires no property rights to the Service
+                    - heading "6.2 User content" [level=3] [ref=e76]
+                    - list [ref=e77]:
+                        - listitem [ref=e78]: The user retains ownership of their content
+                        - listitem [ref=e79]: The user grants a license to use to Picto App for the operation of the Service
+                        - listitem [ref=e80]: Picto App undertakes not to use content for commercial purposes
+                    - heading "7. Personal data" [level=2] [ref=e81]
+                    - heading "7.1 Collection" [level=3] [ref=e82]
+                    - list [ref=e83]:
+                        - listitem [ref=e84]:
+                            - text: Personal data is collected in accordance with our
+                            - link "Privacy Policy" [ref=e85] [cursor=pointer]:
+                                - /url: /privacy-policy
+                        - listitem [ref=e86]: The user consents to the processing of their data for use of the Service
+                    - heading "7.2 Cookies" [level=3] [ref=e87]
+                    - list [ref=e88]:
+                        - listitem [ref=e89]:
+                            - text: The use of cookies is governed by our
+                            - link "Cookie Policy" [ref=e90] [cursor=pointer]:
+                                - /url: /cookie-policy
+                        - listitem [ref=e91]: The user can manage their preferences via the GDPR portal
+                    - heading "8. Liability" [level=2] [ref=e92]
+                    - heading "8.1 Picto App" [level=3] [ref=e93]
+                    - list [ref=e94]:
+                        - listitem [ref=e95]: Strives to keep the Service operational
+                        - listitem [ref=e96]: Cannot be held responsible for temporary interruptions
+                        - listitem [ref=e97]: Limits its liability to proven direct damages
+                    - heading "8.2 User" [level=3] [ref=e98]
+                    - list [ref=e99]:
+                        - listitem [ref=e100]: Is responsible for the use of their account
+                        - listitem [ref=e101]: Is responsible for the content they create
+                        - listitem [ref=e102]: Undertakes to indemnify Picto App in case of damages
+                    - heading "9. Limitation of liability" [level=2] [ref=e103]
+                    - heading "9.1 Exclusion" [level=3] [ref=e104]
+                    - list [ref=e105]:
+                        - listitem [ref=e106]: Picto App is not responsible for data loss
+                        - listitem [ref=e107]: Picto App is not responsible for indirect damages
+                        - listitem [ref=e108]: Liability is limited to the amount paid by the user
+                    - heading "9.2 Force majeure" [level=3] [ref=e109]
+                    - list [ref=e110]:
+                        - listitem [ref=e111]: Picto App is not responsible in case of force majeure
+                        - listitem [ref=e112]: Force majeure events suspend the performance of obligations
+                    - heading "10. Termination" [level=2] [ref=e113]
+                    - heading "10.1 By the user" [level=3] [ref=e114]
+                    - list [ref=e115]:
+                        - listitem [ref=e116]: The user can delete their account at any time
+                        - listitem [ref=e117]: Deletion is final and irreversible
+                        - listitem [ref=e118]: Data is deleted in accordance with our privacy policy
+                    - heading "10.2 By Picto App" [level=3] [ref=e119]
+                    - list [ref=e120]:
+                        - listitem [ref=e121]: Picto App may suspend or terminate an account in case of non-compliance with the ToU
+                        - listitem [ref=e122]: Termination is notified by email
+                        - listitem [ref=e123]: The user can contest the decision
+                    - heading "11. Modification of the ToU" [level=2] [ref=e124]
+                    - heading "11.1 Procedure" [level=3] [ref=e125]
+                    - list [ref=e126]:
+                        - listitem [ref=e127]: Picto App reserves the right to modify these ToU
+                        - listitem [ref=e128]: Modifications are notified to users
+                        - listitem [ref=e129]: Continued use of the Service constitutes acceptance of the new ToU
+                    - heading "11.2 Notification" [level=3] [ref=e130]
+                    - list [ref=e131]:
+                        - listitem [ref=e132]: Important modifications are notified by email
+                        - listitem [ref=e133]: Modifications are published on the website
+                        - listitem [ref=e134]: The user can refuse modifications by deleting their account
+                    - heading "12. Applicable law and jurisdiction" [level=2] [ref=e135]
+                    - heading "12.1 Applicable law" [level=3] [ref=e136]
+                    - list [ref=e137]:
+                        - listitem [ref=e138]: These ToU are subject to French law
+                        - listitem [ref=e139]: In case of dispute, French law applies
+                    - heading "12.2 Jurisdiction" [level=3] [ref=e140]
+                    - list [ref=e141]:
+                        - listitem [ref=e142]: French courts have sole jurisdiction
+                        - listitem [ref=e143]: In case of dispute, mediation procedure is encouraged
+                    - heading "13. Contact" [level=2] [ref=e144]
+                    - heading "13.1 General questions" [level=3] [ref=e145]
+                    - paragraph [ref=e146]:
+                        - strong [ref=e147]: 'Email:'
+                        - text: '[Contact email to be completed]'
+                    - heading "13.2 Technical support" [level=3] [ref=e148]
+                    - paragraph [ref=e149]:
+                        - strong [ref=e150]: 'Via the application:'
+                        - text: Support or help section
+                    - heading "13.3 Complaints" [level=3] [ref=e151]
+                    - paragraph [ref=e152]:
+                        - strong [ref=e153]: 'GDPR Portal:'
+                        - text: '[Link to GDPR portal]'
+                    - separator [ref=e154]
+                    - paragraph [ref=e155]:
+                        - strong [ref=e156]: 'Version history:'
+                    - list [ref=e157]:
+                        - listitem [ref=e158]: 1.0 (December 2024) - First version
+                    - separator [ref=e159]
+                    - paragraph [ref=e160]:
+                        - emphasis [ref=e161]: 'Last updated: December 2024'
+        - contentinfo "Legal notices" [ref=e162]:
+            - navigation "Legal notices" [ref=e163]:
+                - list [ref=e164]:
+                    - listitem [ref=e165]:
+                        - link "Legal notices" [ref=e166] [cursor=pointer]:
+                            - /url: /mentions-legales
+                    - listitem [ref=e167]:
+                        - link "Terms of use" [ref=e168] [cursor=pointer]:
+                            - /url: /cgu
+                    - listitem [ref=e169]:
+                        - link "Terms of sale" [ref=e170] [cursor=pointer]:
+                            - /url: /cgv
+                    - listitem [ref=e171]:
+                        - link "Privacy policy" [ref=e172] [cursor=pointer]:
+                            - /url: /politique-confidentialite
+                    - listitem [ref=e173]:
+                        - link "Cookie policy" [ref=e174] [cursor=pointer]:
+                            - /url: /politique-cookies
+                    - listitem [ref=e175]:
+                        - button "Customize" [ref=e176] [cursor=pointer]
+                    - listitem [ref=e177]:
+                        - button "Refuse" [ref=e178] [cursor=pointer]
+                    - listitem [ref=e179]:
+                        - link "Accessibility" [ref=e180] [cursor=pointer]:
+                            - /url: /accessibilite
+                    - listitem [ref=e181]:
+                        - link "GDPR portal" [ref=e182] [cursor=pointer]:
+                            - /url: /rgpd
+            - paragraph [ref=e183]: © 2025
+        - dialog "This site uses cookies to improve your experience" [ref=e184]:
+            - generic [ref=e185]:
+                - generic [ref=e186]:
+                    - heading "This site uses cookies to improve your experience" [level=2] [ref=e187]
+                    - paragraph [ref=e188]: This site uses cookies to improve your experience
+                    - paragraph [ref=e189]:
+                        - link "Cookie policy" [ref=e190] [cursor=pointer]:
+                            - /url: /politique-cookies
+                - group "This site uses cookies to improve your experience" [ref=e191]:
+                    - button "Refuse" [active] [ref=e192] [cursor=pointer]
+                    - button "Customize" [ref=e193] [cursor=pointer]
+                    - button "Accept" [ref=e194] [cursor=pointer]
 ```
