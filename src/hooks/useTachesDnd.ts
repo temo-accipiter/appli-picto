@@ -110,7 +110,8 @@ export default function useTachesDnd(onChange, reload = 0) {
         console.error(
           `Erreur inattendue lors du chargement des tâches: ${formatErr(err)}`
         )
-        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
+        if (process.env.NODE_ENV === 'development')
+          console.warn("Détails de l'erreur:", err)
 
         if (retryCount < 3) {
           const delay = 1000 * (retryCount + 1)
@@ -148,7 +149,8 @@ export default function useTachesDnd(onChange, reload = 0) {
       }
       if (error) {
         console.error(`Erreur mise à jour tâche: ${formatErr(error)}`)
-        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
+        if (process.env.NODE_ENV === 'development')
+          console.warn("Détails de l'erreur:", error)
         show(t('toasts.taskUpdateError'), 'error')
         return
       }
@@ -171,7 +173,8 @@ export default function useTachesDnd(onChange, reload = 0) {
       console.error(
         `Erreur inattendue lors de la mise à jour de la tâche: ${formatErr(err)}`
       )
-      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
+      if (process.env.NODE_ENV === 'development')
+        console.warn("Détails de l'erreur:", err)
       show(t('toasts.taskUpdateError'), 'error')
     }
   }
@@ -196,7 +199,8 @@ export default function useTachesDnd(onChange, reload = 0) {
       }
       if (error) {
         console.error(`Erreur reset tâches: ${formatErr(error)}`)
-        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
+        if (process.env.NODE_ENV === 'development')
+          console.warn("Détails de l'erreur:", error)
         show(t('toasts.taskResetError'), 'error')
         return
       }
@@ -214,7 +218,8 @@ export default function useTachesDnd(onChange, reload = 0) {
       console.error(
         `Erreur inattendue lors du reset des tâches: ${formatErr(err)}`
       )
-      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
+      if (process.env.NODE_ENV === 'development')
+        console.warn("Détails de l'erreur:", err)
       show(t('toasts.taskResetError'), 'error')
     }
   }
@@ -273,7 +278,8 @@ export default function useTachesDnd(onChange, reload = 0) {
         return
       }
       console.error(`Erreur sauvegarde ordre: ${formatErr(error)}`)
-      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
+      if (process.env.NODE_ENV === 'development')
+        console.warn("Détails de l'erreur:", error)
 
       // En cas d'erreur, recharger pour restaurer l'état correct
       await loadTaches()

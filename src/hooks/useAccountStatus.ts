@@ -47,7 +47,8 @@ export default function useAccountStatus() {
       )
 
       if (aborted || (error && isAbortLike(error))) {
-        if (process.env.NODE_ENV === 'development') console.debug('useAccountStatus: abort ignoré')
+        if (process.env.NODE_ENV === 'development')
+          console.debug('useAccountStatus: abort ignoré')
         setLoading(false)
         return
       }
