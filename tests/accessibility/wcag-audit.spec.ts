@@ -187,30 +187,30 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Mentions Légales (/mentions-legales) - Pas de violations critiques', async ({
+  test('Page Mentions Légales (/legal/mentions-legales) - Pas de violations critiques', async ({
     page,
   }) => {
-    await auditPage(page, '/mentions-legales', 'Page Mentions Légales')
+    await auditPage(page, '/legal/mentions-legales', 'Page Mentions Légales')
 
     const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
 
-  test('Page CGU (/cgu) - Pas de violations critiques', async ({ page }) => {
-    await auditPage(page, '/cgu', 'Page CGU')
+  test('Page CGU (/legal/cgu) - Pas de violations critiques', async ({ page }) => {
+    await auditPage(page, '/legal/cgu', 'Page CGU')
 
     const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
 
-  test('Page Politique de Confidentialité (/politique-confidentialite) - Pas de violations critiques', async ({
+  test('Page Politique de Confidentialité (/legal/politique-confidentialite) - Pas de violations critiques', async ({
     page,
   }) => {
     await auditPage(
       page,
-      '/politique-confidentialite',
+      '/legal/politique-confidentialite',
       'Page Politique de Confidentialité'
     )
 
@@ -219,10 +219,10 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page Accessibilité (/accessibilite) - Pas de violations critiques', async ({
+  test('Page Accessibilité (/legal/accessibilite) - Pas de violations critiques', async ({
     page,
   }) => {
-    await auditPage(page, '/accessibilite', 'Page Accessibilité')
+    await auditPage(page, '/legal/accessibilite', 'Page Accessibilité')
 
     const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
