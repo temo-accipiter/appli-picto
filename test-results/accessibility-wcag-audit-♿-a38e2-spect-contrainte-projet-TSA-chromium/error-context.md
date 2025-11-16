@@ -1,132 +1,39 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e1]:
-    - generic [active]:
-        - generic [ref=e4]:
-            - generic [ref=e5]:
-                - generic [ref=e6]:
-                    - navigation [ref=e7]:
-                        - button "previous" [disabled] [ref=e8]:
-                            - img "previous" [ref=e9]
-                        - generic [ref=e11]:
-                            - generic [ref=e12]: 1/
-                            - text: '2'
-                        - button "next" [ref=e13] [cursor=pointer]:
-                            - img "next" [ref=e14]
-                    - img
-                - generic [ref=e16]:
-                    - generic [ref=e17]:
-                        - img [ref=e18]
-                        - generic "Latest available version is detected (16.0.3)." [ref=e20]: Next.js 16.0.3
-                        - generic [ref=e21]: Turbopack
-                    - img
-            - generic [ref=e22]:
-                - dialog "Runtime Error" [ref=e23]:
-                    - generic [ref=e26]:
-                        - generic [ref=e27]:
-                            - generic [ref=e28]:
-                                - generic [ref=e30]: Runtime Error
-                                - generic [ref=e31]:
-                                    - button "Copy Error Info" [ref=e32] [cursor=pointer]:
-                                        - img [ref=e33]
-                                    - button "No related documentation found" [disabled] [ref=e35]:
-                                        - img [ref=e36]
-                                    - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e38] [cursor=pointer]:
-                                        - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
-                                        - img [ref=e39]
-                            - generic [ref=e48]: window is not defined
-                        - generic [ref=e49]:
-                            - generic [ref=e50]:
-                                - paragraph [ref=e52]:
-                                    - img [ref=e54]
-                                    - generic [ref=e58]: src/utils/images/heicConverter.ts (4:1) @ module evaluation
-                                    - button "Open in editor" [ref=e59] [cursor=pointer]:
-                                        - img [ref=e61]
-                                - generic [ref=e64]:
-                                    - generic [ref=e65]: 2 | // Conversion HEIC (iPhone) → JPEG pour compatibilité navigateur
-                                    - generic [ref=e66]: 3 |
-                                    - generic [ref=e67]: "> 4 | import heic2any from 'heic2any'"
-                                    - generic [ref=e68]: '| ^'
-                                    - generic [ref=e69]: 5 |
-                                    - generic [ref=e70]: 6 | /**
-                                    - generic [ref=e71]: 7 | * Convertit un fichier HEIC (iPhone) en JPEG
-                            - generic [ref=e72]:
-                                - generic [ref=e73]:
-                                    - paragraph [ref=e74]:
-                                        - text: Call Stack
-                                        - generic [ref=e75]: '50'
-                                    - button "Show 43 ignore-listed frame(s)" [ref=e76] [cursor=pointer]:
-                                        - text: Show 43 ignore-listed frame(s)
-                                        - img [ref=e77]
-                                - generic [ref=e79]:
-                                    - generic [ref=e80]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e81] [cursor=pointer]:
-                                            - img [ref=e82]
-                                    - text: src/utils/images/heicConverter.ts (4:1)
-                                - generic [ref=e84]:
-                                    - generic [ref=e85]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e86] [cursor=pointer]:
-                                            - img [ref=e87]
-                                    - text: src/utils/storage/modernUploadImage.ts (7:1)
-                                - generic [ref=e89]:
-                                    - generic [ref=e90]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e91] [cursor=pointer]:
-                                            - img [ref=e92]
-                                    - text: src/hooks/useRecompenses.ts (20:1)
-                                - generic [ref=e94]:
-                                    - generic [ref=e95]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e96] [cursor=pointer]:
-                                            - img [ref=e97]
-                                    - text: src/hooks/index.ts (13:1)
-                                - generic [ref=e99]:
-                                    - generic [ref=e100]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e101] [cursor=pointer]:
-                                            - img [ref=e102]
-                                    - text: src/contexts/ToastContext.tsx (19:1)
-                                - generic [ref=e104]:
-                                    - generic [ref=e105]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e106] [cursor=pointer]:
-                                            - img [ref=e107]
-                                    - text: src/app/providers.tsx (11:1)
-                                - generic [ref=e109]:
-                                    - generic [ref=e110]:
-                                        - text: module evaluation
-                                        - button "Open module evaluation in editor" [ref=e111] [cursor=pointer]:
-                                            - img [ref=e112]
-                                    - text: src/app/client-wrapper.tsx (4:1)
-                    - generic [ref=e114]: '1'
-                    - generic [ref=e115]: '2'
-                - contentinfo [ref=e116]:
-                    - region "Error feedback" [ref=e117]:
-                        - paragraph [ref=e118]:
-                            - link "Was this helpful?" [ref=e119] [cursor=pointer]:
-                                - /url: https://nextjs.org/telemetry#error-feedback
-                        - button "Mark as helpful" [ref=e120] [cursor=pointer]:
-                            - img [ref=e121]
-                        - button "Mark as not helpful" [ref=e124] [cursor=pointer]:
-                            - img [ref=e125]
-        - generic [ref=e131] [cursor=pointer]:
-            - button "Open Next.js Dev Tools" [ref=e132]:
-                - img [ref=e133]
-            - generic [ref=e136]:
-                - button "Open issues overlay" [ref=e137]:
-                    - generic [ref=e138]:
-                        - generic [ref=e139]: '1'
-                        - generic [ref=e140]: '2'
-                    - generic [ref=e141]:
-                        - text: Issue
-                        - generic [ref=e142]: s
-                - button "Collapse issues badge" [ref=e143]:
-                    - img [ref=e144]
-    - generic [ref=e146]:
-        - heading "⚠️ Une erreur est survenue" [level=1] [ref=e147]
-        - paragraph [ref=e148]: Cannot read properties of undefined (reading 'DEV')
-        - button "Réessayer" [ref=e149] [cursor=pointer]
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]: Tableau - Appli-Picto
+  - generic [ref=e12]:
+    - heading "tableau.title" [level=1] [ref=e13]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: "🔍 Debug Rôles:"
+        - button "✕" [ref=e17] [cursor=pointer]
+      - generic [ref=e18]: "Permissions: visitor"
+      - generic [ref=e19]: "Simple: visitor"
+      - generic [ref=e20]: "Final: visitor"
+      - generic [ref=e21]: "ready: true — unknown: false"
+      - button "Recharger rôles" [ref=e22] [cursor=pointer]
+    - region "tableau.progress" [ref=e23]:
+      - heading "tableau.progress" [level=2] [ref=e24]
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - img [ref=e27]
+          - img "Métro" [ref=e31]
+          - img "Ligne 1" [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - generic [ref=e36]: tableau.selectLine
+            - combobox "tableau.selectLine" [ref=e37]:
+              - option "— actions.select —"
+              - option "tableau.line1" [selected]
+              - option "tableau.line6"
+              - option "tableau.line12"
+          - paragraph [ref=e38]: "tableau.progression : 0 / 0 tasks.title"
+    - region "tasks.title" [ref=e39]:
+      - heading "tasks.title" [level=2] [ref=e40]
+      - status [ref=e41]
+      - status [ref=e43]
 ```
