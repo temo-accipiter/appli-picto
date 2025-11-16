@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
 import { ClientWrapper } from './client-wrapper'
 import '@/styles/main.scss'
 
@@ -20,11 +21,7 @@ export const viewport: Viewport = {
   themeColor: '#5A9FB8',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <head>

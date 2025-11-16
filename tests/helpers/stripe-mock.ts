@@ -8,8 +8,6 @@
 import { vi } from 'vitest'
 import type Stripe from 'stripe'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 /**
  * Mock d'un Customer Stripe
  */

@@ -34,9 +34,7 @@ function extractFieldsFromSub(sub: any) {
     null
 
   const customer =
-    typeof sub.customer === 'string'
-      ? sub.customer
-      : (sub.customer?.id ?? null)
+    typeof sub.customer === 'string' ? sub.customer : (sub.customer?.id ?? null)
 
   const endedAt =
     'ended_at' in sub && typeof sub.ended_at === 'number' ? sub.ended_at : null

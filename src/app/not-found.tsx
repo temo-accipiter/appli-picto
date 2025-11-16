@@ -24,7 +24,7 @@ export default function NotFound() {
         Page non trouvée
       </h2>
       <p style={{ fontSize: '1rem', color: '#999', marginBottom: '2rem' }}>
-        La page que vous recherchez n'existe pas.
+        La page que vous recherchez n&apos;existe pas.
       </p>
       <Link
         href="/"
@@ -37,7 +37,7 @@ export default function NotFound() {
           borderRadius: '0.5rem',
         }}
       >
-        Retour à l'accueil
+        Retour à l&apos;accueil
       </Link>
     </div>
   )

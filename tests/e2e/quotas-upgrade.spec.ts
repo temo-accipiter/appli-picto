@@ -175,7 +175,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
           )
 
           // Créer les tâches manuellement via DB pour aller plus vite
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
           const tasksData: any[] = []
           for (let i = 0; i < tasksToCreate; i++) {
             tasksData.push({
@@ -295,7 +295,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       .eq('user_id', userId)
 
     // Créer 5 tâches supplémentaires
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const tasksData: any[] = []
     for (let i = 0; i < 5; i++) {
       tasksData.push({
@@ -450,7 +450,6 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
     const tasksToCreate = 8 - (currentCount || 0)
     if (tasksToCreate > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tasksData: any[] = []
       for (let i = 0; i < tasksToCreate; i++) {
         tasksData.push({
@@ -775,7 +774,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       )
 
       // Créer via DB pour aller plus vite
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const tasksData: any[] = []
       for (let i = 0; i < tasksToLimit; i++) {
         tasksData.push({

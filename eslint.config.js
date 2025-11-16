@@ -9,10 +9,24 @@ import tsPlugin from '@typescript-eslint/eslint-plugin'
 import { defineConfig } from 'eslint/config'
 
 export default defineConfig([
+  // Global ignores (applies to all configs)
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.yarn/**',
+      '**/.pnp.*',
+      '**/.next/**',
+      '**/coverage/**',
+      '**/playwright-report/**',
+      '**/test-results/**',
+      '**/*.tsbuildinfo',
+      '**/build/**',
+      '**/.vite/**',
+    ],
+  },
   {
     files: ['**/*.{js,jsx}'],
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.yarn/**', '**/.pnp.*'],
-
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
@@ -57,8 +71,6 @@ export default defineConfig([
   // Configuration TypeScript
   {
     files: ['**/*.{ts,tsx}'],
-    ignores: ['**/node_modules/**', '**/dist/**', '**/.yarn/**', '**/.pnp.*'],
-
     languageOptions: {
       parser: tsParser,
       parserOptions: {

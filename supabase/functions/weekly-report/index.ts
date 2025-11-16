@@ -171,7 +171,10 @@ async function getImageStats(
     metricsTyped.reduce((sum, m) => sum + (m.compression_ratio || 0), 0) /
     metricsTyped.length
   const storageSaved =
-    metricsTyped.reduce((sum, m) => sum + ((m.original_size || 0) - (m.compressed_size || 0)), 0) /
+    metricsTyped.reduce(
+      (sum, m) => sum + ((m.original_size || 0) - (m.compressed_size || 0)),
+      0
+    ) /
     (1024 * 1024) // Convert to MB
 
   return {

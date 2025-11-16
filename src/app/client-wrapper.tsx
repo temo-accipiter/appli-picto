@@ -1,7 +1,8 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { Providers } from './providers'
 
-export function ClientWrapper({ children }: { children: React.ReactNode }) {
+export function ClientWrapper({ children }: { children: ReactNode }) {
   return <Providers>{children}</Providers>
 }

@@ -111,6 +111,7 @@ export async function createTestUser(
   password: string,
   role?: 'free' | 'abonne' | 'admin'
 ): Promise<string>
+// eslint-disable-next-line no-redeclare
 export async function createTestUser(options: {
   role?: 'free' | 'abonne' | 'admin'
   email?: string
@@ -118,6 +119,7 @@ export async function createTestUser(options: {
 }): Promise<{ email: string; password: string; userId: string }>
 
 // Implementation
+// eslint-disable-next-line no-redeclare
 export async function createTestUser(
   emailOrOptions:
     | string
