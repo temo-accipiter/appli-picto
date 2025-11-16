@@ -58,6 +58,10 @@ coverage/
 .next/
 out/
 
+# ✅ Playwright test artifacts
+playwright-report/
+test-results/
+
 # ✅ Supabase
 supabase/.branches
 supabase/.temp
