@@ -61,6 +61,7 @@ out/
 # ✅ Playwright test artifacts
 playwright-report/
 test-results/
+tests/accessibility/report.html
 
 # ✅ Supabase
 supabase/.branches
