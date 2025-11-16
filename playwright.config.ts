@@ -25,7 +25,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   // Workers (parallélisme) - optimisé pour CI
-  workers: process.env.CI ? 4 : undefined,
+  workers: process.env.CI ? 4 : 1,
 
   // Reporter - optimisé pour CI et local
   reporter: process.env.CI

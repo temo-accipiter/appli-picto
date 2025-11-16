@@ -31,6 +31,9 @@ export default function LegalMarkdown({ title, content }: LegalMarkdownProps) {
     }
   }
 
+  // Parse markdown de manière synchrone
+  const htmlContent = marked.parse(processedContent || '', { async: false }) as string
+
   return (
     <article className="legal-content">
       <header className="legal-content__header">
@@ -46,7 +49,7 @@ export default function LegalMarkdown({ title, content }: LegalMarkdownProps) {
       <div
         className="legal-content__body"
         dangerouslySetInnerHTML={{
-          __html: marked.parse(processedContent || ''),
+          __html: htmlContent,
         }}
       />
     </article>

@@ -1,7 +1,7 @@
 'use client'
 
 import { Pencil } from 'lucide-react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useRouter, usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import './FloatingPencil.scss'
 
@@ -12,14 +12,14 @@ interface FloatingPencilProps {
 export default function FloatingPencil({
   className = '',
 }: FloatingPencilProps) {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
 
   const handleClick = () => {
-    navigate('/edition')
+    router.push('/edition')
   }
 
-  const isTableau = location.pathname === '/tableau'
+  const isTableau = pathname === '/tableau'
   if (!isTableau) return null
 
   return (

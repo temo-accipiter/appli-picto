@@ -38,6 +38,16 @@ let recreationInProgress = false
 // ⚠️ SSR-safe: Configuration différente selon l'environnement
 const isServer = typeof window === 'undefined'
 
+// Helper pour extraire le project ref de l'URL Supabase
+function getProjectRef(supabaseUrl: string): string {
+  const parts = supabaseUrl.split('//')
+  if (parts.length < 2) return 'default'
+  const domain = parts[1]
+  if (!domain) return 'default'
+  const subdomain = domain.split('.')[0]
+  return subdomain || 'default'
+}
+
 // Configuration SDK simple (sans hacks qui cassent PostgREST)
 const clientConfig = {
   auth: {
@@ -46,7 +56,7 @@ const clientConfig = {
     detectSessionInUrl: !isServer,
     // 🔑 CRITICAL: Stockage plus fiable (client-side only)
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    storageKey: `sb-${url.split('//')[1].split('.')[0]}-auth-token`,
+    storageKey: `sb-${getProjectRef(url)}-auth-token`,
   },
   global: {
     // Timeout réduit pour détecter problèmes plus vite
@@ -124,7 +134,7 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     }
 
     // 🔑 AMÉLIORATION : Sauvegarder TOUTES les données de session
-    const storageKey = `sb-${url.split('//')[1].split('.')[0]}-auth-token`
+    const storageKey = `sb-${getProjectRef(url)}-auth-token`
     const savedSessionStr = window.localStorage.getItem(storageKey)
 
     let savedSession: SavedSession | null = null

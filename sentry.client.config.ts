@@ -4,46 +4,51 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
-  // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+// Only initialize Sentry if DSN is configured
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+    // Adjust this value in production, or use tracesSampler for greater control
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 1.0 : 0,
+    // Setting this option to true will print useful information to the console while you're setting up Sentry.
+    debug: false,
 
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+    replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 1.0 : 0,
 
-  // You can remove this option if you're not planning to use the Sentry Session Replay feature:
-  integrations: [
-    Sentry.replayIntegration({
-      // Additional Replay configuration goes in here, for example:
-      maskAllText: true,
-      blockAllMedia: true,
-    }),
-  ],
+    // This sets the sample rate to be 10%. You may want this to be 100% while
+    // in development and sample at a lower rate in production
+    replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
 
-  // Environment
-  environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
+    // You can remove this option if you're not planning to use the Sentry Session Replay feature:
+    integrations: [
+      Sentry.replayIntegration({
+        // Additional Replay configuration goes in here, for example:
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
 
-  // Release tracking
-  release: process.env.NEXT_PUBLIC_APP_VERSION,
+    // Environment
+    environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
 
-  // Ignore common errors
-  ignoreErrors: [
-    // Browser extensions
-    /chrome-extension/,
-    /moz-extension/,
-    // Network errors
-    'NetworkError',
-    'Failed to fetch',
-    'Load failed',
-    // ResizeObserver (non-critical)
-    'ResizeObserver loop',
-  ],
-})
+    // Release tracking
+    release: process.env.NEXT_PUBLIC_APP_VERSION,
+
+    // Ignore common errors
+    ignoreErrors: [
+      // Browser extensions
+      /chrome-extension/,
+      /moz-extension/,
+      // Network errors
+      'NetworkError',
+      'Failed to fetch',
+      'Load failed',
+      // ResizeObserver (non-critical)
+      'ResizeObserver loop',
+    ],
+  })
+}

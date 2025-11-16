@@ -5,18 +5,23 @@
 
 import * as Sentry from '@sentry/nextjs'
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
 
-  // Adjust this value in production, or use tracesSampler for greater control
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+// Only initialize Sentry if DSN is configured
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
+    // Adjust this value in production, or use tracesSampler for greater control
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-  // Environment
-  environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
+    // Setting this option to true will print useful information to the console while you're setting up Sentry.
+    debug: false,
 
-  // Release tracking
-  release: process.env.NEXT_PUBLIC_APP_VERSION,
-})
+    // Environment
+    environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
+
+    // Release tracking
+    release: process.env.NEXT_PUBLIC_APP_VERSION,
+  })
+}

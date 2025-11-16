@@ -1,5 +1,9 @@
 import Link from 'next/link'
 
+
+// Force dynamic rendering (no prerendering) due to client-only dependencies in global providers
+export const dynamic = 'force-dynamic'
+
 export default function NotFound() {
   return (
     <div style={{
