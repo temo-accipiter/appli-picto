@@ -11,8 +11,9 @@
  * Remplace les tests skippés de useCategories.test.js
  */
 
-import { renderHook, waitFor, act } from '@testing-library/react'
+import { waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { renderHookWithProviders } from '@/test/test-utils'
 import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { mockCategories, TEST_USER_ID } from '@/test/mocks/data'
@@ -20,29 +21,9 @@ import { mockCategories, TEST_USER_ID } from '@/test/mocks/data'
 // Import réel du hook
 import useCategories from './useCategories'
 
-// Mocks simples des contexts
-const mockUser = { id: TEST_USER_ID }
-const mockToast = { show: vi.fn() }
-const mockSetLoading = vi.fn()
-
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser, authReady: true }),
-  useI18n: () => ({ t: (key: string) => key }),
-  useToast: () => mockToast,
-}))
-
-vi.mock('@/hooks/useAuth', () => ({
-  default: () => ({ user: mockUser, authReady: true }),
-}))
-
-vi.mock('@/contexts', () => ({
-  useToast: () => mockToast,
-  useLoading: () => ({ setLoading: mockSetLoading }),
-}))
-
 describe.skip('useCategories (avec MSW)', () => {
-  // TODO: Ces tests nécessitent renderWithProviders pour fonctionner correctement
-  // Ils démontrent la migration vers MSW mais nécessitent plus de configuration
+  // TODO: Ces tests nécessitent de mocker l'URL Supabase pour MSW
+  // Les vrais providers utilisent l'URL réelle, pas localhost:54321
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -54,7 +35,7 @@ describe.skip('useCategories (avec MSW)', () => {
       // qui correspondent à OR (user_id.is.null,user_id.eq.${TEST_USER_ID})
 
       // Act
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(
@@ -93,7 +74,7 @@ describe.skip('useCategories (avec MSW)', () => {
         .mockImplementation(() => {})
 
       // Act
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(() => {
@@ -118,7 +99,7 @@ describe.skip('useCategories (avec MSW)', () => {
       )
 
       // Act
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(() => {
@@ -130,7 +111,7 @@ describe.skip('useCategories (avec MSW)', () => {
   describe('Ajout de catégorie', () => {
     it('✅ doit ajouter une nouvelle catégorie', async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       await waitFor(() => {
         expect(result.current.categories.length).toBeGreaterThan(0)
@@ -177,7 +158,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
     it("✅ doit gérer les erreurs d'ajout", async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       await waitFor(() => {
         expect(result.current.categories.length).toBeGreaterThan(0)
@@ -220,7 +201,7 @@ describe.skip('useCategories (avec MSW)', () => {
   describe('Suppression de catégorie', () => {
     it('✅ doit supprimer une catégorie', async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       await waitFor(() => {
         expect(result.current.categories.length).toBeGreaterThan(0)
@@ -248,7 +229,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
     it('✅ doit gérer les erreurs de suppression', async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       await waitFor(() => {
         expect(result.current.categories.length).toBeGreaterThan(0)
@@ -288,8 +269,8 @@ describe.skip('useCategories (avec MSW)', () => {
   describe('Recharger après modification', () => {
     it('✅ doit recharger après ajout de catégorie', async () => {
       // Arrange
-      const { result, rerender } = renderHook(
-        ({ reload }) => useCategories(reload),
+      const { result, rerender } = renderHookWithProviders(
+        ({ reload }: { reload: number }) => useCategories(reload),
         {
           initialProps: { reload: 0 },
         }
@@ -316,7 +297,7 @@ describe.skip('useCategories (avec MSW)', () => {
   describe('Filtrage catégories globales vs utilisateur', () => {
     it('✅ doit inclure les catégories globales (user_id IS NULL)', async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(() => {
@@ -329,7 +310,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
     it('✅ doit inclure les catégories utilisateur', async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(() => {
@@ -342,7 +323,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
     it("✅ ne doit PAS inclure les catégories d'autres utilisateurs", async () => {
       // Arrange
-      const { result } = renderHook(() => useCategories())
+      const { result } = renderHookWithProviders(() => useCategories())
 
       // Assert
       await waitFor(() => {
