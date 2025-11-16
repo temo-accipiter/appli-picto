@@ -28,7 +28,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useLocation } from 'react-router-dom'
+import { usePathname } from 'next/navigation'
 import { useWindowSize } from 'react-use'
 
 // Lazy load Confetti (utilisé seulement quand toutes les tâches sont terminées)
@@ -64,7 +64,7 @@ export default function TableauGrille({
   onLineChange,
 }: TableauGrilleProps) {
   const { t } = useI18n()
-  const location = useLocation()
+  const pathname = usePathname()
   const [reloadKey, setReloadKey] = useState(0)
   const [doneCount, setDoneCount] = useState(0)
   const [totalTaches, setTotalTaches] = useState(0)
@@ -95,7 +95,7 @@ export default function TableauGrille({
   // Recharger les tâches quand on revient sur /tableau depuis une autre page
   const prevPathRef = useRef<string | null>(null) // null au départ pour détecter le premier mount
   useEffect(() => {
-    const currentPath = location.pathname
+    const currentPath = pathname
     const prevPath = prevPathRef.current
 
     // Si on revient sur /tableau depuis une autre page (pas au premier mount)
@@ -108,7 +108,7 @@ export default function TableauGrille({
     }
 
     prevPathRef.current = currentPath
-  }, [location.pathname])
+  }, [pathname])
 
   // Données selon le mode (démo ou personnel)
   const { demoTasks: demoTaches, demoRewards: demoRecompenses } = useDemoCards()

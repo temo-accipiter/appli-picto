@@ -168,7 +168,10 @@ export async function tryLogServerConsent(
     }
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
-    if (process.env.NODE_ENV === 'development' && (err as Error).message?.includes('503')) {
+    if (
+      process.env.NODE_ENV === 'development' &&
+      (err as Error).message?.includes('503')
+    ) {
       console.debug(
         'ℹ️ Edge function log-consent non disponible (normal en dev local)'
       )

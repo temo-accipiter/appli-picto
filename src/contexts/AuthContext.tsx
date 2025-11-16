@@ -207,7 +207,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await supabase.auth.signOut()
     } catch (e) {
-      if (process.env.NODE_ENV === 'development') console.warn('[Auth] signOut error:', e)
+      if (process.env.NODE_ENV === 'development')
+        console.warn('[Auth] signOut error:', e)
       setError(e as Error)
     } finally {
       setUser(null)

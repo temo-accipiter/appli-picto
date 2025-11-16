@@ -35,28 +35,31 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
   const { isVisitor, ready } = usePermissions()
   const loading = !ready // alias pour compat avec l'ancienne logique
 
-  const [showTrain, setShowTrain] = useState(() =>
-    isVisitor ? true : localStorage.getItem('showTrain') === 'true'
-  )
+  const [showTrain, setShowTrain] = useState(() => {
+    if (typeof window === 'undefined') return true
+    return isVisitor ? true : localStorage.getItem('showTrain') === 'true'
+  })
   useEffect(() => {
     if (!loading && isVisitor && !showTrain) setShowTrain(true)
   }, [isVisitor, loading, showTrain])
   useEffect(() => {
-    if (!isVisitor) {
+    if (typeof window !== 'undefined' && !isVisitor) {
       localStorage.setItem('showTrain', showTrain ? 'true' : 'false')
     }
   }, [showTrain, isVisitor])
 
   const [showAutre, setShowAutre] = useState(() => {
+    if (typeof window === 'undefined') return false
     if (loading) return localStorage.getItem('showAutre') === 'true'
     return isVisitor ? false : localStorage.getItem('showAutre') === 'true'
   })
   useEffect(() => {
-    if (!isVisitor)
+    if (typeof window !== 'undefined' && !isVisitor)
       localStorage.setItem('showAutre', showAutre ? 'true' : 'false')
   }, [showAutre, isVisitor])
 
   const [showRecompense, setShowRecompense] = useState(() => {
+    if (typeof window === 'undefined') return true
     if (loading) {
       const v = localStorage.getItem('showRecompense')
       return v === null ? true : v === 'true'
@@ -64,16 +67,17 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
     return isVisitor ? true : localStorage.getItem('showRecompense') === 'true'
   })
   useEffect(() => {
-    if (!isVisitor)
+    if (typeof window !== 'undefined' && !isVisitor)
       localStorage.setItem('showRecompense', showRecompense ? 'true' : 'false')
   }, [showRecompense, isVisitor])
 
   const [showTimeTimer, setShowTimeTimer] = useState(() => {
+    if (typeof window === 'undefined') return false
     if (loading) return localStorage.getItem('showTimeTimer') === 'true'
     return isVisitor ? false : localStorage.getItem('showTimeTimer') === 'true'
   })
   useEffect(() => {
-    if (!isVisitor)
+    if (typeof window !== 'undefined' && !isVisitor)
       localStorage.setItem('showTimeTimer', showTimeTimer ? 'true' : 'false')
   }, [showTimeTimer, isVisitor])
 
