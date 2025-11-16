@@ -228,7 +228,9 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
       },
 
       // Release tracking (optionnel)
-      release: process.env.NEXT_PUBLIC_APP_VERSION,
+      ...(process.env.NEXT_PUBLIC_APP_VERSION && {
+        release: process.env.NEXT_PUBLIC_APP_VERSION,
+      }),
     })
 
     console.log('✅ Sentry initialisé avec succès')

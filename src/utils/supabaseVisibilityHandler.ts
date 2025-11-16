@@ -82,6 +82,11 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
         (supabaseClient as unknown as SupabaseClientInternal).supabaseKey ||
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+      // Vérifier que les clés sont définies
+      if (!supabaseUrl || !supabaseKey) {
+        throw new Error('Missing Supabase credentials')
+      }
+
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
 

@@ -196,7 +196,7 @@ export default function DeleteAccountModal({
           </p>
           <Turnstile
             key={widgetKey}
-            sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
             onSuccess={handleTurnstileSuccess}
             onExpire={() => {
               if (phase === 'login') setTokenLogin(null)
