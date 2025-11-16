@@ -50,7 +50,11 @@ export const mockStripeSubscriptionActive: Stripe.Subscription = {
   object: 'subscription',
   application: null,
   application_fee_percent: null,
-  automatic_tax: { enabled: false },
+  automatic_tax: {
+    enabled: false,
+    disabled_reason: null,
+    liability: null,
+  },
   billing_cycle_anchor: Math.floor(Date.now() / 1000),
   billing_thresholds: null,
   cancel_at: null,
@@ -127,7 +131,12 @@ export const mockStripeCheckoutSession: Stripe.Checkout.Session = {
   allow_promotion_codes: true,
   amount_subtotal: 990,
   amount_total: 990,
-  automatic_tax: { enabled: false, status: null },
+  automatic_tax: {
+    enabled: false,
+    status: null,
+    liability: null,
+    provider: null,
+  },
   billing_address_collection: null,
   cancel_url: 'http://localhost:5173/abonnement?canceled=true',
   client_reference_id: null,
@@ -201,11 +210,11 @@ export const mockStripePrice: Stripe.Price = {
   nickname: 'Abonnement Mensuel Appli-Picto',
   product: 'prod_test_appli_picto',
   recurring: {
-    aggregate_usage: null,
     interval: 'month',
     interval_count: 1,
     trial_period_days: null,
     usage_type: 'licensed',
+    meter: null,
   },
   tax_behavior: 'unspecified',
   tiers_mode: null,
@@ -222,12 +231,12 @@ export const mockStripeProduct: Stripe.Product = {
   id: 'prod_test_appli_picto',
   object: 'product',
   active: true,
-  attributes: [],
   created: Math.floor(Date.now() / 1000),
   default_price: 'price_test_123456789',
   description: 'Abonnement premium Appli-Picto',
   images: [],
   livemode: false,
+  marketing_features: [],
   metadata: {},
   name: 'Appli-Picto Premium',
   package_dimensions: null,
@@ -260,7 +269,7 @@ export function createMockStripeWebhookEvent<T extends Stripe.Event.Type>(
       idempotency_key: null,
     },
     type,
-  }
+  } as Stripe.Event
 }
 
 /**
@@ -270,7 +279,6 @@ export const mockWebhookSubscriptionCreated = createMockStripeWebhookEvent(
   'customer.subscription.created',
   {
     object: mockStripeSubscriptionActive,
-    previous_attributes: undefined,
   }
 )
 
@@ -294,7 +302,6 @@ export const mockWebhookSubscriptionDeleted = createMockStripeWebhookEvent(
   'customer.subscription.deleted',
   {
     object: mockStripeSubscriptionCanceled,
-    previous_attributes: undefined,
   }
 )
 
@@ -305,7 +312,6 @@ export const mockWebhookCheckoutCompleted = createMockStripeWebhookEvent(
   'checkout.session.completed',
   {
     object: mockStripeCheckoutSession,
-    previous_attributes: undefined,
   }
 )
 

@@ -2,7 +2,7 @@
 // Client Stripe réutilisable dans toutes tes Edge Functions (Deno)
 import Stripe from 'npm:stripe'
 
-const apiVersion: Stripe.LatestApiVersion = '2024-06-20'
+const apiVersion = '2024-06-20' as Stripe.LatestApiVersion
 
 export function getStripe() {
   const key = Deno.env.get('STRIPE_SECRET_KEY')

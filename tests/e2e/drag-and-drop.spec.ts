@@ -89,7 +89,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
   }) => {
     // Créer un utilisateur de test
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     // Créer 3 tâches
     await createTestTasks(page, 3)
@@ -132,7 +132,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
 
   test('Drag-and-drop - Animations fluides ≤ 150ms', async ({ page }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -175,7 +175,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
 test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
   test('Réorganiser avec clavier - Tab, Espace, Flèches', async ({ page }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 3)
     await page.goto('/tableau')
@@ -227,7 +227,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -255,7 +255,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -291,7 +291,7 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -348,7 +348,7 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await loginAs(page, user.email, user.password)
+    await loginAs(page, "free" as keyof typeof TEST_USERS)
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')

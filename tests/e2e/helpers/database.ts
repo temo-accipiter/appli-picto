@@ -105,17 +105,49 @@ export async function cleanupDatabase(): Promise<void> {
  * @example
  * const userId = await createTestUser('test@example.com', 'password', 'free')
  */
+// Overload signatures
 export async function createTestUser(
   email: string,
   password: string,
+  role?: 'free' | 'abonne' | 'admin'
+): Promise<string>
+export async function createTestUser(options: {
+  role?: 'free' | 'abonne' | 'admin'
+  email?: string
+  password?: string
+}): Promise<{ email: string; password: string; userId: string }>
+
+// Implementation
+export async function createTestUser(
+  emailOrOptions: string | { role?: 'free' | 'abonne' | 'admin'; email?: string; password?: string },
+  password?: string,
   role: 'free' | 'abonne' | 'admin' = 'free'
-): Promise<string> {
+): Promise<string | { email: string; password: string; userId: string }> {
   const client = getTestClient()
+
+  // Determine which signature was used
+  let email: string
+  let pwd: string
+  let userRole: 'free' | 'abonne' | 'admin'
+  let returnObject = false
+
+  if (typeof emailOrOptions === 'object') {
+    // Options signature
+    email = emailOrOptions.email || `test-${Date.now()}@example.com`
+    pwd = emailOrOptions.password || 'Test123!@#'
+    userRole = emailOrOptions.role || 'free'
+    returnObject = true
+  } else {
+    // Individual parameters signature
+    email = emailOrOptions
+    pwd = password!
+    userRole = role
+  }
 
   // Créer l'utilisateur via l'API admin
   const { data, error } = await client.auth.admin.createUser({
     email,
-    password,
+    password: pwd,
     email_confirm: true,
   })
 
@@ -128,7 +160,7 @@ export async function createTestUser(
   // Assigner le rôle
   await client.from('user_roles').insert({
     user_id: userId,
-    role: role,
+    role: userRole,
   })
 
   // Créer les paramètres par défaut
@@ -137,6 +169,9 @@ export async function createTestUser(
     confettis: true,
   })
 
+  if (returnObject) {
+    return { email, password: pwd, userId }
+  }
   return userId
 }
 

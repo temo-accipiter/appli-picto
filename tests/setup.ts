@@ -2,13 +2,16 @@
 import { vi } from 'vitest'
 
 // Mock Worker pour heic2any
-global.Worker = class Worker {
-  constructor() {}
+global.Worker = class Worker extends EventTarget {
+  constructor() {
+    super()
+  }
   postMessage() {}
   terminate() {}
-  addEventListener() {}
-  removeEventListener() {}
-} as typeof Worker
+  onerror = null
+  onmessage = null
+  onmessageerror = null
+} as unknown as typeof Worker
 
 // Mock URL.createObjectURL et URL.revokeObjectURL (nécessaires pour heic2any et upload d'images)
 global.URL.createObjectURL = vi.fn(() => 'blob:http://localhost/mock-url')

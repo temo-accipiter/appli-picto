@@ -7,10 +7,16 @@ import fs from 'fs'
 
 dotenv.config()
 
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+const supabaseUrl = process.env.VITE_SUPABASE_URL
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !serviceRoleKey) {
+  throw new Error(
+    'Missing environment variables: VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+  )
+}
+
+const supabase = createClient(supabaseUrl, serviceRoleKey)
 
 const BATCH_SIZE = 10
 const PAUSE_MS = 2000
@@ -20,10 +26,13 @@ const report = {
   total: 0,
   success: 0,
   failed: 0,
-  errors: [],
+  errors: [] as Array<{ assetId: string; filePath: string; error: string }>,
 }
 
-async function migrateImages(dryRun = true, limit = null) {
+async function migrateImages(
+  dryRun = true,
+  limit: number | null = null
+) {
   console.log(`\n🚀 Migration images vers nouveau système`)
   console.log(`Mode : ${dryRun ? '🧪 DRY RUN (test)' : '🔴 LIVE (production)'}`)
 
@@ -76,8 +85,8 @@ async function migrateImages(dryRun = true, limit = null) {
           .join('')
 
         // Extraire dimensions (si image bitmap)
-        let width = null
-        let height = null
+        let width: number | null = null
+        let height: number | null = null
 
         if (
           asset.mime_type?.startsWith('image/') &&
@@ -118,13 +127,15 @@ async function migrateImages(dryRun = true, limit = null) {
 
         report.success++
       } catch (error) {
-        console.error(`  ❌ ${asset.file_path.slice(-40)} :`, error.message)
+        const errorMessage =
+          error instanceof Error ? error.message : String(error)
+        console.error(`  ❌ ${asset.file_path.slice(-40)} :`, errorMessage)
 
         report.failed++
         report.errors.push({
           assetId: asset.id,
           filePath: asset.file_path,
-          error: error.message,
+          error: errorMessage,
         })
       }
     }
@@ -162,6 +173,7 @@ async function migrateImages(dryRun = true, limit = null) {
 const args = process.argv.slice(2)
 const dryRun = !args.includes('--live')
 const limitArg = args.find(arg => arg.startsWith('--limit='))
-const limit = limitArg ? parseInt(limitArg.split('=')[1]) : null
+const limitValue = limitArg ? limitArg.split('=')[1] : undefined
+const limit = limitValue ? parseInt(limitValue, 10) : null
 
 migrateImages(dryRun, limit).catch(console.error)

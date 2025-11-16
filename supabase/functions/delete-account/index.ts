@@ -4,14 +4,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.1'
 
 // --- Utils CORS -------------------------------------------------------------
-function getAllowedOrigin(req: Request) {
+function getAllowedOrigin(req: Request): string {
   const origin = req.headers.get('origin') || ''
   const allowed = (Deno.env.get('ALLOWED_RETURN_HOSTS') || '')
     .split(',')
     .map(s => s.trim())
     .filter(Boolean)
   if (allowed.length === 0) return '*'
-  return allowed.includes(origin) ? origin : allowed[0]
+  return allowed.includes(origin) ? origin : allowed[0] || '*'
 }
 
 function corsHeaders(req: Request) {

@@ -5,6 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath } from 'url'
 import { defineConfig } from 'vite'
 import { imagetools } from 'vite-imagetools'
+// @ts-expect-error - Legacy Vite plugin, not used in Next.js
 import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 const __filename = fileURLToPath(import.meta.url)

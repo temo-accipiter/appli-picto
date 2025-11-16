@@ -5,6 +5,7 @@
 import * as Sentry from '@sentry/nextjs'
 
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
+const SENTRY_RELEASE = process.env.NEXT_PUBLIC_APP_VERSION
 
 // Only initialize Sentry if DSN is configured
 if (SENTRY_DSN) {
@@ -35,8 +36,8 @@ if (SENTRY_DSN) {
     // Environment
     environment: process.env.NEXT_PUBLIC_APP_ENV || 'development',
 
-    // Release tracking
-    release: process.env.NEXT_PUBLIC_APP_VERSION,
+    // Release tracking (only if defined)
+    ...(SENTRY_RELEASE && { release: SENTRY_RELEASE }),
 
     // Ignore common errors
     ignoreErrors: [

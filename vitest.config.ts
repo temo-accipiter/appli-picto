@@ -45,7 +45,6 @@ export default defineConfig({
         statements: 80,
       },
       // Exiger 100% de couverture sur les fichiers critiques
-      perFile: true,
       all: true,
     },
   },

@@ -5,7 +5,7 @@ import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.3'
 
 // --- Utils ------------------------------------------------------------------
-function getAllowedOrigin(req: Request) {
+function getAllowedOrigin(req: Request): string {
   const origin = req.headers.get('origin') || ''
   const allowed = (Deno.env.get('ALLOWED_RETURN_HOSTS') || '')
     .split(',')
@@ -13,7 +13,7 @@ function getAllowedOrigin(req: Request) {
     .filter(Boolean)
 
   if (allowed.length === 0) return '*'
-  return allowed.includes(origin) ? origin : allowed[0]
+  return allowed.includes(origin) ? origin : allowed[0] || '*'
 }
 
 function corsHeaders(req: Request) {
