@@ -72,7 +72,7 @@ async function getUserStats(
     .select('user_id')
     .gte('created_at', weekStart.toISOString())
 
-  const activeUsers = new Set(activeTasks?.map(t => t.user_id) || []).size
+  const activeUsers = new Set(activeTasks?.map((t: any) => t.user_id) || []).size
 
   return {
     total: total || 0,
@@ -164,12 +164,12 @@ async function getImageStats(
     }
   }
 
-  const compressed = metrics.filter(m => m.compression_ratio > 0).length
+  const compressed = metrics.filter((m: any) => m.compression_ratio > 0).length
   const avgRatio =
-    metrics.reduce((sum, m) => sum + (m.compression_ratio || 0), 0) /
+    metrics.reduce((sum: number, m: any) => sum + (m.compression_ratio || 0), 0) /
     metrics.length
   const storageSaved =
-    metrics.reduce((sum, m) => sum + (m.original_size - m.compressed_size), 0) /
+    metrics.reduce((sum: number, m: any) => sum + (m.original_size - m.compressed_size), 0) /
     (1024 * 1024) // Convert to MB
 
   return {
@@ -371,7 +371,7 @@ serve(async req => {
     let recipients: string[] = []
     if (req.method === 'POST') {
       try {
-        const body = await req.json()
+        const body: any = await req.json()
         recipients = body.recipients || []
       } catch {
         // Ignore

@@ -223,6 +223,7 @@ export async function seedUserData(
   // Créer des catégories
   const categoriesData = []
   for (let i = 0; i < categories; i++) {
+    // @ts-ignore - Supabase insert type inference issue
     categoriesData.push({
       user_id: userId,
       label: `Catégorie Test ${i + 1}`,
@@ -238,6 +239,7 @@ export async function seedUserData(
   // Créer des tâches
   const tachesData = []
   for (let i = 0; i < taches; i++) {
+    // @ts-ignore - Supabase insert type inference issue
     tachesData.push({
       user_id: userId,
       label: `Tâche Test ${i + 1}`,
@@ -254,6 +256,7 @@ export async function seedUserData(
   // Créer des récompenses
   const recompensesData = []
   for (let i = 0; i < recompenses; i++) {
+    // @ts-ignore - Supabase insert type inference issue
     recompensesData.push({
       user_id: userId,
       label: `Récompense Test ${i + 1}`,

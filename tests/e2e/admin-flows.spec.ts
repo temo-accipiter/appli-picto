@@ -160,7 +160,7 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
 
       if (isSearchVisible) {
         // Rechercher par email
-        await searchInput.fill(testUsers[0].email)
+        await searchInput.fill(testUsers[0]!.email)
         await page.waitForTimeout(1000)
 
         // Vérifier que les résultats sont filtrés
@@ -168,7 +168,7 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
         const filteredCount = await filteredRows.count()
 
         console.log(
-          `✓ Filtrage : ${filteredCount} résultat(s) pour "${testUsers[0].email}"`
+          `✓ Filtrage : ${filteredCount} résultat(s) pour "${testUsers[0]!.email}"`
         )
       }
 
@@ -233,8 +233,8 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
     await page.goto('/login')
     await waitForPageStable(page)
 
-    await page.getByLabel(/email|e-mail/i).fill(testUsers[0].email)
-    await page.getByLabel(/mot de passe|password/i).fill(testUsers[0].password)
+    await page.getByLabel(/email|e-mail/i).fill(testUsers[0]!.email)
+    await page.getByLabel(/mot de passe|password/i).fill(testUsers[0]!.password)
     await page.waitForTimeout(200)
 
     await page
@@ -384,7 +384,7 @@ test.describe('Admin E2E - Gestion et Permissions', () => {
 
       if (isSelectorVisible) {
         // Changer le rôle vers "abonne"
-        await roleSelector.selectOption({ label: /abonné|premium|subscriber/i })
+        await roleSelector.selectOption({ label: 'abonne' })
         await page.waitForTimeout(500)
 
         // Sauvegarder

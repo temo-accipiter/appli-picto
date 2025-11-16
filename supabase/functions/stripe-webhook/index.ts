@@ -3,7 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.2'
 import Stripe from 'https://esm.sh/stripe@14.25.0?target=deno'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-  apiVersion: '2023-08-16',
+  apiVersion: '2023-08-16' as const,
 })
 
 const corsHeaders = {

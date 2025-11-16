@@ -177,6 +177,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
           // Créer les tâches manuellement via DB pour aller plus vite
           const tasksData = []
           for (let i = 0; i < tasksToCreate; i++) {
+            // @ts-ignore - Supabase insert type inference issue
             tasksData.push({
               user_id: userId,
               label: `Tâche Test ${i + 1}`,
@@ -296,6 +297,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     // Créer 5 tâches supplémentaires
     const tasksData = []
     for (let i = 0; i < 5; i++) {
+      // @ts-ignore - Supabase insert type inference issue
       tasksData.push({
         user_id: userId,
         label: `Tâche Limite ${i + 1}`,
@@ -450,6 +452,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     if (tasksToCreate > 0) {
       const tasksData = []
       for (let i = 0; i < tasksToCreate; i++) {
+        // @ts-ignore - Supabase insert type inference issue
         tasksData.push({
           user_id: userId,
           label: `Tâche ${i + 1}`,
@@ -774,6 +777,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       // Créer via DB pour aller plus vite
       const tasksData = []
       for (let i = 0; i < tasksToLimit; i++) {
+        // @ts-ignore - Supabase insert type inference issue
         tasksData.push({
           user_id: userId,
           label: `Tâche Limite ${i + 1}`,

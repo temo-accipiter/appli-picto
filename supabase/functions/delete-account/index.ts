@@ -48,7 +48,7 @@ async function verifyTurnstile(req: Request, token?: string) {
       body: form,
     }
   )
-  const data = await r.json().catch(() => ({}))
+  const data: any = await r.json().catch(() => ({}))
   const ok = !!data?.success
   // 👇 log utile côté Dashboard
   console.log('turnstile_verify', { ok, 'error-codes': data['error-codes'] })
@@ -68,7 +68,7 @@ async function removeAllInPrefix(
     return
   }
   if (!data || data.length === 0) return
-  const paths = data.map((f: { name: string }) => `${prefix}/${f.name}`)
+  const paths = data.map((f: any) => `${prefix}/${f.name}`)
   const { error: remErr } = await admin.storage.from(bucket).remove(paths)
   if (remErr)
     console.warn(`storage remove error ${bucket}/${prefix}`, remErr.message)
@@ -91,7 +91,7 @@ async function cancelStripeIfAny(
     .limit(1)
     .maybeSingle()
 
-  const subscriptionId = sub?.stripe_subscription_id
+  const subscriptionId = sub?.stripe_subscription_id as string | undefined
   if (!subscriptionId) {
     // Pas d’ID → on fait rien (évite de lister côté Stripe pour garder le code simple & sûr)
     return

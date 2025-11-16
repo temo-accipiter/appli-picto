@@ -455,7 +455,7 @@ test.describe('Stripe E2E - Parcours Paiement', () => {
       const match = quotaText.match(/(\d+)\s*\/\s*(\d+)/)
       if (match) {
         const [, _current, limit] = match
-        const limitNum = parseInt(limit, 10)
+        const limitNum = parseInt(limit!, 10)
         // Les quotas premium devraient être beaucoup plus élevés (40+ selon docs)
         expect(limitNum).toBeGreaterThanOrEqual(40)
       }

@@ -192,7 +192,7 @@ async function checkCriticalErrors(
       details: {
         "Nombre d'erreurs": errors.length,
         Période: `${config.periodMinutes} minutes`,
-        'Dernière erreur': errors[0]?.details?.error || 'N/A',
+        'Dernière erreur': (errors[0]?.details as any)?.error || 'N/A',
       },
     }
   }
@@ -308,7 +308,7 @@ serve(async req => {
 
     if (req.method === 'POST') {
       try {
-        const body = await req.json()
+        const body: any = await req.json()
         if (body.config) {
           config = { ...DEFAULT_CONFIG, ...body.config }
         }

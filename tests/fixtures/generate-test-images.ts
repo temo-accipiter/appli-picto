@@ -1,7 +1,7 @@
 // tests/fixtures/generate-test-images.js
 // Génération d'images de test pour E2E (PNG, JPEG)
 
-import { createCanvas } from 'canvas'
+import { createCanvas, Canvas } from 'canvas'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -42,7 +42,7 @@ console.log('🖼️  Génération test-image.png (50 KB)...')
 const pngCanvas = createTestImage(256, 256, 'PNG TEST', '#A8D5FF', '#2E5C7A')
 const pngBuffer = pngCanvas.toBuffer('image/png', {
   compressionLevel: 6,
-  filters: pngCanvas.PNG_FILTER_NONE,
+  filters: Canvas.PNG_FILTER_NONE,
 })
 fs.writeFileSync(path.join(__dirname, 'test-image.png'), pngBuffer)
 console.log(

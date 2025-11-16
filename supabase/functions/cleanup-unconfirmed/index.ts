@@ -31,7 +31,7 @@ serve(async _req => {
     if (delErr) {
       console.error(`⚠️ Erreur suppression ${user.email} :`, delErr)
     } else {
-      deleted.push(user.email)
+      deleted.push(user.email || 'unknown')
     }
   }
 

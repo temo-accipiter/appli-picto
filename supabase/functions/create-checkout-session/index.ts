@@ -161,7 +161,7 @@ serve(async (req: Request) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-08-16' })
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-08-16' as const })
 
     const { data: existing } = await supabase
       .from('abonnements')
@@ -219,7 +219,7 @@ serve(async (req: Request) => {
       .select('stripe_customer')
       .eq('user_id', user.id)
       .maybeSingle()
-    if (abo?.stripe_customer) customerId = abo.stripe_customer
+    if (abo?.stripe_customer) customerId = abo.stripe_customer as string
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',

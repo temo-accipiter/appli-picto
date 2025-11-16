@@ -45,7 +45,7 @@ export const mockStripeCustomer: Stripe.Customer = {
 /**
  * Mock d'une Subscription Stripe active
  */
-export const mockStripeSubscriptionActive: Stripe.Subscription = {
+export const mockStripeSubscriptionActive = {
   id: 'sub_test_123456789',
   object: 'subscription',
   application: null,
@@ -108,7 +108,7 @@ export const mockStripeSubscriptionActive: Stripe.Subscription = {
     end_behavior: { missing_payment_method: 'create_invoice' },
   },
   trial_start: null,
-}
+} as Stripe.Subscription
 
 /**
  * Mock d'une Subscription Stripe annulée
@@ -124,7 +124,7 @@ export const mockStripeSubscriptionCanceled: Stripe.Subscription = {
 /**
  * Mock d'une Checkout Session
  */
-export const mockStripeCheckoutSession: Stripe.Checkout.Session = {
+export const mockStripeCheckoutSession = {
   id: 'cs_test_123456789',
   object: 'checkout.session',
   after_expiration: null,
@@ -191,7 +191,7 @@ export const mockStripeCheckoutSession: Stripe.Checkout.Session = {
   },
   ui_mode: 'hosted',
   url: 'https://checkout.stripe.com/c/pay/cs_test_123456789',
-}
+} as Stripe.Checkout.Session
 
 /**
  * Mock d'un Price Stripe
