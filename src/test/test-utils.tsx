@@ -6,12 +6,13 @@
  * qui dépendent de contexts (Auth, Permissions, Toast, etc.)
  *
  * Usage :
- * import { renderWithProviders } from '@/test/test-utils'
+ * import { renderWithProviders, renderHookWithProviders } from '@/test/test-utils'
  *
  * renderWithProviders(<MyComponent />)
+ * renderHookWithProviders(() => useMyHook())
  */
 
-import { render, type RenderOptions } from '@testing-library/react'
+import { render, renderHook, type RenderOptions } from '@testing-library/react'
 import { type ReactElement, type ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import {
@@ -66,6 +67,20 @@ export function renderWithProviders(
   options?: Omit<RenderOptions, 'wrapper'>
 ) {
   return render(ui, { wrapper: AllTheProviders, ...options })
+}
+
+/**
+ * Helper pour renderHook avec providers
+ *
+ * @param hook - Hook à tester
+ * @param options - Options RTL
+ * @returns Résultat RTL renderHook
+ */
+export function renderHookWithProviders<Result, Props>(
+  hook: (props: Props) => Result,
+  options?: Omit<RenderOptions, 'wrapper'>
+) {
+  return renderHook(hook, { wrapper: AllTheProviders, ...options })
 }
 
 /**

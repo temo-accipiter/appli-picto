@@ -12,8 +12,9 @@
  * Compare avec useRecompenses.test.js (ancienne approche)
  */
 
-import { renderHook, waitFor, act } from '@testing-library/react'
+import { waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { renderHookWithProviders } from '@/test/test-utils'
 import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { mockRecompenses, TEST_USER_ID } from '@/test/mocks/data'
@@ -21,23 +22,14 @@ import { mockRecompenses, TEST_USER_ID } from '@/test/mocks/data'
 // Import réel du hook
 import useRecompenses from './useRecompenses'
 
-// Mocks simples des contexts
-const mockUser = { id: TEST_USER_ID }
-const mockToast = { show: vi.fn() }
-
-vi.mock('@/hooks', () => ({
-  useAuth: () => ({ user: mockUser, authReady: true }),
-  useToast: () => mockToast,
-  useI18n: () => ({ t: (key: string) => key }),
-}))
-
+// Mock deleteImageIfAny
 vi.mock('@/utils/storage/deleteImageIfAny', () => ({
   default: vi.fn(() => Promise.resolve({ deleted: true, error: null })),
 }))
 
 describe.skip('useRecompenses (avec MSW)', () => {
-  // TODO: Ces tests nécessitent renderWithProviders pour fonctionner correctement
-  // Ils démontrent la migration vers MSW mais nécessitent plus de configuration
+  // TODO: Ces tests nécessitent de mocker l'URL Supabase pour MSW
+  // Les vrais providers utilisent l'URL réelle, pas localhost:54321
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -49,7 +41,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
       // (voir src/test/mocks/handlers.js)
 
       // Act
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       // Assert
       await waitFor(
@@ -81,7 +73,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
         .mockImplementation(() => {})
 
       // Act
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       // Assert
       await waitFor(() => {
@@ -114,7 +106,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
       )
 
       // Act
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       // Assert
       await waitFor(() => {
@@ -129,7 +121,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
   describe('Sélection de récompense', () => {
     it('✅ doit sélectionner une récompense et désélectionner les autres', async () => {
       // Arrange
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       await waitFor(() => {
         expect(result.current.recompenses).toHaveLength(2)
@@ -165,7 +157,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
 
     it('✅ doit désélectionner toutes les récompenses', async () => {
       // Arrange
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       await waitFor(() => {
         expect(result.current.recompenses).toHaveLength(2)
@@ -198,7 +190,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
   describe('Création de récompense', () => {
     it('✅ doit créer une nouvelle récompense', async () => {
       // Arrange
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       await waitFor(() => {
         expect(result.current.recompenses).toHaveLength(2)
@@ -249,7 +241,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
   describe('Suppression de récompense', () => {
     it('✅ doit supprimer une récompense', async () => {
       // Arrange
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       await waitFor(() => {
         expect(result.current.recompenses).toHaveLength(2)
@@ -279,7 +271,7 @@ describe.skip('useRecompenses (avec MSW)', () => {
   describe('Mise à jour du label', () => {
     it("✅ doit mettre à jour le label d'une récompense", async () => {
       // Arrange
-      const { result } = renderHook(() => useRecompenses())
+      const { result } = renderHookWithProviders(() => useRecompenses())
 
       await waitFor(() => {
         expect(result.current.recompenses).toHaveLength(2)
