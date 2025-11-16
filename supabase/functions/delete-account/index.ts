@@ -56,7 +56,7 @@ async function verifyTurnstile(req: Request, token?: string) {
 }
 // --- Storage helpers --------------------------------------------------------
 async function removeAllInPrefix(
-  admin: ReturnType<typeof createClient>,
+  admin: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   bucket: string,
   prefix: string
 ) {
@@ -76,7 +76,7 @@ async function removeAllInPrefix(
 
 // --- Stripe (optionnel) -----------------------------------------------------
 async function cancelStripeIfAny(
-  admin: ReturnType<typeof createClient>,
+  admin: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   userId: string
 ) {
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || ''
@@ -119,6 +119,7 @@ async function cancelStripeIfAny(
 }
 
 // --- Main handler -----------------------------------------------------------
+// @ts-expect-error - Deno.serve is available in Deno runtime
 Deno.serve(async (req: Request) => {
   // Preflight CORS
   if (req.method === 'OPTIONS') {

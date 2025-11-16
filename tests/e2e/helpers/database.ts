@@ -223,7 +223,8 @@ export async function seedUserData(
   const { taches = 5, recompenses = 3, categories = 2 } = options
 
   // Créer des catégories
-  const categoriesData = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const categoriesData: any[] = []
   for (let i = 0; i < categories; i++) {
     categoriesData.push({
       user_id: userId,
@@ -238,7 +239,8 @@ export async function seedUserData(
     .select()
 
   // Créer des tâches
-  const tachesData = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tachesData: any[] = []
   for (let i = 0; i < taches; i++) {
     tachesData.push({
       user_id: userId,
@@ -254,7 +256,8 @@ export async function seedUserData(
   await client.from('taches').insert(tachesData)
 
   // Créer des récompenses
-  const recompensesData = []
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recompensesData: any[] = []
   for (let i = 0; i < recompenses; i++) {
     recompensesData.push({
       user_id: userId,

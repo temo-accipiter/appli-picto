@@ -24,14 +24,14 @@ serve(async _req => {
     return !confirmed && ageInDays >= 7 // 📅 seuil = 7 jours
   })
 
-  const deleted = []
+  const deleted: string[] = []
 
   for (const user of toDelete) {
     const { error: delErr } = await supabase.auth.admin.deleteUser(user.id)
     if (delErr) {
       console.error(`⚠️ Erreur suppression ${user.email} :`, delErr)
     } else {
-      deleted.push(user.email)
+      deleted.push(user.email ?? 'unknown')
     }
   }
 

@@ -42,6 +42,7 @@ console.log('🖼️  Génération test-image.png (50 KB)...')
 const pngCanvas = createTestImage(256, 256, 'PNG TEST', '#A8D5FF', '#2E5C7A')
 const pngBuffer = pngCanvas.toBuffer('image/png', {
   compressionLevel: 6,
+  // @ts-expect-error - PNG_FILTER_NONE is a static property
   filters: pngCanvas.PNG_FILTER_NONE,
 })
 fs.writeFileSync(path.join(__dirname, 'test-image.png'), pngBuffer)

@@ -8,6 +8,8 @@
 import { vi } from 'vitest'
 import type Stripe from 'stripe'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Mock d'un Customer Stripe
  */
@@ -45,7 +47,7 @@ export const mockStripeCustomer: Stripe.Customer = {
 /**
  * Mock d'une Subscription Stripe active
  */
-export const mockStripeSubscriptionActive: Stripe.Subscription = {
+export const mockStripeSubscriptionActive = {
   id: 'sub_test_123456789',
   object: 'subscription',
   application: null,
@@ -113,7 +115,7 @@ export const mockStripeSubscriptionActive: Stripe.Subscription = {
 /**
  * Mock d'une Subscription Stripe annulée
  */
-export const mockStripeSubscriptionCanceled: Stripe.Subscription = {
+export const mockStripeSubscriptionCanceled = {
   ...mockStripeSubscriptionActive,
   id: 'sub_test_canceled',
   status: 'canceled',
@@ -124,7 +126,7 @@ export const mockStripeSubscriptionCanceled: Stripe.Subscription = {
 /**
  * Mock d'une Checkout Session
  */
-export const mockStripeCheckoutSession: Stripe.Checkout.Session = {
+export const mockStripeCheckoutSession = {
   id: 'cs_test_123456789',
   object: 'checkout.session',
   after_expiration: null,

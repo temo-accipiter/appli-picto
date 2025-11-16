@@ -52,7 +52,7 @@ interface WeeklyStats {
  * Récupère les statistiques utilisateurs
  */
 async function getUserStats(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   weekStart: Date
 ): Promise<WeeklyStats['users']> {
   // Total utilisateurs
@@ -85,7 +85,7 @@ async function getUserStats(
  * Récupère les statistiques d'abonnements
  */
 async function getSubscriptionStats(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   weekStart: Date
 ): Promise<WeeklyStats['subscriptions']> {
   // Abonnements actifs
@@ -119,7 +119,7 @@ async function getSubscriptionStats(
  * Récupère les statistiques d'erreurs
  */
 async function getErrorStats(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   weekStart: Date
 ): Promise<WeeklyStats['errors']> {
   // Erreurs webhook
@@ -146,7 +146,7 @@ async function getErrorStats(
  * Récupère les statistiques d'images
  */
 async function getImageStats(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   weekStart: Date
 ): Promise<WeeklyStats['images']> {
   const { data: metrics } = await supabase
@@ -164,12 +164,14 @@ async function getImageStats(
     }
   }
 
-  const compressed = metrics.filter(m => m.compression_ratio > 0).length
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const metricsTyped = metrics as any[]
+  const compressed = metricsTyped.filter(m => m.compression_ratio > 0).length
   const avgRatio =
-    metrics.reduce((sum, m) => sum + (m.compression_ratio || 0), 0) /
-    metrics.length
+    metricsTyped.reduce((sum, m) => sum + (m.compression_ratio || 0), 0) /
+    metricsTyped.length
   const storageSaved =
-    metrics.reduce((sum, m) => sum + (m.original_size - m.compressed_size), 0) /
+    metricsTyped.reduce((sum, m) => sum + ((m.original_size || 0) - (m.compressed_size || 0)), 0) /
     (1024 * 1024) // Convert to MB
 
   return {
