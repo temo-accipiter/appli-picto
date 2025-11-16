@@ -23,7 +23,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return null
   }
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('🛠️ Mode dev → Service Worker désactivé')
     return null
   }

@@ -35,7 +35,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
   visibilityHandler = async () => {
     if (document.visibilityState === 'hidden') {
       tabHiddenSince = Date.now()
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('[Visibility] 👁️ Tab hidden')
       }
       return
@@ -46,7 +46,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     const hiddenDuration = tabHiddenSince ? Date.now() - tabHiddenSince : 0
     tabHiddenSince = null
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log(
         `[Visibility] 👁️ Tab visible (was hidden ${Math.round(hiddenDuration / 1000)}s)`
       )
@@ -54,7 +54,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
     // Skip si absence très courte
     if (hiddenDuration < MIN_HIDDEN_DURATION) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('[Visibility] ⏭️ Short absence, skipping')
       }
       return
@@ -63,24 +63,24 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     // 🔑 Éviter recréations en rafale
     const timeSinceLastRecreation = Date.now() - lastRecreationTime
     if (timeSinceLastRecreation < MIN_RECREATION_INTERVAL) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('[Visibility] ⏭️ Too soon since last recreation, skipping')
       }
       return
     }
 
     // Test API avec timeout court
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Visibility] 🔍 Testing API...')
     }
 
     try {
       const supabaseUrl =
         (supabaseClient as unknown as SupabaseClientInternal).supabaseUrl ||
-        import.meta.env.VITE_SUPABASE_URL
+        process.env.NEXT_PUBLIC_SUPABASE_URL
       const supabaseKey =
         (supabaseClient as unknown as SupabaseClientInternal).supabaseKey ||
-        import.meta.env.VITE_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT)
@@ -99,7 +99,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
       if (response.ok || response.status === 404) {
         // API répond (même 404 = API fonctionne)
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.log('[Visibility] ✅ API healthy, no recreation needed')
         }
         return
@@ -108,7 +108,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
       }
     } catch (apiError) {
       // API ne répond pas → Recréer
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         const errorMsg =
           apiError instanceof Error ? apiError.message : String(apiError)
         console.warn('[Visibility] ❌ API check failed:', errorMsg)
@@ -125,7 +125,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
         })
         window.dispatchEvent(event)
 
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.log(
             '[Visibility] ✅ SDK recreated',
             session ? '(session restored)' : '(no session)'
@@ -135,7 +135,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
         console.error('[Visibility] ❌ Recreation failed:', recreateError)
 
         // Dernier recours après délai
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('[Visibility] 🔄 Will reload page in 2s...')
         }
         setTimeout(() => window.location.reload(), 2000)
@@ -145,7 +145,7 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
   document.addEventListener('visibilitychange', visibilityHandler)
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('[Visibility] 👁️ Started monitoring (PRAGMATIC mode)')
   }
 }
@@ -158,7 +158,7 @@ export function stopVisibilityHandler(): void {
     document.removeEventListener('visibilitychange', visibilityHandler)
     visibilityHandler = null
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('[Visibility] 👁️ Stopped monitoring')
     }
   }

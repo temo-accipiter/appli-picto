@@ -58,7 +58,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     })
 
     // Envoyer à Sentry si disponible
-    if (import.meta.env.VITE_SENTRY_DSN) {
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       import('@/config/sentry')
         .then(({ captureError }) => {
           captureError(error, {
@@ -121,7 +121,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             </div>
 
             {/* Détails de l'erreur (visible en DEV uniquement) */}
-            {import.meta.env.DEV && this.state.error && (
+            {process.env.NODE_ENV === 'development' && this.state.error && (
               <details className="error-boundary__details">
                 <summary className="error-boundary__details-summary">
                   Détails techniques (dev)

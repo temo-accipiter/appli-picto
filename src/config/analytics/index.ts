@@ -2,7 +2,7 @@
 import { hasConsent } from '@/utils/consent'
 
 /** === GA4 (charge uniquement si consentement + ID valide) === */
-const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()
+const GA_ID = (process.env.NEXT_PUBLIC_GA4_ID || '').trim()
 const isValidGA = id => /^G-[A-Z0-9]{6,}$/.test(id) // évite les IDs factices
 
 function injectScript(src) {

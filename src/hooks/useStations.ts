@@ -1,6 +1,8 @@
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 
+type TransportType = 'metro' | 'bus' | 'tram' | 'rer'
+
 interface Station {
   id: string
   label: string
@@ -19,7 +21,7 @@ interface UseStationsReturn {
 
 export default function useStations(
   ligne: string = '1',
-  type: string = 'metro'
+  type: TransportType = 'metro'
 ): UseStationsReturn {
   const [stations, setStations] = useState<Station[]>([])
   const [loading, setLoading] = useState(true)

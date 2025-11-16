@@ -47,7 +47,7 @@ export default function useTachesDnd(onChange, reload = 0) {
 
         // 2) Erreur "abort-like" → on ignore aussi
         if (error && isAbortLike(error)) {
-          if (import.meta.env.DEV)
+          if (process.env.NODE_ENV === 'development')
             console.debug('useTachesDnd: abort/transitoire ignoré')
           return
         }
@@ -55,7 +55,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         // 3) Autre erreur → logs + retry (inchangé, logs sûrs)
         if (error) {
           console.error(`Erreur fetch Supabase : ${formatErr(error)}`)
-          if (import.meta.env.DEV) {
+          if (process.env.NODE_ENV === 'development') {
             console.warn("Détails de l'erreur Supabase:", error) // objet "plain"
           }
 
@@ -102,7 +102,7 @@ export default function useTachesDnd(onChange, reload = 0) {
       } catch (err) {
         // Abort (unmount/re-render) → pas d’erreur rouge
         if (isAbortLike(err)) {
-          if (import.meta.env.DEV)
+          if (process.env.NODE_ENV === 'development')
             console.debug('useTachesDnd: abort/transitoire ignoré (catch)')
           return
         }
@@ -110,7 +110,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         console.error(
           `Erreur inattendue lors du chargement des tâches: ${formatErr(err)}`
         )
-        if (import.meta.env.DEV) console.warn("Détails de l'erreur:", err)
+        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
 
         if (retryCount < 3) {
           const delay = 1000 * (retryCount + 1)
@@ -142,13 +142,13 @@ export default function useTachesDnd(onChange, reload = 0) {
       )
 
       if (aborted || (error && isAbortLike(error))) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('toggleDone: abort/transitoire ignoré')
         return
       }
       if (error) {
         console.error(`Erreur mise à jour tâche: ${formatErr(error)}`)
-        if (import.meta.env.DEV) console.warn("Détails de l'erreur:", error)
+        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
         show(t('toasts.taskUpdateError'), 'error')
         return
       }
@@ -159,19 +159,19 @@ export default function useTachesDnd(onChange, reload = 0) {
       const count = Object.values(updated).filter(Boolean).length
       onChange?.(count, taches.length)
       // Toast de succès discret pour ne pas polluer l'UI en drag-and-drop
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('✅ Tâche mise à jour avec succès')
       }
     } catch (err) {
       if (isAbortLike(err)) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('toggleDone: abort/transitoire ignoré (catch)')
         return
       }
       console.error(
         `Erreur inattendue lors de la mise à jour de la tâche: ${formatErr(err)}`
       )
-      if (import.meta.env.DEV) console.warn("Détails de l'erreur:", err)
+      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
       show(t('toasts.taskUpdateError'), 'error')
     }
   }
@@ -190,13 +190,13 @@ export default function useTachesDnd(onChange, reload = 0) {
       )
 
       if (aborted || (error && isAbortLike(error))) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('resetAll: abort/transitoire ignoré')
         return
       }
       if (error) {
         console.error(`Erreur reset tâches: ${formatErr(error)}`)
-        if (import.meta.env.DEV) console.warn("Détails de l'erreur:", error)
+        if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
         show(t('toasts.taskResetError'), 'error')
         return
       }
@@ -207,14 +207,14 @@ export default function useTachesDnd(onChange, reload = 0) {
       show(t('toasts.allTasksReset'), 'success')
     } catch (err) {
       if (isAbortLike(err)) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('resetAll: abort/transitoire ignoré (catch)')
         return
       }
       console.error(
         `Erreur inattendue lors du reset des tâches: ${formatErr(err)}`
       )
-      if (import.meta.env.DEV) console.warn("Détails de l'erreur:", err)
+      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", err)
       show(t('toasts.taskResetError'), 'error')
     }
   }
@@ -268,12 +268,12 @@ export default function useTachesDnd(onChange, reload = 0) {
       // Pas besoin de recharger, l'état local est déjà à jour
     } catch (error) {
       if (isAbortLike(error)) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('saveOrder: abort/transitoire ignoré')
         return
       }
       console.error(`Erreur sauvegarde ordre: ${formatErr(error)}`)
-      if (import.meta.env.DEV) console.warn("Détails de l'erreur:", error)
+      if (process.env.NODE_ENV === 'development') console.warn("Détails de l'erreur:", error)
 
       // En cas d'erreur, recharger pour restaurer l'état correct
       await loadTaches()

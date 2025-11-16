@@ -46,7 +46,7 @@ export default function DemoSignedImage({
           : filePath
 
         // Debug logs désactivés pour réduire le bruit dans la console
-        // if (import.meta.env.DEV) {
+        // if (process.env.NODE_ENV === 'development') {
         //   console.log('🔍 DemoSignedImage - Chemin nettoyé:', cleanPath)
         // }
 
@@ -55,7 +55,7 @@ export default function DemoSignedImage({
           .from('demo-images')
           .getPublicUrl(cleanPath)
 
-        // if (import.meta.env.DEV) {
+        // if (process.env.NODE_ENV === 'development') {
         //   console.log('🔍 DemoSignedImage - URL générée:', data?.publicUrl)
         // }
 
@@ -67,7 +67,7 @@ export default function DemoSignedImage({
           throw new Error("Impossible de générer l'URL publique")
         }
       } catch (err) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('⚠️ Erreur DemoSignedImage:', (err as Error).message)
           console.warn('⚠️ Chemin original:', filePath)
         }
@@ -87,7 +87,7 @@ export default function DemoSignedImage({
 
   // Gestion des erreurs d'image
   const handleImageError = () => {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.warn('⚠️ Image de démo corrompue détectée, tentative de retry...')
     }
     // Retry automatique après 2 secondes

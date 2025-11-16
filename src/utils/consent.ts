@@ -145,7 +145,7 @@ export async function tryLogServerConsent(
   record: Partial<ConsentRecord>
 ): Promise<void> {
   try {
-    const base = import.meta.env.VITE_SUPABASE_FUNCTIONS_URL
+    const base = process.env.NEXT_PUBLIC_SUPABASE_FUNCTIONS_URL
     if (!base) {
       console.warn('❌ Supabase Functions URL not configured')
       return
@@ -163,12 +163,12 @@ export async function tryLogServerConsent(
     }
 
     const result = await response.json()
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('✅ Consent logged server-side:', result)
     }
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
-    if (import.meta.env.DEV && (err as Error).message?.includes('503')) {
+    if (process.env.NODE_ENV === 'development' && (err as Error).message?.includes('503')) {
       console.debug(
         'ℹ️ Edge function log-consent non disponible (normal en dev local)'
       )

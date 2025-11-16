@@ -40,7 +40,7 @@ export function startSupabaseHeartbeat(
 
     // Éviter les checks en rafale (min 10s entre deux checks)
     if (isCheckRunning || now - lastCheckTime < MIN_CHECK_INTERVAL) {
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log(
           '[Heartbeat] ⏭️ Check skipped (cooldown or already running)'
         )
@@ -55,7 +55,7 @@ export function startSupabaseHeartbeat(
       const health = await checkSupabaseHealth(supabaseClient)
 
       if (!health.healthy && health.shouldReset) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn('[Heartbeat] 💔 SDK corrupted, reloading page...')
         }
 
@@ -93,7 +93,7 @@ export function startSupabaseHeartbeat(
   //   document.addEventListener('visibilitychange', visibilityListener)
   // }
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('[Heartbeat] 💓 Started monitoring Supabase SDK health')
   }
 }
@@ -116,7 +116,7 @@ export function stopSupabaseHeartbeat(): void {
   lastCheckTime = 0
   isCheckRunning = false
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('[Heartbeat] 💔 Stopped monitoring')
   }
 }

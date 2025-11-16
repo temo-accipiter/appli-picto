@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { hasConsent } from '@/utils/consent'
 
-const GA_ID = (import.meta.env.VITE_GA4_ID || '').trim()
+const GA_ID = (process.env.NEXT_PUBLIC_GA4_ID || '').trim()
 const isValidGA = (id: string): boolean => /^G-[A-Z0-9]{6,}$/.test(id)
 
 let lastHref: string | null = null
@@ -12,7 +12,7 @@ const sentForHref = new Set<string>() // anti-doublons auto-événements
 
 // Map Price → plan (complète ici si tu ajoutes d'autres offres)
 const PRICE_MAP: Record<string, string> = {
-  [(import.meta.env.VITE_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
+  [(process.env.NEXT_PUBLIC_STRIPE_PRICE_ID || '').trim()]: 'monthly_basic',
   // 'price_ABCDEF...': 'monthly_pro',
 }
 

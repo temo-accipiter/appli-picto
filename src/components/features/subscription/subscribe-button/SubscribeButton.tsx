@@ -20,7 +20,7 @@ export default function SubscribeButton() {
         'create-checkout-session',
         {
           body: {
-            price_id: import.meta.env.VITE_STRIPE_PRICE_ID,
+            price_id: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID,
             success_url: `${window.location.origin}/profil`,
             cancel_url: `${window.location.origin}/profil`,
           },

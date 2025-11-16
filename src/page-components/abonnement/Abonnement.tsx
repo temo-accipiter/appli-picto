@@ -98,7 +98,7 @@ export default function Abonnement() {
   const handleBillingPortal = async () => {
     setPortalLoading(true)
     try {
-      const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
+      const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID
 
       const { data, error } = await supabase.functions.invoke<CheckoutResponse>(
         'create-checkout-session',

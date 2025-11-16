@@ -34,7 +34,7 @@ export default function AvatarProfil({
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 AvatarProfil - handleFileChange début', {
         fileName: file.name,
         fileSize: file.size,
@@ -50,7 +50,7 @@ export default function AvatarProfil({
         return
       }
 
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('🔍 AvatarProfil - Type OK, validation header...')
       }
 
@@ -61,7 +61,7 @@ export default function AvatarProfil({
         return
       }
 
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('🔍 AvatarProfil - Header OK')
       }
     } catch (err) {
@@ -91,7 +91,7 @@ export default function AvatarProfil({
       lastModified: compressed.lastModified,
     })
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 AvatarProfil - Avant appel onUpload', {
         finalFileName: finalFile.name,
         hasOnUpload: !!onUpload,
@@ -101,7 +101,7 @@ export default function AvatarProfil({
     setImageError('')
     onUpload?.(finalFile) // on laisse le parent uploader vers le bucket 'avatars'
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 AvatarProfil - Après appel onUpload')
     }
   }

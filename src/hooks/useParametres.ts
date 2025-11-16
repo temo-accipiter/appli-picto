@@ -52,7 +52,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
     if (error) {
       // Important: si c'est un blocage CORS Safari, ne pas tenter l'insert par défaut.
       if (isCorsAccessControl(error)) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.info(
             'useParametres: blocage CORS/ITP détecté (Safari). Re-essai/ignorer.'
           )
@@ -74,7 +74,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
     if (!data) {
       if (autoInit) {
         // Auto-initialiser avec les valeurs par défaut
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.info(
             'useParametres: row not found, auto-initializing defaults'
           )
@@ -121,7 +121,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
       if (aborted || (error && isAbortLike(error)))
         return { ok: false, error: null }
       if (error) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.error(
             'Erreur insertion paramètres par défaut :',
             String((error as Error)?.message ?? error)
@@ -167,7 +167,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
       if (aborted || (error && isAbortLike(error)))
         return { ok: false, error: null }
       if (error) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.error(
             'Erreur mise à jour paramètres :',
             String((error as Error)?.message ?? error)

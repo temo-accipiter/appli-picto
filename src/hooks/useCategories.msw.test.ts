@@ -18,6 +18,19 @@ import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { mockCategories, TEST_USER_ID } from '@/test/mocks/data'
 
+// Mock Toast context
+const mockToast = vi.hoisted(() => ({
+  show: vi.fn(),
+}))
+
+vi.mock('@/hooks', async () => {
+  const actual = await vi.importActual('@/hooks')
+  return {
+    ...actual,
+    useToast: () => mockToast,
+  }
+})
+
 // Import réel du hook
 import useCategories from './useCategories'
 
@@ -269,11 +282,9 @@ describe.skip('useCategories (avec MSW)', () => {
   describe('Recharger après modification', () => {
     it('✅ doit recharger après ajout de catégorie', async () => {
       // Arrange
-      const { result, rerender } = renderHookWithProviders(
-        ({ reload }: { reload: number }) => useCategories(reload),
-        {
-          initialProps: { reload: 0 },
-        }
+      let reload = 0
+      const { result, rerender } = renderHookWithProviders(() =>
+        useCategories(reload)
       )
 
       await waitFor(() => {
@@ -283,7 +294,8 @@ describe.skip('useCategories (avec MSW)', () => {
       const initialCount = result.current.categories.length
 
       // Act - Simuler un reload
-      rerender({ reload: 1 })
+      reload = 1
+      rerender()
 
       // Assert - Le hook devrait refetch
       await waitFor(() => {

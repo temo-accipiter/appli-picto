@@ -19,7 +19,7 @@ export const setupGlobalErrorHandlers = (): void => {
   window.addEventListener('error', (event: ErrorEvent) => {
     console.error('🚨 Uncaught error:', event.error || event.message)
 
-    if (import.meta.env.VITE_SENTRY_DSN) {
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
       captureError(event.error || new Error(event.message), {
         source: 'window.onerror',
         filename: event.filename,
@@ -35,7 +35,7 @@ export const setupGlobalErrorHandlers = (): void => {
     (event: PromiseRejectionEvent) => {
       console.error('🚨 Unhandled promise rejection:', event.reason)
 
-      if (import.meta.env.VITE_SENTRY_DSN) {
+      if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
         const error =
           event.reason instanceof Error
             ? event.reason
@@ -50,7 +50,7 @@ export const setupGlobalErrorHandlers = (): void => {
   )
 
   // Log de confirmation
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('✅ Global error handlers activés')
   }
 }
@@ -60,7 +60,7 @@ export const setupGlobalErrorHandlers = (): void => {
  * Permet de tracker tous les console.error dans Sentry
  */
 export const setupConsoleErrorTracking = (): void => {
-  if (!import.meta.env.VITE_SENTRY_DSN) return
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return
 
   const originalError = console.error.bind(console)
 
@@ -75,7 +75,7 @@ export const setupConsoleErrorTracking = (): void => {
     }
   }
 
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('✅ Console.error tracking activé')
   }
 }

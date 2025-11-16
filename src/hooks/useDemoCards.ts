@@ -127,7 +127,7 @@ export default function useDemoCards(): UseDemoCardsReturn {
       )
 
       if (aborted || (fetchError && isAbortLike(fetchError))) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.debug('useDemoCards: requête abortée (ignoré)')
         setLoading(false)
         return

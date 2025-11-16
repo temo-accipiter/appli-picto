@@ -77,7 +77,7 @@ export const PermissionsDebug = () => {
   }, [featurePermissions, debouncedSearchTerm])
 
   // N'afficher que pour les administrateurs en développement
-  if (import.meta.env.PROD || !isAdmin) {
+  if (process.env.NODE_ENV === 'production' || !isAdmin) {
     return null
   }
 

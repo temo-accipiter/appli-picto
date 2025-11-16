@@ -45,7 +45,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // 🆕 Synchroniser l'utilisateur avec Sentry
   useEffect(() => {
-    if (!import.meta.env.VITE_SENTRY_DSN) return
+    if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return
 
     import('@/config/sentry')
       .then(({ setSentryUser }) => {
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const customEvent = event as SupabaseClientRecreatedEvent
       const { session } = customEvent.detail
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log(
           '[Auth] 🔄 Supabase client was recreated, updating auth state...'
         )
@@ -98,7 +98,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
       )
 
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV === 'development') {
         console.log('[Auth] ✅ Auth state refreshed after client recreation')
       }
 
@@ -130,7 +130,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           sessionData = result.data
           sErr = result.error || null
         } catch {
-          if (import.meta.env.DEV) {
+          if (process.env.NODE_ENV === 'development') {
             console.warn('[Auth] getSession timeout, recreating SDK client...')
           }
 
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             const { session: restoredSession } = await recreateSupabaseClient()
             sessionData = restoredSession ? { session: restoredSession } : null
 
-            if (import.meta.env.DEV) {
+            if (process.env.NODE_ENV === 'development') {
               console.log('[Auth] ✅ SDK client recreated after timeout')
             }
           } catch (recreateError) {
@@ -151,7 +151,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
 
-        if (sErr && import.meta.env.DEV)
+        if (sErr && process.env.NODE_ENV === 'development')
           console.warn('[Auth] getSession error:', sErr)
 
         let sessionUser = sessionData?.session?.user ?? null
@@ -182,7 +182,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           sub?.subscription?.unsubscribe?.()
         }
       } catch (e) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.warn('[Auth] unexpected init error:', e)
         setError(e as Error)
         // Ne jamais bloquer : on annonce ready même en erreur
@@ -207,7 +207,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await supabase.auth.signOut()
     } catch (e) {
-      if (import.meta.env.DEV) console.warn('[Auth] signOut error:', e)
+      if (process.env.NODE_ENV === 'development') console.warn('[Auth] signOut error:', e)
       setError(e as Error)
     } finally {
       setUser(null)

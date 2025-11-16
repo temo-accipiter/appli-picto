@@ -121,7 +121,7 @@ export default function UserMenu() {
       if (cancelled) return
       if (aborted || (error && isAbortLike(error))) return
       if (error) {
-        if (import.meta.env.DEV)
+        if (process.env.NODE_ENV === 'development')
           console.warn(
             'profiles.pseudo fetch:',
             String(error?.message ?? error)
@@ -150,7 +150,7 @@ export default function UserMenu() {
     if (checkingOutRef.current) return
     checkingOutRef.current = true
 
-    const priceId = import.meta.env.VITE_STRIPE_PRICE_ID
+    const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID
 
     if (!priceId || !/^price_[a-zA-Z0-9]+$/.test(priceId)) {
       alert('⚠️ VITE_STRIPE_PRICE_ID est vide ou invalide (attendu: price_...)')
@@ -184,7 +184,7 @@ export default function UserMenu() {
       const token = session?.session?.access_token
 
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`,
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`,
         {
           method: 'POST',
           headers: {

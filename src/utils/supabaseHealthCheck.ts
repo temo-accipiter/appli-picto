@@ -76,7 +76,7 @@ function logHealth(
   }
 
   // Log console en dev
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     const consoleMethod =
       level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'log'
     console[consoleMethod](`[SupabaseHealth] ${message}`, data)

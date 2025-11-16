@@ -19,6 +19,19 @@ import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { mockRecompenses, TEST_USER_ID } from '@/test/mocks/data'
 
+// Mock Toast context
+const mockToast = vi.hoisted(() => ({
+  show: vi.fn(),
+}))
+
+vi.mock('@/hooks', async () => {
+  const actual = await vi.importActual('@/hooks')
+  return {
+    ...actual,
+    useToast: () => mockToast,
+  }
+})
+
 // Import réel du hook
 import useRecompenses from './useRecompenses'
 

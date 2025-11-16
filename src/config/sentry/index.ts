@@ -91,8 +91,8 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
     replaysOnErrorSampleRate = 1.0, // 100% des sessions avec erreur
   } = options
 
-  const dsn = import.meta.env.VITE_SENTRY_DSN
-  const environment = import.meta.env.VITE_APP_ENV || 'production'
+  const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
+  const environment = process.env.NEXT_PUBLIC_APP_ENV || 'production'
 
   // Ne pas initialiser Sentry si pas de DSN configuré
   if (!dsn) {
@@ -228,7 +228,7 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
       },
 
       // Release tracking (optionnel)
-      release: import.meta.env.VITE_APP_VERSION,
+      release: process.env.NEXT_PUBLIC_APP_VERSION,
     })
 
     console.log('✅ Sentry initialisé avec succès')
@@ -256,7 +256,7 @@ export const setSentryUser = (
   // Hasher l'ID utilisateur pour RGPD
   const hashUserId = async (id: string): Promise<string> => {
     const encoder = new TextEncoder()
-    const data = encoder.encode(id + (import.meta.env.VITE_GA_SALT || ''))
+    const data = encoder.encode(id + (process.env.NEXT_PUBLIC_GA_SALT || ''))
     const hashBuffer = await crypto.subtle.digest('SHA-256', data)
     const hashArray = Array.from(new Uint8Array(hashBuffer))
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')

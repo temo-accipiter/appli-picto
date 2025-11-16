@@ -1,7 +1,24 @@
 // src/utils/images/heicConverter.ts
 // Conversion HEIC (iPhone) → JPEG pour compatibilité navigateur
 
-import heic2any from 'heic2any'
+// Import dynamique pour éviter "window is not defined" en SSR Next.js
+type Heic2AnyFunction = (options: {
+  blob: Blob
+  toType: string
+  quality: number
+}) => Promise<Blob | Blob[]>
+
+let heic2anyLib: Heic2AnyFunction | null = null
+
+/**
+ * Charge heic2any de manière dynamique (client-side uniquement)
+ */
+async function loadHeic2any() {
+  if (!heic2anyLib && typeof window !== 'undefined') {
+    heic2anyLib = (await import('heic2any')).default
+  }
+  return heic2anyLib
+}
 
 /**
  * Convertit un fichier HEIC (iPhone) en JPEG
@@ -16,6 +33,13 @@ import heic2any from 'heic2any'
 export async function convertHEICtoJPEG(file: File): Promise<File> {
   if (!isHEIC(file)) {
     return file // Pas HEIC → retour tel quel
+  }
+
+  // Charger heic2any dynamiquement (client-side uniquement)
+  const heic2any = await loadHeic2any()
+
+  if (!heic2any) {
+    throw new Error('heic2any non disponible (exécution côté serveur)')
   }
 
   try {

@@ -63,7 +63,7 @@ function playBeep(audioCtx: AudioContext): void {
       gainNode.disconnect()
     }
   } catch (error) {
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.warn(
         '⚠️ Erreur lors de la création du son:',
         (error as Error).message
@@ -74,7 +74,7 @@ function playBeep(audioCtx: AudioContext): void {
 
 function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
   // Debug logs désactivés pour réduire le bruit dans la console
-  // if (import.meta.env.DEV) {
+  // if (process.env.NODE_ENV === 'development') {
   //   console.log('🔍 TableauCard reçoit:', { id: tache.id, label: tache.label, done })
   // }
 
@@ -107,7 +107,7 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
           audioCtxRef.current.resume()
         }
       } catch (error) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn(
             '⚠️ Impossible de créer AudioContext:',
             (error as Error).message
@@ -128,7 +128,7 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
       try {
         playBeep(audioCtx)
       } catch (error) {
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
           console.warn(
             '⚠️ Erreur lors de la lecture audio:',
             (error as Error).message

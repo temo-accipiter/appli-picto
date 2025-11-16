@@ -1,105 +1,132 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e3]:
-    - link "Skip to main content" [ref=e4] [cursor=pointer]:
-        - /url: '#main-content'
-    - generic [ref=e5]:
-        - main "Skip to main content" [ref=e6]:
-            - generic [ref=e8]:
-                - heading "Create account" [level=1] [ref=e9]
-                - generic [ref=e10]:
-                    - generic [ref=e11]:
-                        - generic [ref=e12]: Email
-                        - textbox "Champ" [ref=e14]:
-                            - /placeholder: ''
-                        - paragraph [ref=e15]
-                    - generic [ref=e16]:
-                        - generic [ref=e17]: Password
-                        - generic [ref=e18]:
-                            - textbox "Champ" [ref=e19]:
-                                - /placeholder: ''
-                            - button "Afficher le mot de passe" [ref=e20] [cursor=pointer]:
-                                - img [ref=e21]
-                        - paragraph [ref=e24]
-                    - button "Password requirements" [ref=e25] [cursor=pointer]:
-                        - text: Password requirements
-                        - generic [ref=e26]: ▾
-                    - region [ref=e27]:
-                        - paragraph [ref=e28]: 'Password must contain:'
-                        - list [ref=e29]:
-                            - listitem [ref=e30]:
-                                - generic [ref=e31]: •
-                                - generic [ref=e32]: at least 10 characters
-                            - listitem [ref=e33]:
-                                - generic [ref=e34]: •
-                                - generic [ref=e35]: at least one lowercase letter
-                            - listitem [ref=e36]:
-                                - generic [ref=e37]: •
-                                - generic [ref=e38]: at least one uppercase letter
-                            - listitem [ref=e39]:
-                                - generic [ref=e40]: •
-                                - generic [ref=e41]: at least one digit
-                            - listitem [ref=e42]:
-                                - generic [ref=e43]: •
-                                - generic [ref=e44]: at least one symbol
-                            - listitem [ref=e45]:
-                                - generic [ref=e46]: ✅
-                                - generic [ref=e47]: no spaces
-                    - generic [ref=e48]:
-                        - generic [ref=e49]: Confirm password
-                        - generic [ref=e50]:
-                            - textbox "Champ" [ref=e51]:
-                                - /placeholder: ''
-                            - button "Afficher le mot de passe" [ref=e52] [cursor=pointer]:
-                                - img [ref=e53]
-                        - paragraph [ref=e56]
-                    - button "Create account" [disabled]:
-                        - generic: Create account
-                - separator [ref=e57]
-                - paragraph [ref=e58]:
-                    - text: Log in
-                    - link "Log in" [ref=e59] [cursor=pointer]:
-                        - /url: /login
-        - contentinfo "Legal notices" [ref=e60]:
-            - navigation "Legal notices" [ref=e61]:
-                - list [ref=e62]:
-                    - listitem [ref=e63]:
-                        - link "Legal notices" [ref=e64] [cursor=pointer]:
-                            - /url: /mentions-legales
-                    - listitem [ref=e65]:
-                        - link "Terms of use" [ref=e66] [cursor=pointer]:
-                            - /url: /cgu
-                    - listitem [ref=e67]:
-                        - link "Terms of sale" [ref=e68] [cursor=pointer]:
-                            - /url: /cgv
-                    - listitem [ref=e69]:
-                        - link "Privacy policy" [ref=e70] [cursor=pointer]:
-                            - /url: /politique-confidentialite
-                    - listitem [ref=e71]:
-                        - link "Cookie policy" [ref=e72] [cursor=pointer]:
-                            - /url: /politique-cookies
-                    - listitem [ref=e73]:
-                        - button "Customize" [ref=e74] [cursor=pointer]
-                    - listitem [ref=e75]:
-                        - button "Refuse" [ref=e76] [cursor=pointer]
-                    - listitem [ref=e77]:
-                        - link "Accessibility" [ref=e78] [cursor=pointer]:
-                            - /url: /accessibilite
-                    - listitem [ref=e79]:
-                        - link "GDPR portal" [ref=e80] [cursor=pointer]:
-                            - /url: /rgpd
-            - paragraph [ref=e81]: © 2025
-        - dialog "This site uses cookies to improve your experience" [ref=e82]:
-            - generic [ref=e83]:
+- generic [ref=e1]:
+  - generic [active]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - navigation [ref=e7]:
+            - button "previous" [disabled] [ref=e8]:
+              - img "previous" [ref=e9]
+            - generic [ref=e11]:
+              - generic [ref=e12]: 1/
+              - text: "2"
+            - button "next" [ref=e13] [cursor=pointer]:
+              - img "next" [ref=e14]
+          - img
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - img [ref=e18]
+            - generic "Latest available version is detected (16.0.3)." [ref=e20]: Next.js 16.0.3
+            - generic [ref=e21]: Turbopack
+          - img
+      - generic [ref=e22]:
+        - dialog "Runtime Error" [ref=e23]:
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - generic [ref=e28]:
+                - generic [ref=e30]: Runtime Error
+                - generic [ref=e31]:
+                  - button "Copy Error Info" [ref=e32] [cursor=pointer]:
+                    - img [ref=e33]
+                  - button "No related documentation found" [disabled] [ref=e35]:
+                    - img [ref=e36]
+                  - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e38] [cursor=pointer]:
+                    - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+                    - img [ref=e39]
+              - generic [ref=e48]: window is not defined
+            - generic [ref=e49]:
+              - generic [ref=e50]:
+                - paragraph [ref=e52]:
+                  - img [ref=e54]
+                  - generic [ref=e58]: src/utils/images/heicConverter.ts (4:1) @ module evaluation
+                  - button "Open in editor" [ref=e59] [cursor=pointer]:
+                    - img [ref=e61]
+                - generic [ref=e64]:
+                  - generic [ref=e65]: 2 | // Conversion HEIC (iPhone) → JPEG pour compatibilité navigateur
+                  - generic [ref=e66]: 3 |
+                  - generic [ref=e67]: "> 4 | import heic2any from 'heic2any'"
+                  - generic [ref=e68]: "| ^"
+                  - generic [ref=e69]: 5 |
+                  - generic [ref=e70]: 6 | /**
+                  - generic [ref=e71]: 7 | * Convertit un fichier HEIC (iPhone) en JPEG
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - paragraph [ref=e74]:
+                    - text: Call Stack
+                    - generic [ref=e75]: "50"
+                  - button "Show 43 ignore-listed frame(s)" [ref=e76] [cursor=pointer]:
+                    - text: Show 43 ignore-listed frame(s)
+                    - img [ref=e77]
+                - generic [ref=e79]:
+                  - generic [ref=e80]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e81] [cursor=pointer]:
+                      - img [ref=e82]
+                  - text: src/utils/images/heicConverter.ts (4:1)
                 - generic [ref=e84]:
-                    - heading "This site uses cookies to improve your experience" [level=2] [ref=e85]
-                    - paragraph [ref=e86]: This site uses cookies to improve your experience
-                    - paragraph [ref=e87]:
-                        - link "Cookie policy" [ref=e88] [cursor=pointer]:
-                            - /url: /politique-cookies
-                - group "This site uses cookies to improve your experience" [ref=e89]:
-                    - button "Refuse" [active] [ref=e90] [cursor=pointer]
-                    - button "Customize" [ref=e91] [cursor=pointer]
-                    - button "Accept" [ref=e92] [cursor=pointer]
+                  - generic [ref=e85]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e86] [cursor=pointer]:
+                      - img [ref=e87]
+                  - text: src/utils/storage/modernUploadImage.ts (7:1)
+                - generic [ref=e89]:
+                  - generic [ref=e90]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e91] [cursor=pointer]:
+                      - img [ref=e92]
+                  - text: src/hooks/useRecompenses.ts (20:1)
+                - generic [ref=e94]:
+                  - generic [ref=e95]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e96] [cursor=pointer]:
+                      - img [ref=e97]
+                  - text: src/hooks/index.ts (13:1)
+                - generic [ref=e99]:
+                  - generic [ref=e100]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e101] [cursor=pointer]:
+                      - img [ref=e102]
+                  - text: src/contexts/ToastContext.tsx (19:1)
+                - generic [ref=e104]:
+                  - generic [ref=e105]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e106] [cursor=pointer]:
+                      - img [ref=e107]
+                  - text: src/app/providers.tsx (11:1)
+                - generic [ref=e109]:
+                  - generic [ref=e110]:
+                    - text: module evaluation
+                    - button "Open module evaluation in editor" [ref=e111] [cursor=pointer]:
+                      - img [ref=e112]
+                  - text: src/app/client-wrapper.tsx (4:1)
+          - generic [ref=e114]: "1"
+          - generic [ref=e115]: "2"
+        - contentinfo [ref=e116]:
+          - region "Error feedback" [ref=e117]:
+            - paragraph [ref=e118]:
+              - link "Was this helpful?" [ref=e119] [cursor=pointer]:
+                - /url: https://nextjs.org/telemetry#error-feedback
+            - button "Mark as helpful" [ref=e120] [cursor=pointer]:
+              - img [ref=e121]
+            - button "Mark as not helpful" [ref=e124] [cursor=pointer]:
+              - img [ref=e125]
+    - generic [ref=e131] [cursor=pointer]:
+      - button "Open Next.js Dev Tools" [ref=e132]:
+        - img [ref=e133]
+      - generic [ref=e136]:
+        - button "Open issues overlay" [ref=e137]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: "1"
+            - generic [ref=e140]: "2"
+          - generic [ref=e141]:
+            - text: Issue
+            - generic [ref=e142]: s
+        - button "Collapse issues badge" [ref=e143]:
+          - img [ref=e144]
+  - generic [ref=e146]:
+    - heading "⚠️ Une erreur est survenue" [level=1] [ref=e147]
+    - paragraph [ref=e148]: Cannot read properties of undefined (reading 'DEV')
+    - button "Réessayer" [ref=e149] [cursor=pointer]
 ```

@@ -197,7 +197,7 @@ export const PermissionsProvider = ({ children }: PermissionsProviderProps) => {
       setReady(true)
     } catch (e) {
       // En cas d'erreur "réelle", on termine en ready=true pour éviter de bloquer l'UI.
-      if (import.meta.env.DEV) console.warn('[Permissions] load error:', e)
+      if (process.env.NODE_ENV === 'development') console.warn('[Permissions] load error:', e)
       setError(e as Error)
       setRole('unknown')
       setPermissions({})

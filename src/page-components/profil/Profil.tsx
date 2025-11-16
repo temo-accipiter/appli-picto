@@ -101,7 +101,7 @@ export default function Profil() {
     e.preventDefault()
     if (!user) return
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleSave - Début sauvegarde profil', {
         pseudo,
         dateNaissance,
@@ -128,7 +128,7 @@ export default function Profil() {
         (dateNaissance || '').trim() === '' ? null : dateNaissance,
     }
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleSave - Payload nettoyé', payload)
     }
 
@@ -144,7 +144,7 @@ export default function Profil() {
       .update(payload)
       .eq('id', user.id)
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleSave - Résultat update profiles', { error })
     }
 
@@ -159,7 +159,7 @@ export default function Profil() {
   const handleAvatarUpload = async (file: File) => {
     if (!user) return
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleAvatarUpload - Début upload', {
         fileName: file.name,
         fileSize: file.size,
@@ -185,7 +185,7 @@ export default function Profil() {
         upsert: true, // Écrase le fichier s'il existe déjà
       })
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleAvatarUpload - Résultat upload', {
         fileName,
         data,
@@ -225,7 +225,7 @@ export default function Profil() {
       .update({ avatar_url: data.path })
       .eq('id', user.id)
 
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleAvatarUpload - Mise à jour metadata/profil', {
         metaError,
         avatarPath: data.path,
@@ -393,7 +393,7 @@ export default function Profil() {
 
           <Turnstile
             key={captchaKey}
-            sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+            sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
             onSuccess={token => setCaptchaTokenReset(token)}
             onExpire={() => setCaptchaTokenReset(null)}
             theme="light"
