@@ -7,11 +7,27 @@ declare module 'axe-core' {
     }
   }
 
-  export interface AxeResults {
-    violations: unknown[]
-    incomplete: unknown[]
-    passes: unknown[]
+  export interface NodeResult {
+    target: string[]
+    html?: string
+    failureSummary?: string
   }
 
-  export function run(options?: RunOptions): Promise<AxeResults | undefined>
+  export interface Result {
+    id: string
+    impact?: 'minor' | 'moderate' | 'serious' | 'critical'
+    tags: string[]
+    description: string
+    help: string
+    helpUrl: string
+    nodes: NodeResult[]
+  }
+
+  export interface AxeResults {
+    violations: Result[]
+    incomplete: Result[]
+    passes: Result[]
+  }
+
+  export function run(options?: RunOptions): Promise<AxeResults>
 }

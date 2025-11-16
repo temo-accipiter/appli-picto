@@ -191,13 +191,14 @@ export async function checkColorContrast(
 
     // Fonction pour calculer la luminance relative
     const getLuminance = (rgb: string): number => {
-      const [r, g, b] = rgb
+      const components = rgb
         .match(/\d+/g)!
         .map(Number)
         .map(val => {
           const s = val / 255
           return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
         })
+      const [r = 0, g = 0, b = 0] = components
       return 0.2126 * r + 0.7152 * g + 0.0722 * b
     }
 
@@ -343,7 +344,9 @@ export async function checkHeadingOrder(page: Page): Promise<void> {
 
   // Vérifier qu'il n'y a pas de sauts de niveau (ex: h1 -> h3)
   for (let i = 1; i < headingLevels.length; i++) {
-    const diff = headingLevels[i] - headingLevels[i - 1]
+    const currentLevel = headingLevels[i]!
+    const previousLevel = headingLevels[i - 1]!
+    const diff = currentLevel - previousLevel
     expect(diff).toBeLessThanOrEqual(1)
   }
 }

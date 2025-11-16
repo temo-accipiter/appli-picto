@@ -377,12 +377,13 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
               const match = rgb.match(/\d+/g)
               if (!match) return 0
 
-              const [r, g, b] = match.map(Number).map(val => {
+              const components = match.map(Number).map(val => {
                 const s = val / 255
                 return s <= 0.03928
                   ? s / 12.92
                   : Math.pow((s + 0.055) / 1.055, 2.4)
               })
+              const [r = 0, g = 0, b = 0] = components
 
               return 0.2126 * r + 0.7152 * g + 0.0722 * b
             }

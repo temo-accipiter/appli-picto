@@ -139,7 +139,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     await auditPage(page, '/', "Page d'accueil")
 
     // Vérifier 0 violation critique/sérieuse
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -150,7 +150,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/login', 'Page Login')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -161,7 +161,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/signup', 'Page Signup')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -172,7 +172,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     await mockTurnstileCaptcha(page)
     await auditPage(page, '/forgot-password', 'Page Forgot Password')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -182,7 +182,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
   }) => {
     await auditPage(page, '/tableau', 'Page Tableau')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -192,7 +192,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
   }) => {
     await auditPage(page, '/mentions-legales', 'Page Mentions Légales')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -200,7 +200,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
   test('Page CGU (/cgu) - Pas de violations critiques', async ({ page }) => {
     await auditPage(page, '/cgu', 'Page CGU')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -214,7 +214,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
       'Page Politique de Confidentialité'
     )
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
@@ -224,7 +224,7 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
   }) => {
     await auditPage(page, '/accessibilite', 'Page Accessibilité')
 
-    const result = auditResults[auditResults.length - 1]
+    const result = auditResults[auditResults.length - 1]!
     expect(result.critical).toBe(0)
     expect(result.serious).toBe(0)
   })
