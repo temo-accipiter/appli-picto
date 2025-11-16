@@ -26,7 +26,7 @@ interface DeleteAccountGuardProps {
 export default function DeleteAccountGuard({
   onConfirm,
   dangerWord = 'SUPPRIMER',
-  turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+  turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '',
   countdownSec = 5,
 }: DeleteAccountGuardProps) {
   const { user } = useAuth()

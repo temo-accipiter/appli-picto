@@ -393,7 +393,7 @@ export default function Profil() {
 
           <Turnstile
             key={captchaKey}
-            sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+            sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
             onSuccess={token => setCaptchaTokenReset(token)}
             onExpire={() => setCaptchaTokenReset(null)}
             theme="light"

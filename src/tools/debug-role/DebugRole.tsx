@@ -27,7 +27,7 @@ export default function DebugRole() {
     })
   }
 
-  if (!process.env.NODE_ENV === 'development') return null
+  if (process.env.NODE_ENV !== 'development') return null
 
   if (!visible) {
     return (
