@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.2'
 import Stripe from 'https://esm.sh/stripe@14.25.0?target=deno'
 
+// @ts-expect-error - Deno ESM import type compatibility
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
   apiVersion: '2023-08-16',
 })
@@ -23,7 +24,8 @@ function toIso(sec?: number | null) {
   return sec ? new Date(sec * 1000).toISOString() : null
 }
 
-function extractFieldsFromSub(sub: Stripe.Subscription) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractFieldsFromSub(sub: any) {
   const item = sub.items?.data?.[0]
   const price = item?.price
   const plan =
@@ -34,7 +36,7 @@ function extractFieldsFromSub(sub: Stripe.Subscription) {
   const customer =
     typeof sub.customer === 'string'
       ? sub.customer
-      : ((sub.customer as Stripe.Customer | Stripe.DeletedCustomer)?.id ?? null)
+      : (sub.customer?.id ?? null)
 
   const endedAt =
     'ended_at' in sub && typeof sub.ended_at === 'number' ? sub.ended_at : null
@@ -42,7 +44,7 @@ function extractFieldsFromSub(sub: Stripe.Subscription) {
   const latestInvoice =
     typeof sub.latest_invoice === 'string'
       ? sub.latest_invoice
-      : ((sub.latest_invoice as Stripe.Invoice)?.id ?? null)
+      : (sub.latest_invoice?.id ?? null)
 
   return {
     stripe_customer: customer,
@@ -63,7 +65,7 @@ function extractFieldsFromSub(sub: Stripe.Subscription) {
 
 // 🔹 petit helper de log (fire-and-forget pour ne pas bloquer le webhook)
 async function logSubscriptionEvent(
-  admin: ReturnType<typeof createClient>,
+  admin: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   eventType: string,
   userId: string | null,
   details: Record<string, unknown>
@@ -82,7 +84,7 @@ async function logSubscriptionEvent(
 
 // ✅ PHASE 2: Vérifier idempotence (empêcher double-traitement d'un même event)
 async function isEventAlreadyProcessed(
-  admin: ReturnType<typeof createClient>,
+  admin: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   subscriptionId: string,
   eventId: string
 ): Promise<boolean> {
@@ -114,7 +116,8 @@ serve(async req => {
   const sig = req.headers.get('stripe-signature') ?? ''
   const body = await req.text()
 
-  let event: Stripe.Event
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let event: any
   try {
     event = await stripe.webhooks.constructEventAsync(
       body,
@@ -138,7 +141,8 @@ serve(async req => {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const session = event.data.object as any
 
         const user_id =
           session.metadata?.supabase_user_id ??
@@ -148,7 +152,7 @@ serve(async req => {
         const subscriptionId =
           typeof session.subscription === 'string'
             ? session.subscription
-            : ((session.subscription as Stripe.Subscription)?.id ?? null)
+            : (session.subscription?.id ?? null)
 
         // log réception
         queueMicrotask(() =>
@@ -182,7 +186,8 @@ serve(async req => {
             )
           }
 
-          let sub: Stripe.Subscription | null = null
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let sub: any = null
           try {
             sub = await stripe.subscriptions.retrieve(subscriptionId)
           } catch (e) {
@@ -217,7 +222,8 @@ serve(async req => {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
-        const sub = event.data.object as Stripe.Subscription
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const sub = event.data.object as any
         const user_id = sub.metadata?.supabase_user_id ?? null
 
         queueMicrotask(() =>

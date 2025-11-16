@@ -161,8 +161,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       const match = quotaText?.match(/(\d+)\s*\/\s*(\d+)/)
       if (match) {
         const [, current, limit] = match
-        const currentNum = parseInt(current, 10)
-        const limitNum = parseInt(limit, 10)
+        const currentNum = parseInt(current!, 10)
+        const limitNum = parseInt(limit!, 10)
 
         console.log(`Quotas actuels : ${currentNum}/${limitNum}`)
 
@@ -175,7 +175,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
           )
 
           // Créer les tâches manuellement via DB pour aller plus vite
-          const tasksData = []
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const tasksData: any[] = []
           for (let i = 0; i < tasksToCreate; i++) {
             tasksData.push({
               user_id: userId,
@@ -294,7 +295,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       .eq('user_id', userId)
 
     // Créer 5 tâches supplémentaires
-    const tasksData = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tasksData: any[] = []
     for (let i = 0; i < 5; i++) {
       tasksData.push({
         user_id: userId,
@@ -448,7 +450,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
     const tasksToCreate = 8 - (currentCount || 0)
     if (tasksToCreate > 0) {
-      const tasksData = []
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tasksData: any[] = []
       for (let i = 0; i < tasksToCreate; i++) {
         tasksData.push({
           user_id: userId,
@@ -522,7 +525,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       const matchAfter = quotaTextAfter?.match(/(\d+)\s*\/\s*(\d+)/)
       if (matchAfter) {
         const [, , limitAfter] = matchAfter
-        const limitNum = parseInt(limitAfter, 10)
+        const limitNum = parseInt(limitAfter!, 10)
 
         // Les quotas premium devraient être beaucoup plus élevés (40+ selon docs)
         expect(limitNum).toBeGreaterThanOrEqual(40)
@@ -646,7 +649,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
     }
 
     const [, currentBefore, limit] = initialMatch
-    const currentBeforeNum = parseInt(currentBefore, 10)
+    const currentBeforeNum = parseInt(currentBefore!, 10)
 
     console.log(`Compteur initial : ${currentBefore}/${limit}`)
 
@@ -675,7 +678,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
     if (updatedMatch) {
       const [, currentAfter] = updatedMatch
-      const currentAfterNum = parseInt(currentAfter, 10)
+      const currentAfterNum = parseInt(currentAfter!, 10)
 
       console.log(`Compteur après création : ${currentAfter}/${limit}`)
 
@@ -717,7 +720,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
       if (afterDeleteMatch) {
         const [, currentAfterDelete] = afterDeleteMatch
-        const currentAfterDeleteNum = parseInt(currentAfterDelete, 10)
+        const currentAfterDeleteNum = parseInt(currentAfterDelete!, 10)
 
         console.log(
           `Compteur après suppression : ${currentAfterDelete}/${limit}`
@@ -764,7 +767,7 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
 
     // 11. Vérifier les alertes si proche de la limite
     // Créer des tâches jusqu'à 9/10 pour voir l'alerte
-    const tasksToLimit = parseInt(limit, 10) - currentBeforeNum - 1
+    const tasksToLimit = parseInt(limit!, 10) - currentBeforeNum - 1
 
     if (tasksToLimit > 0 && tasksToLimit <= 3) {
       console.log(
@@ -772,7 +775,8 @@ test.describe('Quotas E2E - Gestion des Limites', () => {
       )
 
       // Créer via DB pour aller plus vite
-      const tasksData = []
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const tasksData: any[] = []
       for (let i = 0; i < tasksToLimit; i++) {
         tasksData.push({
           user_id: userId,

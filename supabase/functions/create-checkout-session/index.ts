@@ -66,7 +66,7 @@ function isAllowedHost(url: string) {
 }
 
 async function logSubscriptionEvent(
-  admin: ReturnType<typeof createClient>,
+  admin: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   eventType: string,
   userId: string | null,
   details: Record<string, unknown>
@@ -161,6 +161,7 @@ serve(async (req: Request) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+    // @ts-expect-error - Deno ESM import type compatibility
     const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-08-16' })
 
     const { data: existing } = await supabase

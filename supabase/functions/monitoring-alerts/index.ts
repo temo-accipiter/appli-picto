@@ -161,7 +161,7 @@ async function sendEmailAlert(
  * Vérifie les erreurs critiques récentes
  */
 async function checkCriticalErrors(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AlertConfig
 ): Promise<{
   hasAlert: boolean
@@ -192,7 +192,7 @@ async function checkCriticalErrors(
       details: {
         "Nombre d'erreurs": errors.length,
         Période: `${config.periodMinutes} minutes`,
-        'Dernière erreur': errors[0]?.details?.error || 'N/A',
+        'Dernière erreur': (errors[0]?.details as any)?.error || 'N/A', // eslint-disable-line @typescript-eslint/no-explicit-any
       },
     }
   }
@@ -204,7 +204,7 @@ async function checkCriticalErrors(
  * Vérifie les quotas dépassés de manière répétée
  */
 async function checkQuotaIssues(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   config: AlertConfig
 ): Promise<{
   hasAlert: boolean
@@ -252,7 +252,7 @@ async function checkQuotaIssues(
  * Vérifie la santé globale du système
  */
 async function checkSystemHealth(
-  supabase: ReturnType<typeof createClient>
+  supabase: any // eslint-disable-line @typescript-eslint/no-explicit-any
 ): Promise<{
   hasAlert: boolean
   message?: string
