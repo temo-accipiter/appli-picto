@@ -2,101 +2,101 @@
 
 ```yaml
 - generic [ref=e1]:
-  - generic [active]:
-    - generic [ref=e4]:
-      - generic [ref=e5]:
-        - generic [ref=e6]:
-          - navigation [ref=e7]:
-            - button "previous" [disabled] [ref=e8]:
-              - img "previous" [ref=e9]
-            - generic [ref=e11]:
-              - generic [ref=e12]: 1/
-              - text: "1"
-            - button "next" [disabled] [ref=e13]:
-              - img "next" [ref=e14]
-          - img
-        - generic [ref=e16]:
-          - generic [ref=e17]:
-            - img [ref=e18]
-            - generic "Latest available version is detected (16.0.3)." [ref=e20]: Next.js 16.0.3
-            - generic [ref=e21]: Turbopack
-          - img
-      - dialog "Runtime TypeError" [ref=e23]:
-        - generic [ref=e26]:
-          - generic [ref=e27]:
-            - generic [ref=e28]:
-              - generic [ref=e30]: Runtime TypeError
-              - generic [ref=e31]:
-                - button "Copy Error Info" [ref=e32] [cursor=pointer]:
-                  - img [ref=e33]
-                - button "No related documentation found" [disabled] [ref=e35]:
-                  - img [ref=e36]
-                - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e38] [cursor=pointer]:
-                  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
-                  - img [ref=e39]
-            - generic [ref=e48]: Cannot read properties of undefined (reading 'DEV')
-          - generic [ref=e49]:
-            - generic [ref=e50]:
-              - paragraph [ref=e52]:
-                - img [ref=e54]
-                - generic [ref=e57]: src/components/shared/error-boundary/ErrorBoundary.tsx (124:30) @ ErrorBoundary.render
-                - button "Open in editor" [ref=e58] [cursor=pointer]:
-                  - img [ref=e60]
-              - generic [ref=e63]:
-                - generic [ref=e64]: 122 |
-                - generic [ref=e65]: "123 | {/* Détails de l'erreur (visible en DEV uniquement) */}"
-                - generic [ref=e66]: "> 124 | {import.meta.env.DEV && this.state.error && ("
-                - generic [ref=e67]: "| ^"
-                - generic [ref=e68]: 125 | <details className="error-boundary__details">
-                - generic [ref=e69]: 126 | <summary className="error-boundary__details-summary">
-                - generic [ref=e70]: 127 | Détails techniques (dev)
-            - generic [ref=e71]:
-              - generic [ref=e72]:
-                - paragraph [ref=e73]:
-                  - text: Call Stack
-                  - generic [ref=e74]: "17"
-                - button "Show 13 ignore-listed frame(s)" [ref=e75] [cursor=pointer]:
-                  - text: Show 13 ignore-listed frame(s)
-                  - img [ref=e76]
-              - generic [ref=e78]:
-                - generic [ref=e79]:
-                  - text: ErrorBoundary.render
-                  - button "Open ErrorBoundary.render in editor" [ref=e80] [cursor=pointer]:
-                    - img [ref=e81]
-                - text: src/components/shared/error-boundary/ErrorBoundary.tsx (124:30)
-              - generic [ref=e83]:
-                - generic [ref=e84]:
-                  - text: Providers
-                  - button "Open Providers in editor" [ref=e85] [cursor=pointer]:
-                    - img [ref=e86]
-                - text: src/app/providers.tsx (17:5)
-              - generic [ref=e88]:
-                - generic [ref=e89]:
-                  - text: ClientWrapper
-                  - button "Open ClientWrapper in editor" [ref=e90] [cursor=pointer]:
-                    - img [ref=e91]
-                - text: src/app/client-wrapper.tsx (7:10)
-              - generic [ref=e93]:
-                - generic [ref=e94]:
-                  - text: RootLayout
-                  - button "Open RootLayout in editor" [ref=e95] [cursor=pointer]:
-                    - img [ref=e96]
-                - text: src/app/layout.tsx (34:9)
-        - generic [ref=e98]: "1"
-        - generic [ref=e99]: "2"
-    - generic [ref=e104] [cursor=pointer]:
-      - button "Open Next.js Dev Tools" [ref=e105]:
-        - img [ref=e106]
-      - generic [ref=e109]:
-        - button "Open issues overlay" [ref=e110]:
-          - generic [ref=e111]:
-            - generic [ref=e112]: "0"
-            - generic [ref=e113]: "1"
-          - generic [ref=e114]: Issue
-        - button "Collapse issues badge" [ref=e115]:
-          - img [ref=e116]
-  - generic [ref=e118]:
-    - heading "⚠️ Une erreur est survenue" [level=1] [ref=e119]
-    - paragraph [ref=e120]: Cannot read properties of undefined (reading 'DEV')
-    - button "Réessayer" [ref=e121] [cursor=pointer]
+    - generic [active]:
+        - generic [ref=e4]:
+            - generic [ref=e5]:
+                - generic [ref=e6]:
+                    - navigation [ref=e7]:
+                        - button "previous" [disabled] [ref=e8]:
+                            - img "previous" [ref=e9]
+                        - generic [ref=e11]:
+                            - generic [ref=e12]: 1/
+                            - text: '1'
+                        - button "next" [disabled] [ref=e13]:
+                            - img "next" [ref=e14]
+                    - img
+                - generic [ref=e16]:
+                    - generic [ref=e17]:
+                        - img [ref=e18]
+                        - generic "Latest available version is detected (16.0.3)." [ref=e20]: Next.js 16.0.3
+                        - generic [ref=e21]: Turbopack
+                    - img
+            - dialog "Runtime TypeError" [ref=e23]:
+                - generic [ref=e26]:
+                    - generic [ref=e27]:
+                        - generic [ref=e28]:
+                            - generic [ref=e30]: Runtime TypeError
+                            - generic [ref=e31]:
+                                - button "Copy Error Info" [ref=e32] [cursor=pointer]:
+                                    - img [ref=e33]
+                                - button "No related documentation found" [disabled] [ref=e35]:
+                                    - img [ref=e36]
+                                - link "Learn more about enabling Node.js inspector for server code with Chrome DevTools" [ref=e38] [cursor=pointer]:
+                                    - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+                                    - img [ref=e39]
+                        - generic [ref=e48]: Cannot read properties of undefined (reading 'DEV')
+                    - generic [ref=e49]:
+                        - generic [ref=e50]:
+                            - paragraph [ref=e52]:
+                                - img [ref=e54]
+                                - generic [ref=e57]: src/components/shared/error-boundary/ErrorBoundary.tsx (124:30) @ ErrorBoundary.render
+                                - button "Open in editor" [ref=e58] [cursor=pointer]:
+                                    - img [ref=e60]
+                            - generic [ref=e63]:
+                                - generic [ref=e64]: 122 |
+                                - generic [ref=e65]: "123 | {/* Détails de l'erreur (visible en DEV uniquement) */}"
+                                - generic [ref=e66]: '> 124 | {import.meta.env.DEV && this.state.error && ('
+                                - generic [ref=e67]: '| ^'
+                                - generic [ref=e68]: 125 | <details className="error-boundary__details">
+                                - generic [ref=e69]: 126 | <summary className="error-boundary__details-summary">
+                                - generic [ref=e70]: 127 | Détails techniques (dev)
+                        - generic [ref=e71]:
+                            - generic [ref=e72]:
+                                - paragraph [ref=e73]:
+                                    - text: Call Stack
+                                    - generic [ref=e74]: '17'
+                                - button "Show 13 ignore-listed frame(s)" [ref=e75] [cursor=pointer]:
+                                    - text: Show 13 ignore-listed frame(s)
+                                    - img [ref=e76]
+                            - generic [ref=e78]:
+                                - generic [ref=e79]:
+                                    - text: ErrorBoundary.render
+                                    - button "Open ErrorBoundary.render in editor" [ref=e80] [cursor=pointer]:
+                                        - img [ref=e81]
+                                - text: src/components/shared/error-boundary/ErrorBoundary.tsx (124:30)
+                            - generic [ref=e83]:
+                                - generic [ref=e84]:
+                                    - text: Providers
+                                    - button "Open Providers in editor" [ref=e85] [cursor=pointer]:
+                                        - img [ref=e86]
+                                - text: src/app/providers.tsx (17:5)
+                            - generic [ref=e88]:
+                                - generic [ref=e89]:
+                                    - text: ClientWrapper
+                                    - button "Open ClientWrapper in editor" [ref=e90] [cursor=pointer]:
+                                        - img [ref=e91]
+                                - text: src/app/client-wrapper.tsx (7:10)
+                            - generic [ref=e93]:
+                                - generic [ref=e94]:
+                                    - text: RootLayout
+                                    - button "Open RootLayout in editor" [ref=e95] [cursor=pointer]:
+                                        - img [ref=e96]
+                                - text: src/app/layout.tsx (34:9)
+                - generic [ref=e98]: '1'
+                - generic [ref=e99]: '2'
+        - generic [ref=e104] [cursor=pointer]:
+            - button "Open Next.js Dev Tools" [ref=e105]:
+                - img [ref=e106]
+            - generic [ref=e109]:
+                - button "Open issues overlay" [ref=e110]:
+                    - generic [ref=e111]:
+                        - generic [ref=e112]: '0'
+                        - generic [ref=e113]: '1'
+                    - generic [ref=e114]: Issue
+                - button "Collapse issues badge" [ref=e115]:
+                    - img [ref=e116]
+    - generic [ref=e118]:
+        - heading "⚠️ Une erreur est survenue" [level=1] [ref=e119]
+        - paragraph [ref=e120]: Cannot read properties of undefined (reading 'DEV')
+        - button "Réessayer" [ref=e121] [cursor=pointer]
 ```
