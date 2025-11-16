@@ -8,6 +8,7 @@
 
 import { Page, Locator, expect } from '@playwright/test'
 import type { AxeResults } from 'axe-core'
+import * as path from 'path'
 
 /**
  * Options pour l'analyse d'accessibilité
@@ -32,10 +33,15 @@ export interface A11yCheckOptions {
  * await injectAxe(page)
  */
 export async function injectAxe(page: Page): Promise<void> {
-  // Injecter axe-core depuis CDN
-  await page.addScriptTag({
-    url: 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js',
-  })
+  // Injecter axe-core depuis le package local au lieu du CDN pour éviter les timeouts réseau
+  // Trouver le chemin vers axe-core dans node_modules
+  const axePath = path.join(
+    process.cwd(),
+    'node_modules',
+    'axe-core',
+    'axe.min.js'
+  )
+  await page.addScriptTag({ path: axePath })
 }
 
 /**
