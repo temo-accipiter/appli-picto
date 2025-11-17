@@ -25,14 +25,15 @@ import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 import { TEST_USER_ID } from '@/test/mocks/data'
 
-// Mock react-router-dom
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => vi.fn(),
-  }
-})
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+  }),
+  usePathname: () => '/profil',
+}))
 
 // Mock Turnstile (Cloudflare captcha)
 vi.mock('react-turnstile', () => ({
