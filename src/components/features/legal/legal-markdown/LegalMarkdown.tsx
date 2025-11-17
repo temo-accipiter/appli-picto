@@ -3,7 +3,7 @@
 import { replaceLegalPlaceholders } from '@/config/constants/legalConfig'
 import { useI18n } from '@/hooks'
 import { marked } from 'marked'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import './LegalMarkdown.scss'
 
 // Config minimale pour un rendu sûr
@@ -19,15 +19,15 @@ interface LegalMarkdownProps {
 export default function LegalMarkdown({ title, content }: LegalMarkdownProps) {
   // Remplacement automatique de tous les placeholders
   const processedContent = replaceLegalPlaceholders(content)
-  const navigate = useNavigate()
+  const router = useRouter()
   const { t } = useI18n()
 
   const handleBack = () => {
     // Si l'historique existe, revenir en arrière, sinon aller à l'accueil
     if (window.history.length > 1) {
-      navigate(-1)
+      router.back()
     } else {
-      navigate('/tableau')
+      router.push('/tableau')
     }
   }
 
