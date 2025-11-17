@@ -7,15 +7,15 @@ import {
   Navbar,
   PageTransition,
 } from '@/components'
-import { useLocation } from 'react-router-dom'
+import { usePathname } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import './Layout.scss'
 
 export default function Layout() {
   const { t } = useTranslation('common')
-  const location = useLocation()
+  const pathname = usePathname()
   const showNavbarRoutes = ['/profil', '/edition', '/tableau', '/tableau-demo']
-  const showNavbar = showNavbarRoutes.includes(location.pathname)
+  const showNavbar = showNavbarRoutes.includes(pathname)
 
   return (
     <div className="layout">
