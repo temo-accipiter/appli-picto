@@ -1,8 +1,9 @@
 'use client'
 
-import { ReactNode } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks'
+import { useRouter } from 'next/navigation'
+import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 
 interface ProtectedRouteProps {
   children: ReactNode
@@ -10,13 +11,19 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user } = useAuth()
-  const location = useLocation()
+  const router = useRouter()
 
   // Plus besoin de vérifier loading ici car InitializationLoader
   // attend déjà que authReady soit true avant d'afficher quoi que ce soit
 
+  useEffect(() => {
+    if (!user) {
+      router.replace('/login')
+    }
+  }, [user, router])
+
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return null // Afficher rien pendant la redirection
   }
 
   return children
