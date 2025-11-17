@@ -2,7 +2,7 @@
 
 import { useI18n } from '@/hooks'
 import { revokeConsent } from '@/utils/consent'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import './Footer.scss'
 
 export default function Footer() {
@@ -25,19 +25,21 @@ export default function Footer() {
       <nav className="app-footer__nav" aria-label={t('legal.mentions')}>
         <ul className="app-footer__list">
           <li>
-            <Link to="/mentions-legales">{t('legal.mentions')}</Link>
+            <Link href="/legal/mentions-legales">{t('legal.mentions')}</Link>
           </li>
           <li>
-            <Link to="/cgu">{t('legal.cgu')}</Link>
+            <Link href="/legal/cgu">{t('legal.cgu')}</Link>
           </li>
           <li>
-            <Link to="/cgv">{t('legal.cgv')}</Link>
+            <Link href="/legal/cgv">{t('legal.cgv')}</Link>
           </li>
           <li>
-            <Link to="/politique-confidentialite">{t('legal.privacy')}</Link>
+            <Link href="/legal/politique-confidentialite">
+              {t('legal.privacy')}
+            </Link>
           </li>
           <li>
-            <Link to="/politique-cookies">{t('legal.cookies')}</Link>
+            <Link href="/legal/politique-cookies">{t('legal.cookies')}</Link>
           </li>
           <li>
             <button
@@ -62,10 +64,10 @@ export default function Footer() {
             </button>
           </li>
           <li>
-            <Link to="/accessibilite">{t('legal.accessibility')}</Link>
+            <Link href="/legal/accessibilite">{t('legal.accessibility')}</Link>
           </li>
           <li>
-            <Link to="/rgpd">{t('legal.rgpd')}</Link>
+            <Link href="/legal/rgpd">{t('legal.rgpd')}</Link>
           </li>
         </ul>
       </nav>

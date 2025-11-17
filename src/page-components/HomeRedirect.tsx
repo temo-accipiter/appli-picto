@@ -2,7 +2,8 @@
 
 import { Loader } from '@/components'
 import { usePermissions } from '@/contexts'
-import { Navigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 /**
  * Page de redirection intelligente qui décide automatiquement où envoyer l'utilisateur
@@ -11,17 +12,20 @@ import { Navigate } from 'react-router-dom'
  */
 export default function HomeRedirect() {
   const { role: _role, loading } = usePermissions()
-
-  // Afficher un loader pendant la détermination du rôle
-  if (loading) {
-    return (
-      <div className="home-redirect-loading">
-        <Loader />
-        <p>Chargement...</p>
-      </div>
-    )
-  }
+  const router = useRouter()
 
   // Redirection selon le rôle - tous vers /tableau
-  return <Navigate to="/tableau" replace />
+  useEffect(() => {
+    if (!loading) {
+      router.replace('/tableau')
+    }
+  }, [loading, router])
+
+  // Afficher un loader pendant la détermination du rôle
+  return (
+    <div className="home-redirect-loading">
+      <Loader />
+      <p>Chargement...</p>
+    </div>
+  )
 }

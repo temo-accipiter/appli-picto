@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useRouter } from 'next/navigation'
 import './PortailRGPD.scss'
 
 import { supabase } from '@/utils/supabaseClient'
@@ -10,7 +10,7 @@ import { useToast } from '@/contexts'
 import { exportUserDataZip } from '@/utils/rgpdExport'
 
 export default function PortailRGPD() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { user } = useAuth()
   const { show: showToast } = useToast()
   const { t } = useI18n()
@@ -65,7 +65,7 @@ export default function PortailRGPD() {
           <p>{t('rgpd.rectifyDescription')}</p>
           <button
             className="btn"
-            onClick={() => navigate('/profil')}
+            onClick={() => router.push('/profil')}
             aria-label={t('rgpd.rectifyAriaLabel')}
           >
             {t('rgpd.rectifyButton')}
@@ -78,7 +78,7 @@ export default function PortailRGPD() {
           <p>{t('rgpd.deleteDescription')}</p>
           <button
             className="btn btn-danger"
-            onClick={() => navigate('/profil')}
+            onClick={() => router.push('/profil')}
             aria-label={t('rgpd.deleteAriaLabel')}
           >
             {t('rgpd.deleteButton')}

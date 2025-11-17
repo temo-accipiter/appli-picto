@@ -18,14 +18,15 @@ import Edition from './Edition'
 import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 
-// Mock des hooks de navigation
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => vi.fn(),
-  }
-})
+// Mock des hooks de navigation Next.js
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+  }),
+  usePathname: () => '/edition',
+}))
 
 // Mock des services d'upload d'images
 vi.mock('@/lib/services/imageUploadService', () => ({

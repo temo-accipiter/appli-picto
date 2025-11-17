@@ -16,22 +16,23 @@ import {
   Settings,
   UserPlus,
 } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
 import './Navbar.scss'
 
 export default function Navbar() {
-  const location = useLocation()
+  const pathname = usePathname()
   const { user } = useAuth()
   const { can: _can, isVisitor, ready } = usePermissions()
   const { t } = useI18n() // 🌐 Hook i18n pour les traductions
   const [showPersonalizationModal, setShowPersonalizationModal] =
     useState(false)
 
-  const isTableau = location.pathname === '/tableau'
-  const isEdition = location.pathname === '/edition'
-  const isProfil = location.pathname === '/profil'
-  const isAdminPermissions = location.pathname === '/admin/permissions'
+  const isTableau = pathname === '/tableau'
+  const isEdition = pathname === '/edition'
+  const isProfil = pathname === '/profil'
+  const isAdminPermissions = pathname === '/admin/permissions'
 
   // 🔧 CORRECTIF : Détecter visitor même pendant le chargement
   const isVisitorMode = !user && (isVisitor || !ready)
@@ -45,28 +46,28 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <NavLink
-              to="/edition"
+            <Link
+              href="/edition"
               className="nav-icon-link"
               aria-label={t('nav.edition')}
               title={t('nav.edition')}
             >
               <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-            </NavLink>
+            </Link>
           </motion.div>
         )}
 
         {(isEdition ||
           isProfil ||
           isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
-          <NavLink
-            to="/tableau"
+          <Link
+            href="/tableau"
             className="nav-icon-link"
             aria-label={t('nav.tableau')}
             title={t('nav.tableau')}
           >
             <LayoutDashboard size={20} strokeWidth={2} aria-hidden="true" />
-          </NavLink>
+          </Link>
         )}
       </div>
 
@@ -108,48 +109,48 @@ export default function Navbar() {
                   <span>{t('nav.personalization')}</span>
                 </button>
 
-                <NavLink
-                  to="/signup"
+                <Link
+                  href="/signup"
                   className="nav-button signup-button"
                   aria-label={t('nav.createAccount')}
                   title={t('nav.createAccount')}
                 >
                   <UserPlus size={18} aria-hidden="true" />
                   <span>{t('nav.createAccount')}</span>
-                </NavLink>
+                </Link>
 
-                <NavLink
-                  to="/login"
+                <Link
+                  href="/login"
                   className="nav-button login-button"
                   aria-label={t('nav.login')}
                   title={t('nav.login')}
                 >
                   <Settings size={18} aria-hidden="true" />
                   <span>{t('nav.login')}</span>
-                </NavLink>
+                </Link>
               </>
             ) : (
               // Boutons normaux pour les autres pages
               <>
-                <NavLink
-                  to="/signup"
+                <Link
+                  href="/signup"
                   className="nav-button signup-button"
                   aria-label={t('nav.signup')}
                   title={t('nav.signup')}
                 >
                   <UserPlus size={18} aria-hidden="true" />
                   <span>{t('nav.signup')}</span>
-                </NavLink>
+                </Link>
 
-                <NavLink
-                  to="/login"
+                <Link
+                  href="/login"
                   className="nav-button login-button"
                   aria-label={t('nav.login')}
                   title={t('nav.login')}
                 >
                   <Settings size={18} aria-hidden="true" />
                   <span>{t('nav.login')}</span>
-                </NavLink>
+                </Link>
               </>
             )}
           </div>

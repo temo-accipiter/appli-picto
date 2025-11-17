@@ -1,23 +1,29 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
+import { usePathname } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { memo } from 'react'
-import { useLocation, useOutlet } from 'react-router-dom'
 
-const PageTransition = memo(function PageTransition() {
-  const location = useLocation()
-  const outlet = useOutlet()
+interface PageTransitionProps {
+  children: ReactNode
+}
+
+const PageTransition = memo(function PageTransition({
+  children,
+}: PageTransitionProps) {
+  const pathname = usePathname()
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={location.pathname}
+        key={pathname}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
         transition={{ duration: 0.2, ease: 'easeOut' }}
       >
-        {outlet}
+        {children}
       </motion.div>
     </AnimatePresence>
   )

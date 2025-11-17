@@ -37,14 +37,15 @@ vi.mock('react-use', () => ({
   useWindowSize: () => ({ width: 1024, height: 768 }),
 }))
 
-// Mock react-router-dom
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom')
-  return {
-    ...actual,
-    useNavigate: () => vi.fn(),
-  }
-})
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+  }),
+  usePathname: () => '/tableau',
+}))
 
 describe('Tableau - Test intégration', () => {
   let user

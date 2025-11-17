@@ -28,8 +28,8 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
 import './AdminPermissions.scss'
 
 type TabType =
@@ -93,6 +93,8 @@ type Permission = {
 }
 
 export default function AdminPermissions() {
+  const router = useRouter()
+
   // Permissions utilisateur (pour vérifier isAdmin)
   const { loading: permissionsLoading, ready, isAdmin } = usePermissions()
 
@@ -172,6 +174,21 @@ export default function AdminPermissions() {
     }
   }, [permissions])
 
+  // Rediriger les non-admins vers l'accueil
+  useEffect(() => {
+    const hasLoadedData =
+      !loading &&
+      ready &&
+      isAdmin !== undefined &&
+      permissions &&
+      features &&
+      roles
+
+    if (hasLoadedData && !isAdmin) {
+      router.replace('/')
+    }
+  }, [loading, ready, isAdmin, permissions, features, roles, router])
+
   // Attendre que TOUT soit chargé avant de décider
   const isLoading = loading || !ready || !permissions || !features || !roles
   const hasLoadedData =
@@ -196,7 +213,15 @@ export default function AdminPermissions() {
 
   // Rediriger les non-admins SEULEMENT après le chargement complet ET la vérification du rôle
   if (hasLoadedData && !isAdmin) {
-    return <Navigate to="/" replace />
+    return (
+      <div className="admin-permissions-page">
+        <Navbar />
+        <div className="loading-container">
+          <Loader />
+          <p>Redirection...</p>
+        </div>
+      </div>
+    )
   }
 
   // Si les données ne sont pas encore chargées, continuer à attendre
