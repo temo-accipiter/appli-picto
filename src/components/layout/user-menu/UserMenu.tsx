@@ -12,9 +12,9 @@ import {
 import { supabase } from '@/utils/supabaseClient'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import { Crown, LogOut, Shield, User } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 
 import './UserMenu.scss'
 
@@ -29,8 +29,8 @@ export default function UserMenu() {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [dbPseudo, setDbPseudo] = useState('')
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const dialogRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const checkingOutRef = useRef(false) // évite double-clic sur checkout
@@ -48,7 +48,7 @@ export default function UserMenu() {
   }, [loading])
 
   // Ferme le menu sur changement de route
-  useEffect(() => setOpen(false), [location.pathname])
+  useEffect(() => setOpen(false), [pathname])
 
   // WCAG 2.1.1 - Navigation clavier et gestion focus
   useEffect(() => {
@@ -291,7 +291,7 @@ export default function UserMenu() {
                   if (el) menuItemsRef.current[0] = el
                 }}
                 className="user-menu-item"
-                onClick={() => navigate('/profil')}
+                onClick={() => router.push('/profil')}
               >
                 <User className="icon" aria-hidden />
                 <span>{t('nav.profil')}</span>
@@ -308,7 +308,7 @@ export default function UserMenu() {
                     (loading || !authReady) && !forceUnblock
                       ? undefined
                       : isActive
-                        ? () => navigate('/abonnement')
+                        ? () => router.push('/abonnement')
                         : handleCheckout
                   }
                   disabled={(loading || !authReady) && !forceUnblock}
@@ -330,7 +330,7 @@ export default function UserMenu() {
                     if (el) menuItemsRef.current[1] = el
                   }}
                   className="user-menu-item admin"
-                  onClick={() => navigate('/admin/permissions')}
+                  onClick={() => router.push('/admin/permissions')}
                 >
                   <Shield className="icon" aria-hidden />
                   <span>{t('nav.admin')}</span>
@@ -343,7 +343,7 @@ export default function UserMenu() {
                 }}
                 className="user-menu-item danger"
                 onClick={() => {
-                  signOut().then(() => navigate('/login'))
+                  signOut().then(() => router.push('/login'))
                 }}
               >
                 <LogOut className="icon" aria-hidden />
