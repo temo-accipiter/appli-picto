@@ -14,7 +14,6 @@
 
 import { render, renderHook, type RenderOptions } from '@testing-library/react'
 import { type ReactElement, type ReactNode } from 'react'
-import { BrowserRouter } from 'react-router-dom'
 import {
   AuthProvider,
   ToastProvider,
@@ -41,17 +40,15 @@ interface AllTheProvidersProps {
 
 export function AllTheProviders({ children }: AllTheProvidersProps) {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <PermissionsProvider>
-          <DisplayProvider>
-            <LoadingProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </LoadingProvider>
-          </DisplayProvider>
-        </PermissionsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <AuthProvider>
+      <PermissionsProvider>
+        <DisplayProvider>
+          <LoadingProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </LoadingProvider>
+        </DisplayProvider>
+      </PermissionsProvider>
+    </AuthProvider>
   )
 }
 
