@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  overflow: visible; // Permet à l'image de dépasser lors des animations hover
 
   &__img {
     width: 100%;

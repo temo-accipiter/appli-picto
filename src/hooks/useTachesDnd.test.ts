@@ -6,7 +6,7 @@
  * - Chargement des tâches "aujourdhui"
  * - Toggle done/undone
  * - Reset all tasks
- * - Drag & drop (moveTask)
+ * - Drag & drop (swapTasks)
  * - Sauvegarde de l'ordre (saveOrder)
  * - Gestion retry logic
  * - Gestion abort-safe
@@ -303,8 +303,8 @@ describe('useTachesDnd', () => {
     })
   })
 
-  describe('moveTask', () => {
-    it('doit réordonner les tâches lors du drag & drop', async () => {
+  describe('swapTasks', () => {
+    it('doit échanger deux tâches lors du drag & drop', async () => {
       // Arrange
       const mockTaches = [
         {
@@ -356,16 +356,16 @@ describe('useTachesDnd', () => {
       })
 
       act(() => {
-        // Déplacer tâche 1 (index 0) à la position de tâche 3 (index 2)
-        result.current.moveTask('1', '3')
+        // Échanger tâche 1 (index 0) avec tâche 3 (index 2)
+        result.current.swapTasks('1', '3')
       })
 
-      // Assert - Vérifier que l'état result.current.taches a changé
+      // Assert - Swap: tâche 1 et tâche 3 échangent leurs positions
       await waitFor(() => {
         expect(result.current.taches).toHaveLength(3)
-        expect(result.current.taches[0].id).toBe('2') // Tâche 2 passe en premier
-        expect(result.current.taches[1].id).toBe('3') // Tâche 3 en deuxième
-        expect(result.current.taches[2].id).toBe('1') // Tâche 1 en dernier
+        expect(result.current.taches[0].id).toBe('3') // Tâche 3 prend la place de Tâche 1
+        expect(result.current.taches[1].id).toBe('2') // Tâche 2 reste en place
+        expect(result.current.taches[2].id).toBe('1') // Tâche 1 prend la place de Tâche 3
       })
     })
   })

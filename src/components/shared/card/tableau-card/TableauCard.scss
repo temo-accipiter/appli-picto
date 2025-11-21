@@ -2,22 +2,59 @@
 
 .tableau-card {
   @include card-style;
-  @include transition-smooth;
 
   cursor: grab;
   user-select: none;
+  position: relative;
+
+  // Override du overflow: hidden du mixin card-style
+  // pour permettre à l'image de dépasser lors du hover
+  overflow: visible;
+
+  // Animation d'apparition lors du swap
+  animation: card-swap-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  // Transitions optimisées pour éviter les sauts
+  transition:
+    transform 300ms cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 200ms ease,
+    box-shadow 200ms ease,
+    background-color 200ms ease;
 
   // Drag actif
   &.dragging {
     opacity: 0.5;
     cursor: grabbing;
     transform: scale(0.98);
+    z-index: 999;
+  }
+
+  // Carte cochée (tâche accomplie)
+  &.done {
+    opacity: 0.5;
+    filter: grayscale(100%);
+
+    span {
+      text-decoration: line-through;
+    }
+  }
+
+  // Image avec transition pour le hover
+  img,
+  .tableau-card__image {
+    transition: transform 300ms ease;
   }
 
   // Hover (si non touch)
   @include on-event {
     background-color: var(--color-hover);
     transform: scale(1.02);
+
+    // Animation de rotation sur l'image au hover
+    img,
+    .tableau-card__image {
+      transform: scale(1.15) rotate(8deg);
+    }
   }
 
   // 📱 Responsive mobile-first
@@ -32,5 +69,17 @@
   /* Desktop (768px+) */
   @include respond-to(md) {
     padding: $spacing-md;
+  }
+}
+
+// Animation de swap fluide
+@keyframes card-swap-in {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }

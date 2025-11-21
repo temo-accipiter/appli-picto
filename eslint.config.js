@@ -23,6 +23,7 @@ export default defineConfig([
       '**/*.tsbuildinfo',
       '**/build/**',
       '**/.vite/**',
+      '**/projet-drag&drop/**',
     ],
   },
   {

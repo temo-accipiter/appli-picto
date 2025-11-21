@@ -4,6 +4,8 @@
 .grid-taches {
   display: grid;
   width: 100%;
+  position: relative;
+  overflow: visible; // Permet aux images de dépasser lors du hover
 
   /* [Mobile-first] Base = mobile (320px+) */
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -16,17 +18,26 @@
     gap: $spacing-md;
     padding: $spacing-md;
   }
+
+  // Isolation pour éviter les effets de bord sur les z-index
+  isolation: isolate;
 }
 
 .slot {
   min-height: rem(160);
   border: rem(2) dashed transparent;
   border-radius: $radius-md;
+  overflow: visible; // Permet à l'image de dépasser lors du hover
 
-  @include transition-smooth;
+  // Transition fluide pour le border et background
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease;
 
-  &:hover {
-    border-color: rgba($color-primary, 0.3);
+  // Slot survolé pendant un drag
+  &.over {
+    border-color: $color-primary;
+    background-color: rgba($color-primary, 0.1);
   }
 }
 
@@ -153,6 +164,20 @@
       }
     }
   }
+}
+
+.drag-overlay-wrapper {
+  // Style pour l'élément en cours de drag
+  cursor: grabbing;
+
+  // Ombre plus prononcée pour l'effet de levée
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+
+  // Légère rotation pour l'effet de soulèvement
+  transform: rotate(3deg) scale(1.05);
+
+  // Animation fluide
+  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .reset-all-zone {

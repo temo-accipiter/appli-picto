@@ -6,14 +6,13 @@
  *     - son titre (tache.label)
  *     - une image (si existante)
  *     - une case à cocher custom pour marquer "fait"
- *   Permet de drag & drop via dnd-kit (useSortable).
+ *   Permet de drag & drop via dnd-kit (useDraggable).
  *   Joue un bip sonore lors de la coche si la tâche n'était pas faite (configurable).
  */
 
 import { Checkbox, DemoSignedImage, SignedImage } from '@/components'
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import React, { useCallback, useMemo, useRef } from 'react'
+import { useDraggable } from '@dnd-kit/core'
+import React, { useCallback, useRef } from 'react'
 import './TableauCard.scss'
 
 interface Tache {
@@ -27,6 +26,7 @@ interface TableauCardProps {
   tache: Tache
   done: boolean
   toggleDone: (id: string | number, newDone: boolean) => void
+  isDraggingGlobal?: boolean
 }
 
 // 🔊 Bip sonore quand une tâche est cochée
@@ -72,23 +72,33 @@ function playBeep(audioCtx: AudioContext): void {
   }
 }
 
-function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
-  // Debug logs désactivés pour réduire le bruit dans la console
-  // if (process.env.NODE_ENV === 'development') {
-  //   console.log('🔍 TableauCard reçoit:', { id: tache.id, label: tache.label, done })
-  // }
+function TableauCard({
+  tache,
+  done,
+  toggleDone,
+  isDraggingGlobal = false,
+}: TableauCardProps) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: tache.id.toString(),
+    })
 
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id: tache.id.toString() })
-
-  // — mémoriser le style pour éviter de recomputer à chaque render
-  const style = useMemo(
-    () => ({
-      transform: CSS.Transform.toString(transform),
-      transition,
-    }),
-    [transform, transition]
-  )
+  // Style pour le drag avec animation fluide
+  const style = {
+    transform: transform
+      ? `translate(${transform.x}px, ${transform.y}px)`
+      : undefined,
+    // Pas de transition pendant le drag pour un suivi précis du curseur
+    transition: isDragging
+      ? 'none'
+      : 'transform 300ms cubic-bezier(0.25, 1, 0.5, 1), opacity 200ms ease',
+    touchAction: 'manipulation' as const,
+    // Désactiver les pointer events sur les cartes non-draggées pendant un drag global
+    pointerEvents:
+      isDraggingGlobal && !isDragging ? ('none' as const) : ('auto' as const),
+    zIndex: isDragging ? 1000 : 'auto',
+    opacity: isDragging ? 0.8 : 1,
+  }
   // — créer le contexte audio seulement quand nécessaire (après interaction utilisateur)
   const audioCtxRef = useRef<AudioContext | null>(null)
 
@@ -144,7 +154,7 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
   return (
     <div
       ref={setNodeRef}
-      className={`tableau-card ${done ? 'done' : ''}`}
+      className={`tableau-card ${done ? 'done' : ''} ${isDragging ? 'dragging' : ''}`}
       style={style}
       {...attributes}
       {...listeners}
@@ -167,7 +177,10 @@ function TableauCard({ tache, done, toggleDone }: TableauCardProps) {
         ))}
 
       {/* Wrapper pour isoler la checkbox des drag listeners */}
-      <div onPointerDown={e => e.stopPropagation()}>
+      <div
+        onPointerDown={e => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
+      >
         <Checkbox
           id={`tache-fait-${tache.id}`}
           checked={done}

@@ -1,6 +1,6 @@
 import { isAbortLike, useAuth, useToast, useI18n, withAbortSafe } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 
 interface Tache {
   id: string | number
@@ -27,9 +27,17 @@ export default function useTachesDnd(onChange, reload = 0) {
   const { show } = useToast()
   const { t } = useI18n()
 
+  // Ref pour éviter la boucle infinie avec onChange dans les dépendances
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
   const loadTaches = useCallback(
     async (retryCount = 0) => {
       if (!user?.id) return
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 useTachesDnd: Chargement tâches pour user', user.id)
+      }
 
       try {
         const { data, error, aborted } = await withAbortSafe(
@@ -85,7 +93,7 @@ export default function useTachesDnd(onChange, reload = 0) {
           console.warn('Données invalides reçues de Supabase:', data)
           setTaches([])
           setDone({})
-          onChange?.(0, 0)
+          onChangeRef.current?.(0, 0)
           return
         }
 
@@ -98,7 +106,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         setDone(initDone)
 
         const doneCount = Object.values(initDone).filter(Boolean).length
-        onChange?.(doneCount, rows.length)
+        onChangeRef.current?.(doneCount, rows.length)
       } catch (err) {
         // Abort (unmount/re-render) → pas d’erreur rouge
         if (isAbortLike(err)) {
@@ -122,7 +130,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         }
       }
     },
-    [onChange, user?.id]
+    [user?.id]
   )
 
   useEffect(() => {
@@ -159,7 +167,7 @@ export default function useTachesDnd(onChange, reload = 0) {
       setDone(updated)
 
       const count = Object.values(updated).filter(Boolean).length
-      onChange?.(count, taches.length)
+      onChangeRef.current?.(count, taches.length)
       // Toast de succès discret pour ne pas polluer l'UI en drag-and-drop
       if (process.env.NODE_ENV === 'development') {
         console.log('✅ Tâche mise à jour avec succès')
@@ -207,7 +215,7 @@ export default function useTachesDnd(onChange, reload = 0) {
 
       const reset = Object.fromEntries(taches.map(t => [t.id, false]))
       setDone(reset)
-      onChange?.(0, taches.length)
+      onChangeRef.current?.(0, taches.length)
       show(t('toasts.allTasksReset'), 'success')
     } catch (err) {
       if (isAbortLike(err)) {
@@ -224,14 +232,20 @@ export default function useTachesDnd(onChange, reload = 0) {
     }
   }
 
-  const moveTask = (activeId, overId) => {
+  const swapTasks = (activeId: string, overId: string) => {
     let newList: Tache[] = []
     setTaches(prev => {
-      const oldIndex = prev.findIndex(t => t.id.toString() === activeId)
-      const newIndex = prev.findIndex(t => t.id.toString() === overId)
+      const fromIndex = prev.findIndex(t => t.id.toString() === activeId)
+      const toIndex = prev.findIndex(t => t.id.toString() === overId)
+
+      if (fromIndex === -1 || toIndex === -1) return prev
+
+      // Swap : échange direct des positions
       const arr = [...prev]
-      const [moved] = arr.splice(oldIndex, 1)
-      if (moved) arr.splice(newIndex, 0, moved)
+      const temp = arr[fromIndex]
+      arr[fromIndex] = arr[toIndex]
+      arr[toIndex] = temp
+
       newList = arr
       return arr
     })
@@ -291,7 +305,7 @@ export default function useTachesDnd(onChange, reload = 0) {
     doneMap,
     toggleDone,
     resetAll,
-    moveTask,
+    swapTasks,
     saveOrder,
   }
 }
