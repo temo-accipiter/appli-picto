@@ -242,9 +242,14 @@ export default function useTachesDnd(onChange, reload = 0) {
 
       // Swap : échange direct des positions
       const arr = [...prev]
-      const temp = arr[fromIndex]
-      arr[fromIndex] = arr[toIndex]
-      arr[toIndex] = temp
+      const fromItem = arr[fromIndex]
+      const toItem = arr[toIndex]
+
+      // Vérification de sécurité (ne devrait jamais être undefined après findIndex)
+      if (!fromItem || !toItem) return prev
+
+      arr[fromIndex] = toItem
+      arr[toIndex] = fromItem
 
       newList = arr
       return arr

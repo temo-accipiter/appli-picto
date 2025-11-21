@@ -167,11 +167,12 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       // Effectuer le swap
       const cardAtDestination = layout[toSlot]
 
-      setLayout(prev => ({
-        ...prev,
-        [fromSlot]: cardAtDestination,
-        [toSlot]: activeId,
-      }))
+      setLayout(prev => {
+        const newLayout = { ...prev }
+        newLayout[fromSlot] = cardAtDestination ?? null
+        newLayout[toSlot] = activeId
+        return newLayout
+      })
 
       // Reconstruire la liste ordonnée pour onReorder
       const newOrder = generateSlots(items.length)
