@@ -123,7 +123,7 @@ function DraggableCard({
       setSwapPhase('shrinking')
       const growTimer = setTimeout(() => {
         setSwapPhase('growing')
-      }, 300)
+      }, 500)
       return () => clearTimeout(growTimer)
     } else {
       setSwapPhase('idle')
@@ -177,7 +177,7 @@ function DraggableCard({
   const getTransitionDuration = () => {
     // Animation de swap
     if (!isDragging && swapPhase !== 'idle') {
-      return swapPhase === 'shrinking' ? '250ms' : '400ms'
+      return swapPhase === 'shrinking' ? '400ms' : '600ms'
     }
     switch (dragPhase) {
       case 'lifting':
@@ -305,7 +305,7 @@ export default function RecompensesEdition({
         setSwappedCardId(cardAtDestination)
         setTimeout(() => {
           setSwappedCardId(null)
-        }, 700) // Durée totale de l'animation de swap
+        }, 1100) // Durée totale de l'animation de swap (500ms + 600ms)
       }
 
       setLayout(prev => {

@@ -12,7 +12,7 @@
 
 import { Checkbox, DemoSignedImage, SignedImage } from '@/components'
 import { useDraggable } from '@dnd-kit/core'
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useRef, useState, useEffect } from 'react'
 import './TableauCard.scss'
 
 interface Tache {
@@ -27,6 +27,7 @@ interface TableauCardProps {
   done: boolean
   toggleDone: (id: string | number, newDone: boolean) => void
   isDraggingGlobal?: boolean
+  isBeingSwapped?: boolean
 }
 
 // 🔊 Bip sonore quand une tâche est cochée
@@ -77,27 +78,122 @@ function TableauCard({
   done,
   toggleDone,
   isDraggingGlobal = false,
+  isBeingSwapped = false,
 }: TableauCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id: tache.id.toString(),
     })
 
+  // États pour les animations
+  const [dragPhase, setDragPhase] = useState<
+    'idle' | 'lifting' | 'shrinking' | 'growing' | 'moving'
+  >('idle')
+  const [swapPhase, setSwapPhase] = useState<'idle' | 'shrinking' | 'growing'>(
+    'idle'
+  )
+
+  // Gérer les phases d'animation du drag
+  useEffect(() => {
+    if (isDragging) {
+      setDragPhase('lifting')
+      const shrinkTimer = setTimeout(() => setDragPhase('shrinking'), 120)
+      const growTimer = setTimeout(() => setDragPhase('growing'), 500)
+      const moveTimer = setTimeout(() => setDragPhase('moving'), 900)
+      return () => {
+        clearTimeout(shrinkTimer)
+        clearTimeout(growTimer)
+        clearTimeout(moveTimer)
+      }
+    } else {
+      setDragPhase('idle')
+    }
+  }, [isDragging])
+
+  // Gérer l'animation de swap
+  useEffect(() => {
+    if (isBeingSwapped) {
+      setSwapPhase('shrinking')
+      const growTimer = setTimeout(() => setSwapPhase('growing'), 500)
+      return () => clearTimeout(growTimer)
+    } else {
+      setSwapPhase('idle')
+    }
+  }, [isBeingSwapped])
+
+  // Calculer les valeurs de transformation selon la phase
+  const getTransformValues = () => {
+    if (!isDragging && swapPhase !== 'idle') {
+      switch (swapPhase) {
+        case 'shrinking':
+          return { scale: 0.8, rotate: -3, y: -10 }
+        case 'growing':
+          return { scale: 1, rotate: 0, y: 0 }
+        default:
+          return { scale: 1, rotate: 0, y: 0 }
+      }
+    }
+    switch (dragPhase) {
+      case 'lifting':
+        return { scale: 1.05, rotate: -2, y: -8 }
+      case 'shrinking':
+        return { scale: 0.75, rotate: 3, y: -15 }
+      case 'growing':
+        return { scale: 0.9, rotate: -1, y: -10 }
+      case 'moving':
+        return { scale: 1.03, rotate: 0, y: 0 }
+      default:
+        return { scale: 1, rotate: 0, y: 0 }
+    }
+  }
+
+  const { scale, rotate, y } = getTransformValues()
+
+  // Durée de transition selon la phase
+  const getTransitionDuration = () => {
+    if (!isDragging && swapPhase !== 'idle') {
+      return swapPhase === 'shrinking' ? '400ms' : '600ms'
+    }
+    switch (dragPhase) {
+      case 'lifting':
+        return '120ms'
+      case 'shrinking':
+        return '350ms'
+      case 'growing':
+        return '400ms'
+      case 'moving':
+        return '500ms'
+      default:
+        return '250ms'
+    }
+  }
+
+  // Construire le transform
+  const buildTransform = () => {
+    if (transform) {
+      return `translate(${transform.x}px, ${transform.y + y}px) scale(${scale}) rotate(${rotate}deg)`
+    }
+    if (isDragging || swapPhase !== 'idle') {
+      return `translateY(${y}px) scale(${scale}) rotate(${rotate}deg)`
+    }
+    return undefined
+  }
+
   // Style pour le drag avec animation fluide
   const style = {
-    transform: transform
-      ? `translate(${transform.x}px, ${transform.y}px)`
-      : undefined,
-    // Pas de transition pendant le drag pour un suivi précis du curseur
-    transition: isDragging
-      ? 'none'
-      : 'transform 300ms cubic-bezier(0.25, 1, 0.5, 1), opacity 200ms ease',
+    transform: buildTransform(),
+    transition: `transform ${getTransitionDuration()} cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow ${getTransitionDuration()} ease-out, opacity 150ms ease`,
     touchAction: 'manipulation' as const,
     // Désactiver les pointer events sur les cartes non-draggées pendant un drag global
     pointerEvents:
       isDraggingGlobal && !isDragging ? ('none' as const) : ('auto' as const),
     zIndex: isDragging ? 1000 : 'auto',
-    opacity: isDragging ? 0.8 : 1,
+    opacity: isDragging ? 0.92 : 1,
+    cursor: isDragging ? 'grabbing' : 'grab',
+    boxShadow: isDragging
+      ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 15px rgba(0, 0, 0, 0.2)'
+      : undefined,
+    willChange: isDragging ? 'transform' : undefined,
   }
   // — créer le contexte audio seulement quand nécessaire (après interaction utilisateur)
   const audioCtxRef = useRef<AudioContext | null>(null)

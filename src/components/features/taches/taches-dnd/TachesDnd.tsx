@@ -85,6 +85,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   const [isDragging, setIsDragging] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [announcement, setAnnouncement] = useState('')
+  const [swappedCardId, setSwappedCardId] = useState<string | null>(null)
 
   // Layout : mapping slot -> tâche ID (ou null si vide)
   const [layout, setLayout] = useState<Record<string, string | null>>({})
@@ -167,6 +168,14 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       // Effectuer le swap
       const cardAtDestination = layout[toSlot]
 
+      // Déclencher l'animation de swap sur la card échangée
+      if (cardAtDestination) {
+        setSwappedCardId(cardAtDestination)
+        setTimeout(() => {
+          setSwappedCardId(null)
+        }, 1100) // Durée totale de l'animation de swap (500ms + 600ms)
+      }
+
       setLayout(prev => {
         const newLayout = { ...prev }
         newLayout[fromSlot] = cardAtDestination ?? null
@@ -248,6 +257,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
                     done={doneMap[tache.id] || false}
                     toggleDone={onToggle}
                     isDraggingGlobal={isDragging}
+                    isBeingSwapped={swappedCardId === tache.id.toString()}
                   />
                 )}
               </DroppableSlot>
