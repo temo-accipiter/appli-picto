@@ -10,7 +10,7 @@
   font-weight: $font-weight-semibold;
   font-size: $font-size-base;
   line-height: 1.2;
-  height: rem(25);
+  min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
   cursor: pointer;
   border: none;
   box-shadow: $box-shadow;
@@ -18,10 +18,7 @@
     background $transition-fast ease,
     color $transition-fast ease;
 
-  &:focus-visible {
-    outline: 2px solid $color-accent;
-    outline-offset: 2px;
-  }
+  @include focus-ring;
 
   &__text {
     display: inline-block;
@@ -52,6 +49,16 @@
 
     @include on-event {
       background-color: color.adjust($color-primary, $lightness: -6%);
+    }
+  }
+
+  &--danger {
+    // Variant pour actions destructives (suppression, annulation)
+    background-color: $color-error;
+    color: $color-text-invert;
+
+    @include on-event {
+      background-color: color.adjust($color-error, $lightness: -8%);
     }
   }
 

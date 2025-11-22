@@ -6,38 +6,30 @@
   gap: $spacing-sm;
 
   &__label {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
     font-size: rem(18);
     color: var(--color-text);
     white-space: nowrap;
   }
 
   &__select {
-    padding: rem(8);
+    padding: rem(8) rem(12);
     font-size: rem(16);
     border: 2px solid var(--color-border);
     border-radius: $radius-md;
     background-color: var(--color-bg);
     color: var(--color-text);
     width: 100%;
+    min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
+    cursor: pointer;
     transition:
-      border-color $transition-base,
-      box-shadow $transition-base;
+      border-color $transition-fast,
+      box-shadow $transition-fast;
 
     box-shadow: 0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
 
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow:
-        0 0 0 rem(2) rgba(var(--color-primary-rgb), 0.3),
-        0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
-    }
-
-    &:focus-visible {
-      outline: rem(2) solid $color-accent;
-      outline-offset: rem(2);
-    }
+    // Focus ring unifié
+    @include focus-ring;
 
     &--error {
       border-color: $color-error;
@@ -46,7 +38,7 @@
 
   &__error {
     color: $color-error;
-    font-size: rem(14);
+    font-size: $font-size-sm;
     margin-left: $spacing-md;
   }
 }

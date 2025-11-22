@@ -1,10 +1,11 @@
-// src/components/fields/Checkbox.scss
+// src/components/ui/checkbox/Checkbox.scss
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
 .checkbox-field {
   display: inline-flex;
   align-items: center;
+  min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
 
   &__input {
     -webkit-appearance: none;
@@ -18,19 +19,21 @@
     position: relative;
     transition:
       background-color $transition-fast,
-      border-color $transition-fast;
+      border-color $transition-fast,
+      box-shadow $transition-fast;
 
-    /* [Mobile-first] Base = mobile (petit) */
-    width: rem(16);
-    height: rem(16);
+    // Mobile-first: base = mobile (petit)
+    width: rem(20);
+    height: rem(20);
 
-    /* Desktop (576px+) = taille normale */
+    // Desktop (576px+) = taille normale
     @include respond-to(sm) {
-      width: rem(20);
-      height: rem(20);
+      width: rem(24);
+      height: rem(24);
     }
 
     &:checked {
+      background-color: $color-primary;
       border-color: $color-primary;
     }
 
@@ -42,19 +45,17 @@
       transform: translate(-50%, -60%);
       color: $color-text-invert;
 
-      /* [Mobile-first] Base = mobile (petit) */
+      // Mobile-first: base = mobile (petit)
       font-size: rem(12);
 
-      /* Desktop (576px+) = taille normale */
+      // Desktop (576px+) = taille normale
       @include respond-to(sm) {
         font-size: rem(14);
       }
     }
 
-    &:focus {
-      outline: none;
-      box-shadow: 0 0 0 rem(3) rgba($color-primary, 0.3);
-    }
+    // Focus ring unifié avec le reste du design system
+    @include focus-ring($color-primary);
   }
 
   &__label {
@@ -66,28 +67,38 @@
 
   &__error {
     margin-top: $spacing-xs;
-    margin-left: calc(rem(20) + $spacing-sm);
+    margin-left: calc(rem(24) + $spacing-sm);
     font-size: $font-size-sm;
     color: $color-error;
   }
 
-  // ✅ Variante sm
+  // Variante sm (compacte)
   &--sm &__input {
     width: rem(16);
     height: rem(16);
+
+    &:checked::after {
+      font-size: rem(10);
+    }
+  }
+
+  // Variante md (défaut explicite)
+  &--md &__input {
+    width: rem(20);
+    height: rem(20);
 
     &:checked::after {
       font-size: rem(12);
     }
   }
 
-  // ✅ Variante md (valeur par défaut, redondante ici mais explicite)
-  &--md &__input {
-    width: rem(20);
-    height: rem(20);
+  // Variante lg (grande taille pour meilleure accessibilité)
+  &--lg &__input {
+    width: rem(28);
+    height: rem(28);
 
     &:checked::after {
-      font-size: rem(14);
+      font-size: rem(18);
     }
   }
 }
