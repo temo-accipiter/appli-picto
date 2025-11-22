@@ -197,7 +197,9 @@ test.describe('♿ Audit WCAG 2.2 AA - Pages Principales', () => {
     expect(result.serious).toBe(0)
   })
 
-  test('Page CGU (/legal/cgu) - Pas de violations critiques', async ({ page }) => {
+  test('Page CGU (/legal/cgu) - Pas de violations critiques', async ({
+    page,
+  }) => {
     await auditPage(page, '/legal/cgu', 'Page CGU')
 
     const result = auditResults[auditResults.length - 1]!

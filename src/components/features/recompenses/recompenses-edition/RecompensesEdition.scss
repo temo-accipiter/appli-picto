@@ -94,7 +94,20 @@
 .checklist-recompenses {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  background-color: #f4f0ff; // Violet pastel comme LiensGrid services-section
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+
+  // Dark mode
+  [data-theme='dark'] & {
+    background: linear-gradient(145deg, #222530, #2a2d37);
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+  }
 
   h2 {
     font-size: 1.4rem;
@@ -108,5 +121,51 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
     align-items: start;
+  }
+}
+
+// Styles partagés avec TachesEdition (réutilisés)
+.checklist-recompenses {
+  .edition-section__title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: $spacing-sm;
+    color: var(--text-primary, #333);
+  }
+
+  .edition-section__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+    align-items: center;
+  }
+
+  .edition-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: $spacing-md;
+  }
+
+  .edition-section__empty {
+    grid-column: 1 / -1;
+    font-size: 1.1rem;
+    color: var(--c-text-secondary, #666);
+    padding: $spacing-lg;
+    border: 2px dashed var(--c-border, #ccc);
+    border-radius: $radius-lg;
+    text-align: center;
+  }
+
+  .edition-slot {
+    min-height: 140px;
+    border: 2px dashed transparent;
+    border-radius: $radius-md;
+    transition: border-color 0.2s ease;
+
+    &.over {
+      border-color: var(--color-primary, #9b59b6);
+      background-color: rgba(155, 89, 182, 0.1);
+    }
   }
 }

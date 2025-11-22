@@ -76,27 +76,17 @@ export default function useParametres(reload = 0): UseParametresReturn {
         // Auto-initialiser avec les valeurs par défaut
         if (process.env.NODE_ENV === 'development') {
           console.info(
-            'useParametres: row not found, auto-initializing defaults'
+            'useParametres: row not found, using local defaults (visitor mode)'
           )
         }
         setLoading(false)
 
-        // Créer la row avec les defaults
+        // Mode visiteur : utiliser valeurs par défaut locales sans insertion DB
         const payload: Partial<Parametre> = {
           id: 1,
           confettis: true,
-          toasts_enabled: true,
         }
-        const { error: insertError } = await withAbortSafe(
-          supabase
-            .from('parametres')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .upsert(payload, { onConflict: 'id' }) as any
-        )
-
-        if (!insertError) {
-          setParametres(payload as Parametre)
-        }
+        setParametres(payload as Parametre)
       } else {
         setParametres(null)
         setLoading(false)

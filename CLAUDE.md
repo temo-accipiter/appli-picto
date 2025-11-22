@@ -8,12 +8,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite, **pnpm 9.15.0** (migrated from Yarn PnP), React Router
+- **Frontend**: React 19, **Next.js 16** (App Router, Turbopack), **pnpm 9.15.0** (migrated from Yarn PnP)
+- **Routing**: Next.js App Router with route groups `(public)` and `(protected)`
 - **Styling**: SCSS with BEM-lite methodology, custom animations
 - **Backend**: 100% Supabase (PostgreSQL, Auth, Storage, Edge Functions, RLS)
 - **Payment**: Stripe (Checkout, subscriptions, webhooks)
 - **Security**: Cloudflare Turnstile (CAPTCHA), RGPD/CNIL compliant
 - **Testing**: Vitest with jsdom, Playwright for E2E
+- **PWA**: Configured with @ducanh2912/next-pwa
 - **Node version**: 20.19.4 (managed by Volta)
 - **TypeScript**: Strict mode with relaxed settings for Next.js migration (329 non-blocking errors)
 
@@ -24,10 +26,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Core Development
 
 ```bash
-pnpm dev              # Start dev server (port 5173)
-pnpm build            # Build for production (Vite)
+pnpm dev              # Start Next.js dev server (port 3000, Turbopack)
+pnpm build            # Build for production (Next.js)
 pnpm build:prod       # Build with production mode
-pnpm preview          # Preview production build
+pnpm build:analyze    # Build with bundle analysis
+pnpm start            # Start production server
+pnpm preview          # Preview production build (alias for start)
 ```
 
 ### Code Quality
@@ -56,7 +60,7 @@ pnpm test:e2e:ui      # Run Playwright with UI
 pnpm verify           # Full check: type-check + lint + format + test + build
 pnpm verify:quick     # Quick check: type-check + lint + build
 pnpm verify:ci        # CI check: full verification with coverage
-pnpm check-bundle     # Verify bundle size (< 1.6 MB per chunk)
+pnpm check-bundle     # Verify bundle size
 ```
 
 ### Database & Types
@@ -125,7 +129,8 @@ pnpm context:update # MUST update schema.sql + types
 - Upload images > 100KB (auto-compression enforced)
 - Create markdown documentation files (\*.md) without explicit user request
 - Generate README or analysis files proactively
-- Use `yarn` commands (project migrated to pnpm)
+- Use `yarn` or `vite` commands (project migrated to pnpm + Next.js)
+- Create new `react-router-dom` dependencies (migrated to Next.js App Router)
 
 ## TypeScript Configuration
 
@@ -155,13 +160,26 @@ pnpm context:update # MUST update schema.sql + types
 
 ## Migration History
 
+### React Router → Next.js App Router (Completed Nov 2024)
+
+- ✅ **Routing**: Migrated from React Router v7 to Next.js 16 App Router
+- ✅ **Build system**: Migrated from Vite to Next.js with Turbopack
+- ✅ **Performance**: Build time **31s** with Turbopack (-79% vs Vite)
+- ✅ **Route groups**: Implemented `(public)` and `(protected)` patterns
+- ✅ **Server Components**: 108 components correctly marked with `'use client'`
+- ✅ **Image optimization**: Migrated to `next/image` for SignedImage component
+- ✅ **PWA**: Configured with @ducanh2912/next-pwa
+- ✅ **Metadata API**: SEO optimization for all pages
+- ✅ **Environment variables**: Migrated `VITE_*` → `NEXT_PUBLIC_*`
+
+**CRITICAL**: All routing now uses Next.js App Router patterns, not `react-router-dom`
+
 ### Yarn → pnpm (Completed Nov 2024)
 
 - ✅ **Package manager**: pnpm@9.15.0
 - ✅ **Performance**: Build time reduced from 2m30s to ~20s (-87%)
 - ✅ **node_modules**: Reduced from 400 MB to 250 MB (-37%)
 - ✅ **Installation**: Reduced from 45s to 8.5s (-81%)
-- ⚠️ **Bundle size**: 1.78 MB (target: 1.6 MB)
 
 **CRITICAL**: All commands now use `pnpm`, not `yarn`
 
@@ -247,6 +265,84 @@ src/
 Use `<FeatureGate role="abonne">...</FeatureGate>` to restrict UI features. Server-side enforcement via RLS policies.
 
 ## Important Patterns
+
+## Next.js Patterns
+
+### Routing with App Router
+
+**Routes are defined by folder structure** in `src/app/`:
+
+```typescript
+// src/app/(protected)/edition/page.tsx
+import Edition from '@/page-components/edition/Edition'
+
+export const metadata = {
+  title: 'Édition - Appli-Picto',
+  description: 'Créez et modifiez vos tâches et récompenses',
+}
+
+export default function EditionPage() {
+  return <Edition />
+}
+```
+
+### Route Groups
+
+- `(public)/` - Routes accessibles sans authentification (tableau, login, signup, legal)
+- `(protected)/` - Routes nécessitant authentification (edition, profil, abonnement, admin)
+
+### Server vs Client Components
+
+**Default** : Server Components (pas de `'use client'`)
+**Require `'use client'`** si utilisation de :
+
+- React hooks (`useState`, `useEffect`, `useContext`, etc.)
+- Event handlers (`onClick`, `onChange`, etc.)
+- Browser APIs (`window`, `document`, `localStorage`)
+- Client-side libraries (Supabase client-side auth)
+
+**Pattern** :
+
+```typescript
+'use client' // Requis pour interactivité
+
+import { useState } from 'react'
+
+export default function InteractiveComponent() {
+  const [count, setCount] = useState(0)
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>
+}
+```
+
+### Image Optimization
+
+Use `next/image` for automatic optimization (WebP/AVIF, lazy loading):
+
+```typescript
+import Image from 'next/image'
+
+<Image
+  src={signedUrl}
+  alt="Description"
+  width={200}
+  height={200}
+  loading="lazy"
+  quality={85}
+/>
+```
+
+### Environment Variables
+
+**Client-side** : `NEXT_PUBLIC_*` (exposed to browser)
+**Server-side** : Any other name (server-only)
+
+```typescript
+// ✅ Accessible client-side
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+// ❌ Undefined client-side, OK server-side
+const secretKey = process.env.SECRET_KEY
+```
 
 ## CRITICAL Patterns
 

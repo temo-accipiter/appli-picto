@@ -94,18 +94,13 @@ export default function TrainProgressBar({
 
         {/* Train en mouvement */}
         <div className="train" style={trainStyle}>
-          <img
-            src="/src/assets/images/train.png"
-            alt="Métro"
-            className="train-icon"
-            loading="lazy"
-          />
+          <img src="/images/train.png" alt="Métro" className="train-icon" />
         </div>
 
         {/* Logo ligne figé à droite */}
         <div className="dot-logo fixed-logo">
           <img
-            src={`/src/assets/images/ligne/ligne${ligne}.png`}
+            src={`/images/ligne/ligne${ligne}.png`}
             alt={`Ligne ${ligne}`}
             loading="lazy"
           />

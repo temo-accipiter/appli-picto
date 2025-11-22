@@ -49,6 +49,7 @@ export default function Profil() {
   const [_isAdmin, setIsAdmin] = useState(false)
   const [tempAvatarPath, setTempAvatarPath] = useState<string | null>(null)
   const [avatarKey, setAvatarKey] = useState(0)
+  const [isSaving, setIsSaving] = useState(false)
 
   // même logique d'affichage que le UserMenu (DB > metadata > email)
   const displayPseudo = getDisplayPseudo(user, pseudo)
@@ -99,60 +100,75 @@ export default function Profil() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || isSaving) return
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleSave - Début sauvegarde profil', {
-        pseudo,
-        dateNaissance,
-        ville,
+    setIsSaving(true)
+
+    try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 handleSave - Début sauvegarde profil', {
+          pseudo,
+          dateNaissance,
+          ville,
+        })
+      }
+
+      // Bloque si règle violée
+      const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
+      const villeMsg = noEdgeSpaces(ville) || noDoubleSpaces(ville)
+      if (pseudoMsg || villeMsg) {
+        showToast(t('profil.fixFieldErrors'), 'error')
+        return
+      }
+
+      // Nettoyage final
+      const pseudoClean = normalizeSpaces(pseudo || '')
+      const villeClean = normalizeSpaces(ville || '')
+
+      const payload = {
+        pseudo: pseudoClean === '' ? null : pseudoClean,
+        ville: villeClean === '' ? null : villeClean,
+        date_naissance:
+          (dateNaissance || '').trim() === '' ? null : dateNaissance,
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 handleSave - Payload nettoyé', payload)
+      }
+
+      // 1. Mise à jour metadata Auth
+      const { error: metaError } = await supabase.auth.updateUser({
+        data: { pseudo: payload.pseudo },
       })
-    }
+      if (metaError)
+        console.warn('⚠️ Mise à jour metadata échouée :', metaError)
 
-    // Bloque si règle violée
-    const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
-    const villeMsg = noEdgeSpaces(ville) || noDoubleSpaces(ville)
-    if (pseudoMsg || villeMsg) {
-      showToast(t('profil.fixFieldErrors'), 'error')
-      return
-    }
+      if (!user?.id) return
 
-    // Nettoyage final
-    const pseudoClean = normalizeSpaces(pseudo || '')
-    const villeClean = normalizeSpaces(ville || '')
+      // 2. Mise à jour table profiles
+      const { error } = await supabase
+        .from('profiles')
+        .update(payload)
+        .eq('id', user.id)
 
-    const payload = {
-      pseudo: pseudoClean === '' ? null : pseudoClean,
-      ville: villeClean === '' ? null : villeClean,
-      date_naissance:
-        (dateNaissance || '').trim() === '' ? null : dateNaissance,
-    }
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 handleSave - Résultat update profiles', { error })
+      }
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleSave - Payload nettoyé', payload)
-    }
+      if (error) {
+        showToast(t('profil.profileUpdateError'), 'error')
+        console.error('❌ Erreur sauvegarde profil:', error)
+      } else {
+        // 3. IMPORTANT: Mettre à jour l'état local avec les valeurs nettoyées
+        // Cela suffit pour mettre à jour l'UI car getDisplayPseudo() utilise dbPseudo en priorité
+        setPseudo(payload.pseudo || '')
+        setVille(payload.ville || '')
+        setDateNaissance(payload.date_naissance || '')
 
-    const { error: metaError } = await supabase.auth.updateUser({
-      data: { pseudo: payload.pseudo },
-    })
-    if (metaError) console.warn('⚠️ Mise à jour metadata échouée :', metaError)
-
-    if (!user?.id) return
-
-    const { error } = await supabase
-      .from('profiles')
-      .update(payload)
-      .eq('id', user.id)
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleSave - Résultat update profiles', { error })
-    }
-
-    if (error) {
-      showToast(t('profil.profileUpdateError'), 'error')
-      console.error('❌ Erreur sauvegarde profil:', error)
-    } else {
-      showToast(t('profil.profileUpdated'), 'success')
+        showToast(t('profil.profileUpdated'), 'success')
+      }
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -286,7 +302,17 @@ export default function Profil() {
       showToast(t('profil.resetEmailSent'), 'success')
     } catch (err) {
       console.error('Erreur reset mdp :', err)
-      showToast((err as Error)?.message || t('errors.generic'), 'error')
+      const errorMessage = (err as Error)?.message || ''
+
+      // Gestion spécifique de l'erreur de rate limiting
+      if (errorMessage.includes('you can only request this after')) {
+        showToast(
+          'Pour des raisons de sécurité, veuillez patienter avant de demander un nouveau lien.',
+          'error'
+        )
+      } else {
+        showToast(errorMessage || t('errors.generic'), 'error')
+      }
     } finally {
       setCaptchaTokenReset(null)
       setCaptchaKey(k => k + 1)
@@ -389,7 +415,12 @@ export default function Profil() {
         {/* {!loading && !isActive && <SubscribeButton />} */}
 
         <div className="profil-buttons">
-          <Button type="submit" label={t('profil.save')} variant="primary" />
+          <Button
+            type="submit"
+            label={isSaving ? t('app.loading') : t('profil.save')}
+            variant="primary"
+            disabled={isSaving}
+          />
 
           <Turnstile
             key={captchaKey}

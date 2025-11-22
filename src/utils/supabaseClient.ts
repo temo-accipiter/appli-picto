@@ -59,13 +59,14 @@ const clientConfig = {
     storageKey: `sb-${getProjectRef(url)}-auth-token`,
   },
   global: {
-    // Timeout réduit pour détecter problèmes plus vite
+    // Timeout adaptatif : plus long en dev local, court en production
     fetch: async (
       input: string | URL | Request,
       options?: globalThis.RequestInit
     ) => {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000) // 5s max
+      const timeoutMs = process.env.NODE_ENV === 'development' ? 15000 : 5000 // 15s en dev, 5s en prod
+      const timeout = setTimeout(() => controller.abort(), timeoutMs)
 
       try {
         const response = await fetch(input, {
@@ -77,8 +78,11 @@ const clientConfig = {
       } catch (error) {
         clearTimeout(timeout)
         if (error instanceof Error && error.name === 'AbortError') {
-          console.warn('[Supabase] Request timeout after 5s')
-          throw new Error('Supabase timeout')
+          const timeoutSec = timeoutMs / 1000
+          console.warn(
+            `[Supabase] Request timeout after ${timeoutSec}s (${process.env.NODE_ENV})`
+          )
+          throw new Error(`Supabase timeout (${timeoutSec}s)`)
         }
         throw error
       }

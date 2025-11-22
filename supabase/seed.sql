@@ -1,255 +1,273 @@
 -- ═══════════════════════════════════════════════════════════════
--- 🌱 Seed file pour Supabase Local
+-- 🌱 Seed file pour Supabase Local - VERSION MINIMALE
 -- ═══════════════════════════════════════════════════════════════
 --
--- Ce fichier contient des données de test pour le développement local.
--- Il est automatiquement exécuté lors de `yarn supabase:reset`.
---
--- ⚠️ ATTENTION : Ce fichier est pour TESTS LOCAUX uniquement !
---    Ne JAMAIS exécuter en production !
---
+-- Ce fichier contient uniquement les données essentielles pour le mode visiteur
 -- ═══════════════════════════════════════════════════════════════
 
 -- Désactiver temporairement RLS pour le seed
 SET session_replication_role = replica;
 
 -- ═══════════════════════════════════════════════════════════════
--- 1. ROLES & FEATURES
+-- 1. RÔLES ET QUOTAS
 -- ═══════════════════════════════════════════════════════════════
 
--- Insérer les rôles de base (s'ils n'existent pas déjà)
-INSERT INTO public.roles (id, name, description)
+-- Insérer les rôles de base
+INSERT INTO public.roles (name, display_name, description, priority)
 VALUES
-  (1, 'visiteur', 'Utilisateur en mode démo (non connecté)'),
-  (2, 'free', 'Utilisateur gratuit avec quotas limités'),
-  (3, 'abonne', 'Utilisateur avec abonnement premium'),
-  (4, 'admin', 'Administrateur avec accès complet')
+  ('admin', 'Administrateur', 'Administrateur avec accès complet', 100),
+  ('abonne', 'Abonné', 'Utilisateur avec abonnement actif', 50),
+  ('free', 'Gratuit', 'Utilisateur gratuit avec quotas limités', 20),
+  ('visiteur', 'Visiteur', 'Mode démo sans compte', 10)
+ON CONFLICT (name) DO NOTHING;
+
+-- Insérer les quotas par rôle (format normalisé)
+INSERT INTO public.role_quotas (role_id, quota_type, quota_limit, quota_period)
+SELECT r.id, quota_data.qtype, quota_data.qlimit, 'monthly'
+FROM public.roles r
+CROSS JOIN (
+  VALUES
+    ('taches', 999),
+    ('recompenses', 999),
+    ('categories', 999)
+) AS quota_data(qtype, qlimit)
+WHERE r.name = 'admin'
+UNION ALL
+SELECT r.id, quota_data.qtype, quota_data.qlimit, 'monthly'
+FROM public.roles r
+CROSS JOIN (
+  VALUES
+    ('taches', 40),
+    ('recompenses', 10),
+    ('categories', 50)
+) AS quota_data(qtype, qlimit)
+WHERE r.name = 'abonne'
+UNION ALL
+SELECT r.id, quota_data.qtype, quota_data.qlimit, 'monthly'
+FROM public.roles r
+CROSS JOIN (
+  VALUES
+    ('taches', 5),
+    ('recompenses', 2),
+    ('categories', 2)
+) AS quota_data(qtype, qlimit)
+WHERE r.name = 'free'
+UNION ALL
+SELECT r.id, quota_data.qtype, quota_data.qlimit, 'total'
+FROM public.roles r
+CROSS JOIN (
+  VALUES
+    ('taches', 3),
+    ('recompenses', 1),
+    ('categories', 0)
+) AS quota_data(qtype, qlimit)
+WHERE r.name = 'visiteur'
+ON CONFLICT (role_id, quota_type, quota_period) DO NOTHING;
+
+-- Créer le compte admin fictif pour développement local
+INSERT INTO auth.users (
+  id,
+  instance_id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  created_at,
+  updated_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  is_super_admin,
+  role,
+  aud,
+  confirmation_token,
+  recovery_token,
+  email_change,
+  email_change_token_new,
+  email_change_token_current,
+  is_sso_user,
+  is_anonymous
+)
+VALUES (
+  'afcd1e0e-fd75-4c1c-b4ed-d347663fbeeb',
+  '00000000-0000-0000-0000-000000000000',
+  'admin@local.com',
+  crypt('admin123', gen_salt('bf')),
+  NOW(),
+  NOW(),
+  NOW(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  false,
+  'authenticated',
+  'authenticated',
+  '',
+  '',
+  '',
+  '',
+  '',
+  false,
+  false
+)
+ON CONFLICT (id) DO UPDATE SET
+  email_confirmed_at = NOW(),
+  encrypted_password = crypt('admin123', gen_salt('bf')),
+  email_change = '',
+  email_change_token_new = '',
+  email_change_token_current = '';
+
+-- Assigner le rôle admin au compte
+INSERT INTO public.user_roles (user_id, role_id, is_active)
+SELECT
+  'afcd1e0e-fd75-4c1c-b4ed-d347663fbeeb',
+  r.id,
+  true
+FROM public.roles r
+WHERE r.name = 'admin'
+ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true;
+
+-- Créer le compte free fictif pour développement local
+INSERT INTO auth.users (
+  id,
+  instance_id,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  created_at,
+  updated_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  is_super_admin,
+  role,
+  aud,
+  confirmation_token,
+  recovery_token,
+  email_change,
+  email_change_token_new,
+  email_change_token_current,
+  is_sso_user,
+  is_anonymous
+)
+VALUES (
+  'bfcd2e0e-fd75-4c1c-b4ed-d347663fbeec',
+  '00000000-0000-0000-0000-000000000000',
+  'free@local.com',
+  crypt('free123', gen_salt('bf')),
+  NOW(),
+  NOW(),
+  NOW(),
+  '{"provider":"email","providers":["email"]}',
+  '{}',
+  false,
+  'authenticated',
+  'authenticated',
+  '',
+  '',
+  '',
+  '',
+  '',
+  false,
+  false
+)
+ON CONFLICT (id) DO UPDATE SET
+  email_confirmed_at = NOW(),
+  encrypted_password = crypt('free123', gen_salt('bf')),
+  email_change = '',
+  email_change_token_new = '',
+  email_change_token_current = '';
+
+-- Assigner le rôle free au compte
+INSERT INTO public.user_roles (user_id, role_id, is_active)
+SELECT
+  'bfcd2e0e-fd75-4c1c-b4ed-d347663fbeec',
+  r.id,
+  true
+FROM public.roles r
+WHERE r.name = 'free'
+ON CONFLICT (user_id, role_id) DO UPDATE SET is_active = true;
+
+-- Créer les profils pour les comptes de test
+INSERT INTO public.profiles (id, pseudo)
+VALUES
+  ('afcd1e0e-fd75-4c1c-b4ed-d347663fbeeb', 'Admin'),
+  ('bfcd2e0e-fd75-4c1c-b4ed-d347663fbeec', 'Free User')
+ON CONFLICT (id) DO UPDATE SET
+  pseudo = EXCLUDED.pseudo;
+
+-- ═══════════════════════════════════════════════════════════════
+-- 2. BUCKET STORAGE IMAGES
+-- ═══════════════════════════════════════════════════════════════
+
+-- Créer le bucket images (privé)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'images',
+  'images',
+  false,
+  5242880, -- 5 MB max
+  ARRAY['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+)
 ON CONFLICT (id) DO NOTHING;
 
--- Insérer les features de base
-INSERT INTO public.features (id, name, description)
-VALUES
-  (1, 'create_taches', 'Créer des tâches'),
-  (2, 'create_recompenses', 'Créer des récompenses'),
-  (3, 'create_categories', 'Créer des catégories'),
-  (4, 'upload_images', 'Uploader des images personnalisées'),
-  (5, 'export_data', 'Exporter les données'),
-  (6, 'admin_panel', 'Accéder au panel admin')
-ON CONFLICT (id) DO NOTHING;
-
--- Permissions par rôle
-INSERT INTO public.role_permissions (role_id, feature_id, can_access)
-VALUES
-  -- Visiteur (très limité)
-  (1, 1, false),
-  (1, 2, false),
-  (1, 3, false),
-  (1, 4, false),
-  (1, 5, false),
-  (1, 6, false),
-
-  -- Free (accès limité)
-  (2, 1, true),
-  (2, 2, true),
-  (2, 3, true),
-  (2, 4, true),
-  (2, 5, false),
-  (2, 6, false),
-
-  -- Abonné (accès complet sauf admin)
-  (3, 1, true),
-  (3, 2, true),
-  (3, 3, true),
-  (3, 4, true),
-  (3, 5, true),
-  (3, 6, false),
-
-  -- Admin (accès complet)
-  (4, 1, true),
-  (4, 2, true),
-  (4, 3, true),
-  (4, 4, true),
-  (4, 5, true),
-  (4, 6, true)
-ON CONFLICT (role_id, feature_id) DO NOTHING;
-
--- Quotas par rôle
-INSERT INTO public.role_quotas (role_id, resource_type, max_count)
-VALUES
-  -- Visiteur
-  (1, 'taches', 3),
-  (1, 'recompenses', 0),
-  (1, 'categories', 0),
-
-  -- Free
-  (2, 'taches', 5),
-  (2, 'recompenses', 2),
-  (2, 'categories', 2),
-
-  -- Abonné
-  (3, 'taches', 40),
-  (3, 'recompenses', 10),
-  (3, 'categories', 50),
-
-  -- Admin (illimité)
-  (4, 'taches', 999),
-  (4, 'recompenses', 999),
-  (4, 'categories', 999)
-ON CONFLICT (role_id, resource_type) DO NOTHING;
-
 -- ═══════════════════════════════════════════════════════════════
--- 2. UTILISATEURS DE TEST
+-- 3. STATIONS DE MÉTRO (pour la feature thème métro)
 -- ═══════════════════════════════════════════════════════════════
 
--- Note: Les utilisateurs sont créés via auth.users
--- Ici on va juste préparer les UUID que l'on utilisera
-
-DO $$
-DECLARE
-  user_free_id UUID := '11111111-1111-1111-1111-111111111111';
-  user_abonne_id UUID := '22222222-2222-2222-2222-222222222222';
-  user_admin_id UUID := '33333333-3333-3333-3333-333333333333';
-BEGIN
-
-  -- ═══════════════════════════════════════════════════════════════
-  -- 3. PROFILS & RÔLES
-  -- ═══════════════════════════════════════════════════════════════
-
-  -- Profils
-  INSERT INTO public.profiles (id, email, created_at)
-  VALUES
-    (user_free_id, 'test-free@appli-picto.test', NOW()),
-    (user_abonne_id, 'test-abonne@appli-picto.test', NOW()),
-    (user_admin_id, 'test-admin@appli-picto.test', NOW())
-  ON CONFLICT (id) DO NOTHING;
-
-  -- Assigner les rôles
-  -- Note: Il faut gérer le conflit car la table peut avoir une contrainte unique
-  INSERT INTO public.user_roles (user_id, role)
-  VALUES
-    (user_free_id, 'free'),
-    (user_abonne_id, 'abonne'),
-    (user_admin_id, 'admin')
-  ON CONFLICT DO NOTHING;
-
-  -- Paramètres par défaut
-  INSERT INTO public.parametres (user_id, confettis)
-  VALUES
-    (user_free_id, true),
-    (user_abonne_id, true),
-    (user_admin_id, true)
-  ON CONFLICT (user_id) DO NOTHING;
-
-  -- ═══════════════════════════════════════════════════════════════
-  -- 4. CATÉGORIES DE TEST
-  -- ═══════════════════════════════════════════════════════════════
-
-  -- Catégories pour utilisateur Free
-  INSERT INTO public.categories (user_id, label, color, created_at)
-  VALUES
-    (user_free_id, 'Matin', '#FF6B6B', NOW()),
-    (user_free_id, 'Soir', '#4ECDC4', NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- Catégories pour utilisateur Abonné
-  INSERT INTO public.categories (user_id, label, color, created_at)
-  VALUES
-    (user_abonne_id, 'Matin', '#FF6B6B', NOW()),
-    (user_abonne_id, 'Midi', '#FFA07A', NOW()),
-    (user_abonne_id, 'Soir', '#4ECDC4', NOW()),
-    (user_abonne_id, 'École', '#45B7D1', NOW()),
-    (user_abonne_id, 'Maison', '#96CEB4', NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- ═══════════════════════════════════════════════════════════════
-  -- 5. TÂCHES DE TEST
-  -- ═══════════════════════════════════════════════════════════════
-
-  -- Tâches pour utilisateur Free (3 max)
-  INSERT INTO public.taches (user_id, label, fait, aujourdhui, position, created_at)
-  VALUES
-    (user_free_id, 'Se brosser les dents', false, true, 0, NOW()),
-    (user_free_id, 'S''habiller', false, true, 1, NOW()),
-    (user_free_id, 'Ranger sa chambre', false, false, 2, NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- Tâches pour utilisateur Abonné (plus variées)
-  INSERT INTO public.taches (user_id, label, fait, aujourdhui, position, created_at)
-  VALUES
-    (user_abonne_id, 'Se lever', true, true, 0, NOW()),
-    (user_abonne_id, 'Petit-déjeuner', false, true, 1, NOW()),
-    (user_abonne_id, 'Se brosser les dents', false, true, 2, NOW()),
-    (user_abonne_id, 'S''habiller', false, true, 3, NOW()),
-    (user_abonne_id, 'Préparer son sac', false, true, 4, NOW()),
-    (user_abonne_id, 'Faire ses devoirs', false, false, 5, NOW()),
-    (user_abonne_id, 'Ranger sa chambre', false, false, 6, NOW()),
-    (user_abonne_id, 'Prendre sa douche', false, false, 7, NOW()),
-    (user_abonne_id, 'Lire une histoire', false, false, 8, NOW()),
-    (user_abonne_id, 'Se coucher', false, false, 9, NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- ═══════════════════════════════════════════════════════════════
-  -- 6. RÉCOMPENSES DE TEST
-  -- ═══════════════════════════════════════════════════════════════
-
-  -- Récompenses pour utilisateur Free (2 max)
-  INSERT INTO public.recompenses (user_id, label, selected, created_at)
-  VALUES
-    (user_free_id, 'Jouer aux jeux vidéo', true, NOW()),
-    (user_free_id, 'Regarder la télé', false, NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- Récompenses pour utilisateur Abonné (plus variées)
-  INSERT INTO public.recompenses (user_id, label, selected, created_at)
-  VALUES
-    (user_abonne_id, 'Jouer dehors', true, NOW()),
-    (user_abonne_id, 'Dessiner', false, NOW()),
-    (user_abonne_id, 'Regarder un film', false, NOW()),
-    (user_abonne_id, 'Jouer avec les copains', false, NOW()),
-    (user_abonne_id, 'Aller au parc', false, NOW())
-  ON CONFLICT DO NOTHING;
-
-  -- ═══════════════════════════════════════════════════════════════
-  -- 7. ABONNEMENT POUR UTILISATEUR ABONNÉ
-  -- ═══════════════════════════════════════════════════════════════
-
-  INSERT INTO public.abonnements (user_id, customer_id, subscription_id, status, current_period_end, created_at)
-  VALUES
-    (user_abonne_id, 'cus_test_abonne', 'sub_test_abonne', 'active', NOW() + INTERVAL '30 days', NOW())
-  ON CONFLICT (user_id) DO NOTHING;
-
-END $$;
-
--- ═══════════════════════════════════════════════════════════════
--- 8. DONNÉES SYSTÈME
--- ═══════════════════════════════════════════════════════════════
-
--- Stations de métro (pour la feature thème métro)
-INSERT INTO public.stations (line, name, position, transport)
+INSERT INTO public.stations (ligne, label, ordre, type)
 VALUES
+  -- Ligne 1
   ('1', 'La Défense', 1, 'metro'),
   ('1', 'Esplanade de La Défense', 2, 'metro'),
   ('1', 'Pont de Neuilly', 3, 'metro'),
   ('1', 'Les Sablons', 4, 'metro'),
   ('1', 'Porte Maillot', 5, 'metro'),
-  ('14', 'Saint-Lazare', 1, 'metro'),
-  ('14', 'Madeleine', 2, 'metro'),
-  ('14', 'Pyramides', 3, 'metro'),
-  ('14', 'Châtelet', 4, 'metro'),
-  ('14', 'Gare de Lyon', 5, 'metro')
+  ('1', 'Argentine', 6, 'metro'),
+  ('1', 'Charles de Gaulle - Étoile', 7, 'metro'),
+  ('1', 'George V', 8, 'metro'),
+  ('1', 'Franklin D. Roosevelt', 9, 'metro'),
+  ('1', 'Champs-Élysées - Clemenceau', 10, 'metro'),
+
+  -- Ligne 6
+  ('6', 'Charles de Gaulle - Étoile', 1, 'metro'),
+  ('6', 'Kléber', 2, 'metro'),
+  ('6', 'Boissière', 3, 'metro'),
+  ('6', 'Trocadéro', 4, 'metro'),
+  ('6', 'Passy', 5, 'metro'),
+  ('6', 'Bir-Hakeim', 6, 'metro'),
+  ('6', 'Dupleix', 7, 'metro'),
+  ('6', 'La Motte-Picquet - Grenelle', 8, 'metro'),
+  ('6', 'Cambronne', 9, 'metro'),
+  ('6', 'Sèvres - Lecourbe', 10, 'metro'),
+
+  -- Ligne 12
+  ('12', 'Front Populaire', 1, 'metro'),
+  ('12', 'Porte de la Chapelle', 2, 'metro'),
+  ('12', 'Marx Dormoy', 3, 'metro'),
+  ('12', 'Marcadet - Poissonniers', 4, 'metro'),
+  ('12', 'Jules Joffrin', 5, 'metro'),
+  ('12', 'Lamarck - Caulaincourt', 6, 'metro'),
+  ('12', 'Abbesses', 7, 'metro'),
+  ('12', 'Pigalle', 8, 'metro'),
+  ('12', 'Saint-Georges', 9, 'metro'),
+  ('12', 'Notre-Dame-de-Lorette', 10, 'metro')
 ON CONFLICT DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════
--- 9. CARTES DÉMO (pour mode visiteur)
+-- 3. PARAMÈTRES GLOBAUX (singleton)
 -- ═══════════════════════════════════════════════════════════════
 
-INSERT INTO public.demo_cards (type, label, position, is_done)
+INSERT INTO public.parametres (id, confettis)
+VALUES (1, true)
+ON CONFLICT (id) DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════
+-- 4. CARTES DÉMO (pour mode visiteur)
+-- ═══════════════════════════════════════════════════════════════
+
+INSERT INTO public.demo_cards (card_type, label, position, is_active)
 VALUES
-  ('tache', 'Se brosser les dents', 0, false),
-  ('tache', 'S''habiller', 1, false),
-  ('tache', 'Prendre son petit-déjeuner', 2, false),
-  ('recompense', 'Jouer dehors', 0, false),
-  ('recompense', 'Regarder la télé', 1, false)
+  ('task', 'Se brosser les dents', 0, true),
+  ('task', 'S''habiller', 1, true),
+  ('task', 'Prendre son petit-déjeuner', 2, true),
+  ('reward', 'Jouer dehors', 0, true)
 ON CONFLICT DO NOTHING;
 
 -- Réactiver RLS
@@ -259,13 +277,8 @@ SET session_replication_role = DEFAULT;
 -- FIN DU SEED
 -- ═══════════════════════════════════════════════════════════════
 
--- Message de confirmation
 DO $$
 BEGIN
   RAISE NOTICE '✅ Seed completed successfully!';
-  RAISE NOTICE '📝 3 test users created:';
-  RAISE NOTICE '   - test-free@appli-picto.test (password: TestPassword123!)';
-  RAISE NOTICE '   - test-abonne@appli-picto.test (password: TestPassword123!)';
-  RAISE NOTICE '   - test-admin@appli-picto.test (password: TestPassword123!)';
-  RAISE NOTICE '🎯 Use these credentials for E2E tests';
+  RAISE NOTICE '🎯 Demo cards and metro stations inserted';
 END $$;

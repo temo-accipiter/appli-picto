@@ -1,0 +1,83 @@
+.liens-grid-two {
+  padding: 2rem;
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--text-primary, #333);
+  }
+}
+
+.icon-title {
+  width: 2rem;
+  height: 2rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.section {
+  padding: 2rem;
+  border-radius: 12px;
+  background: var(--color-accent);
+  margin-bottom: 2rem;
+}
+
+.social-section {
+  background-color: #f0f8ff;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35); // ombre plus marquée
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.services-section {
+  background-color: #f4f0ff;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35); // ombre plus marquée
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.separator {
+  height: 2px;
+  margin: 3rem auto;
+  max-width: 600px;
+  background: linear-gradient(to right, transparent, #ccc, transparent);
+  border-radius: 1px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.slot {
+  min-height: 140px;
+  border: 2px dashed transparent;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.slot.over {
+  border-color: var(--color-primary);
+}
+
+/* 🌙 Dark Mode */
+[data-theme='dark'] .section {
+  background: linear-gradient(145deg, #1e1f25, #2a2d37);
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.35); // ombre plus visible en mode sombre
+
+  &.social {
+    background-color: #2b2f3c;
+  }
+
+  &.services {
+    background-color: #222530;
+  }
+}

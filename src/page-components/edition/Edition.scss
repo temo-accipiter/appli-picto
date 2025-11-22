@@ -172,6 +172,16 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-lg;
+
+  // Separator stylisé comme LiensGrid
+  .separator {
+    height: 2px;
+    margin: $spacing-xl auto;
+    max-width: 600px;
+    width: 100%;
+    background: linear-gradient(to right, transparent, #ccc, transparent);
+    border-radius: 1px;
+  }
 }
 
 // Indicateurs de quotas d'images

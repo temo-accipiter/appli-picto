@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import {
   CookieBanner,
   CookiePreferences,
@@ -11,7 +12,7 @@ import { usePathname } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import './Layout.scss'
 
-export default function Layout() {
+export default function Layout({ children }: { children?: ReactNode }) {
   const { t } = useTranslation('common')
   const pathname = usePathname()
   const showNavbarRoutes = ['/profil', '/edition', '/tableau', '/tableau-demo']
@@ -27,7 +28,7 @@ export default function Layout() {
       <div className="layout-main">
         {showNavbar && <Navbar />}
         <main id="main-content" aria-label={t('accessibility.skipToContent')}>
-          <PageTransition />
+          <PageTransition>{children}</PageTransition>
         </main>
         <Footer />
         <CookieBanner />

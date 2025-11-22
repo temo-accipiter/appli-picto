@@ -23,10 +23,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="fr" data-scroll-behavior="smooth">
       <head>
+        {/* Preconnect optimizations for faster DNS/TLS */}
         <link
           rel="preconnect"
+          href="https://tklcztqoqvnialaqfcjm.supabase.co"
+        />
+        <link
+          rel="dns-prefetch"
           href="https://tklcztqoqvnialaqfcjm.supabase.co"
         />
       </head>

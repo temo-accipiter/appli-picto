@@ -151,10 +151,21 @@ export async function tryLogServerConsent(
       return
     }
 
+    // Récupérer la clé anon pour l'authentification
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!anonKey) {
+      console.warn('❌ Supabase anon key not configured')
+      return
+    }
+
     const url = `${base}/log-consent`
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${anonKey}`,
+        apikey: anonKey,
+      },
       body: JSON.stringify(record),
     })
 

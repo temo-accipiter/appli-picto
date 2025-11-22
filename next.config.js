@@ -62,12 +62,47 @@ const nextConfig = {
         hostname: 'tklcztqoqvnialaqfcjm.supabase.co',
         pathname: '/storage/v1/object/**',
       },
+      {
+        protocol: 'http',
+        hostname: '127.0.0.1',
+        port: '54321',
+        pathname: '/storage/v1/object/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '54321',
+        pathname: '/storage/v1/object/**',
+      },
     ],
     formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    qualities: [75, 85],
   },
 
   // Turbopack configuration (Next.js 16 default)
-  turbopack: {},
+  turbopack: {
+    // Optimisations pour accélérer la compilation
+    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.json'],
+  },
+
+  // Optimisations de développement
+  devIndicators: {
+    buildActivity: true,
+    buildActivityPosition: 'bottom-right',
+  },
+
+  // Désactiver la télémétrie pour un léger gain de performance
+  productionBrowserSourceMaps: false,
+
+  // Compiler toutes les pages en avance pour accélérer la navigation
+  // (uniquement pour les pages statiques, pas pour les pages dynamiques)
+  // En développement, Next.js compile à la demande par défaut
+  compiler: {
+    // Supprime console.log en production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 
   // Webpack configuration (legacy, will be migrated to Turbopack)
   webpack: (config, { isServer }) => {
@@ -108,8 +143,9 @@ const nextConfig = {
 
   // ESLint config (utiliser `next lint` en CLI plutôt que dans next.config.js)
 
-  // Output (standalone pour déploiement optimisé)
-  output: 'standalone',
+  // Output (standalone désactivé pour développement local)
+  // Réactiver avant déploiement production : output: 'standalone'
+  // output: 'standalone',
 
   // Page extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx'],

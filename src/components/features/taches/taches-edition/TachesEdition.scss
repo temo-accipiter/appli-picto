@@ -4,12 +4,73 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  background-color: #f0f8ff; // Bleu pastel comme LiensGrid social-section
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  transition:
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+
+  // Dark mode
+  [data-theme='dark'] & {
+    background: linear-gradient(145deg, #1e1f25, #2a2d37);
+    box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+  }
 }
 
+// Titre de section
+.edition-section__title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: $spacing-sm;
+  color: var(--text-primary, #333);
+}
+
+// Actions (boutons, filtres)
+.edition-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  align-items: center;
+}
+
+// Grille de cards avec drag & drop
+.edition-section__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: $spacing-md;
+}
+
+// Message vide
+.edition-section__empty {
+  grid-column: 1 / -1;
+  font-size: 1.1rem;
+  color: var(--c-text-secondary, #666);
+  padding: $spacing-lg;
+  border: 2px dashed var(--c-border, #ccc);
+  border-radius: $radius-lg;
+  text-align: center;
+}
+
+// Slot droppable pour drag & drop
+.edition-slot {
+  min-height: 140px;
+  border: 2px dashed transparent;
+  border-radius: $radius-md;
+  transition: border-color 0.2s ease;
+
+  &.over {
+    border-color: var(--color-primary, #4a90d9);
+    background-color: rgba(74, 144, 217, 0.1);
+  }
+}
+
+// Anciens styles conservés pour compatibilité
 .header-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start;
   justify-content: space-between;
   gap: $spacing-md;
   padding: $spacing-xs $spacing-md;
@@ -17,7 +78,6 @@
   box-shadow: $box-shadow;
   border-radius: $radius-md;
 
-  // Permet aux boutons et selects de conserver leur taille naturelle
   > * {
     flex: 0 0 auto;
   }
@@ -38,6 +98,7 @@
   border-radius: $radius-md;
   padding: $spacing-xs;
 }
+
 .liste-taches-edition__empty {
   width: 100%;
   min-height: 6rem;

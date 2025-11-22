@@ -66,3 +66,4 @@ tests/accessibility/report.html
 # ✅ Supabase
 supabase/.branches
 supabase/.temp
+supabase/.archive/

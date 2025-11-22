@@ -116,6 +116,9 @@ export async function modernUploadImage(
     conversionMethod: 'none',
   }
 
+  // Déclarer fileHash en dehors du try/catch pour qu'il soit accessible dans le catch
+  let fileHash: string | undefined
+
   try {
     // 0️⃣ VÉRIFICATION SESSION
     try {
@@ -205,7 +208,7 @@ export async function modernUploadImage(
     }
 
     // 5️⃣ CALCUL HASH
-    const fileHash = await calculateFileHash(processedFile)
+    fileHash = await calculateFileHash(processedFile)
 
     if (onProgress) {
       onProgress({ step: 'hash', progress: 50 })
@@ -242,7 +245,7 @@ export async function modernUploadImage(
       if (fileExists && fileExists.length > 0) {
         console.log('✅ Fichier existe dans Storage → réutilisation')
 
-        await logMetrics(userId, assetType, metrics)
+        await logMetrics(userId, assetType, metrics, fileHash)
 
         return {
           path: dupCheck.file_path!,
@@ -255,13 +258,12 @@ export async function modernUploadImage(
         }
       } else {
         console.warn(
-          '⚠️ Fichier supprimé du Storage → soft-delete asset + re-upload'
+          '⚠️ Fichier supprimé du Storage → suppression asset + re-upload'
         )
 
-        await supabase
-          .from('user_assets')
-          .update({ deleted_at: new Date().toISOString() })
-          .eq('id', dupCheck.asset_id!)
+        // Le champ deleted_at n'existe pas dans user_assets
+        // On supprime directement l'enregistrement
+        await supabase.from('user_assets').delete().eq('id', dupCheck.asset_id!)
       }
     }
 
@@ -376,10 +378,11 @@ export async function modernUploadImage(
       .single()
 
     if (dbError) {
-      console.error('❌ [STEP 10] Erreur enregistrement BDD:', dbError)
-
+      // Code 23505 = duplicate hash (comportement normal, déduplication)
       if (dbError.code === '23505') {
-        console.warn('⚠️ Hash en conflit → récupération asset existant')
+        console.log(
+          "ℹ️ Image déjà existante → réutilisation de l'asset (déduplication)"
+        )
 
         const { data: existing } = await supabase
           .from('user_assets')
@@ -391,7 +394,7 @@ export async function modernUploadImage(
         if (existing) {
           await supabase.storage.from(PRIVATE_BUCKET).remove([storageData.path])
 
-          await logMetrics(userId, assetType, metrics)
+          await logMetrics(userId, assetType, metrics, fileHash)
 
           return {
             path: existing.file_path,
@@ -404,6 +407,14 @@ export async function modernUploadImage(
           }
         }
       }
+
+      // Si ce n'est pas une erreur de hash en doublon, c'est une vraie erreur
+      console.error('❌ [STEP 10] Erreur enregistrement BDD:', {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint,
+      })
 
       await supabase.storage.from(PRIVATE_BUCKET).remove([storageData.path])
 
@@ -424,7 +435,7 @@ export async function modernUploadImage(
     }
 
     // 1️⃣2️⃣ LOG METRICS
-    await logMetrics(userId, assetType, metrics)
+    await logMetrics(userId, assetType, metrics, fileHash)
 
     if (onProgress) {
       onProgress({ step: 'complete', progress: 100 })
@@ -448,7 +459,7 @@ export async function modernUploadImage(
     metrics.errorMessage = (error as Error).message
 
     try {
-      await logMetrics(userId, assetType, metrics)
+      await logMetrics(userId, assetType, metrics, fileHash)
     } catch (metricError) {
       console.error('⚠️ Erreur log metrics (non bloquant):', metricError)
     }
@@ -468,7 +479,8 @@ export async function modernUploadImage(
 async function logMetrics(
   userId: string,
   assetType: AssetType,
-  metrics: UploadMetrics
+  metrics: UploadMetrics,
+  fileHash?: string
 ): Promise<void> {
   try {
     await supabase.from('image_metrics').insert({
@@ -483,6 +495,7 @@ async function logMetrics(
       mime_type_original: metrics.mimeTypeOriginal,
       mime_type_final: metrics.mimeTypeFinal,
       conversion_method: metrics.conversionMethod,
+      sha256_hash: fileHash || 'unknown',
     })
   } catch (error) {
     console.error('⚠️ Erreur log metrics:', error)
@@ -532,10 +545,9 @@ export async function replaceImage(
       return uploadResult
     }
 
-    await supabase
-      .from('user_assets')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', assetId)
+    // Le champ deleted_at n'existe pas dans user_assets
+    // On supprime directement l'ancien enregistrement
+    await supabase.from('user_assets').delete().eq('id', assetId)
 
     const newVersion = (existingAsset.version || 1) + 1
 

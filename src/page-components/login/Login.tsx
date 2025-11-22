@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { FormEvent } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
@@ -79,10 +79,12 @@ export default function Login() {
     setLoading(false)
   }
 
-  if (user && pathname !== '/reset-password') {
-    router.push('/tableau')
-    return null
-  }
+  // Redirect authenticated users to tableau
+  useEffect(() => {
+    if (user && pathname !== '/reset-password') {
+      router.push('/tableau')
+    }
+  }, [user, pathname, router])
 
   return (
     <div className="login-page">

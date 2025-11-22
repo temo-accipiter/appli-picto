@@ -6,8 +6,10 @@
 // Nouveautés :
 // - Si bucket === 'demo-images' (public), on construit une URL publique (pas de signature).
 // - Si la signature échoue avec le bucket fourni (ex. 'avatars'), on tente automatiquement 'images' en fallback.
+// - Utilise next/image pour optimisation automatique (WebP/AVIF, lazy loading)
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { getSignedImageUrl } from '@/utils/storage/getSignedUrl'
 import { supabase } from '@/utils/supabaseClient'
 import './SignedImage.scss'
@@ -107,14 +109,15 @@ export default function SignedImage({
       style={{ width: `${size}px`, height: `${size}px` }}
     >
       {url ? (
-        <img
+        <Image
           src={url}
           alt={alt}
           width={size}
           height={size}
           className="signed-image__img"
           loading="lazy"
-          decoding="async"
+          unoptimized={true}
+          quality={85}
         />
       ) : (
         <div
