@@ -5,6 +5,7 @@ import { usePermissions } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState, useMemo } from 'react'
 import { useDebounce } from '@/hooks'
+import { Select } from '@/components'
 import './AccountManagement.scss'
 
 type AccountStatus =
@@ -246,18 +247,18 @@ export default function AccountManagement({
           />
         </div>
 
-        <div className="filter-select">
-          <select
-            value={filter}
-            onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}
-          >
-            <option value="all">Tous les états</option>
-            <option value="active">Actifs</option>
-            <option value="suspended">Suspendus</option>
-            <option value="deletion_scheduled">Suppression programmée</option>
-            <option value="pending_verification">En attente</option>
-          </select>
-        </div>
+        <Select
+          id="filter-status"
+          value={filter}
+          onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}
+          options={[
+            { value: 'all', label: 'Tous les états' },
+            { value: 'active', label: 'Actifs' },
+            { value: 'suspended', label: 'Suspendus' },
+            { value: 'deletion_scheduled', label: 'Suppression programmée' },
+            { value: 'pending_verification', label: 'En attente' },
+          ]}
+        />
       </div>
 
       <div className="users-list">

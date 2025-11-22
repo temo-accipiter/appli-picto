@@ -1,7 +1,7 @@
 'use client'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { InputWithValidation, ModalConfirm } from '@/components'
+import { InputWithValidation, ModalConfirm, Select } from '@/components'
 import { useDebounce } from '@/hooks'
 import {
   assignRoleToUser,
@@ -269,45 +269,41 @@ export default function UsersTab() {
       {/* Filtres et recherche */}
       <div className="filters-container">
         <div className="filters-row">
-          <div className="filter-group">
-            <label htmlFor="role-filter">Filtrer par rôle :</label>
-            <select
-              id="role-filter"
-              value={roleFilter}
-              onChange={e => {
-                setRoleFilter(e.target.value)
-                setCurrentPage(1) // Reset à la première page
-              }}
-              className="filter-select"
-            >
-              <option value="all">Tous les rôles</option>
-              <option value="admin">Administrateurs</option>
-              <option value="abonne">Abonnés</option>
-              <option value="staff">Staff</option>
-              <option value="free">Comptes gratuits</option>
-              <option value="visitor">Visiteurs</option>
-              <option value="no_roles">Sans rôles</option>
-            </select>
-          </div>
+          <Select
+            id="role-filter"
+            label="Filtrer par rôle :"
+            value={roleFilter}
+            onChange={e => {
+              setRoleFilter(e.target.value)
+              setCurrentPage(1)
+            }}
+            options={[
+              { value: 'all', label: 'Tous les rôles' },
+              { value: 'admin', label: 'Administrateurs' },
+              { value: 'abonne', label: 'Abonnés' },
+              { value: 'staff', label: 'Staff' },
+              { value: 'free', label: 'Comptes gratuits' },
+              { value: 'visitor', label: 'Visiteurs' },
+              { value: 'no_roles', label: 'Sans rôles' },
+            ]}
+          />
 
-          <div className="filter-group">
-            <label htmlFor="status-filter">Statut du compte :</label>
-            <select
-              id="status-filter"
-              value={statusFilter}
-              onChange={e => {
-                setStatusFilter(e.target.value)
-                setCurrentPage(1) // Reset à la première page
-              }}
-              className="filter-select"
-            >
-              <option value="all">Tous les statuts</option>
-              <option value="active">Actifs</option>
-              <option value="suspended">Suspendus</option>
-              <option value="pending_verification">En attente</option>
-              <option value="deletion_scheduled">Suppression programmée</option>
-            </select>
-          </div>
+          <Select
+            id="status-filter"
+            label="Statut du compte :"
+            value={statusFilter}
+            onChange={e => {
+              setStatusFilter(e.target.value)
+              setCurrentPage(1)
+            }}
+            options={[
+              { value: 'all', label: 'Tous les statuts' },
+              { value: 'active', label: 'Actifs' },
+              { value: 'suspended', label: 'Suspendus' },
+              { value: 'pending_verification', label: 'En attente' },
+              { value: 'deletion_scheduled', label: 'Suppression programmée' },
+            ]}
+          />
         </div>
 
         <div className="search-container">

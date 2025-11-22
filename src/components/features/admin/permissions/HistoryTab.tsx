@@ -1,6 +1,7 @@
 'use client'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Select } from '@/components'
 import { getPermissionHistory } from '@/utils/permissions-api'
 import { Clock, Edit, History, Plus, Trash2, User } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -167,52 +168,46 @@ export default function HistoryTab() {
       {/* Filtres et contrôles */}
       <div className="history-controls">
         <div className="filters-grid">
-          <div className="filter-group">
-            <label htmlFor="change-type-filter">Type de changement :</label>
-            <select
-              id="change-type-filter"
-              value={changeTypeFilter}
-              onChange={e =>
-                setChangeTypeFilter(e.target.value as ChangeTypeFilter)
-              }
-              className="form-select"
-            >
-              <option value="all">Tous les types</option>
-              <option value="INSERT">Créations</option>
-              <option value="UPDATE">Modifications</option>
-              <option value="DELETE">Suppressions</option>
-            </select>
-          </div>
+          <Select
+            id="change-type-filter"
+            label="Type de changement :"
+            value={changeTypeFilter}
+            onChange={e =>
+              setChangeTypeFilter(e.target.value as ChangeTypeFilter)
+            }
+            options={[
+              { value: 'all', label: 'Tous les types' },
+              { value: 'INSERT', label: 'Créations' },
+              { value: 'UPDATE', label: 'Modifications' },
+              { value: 'DELETE', label: 'Suppressions' },
+            ]}
+          />
 
-          <div className="filter-group">
-            <label htmlFor="table-filter">Type d&apos;élément :</label>
-            <select
-              id="table-filter"
-              value={tableFilter}
-              onChange={e => setTableFilter(e.target.value as TableFilter)}
-              className="form-select"
-            >
-              <option value="all">Tous les éléments</option>
-              <option value="roles">Rôles</option>
-              <option value="features">Fonctionnalités</option>
-              <option value="role_permissions">Permissions</option>
-              <option value="user_roles">Attributions</option>
-            </select>
-          </div>
+          <Select
+            id="table-filter"
+            label="Type d'élément :"
+            value={tableFilter}
+            onChange={e => setTableFilter(e.target.value as TableFilter)}
+            options={[
+              { value: 'all', label: 'Tous les éléments' },
+              { value: 'roles', label: 'Rôles' },
+              { value: 'features', label: 'Fonctionnalités' },
+              { value: 'role_permissions', label: 'Permissions' },
+              { value: 'user_roles', label: 'Attributions' },
+            ]}
+          />
 
-          <div className="limit-group">
-            <label htmlFor="history-limit">Nombre d&apos;éléments :</label>
-            <select
-              id="history-limit"
-              value={limit}
-              onChange={e => setLimit(Number(e.target.value))}
-              className="form-select"
-            >
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </div>
+          <Select
+            id="history-limit"
+            label="Nombre d'éléments :"
+            value={limit}
+            onChange={e => setLimit(Number(e.target.value))}
+            options={[
+              { value: 25, label: '25' },
+              { value: 50, label: '50' },
+              { value: 100, label: '100' },
+            ]}
+          />
 
           <div className="action-group">
             <button className="btn btn-secondary" onClick={loadHistory}>
