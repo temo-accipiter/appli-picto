@@ -73,12 +73,16 @@ const generateSlots = (count: number) =>
 interface DroppableSlotProps {
   id: string
   children?: React.ReactNode
+  isDraggingFrom?: boolean
 }
 
-function DroppableSlot({ id, children }: DroppableSlotProps) {
+function DroppableSlot({ id, children, isDraggingFrom }: DroppableSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id })
+  const classNames = ['edition-slot']
+  if (isOver) classNames.push('over')
+  if (isDraggingFrom) classNames.push('dragging-from')
   return (
-    <div ref={setNodeRef} className={`edition-slot${isOver ? ' over' : ''}`}>
+    <div ref={setNodeRef} className={classNames.join(' ')}>
       {children}
     </div>
   )
@@ -144,7 +148,7 @@ function DraggableCard({
       setSwapPhase('shrinking')
       const growTimer = setTimeout(() => {
         setSwapPhase('growing')
-      }, 500)
+      }, 800)
       return () => clearTimeout(growTimer)
     } else {
       setSwapPhase('idle')
@@ -160,7 +164,7 @@ function DraggableCard({
     if (!isDragging && swapPhase !== 'idle') {
       switch (swapPhase) {
         case 'shrinking':
-          return { scale: 0.8, rotate: -3, y: -10 }
+          return { scale: 0.6, rotate: -5, y: -30 }
         case 'growing':
           return { scale: 1, rotate: 0, y: 0 }
         default:
@@ -198,7 +202,7 @@ function DraggableCard({
   const getTransitionDuration = () => {
     // Animation de swap
     if (!isDragging && swapPhase !== 'idle') {
-      return swapPhase === 'shrinking' ? '400ms' : '600ms'
+      return swapPhase === 'shrinking' ? '700ms' : '900ms'
     }
     switch (dragPhase) {
       case 'lifting':
@@ -264,6 +268,7 @@ export default function ChecklistTachesEdition({
     null
   )
   const [isDragging, setIsDragging] = useState(false)
+  const [draggingFromSlot, setDraggingFromSlot] = useState<string | null>(null)
   const [layout, setLayout] = useState<Record<string, string | null>>({})
   const [announcement, setAnnouncement] = useState('')
   const [swappedCardId, setSwappedCardId] = useState<string | null>(null)
@@ -303,18 +308,22 @@ export default function ChecklistTachesEdition({
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
       setIsDragging(true)
-      const tache = items.find(t => t.id.toString() === active.id)
+      const activeId = active.id as string
+      const fromSlot = Object.keys(layout).find(key => layout[key] === activeId)
+      setDraggingFromSlot(fromSlot || null)
+      const tache = items.find(t => t.id.toString() === activeId)
       if (tache) {
         setAnnouncement(`Déplacement de "${tache.label}"`)
       }
     },
-    [items]
+    [items, layout]
   )
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
       if (!over || active.id === over.id) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         setAnnouncement('Déplacement annulé')
         return
       }
@@ -331,6 +340,7 @@ export default function ChecklistTachesEdition({
 
       if (!fromSlot || fromSlot === toSlot) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         return
       }
 
@@ -341,7 +351,7 @@ export default function ChecklistTachesEdition({
         setSwappedCardId(cardAtDestination)
         setTimeout(() => {
           setSwappedCardId(null)
-        }, 1100) // Durée totale de l'animation de swap (500ms + 600ms)
+        }, 1800) // Durée totale de l'animation de swap (800ms + 900ms + marge)
       }
 
       setLayout(prev => {
@@ -378,6 +388,7 @@ export default function ChecklistTachesEdition({
 
       setTimeout(() => {
         setIsDragging(false)
+        setDraggingFromSlot(null)
       }, 100)
     },
     [layout, items, onReorder]
@@ -463,8 +474,6 @@ export default function ChecklistTachesEdition({
         {announcement}
       </div>
 
-      <h2 className="edition-section__title">{`🗒️ ${t('tasks.toEdit')}`}</h2>
-
       <div className="edition-section__actions">
         <Button
           label={`➕ ${t('tasks.addTask')}`}
@@ -527,7 +536,11 @@ export default function ChecklistTachesEdition({
                 : null
 
               return (
-                <DroppableSlot key={slotId} id={slotId}>
+                <DroppableSlot
+                  key={slotId}
+                  id={slotId}
+                  isDraggingFrom={draggingFromSlot === slotId}
+                >
                   {tache && (
                     <DraggableCard
                       id={tache.id.toString()}

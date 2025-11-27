@@ -3,6 +3,7 @@
 import {
   LangSelector,
   PersonalizationModal,
+  SettingsMenu,
   ThemeToggle,
   UserMenu,
 } from '@/components'
@@ -79,6 +80,7 @@ export default function Navbar() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
         >
+          {isEdition && <SettingsMenu />}
           <UserMenu />
         </motion.div>
       ) : (

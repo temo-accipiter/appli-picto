@@ -114,7 +114,7 @@ function TableauCard({
   useEffect(() => {
     if (isBeingSwapped) {
       setSwapPhase('shrinking')
-      const growTimer = setTimeout(() => setSwapPhase('growing'), 500)
+      const growTimer = setTimeout(() => setSwapPhase('growing'), 800)
       return () => clearTimeout(growTimer)
     } else {
       setSwapPhase('idle')
@@ -126,7 +126,7 @@ function TableauCard({
     if (!isDragging && swapPhase !== 'idle') {
       switch (swapPhase) {
         case 'shrinking':
-          return { scale: 0.8, rotate: -3, y: -10 }
+          return { scale: 0.6, rotate: -5, y: -30 }
         case 'growing':
           return { scale: 1, rotate: 0, y: 0 }
         default:
@@ -152,7 +152,7 @@ function TableauCard({
   // Durée de transition selon la phase
   const getTransitionDuration = () => {
     if (!isDragging && swapPhase !== 'idle') {
-      return swapPhase === 'shrinking' ? '400ms' : '600ms'
+      return swapPhase === 'shrinking' ? '700ms' : '900ms'
     }
     switch (dragPhase) {
       case 'lifting':

@@ -417,6 +417,11 @@
     "deleteModalTypeExactly": "Type exactly \"DELETE\""
   },
   "edition": {
+    "confetti": "🎉 Confetti",
+    "train": "🚆 Train",
+    "reward": "🎁 Reward",
+    "timer": "⏱ Time Timer",
+    "notifications": "💬 Notifications",
     "confettiEnabled": "🎉 Confetti enabled",
     "confettiDisabled": "🎊 Confetti disabled",
     "toastsEnabled": "💬 Notifications enabled",

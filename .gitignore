@@ -32,6 +32,9 @@ Thumbs.db
 .env.keys
 .mcp.json
 
+# ✅ Claude Code config local (personnel)
+.claude/settings.local.json
+
 # ✅ SQLite / DB
 *.sqlite
 *.sqlite3

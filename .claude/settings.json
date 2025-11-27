@@ -1,0 +1,46 @@
+{
+  "model": "haiku",
+  "outputStyle": "appli-picto-guide",
+
+  "statusLine": {
+    "command": "$CLAUDE_PROJECT_DIR/.claude/status-line/simple.sh"
+  },
+
+  "hooks": {},
+
+  "permissions": {
+    "bash": "allow",
+    "read_files": "allow",
+    "write_files": "ask"
+  },
+
+  "commands": {
+    "debug": {
+      "model": "sonnet"
+    },
+    "explore": {
+      "model": "sonnet"
+    },
+    "verify-quick": {
+      "model": "haiku"
+    },
+    "verify-full": {
+      "model": "haiku"
+    }
+  },
+
+  "agents": {
+    "explore-codebase": {
+      "model": "haiku"
+    },
+    "explore-docs": {
+      "model": "haiku"
+    },
+    "action": {
+      "model": "haiku"
+    },
+    "websearch": {
+      "model": "haiku"
+    }
+  }
+}

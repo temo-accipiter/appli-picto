@@ -39,6 +39,12 @@
     border-color: $color-primary;
     background-color: rgba($color-primary, 0.1);
   }
+
+  // Slot source (d'où vient la carte draggée)
+  &.dragging-from {
+    border-color: $color-primary;
+    background-color: rgba($color-primary, 0.05);
+  }
 }
 
 .card-tache {

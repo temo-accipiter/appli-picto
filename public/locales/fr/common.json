@@ -417,6 +417,11 @@
     "deleteModalTypeExactly": "Tape exactement « SUPPRIMER »"
   },
   "edition": {
+    "confetti": "🎉 Confettis",
+    "train": "🚆 Train",
+    "reward": "🎁 Récompense",
+    "timer": "⏱ Time Timer",
+    "notifications": "💬 Notifications",
     "confettiEnabled": "🎉 Confettis activés",
     "confettiDisabled": "🎊 Confettis désactivés",
     "toastsEnabled": "💬 Notifications activées",

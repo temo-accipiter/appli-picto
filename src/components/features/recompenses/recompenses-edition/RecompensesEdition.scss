@@ -97,7 +97,7 @@
   gap: $spacing-md;
   padding: $spacing-lg;
   border-radius: $radius-lg;
-  background-color: #f4f0ff; // Violet pastel comme LiensGrid services-section
+  background-color: #f0f8ff; // Bleu pastel comme checklist-edition
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
   transition:
     box-shadow 0.3s ease,
@@ -126,19 +126,25 @@
 
 // Styles partagés avec TachesEdition (réutilisés)
 .checklist-recompenses {
-  .edition-section__title {
-    font-size: 1.4rem;
-    font-weight: 600;
-    margin-bottom: $spacing-sm;
-    color: var(--text-primary, #333);
-  }
-
+  // Actions (boutons) - stylisé comme une card
   .edition-section__actions {
     display: flex;
     flex-wrap: wrap;
     gap: $spacing-sm;
     margin-bottom: $spacing-md;
     align-items: center;
+    padding: $spacing-md;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: $radius-md;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(155, 89, 182, 0.15);
+
+    // Dark mode
+    [data-theme='dark'] & {
+      background-color: rgba(34, 37, 48, 0.6);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
   }
 
   .edition-section__grid {
@@ -161,11 +167,18 @@
     min-height: 140px;
     border: 2px dashed transparent;
     border-radius: $radius-md;
-    transition: border-color 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
 
     &.over {
       border-color: var(--color-primary, #9b59b6);
       background-color: rgba(155, 89, 182, 0.1);
+    }
+
+    &.dragging-from {
+      border-color: var(--color-primary, #9b59b6);
+      background-color: rgba(155, 89, 182, 0.05);
     }
   }
 }

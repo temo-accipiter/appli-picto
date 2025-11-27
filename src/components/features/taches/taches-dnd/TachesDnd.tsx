@@ -61,13 +61,16 @@ const generateSlots = (count: number) =>
 interface DroppableSlotProps {
   id: string
   children?: ReactNode
-  isOver?: boolean
+  isDraggingFrom?: boolean
 }
 
-function DroppableSlot({ id, children }: DroppableSlotProps) {
+function DroppableSlot({ id, children, isDraggingFrom }: DroppableSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id })
+  const classNames = ['slot']
+  if (isOver) classNames.push('over')
+  if (isDraggingFrom) classNames.push('dragging-from')
   return (
-    <div ref={setNodeRef} className={`slot${isOver ? ' over' : ''}`}>
+    <div ref={setNodeRef} className={classNames.join(' ')}>
       {children}
     </div>
   )
@@ -83,6 +86,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
 }: ChecklistTachesDndProps) {
   const { t } = useI18n()
   const [isDragging, setIsDragging] = useState(false)
+  const [draggingFromSlot, setDraggingFromSlot] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [announcement, setAnnouncement] = useState('')
   const [swappedCardId, setSwappedCardId] = useState<string | null>(null)
@@ -128,12 +132,15 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
       setIsDragging(true)
-      const tache = items.find(t => t.id.toString() === active.id)
+      const activeId = active.id as string
+      const fromSlot = Object.keys(layout).find(key => layout[key] === activeId)
+      setDraggingFromSlot(fromSlot || null)
+      const tache = items.find(t => t.id.toString() === activeId)
       if (tache) {
         setAnnouncement(`Déplacement de "${tache.label}"`)
       }
     },
-    [items]
+    [items, layout]
   )
 
   const handleDragEnd = useCallback(
@@ -141,6 +148,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       // Si pas de cible valide ou même position
       if (!over || active.id === over.id) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         setAnnouncement('Déplacement annulé')
         return
       }
@@ -161,6 +169,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
 
       if (!fromSlot || fromSlot === toSlot) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         setAnnouncement('Déplacement annulé')
         return
       }
@@ -173,7 +182,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
         setSwappedCardId(cardAtDestination)
         setTimeout(() => {
           setSwappedCardId(null)
-        }, 1100) // Durée totale de l'animation de swap (500ms + 600ms)
+        }, 1800) // Durée totale de l'animation de swap (800ms + 900ms + marge)
       }
 
       setLayout(prev => {
@@ -211,6 +220,7 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
       // Délai pour bloquer les clics accidentels après le drop
       setTimeout(() => {
         setIsDragging(false)
+        setDraggingFromSlot(null)
       }, 100)
     },
     [layout, items, onReorder]
@@ -250,7 +260,11 @@ const ChecklistTachesDnd = memo(function ChecklistTachesDnd({
               : null
 
             return (
-              <DroppableSlot key={slotId} id={slotId}>
+              <DroppableSlot
+                key={slotId}
+                id={slotId}
+                isDraggingFrom={draggingFromSlot === slotId}
+              >
                 {tache && (
                   <TableauCard
                     tache={tache as unknown as Tache}

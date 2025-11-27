@@ -52,12 +52,16 @@ const generateSlots = (count: number) =>
 interface DroppableSlotProps {
   id: string
   children?: React.ReactNode
+  isDraggingFrom?: boolean
 }
 
-function DroppableSlot({ id, children }: DroppableSlotProps) {
+function DroppableSlot({ id, children, isDraggingFrom }: DroppableSlotProps) {
   const { setNodeRef, isOver } = useDroppable({ id })
+  const classNames = ['edition-slot']
+  if (isOver) classNames.push('over')
+  if (isDraggingFrom) classNames.push('dragging-from')
   return (
-    <div ref={setNodeRef} className={`edition-slot${isOver ? ' over' : ''}`}>
+    <div ref={setNodeRef} className={classNames.join(' ')}>
       {children}
     </div>
   )
@@ -123,7 +127,7 @@ function DraggableCard({
       setSwapPhase('shrinking')
       const growTimer = setTimeout(() => {
         setSwapPhase('growing')
-      }, 500)
+      }, 800)
       return () => clearTimeout(growTimer)
     } else {
       setSwapPhase('idle')
@@ -139,7 +143,7 @@ function DraggableCard({
     if (!isDragging && swapPhase !== 'idle') {
       switch (swapPhase) {
         case 'shrinking':
-          return { scale: 0.8, rotate: -3, y: -10 }
+          return { scale: 0.6, rotate: -5, y: -30 }
         case 'growing':
           return { scale: 1, rotate: 0, y: 0 }
         default:
@@ -177,7 +181,7 @@ function DraggableCard({
   const getTransitionDuration = () => {
     // Animation de swap
     if (!isDragging && swapPhase !== 'idle') {
-      return swapPhase === 'shrinking' ? '400ms' : '600ms'
+      return swapPhase === 'shrinking' ? '700ms' : '900ms'
     }
     switch (dragPhase) {
       case 'lifting':
@@ -228,6 +232,7 @@ export default function RecompensesEdition({
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [successIds, setSuccessIds] = useState(new Set<string | number>())
   const [isDragging, setIsDragging] = useState(false)
+  const [draggingFromSlot, setDraggingFromSlot] = useState<string | null>(null)
   const [layout, setLayout] = useState<Record<string, string | null>>({})
   const [announcement, setAnnouncement] = useState('')
   const [swappedCardId, setSwappedCardId] = useState<string | null>(null)
@@ -267,18 +272,22 @@ export default function RecompensesEdition({
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
       setIsDragging(true)
-      const reward = items.find(r => r.id.toString() === active.id)
+      const activeId = active.id as string
+      const fromSlot = Object.keys(layout).find(key => layout[key] === activeId)
+      setDraggingFromSlot(fromSlot || null)
+      const reward = items.find(r => r.id.toString() === activeId)
       if (reward) {
         setAnnouncement(`Déplacement de "${reward.label}"`)
       }
     },
-    [items]
+    [items, layout]
   )
 
   const handleDragEnd = useCallback(
     ({ active, over }: DragEndEvent) => {
       if (!over || active.id === over.id) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         setAnnouncement('Déplacement annulé')
         return
       }
@@ -295,6 +304,7 @@ export default function RecompensesEdition({
 
       if (!fromSlot || fromSlot === toSlot) {
         setIsDragging(false)
+        setDraggingFromSlot(null)
         return
       }
 
@@ -305,7 +315,7 @@ export default function RecompensesEdition({
         setSwappedCardId(cardAtDestination)
         setTimeout(() => {
           setSwappedCardId(null)
-        }, 1100) // Durée totale de l'animation de swap (500ms + 600ms)
+        }, 1800) // Durée totale de l'animation de swap (800ms + 900ms + marge)
       }
 
       setLayout(prev => {
@@ -342,6 +352,7 @@ export default function RecompensesEdition({
 
       setTimeout(() => {
         setIsDragging(false)
+        setDraggingFromSlot(null)
       }, 100)
     },
     [layout, items, onReorder]
@@ -412,8 +423,6 @@ export default function RecompensesEdition({
         {announcement}
       </div>
 
-      <h2 className="edition-section__title">{`🎁 ${t('rewards.toEdit')}`}</h2>
-
       <div className="edition-section__actions">
         <Button
           label={`🏱 ${t('rewards.addReward')}`}
@@ -453,7 +462,11 @@ export default function RecompensesEdition({
                 : null
 
               return (
-                <DroppableSlot key={slotId} id={slotId}>
+                <DroppableSlot
+                  key={slotId}
+                  id={slotId}
+                  isDraggingFrom={draggingFromSlot === slotId}
+                >
                   {reward && (
                     <DraggableCard
                       id={reward.id.toString()}

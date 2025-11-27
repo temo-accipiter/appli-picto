@@ -155,3 +155,36 @@
   white-space: nowrap;
   border: 0;
 }
+
+/// Transition sécurisée respectant prefers-reduced-motion (WCAG 2.3.3)
+/// Important pour les utilisateurs TSA sensibles aux mouvements
+@mixin safe-transition(
+  $property: all,
+  $duration: $transition-fast,
+  $easing: ease
+) {
+  transition: $property $duration $easing;
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/// Animation sécurisée respectant prefers-reduced-motion
+@mixin safe-animation(
+  $name,
+  $duration: $transition-base,
+  $timing: ease-in-out
+) {
+  animation: $name $duration $timing;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/// Zone interactive minimum WCAG 2.2 AA (44x44px)
+@mixin interactive-target {
+  min-height: rem(44);
+  min-width: rem(44);
+}
