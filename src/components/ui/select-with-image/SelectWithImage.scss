@@ -4,195 +4,254 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-xxs;
-}
 
-.select-with-image__label {
-  font-size: $font-size-sm;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0;
-}
-
-.select-with-image__details {
-  position: relative;
-  list-style: none;
-
-  &--error .select-with-image__summary {
-    border-color: $color-error;
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
   }
 
-  &[open] .select-with-image__options {
+  &__required {
+    color: $color-error;
+  }
+
+  // Trigger (bouton Radix UI)
+  &__trigger {
+    position: relative;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-xs;
+    width: 100%;
+    min-height: rem(44); // WCAG 2.2 AA
+    padding: rem(8) $spacing-sm;
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-border);
+    border-radius: $radius-md;
+    cursor: pointer;
+    color: var(--color-text);
+    font-size: rem(16);
+    font-family: inherit;
+    user-select: none;
+    transition:
+      border $transition-fast ease,
+      background-color $transition-fast ease,
+      box-shadow $transition-fast ease;
+
+    &:hover:not([data-disabled]) {
+      background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.02));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-focus, #0077c2);
+      outline-offset: 2px;
+    }
+
+    &[data-disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--error {
+      border-color: $color-error;
+
+      &:focus-visible {
+        outline-color: $color-error;
+      }
+    }
+
+    &[data-state='open'] {
+      border-color: var(--color-focus, #0077c2);
+      box-shadow: 0 0 0 3px rgba(0, 119, 194, 0.1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 
-  &[open] .select-with-image__chevron {
-    transform: rotate(180deg);
+  // Contenu sélectionné
+  &__selected {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__selected-image {
+    width: rem(32);
+    height: rem(32);
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: $radius-sm;
+  }
+
+  &__selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__placeholder {
+    color: var(--color-text, rgba(0, 0, 0, 0.5));
+    opacity: 0.6;
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(24);
+    height: rem(24);
+    flex-shrink: 0;
+    color: var(--color-text);
+    font-size: rem(12);
+    transition: transform $transition-fast ease;
+
+    [data-state='open'] & {
+      transform: rotate(180deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  // Dropdown content (Radix Portal)
+  &__content {
+    z-index: 1000;
+    width: var(--radix-select-trigger-width);
+    max-height: var(--radix-select-content-available-height);
+    overflow: hidden;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-border);
+    border-radius: $radius-md;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    // Animation douce pour TSA
+    &[data-state='open'] {
+      animation: slideDownAndFade 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &[data-state='closed'] {
+      animation: slideUpAndFade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none !important;
+    }
+  }
+
+  &__viewport {
+    padding: $spacing-sm;
+  }
+
+  // Item dans le dropdown
+  &__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    font-size: rem(14);
+    color: var(--color-text);
+    border-radius: $radius-sm;
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    transition:
+      background-color $transition-fast ease,
+      color $transition-fast ease;
+
+    &[data-highlighted] {
+      background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
+    }
+
+    &[data-state='checked'] {
+      background-color: var(--color-primary-light, rgba(0, 119, 194, 0.1));
+      font-weight: 600;
+    }
+
+    &[data-disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  &__item-content {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__item-image {
+    width: rem(28);
+    height: rem(28);
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: $radius-sm;
+  }
+
+  &__item-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__indicator {
+    position: absolute;
+    right: $spacing-sm;
+    color: var(--color-primary, #0077c2);
+    font-weight: 600;
+  }
+
+  // Message d'erreur
+  &__error {
+    min-height: 1rem;
+    font-size: $font-size-sm;
+    color: $color-error;
+    line-height: 1.2;
+    margin: 0;
+    transition: opacity $transition-fast ease;
+
+    &:empty {
+      opacity: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
   }
 }
 
-.select-with-image__summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: $spacing-xs;
-  padding: rem(8) $spacing-sm;
-  min-height: rem(44); // WCAG 2.2 AA
-  background-color: var(--color-bg);
-  border: 2px solid var(--color-border);
-  border-radius: $radius-md;
-  cursor: pointer;
-  color: var(--color-text);
-  font-size: rem(16);
-  list-style: none;
-  user-select: none;
-  transition:
-    border $transition-fast ease,
-    background-color $transition-fast ease;
-
-  &:hover {
-    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.02));
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus, #0077c2);
-    outline-offset: 2px;
-  }
-
-  &::-webkit-details-marker {
-    display: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-}
-
-.select-with-image__selected {
-  display: flex;
-  align-items: center;
-  gap: $spacing-xs;
-  flex: 1;
-  min-width: 0;
-}
-
-.select-with-image__selected-image {
-  width: rem(32);
-  height: rem(32);
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.select-with-image__selected-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.select-with-image__placeholder {
-  color: var(--color-text, rgba(0, 0, 0, 0.5));
-  opacity: 0.6;
-}
-
-.select-with-image__chevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: rem(24);
-  height: rem(24);
-  flex-shrink: 0;
-  transition: transform $transition-fast ease;
-  color: var(--color-text);
-  font-size: rem(12);
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-}
-
-.select-with-image__options {
-  display: none;
-  position: absolute;
-  top: calc(100% + $spacing-xxs);
-  left: 0;
-  right: 0;
-  flex-direction: column;
-  gap: $spacing-xxs;
-  padding: $spacing-sm;
-  margin: 0;
-  background-color: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: $radius-md;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  max-height: rem(300);
-  overflow-y: auto;
-  list-style: none;
-}
-
-.select-with-image__option {
-  margin: 0;
-  padding: 0;
-
-  &--selected .select-with-image__option-button {
-    background-color: var(--color-primary-light, rgba(0, 119, 194, 0.1));
-    border-color: var(--color-primary, #0077c2);
-  }
-}
-
-.select-with-image__option-button {
-  display: flex;
-  align-items: center;
-  gap: $spacing-xs;
-  width: 100%;
-  padding: $spacing-xs $spacing-sm;
-  background: none;
-  border: 2px solid transparent;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  color: var(--color-text);
-  font-size: rem(14);
-  font-family: inherit;
-  text-align: left;
-  transition:
-    background-color $transition-fast ease,
-    border-color $transition-fast ease;
-
-  &:hover {
-    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-focus, #0077c2);
-    outline-offset: -2px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-}
-
-.select-with-image__option-image {
-  width: rem(28);
-  height: rem(28);
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.select-with-image__option-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.select-with-image__error {
-  min-height: 1rem;
-  font-size: $font-size-sm;
-  color: $color-error;
-  line-height: 1.2;
-  margin: 0;
-  transition: opacity $transition-fast ease;
-
-  &:empty {
+// Animations douces pour TSA
+@keyframes slideDownAndFade {
+  from {
     opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
   }
 }

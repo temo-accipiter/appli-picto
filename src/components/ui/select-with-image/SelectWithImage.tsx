@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React from 'react'
+import * as Select from '@radix-ui/react-select'
 import { useI18n } from '@/hooks'
 import './SelectWithImage.scss'
 
@@ -11,8 +12,7 @@ export interface SelectWithImageOption {
   imageAlt?: string // Alt text pour l'image
 }
 
-interface SelectWithImageProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'value'> {
+interface SelectWithImageProps {
   id: string
   label?: string
   value: string | number
@@ -21,10 +21,12 @@ interface SelectWithImageProps
   error?: string
   placeholder?: string
   disabled?: boolean
+  required?: boolean
+  name?: string
 }
 
 export const SelectWithImage = React.forwardRef<
-  HTMLDivElement,
+  HTMLButtonElement,
   SelectWithImageProps
 >(
   (
@@ -37,141 +39,108 @@ export const SelectWithImage = React.forwardRef<
       error = '',
       placeholder,
       disabled = false,
-      ...rest
+      required = false,
+      name,
     },
     ref
   ) => {
     const { t } = useI18n()
-    const [isOpen, setIsOpen] = useState(false)
-    const detailsRef = useRef<HTMLDetailsElement>(null)
     const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
 
-    // Fermer le dropdown quand on clique dehors
-    useEffect(() => {
-      if (!isOpen) return
-
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          detailsRef.current &&
-          !detailsRef.current.contains(event.target as Node)
-        ) {
-          setIsOpen(false)
-        }
-      }
-
-      document.addEventListener('click', handleClickOutside)
-      return () => document.removeEventListener('click', handleClickOutside)
-    }, [isOpen])
-
     // Trouve l'option sélectionnée
-    const selectedOption = options.find(opt => opt.value === value)
-
-    const handleSelect = (optionValue: string | number) => {
-      onChange(optionValue)
-      setIsOpen(false)
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (disabled) return
-
-      switch (e.key) {
-        case 'Enter':
-        case ' ':
-          e.preventDefault()
-          setIsOpen(!isOpen)
-          break
-        case 'Escape':
-          e.preventDefault()
-          setIsOpen(false)
-          break
-        case 'ArrowDown':
-          e.preventDefault()
-          setIsOpen(true)
-          break
-      }
-    }
+    const selectedOption = options.find(opt => String(opt.value) === String(value))
 
     return (
-      <div ref={ref} className="select-with-image" {...rest}>
+      <div className="select-with-image">
         {label && (
           <label htmlFor={id} className="select-with-image__label">
             {label}
+            {required && <span className="select-with-image__required"> *</span>}
           </label>
         )}
 
-        <details
-          ref={detailsRef}
-          className={`select-with-image__details${error ? ' select-with-image__details--error' : ''}`}
-          open={isOpen}
-          onToggle={e => setIsOpen(e.currentTarget.open)}
+        <Select.Root
+          value={String(value)}
+          onValueChange={val => {
+            // Convertir en nombre si la valeur originale était un nombre
+            const option = options.find(opt => String(opt.value) === val)
+            if (option) {
+              onChange(option.value)
+            }
+          }}
+          disabled={disabled}
+          name={name}
+          required={required}
         >
-          <summary
+          <Select.Trigger
+            ref={ref}
             id={id}
-            role="button"
-            className="select-with-image__summary"
-            tabIndex={disabled ? -1 : 0}
-            aria-expanded={isOpen}
-            aria-haspopup="listbox"
-            aria-disabled={disabled}
-            onKeyDown={handleKeyDown}
+            className={`select-with-image__trigger${error ? ' select-with-image__trigger--error' : ''}`}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : undefined}
           >
-            {selectedOption ? (
-              <div className="select-with-image__selected">
-                {selectedOption.image && (
-                  <img
-                    src={selectedOption.image}
-                    alt={selectedOption.imageAlt || selectedOption.label}
-                    className="select-with-image__selected-image"
-                  />
-                )}
-                <span className="select-with-image__selected-label">
-                  {selectedOption.label}
-                </span>
-              </div>
-            ) : (
-              <span className="select-with-image__placeholder">
-                {defaultPlaceholder}
-              </span>
-            )}
-            <span className="select-with-image__chevron" aria-hidden="true">
-              ▼
-            </span>
-          </summary>
-
-          <ul className="select-with-image__options" role="listbox">
-            {options.map(option => (
-              <li
-                key={option.value}
-                className={`select-with-image__option${value === option.value ? ' select-with-image__option--selected' : ''}`}
-                role="option"
-                aria-selected={value === option.value}
-              >
-                <button
-                  type="button"
-                  className="select-with-image__option-button"
-                  onClick={() => handleSelect(option.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleSelect(option.value)
-                    }
-                  }}
-                >
-                  {option.image && (
+            <Select.Value asChild>
+              {selectedOption ? (
+                <div className="select-with-image__selected">
+                  {selectedOption.image && (
                     <img
-                      src={option.image}
-                      alt={option.imageAlt || option.label}
-                      className="select-with-image__option-image"
+                      src={selectedOption.image}
+                      alt={selectedOption.imageAlt || selectedOption.label}
+                      className="select-with-image__selected-image"
                     />
                   )}
-                  <span className="select-with-image__option-label">
-                    {option.label}
+                  <span className="select-with-image__selected-label">
+                    {selectedOption.label}
                   </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </details>
+                </div>
+              ) : (
+                <span className="select-with-image__placeholder">
+                  {defaultPlaceholder}
+                </span>
+              )}
+            </Select.Value>
+            <Select.Icon className="select-with-image__icon" aria-hidden="true">
+              ▼
+            </Select.Icon>
+          </Select.Trigger>
+
+          <Select.Portal>
+            <Select.Content
+              className="select-with-image__content"
+              position="popper"
+              sideOffset={4}
+              align="start"
+            >
+              <Select.Viewport className="select-with-image__viewport">
+                {options.map(option => (
+                  <Select.Item
+                    key={option.value}
+                    value={String(option.value)}
+                    className="select-with-image__item"
+                  >
+                    <Select.ItemText asChild>
+                      <div className="select-with-image__item-content">
+                        {option.image && (
+                          <img
+                            src={option.image}
+                            alt={option.imageAlt || option.label}
+                            className="select-with-image__item-image"
+                          />
+                        )}
+                        <span className="select-with-image__item-label">
+                          {option.label}
+                        </span>
+                      </div>
+                    </Select.ItemText>
+                    <Select.ItemIndicator className="select-with-image__indicator">
+                      ✓
+                    </Select.ItemIndicator>
+                  </Select.Item>
+                ))}
+              </Select.Viewport>
+            </Select.Content>
+          </Select.Portal>
+        </Select.Root>
 
         {error && (
           <p
