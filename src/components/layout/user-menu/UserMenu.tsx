@@ -11,7 +11,7 @@ import {
 } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
-import { Crown, LogOut, Shield, User } from 'lucide-react'
+import { Crown, LogOut, Pencil, Shield, User, FileText } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
@@ -286,9 +286,24 @@ export default function UserMenu() {
             </div>
 
             <nav className="user-menu-list" aria-label={t('nav.profil')}>
+              {/* Édition icon - hidden if already on /edition page */}
+              {pathname !== '/edition' && (
+                <button
+                  ref={el => {
+                    if (el) menuItemsRef.current[0] = el
+                  }}
+                  className="user-menu-item"
+                  onClick={() => router.push('/edition')}
+                >
+                  <Pencil className="icon" aria-hidden />
+                  <span>{t('nav.edition')}</span>
+                </button>
+              )}
+
               <button
                 ref={el => {
-                  if (el) menuItemsRef.current[0] = el
+                  if (el)
+                    menuItemsRef.current[pathname !== '/edition' ? 1 : 0] = el
                 }}
                 className="user-menu-item"
                 onClick={() => router.push('/profil')}
@@ -301,7 +316,8 @@ export default function UserMenu() {
               {!isAdmin && (
                 <button
                   ref={el => {
-                    if (el) menuItemsRef.current[1] = el
+                    if (el)
+                      menuItemsRef.current[pathname !== '/edition' ? 2 : 1] = el
                   }}
                   className="user-menu-item"
                   onClick={
@@ -327,7 +343,8 @@ export default function UserMenu() {
               {isAdmin && (
                 <button
                   ref={el => {
-                    if (el) menuItemsRef.current[1] = el
+                    if (el)
+                      menuItemsRef.current[pathname !== '/edition' ? 2 : 1] = el
                   }}
                   className="user-menu-item admin"
                   onClick={() => router.push('/admin/permissions')}
@@ -337,9 +354,44 @@ export default function UserMenu() {
                 </button>
               )}
 
+              {/* Separator before legal links */}
+              <div className="user-menu-separator" />
+
+              {/* Cookies & Legal Links */}
+              <button
+                className="user-menu-item legal"
+                ref={el => {
+                  if (el) {
+                    const index = pathname !== '/edition' ? 3 : 2
+                    menuItemsRef.current[index] = el
+                  }
+                }}
+                onClick={() => router.push('/legal/politique-cookies')}
+              >
+                <FileText className="icon" aria-hidden />
+                <span>{t('nav.cookies')}</span>
+              </button>
+
+              <button
+                className="user-menu-item legal"
+                ref={el => {
+                  if (el) {
+                    const index = pathname !== '/edition' ? 4 : 3
+                    menuItemsRef.current[index] = el
+                  }
+                }}
+                onClick={() => router.push('/legal/rgpd')}
+              >
+                <FileText className="icon" aria-hidden />
+                <span>{t('nav.rgpd')}</span>
+              </button>
+
               <button
                 ref={el => {
-                  if (el) menuItemsRef.current[2] = el
+                  if (el) {
+                    const index = pathname !== '/edition' ? 5 : 4
+                    menuItemsRef.current[index] = el
+                  }
                 }}
                 className="user-menu-item danger"
                 onClick={() => {

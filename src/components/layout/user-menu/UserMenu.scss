@@ -72,6 +72,13 @@
   display: grid;
   padding: 6px;
 }
+
+.user-menu-separator {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin: 4px 0;
+}
+
 .user-menu-item {
   display: flex;
   align-items: center;
@@ -84,6 +91,8 @@
   cursor: pointer;
   text-align: left;
   font-size: 15px;
+  text-decoration: none;
+  color: inherit;
   &:hover {
     background: #f3f6ff;
   }
@@ -116,6 +125,17 @@
     outline: 2px solid #d97706;
     outline-offset: -2px;
   }
+
+  &.legal:hover {
+    background: #f0f4ff;
+  }
+
+  &.legal:focus-visible {
+    background: #f0f4ff;
+    outline: 2px solid #4f46e5;
+    outline-offset: -2px;
+  }
+
   .icon {
     width: 18px;
     height: 18px;

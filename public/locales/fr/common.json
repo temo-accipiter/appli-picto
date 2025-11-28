@@ -23,7 +23,9 @@
     "main": "Navigation principale",
     "more": "Plus",
     "settings": "Paramètres",
-    "breadcrumbs": "Fil d'Ariane"
+    "breadcrumbs": "Fil d'Ariane",
+    "cookies": "Cookies",
+    "rgpd": "RGPD"
   },
   "actions": {
     "add": "Ajouter",

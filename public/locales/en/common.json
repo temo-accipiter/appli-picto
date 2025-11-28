@@ -23,7 +23,9 @@
     "main": "Main navigation",
     "more": "More",
     "settings": "Settings",
-    "breadcrumbs": "Breadcrumbs"
+    "breadcrumbs": "Breadcrumbs",
+    "cookies": "Cookies",
+    "rgpd": "GDPR"
   },
   "actions": {
     "add": "Add",
