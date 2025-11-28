@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { Select } from '@/components'
+import { SelectWithImage } from '@/components/ui/select-with-image'
+import type { SelectWithImageOption } from '@/components/ui/select-with-image'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import { useI18n, useStations } from '@/hooks'
 import { useEffect, useState } from 'react'
@@ -119,17 +120,15 @@ export default function TrainProgressBar({
       </div>
 
       <div className="toolbar">
-        <Select
+        <SelectWithImage
           id="ligne"
           label={t('tableau.selectLine')}
           value={ligne}
-          onChange={e => {
-            const nouvelleLigne = e.target.value
+          onChange={value => {
+            const nouvelleLigne = String(value)
 
             // En mode démo, empêcher le changement de ligne et ouvrir la modal
             if (isDemo && nouvelleLigne !== '1') {
-              e.preventDefault()
-              e.target.value = '1' // Remettre la ligne 1
               if (onLineChange) {
                 onLineChange('line_change')
               }
@@ -140,11 +139,28 @@ export default function TrainProgressBar({
             setLigne(nouvelleLigne)
             localStorage.setItem('ligne', nouvelleLigne)
           }}
-          options={[
-            { value: '1', label: t('tableau.line1') },
-            { value: '6', label: t('tableau.line6') },
-            { value: '12', label: t('tableau.line12') },
-          ]}
+          options={
+            [
+              {
+                value: '1',
+                label: t('tableau.line1'),
+                image: '/images/ligne/ligne1.png',
+                imageAlt: 'Ligne 1',
+              },
+              {
+                value: '6',
+                label: t('tableau.line6'),
+                image: '/images/ligne/ligne6.png',
+                imageAlt: 'Ligne 6',
+              },
+              {
+                value: '12',
+                label: t('tableau.line12'),
+                image: '/images/ligne/ligne12.png',
+                imageAlt: 'Ligne 12',
+              },
+            ] as SelectWithImageOption[]
+          }
         />
 
         <p className="progression">
