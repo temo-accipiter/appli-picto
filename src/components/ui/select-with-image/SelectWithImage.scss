@@ -1,0 +1,198 @@
+@use '@styles/abstracts' as *;
+
+.select-with-image {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xxs;
+}
+
+.select-with-image__label {
+  font-size: $font-size-sm;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.select-with-image__details {
+  position: relative;
+  list-style: none;
+
+  &--error .select-with-image__summary {
+    border-color: $color-error;
+  }
+
+  &[open] .select-with-image__options {
+    display: flex;
+  }
+
+  &[open] .select-with-image__chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.select-with-image__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  padding: rem(8) $spacing-sm;
+  min-height: rem(44); // WCAG 2.2 AA
+  background-color: var(--color-bg);
+  border: 2px solid var(--color-border);
+  border-radius: $radius-md;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: rem(16);
+  list-style: none;
+  user-select: none;
+  transition:
+    border $transition-fast ease,
+    background-color $transition-fast ease;
+
+  &:hover {
+    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.02));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus, #0077c2);
+    outline-offset: 2px;
+  }
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.select-with-image__selected {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  flex: 1;
+  min-width: 0;
+}
+
+.select-with-image__selected-image {
+  width: rem(32);
+  height: rem(32);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.select-with-image__selected-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-with-image__placeholder {
+  color: var(--color-text, rgba(0, 0, 0, 0.5));
+  opacity: 0.6;
+}
+
+.select-with-image__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: rem(24);
+  height: rem(24);
+  flex-shrink: 0;
+  transition: transform $transition-fast ease;
+  color: var(--color-text);
+  font-size: rem(12);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.select-with-image__options {
+  display: none;
+  position: absolute;
+  top: calc(100% + $spacing-xxs);
+  left: 0;
+  right: 0;
+  flex-direction: column;
+  gap: $spacing-xxs;
+  padding: $spacing-sm;
+  margin: 0;
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: $radius-md;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  max-height: rem(300);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.select-with-image__option {
+  margin: 0;
+  padding: 0;
+
+  &--selected .select-with-image__option-button {
+    background-color: var(--color-primary-light, rgba(0, 119, 194, 0.1));
+    border-color: var(--color-primary, #0077c2);
+  }
+}
+
+.select-with-image__option-button {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  width: 100%;
+  padding: $spacing-xs $spacing-sm;
+  background: none;
+  border: 2px solid transparent;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: rem(14);
+  font-family: inherit;
+  text-align: left;
+  transition:
+    background-color $transition-fast ease,
+    border-color $transition-fast ease;
+
+  &:hover {
+    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus, #0077c2);
+    outline-offset: -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+.select-with-image__option-image {
+  width: rem(28);
+  height: rem(28);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.select-with-image__option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.select-with-image__error {
+  min-height: 1rem;
+  font-size: $font-size-sm;
+  color: $color-error;
+  line-height: 1.2;
+  margin: 0;
+  transition: opacity $transition-fast ease;
+
+  &:empty {
+    opacity: 0;
+  }
+}

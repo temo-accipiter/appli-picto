@@ -48,3 +48,12 @@ a {
     text-decoration: underline;
   }
 }
+
+// Lexend pour accessibilité TSA - meilleure distinction des lettres
+label,
+button,
+input,
+select,
+textarea {
+  font-family: $lexend-font-stack;
+}

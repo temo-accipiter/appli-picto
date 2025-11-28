@@ -6,6 +6,7 @@
   display: inline-flex;
   align-items: center;
   min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
+  position: relative;
 
   &__input {
     -webkit-appearance: none;
@@ -21,6 +22,7 @@
       background-color $transition-fast,
       border-color $transition-fast,
       box-shadow $transition-fast;
+    z-index: 1;
 
     // Mobile-first: base = mobile (petit)
     width: rem(20);
@@ -35,27 +37,37 @@
     &:checked {
       background-color: $color-primary;
       border-color: $color-primary;
+      animation: checkbox-bounce $transition-fast
+        cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    &:checked::after {
-      content: '✔️';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -60%);
-      color: $color-text-invert;
-
-      // Mobile-first: base = mobile (petit)
-      font-size: rem(12);
-
-      // Desktop (576px+) = taille normale
-      @include respond-to(sm) {
-        font-size: rem(14);
+    @media (prefers-reduced-motion: reduce) {
+      &:checked {
+        animation: none;
       }
     }
 
     // Focus ring unifié avec le reste du design system
     @include focus-ring($color-primary);
+  }
+
+  &__checkmark {
+    position: absolute;
+    top: 50%;
+    left: $spacing-xs;
+    transform: translateY(-50%);
+    color: $color-text-invert;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+
+    svg {
+      width: rem(16);
+      height: rem(16);
+      stroke: currentColor;
+    }
   }
 
   &__label {
@@ -100,5 +112,17 @@
     &:checked::after {
       font-size: rem(18);
     }
+  }
+}
+
+@keyframes checkbox-bounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
   }
 }

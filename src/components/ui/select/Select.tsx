@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { forwardRef } from 'react'
 import { useI18n } from '@/hooks'
 import './Select.scss'
 
@@ -23,47 +23,57 @@ interface SelectProps
   placeholder?: string
 }
 
-export default function Select({
-  id,
-  label,
-  value,
-  onChange,
-  options = [],
-  error = '',
-  placeholder,
-  ...rest
-}: SelectProps) {
-  const { t } = useI18n()
-  const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
+const Select = forwardRef<HTMLSelectElement, SelectProps>(
+  (
+    {
+      id,
+      label,
+      value,
+      onChange,
+      options = [],
+      error = '',
+      placeholder,
+      ...rest
+    },
+    ref
+  ) => {
+    const { t } = useI18n()
+    const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
 
-  return (
-    <div className="select-field">
-      {label && (
-        <label htmlFor={id} className="select-field__label">
-          {label}
-        </label>
-      )}
-      <select
-        id={id}
-        className={`select-field__select${error ? ' select-field__select--error' : ''}`}
-        value={value}
-        onChange={onChange}
-        aria-invalid={!!error}
-        aria-describedby={error ? `${id}-error` : undefined}
-        {...rest}
-      >
-        <option value="">{defaultPlaceholder}</option>
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      {error && (
-        <p id={`${id}-error`} className="select-field__error">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
+    return (
+      <div className="select-field">
+        {label && (
+          <label htmlFor={id} className="select-field__label">
+            {label}
+          </label>
+        )}
+        <select
+          ref={ref}
+          id={id}
+          className={`select-field__select${error ? ' select-field__select--error' : ''}`}
+          value={value}
+          onChange={onChange}
+          aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
+          {...rest}
+        >
+          <option value="">{defaultPlaceholder}</option>
+          {options.map(opt => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {error && (
+          <p id={`${id}-error`} className="select-field__error">
+            {error}
+          </p>
+        )}
+      </div>
+    )
+  }
+)
+
+Select.displayName = 'Select'
+
+export default Select

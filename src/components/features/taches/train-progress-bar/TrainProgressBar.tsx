@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Select } from '@/components'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import { useI18n, useStations } from '@/hooks'
@@ -94,15 +95,25 @@ export default function TrainProgressBar({
 
         {/* Train en mouvement */}
         <div className="train" style={trainStyle}>
-          <img src="/images/train.png" alt="Métro" className="train-icon" />
+          <Image
+            src="/images/train.png"
+            alt="Métro"
+            width={40}
+            height={40}
+            className="train-icon"
+            priority={false}
+          />
         </div>
 
         {/* Logo ligne figé à droite */}
         <div className="dot-logo fixed-logo">
-          <img
+          <Image
             src={`/images/ligne/ligne${ligne}.png`}
             alt={`Ligne ${ligne}`}
+            width={32}
+            height={32}
             loading="lazy"
+            quality={85}
           />
         </div>
       </div>

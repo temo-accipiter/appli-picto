@@ -92,14 +92,34 @@ input[type='file'].input-field__input {
   right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   font-size: 1rem;
   cursor: pointer;
   opacity: 0.6;
   padding: 0;
+  border-radius: $radius-sm;
+  transition:
+    opacity $transition-fast ease,
+    background-color $transition-fast ease;
 
   &:hover {
     opacity: 1;
+    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus, #0077c2);
+    outline-offset: 2px;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }

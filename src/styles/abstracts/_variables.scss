@@ -10,6 +10,12 @@ $text-font-stack:
   Arial,
   sans-serif;
 $heading-font-stack: Georgia, 'Times New Roman', Times, serif;
+$lexend-font-stack:
+  'Lexend',
+  system-ui,
+  -apple-system,
+  'Segoe UI',
+  sans-serif; // Pour accessibilité TSA
 
 // Largeur maximale du container principal
 $max-width: 1200px;

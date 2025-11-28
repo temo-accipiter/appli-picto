@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useId, useMemo, useState } from 'react'
+import { Check, Circle, ChevronDown } from 'lucide-react'
 import { useI18n } from '@/hooks'
 import { PASSWORD_MIN } from '@/utils'
 import './PasswordChecklist.scss'
@@ -37,7 +38,11 @@ function ChecklistItem({ ok, children }: ChecklistItemProps) {
       aria-live="polite"
     >
       <span aria-hidden="true" className="password-checklist__icon">
-        {ok ? '✅' : '•'}
+        {ok ? (
+          <Check size={18} strokeWidth={3} color="currentColor" />
+        ) : (
+          <Circle size={18} color="currentColor" fill="currentColor" />
+        )}
       </span>
       <span className="password-checklist__text">{children}</span>
     </li>
@@ -132,7 +137,7 @@ export default function PasswordChecklist({
           className={`password-checklist__chev ${open ? 'is-open' : ''}`}
           aria-hidden="true"
         >
-          ▾
+          <ChevronDown size={18} />
         </span>
       </button>
 

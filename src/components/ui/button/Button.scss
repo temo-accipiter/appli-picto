@@ -7,6 +7,7 @@
   justify-content: center;
   padding: $spacing-xs $spacing-sm;
   border-radius: $radius-sm;
+  font-family: $lexend-font-stack;
   font-weight: $font-weight-semibold;
   font-size: $font-size-base;
   line-height: 1.2;
@@ -66,5 +67,64 @@
   &[aria-disabled='true'] {
     opacity: 0.5;
     pointer-events: none;
+  }
+
+  &--loading {
+    opacity: 0.8;
+  }
+}
+
+.btn__spinner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: $spacing-xs;
+  animation: spinner-rotate 1s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+.btn__spinner-dot {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.6;
+
+  &:nth-child(2) {
+    animation: spinner-fade 0.6s ease-in-out 0.1s infinite;
+  }
+
+  &:nth-child(3) {
+    animation: spinner-fade 0.6s ease-in-out 0.2s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes spinner-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinner-fade {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
   }
 }
