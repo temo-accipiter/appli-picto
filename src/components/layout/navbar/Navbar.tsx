@@ -7,7 +7,6 @@ import {
   ThemeToggle,
   UserMenu,
 } from '@/components'
-import { HomeButton } from '@/components/layout/home-button'
 import { usePermissions } from '@/contexts'
 import { useAuth, useI18n } from '@/hooks'
 import { motion } from 'framer-motion'
@@ -42,9 +41,6 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        {/* Home Button - "Panic button" toujours accessible */}
-        <HomeButton />
-
         {(isTableau || isProfil || isAdminPermissions) && !isVisitor && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
