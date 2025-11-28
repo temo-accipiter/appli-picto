@@ -22,7 +22,8 @@
     "personalization": "Personalization",
     "main": "Main navigation",
     "more": "More",
-    "settings": "Settings"
+    "settings": "Settings",
+    "breadcrumbs": "Breadcrumbs"
   },
   "actions": {
     "add": "Add",

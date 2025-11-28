@@ -22,7 +22,8 @@
     "personalization": "Personnalisation",
     "main": "Navigation principale",
     "more": "Plus",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "breadcrumbs": "Fil d'Ariane"
   },
   "actions": {
     "add": "Ajouter",
