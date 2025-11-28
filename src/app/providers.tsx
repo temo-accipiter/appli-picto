@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { Suspense, useEffect } from 'react'
 import ErrorBoundary from '@/components/shared/error-boundary/ErrorBoundary'
 import WebVitals from '@/components/shared/web-vitals/WebVitals'
+import { BottomNav } from '@/components/layout/bottom-nav'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { PermissionsProvider } from '@/contexts/PermissionsContext'
 import { DisplayProvider } from '@/contexts/DisplayContext'
@@ -29,7 +30,11 @@ export function Providers({ children }: { children: ReactNode }) {
             <LoadingProvider>
               <ToastProvider>
                 <InitializationLoader>
-                  <Suspense fallback={<Loader />}>{children}</Suspense>
+                  <Suspense fallback={<Loader />}>
+                    {children}
+                    {/* Bottom Navigation Bar - Mobile only (< 768px) */}
+                    <BottomNav />
+                  </Suspense>
                 </InitializationLoader>
               </ToastProvider>
             </LoadingProvider>

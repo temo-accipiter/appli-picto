@@ -147,10 +147,7 @@ export default function DemoSelectPage() {
         </div>
 
         <div className="demo-select-page__actions">
-          <button
-            onClick={handleValidate}
-            className="demo-select-page__button"
-          >
+          <button onClick={handleValidate} className="demo-select-page__button">
             Valider la sélection
           </button>
           <button

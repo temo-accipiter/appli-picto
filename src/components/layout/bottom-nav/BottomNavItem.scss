@@ -1,0 +1,138 @@
+@use '@styles/abstracts' as *;
+
+/**
+ * BottomNavItem Styles
+ *
+ * Spécifications WCAG 2.2 AA:
+ * - Touch target: min-height 44px ✅
+ * - Focus ring: visible outline ✅
+ * - Active state: aria-current="page" + visual indicator ✅
+ * - Accessibilité TSA: icônes claires + labels courts ✅
+ */
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  flex: 1;
+  min-width: 0;
+  padding: $spacing-xs $spacing-xs;
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all $transition-base ease;
+  cursor: pointer;
+  position: relative;
+
+  // WCAG 2.5.5 - Pointer Target Size (44x44px minimum)
+  min-height: rem(44);
+  min-width: rem(44);
+
+  &__icon {
+    flex-shrink: 0;
+    transition: color $transition-base ease;
+  }
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    text-align: center;
+    word-break: break-word;
+    max-width: rem(64);
+    line-height: 1.2;
+    transition: color $transition-base ease;
+  }
+
+  // ============================================
+  // Active State (aria-current="page")
+  // ============================================
+  &--active {
+    color: var(--color-primary);
+
+    .bottom-nav-item__icon {
+      color: var(--color-primary);
+    }
+
+    // Top border indicator (visuel TSA-friendly)
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: $spacing-xs;
+      right: $spacing-xs;
+      height: rem(3);
+      background: var(--color-primary);
+      border-radius: $radius-sm $radius-sm 0 0;
+      animation: slide-in-top $transition-base ease-out;
+    }
+  }
+
+  // ============================================
+  // Focus Visible (Keyboard Navigation)
+  // ============================================
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+    background: var(--color-bg-hover);
+    border-radius: $radius-sm;
+  }
+
+  // ============================================
+  // Hover State
+  // ============================================
+  &:hover {
+    color: var(--color-primary-light);
+
+    .bottom-nav-item__icon {
+      color: var(--color-primary-light);
+    }
+  }
+
+  // ============================================
+  // Active Hover (ne pas doubler l'effet)
+  // ============================================
+  &--active:hover {
+    color: var(--color-primary);
+
+    .bottom-nav-item__icon {
+      color: var(--color-primary);
+    }
+  }
+
+  // ============================================
+  // Disabled State (si jamais)
+  // ============================================
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--color-text-disabled);
+  }
+
+  // ============================================
+  // Reduced Motion (TSA accessibility)
+  // ============================================
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &--active::before {
+      animation: none;
+    }
+  }
+}
+
+// ============================================
+// Animation: Slide in top (active indicator)
+// ============================================
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

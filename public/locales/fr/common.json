@@ -19,7 +19,10 @@
     "signup": "S'inscrire",
     "logout": "Déconnexion",
     "createAccount": "Créer un compte",
-    "personalization": "Personnalisation"
+    "personalization": "Personnalisation",
+    "main": "Navigation principale",
+    "more": "Plus",
+    "settings": "Paramètres"
   },
   "actions": {
     "add": "Ajouter",

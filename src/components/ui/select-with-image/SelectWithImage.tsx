@@ -48,14 +48,18 @@ export const SelectWithImage = React.forwardRef<
     const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
 
     // Trouve l'option sélectionnée
-    const selectedOption = options.find(opt => String(opt.value) === String(value))
+    const selectedOption = options.find(
+      opt => String(opt.value) === String(value)
+    )
 
     return (
       <div className="select-with-image">
         {label && (
           <label htmlFor={id} className="select-with-image__label">
             {label}
-            {required && <span className="select-with-image__required"> *</span>}
+            {required && (
+              <span className="select-with-image__required"> *</span>
+            )}
           </label>
         )}
 

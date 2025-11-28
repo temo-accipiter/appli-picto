@@ -19,7 +19,10 @@
     "signup": "Sign up",
     "logout": "Log out",
     "createAccount": "Create account",
-    "personalization": "Personalization"
+    "personalization": "Personalization",
+    "main": "Main navigation",
+    "more": "More",
+    "settings": "Settings"
   },
   "actions": {
     "add": "Add",
