@@ -1,22 +1,23 @@
 @use '@styles/abstracts' as *;
 
 /**
- * BottomNav - Mobile-only responsive navbar
+ * BottomNav - Responsive navbar with context-aware positioning
  *
- * Shows navbar at TOP-RIGHT on mobile (fixed position)
- * Hidden on desktop (navbar remains at top)
+ * /tableau (zen mode TSA-optimized):
+ * - Mobile: bottom-right (accessible thumb zone)
+ * - Desktop: top-right (standard UI position)
+ * - Shows ONLY avatar (no nav-icon-links)
  *
- * Zen Mode (/tableau):
- * - Shows ONLY avatar + UserMenu
- * - No nav-icon-links clutter
- * - Maximum focus for autistic children
+ * Other pages (/profil, /edition, /admin):
+ * - Mobile: bottom fixed navbar with 3 icons
+ * - Desktop: hidden (navbar remains at top)
  */
 
 .bottom-nav {
-  // Hidden by default (desktop >= 768px)
+  // Desktop >= 768px
   display: none;
 
-  // Visible on mobile (< 768px)
+  // Mobile < 768px
   @media (max-width: #{$breakpoint-md - 1px}) {
     display: flex;
     position: fixed;
@@ -30,6 +31,61 @@
     // Support safe area (iPhone notch)
     padding-top: max($spacing-md, env(safe-area-inset-top));
     padding-right: max($spacing-md, env(safe-area-inset-right));
+  }
+}
+
+// Zen mode /tableau: Avatar positioning
+.bottom-nav--tableau {
+  // Mobile: bas-droite (thumb-friendly zone)
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    top: auto;
+    bottom: 0;
+    padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
+    padding-top: $spacing-md;
+  }
+
+  // Desktop: haut-droite (standard UI)
+  @media (min-width: $breakpoint-md) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: $z-modal;
+    padding: $spacing-md;
+    padding-top: max($spacing-md, env(safe-area-inset-top));
+    padding-right: max($spacing-md, env(safe-area-inset-right));
+  }
+}
+
+// Other pages (/edition, /profil, /admin): Bottom fixed navbar
+.bottom-nav--fixed {
+  // Mobile: bas de l'écran (full width navbar)
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    padding-bottom: max($spacing-sm, env(safe-area-inset-bottom));
+    justify-content: space-around;
+    // Background opaque pour éviter que le contenu soit visible à travers
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--color-border);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  // Dark mode support
+  [data-theme='dark'] & {
+    @media (max-width: #{$breakpoint-md - 1px}) {
+      background: rgba(29, 36, 51, 0.98);
+    }
+  }
+
+  // Desktop: hidden (navbar top remains)
+  @media (min-width: $breakpoint-md) {
+    display: none;
   }
 }
 

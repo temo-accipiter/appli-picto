@@ -20,3 +20,17 @@
   white-space: nowrap;
   border: 0;
 }
+
+/// Navbar visible seulement sur desktop (≥ 768px)
+/// Sur mobile, remplacée par BottomNav
+.navbar-desktop-only {
+  // Mobile: caché
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    display: none;
+  }
+
+  // Desktop: visible
+  @media (min-width: $breakpoint-md) {
+    display: block;
+  }
+}

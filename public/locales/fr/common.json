@@ -24,8 +24,12 @@
     "more": "Plus",
     "settings": "Paramètres",
     "breadcrumbs": "Fil d'Ariane",
+    "legal": "Informations",
     "cookies": "Cookies",
-    "rgpd": "RGPD"
+    "rgpd": "RGPD",
+    "mentions": "Mentions légales",
+    "cgu": "CGU",
+    "cgv": "CGV"
   },
   "actions": {
     "add": "Ajouter",

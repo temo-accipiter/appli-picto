@@ -24,8 +24,12 @@
     "more": "More",
     "settings": "Settings",
     "breadcrumbs": "Breadcrumbs",
+    "legal": "Information",
     "cookies": "Cookies",
-    "rgpd": "GDPR"
+    "rgpd": "GDPR",
+    "mentions": "Legal Notice",
+    "cgu": "Terms of Use",
+    "cgv": "Terms of Sale"
   },
   "actions": {
     "add": "Add",

@@ -11,7 +11,16 @@ import {
 } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
-import { Crown, LogOut, Pencil, Shield, User, FileText } from 'lucide-react'
+import {
+  Crown,
+  LogOut,
+  Pencil,
+  Shield,
+  User,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
@@ -28,13 +37,25 @@ export default function UserMenu() {
   const { isAdmin } = usePermissions() // ⚠️ On ne bloque plus sur isUnknown
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
+  const [legalOpen, setLegalOpen] = useState(false) // Sous-menu collapsible informations légales
   const [dbPseudo, setDbPseudo] = useState('')
+  const [isMobile, setIsMobile] = useState(false) // Détection mobile pour sous-menu Informations
   const router = useRouter()
   const pathname = usePathname()
   const dialogRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const checkingOutRef = useRef(false) // évite double-clic sur checkout
   const menuItemsRef = useRef<HTMLButtonElement[]>([]) // WCAG 2.1.1 - Navigation clavier
+
+  // Détection mobile (< 768px) pour afficher/masquer sous-menu Informations
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // ⚠️ Garde-fou: si tout reste en "chargement" > 3s, on débloque l'UI
   const [forceUnblock, setForceUnblock] = useState(false)
@@ -286,19 +307,26 @@ export default function UserMenu() {
             </div>
 
             <nav className="user-menu-list" aria-label={t('nav.profil')}>
-              {/* Édition icon - hidden if already on /edition page */}
-              {pathname !== '/edition' && (
-                <button
-                  ref={el => {
-                    if (el) menuItemsRef.current[0] = el
-                  }}
-                  className="user-menu-item"
-                  onClick={() => router.push('/edition')}
-                >
-                  <Pencil className="icon" aria-hidden />
-                  <span>{t('nav.edition')}</span>
-                </button>
-              )}
+              {/* Édition icon - Caché si :
+                  - Déjà sur /edition
+                  - Sur /profil ou /admin en mobile (BottomNav a déjà l'icon)
+              */}
+              {pathname !== '/edition' &&
+                !(
+                  isMobile &&
+                  (pathname === '/profil' || pathname.startsWith('/admin'))
+                ) && (
+                  <button
+                    ref={el => {
+                      if (el) menuItemsRef.current[0] = el
+                    }}
+                    className="user-menu-item"
+                    onClick={() => router.push('/edition')}
+                  >
+                    <Pencil className="icon" aria-hidden />
+                    <span>{t('nav.edition')}</span>
+                  </button>
+                )}
 
               <button
                 ref={el => {
@@ -354,37 +382,94 @@ export default function UserMenu() {
                 </button>
               )}
 
-              {/* Separator before legal links */}
-              <div className="user-menu-separator" />
+              {/* Separator before legal links - Mobile only */}
+              {isMobile && <div className="user-menu-separator" />}
 
-              {/* Cookies & Legal Links */}
-              <button
-                className="user-menu-item legal"
-                ref={el => {
-                  if (el) {
-                    const index = pathname !== '/edition' ? 3 : 2
-                    menuItemsRef.current[index] = el
-                  }
-                }}
-                onClick={() => router.push('/legal/politique-cookies')}
-              >
-                <FileText className="icon" aria-hidden />
-                <span>{t('nav.cookies')}</span>
-              </button>
+              {/* Collapsible Legal Links - Mobile only (desktop has footer) */}
+              {isMobile && (
+                <>
+                  <button
+                    className="user-menu-item legal"
+                    ref={el => {
+                      if (el) {
+                        const index = pathname !== '/edition' ? 3 : 2
+                        menuItemsRef.current[index] = el
+                      }
+                    }}
+                    onClick={() => setLegalOpen(!legalOpen)}
+                    aria-expanded={legalOpen}
+                  >
+                    <FileText className="icon" aria-hidden />
+                    <span>{t('nav.legal')}</span>
+                    {legalOpen ? (
+                      <ChevronUp className="icon chevron" aria-hidden />
+                    ) : (
+                      <ChevronDown className="icon chevron" aria-hidden />
+                    )}
+                  </button>
 
-              <button
-                className="user-menu-item legal"
-                ref={el => {
-                  if (el) {
-                    const index = pathname !== '/edition' ? 4 : 3
-                    menuItemsRef.current[index] = el
-                  }
-                }}
-                onClick={() => router.push('/legal/rgpd')}
-              >
-                <FileText className="icon" aria-hidden />
-                <span>{t('nav.rgpd')}</span>
-              </button>
+                  {/* Sous-menu légal (collapsible) - All footer links */}
+                  {legalOpen && (
+                    <div className="user-menu-submenu">
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/mentions-legales')}
+                      >
+                        <span>{t('nav.mentions')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/cgu')}
+                      >
+                        <span>{t('nav.cgu')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/cgv')}
+                      >
+                        <span>{t('nav.cgv')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() =>
+                          router.push('/legal/politique-confidentialite')
+                        }
+                      >
+                        <span>{t('legal.privacy')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/politique-cookies')}
+                      >
+                        <span>{t('nav.cookies')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => {
+                          setOpen(false)
+                          window.dispatchEvent(
+                            new CustomEvent('open-cookie-preferences')
+                          )
+                        }}
+                      >
+                        <span>{t('cookies.customize')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/accessibilite')}
+                      >
+                        <span>{t('legal.accessibility')}</span>
+                      </button>
+                      <button
+                        className="user-menu-item submenu-item"
+                        onClick={() => router.push('/legal/rgpd')}
+                      >
+                        <span>{t('nav.rgpd')}</span>
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
 
               <button
                 ref={el => {

@@ -34,7 +34,6 @@ export default function DebugRole() {
       <button
         onClick={toggleVisible}
         style={{
-          position: 'fixed',
           top: '10px',
           right: '10px',
           background: 'rgba(0,0,0,0.5)',

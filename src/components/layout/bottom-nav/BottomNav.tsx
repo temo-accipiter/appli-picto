@@ -3,19 +3,28 @@
 import { useAuth, useI18n } from '@/hooks'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Pencil } from 'lucide-react'
+import { LayoutDashboard, Pencil, Settings } from 'lucide-react'
 import { UserMenu } from '@/components'
 import './BottomNav.scss'
 
 /**
- * BottomNav - Responsive navigation bar for mobile
+ * BottomNav - Responsive navigation bar with page-specific compositions
  *
- * Mobile-first approach:
- * - On /tableau: show ONLY avatar (zen mode for autistic children)
- * - On other pages: show nav-icon-links + avatar (normal navbar, bottom position)
- * - Desktop: hidden (navbar remains at top)
+ * /tableau (zen mode TSA-optimized):
+ * - Mobile: bottom-right avatar only
+ * - Desktop: top-right avatar only
  *
- * TSA-friendly: Minimal visual clutter on tableau page
+ * /edition (Mobile < 768px):
+ * - Fixed bottom: Tableau, Avatar, Settings
+ *
+ * /profil (Mobile < 768px):
+ * - Fixed bottom: Édition, Tableau, Avatar
+ *
+ * /admin (Mobile < 768px):
+ * - Fixed bottom: Édition, Tableau, Avatar
+ *
+ * Desktop (≥ 768px):
+ * - Hidden (navbar top remains)
  */
 export default function BottomNav() {
   const pathname = usePathname()
@@ -25,50 +34,98 @@ export default function BottomNav() {
   const isTableau = pathname === '/tableau'
   const isEdition = pathname === '/edition'
   const isProfil = pathname === '/profil'
-  const isAdminPermissions = pathname === '/admin/permissions'
+  const isAdmin = pathname.startsWith('/admin')
 
-  // Only show BottomNav on mobile and when needed
-  // Desktop will keep top navbar
-  const showNav = isTableau || isEdition || isProfil || isAdminPermissions
+  // Only show BottomNav on specific pages
+  const showNav = isTableau || isEdition || isProfil || isAdmin
 
   if (!showNav || !user) {
     return null
   }
 
-  return (
-    <nav className="bottom-nav" role="navigation" aria-label={t('nav.main')}>
-      <div className="bottom-nav__items">
-        {/* Zen mode: tableau page = only avatar (no nav-icon-links) */}
-        {!isTableau && (
-          <>
-            {/* Édition icon */}
-            {(isTableau || isProfil || isAdminPermissions) && (
-              <Link
-                href="/edition"
-                className="nav-icon-link"
-                aria-label={t('nav.edition')}
-                title={t('nav.edition')}
-              >
-                <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-              </Link>
-            )}
+  // Class conditionnelle pour position
+  const navClass = isTableau
+    ? 'bottom-nav bottom-nav--tableau'
+    : 'bottom-nav bottom-nav--fixed'
 
-            {/* Tableau icon */}
-            {(isEdition || isProfil || isAdminPermissions) && (
-              <Link
-                href="/tableau"
-                className="nav-icon-link"
-                aria-label={t('nav.tableau')}
-                title={t('nav.tableau')}
-              >
-                <LayoutDashboard size={20} strokeWidth={2} aria-hidden="true" />
-              </Link>
-            )}
+  return (
+    <nav className={navClass} role="navigation" aria-label={t('nav.main')}>
+      <div className="bottom-nav__items">
+        {/* /tableau: Avatar only (zen mode) */}
+        {isTableau && <UserMenu />}
+
+        {/* /edition: Tableau, Avatar, Settings */}
+        {isEdition && (
+          <>
+            <Link
+              href="/tableau"
+              className="nav-icon-link"
+              aria-label={t('nav.tableau')}
+              title={t('nav.tableau')}
+            >
+              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
+            </Link>
+            <UserMenu />
+            <button
+              className="nav-icon-link"
+              aria-label={t('nav.settings')}
+              title={t('nav.settings')}
+              onClick={() => {
+                // TODO: Toggle settings panel (existing functionality)
+                const event = new CustomEvent('toggle-settings')
+                window.dispatchEvent(event)
+              }}
+            >
+              <Settings size={24} strokeWidth={2} aria-hidden="true" />
+            </button>
           </>
         )}
 
-        {/* User avatar - always visible */}
-        <UserMenu />
+        {/* /profil: Édition, Tableau, Avatar */}
+        {isProfil && (
+          <>
+            <Link
+              href="/edition"
+              className="nav-icon-link"
+              aria-label={t('nav.edition')}
+              title={t('nav.edition')}
+            >
+              <Pencil size={24} strokeWidth={2} aria-hidden="true" />
+            </Link>
+            <Link
+              href="/tableau"
+              className="nav-icon-link"
+              aria-label={t('nav.tableau')}
+              title={t('nav.tableau')}
+            >
+              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
+            </Link>
+            <UserMenu />
+          </>
+        )}
+
+        {/* /admin: Édition, Tableau, Avatar */}
+        {isAdmin && (
+          <>
+            <Link
+              href="/edition"
+              className="nav-icon-link"
+              aria-label={t('nav.edition')}
+              title={t('nav.edition')}
+            >
+              <Pencil size={24} strokeWidth={2} aria-hidden="true" />
+            </Link>
+            <Link
+              href="/tableau"
+              className="nav-icon-link"
+              aria-label={t('nav.tableau')}
+              title={t('nav.tableau')}
+            >
+              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
+            </Link>
+            <UserMenu />
+          </>
+        )}
       </div>
     </nav>
   )

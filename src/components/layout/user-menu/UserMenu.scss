@@ -140,7 +140,29 @@
     width: 18px;
     height: 18px;
     flex: 0 0 18px;
+
+    &.chevron {
+      margin-left: auto;
+    }
   }
+
+  // Item dans sous-menu (indent)
+  &.submenu-item {
+    padding-left: 40px;
+    font-size: 14px;
+    color: #64748b;
+
+    &:hover {
+      color: #1d2433;
+    }
+  }
+}
+
+// Sous-menu collapsible
+.user-menu-submenu {
+  display: grid;
+  gap: 2px;
+  padding: 4px 0;
 }
 
 @keyframes slideIn {

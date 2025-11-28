@@ -11,12 +11,15 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   const showNavbarRoutes = ['/time-timer']
   const showNavbar = showNavbarRoutes.some(route => pathname.startsWith(route))
 
+  // Masquer le footer sur /tableau (zen mode TSA-optimized)
+  const showFooter = pathname !== '/tableau'
+
   return (
     <div className="layout">
       <div className="layout-main">
         {showNavbar && <Navbar />}
         <main id="main-content">{children}</main>
-        <Footer />
+        {showFooter && <Footer />}
         <CookieBanner />
         <CookiePreferences />
       </div>
