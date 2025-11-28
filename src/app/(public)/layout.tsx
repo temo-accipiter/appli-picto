@@ -7,8 +7,8 @@ import { usePathname } from 'next/navigation'
 export default function PublicLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
-  // Afficher la navbar seulement sur tableau et time-timer
-  const showNavbarRoutes = ['/tableau', '/time-timer']
+  // Afficher la navbar seulement sur time-timer (pas sur /tableau = zen mode)
+  const showNavbarRoutes = ['/time-timer']
   const showNavbar = showNavbarRoutes.some(route => pathname.startsWith(route))
 
   return (
