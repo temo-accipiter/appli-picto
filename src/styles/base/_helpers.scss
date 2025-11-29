@@ -34,3 +34,17 @@
     display: block;
   }
 }
+
+/// Footer visible seulement sur desktop (≥ 768px)
+/// Sur mobile, remplacé par liens dans UserMenu
+.footer-desktop-only {
+  // Mobile: caché
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    display: none;
+  }
+
+  // Desktop: visible
+  @media (min-width: $breakpoint-md) {
+    display: block;
+  }
+}

@@ -124,6 +124,25 @@ export default function UserMenu() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [open])
 
+  // Fermer quand on clique en dehors
+  useEffect(() => {
+    if (!open) return
+
+    const handleClickOutside = (e: globalThis.MouseEvent) => {
+      if (
+        dialogRef.current &&
+        !dialogRef.current.contains(e.target as Node) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
+
   // Récupère pseudo DB (safe Safari/Firefox)
   useEffect(() => {
     let cancelled = false
@@ -240,6 +259,10 @@ export default function UserMenu() {
     if (e.target === e.currentTarget) setOpen(false)
   }
 
+  const handleBackdropClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) setOpen(false)
+  }
+
   return (
     <>
       <button
@@ -270,6 +293,7 @@ export default function UserMenu() {
           className="user-menu-backdrop"
           role="presentation"
           onMouseDown={handleBackdropMouseDown}
+          onClick={handleBackdropClick}
         >
           <div
             id="user-menu-dialog"
@@ -277,7 +301,14 @@ export default function UserMenu() {
             role="dialog"
             aria-modal="true"
             aria-label={t('nav.profil')}
-            className="user-menu-dialog"
+            className={`user-menu-dialog ${
+              isMobile &&
+              (pathname === '/edition' ||
+                pathname === '/profil' ||
+                pathname.startsWith('/admin'))
+                ? 'user-menu-dialog--elevated'
+                : ''
+            }`}
             onMouseDown={e => e.stopPropagation()}
           >
             <header className="user-menu-header">
@@ -307,45 +338,143 @@ export default function UserMenu() {
             </div>
 
             <nav className="user-menu-list" aria-label={t('nav.profil')}>
-              {/* Édition icon - Caché si :
-                  - Déjà sur /edition
-                  - Sur /profil ou /admin en mobile (BottomNav a déjà l'icon)
-              */}
-              {pathname !== '/edition' &&
-                !(
-                  isMobile &&
-                  (pathname === '/profil' || pathname.startsWith('/admin'))
-                ) && (
-                  <button
-                    ref={el => {
-                      if (el) menuItemsRef.current[0] = el
-                    }}
-                    className="user-menu-item"
-                    onClick={() => router.push('/edition')}
-                  >
-                    <Pencil className="icon" aria-hidden />
-                    <span>{t('nav.edition')}</span>
-                  </button>
-                )}
+              {/* Links contextuels sur desktop uniquement */}
+              {!isMobile && (
+                <>
+                  {/* Sur tableau: afficher Edition + Profil */}
+                  {pathname === '/tableau' && (
+                    <>
+                      <button
+                        ref={el => {
+                          if (el) menuItemsRef.current[0] = el
+                        }}
+                        className="user-menu-item"
+                        onClick={() => router.push('/edition')}
+                      >
+                        <Pencil className="icon" aria-hidden />
+                        <span>{t('nav.edition')}</span>
+                      </button>
+                      <button
+                        ref={el => {
+                          if (el) menuItemsRef.current[1] = el
+                        }}
+                        className="user-menu-item"
+                        onClick={() => router.push('/profil')}
+                      >
+                        <User className="icon" aria-hidden />
+                        <span>{t('nav.profil')}</span>
+                      </button>
+                    </>
+                  )}
 
-              <button
-                ref={el => {
-                  if (el)
-                    menuItemsRef.current[pathname !== '/edition' ? 1 : 0] = el
-                }}
-                className="user-menu-item"
-                onClick={() => router.push('/profil')}
-              >
-                <User className="icon" aria-hidden />
-                <span>{t('nav.profil')}</span>
-              </button>
+                  {/* Sur edition: afficher Profil */}
+                  {pathname === '/edition' && (
+                    <button
+                      ref={el => {
+                        if (el) menuItemsRef.current[0] = el
+                      }}
+                      className="user-menu-item"
+                      onClick={() => router.push('/profil')}
+                    >
+                      <User className="icon" aria-hidden />
+                      <span>{t('nav.profil')}</span>
+                    </button>
+                  )}
+
+                  {/* Sur admin: afficher Profil */}
+                  {pathname.startsWith('/admin') && (
+                    <button
+                      ref={el => {
+                        if (el) menuItemsRef.current[0] = el
+                      }}
+                      className="user-menu-item"
+                      onClick={() => router.push('/profil')}
+                    >
+                      <User className="icon" aria-hidden />
+                      <span>{t('nav.profil')}</span>
+                    </button>
+                  )}
+                </>
+              )}
+
+              {/* Links contextuels sur mobile uniquement */}
+              {isMobile && (
+                <>
+                  {/* Sur tableau mobile: afficher Edition + Profil */}
+                  {pathname === '/tableau' && (
+                    <>
+                      <button
+                        ref={el => {
+                          if (el) menuItemsRef.current[0] = el
+                        }}
+                        className="user-menu-item"
+                        onClick={() => router.push('/edition')}
+                      >
+                        <Pencil className="icon" aria-hidden />
+                        <span>{t('nav.edition')}</span>
+                      </button>
+                      <button
+                        ref={el => {
+                          if (el) menuItemsRef.current[1] = el
+                        }}
+                        className="user-menu-item"
+                        onClick={() => router.push('/profil')}
+                      >
+                        <User className="icon" aria-hidden />
+                        <span>{t('nav.profil')}</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Sur edition mobile: afficher Profil */}
+                  {pathname === '/edition' && (
+                    <button
+                      ref={el => {
+                        if (el) menuItemsRef.current[0] = el
+                      }}
+                      className="user-menu-item"
+                      onClick={() => router.push('/profil')}
+                    >
+                      <User className="icon" aria-hidden />
+                      <span>{t('nav.profil')}</span>
+                    </button>
+                  )}
+
+                  {/* Sur admin mobile: afficher Profil */}
+                  {pathname.startsWith('/admin') && (
+                    <button
+                      ref={el => {
+                        if (el) menuItemsRef.current[0] = el
+                      }}
+                      className="user-menu-item"
+                      onClick={() => router.push('/profil')}
+                    >
+                      <User className="icon" aria-hidden />
+                      <span>{t('nav.profil')}</span>
+                    </button>
+                  )}
+                </>
+              )}
 
               {/* Masquer le bouton d'abonnement pour les admins */}
               {!isAdmin && (
                 <button
                   ref={el => {
-                    if (el)
-                      menuItemsRef.current[pathname !== '/edition' ? 2 : 1] = el
+                    if (el) {
+                      let subsIndex = 0
+                      if (isMobile) {
+                        // Mobile: après les liens contextuels sur tableau
+                        subsIndex = pathname === '/tableau' ? 2 : 0
+                      } else {
+                        // Desktop: après les liens contextuels
+                        if (pathname === '/tableau') {
+                          subsIndex = 2 // Edition + Profil + Subscription
+                        } else {
+                          subsIndex = 1 // Profil + Subscription
+                        }
+                      }
+                      menuItemsRef.current[subsIndex] = el
+                    }
                   }}
                   className="user-menu-item"
                   onClick={
@@ -371,8 +500,21 @@ export default function UserMenu() {
               {isAdmin && (
                 <button
                   ref={el => {
-                    if (el)
-                      menuItemsRef.current[pathname !== '/edition' ? 2 : 1] = el
+                    if (el) {
+                      let adminIndex = 0
+                      if (isMobile) {
+                        // Mobile: après les liens contextuels sur tableau
+                        adminIndex = pathname === '/tableau' ? 2 : 0
+                      } else {
+                        // Desktop: après les liens contextuels
+                        if (pathname === '/tableau') {
+                          adminIndex = 2 // Edition + Profil + Admin
+                        } else {
+                          adminIndex = 1 // Profil + Admin
+                        }
+                      }
+                      menuItemsRef.current[adminIndex] = el
+                    }
                   }}
                   className="user-menu-item admin"
                   onClick={() => router.push('/admin/permissions')}
@@ -392,8 +534,12 @@ export default function UserMenu() {
                     className="user-menu-item legal"
                     ref={el => {
                       if (el) {
-                        const index = pathname !== '/edition' ? 3 : 2
-                        menuItemsRef.current[index] = el
+                        // Mobile legal button index
+                        let legalIndex = 1 // Default: Subscription/Admin (0) + Legal (1)
+                        if (pathname === '/tableau') {
+                          legalIndex = 3 // Edition (0) + Profil (1) + Subscription/Admin (2) + Legal (3)
+                        }
+                        menuItemsRef.current[legalIndex] = el
                       }
                     }}
                     onClick={() => setLegalOpen(!legalOpen)}
@@ -455,6 +601,17 @@ export default function UserMenu() {
                         <span>{t('cookies.customize')}</span>
                       </button>
                       <button
+                        className="user-menu-item submenu-item danger"
+                        onClick={() => {
+                          setOpen(false)
+                          window.dispatchEvent(
+                            new CustomEvent('reject-all-cookies')
+                          )
+                        }}
+                      >
+                        <span>{t('cookies.reject_all')}</span>
+                      </button>
+                      <button
                         className="user-menu-item submenu-item"
                         onClick={() => router.push('/legal/accessibilite')}
                       >
@@ -474,8 +631,23 @@ export default function UserMenu() {
               <button
                 ref={el => {
                   if (el) {
-                    const index = pathname !== '/edition' ? 5 : 4
-                    menuItemsRef.current[index] = el
+                    let logoutIndex = 0
+                    if (isMobile) {
+                      // Mobile: calculate based on current page
+                      if (pathname === '/tableau') {
+                        logoutIndex = 4 // Edition (0) + Profil (1) + Subscription/Admin (2) + Legal (3) + Logout (4)
+                      } else {
+                        logoutIndex = 2 // Subscription/Admin (0) + Legal (1) + Logout (2)
+                      }
+                    } else {
+                      // Desktop: calculate based on current page
+                      if (pathname === '/tableau') {
+                        logoutIndex = 3 // Edition (0) + Profil (1) + Subscription/Admin (2) + Logout (3)
+                      } else {
+                        logoutIndex = 2 // Profil (0) + Subscription/Admin (1) + Logout (2)
+                      }
+                    }
+                    menuItemsRef.current[logoutIndex] = el
                   }
                 }}
                 className="user-menu-item danger"

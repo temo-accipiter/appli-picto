@@ -3,8 +3,8 @@
 import { useAuth, useI18n } from '@/hooks'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Pencil, Settings } from 'lucide-react'
-import { UserMenu } from '@/components'
+import { LayoutDashboard, Pencil } from 'lucide-react'
+import { UserMenu, SettingsMenu } from '@/components'
 import './BottomNav.scss'
 
 /**
@@ -66,18 +66,7 @@ export default function BottomNav() {
               <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
             </Link>
             <UserMenu />
-            <button
-              className="nav-icon-link"
-              aria-label={t('nav.settings')}
-              title={t('nav.settings')}
-              onClick={() => {
-                // TODO: Toggle settings panel (existing functionality)
-                const event = new CustomEvent('toggle-settings')
-                window.dispatchEvent(event)
-              }}
-            >
-              <Settings size={24} strokeWidth={2} aria-hidden="true" />
-            </button>
+            <SettingsMenu />
           </>
         )}
 

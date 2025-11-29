@@ -6,7 +6,6 @@ import {
   InputWithValidation,
   Loader,
   ModalConfirm,
-  Navbar,
 } from '@/components'
 import {
   HistoryTab,
@@ -202,7 +201,6 @@ export default function AdminPermissions() {
   if (isLoading) {
     return (
       <div className="admin-permissions-page">
-        <Navbar />
         <div className="loading-container">
           <Loader />
           <p>Chargement de l&apos;administration...</p>
@@ -215,7 +213,6 @@ export default function AdminPermissions() {
   if (hasLoadedData && !isAdmin) {
     return (
       <div className="admin-permissions-page">
-        <Navbar />
         <div className="loading-container">
           <Loader />
           <p>Redirection...</p>
@@ -228,7 +225,6 @@ export default function AdminPermissions() {
   if (!hasLoadedData) {
     return (
       <div className="admin-permissions-page">
-        <Navbar />
         <div className="loading-container">
           <Loader />
           <p>Vérification des permissions...</p>
@@ -528,7 +524,6 @@ export default function AdminPermissions() {
 
   return (
     <div className="admin-permissions-page">
-      <Navbar />
       <div className="admin-header">
         <h1>
           <Settings className="icon" aria-hidden />
