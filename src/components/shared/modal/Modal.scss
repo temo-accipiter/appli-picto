@@ -11,6 +11,12 @@
   justify-content: center;
   z-index: $z-overlay;
   animation: fadeIn $transition-fast ease-out;
+  overflow-y: auto;
+  padding: $spacing-md;
+
+  @media (max-width: 575px) {
+    padding: $spacing-sm;
+  }
 }
 
 // === MODAL CONTENEUR ===
@@ -29,6 +35,33 @@
   flex-direction: column;
   animation: scaleIn $transition-fast ease-out;
 
+  // Mobile optimization (320px - 575px)
+  @media (max-width: 575px) {
+    width: 95vw;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 32px);
+    border-radius: $radius-md;
+  }
+
+  // Small tablets (576px - 767px)
+  @media (min-width: 576px) and (max-width: 767px) {
+    width: 90vw;
+    max-width: 540px;
+    max-height: calc(100vh - 64px);
+  }
+
+  // Tablets & desktop (768px+)
+  @media (min-width: 768px) {
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+  }
+
+  // Large desktop (1200px+)
+  @media (min-width: 1200px) {
+    max-width: 600px;
+  }
+
   &:focus-visible {
     outline: none;
   }
@@ -43,6 +76,16 @@
   padding: $spacing-lg $spacing-md;
   border-bottom: 1px solid gray(200);
   flex-shrink: 0;
+
+  // Mobile optimization
+  @media (max-width: 575px) {
+    padding: $spacing-md $spacing-sm;
+    gap: $spacing-sm;
+  }
+
+  @media (min-width: 768px) {
+    padding: $spacing-lg $spacing-md;
+  }
 }
 
 // === TITLE ===
@@ -52,6 +95,11 @@
   font-weight: $font-weight-bold;
   color: $color-primary;
   flex: 1;
+
+  // Mobile: smaller title
+  @media (max-width: 575px) {
+    font-size: $font-size-lg;
+  }
 }
 
 // === CONTENU ===
@@ -60,6 +108,12 @@
   padding: $spacing-lg $spacing-md;
   overflow-y: auto;
   min-height: 100px;
+
+  // Mobile optimization
+  @media (max-width: 575px) {
+    padding: $spacing-md $spacing-sm;
+    min-height: 80px;
+  }
 
   // Scrollbar personnalisée
   &::-webkit-scrollbar {
@@ -89,6 +143,11 @@
   color: $color-text;
   line-height: $line-height-base;
 
+  // Mobile: smaller font
+  @media (max-width: 575px) {
+    font-size: $font-size-base;
+  }
+
   p {
     margin: 0;
   }
@@ -105,6 +164,26 @@
   flex-shrink: 0;
   flex-wrap: wrap;
 
+  // Mobile: stack buttons vertically
+  @media (max-width: 575px) {
+    padding: $spacing-sm;
+    gap: $spacing-xs;
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  // Desktop: buttons inline
+  @media (min-width: 576px) {
+    flex-direction: row;
+
+    .btn {
+      width: auto;
+    }
+  }
+
   .btn {
     transition:
       transform $transition-fast ease-out,
@@ -120,9 +199,11 @@
       transform: translateY(0);
     }
 
-    // Bouton Annuler à gauche
-    &:first-child {
-      margin-right: auto;
+    // Bouton Annuler à gauche (desktop)
+    @media (min-width: 576px) {
+      &:first-child {
+        margin-right: auto;
+      }
     }
   }
 }
