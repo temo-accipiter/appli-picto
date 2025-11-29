@@ -1,32 +1,77 @@
 @use '@styles/abstracts' as *;
 
 .button-close {
-  position: absolute;
-  top: 0;
-  right: 0;
+  position: relative;
   width: 2rem;
   height: 2rem;
   background: transparent;
   border: none;
-  border-radius: 50%;
-  font-size: $font-size-lg;
-  line-height: 1;
+  border-radius: $radius-full;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
   cursor: pointer;
   transition:
     background $transition-fast,
-    color $transition-fast;
+    color $transition-fast,
+    transform $transition-fast;
   color: $color-text;
+  flex-shrink: 0;
 
   &:hover {
     background: gray(200);
     color: $color-primary;
+    transform: scale(1.1);
   }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
   &:focus-visible {
     outline: 2px solid $color-accent;
     outline-offset: 2px;
+  }
+
+  // === VARIANT: LARGE (pour modals) ===
+  &--large {
+    width: 3rem;
+    height: 3rem;
+    background: gray(100);
+    border: 2px solid $color-primary;
+
+    &:hover {
+      background: gray(200);
+      transform: scale(1.05);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-accent;
+      outline-offset: 4px;
+    }
+  }
+
+  &--small {
+    // Default styling, no additional rules needed
+  }
+}
+
+// === DARK MODE ===
+@media (prefers-color-scheme: dark) {
+  .button-close {
+    color: var(--color-text);
+
+    &:hover {
+      background: var(--color-bg-hover);
+    }
+
+    &--large {
+      background: var(--color-bg-soft);
+      border-color: var(--color-primary);
+
+      &:hover {
+        background: var(--color-bg-hover);
+      }
+    }
   }
 }

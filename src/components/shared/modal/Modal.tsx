@@ -58,16 +58,16 @@ export default function Modal({
     return () => document.removeEventListener('keydown', handleKey)
   }, [isOpen, onClose])
 
-  // Lock scroll & focus par défaut sur "Confirmer" (dernier bouton d'action)
+  // Lock scroll & focus par défaut sur le dernier bouton d'action
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
-      // on cible le bouton "Confirmer" : dernier bouton dans .modal__actions
-      const confirmBtn = modalRef.current?.querySelector(
-        '.modal__actions button:last-of-type'
+      // on cible le dernier bouton dans .modal__footer
+      const lastBtn = modalRef.current?.querySelector(
+        '.modal__footer button:last-of-type'
       )
-      if (confirmBtn instanceof HTMLElement) {
-        confirmBtn.focus()
+      if (lastBtn instanceof HTMLElement) {
+        lastBtn.focus()
       } else {
         // fallback : focus sur la boîte
         modalRef.current?.focus()
@@ -115,14 +115,25 @@ export default function Modal({
         ref={modalRef}
         tabIndex={-1}
       >
-        {title && (
-          <h2 className="modal__title" id="modal-title">
-            {title}
-          </h2>
-        )}
+        {/* Header avec titre et close button */}
+        <div className="modal__header">
+          {title && (
+            <h2 className="modal__title" id="modal-title">
+              {title}
+            </h2>
+          )}
+          <ButtonClose onClick={onClose} size="large" />
+        </div>
+
+        {/* Contenu principal */}
         <div className="modal__content">{children}</div>
+
+        {/* Footer avec actions */}
         {actions.length > 0 && (
-          <footer className="modal__actions">
+          <footer className="modal__footer">
+            {/* Bouton Annuler par défaut à gauche */}
+            <Button label="Annuler" onClick={onClose} variant="secondary" />
+            {/* Autres actions */}
             {actions.map((act, i) => (
               <Button
                 key={i}
@@ -134,7 +145,6 @@ export default function Modal({
             ))}
           </footer>
         )}
-        <ButtonClose onClick={onClose} />
       </div>
     </div>
   )
