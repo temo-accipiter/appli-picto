@@ -48,26 +48,8 @@
 
   /* États visuels FRANCS pour TSA */
   &--checked {
-    border-color: var(--color-success, #4caf50);
-    background-color: rgba(76, 175, 80, 0.08);
-
-    .base-card__image::after {
-      content: '✓';
-      position: absolute;
-      bottom: -8px;
-      right: -8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background-color: var(--color-success, #4caf50);
-      color: white;
-      border-radius: 50%;
-      font-weight: bold;
-      font-size: 1.2rem;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
+    border: 2px solid var(--color-success, #4caf50);
+    background-color: #d4f4dd; /* Vert clair pastel comme avant */
   }
 
   &--completed {
@@ -83,8 +65,7 @@
   }
 
   &--editable {
-    border-color: var(--color-warning, #ff9800);
-    background-color: rgba(255, 152, 0, 0.02);
+    /* Retiré : la bordure orange n'est plus appliquée */
   }
 
   /* Container pour image + actions */
@@ -93,27 +74,14 @@
     flex-direction: column;
     align-items: center;
     gap: $spacing-xs;
-    min-width: 100px;
   }
 
   &__image {
     position: relative;
-    width: 100%;
-    max-width: 120px;
-    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.02);
-    border-radius: $radius-sm;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-    }
+    /* Pas de background, pas de wrapper visible - juste l'image */
   }
 
   /* Actions : layout optimisé pour mobile (56px touch target min) */
@@ -164,7 +132,7 @@
 
   /* Focus visible pour accessibility clavier */
   &:focus-within {
-    box-shadow: 0 0 0 3px rgba(74, 144, 217, 0.3);
+    box-shadow: 0 0 0 3px rgba(135, 206, 250, 0.5); /* Bleu ciel doux */
     outline: none;
   }
 }

@@ -85,8 +85,10 @@ const DndCard = memo(function DndCard({
       style={style}
       data-testid={testId || `dnd-card-${id}`}
       {...attributes}
-      {...listeners}
     >
+      <div className="dnd-card__drag-handle" {...listeners}>
+        {/* Zone de drag invisible qui couvre toute la card */}
+      </div>
       {children}
     </div>
   )
