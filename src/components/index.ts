@@ -84,7 +84,6 @@ export { default as ModalConfirm } from './shared/modal/modal-confirm/ModalConfi
 export { default as ModalQuota } from './shared/modal/modal-quota/ModalQuota'
 export { default as ModalRecompense } from './shared/modal/modal-recompense/ModalRecompense'
 export { default as PersonalizationModal } from './shared/modal/modal-personalization/PersonalizationModal'
-export { SignupPromptModal } from './shared/modal/modal-signup-prompt/SignupPromptModal'
 
 // ========================================
 // UI - Primitives UI pures

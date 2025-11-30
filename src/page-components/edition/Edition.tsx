@@ -37,20 +37,12 @@ const ModalQuota = lazy(() =>
 
 type ContentType = 'task' | 'reward' | 'category'
 type QuotaPeriod = 'total' | 'monthly'
-type AssetType = 'task_image' | 'reward_image'
 
 interface QuotaModalContent {
   contentType: ContentType
   currentUsage: number
   limit: number
   period: QuotaPeriod
-}
-
-interface ImageQuotaContent {
-  assetType: AssetType
-  currentUsage: number
-  limit: number
-  reason: string
 }
 
 interface TaskSubmitParams {
@@ -90,16 +82,6 @@ export default function Edition() {
       period: 'total',
     }
   )
-
-  // États pour les quotas d'images
-  const [imageQuotaModalOpen, setImageQuotaModalOpen] = useState(false)
-  const [_imageQuotaContent, _setImageQuotaContent] =
-    useState<ImageQuotaContent>({
-      assetType: 'task_image',
-      currentUsage: 0,
-      limit: 0,
-      reason: '',
-    })
 
   // Note: Vérification des quotas d'images maintenant gérée automatiquement
   // dans modernUploadImage() via check_image_quota() RPC
@@ -556,18 +538,6 @@ export default function Edition() {
           currentUsage={quotaModalContent.currentUsage}
           limit={quotaModalContent.limit}
           period={quotaModalContent.period}
-        />
-
-        {/* Modal pour quotas d'images */}
-        <ModalQuota
-          isOpen={imageQuotaModalOpen}
-          onClose={() => setImageQuotaModalOpen(false)}
-          contentType={
-            _imageQuotaContent.assetType === 'task_image' ? 'task' : 'reward'
-          }
-          currentUsage={_imageQuotaContent.currentUsage}
-          limit={_imageQuotaContent.limit}
-          period="total"
         />
       </Suspense>
     </div>
