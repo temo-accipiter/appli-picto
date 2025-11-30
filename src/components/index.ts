@@ -48,6 +48,7 @@ export { default as UserMenu } from './layout/user-menu/UserMenu'
 
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'
+export { default as Dropdown } from './shared/dropdown/Dropdown'
 export { default as BaseCard } from './shared/card/base-card/BaseCard'
 export { default as EditionCard } from './shared/card/edition-card/EditionCard'
 export { default as TableauCard } from './shared/card/tableau-card/TableauCard'

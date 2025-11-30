@@ -1,0 +1,82 @@
+@use '@styles/abstracts' as *;
+
+.dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.dropdown-trigger {
+  // Le trigger est positionné au parent pour que le dropdown le référence
+}
+
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  pointer-events: none; // Permet aux clics sur le backdrop de passer via
+}
+
+.dropdown {
+  position: fixed;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: $radius-md;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  pointer-events: auto;
+  max-width: 320px;
+  min-width: 200px;
+  animation: slideDown 0.2s ease-out;
+
+  // Position: left (défaut)
+  &--left {
+    // Calculé avec JavaScript (voir SettingsMenu)
+  }
+
+  // Position: right
+  &--right {
+    // Calculé avec JavaScript
+  }
+
+  // Position: center
+  &--center {
+    left: 50% !important;
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Dark mode
+@media (prefers-color-scheme: dark) {
+  .dropdown {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// Mobile responsiveness
+@media (max-width: 480px) {
+  .dropdown {
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
