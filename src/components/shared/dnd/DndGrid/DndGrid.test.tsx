@@ -25,9 +25,12 @@ const { mockUseSensor, mockUseSensors, mockClosestCenter } = vi.hoisted(() => ({
 }))
 
 let mockDndContextProps: {
-  onDragStart?: (event: DragStartEvent) => void
-  onDragEnd?: (event: DragEndEvent) => void
-} = {}
+  onDragStart: ((event: DragStartEvent) => void) | undefined
+  onDragEnd: ((event: DragEndEvent) => void) | undefined
+} = {
+  onDragStart: undefined,
+  onDragEnd: undefined,
+}
 
 vi.mock('@dnd-kit/core', () => ({
   DndContext: ({
@@ -105,7 +108,10 @@ describe('DndGrid', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockDndContextProps = {}
+    mockDndContextProps = {
+      onDragStart: undefined,
+      onDragEnd: undefined,
+    }
   })
 
   // ═════════════════════════════════════════════════════════════════════════════
@@ -355,13 +361,18 @@ describe('DndGrid', () => {
 
     // Simuler un drag-end via le callback capturé
     if (mockDndContextProps.onDragEnd) {
-      const dragEndEvent = {
+      const dragEndEvent: DragEndEvent = {
         active: {
           id: 'item-1',
           data: { current: {} },
-          rect: { current: null },
+          rect: { current: { initial: null, translated: null } },
         },
-        over: { id: 'item-3', data: { current: {} }, rect: { current: null } },
+        over: {
+          id: 'item-3',
+          rect: { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 },
+          data: { current: {} },
+          disabled: false,
+        },
         delta: { x: 0, y: 0 },
         collisions: null,
         activatorEvent: new MouseEvent('mousedown'),
@@ -390,13 +401,18 @@ describe('DndGrid', () => {
 
     // Simuler un drag-end
     if (mockDndContextProps.onDragEnd) {
-      const dragEndEvent = {
+      const dragEndEvent: DragEndEvent = {
         active: {
           id: 'item-1',
           data: { current: {} },
-          rect: { current: null },
+          rect: { current: { initial: null, translated: null } },
         },
-        over: { id: 'item-2', data: { current: {} }, rect: { current: null } },
+        over: {
+          id: 'item-2',
+          rect: { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 },
+          data: { current: {} },
+          disabled: false,
+        },
         delta: { x: 0, y: 0 },
         collisions: null,
         activatorEvent: new MouseEvent('mousedown'),

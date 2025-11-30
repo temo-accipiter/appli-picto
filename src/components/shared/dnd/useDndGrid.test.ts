@@ -32,17 +32,33 @@ describe('useDndGrid', () => {
     }))
   }
 
-  const createDragStartEvent = (activeId: string): DragStartEvent => ({
-    active: { id: activeId, data: { current: {} }, rect: { current: null } },
+  const createDragStartEvent = (
+    activeId: string | number
+  ): DragStartEvent => ({
+    active: {
+      id: activeId,
+      data: { current: {} },
+      rect: { current: { initial: null, translated: null } },
+    },
+    activatorEvent: new MouseEvent('mousedown'),
   })
 
   const createDragEndEvent = (
-    activeId: string,
-    overId: string | null
+    activeId: string | number,
+    overId: string | number | null
   ): DragEndEvent => ({
-    active: { id: activeId, data: { current: {} }, rect: { current: null } },
+    active: {
+      id: activeId,
+      data: { current: {} },
+      rect: { current: { initial: null, translated: null } },
+    },
     over: overId
-      ? { id: overId, data: { current: {} }, rect: { current: null } }
+      ? {
+          id: overId,
+          rect: { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 },
+          data: { current: {} },
+          disabled: false,
+        }
       : null,
     delta: { x: 0, y: 0 },
     collisions: null,
@@ -106,7 +122,8 @@ describe('useDndGrid', () => {
 
     // Vérifier que onReorder a été appelé avec la nouvelle liste swappée
     expect(onReorder).toHaveBeenCalledTimes(1)
-    const newItems = onReorder.mock.calls[0][0]
+    const newItems = onReorder.mock.calls?.[0]?.[0]
+    expect(newItems).toBeDefined()
     expect(newItems[0].id).toBe('item-3') // item-3 prend la place de item-1
     expect(newItems[1].id).toBe('item-2') // item-2 reste en place
     expect(newItems[2].id).toBe('item-1') // item-1 prend la place de item-3
@@ -360,12 +377,13 @@ describe('useDndGrid', () => {
     )
 
     await act(async () => {
-      result.current.handleDragStart(createDragStartEvent(101))
-      await result.current.handleDragEnd(createDragEndEvent(101, 103))
+      result.current.handleDragStart(createDragStartEvent('101'))
+      await result.current.handleDragEnd(createDragEndEvent('101', '103'))
     })
 
     expect(onReorder).toHaveBeenCalledTimes(1)
-    const newItems = onReorder.mock.calls[0][0]
+    const newItems = onReorder.mock.calls?.[0]?.[0]
+    expect(newItems).toBeDefined()
     expect(newItems[0].uid).toBe(103) // C prend la place de A
     expect(newItems[1].uid).toBe(102) // B reste en place
     expect(newItems[2].uid).toBe(101) // A prend la place de C
@@ -383,7 +401,8 @@ describe('useDndGrid', () => {
     })
 
     expect(onReorder).toHaveBeenCalledTimes(1)
-    const newItems = onReorder.mock.calls[0][0]
+    const newItems = onReorder.mock.calls?.[0]?.[0]
+    expect(newItems).toBeDefined()
     expect(newItems[0].id).toBe('item-2')
     expect(newItems[1].id).toBe('item-1')
   })
