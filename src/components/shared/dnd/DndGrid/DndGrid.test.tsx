@@ -369,7 +369,14 @@ describe('DndGrid', () => {
         },
         over: {
           id: 'item-3',
-          rect: { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 },
+          rect: {
+            width: 100,
+            height: 100,
+            top: 0,
+            left: 0,
+            right: 100,
+            bottom: 100,
+          },
           data: { current: {} },
           disabled: false,
         },
@@ -409,7 +416,14 @@ describe('DndGrid', () => {
         },
         over: {
           id: 'item-2',
-          rect: { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 },
+          rect: {
+            width: 100,
+            height: 100,
+            top: 0,
+            left: 0,
+            right: 100,
+            bottom: 100,
+          },
           data: { current: {} },
           disabled: false,
         },
