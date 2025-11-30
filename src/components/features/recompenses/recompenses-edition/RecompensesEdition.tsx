@@ -1,21 +1,14 @@
 'use client'
 
-import { Button, EditionCard, ModalAjout, SignedImage } from '@/components'
-import { useI18n } from '@/hooks'
-import React, { useState, useCallback, useEffect, useRef } from 'react'
 import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  KeyboardSensor,
-  useSensor,
-  useSensors,
-  DragStartEvent,
-  DragEndEvent,
-  useDroppable,
-  useDraggable,
-} from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+  Button,
+  EditionCard,
+  ModalAjout,
+  SignedImage,
+  DndGrid,
+} from '@/components'
+import { useI18n } from '@/hooks'
+import React, { useState, useCallback, useRef } from 'react'
 import './RecompensesEdition.scss'
 
 interface RewardItem {
@@ -44,179 +37,6 @@ interface RecompensesEditionProps {
   onReorder?: (ids: (string | number)[]) => void
 }
 
-// Génère les IDs de slots
-const generateSlots = (count: number) =>
-  Array.from({ length: count }, (_, i) => `reward-slot${i}`)
-
-// Composant DroppableSlot pour les récompenses
-interface DroppableSlotProps {
-  id: string
-  children?: React.ReactNode
-  isDraggingFrom?: boolean
-}
-
-function DroppableSlot({ id, children, isDraggingFrom }: DroppableSlotProps) {
-  const { setNodeRef, isOver } = useDroppable({ id })
-  const classNames = ['edition-slot']
-  if (isOver) classNames.push('over')
-  if (isDraggingFrom) classNames.push('dragging-from')
-  return (
-    <div ref={setNodeRef} className={classNames.join(' ')}>
-      {children}
-    </div>
-  )
-}
-
-// Composant DraggableCard wrapper
-interface DraggableCardProps {
-  id: string
-  children: React.ReactNode
-  isDraggingGlobal: boolean
-  isBeingSwapped?: boolean
-}
-
-function DraggableCard({
-  id,
-  children,
-  isDraggingGlobal,
-  isBeingSwapped,
-}: DraggableCardProps) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id })
-  const [dragPhase, setDragPhase] = useState<
-    'idle' | 'lifting' | 'shrinking' | 'growing' | 'moving'
-  >('idle')
-  const [swapPhase, setSwapPhase] = useState<'idle' | 'shrinking' | 'growing'>(
-    'idle'
-  )
-
-  // Gérer les phases d'animation avec timing plus lent et visible
-  useEffect(() => {
-    if (isDragging) {
-      // Phase 1: Soulèvement rapide avec léger agrandissement
-      setDragPhase('lifting')
-
-      // Phase 2: Rétrécissement marqué (après 120ms)
-      const shrinkTimer = setTimeout(() => {
-        setDragPhase('shrinking')
-      }, 120)
-
-      // Phase 3: Début du retour à la normale (après 500ms)
-      const growTimer = setTimeout(() => {
-        setDragPhase('growing')
-      }, 500)
-
-      // Phase 4: Taille finale de déplacement (après 900ms)
-      const moveTimer = setTimeout(() => {
-        setDragPhase('moving')
-      }, 900)
-
-      return () => {
-        clearTimeout(shrinkTimer)
-        clearTimeout(growTimer)
-        clearTimeout(moveTimer)
-      }
-    } else {
-      setDragPhase('idle')
-    }
-  }, [isDragging])
-
-  // Gérer l'animation de swap pour la card échangée
-  useEffect(() => {
-    if (isBeingSwapped) {
-      setSwapPhase('shrinking')
-      const growTimer = setTimeout(() => {
-        setSwapPhase('growing')
-      }, 800)
-      return () => clearTimeout(growTimer)
-    } else {
-      setSwapPhase('idle')
-    }
-  }, [isBeingSwapped])
-
-  const pointerEvents: 'none' | 'auto' =
-    isDraggingGlobal && !isDragging ? 'none' : 'auto'
-
-  // Scale et rotation selon la phase de drag
-  const getTransformValues = () => {
-    // Animation de swap prioritaire si pas en train de drag
-    if (!isDragging && swapPhase !== 'idle') {
-      switch (swapPhase) {
-        case 'shrinking':
-          return { scale: 0.6, rotate: -5, y: -30 }
-        case 'growing':
-          return { scale: 1, rotate: 0, y: 0 }
-        default:
-          return { scale: 1, rotate: 0, y: 0 }
-      }
-    }
-    switch (dragPhase) {
-      case 'lifting':
-        return { scale: 1.05, rotate: -2, y: -8 }
-      case 'shrinking':
-        return { scale: 0.75, rotate: 3, y: -15 }
-      case 'growing':
-        return { scale: 0.9, rotate: -1, y: -10 }
-      case 'moving':
-        return { scale: 1.03, rotate: 0, y: 0 }
-      default:
-        return { scale: 1, rotate: 0, y: 0 }
-    }
-  }
-
-  const { scale, rotate, y } = getTransformValues()
-
-  // Construire le transform avec ou sans déplacement
-  const buildTransform = () => {
-    if (transform) {
-      return `translate(${transform.x}px, ${transform.y + y}px) scale(${scale}) rotate(${rotate}deg)`
-    }
-    if (isDragging || swapPhase !== 'idle') {
-      return `translateY(${y}px) scale(${scale}) rotate(${rotate}deg)`
-    }
-    return undefined
-  }
-
-  // Durée de transition selon la phase (plus lent pour être visible)
-  const getTransitionDuration = () => {
-    // Animation de swap
-    if (!isDragging && swapPhase !== 'idle') {
-      return swapPhase === 'shrinking' ? '700ms' : '900ms'
-    }
-    switch (dragPhase) {
-      case 'lifting':
-        return '120ms'
-      case 'shrinking':
-        return '350ms'
-      case 'growing':
-        return '400ms'
-      case 'moving':
-        return '500ms'
-      default:
-        return '250ms'
-    }
-  }
-
-  const style: React.CSSProperties = {
-    transform: buildTransform(),
-    transition: `transform ${getTransitionDuration()} cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow ${getTransitionDuration()} ease-out, opacity 150ms ease`,
-    touchAction: 'manipulation' as const,
-    pointerEvents,
-    zIndex: isDragging ? 1000 : 'auto',
-    opacity: isDragging ? 0.92 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
-    boxShadow: isDragging
-      ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 10px 15px rgba(0, 0, 0, 0.2)'
-      : undefined,
-    willChange: isDragging ? 'transform' : undefined,
-  }
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      {children}
-    </div>
-  )
-}
 
 export default function RecompensesEdition({
   items,
@@ -231,134 +51,10 @@ export default function RecompensesEdition({
   const [drafts, setDrafts] = useState<Record<string | number, string>>({})
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [successIds, setSuccessIds] = useState(new Set<string | number>())
-  const [isDragging, setIsDragging] = useState(false)
-  const [draggingFromSlot, setDraggingFromSlot] = useState<string | null>(null)
-  const [layout, setLayout] = useState<Record<string, string | null>>({})
   const [announcement, setAnnouncement] = useState('')
-  const [swappedCardId, setSwappedCardId] = useState<string | null>(null)
-  const prevItemIdsRef = useRef<string>('')
+  const announcementRef = useRef<NodeJS.Timeout | null>(null)
 
   const { t } = useI18n()
-
-  // Sensors pour le drag & drop
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
-
-  // Synchroniser le layout quand les items changent
-  useEffect(() => {
-    const currentIds = items
-      .map(item => item.id.toString())
-      .sort()
-      .join(',')
-
-    if (currentIds !== prevItemIdsRef.current) {
-      prevItemIdsRef.current = currentIds
-      const newLayout: Record<string, string | null> = {}
-      items.forEach((item, index) => {
-        newLayout[`reward-slot${index}`] = item.id.toString()
-      })
-      setLayout(newLayout)
-    }
-  }, [items])
-
-  const handleDragStart = useCallback(
-    ({ active }: DragStartEvent) => {
-      setIsDragging(true)
-      const activeId = active.id as string
-      const fromSlot = Object.keys(layout).find(key => layout[key] === activeId)
-      setDraggingFromSlot(fromSlot || null)
-      const reward = items.find(r => r.id.toString() === activeId)
-      if (reward) {
-        setAnnouncement(`Déplacement de "${reward.label}"`)
-      }
-    },
-    [items, layout]
-  )
-
-  const handleDragEnd = useCallback(
-    ({ active, over }: DragEndEvent) => {
-      if (!over || active.id === over.id) {
-        setIsDragging(false)
-        setDraggingFromSlot(null)
-        setAnnouncement('Déplacement annulé')
-        return
-      }
-
-      const activeId = active.id as string
-      const overId = over.id as string
-
-      const fromSlot = Object.keys(layout).find(key => layout[key] === activeId)
-      let toSlot = overId
-      if (!overId.startsWith('reward-slot')) {
-        toSlot =
-          Object.keys(layout).find(key => layout[key] === overId) || overId
-      }
-
-      if (!fromSlot || fromSlot === toSlot) {
-        setIsDragging(false)
-        setDraggingFromSlot(null)
-        return
-      }
-
-      const cardAtDestination = layout[toSlot]
-
-      // Déclencher l'animation de swap sur la card échangée
-      if (cardAtDestination) {
-        setSwappedCardId(cardAtDestination)
-        setTimeout(() => {
-          setSwappedCardId(null)
-        }, 1800) // Durée totale de l'animation de swap (800ms + 900ms + marge)
-      }
-
-      setLayout(prev => {
-        const newLayout = { ...prev }
-        newLayout[fromSlot] = cardAtDestination ?? null
-        newLayout[toSlot] = activeId
-        return newLayout
-      })
-
-      // Reconstruire l'ordre et appeler onReorder
-      if (onReorder) {
-        const newOrder = generateSlots(items.length)
-          .map(slotId => {
-            if (slotId === fromSlot) return cardAtDestination
-            if (slotId === toSlot) return activeId
-            return layout[slotId]
-          })
-          .filter((id): id is string => id !== null)
-        onReorder(newOrder)
-      }
-
-      const movedReward = items.find(r => r.id.toString() === activeId)
-      const swappedReward = cardAtDestination
-        ? items.find(r => r.id.toString() === cardAtDestination)
-        : null
-
-      if (swappedReward) {
-        setAnnouncement(
-          `"${movedReward?.label}" échangé avec "${swappedReward.label}"`
-        )
-      } else {
-        setAnnouncement(`"${movedReward?.label}" déplacé`)
-      }
-
-      setTimeout(() => {
-        setIsDragging(false)
-        setDraggingFromSlot(null)
-      }, 100)
-    },
-    [layout, items, onReorder]
-  )
-
-  const slots = generateSlots(items.length)
 
   const validateLabel = (label: string): string => {
     const trimmed = label.trim()
@@ -411,6 +107,34 @@ export default function RecompensesEdition({
     }
   }
 
+  const handleDragEndAnnouncement = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (announcementRef.current) clearTimeout(announcementRef.current)
+      if (fromIndex === toIndex) {
+        setAnnouncement('Déplacement annulé')
+        return
+      }
+
+      const movedReward = items[fromIndex]
+      const swappedReward = items[toIndex]
+
+      if (!movedReward) return
+
+      if (swappedReward) {
+        setAnnouncement(
+          `"${movedReward.label}" échangé avec "${swappedReward.label}"`
+        )
+      } else {
+        setAnnouncement(`"${movedReward.label}" déplacé`)
+      }
+
+      announcementRef.current = setTimeout(() => {
+        setAnnouncement('')
+      }, 3000)
+    },
+    [items]
+  )
+
   return (
     <div className="checklist-recompenses">
       {/* WCAG 4.1.3 - Région d'annonces pour lecteur d'écran */}
@@ -439,83 +163,62 @@ export default function RecompensesEdition({
         />
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="edition-section__grid">
-          {items.length === 0 ? (
-            <div
-              className="edition-section__empty"
-              role="status"
-              aria-live="polite"
-            >
-              💤 {t('rewards.noRewardsToDisplay')}
-            </div>
-          ) : (
-            slots.map(slotId => {
-              const cardId = layout[slotId]
-              const reward = cardId
-                ? items.find(item => item.id.toString() === cardId)
-                : null
-
-              return (
-                <DroppableSlot
-                  key={slotId}
-                  id={slotId}
-                  isDraggingFrom={draggingFromSlot === slotId}
-                >
-                  {reward && (
-                    <DraggableCard
-                      id={reward.id.toString()}
-                      isDraggingGlobal={isDragging}
-                      isBeingSwapped={swappedCardId === reward.id.toString()}
-                    >
-                      <EditionCard
-                        imageComponent={
-                          <SignedImage
-                            filePath={reward.imagepath || ''}
-                            bucket="images"
-                            alt={reward.label}
-                            className="img-size-sm"
-                          />
-                        }
-                        label={drafts[reward.id] ?? reward.label}
-                        labelId={reward.id}
-                        onLabelChange={val => handleChange(reward.id, val)}
-                        onBlur={val => handleBlur(reward.id, val)}
-                        onDelete={() => onDelete(reward)}
-                        checked={
-                          reward.selected === true || reward.selected === 1
-                        }
-                        onToggleCheck={() =>
-                          onToggleSelect(
-                            reward.id,
-                            reward.selected === true || reward.selected === 1
-                          )
-                        }
-                        categorieOptions={[]}
-                        className={[
-                          reward.selected === 1 ? 'active' : '',
-                          'card-reward',
-                          errors[reward.id] ? 'input-field__input--error' : '',
-                          successIds.has(reward.id)
-                            ? 'input-field__input--success'
-                            : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                      />
-                    </DraggableCard>
-                  )}
-                </DroppableSlot>
-              )
-            })
-          )}
+      {items.length === 0 ? (
+        <div
+          className="edition-section__empty"
+          role="status"
+          aria-live="polite"
+        >
+          💤 {t('rewards.noRewardsToDisplay')}
         </div>
-      </DndContext>
+      ) : (
+        <DndGrid
+          items={items}
+          onReorder={newItems => {
+            if (onReorder) {
+              onReorder(newItems.map(item => item.id))
+            }
+          }}
+          renderItem={(item: RewardItem) => (
+            <EditionCard
+              imageComponent={
+                <SignedImage
+                  filePath={item.imagepath || ''}
+                  bucket="images"
+                  alt={item.label}
+                  className="img-size-sm"
+                />
+              }
+              label={drafts[item.id] ?? item.label}
+              labelId={item.id}
+              onLabelChange={val => handleChange(item.id, val)}
+              onBlur={val => handleBlur(item.id, val)}
+              onDelete={() => onDelete(item)}
+              checked={item.selected === true || item.selected === 1}
+              onToggleCheck={() =>
+                onToggleSelect(
+                  item.id,
+                  item.selected === true || item.selected === 1
+                )
+              }
+              categorieOptions={[]}
+              className={[
+                item.selected === 1 ? 'active' : '',
+                'card-reward',
+                errors[item.id] ? 'input-field__input--error' : '',
+                successIds.has(item.id) ? 'input-field__input--success' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            />
+          )}
+          columns={3}
+          gap="medium"
+          layout="custom"
+          className="edition-section__grid"
+          getItemId={(item: RewardItem) => item.id}
+        />
+      )}
 
       <ModalAjout
         isOpen={modalOpen}
