@@ -2,14 +2,14 @@
 
 ## 🎯 TL;DR - Ce qu'on change et pourquoi
 
-| Aspect | Avant | Après | Raison TSA |
-|--------|-------|-------|------------|
-| **Overlay opacité** | 40% | 75% | Évite distractions, masque fond |
-| **Blur overlay** | 2px | 4px | Accentue séparation visuelle |
-| **Close button** | 20px | 48px | Accessible pour contrôle moteur |
-| **Border modal** | 1px gray | 2px primary | Meilleur contraste |
-| **Modal structure** | All mixed | Header/Content/Footer | Accessibilité sémantique |
-| **Footer button** | Actions only | Auto Annuler + Actions | 2e option de fermeture |
+| Aspect              | Avant        | Après                  | Raison TSA                      |
+| ------------------- | ------------ | ---------------------- | ------------------------------- |
+| **Overlay opacité** | 40%          | 75%                    | Évite distractions, masque fond |
+| **Blur overlay**    | 2px          | 4px                    | Accentue séparation visuelle    |
+| **Close button**    | 20px         | 48px                   | Accessible pour contrôle moteur |
+| **Border modal**    | 1px gray     | 2px primary            | Meilleur contraste              |
+| **Modal structure** | All mixed    | Header/Content/Footer  | Accessibilité sémantique        |
+| **Footer button**   | Actions only | Auto Annuler + Actions | 2e option de fermeture          |
 
 ---
 
@@ -29,11 +29,13 @@
 ### 1️⃣ ButtonClose (5 min)
 
 **ButtonClose.tsx:**
+
 - Ajouter interface: `size?: 'small' | 'large'`
 - Ajouter class: `button-close--${size}`
 - Ajuster `iconSize` selon size
 
 **ButtonClose.scss:**
+
 - Variant `.button-close--large` avec:
   - `width: 3rem` (48px)
   - `background: gray(100)`
@@ -44,6 +46,7 @@
 ### 2️⃣ Modal.scss (10 min)
 
 **Clés:**
+
 - `.modal-overlay` → `background-color: rgba(gray(900), 0.75)` + `backdrop-filter: blur(4px)`
 - `.modal` → `border: 2px solid $color-primary` + ombre augmentée
 - Ajouter `.modal__header` (flexbox, border-bottom)
@@ -55,6 +58,7 @@
 ### 3️⃣ Modal.tsx (15 min)
 
 **Nouvelle structure:**
+
 ```tsx
 <div className="modal-overlay" onClick={onClose}>
   <div className="modal" role="dialog" aria-modal="true">
@@ -84,6 +88,7 @@
 ### 4️⃣ Adapter ModalConfirm.tsx (5 min)
 
 **Avant:**
+
 ```tsx
 actions={[
   { label: 'Annuler', onClick: onClose },
@@ -92,6 +97,7 @@ actions={[
 ```
 
 **Après (Annuler devient auto):**
+
 ```tsx
 actions={[
   { label: 'Confirmer', onClick: handleConfirm, variant: 'primary' }
@@ -115,6 +121,7 @@ pnpm build          # Build complet
 ## 📸 Résultat Visuel
 
 **AVANT:**
+
 ```
 ┌─────────────────────────────────────────┐
 │ Contenu derrière VISIBLE (distraction) │ ← 40% opacité
@@ -131,6 +138,7 @@ pnpm build          # Build complet
 ```
 
 **APRÈS:**
+
 ```
 ┌─────────────────────────────────────────┐
 │                                         │ ← 75% opacité + blur(4px)
@@ -164,15 +172,19 @@ pnpm build          # Build complet
 ## 🆘 Troubleshooting
 
 ### Erreur: "ButtonClose is not defined"
+
 → Vérifier import dans Modal.tsx
 
 ### Modal ne ferme pas au Échap
+
 → Vérifier event listener dans useEffect
 
 ### Annuler bouton apparaît 2x
+
 → Vérifier ModalConfirm n'envoie pas d'action Annuler
 
 ### Close button trop grand/petit
+
 → Vérifier class `button-close--large` est appliquée
 
 ---

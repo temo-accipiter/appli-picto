@@ -250,7 +250,6 @@ interface SelectProps
 
 ```tsx
 import Select from '@/components/ui/select/Select'
-
 ;<Select
   id="category"
   label="Catégorie"
@@ -318,7 +317,6 @@ interface SelectWithImageProps
 
 ```tsx
 import { SelectWithImage } from '@/components/ui/select-with-image'
-
 ;<SelectWithImage
   id="task-category"
   label="Choisir une catégorie"

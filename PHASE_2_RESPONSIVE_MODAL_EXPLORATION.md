@@ -22,8 +22,10 @@ This exploration analyzed the entire appli-picto codebase to understand:
 ## 4 Documents Created
 
 ### 1. CODEBASE_EXPLORATION_SUMMARY.md (13 KB)
+
 **What**: Executive summary of entire exploration
 **Contains**:
+
 - All files analyzed (20+)
 - Key findings in each category
 - 10 best responsive patterns found
@@ -39,8 +41,10 @@ This exploration analyzed the entire appli-picto codebase to understand:
 ---
 
 ### 2. RESPONSIVE_MODAL_ANALYSIS.md (15 KB)
+
 **What**: Deep technical analysis of responsive patterns
 **Contains**:
+
 - Breakpoints definition (576px, 768px, 992px, 1200px)
 - Current Modal.scss state (problems identified)
 - 5 responsive pattern examples from codebase
@@ -56,8 +60,10 @@ This exploration analyzed the entire appli-picto codebase to understand:
 ---
 
 ### 3. PHASE_2_MODAL_IMPLEMENTATION.md (14 KB)
+
 **What**: Actual code to copy and modify
 **Contains**:
+
 - Current Modal.scss code (lines to change)
 - Recommendation 1: Responsive base modal (with media queries)
 - Recommendation 2: Responsive header/content/footer
@@ -75,8 +81,10 @@ This exploration analyzed the entire appli-picto codebase to understand:
 ---
 
 ### 4. RESPONSIVE_PATTERNS_REFERENCE.md (16 KB)
+
 **What**: Patterns to copy from existing components
 **Contains**:
+
 - 8 proven patterns from codebase
   - SettingsMenu: Position variants
   - BottomNav: Safe-area support
@@ -99,6 +107,7 @@ This exploration analyzed the entire appli-picto codebase to understand:
 ## Key Findings Summary
 
 ### Current Modal State ✅ Good Foundation
+
 - ✅ Correct sizing (90% width, 500px max)
 - ✅ Good animations (fadeIn, scaleIn)
 - ✅ Dark mode support
@@ -106,6 +115,7 @@ This exploration analyzed the entire appli-picto codebase to understand:
 - ✅ WCAG 2.2 AA compliance
 
 ### Missing for Phase 2 ❌ Needs Updates
+
 - ❌ NO media queries for responsive sizing
 - ❌ NO safe-area support for iPhone notches
 - ❌ NO padding optimization for mobile
@@ -113,6 +123,7 @@ This exploration analyzed the entire appli-picto codebase to understand:
 - ❌ NO portrait/landscape handling
 
 ### Best Patterns Found in Codebase ✅
+
 1. **Smart sizing**: `width: min(300px, 90vw);`
 2. **Safe-area support**: `padding: max($spacing-md, env(safe-area-inset-*));`
 3. **Height adaptation**: Different max-height on mobile vs desktop
@@ -143,12 +154,12 @@ Usage: @include respond-to(sm|md|lg|xl)
 
 ## Existing Modal Variants to Learn From
 
-| Modal | Location | Pattern | Status |
-|-------|----------|---------|--------|
-| Modal | base component | No media queries | Needs Phase 2 |
+| Modal             | Location             | Pattern          | Status           |
+| ----------------- | -------------------- | ---------------- | ---------------- |
+| Modal             | base component       | No media queries | Needs Phase 2    |
 | SignupPromptModal | modal-signup-prompt/ | **Responsive** ✓ | Use as reference |
-| ModalCategory | modal-category/ | Basic styles | Works |
-| ModalRecompense | modal-recompense/ | Basic styles | Works |
+| ModalCategory     | modal-category/      | Basic styles     | Works            |
+| ModalRecompense   | modal-recompense/    | Basic styles     | Works            |
 
 **SignupPromptModal is the reference implementation!** - It shows responsive modal done right.
 
@@ -157,6 +168,7 @@ Usage: @include respond-to(sm|md|lg|xl)
 ## Phase 2 Implementation Roadmap
 
 ### Phase 2.0: Core Responsive (Priority 1)
+
 - Add media queries to Modal.scss
 - 3 breakpoints: mobile (320-575px), tablet (576-767px), desktop (768px+)
 - Reduce padding/font-size on mobile
@@ -164,21 +176,25 @@ Usage: @include respond-to(sm|md|lg|xl)
 - **Estimated**: 2-3 hours
 
 ### Phase 2.1: Fullscreen Variant
+
 - Create `.modal--fullscreen` class
 - Full viewport on mobile
 - **Estimated**: 1-2 hours
 
 ### Phase 2.2: Drawer Variant
+
 - Create `.modal--drawer` class
 - Slide-up from bottom on mobile
 - **Estimated**: 2-3 hours
 
 ### Phase 2.3: Safe-Area Support
+
 - Add `env(safe-area-inset-*)` for notches
 - Test on iPhone with notch
 - **Estimated**: 1-2 hours
 
 ### Phase 2.4: Polish
+
 - Fine-tune animations
 - Portrait/landscape modes
 - Final QA
@@ -191,6 +207,7 @@ Usage: @include respond-to(sm|md|lg|xl)
 ## Testing Devices
 
 ### Must Test
+
 - [ ] iPhone SE (375px) - smallest
 - [ ] iPhone 14 (390px) - standard
 - [ ] iPhone 14 Pro (393px) - with notch
@@ -199,6 +216,7 @@ Usage: @include respond-to(sm|md|lg|xl)
 - [ ] Desktop (1920px) - desktop
 
 ### Accessibility
+
 - [ ] prefers-reduced-motion: reduce
 - [ ] Dark mode
 - [ ] Zoom 200%
@@ -210,41 +228,49 @@ Usage: @include respond-to(sm|md|lg|xl)
 ## Files Ready to Implement
 
 ### Must Copy From
+
 1. **Navbar.scss** - Mobile-first flex pattern
 2. **SettingsMenu.scss** - Position variants
 3. **SignupPromptModal.scss** - Working modal
 4. **BottomNav.scss** - Safe-area pattern
 
 ### Should Reference
+
 1. **UserMenu.scss** - Height variants
 2. **SelectWithImage.scss** - Smart sizing
 3. **Button.scss** - WCAG compliance
-4. **_mixins.scss** - Available helpers
+4. **\_mixins.scss** - Available helpers
 
 ---
 
 ## Quick Answers to Original Questions
 
 ### 1. How do modals behave on mobile/tablet?
+
 **Currently**: Same as desktop (500px max-width)
 **Should be**: Optimized for each breakpoint (full-width on small, centered on large)
 
 ### 2. What breakpoints are used?
+
 **Answer**: 576px, 768px, 992px, 1200px (mobile-first)
 
 ### 3. What variables for spacing/sizing?
+
 **Spacing**: $spacing-md (16px) to $spacing-xl (32px)
 **Sizing**: rem() function (16px base), font-size from 14px to 24px
-**Breakpoints**: Variables in _variables.scss
+**Breakpoints**: Variables in \_variables.scss
 
 ### 4. How do other components handle responsive?
+
 **Pattern**: Media queries @include respond-to(breakpoint) with layout/padding changes
 **Examples**: Navbar (flex direction), UserMenu (height), SettingsMenu (position)
 
 ### 5. Are animations controlled by screen size?
+
 **Answer**: Yes - different animations per breakpoint (slideInDown desktop, slideInUp mobile)
 
 ### 6. Existing responsive patterns?
+
 **Found 10 patterns!** See RESPONSIVE_PATTERNS_REFERENCE.md for all
 
 ---
@@ -275,18 +301,23 @@ Usage: @include respond-to(sm|md|lg|xl)
 ## Key Learnings
 
 ### 1. Mobile-First is Standard Here
+
 All responsive code uses `@include respond-to()` starting from mobile
 
 ### 2. Existing Patterns Work Well
+
 Just follow what SignupPromptModal, SettingsMenu, and BottomNav do
 
 ### 3. Safe-Area Matters
+
 iOS devices need special attention - pattern exists in BottomNav
 
 ### 4. Accessibility is Built-In
+
 WCAG, dark mode, motion preferences are handled everywhere
 
 ### 5. No Breaking Changes Needed
+
 The base Modal.tsx doesn't need changes - only CSS
 
 ---
@@ -296,6 +327,7 @@ The base Modal.tsx doesn't need changes - only CSS
 **Complete file reference** for Phase 2:
 
 ### Style System
+
 - `/src/styles/abstracts/_variables.scss` - Breakpoints (576, 768, 992, 1200)
 - `/src/styles/abstracts/_mixins.scss` - Responsive mixins (respond-to, safe-transition, focus-ring)
 - `/src/styles/abstracts/_functions.scss` - rem() helper
@@ -303,11 +335,13 @@ The base Modal.tsx doesn't need changes - only CSS
 - `/src/styles/base/_reduced-motion.scss` - Motion accessibility
 
 ### Modal & Components
+
 - `/src/components/shared/modal/Modal.tsx` - Base component (no changes needed)
 - `/src/components/shared/modal/Modal.scss` - **MAIN FILE TO UPDATE**
 - `/src/components/shared/modal/modal-signup-prompt/SignupPromptModal.scss` - Reference implementation
 
 ### Reference Components
+
 - `/src/components/layout/navbar/Navbar.scss` - Flex direction switching
 - `/src/components/layout/settings-menu/SettingsMenu.scss` - Position variants
 - `/src/components/layout/bottom-nav/BottomNav.scss` - Safe-area support
@@ -322,17 +356,20 @@ The base Modal.tsx doesn't need changes - only CSS
 **For different audiences:**
 
 ### Developers implementing Phase 2
+
 1. Start: CODEBASE_EXPLORATION_SUMMARY.md (15 min read)
 2. Understand: RESPONSIVE_MODAL_ANALYSIS.md (30 min read)
 3. Implement: PHASE_2_MODAL_IMPLEMENTATION.md (reference while coding)
 4. Copy patterns: RESPONSIVE_PATTERNS_REFERENCE.md (tab open while coding)
 
 ### Project Managers tracking progress
+
 1. Read: CODEBASE_EXPLORATION_SUMMARY.md (Estimated time section)
 2. Check: Phase 2 Implementation Roadmap above
 3. Reference: Testing Devices and Success Criteria
 
 ### Team reviewing Phase 2 PR
+
 1. Reference: RESPONSIVE_MODAL_ANALYSIS.md (patterns used)
 2. Check: PHASE_2_MODAL_IMPLEMENTATION.md (what changed)
 3. Verify: Testing Devices (tested on these?)
@@ -367,4 +404,3 @@ The exploration is **COMPLETE**. The codebase has excellent responsive patterns 
 
 **Generated**: 2025-11-29
 **Status**: ✅ READY FOR PHASE 2 IMPLEMENTATION
-

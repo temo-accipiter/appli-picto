@@ -11,27 +11,29 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Changes position and animation based on screen size (mobile vs desktop)
 
 ### Pattern to Copy:
+
 ```scss
 .settings-menu__dialog {
-  width: min(300px, 90vw);        // Smart width: smaller of 300px or 90% viewport
+  width: min(300px, 90vw); // Smart width: smaller of 300px or 90% viewport
 
   // Desktop: top-right positioning
   @media (min-width: 768px) {
     max-height: calc(100vh - 100px);
-    animation: slideInDown 0.18s ease-out;  // Slide down from top
-    margin: 64px 14px 0 0;         // Position below navbar
+    animation: slideInDown 0.18s ease-out; // Slide down from top
+    margin: 64px 14px 0 0; // Position below navbar
   }
 
   // Mobile: bottom-right positioning (thumb-friendly)
   @media (max-width: 767px) {
-    margin: 0 14px 14px 0;         // Bottom-right corner
-    max-height: 70vh;              // Reduced height for mobile
-    animation: slideInUp 0.18s ease-out;  // Slide up from bottom
+    margin: 0 14px 14px 0; // Bottom-right corner
+    max-height: 70vh; // Reduced height for mobile
+    animation: slideInUp 0.18s ease-out; // Slide up from bottom
   }
 }
 ```
 
 ### Why good for modals:
+
 - Different positioning per device
 - Different max-heights per device
 - Context-aware animations
@@ -46,11 +48,13 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Respects iPhone notch, home indicator, and Android safe areas
 
 ### Pattern to Copy:
+
 ```scss
 .bottom-nav {
-  display: none;  // Hidden by default
+  display: none; // Hidden by default
 
-  @media (max-width: #{$breakpoint-md - 1px}) {  // Mobile only
+  @media (max-width: #{$breakpoint-md - 1px}) {
+    // Mobile only
     display: flex;
     position: fixed;
     top: 0;
@@ -67,7 +71,7 @@ This document lists existing responsive patterns in the codebase that should be 
 .bottom-nav--tableau {
   @media (max-width: #{$breakpoint-md - 1px}) {
     top: auto;
-    bottom: 0;  // Mobile: switch to bottom
+    bottom: 0; // Mobile: switch to bottom
 
     // SMART: Account for home indicator
     padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
@@ -75,13 +79,14 @@ This document lists existing responsive patterns in the codebase that should be 
 
   @media (min-width: $breakpoint-md) {
     display: flex;
-    top: 0;     // Desktop: back to top
+    top: 0; // Desktop: back to top
     right: 0;
   }
 }
 ```
 
 ### Why good for modals:
+
 - Shows how to use `env(safe-area-inset-*)`
 - Shows positional switching (top ↔ bottom)
 - Shows content shifting based on device features
@@ -95,47 +100,61 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Changes max-height, positioning, and animation per screen size
 
 ### Pattern to Copy:
+
 ```scss
 .user-menu-dialog {
-  width: min(92vw, 320px);  // Smart width
+  width: min(92vw, 320px); // Smart width
 
   // Desktop: top-right, normal max-height
   @media (min-width: 768px) {
     margin: 64px 14px 0 0;
-    max-height: calc(100vh - 100px);  // Leave room for navbar
+    max-height: calc(100vh - 100px); // Leave room for navbar
     overflow-y: auto;
-    animation: slideInDown 0.18s ease-out;  // Top animation
+    animation: slideInDown 0.18s ease-out; // Top animation
   }
 
   // Mobile: bottom-right, limited max-height
   @media (max-width: 767px) {
     margin: 0 14px 14px 0;
-    max-height: 80vh;  // Reduced height
+    max-height: 80vh; // Reduced height
     overflow-y: auto;
-    animation: slideInUp 0.18s ease-out;  // Bottom animation
+    animation: slideInUp 0.18s ease-out; // Bottom animation
   }
 
   // Variant for pages with bottom nav (needs higher position)
   &.user-menu-dialog--elevated {
     @media (max-width: 767px) {
-      max-height: 70vh;  // Even more reduced
+      max-height: 70vh; // Even more reduced
     }
   }
 }
 
 // Animations reusable
 @keyframes slideInDown {
-  from { transform: translateY(-6px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(-6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slideInUp {
-  from { transform: translateY(6px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 ```
 
 ### Why good for modals:
+
 - Shows height variant patterns (80vh vs 70vh)
 - Shows positional class variants (`.--elevated`)
 - Shows height `calc()` expressions
@@ -150,6 +169,7 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Switches from vertical (mobile) to horizontal (desktop) layout
 
 ### Pattern to Copy:
+
 ```scss
 .navbar {
   /* Mobile-first: BASE = vertical layout */
@@ -161,12 +181,12 @@ This document lists existing responsive patterns in the codebase that should be 
 
   /* Desktop: ENHANCEMENT = horizontal layout */
   @include respond-to(sm) {
-    flex-direction: row;           // Switch to row
+    flex-direction: row; // Switch to row
     justify-content: space-between; // Different alignment
     align-items: center;
-    height: rem(64);               // Fixed height
-    padding: 0 $spacing-lg;        // Different padding
-    gap: 0;                        // Remove gap
+    height: rem(64); // Fixed height
+    padding: 0 $spacing-lg; // Different padding
+    gap: 0; // Remove gap
   }
 }
 
@@ -179,10 +199,10 @@ This document lists existing responsive patterns in the codebase that should be 
 
   /* Desktop: Enhancement */
   @include respond-to(sm) {
-    width: auto;              // Not full width
-    flex-wrap: nowrap;        // Don't wrap
-    justify-content: flex-start;  // Different alignment
-    gap: $spacing-lg;         // Larger gap
+    width: auto; // Not full width
+    flex-wrap: nowrap; // Don't wrap
+    justify-content: flex-start; // Different alignment
+    gap: $spacing-lg; // Larger gap
   }
 }
 
@@ -202,6 +222,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 ### Why good for modals:
+
 - Shows complete flex layout switching
 - Shows how to structure mobile-first code
 - Shows gap/spacing changes per breakpoint
@@ -216,6 +237,7 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Already has responsive design - shows what modals CAN do
 
 ### Pattern to Copy:
+
 ```scss
 .signup-prompt-modal {
   background: var(--background);
@@ -235,10 +257,10 @@ This document lists existing responsive patterns in the codebase that should be 
   margin: 20px;
 
   .modal-header {
-    padding: 20px 20px 16px;  // Mobile padding
+    padding: 20px 20px 16px; // Mobile padding
 
     .modal-title {
-      font-size: 1.3rem;  // Smaller title on mobile
+      font-size: 1.3rem; // Smaller title on mobile
     }
   }
 
@@ -253,20 +275,20 @@ This document lists existing responsive patterns in the codebase that should be 
   @include respond-to(sm) {
     width: 90vw;
     max-width: 500px;
-    margin: auto;  // Center instead of offset
+    margin: auto; // Center instead of offset
 
     .modal-header {
-      padding: 24px 24px 16px;  // Larger padding
+      padding: 24px 24px 16px; // Larger padding
 
       .modal-title {
-        font-size: 1.5rem;  // Larger title
+        font-size: 1.5rem; // Larger title
       }
     }
 
     .modal-message,
     .features-list,
     .modal-actions {
-      padding-left: 24px;  // Wider padding
+      padding-left: 24px; // Wider padding
       padding-right: 24px;
     }
   }
@@ -275,12 +297,13 @@ This document lists existing responsive patterns in the codebase that should be 
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .signup-prompt-modal {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);  // Darker shadow
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); // Darker shadow
   }
 }
 ```
 
 ### Why good for modals:
+
 - **ACTUAL MODAL IN PROJECT** - proven pattern
 - Shows padding scaling (20px → 24px)
 - Shows font-size scaling per breakpoint
@@ -296,6 +319,7 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Uses CSS custom properties for auto-height
 
 ### Pattern to Copy:
+
 ```scss
 .select-with-image__trigger {
   position: relative;
@@ -304,18 +328,19 @@ This document lists existing responsive patterns in the codebase that should be 
   justify-content: space-between;
   gap: $spacing-xs;
   width: 100%;
-  min-height: rem(44);  // WCAG 2.2 AA
+  min-height: rem(44); // WCAG 2.2 AA
   padding: rem(8) $spacing-sm;
   background-color: var(--color-bg);
   border: 2px solid var(--color-border);
   border-radius: $radius-md;
   cursor: pointer;
   color: var(--color-text);
-  font-size: rem(16);  // Important: 16px min for no zoom on iOS
+  font-size: rem(16); // Important: 16px min for no zoom on iOS
   user-select: none;
-  transition: border $transition-fast ease,
-              background-color $transition-fast ease,
-              box-shadow $transition-fast ease;
+  transition:
+    border $transition-fast ease,
+    background-color $transition-fast ease,
+    box-shadow $transition-fast ease;
 
   &:hover:not([data-disabled]) {
     background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.02));
@@ -327,15 +352,15 @@ This document lists existing responsive patterns in the codebase that should be 
   }
 
   @media (prefers-reduced-motion: reduce) {
-    transition: none;  // Respect motion preferences
+    transition: none; // Respect motion preferences
   }
 }
 
 // Smart content sizing using Radix UI
 .select-with-image__content {
   z-index: 1000;
-  width: var(--radix-select-trigger-width);  // Match trigger width
-  max-height: var(--radix-select-content-available-height);  // Auto!
+  width: var(--radix-select-trigger-width); // Match trigger width
+  max-height: var(--radix-select-content-available-height); // Auto!
   overflow: hidden;
   background-color: var(--color-surface);
   border: 2px solid var(--color-border);
@@ -357,6 +382,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 ### Why good for modals:
+
 - Shows CSS custom property usage for layout
 - Shows how to keep 16px font-size (prevents iOS zoom)
 - Shows animation state handling
@@ -371,6 +397,7 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Ensures WCAG 2.2 AA compliance
 
 ### Pattern to Copy:
+
 ```scss
 .btn {
   display: inline-flex;
@@ -382,7 +409,7 @@ This document lists existing responsive patterns in the codebase that should be 
   font-weight: $font-weight-semibold;
   font-size: $font-size-base;
   line-height: 1.2;
-  min-height: rem(44);  // WCAG 2.2 AA: 44px minimum target size
+  min-height: rem(44); // WCAG 2.2 AA: 44px minimum target size
   cursor: pointer;
   border: none;
   box-shadow: $box-shadow;
@@ -390,19 +417,19 @@ This document lists existing responsive patterns in the codebase that should be 
     background $transition-fast ease,
     color $transition-fast ease;
 
-  @include focus-ring;  // Accessible focus state
+  @include focus-ring; // Accessible focus state
 }
 
 .input-field__input {
   padding: rem(8);
-  font-size: rem(16);  // CRITICAL: 16px min prevents iOS zoom
+  font-size: rem(16); // CRITICAL: 16px min prevents iOS zoom
   border: 2px solid var(--color-border);
   border-radius: $radius-md;
   box-sizing: border-box;
   background-color: var(--color-bg);
   color: var(--color-text);
   max-width: 11.5rem;
-  min-height: rem(44);  // WCAG 2.2 AA
+  min-height: rem(44); // WCAG 2.2 AA
   transition:
     border $transition-fast ease,
     outline $transition-fast ease;
@@ -416,7 +443,7 @@ This document lists existing responsive patterns in the codebase that should be 
   right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  min-width: 44px;  // WCAG target
+  min-width: 44px; // WCAG target
   min-height: 44px;
   display: flex;
   align-items: center;
@@ -450,6 +477,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 ### Why good for modals:
+
 - Shows WCAG 2.2 AA compliance patterns
 - Shows 16px font-size minimum for inputs
 - Shows min 44×44px interactive targets
@@ -464,6 +492,7 @@ This document lists existing responsive patterns in the codebase that should be 
 **What it does**: Shows main content layout with responsive padding
 
 ### Pattern to Copy:
+
 ```scss
 .layout {
   display: flex;
@@ -487,18 +516,19 @@ This document lists existing responsive patterns in the codebase that should be 
   main {
     flex: 1;
     /* [Mobile-first] Base = mobile (320px+) */
-    padding: $spacing-md;  // 16px padding
+    padding: $spacing-md; // 16px padding
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
       margin-left: 0;
-      padding: $spacing-xl;  // 32px padding for more breathing room
+      padding: $spacing-xl; // 32px padding for more breathing room
     }
   }
 }
 ```
 
 ### Why good for modals:
+
 - Shows padding scaling strategy
 - Shows flex layout with responsive padding
 - Shows comment style for mobile-first approach
@@ -510,14 +540,20 @@ This document lists existing responsive patterns in the codebase that should be 
 ### Available Mixins (from `_mixins.scss`):
 
 #### 1. `respond-to()` - Mobile-first media queries
+
 ```scss
-@include respond-to(sm) { }   // @media (min-width: 576px)
-@include respond-to(md) { }   // @media (min-width: 768px)
-@include respond-to(lg) { }   // @media (min-width: 992px)
-@include respond-to(xl) { }   // @media (min-width: 1200px)
+@include respond-to(sm) {
+} // @media (min-width: 576px)
+@include respond-to(md) {
+} // @media (min-width: 768px)
+@include respond-to(lg) {
+} // @media (min-width: 992px)
+@include respond-to(xl) {
+} // @media (min-width: 1200px)
 ```
 
 #### 2. `safe-transition()` - Respects prefers-reduced-motion
+
 ```scss
 @include safe-transition($property: all, $duration: $transition-fast) {
   // Automatically adds prefers-reduced-motion: reduce handling
@@ -525,6 +561,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 #### 3. `focus-ring()` - WCAG accessible focus
+
 ```scss
 @include focus-ring($color: $color-accent, $width: 2px, $offset: 2px) {
   // Creates accessible focus outline
@@ -532,6 +569,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 #### 4. `interactive-target()` - WCAG 2.2 AA sizes
+
 ```scss
 @include interactive-target {
   // Sets min-height: 44px, min-width: 44px
@@ -539,6 +577,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 #### 5. `on-event()` - Applies to hover/active/focus
+
 ```scss
 @include on-event($self: false) {
   // Applies to &:hover, &:active, &:focus, &:focus-within
@@ -546,6 +585,7 @@ This document lists existing responsive patterns in the codebase that should be 
 ```
 
 #### 6. `flex-center()` - Flexbox centering
+
 ```scss
 @include flex-center {
   // display: flex, justify-content: center, align-items: center
@@ -560,24 +600,13 @@ This document lists existing responsive patterns in the codebase that should be 
 
 ```scss
 // Colors
---color-primary: #0077c2
---color-secondary: #ef5350
---color-accent: #ffb400
---color-text: #333333
---color-text-invert: #ffffff
---color-bg: #ffffff
---color-surface: #f7f7f7
---color-border: #e1e1e1
---color-bg-soft: #f7f7f7
---color-bg-hover: #e1e1e1
-
-// Focus
---focus-ring-color: #ffb400
---focus-ring-width: 2px
---focus-ring-offset: 2px
-
-// Scrollbar
---c-scroll-thumb: #bbb
+--color-primary: #0077c2 --color-secondary: #ef5350 --color-accent: #ffb400
+  --color-text: #333333 --color-text-invert: #ffffff --color-bg: #ffffff
+  --color-surface: #f7f7f7 --color-border: #e1e1e1 --color-bg-soft: #f7f7f7
+  --color-bg-hover: #e1e1e1 // Focus
+  --focus-ring-color: #ffb400 --focus-ring-width: 2px --focus-ring-offset: 2px
+  // Scrollbar
+  --c-scroll-thumb: #bbb;
 ```
 
 All support **dark mode** via `@media (prefers-color-scheme: dark)` or `[data-theme='dark']`
@@ -603,16 +632,15 @@ For Phase 2 Modal Implementation:
 
 ## Summary Table: Quick Reference
 
-| Pattern | File | Use For | Key Trick |
-|---------|------|---------|-----------|
-| **Positioning** | SettingsMenu | Modal position (top vs bottom) | Different animations per screen |
-| **Safe Areas** | BottomNav | iPhone notch support | `max()` + `env()` CSS |
-| **Height Variants** | UserMenu | Modal max-height adaptation | Reduce for mobile, expand for desktop |
-| **Layout Switching** | Navbar | Content structure | Flex direction change (column ↔ row) |
-| **Existing Modal** | SignupPrompt | Real working example | Padding scaling 20px → 24px |
-| **Smart Sizing** | SelectWithImage | Dropdown sizing | CSS custom properties from component |
-| **WCAG Compliance** | Button/Input | Interactive target sizes | min-height/width: 44px |
-| **Motion A11y** | Any transition | Respect motion preferences | `@media (prefers-reduced-motion: reduce)` |
-| **Dark Mode** | All components | Theme support | CSS variables + media query |
-| **Spacing** | All components | Padding/margin | Use `$spacing-*` variables |
-
+| Pattern              | File            | Use For                        | Key Trick                                 |
+| -------------------- | --------------- | ------------------------------ | ----------------------------------------- |
+| **Positioning**      | SettingsMenu    | Modal position (top vs bottom) | Different animations per screen           |
+| **Safe Areas**       | BottomNav       | iPhone notch support           | `max()` + `env()` CSS                     |
+| **Height Variants**  | UserMenu        | Modal max-height adaptation    | Reduce for mobile, expand for desktop     |
+| **Layout Switching** | Navbar          | Content structure              | Flex direction change (column ↔ row)     |
+| **Existing Modal**   | SignupPrompt    | Real working example           | Padding scaling 20px → 24px               |
+| **Smart Sizing**     | SelectWithImage | Dropdown sizing                | CSS custom properties from component      |
+| **WCAG Compliance**  | Button/Input    | Interactive target sizes       | min-height/width: 44px                    |
+| **Motion A11y**      | Any transition  | Respect motion preferences     | `@media (prefers-reduced-motion: reduce)` |
+| **Dark Mode**        | All components  | Theme support                  | CSS variables + media query               |
+| **Spacing**          | All components  | Padding/margin                 | Use `$spacing-*` variables                |

@@ -15,27 +15,28 @@ Je suis **partiellement d'accord** avec les recommandations de Gemini. Voici mon
 
 ### Points d'Accord ✅
 
-| Recommandation Gemini | Mon Verdict | Raison |
-|----------------------|-----------|--------|
-| Utiliser Radix UI | ✅ À faire | Excellent pour a11y, mais moyen terme (migration coûteuse) |
-| Dimming 65-75% | ✅ ESSENTIEL | TSA critique: évite distractions |
-| Bouton fermer énorme | ✅ ESSENTIEL | TSA critique: accessibilité motrice |
-| Bouton Annuler bas | ✅ ESSENTIEL | Double option fermeture = feedback rapide |
-| SCSS Modules | ✅ Bon | Déjà utilisé, juste améliorer |
+| Recommandation Gemini | Mon Verdict  | Raison                                                     |
+| --------------------- | ------------ | ---------------------------------------------------------- |
+| Utiliser Radix UI     | ✅ À faire   | Excellent pour a11y, mais moyen terme (migration coûteuse) |
+| Dimming 65-75%        | ✅ ESSENTIEL | TSA critique: évite distractions                           |
+| Bouton fermer énorme  | ✅ ESSENTIEL | TSA critique: accessibilité motrice                        |
+| Bouton Annuler bas    | ✅ ESSENTIEL | Double option fermeture = feedback rapide                  |
+| SCSS Modules          | ✅ Bon       | Déjà utilisé, juste améliorer                              |
 
 ### Nuances ⚠️
 
-| Recommandation | Ma Nuance | Détail |
-|----------------|-----------|--------|
+| Recommandation       | Ma Nuance       | Détail                                                                    |
+| -------------------- | --------------- | ------------------------------------------------------------------------- |
 | Radix UI obligatoire | Non, progressif | Ton Modal.tsx fonctionne bien. Migrer = 4-6h. Priorité: le visuel d'abord |
-| Drawer obligatoire | Optionnel | Bon pour formulaires longs, pas pour confirmations |
-| Animations complexes | Simplifier | Réduite sur mobile pour éviter surcharge TSA |
+| Drawer obligatoire   | Optionnel       | Bon pour formulaires longs, pas pour confirmations                        |
+| Animations complexes | Simplifier      | Réduite sur mobile pour éviter surcharge TSA                              |
 
 ---
 
 ## 🎨 Améliorations Phase 1
 
 ### 1. Overlay (Fond de la Modal)
+
 ```
 AVANT: rgba(gray(900), 0.4) = 40% opacité
 APRÈS: rgba(gray(900), 0.75) = 75% opacité + blur(4px)
@@ -44,6 +45,7 @@ Impact TSA: ✅ Évite distractions visuelles du contenu derrière
 ```
 
 ### 2. Close Button (Croix)
+
 ```
 AVANT: 20px × 20px
 APRÈS: 48px × 48px + bordure colorée
@@ -52,6 +54,7 @@ Impact TSA: ✅ Facile à cliquer (troubles moteurs)
 ```
 
 ### 3. Bouton Annuler
+
 ```
 AVANT: Juste dans les actions (si sélectionné)
 APRÈS: Auto dans footer + label explicite
@@ -60,6 +63,7 @@ Impact TSA: ✅ Double option fermeture = moins de frustration
 ```
 
 ### 4. Structure HTML
+
 ```
 AVANT: Mélangé (title + content + actions + close button)
 APRÈS: Header | Content | Footer (sémantique claire)
@@ -69,6 +73,7 @@ Impact Mobile: ✅ Prépare Phase 2 (fullscreen, drawer)
 ```
 
 ### 5. Contraste
+
 ```
 AVANT: Bordure 1px gray(200)
 APRÈS: Bordure 2px $color-primary (bleu)
@@ -124,6 +129,7 @@ pnpm dev             # Tester visuellement
 ## 🎯 Résultat Attendu
 
 ### Avant Phase 1
+
 ```
 Modal petite, distractive, bouton difficile à actionner
 Fond partiellement transparent = stimulus visuel excessif
@@ -131,6 +137,7 @@ Pas d'option de fermeture explicite
 ```
 
 ### Après Phase 1
+
 ```
 Modal claire, focused, 2 boutons fermeture
 Fond noir (75%) = concentration maximale
@@ -143,27 +150,30 @@ Prêt pour Phase 2 (mobile-first)
 
 ## 💼 Business Value
 
-| Aspect | Impact |
-|--------|--------|
-| **Accessibilité TSA** | 🔴 CRITIQUE |
-| **Accessibilité motrice** | 🔴 CRITIQUE |
-| **WCAG 2.2 AA** | 🟠 Meilleur |
-| **Mobile-first** | 🟠 Préparation |
-| **UX enfants** | 🟢 Très bon |
+| Aspect                    | Impact         |
+| ------------------------- | -------------- |
+| **Accessibilité TSA**     | 🔴 CRITIQUE    |
+| **Accessibilité motrice** | 🔴 CRITIQUE    |
+| **WCAG 2.2 AA**           | 🟠 Meilleur    |
+| **Mobile-first**          | 🟠 Préparation |
+| **UX enfants**            | 🟢 Très bon    |
 
 ---
 
 ## 🚀 Timeline
 
 ### Aujourd'hui
+
 - ✅ Analyse complète (FAIT)
 - ✅ 5 documents détaillés créés
 - ⏳ Implémentation (si "Go Phase 1!")
 
 ### Demain
+
 - Phase 2 planning (mobile-first)
 
 ### Prochain Sprint
+
 - Phase 2 implémentation (fullscreen mobile, drawer, etc.)
 
 ---
@@ -192,18 +202,23 @@ Je t'ai créé **4 documents détaillés:**
 ## ❓ Questions Répondues
 
 ### Q: Faut-il vraiment migrer vers Radix UI maintenant?
+
 **R:** Non. Phase 1 = amélioration visuelle. Radix UI = moyen terme (refactor + tests).
 
 ### Q: Comment gérer ModalConfirm qui aura 2 Annuler?
+
 **R:** Adapter ModalConfirm.tsx pour ne pas envoyer action "Annuler". Footer l'ajoute auto.
 
 ### Q: Et mobile? (petit écran)
+
 **R:** Phase 1 = desktop focus. Phase 2 = fullscreen mobile + drawer variant.
 
 ### Q: Durée réelle?
+
 **R:** 45-60 min implémentation + 15 min tests = ~1 heure total.
 
 ### Q: Breaking changes?
+
 **R:** Non (API inchangée). Juste réorganisation HTML/SCSS.
 
 ---
@@ -211,6 +226,7 @@ Je t'ai créé **4 documents détaillés:**
 ## 🎬 Prochaines Étapes
 
 ### Option 1: Je fais tout 🤖
+
 ```
 → Dis: "Go Phase 1!"
 → Je modifie les 4 fichiers avec Edit
@@ -219,6 +235,7 @@ Je t'ai créé **4 documents détaillés:**
 ```
 
 ### Option 2: Tu fais tout 🏗️
+
 ```
 → Lis PHASE_1_QUICK_START.md (5 min)
 → Lis PHASE_1_MODALS_REFACTORING.md (25 min)
@@ -227,6 +244,7 @@ Je t'ai créé **4 documents détaillés:**
 ```
 
 ### Option 3: Ensemble 🤝
+
 ```
 → Tu lis les docs
 → Je fais les modifs
@@ -262,11 +280,13 @@ Je t'ai créé **4 documents détaillés:**
 ## 📞 Support
 
 **Pendant implémentation:**
+
 - Je suis disponible pour questions
 - Documentations couvrent 95% des cas
 - Troubleshooting guide dans PHASE_1_QUICK_START.md
 
 **Post Phase 1:**
+
 - Phase 2 planning (mobile-first)
 - Radix UI migration (if needed)
 - E2E tests (Playwright)
@@ -278,6 +298,7 @@ Je t'ai créé **4 documents détaillés:**
 **Choisis une option ci-dessus et reply!**
 
 Mon recommandation:
+
 1. Lis PHASE_1_QUICK_START.md (5 min)
 2. Dis "Go Phase 1!" si OK
 3. Je fais tout, tu reviews

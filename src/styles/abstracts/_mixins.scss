@@ -188,3 +188,84 @@
   min-height: rem(44);
   min-width: rem(44);
 }
+
+// ============================================
+// DND PATTERNS MIXINS (Drag & Drop)
+// ============================================
+
+/// Mixin pour zones droppables (DndSlot)
+/// Gère les états : default, over, dragging-from
+/// @param {Color} $border-color Couleur border au hover
+/// @param {Color} $bg-color Couleur background au hover
+/// @param {Length} $min-height Hauteur min de la zone
+/// @example
+///   @include dnd-slot($color-primary, rgba($color-primary, 0.08))
+@mixin dnd-slot(
+  $border-color: var(--color-primary, #4a90d9),
+  $bg-color: rgba(74, 144, 217, 0.08),
+  $min-height: 140px
+) {
+  min-height: $min-height;
+  border: 2px dashed transparent;
+  border-radius: $radius-md;
+  background-color: transparent;
+  padding: $spacing-sm;
+  @include safe-transition(border-color opacity, $transition-fast, ease);
+
+  // État : drag hover (over)
+  &.dnd-slot--over,
+  &--over {
+    border-color: $border-color;
+    background-color: $bg-color;
+  }
+
+  // État : dragging from this slot
+  &.dnd-slot--dragging-from,
+  &--dragging-from {
+    border-color: $border-color;
+    background-color: rgba($border-color, 0.04);
+  }
+
+  // Focus visible pour keyboard navigation
+  &:focus-visible {
+    outline: 2px solid $border-color;
+    outline-offset: -2px;
+  }
+}
+
+/// Mixin pour grille DnD responsive (DndGrid)
+/// Grille mobile-first avec auto-fill
+/// @param {Length} $min-width Largeur min items (minmax)
+/// @param {Length} $gap Gap entre items
+/// @example
+///   @include dnd-grid(260px, var(--spacing-md))
+@mixin dnd-grid($min-width: 260px, $gap: var(--spacing-md)) {
+  display: grid;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
+  gap: $gap;
+
+  // Responsive mobile-first
+  @media (max-width: 576px) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-xs);
+  }
+
+  @media (min-width: 768px) {
+    gap: var(--spacing-sm);
+  }
+
+  @media (min-width: 1024px) {
+    gap: $gap;
+  }
+
+  // État dragging global
+  &.dnd-grid--dragging {
+    opacity: 0.95;
+  }
+}
+
+/// Alias pour dnd-layout (compatibilité future)
+@mixin dnd-layout {
+  @include dnd-grid;
+}

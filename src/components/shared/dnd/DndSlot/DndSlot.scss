@@ -1,0 +1,9 @@
+@use '@styles/abstracts' as *;
+
+// ============================================
+// DND SLOT - Droppable Zone
+// ============================================
+
+.dnd-slot {
+  @include dnd-slot;
+}

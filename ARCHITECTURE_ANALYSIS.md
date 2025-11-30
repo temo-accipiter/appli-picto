@@ -1,4 +1,5 @@
 # Analyse Architecture Appli-Picto
+
 ## État Actuel - Layout, Navigation & Accessibilité
 
 **Date**: 28 novembre 2024 | **Analyste**: Claude Code
@@ -71,14 +72,14 @@ showNavbar = pathname.startsWith(...) // voir uniquement sur certaines routes
 
 ### 1.3 Zones Principales du Layout
 
-| Zone | Composant | Localisation | Responsive | Notes |
-|------|-----------|--------------|-----------|-------|
-| **Header/Nav** | `<Navbar>` | `/src/components/layout/navbar/` | ✅ Mobile-first | Fixed position, z-index: $z-modal |
-| **Navigation** | Boutons/Liens dans Navbar | Navbar.tsx | ✅ Flex wrap | Icon-only mobile, text+icon desktop |
-| **User Menu** | `<UserMenu>` | `/src/components/layout/user-menu/` | ✅ Dialog | Dropdown keyboard-accessible |
-| **Settings Menu** | `<SettingsMenu>` | `/src/components/layout/settings-menu/` | ✅ Burger menu | Checkbox controls |
-| **Main Content** | `<main id="main-content">` | Layouts | ✅ Padding fluid | Flex: 1 pour full-height |
-| **Footer** | `<Footer>` | `/src/components/layout/footer/` | ✅ Stack vertical | Links + consent control |
+| Zone              | Composant                  | Localisation                            | Responsive        | Notes                               |
+| ----------------- | -------------------------- | --------------------------------------- | ----------------- | ----------------------------------- |
+| **Header/Nav**    | `<Navbar>`                 | `/src/components/layout/navbar/`        | ✅ Mobile-first   | Fixed position, z-index: $z-modal   |
+| **Navigation**    | Boutons/Liens dans Navbar  | Navbar.tsx                              | ✅ Flex wrap      | Icon-only mobile, text+icon desktop |
+| **User Menu**     | `<UserMenu>`               | `/src/components/layout/user-menu/`     | ✅ Dialog         | Dropdown keyboard-accessible        |
+| **Settings Menu** | `<SettingsMenu>`           | `/src/components/layout/settings-menu/` | ✅ Burger menu    | Checkbox controls                   |
+| **Main Content**  | `<main id="main-content">` | Layouts                                 | ✅ Padding fluid  | Flex: 1 pour full-height            |
+| **Footer**        | `<Footer>`                 | `/src/components/layout/footer/`        | ✅ Stack vertical | Links + consent control             |
 
 ---
 
@@ -89,6 +90,7 @@ showNavbar = pathname.startsWith(...) // voir uniquement sur certaines routes
 **Fichier**: `Navbar.tsx` (183 lignes)
 
 **Responsabilités**:
+
 - Affichage conditionnel selon route + rôle utilisateur
 - Boutons de navigation avec icones (Lucide)
 - Actions visiteurs vs authentifiés
@@ -96,6 +98,7 @@ showNavbar = pathname.startsWith(...) // voir uniquement sur certaines routes
 - Animations Framer Motion
 
 **Props & État**:
+
 ```typescript
 // État interne:
 - pathname (usePathname)
@@ -111,6 +114,7 @@ isAdminPermissions = pathname === '/admin/permissions'
 ```
 
 **Structure HTML**:
+
 ```html
 <nav class="navbar">
   <div class="navbar-left">
@@ -126,12 +130,14 @@ isAdminPermissions = pathname === '/admin/permissions'
 ```
 
 **Accessibilité**:
+
 - ✅ aria-label sur tous les boutons
 - ✅ aria-hidden="true" sur icones
 - ✅ title attribut pour tooltips
 - ⚠️ Pas de skip-link (voir Layout.scss)
 
 **Styling**: `Navbar.scss` (256 lignes)
+
 - Mobile-first: flex-direction: column (320px+)
 - Desktop (sm breakpoint 576px): flex-direction: row
 - Focus-visible: 2px outline + 4px offset
@@ -142,6 +148,7 @@ isAdminPermissions = pathname === '/admin/permissions'
 **Fichier**: `UserMenu.tsx` (359 lignes)
 
 **Responsabilités**:
+
 - Dropdown de profil utilisateur
 - Navigation clavier (Arrow keys, Home, End, Escape)
 - Focus trap + gestion focus retour
@@ -150,6 +157,7 @@ isAdminPermissions = pathname === '/admin/permissions'
 - Abonnement + admin access
 
 **Accessibilité Avancée** ✅:
+
 ```typescript
 // WCAG 2.1.1 - Navigation clavier complète:
 - ArrowDown/Up: Navigation entre items
@@ -173,6 +181,7 @@ isAdminPermissions = pathname === '/admin/permissions'
 ```
 
 **Structure Menu** (3 sections):
+
 1. Header: Avatar + Pseudo
 2. Preferences: LangSelector + ThemeToggle
 3. Navigation: Profil | Abonnement/Admin | Logout
@@ -182,12 +191,14 @@ isAdminPermissions = pathname === '/admin/permissions'
 **Fichier**: `SettingsMenu.tsx` (162 lignes)
 
 **Responsabilités**:
+
 - Burger menu settings
 - Checkboxes: Confettis, Train, Rewards, Timer, Notifications
 - Featuregate-aware
 - Escape + click-outside close
 
 **Accessibilité**:
+
 - ✅ aria-expanded sur trigger
 - ✅ aria-haspopup="true"
 - ✅ aria-label + title
@@ -195,6 +206,7 @@ isAdminPermissions = pathname === '/admin/permissions'
 - ⚠️ Pas de keyboard navigation intra-menu (checkboxes oui, mais pas arrow nav)
 
 **SCSS**: `SettingsMenu.scss` (180 lignes)
+
 - Position: absolute (backdrop fixed)
 - Burger animation 3 lignes
 - z-index: $z-modal
@@ -204,12 +216,14 @@ isAdminPermissions = pathname === '/admin/permissions'
 **Fichier**: `Footer.tsx` (78 lignes)
 
 **Responsabilités**:
+
 - Liens légaux (mentions, CGU, CGV, privacy, cookies, a11y, RGPD)
 - Retract consent button
 - Customize cookies button
 - Copyright dynamique
 
 **Accessibilité** ✅:
+
 ```typescript
 // ARIA Landmarks:
 <footer role="contentinfo" aria-label={t('legal.mentions')}>
@@ -239,6 +253,7 @@ $breakpoint-xl: 1200px   // Desktop XL
 ### 3.2 Pattern Responsive Navbar
 
 **Mobile (320px+)**:
+
 ```scss
 .navbar {
   flex-direction: column    // Stack vertical
@@ -267,6 +282,7 @@ $breakpoint-xl: 1200px   // Desktop XL
 ```
 
 **Desktop (≥576px)**:
+
 ```scss
 .navbar {
   flex-direction: row        // Horizontal
@@ -298,10 +314,9 @@ $breakpoint-xl: 1200px   // Desktop XL
 ```scss
 .layout-main {
   main {
-    padding: $spacing-md      // Mobile: 1rem
-
-    @include respond-to(sm) {
-      padding: $spacing-xl    // Desktop: 2rem
+    padding: $spacing-md // Mobile: 1rem
+      @include respond-to(sm) {
+      padding: $spacing-xl; // Desktop: 2rem
     }
   }
 }
@@ -314,6 +329,7 @@ $breakpoint-xl: 1200px   // Desktop XL
 **Défini**: 44px minimum (rem(44) = 2.75rem)
 
 **Appliqué à**:
+
 - ✅ `.btn` (buttons)
 - ✅ `.input-field__input` (inputs)
 - ✅ `.checkbox-field` (checkboxes)
@@ -331,20 +347,21 @@ $breakpoint-xl: 1200px   // Desktop XL
 
 **Appliqués Systématiquement**:
 
-| Élément | Role | aria-label | aria-expanded | Notes |
-|---------|------|------------|---------------|-------|
-| `<footer>` | contentinfo | ✅ legal.mentions | — | Footer.tsx L22 |
-| `<nav>` inside footer | — | ✅ legal.mentions | — | Footer.tsx L25 |
-| Navbar buttons | — | ✅ nav.edition, nav.tableau | — | Navbar.tsx L53-68 |
-| UserMenu trigger | — | — | ✅ open | L228 |
-| UserMenu dialog | dialog | ✅ nav.profil | — | L257-258 |
-| SettingsMenu trigger | — | — | ✅ open | L75-77 |
-| SettingsMenu dialog | dialog | ✅ settings.title | — | L96 |
-| Modal base | dialog | ✅ modal-title | — | Modal.tsx L111-113 |
+| Élément               | Role        | aria-label                  | aria-expanded | Notes              |
+| --------------------- | ----------- | --------------------------- | ------------- | ------------------ |
+| `<footer>`            | contentinfo | ✅ legal.mentions           | —             | Footer.tsx L22     |
+| `<nav>` inside footer | —           | ✅ legal.mentions           | —             | Footer.tsx L25     |
+| Navbar buttons        | —           | ✅ nav.edition, nav.tableau | —             | Navbar.tsx L53-68  |
+| UserMenu trigger      | —           | —                           | ✅ open       | L228               |
+| UserMenu dialog       | dialog      | ✅ nav.profil               | —             | L257-258           |
+| SettingsMenu trigger  | —           | —                           | ✅ open       | L75-77             |
+| SettingsMenu dialog   | dialog      | ✅ settings.title           | —             | L96                |
+| Modal base            | dialog      | ✅ modal-title              | —             | Modal.tsx L111-113 |
 
 **Main Content ID**: ✅ Présent (`id="main-content"`) dans tous layouts
 
 **Skip Link**: ✅ Implémenté (`/src/components/shared/layout/Layout.scss` L14-31)
+
 ```scss
 .skip-link {
   position: absolute
@@ -358,13 +375,13 @@ $breakpoint-xl: 1200px   // Desktop XL
 
 **Implémenté**:
 
-| Composant | Escape | Arrow | Tab | Home/End | Niveau |
-|-----------|--------|-------|-----|----------|--------|
-| UserMenu | ✅ | ✅ | ✅ | ✅ | WCAG 2.1.1 |
-| SettingsMenu | ✅ | ❌ | ✅ | ❌ | WCAG 2.1.1 (partiel) |
-| Modal | ✅ | ❌ | ✅ (trap) | ❌ | WCAG 2.1.1 (partiel) |
-| Navbar links | ✅ focus-visible | ❌ | ✅ | ❌ | WCAG 2.4.7 |
-| Form inputs | — | — | ✅ | — | Standard |
+| Composant    | Escape           | Arrow | Tab       | Home/End | Niveau               |
+| ------------ | ---------------- | ----- | --------- | -------- | -------------------- |
+| UserMenu     | ✅               | ✅    | ✅        | ✅       | WCAG 2.1.1           |
+| SettingsMenu | ✅               | ❌    | ✅        | ❌       | WCAG 2.1.1 (partiel) |
+| Modal        | ✅               | ❌    | ✅ (trap) | ❌       | WCAG 2.1.1 (partiel) |
+| Navbar links | ✅ focus-visible | ❌    | ✅        | ❌       | WCAG 2.4.7           |
+| Form inputs  | —                | —     | ✅        | —        | Standard             |
 
 ### 4.3 Focus Visible Styling
 
@@ -381,12 +398,14 @@ $breakpoint-xl: 1200px   // Desktop XL
 ```
 
 **Appliqué à**:
+
 - ✅ Buttons: `@include focus-ring`
 - ✅ Input toggles: aria-label + focus
 - ✅ Links: outline 2px + offset 4px
 - ✅ Select elements: outline styling
 
 **Contraste Color Focus**:
+
 - Orange accent (#ffb400) sur surfaces claires ✅
 - Visible sur tous les thèmes (light/dark)
 
@@ -407,12 +426,14 @@ $breakpoint-xl: 1200px   // Desktop XL
 ```
 
 **Implémenté aussi dans**:
+
 - ✅ Button spinner: `@media (prefers-reduced-motion: reduce)`
 - ✅ Mixins: `@mixin safe-transition` & `@mixin safe-animation`
 
 ### 4.5 Forms & Inputs Accessibilité
 
 **Input.tsx** (97 lignes):
+
 ```typescript
 // Labels:
 <label htmlFor={id}> (L49)
@@ -428,6 +449,7 @@ SVG icon: aria-hidden="true"
 ```
 
 **Checkbox.tsx**:
+
 ```typescript
 // Identique pattern:
 aria-invalid={!!error}
@@ -437,6 +459,7 @@ Check SVG: aria-hidden="true"
 ```
 
 **Select.tsx**:
+
 ```typescript
 aria-invalid={!!error}
 aria-describedby={...}
@@ -446,10 +469,12 @@ Native <select> (bon support screen readers)
 ### 4.6 Color Contrast (WCAG 2.2 AA minimum: 4.5:1)
 
 **Déclaré dans code**:
+
 - Button.scss L47: "WCAG 2.2 AA compliant - Ratio ~4.7:1"
 - UserMenu.scss L242: "WCAG 2.2 AA compliant - Ratio ~4.5:1"
 
 **Couleurs principales**:
+
 ```scss
 $color-primary: #0077c2      // Blanc: 4.7:1 ✅
 $color-secondary: #ef5350    // Blanc: 5.1:1 ✅
@@ -460,6 +485,7 @@ $color-accent: #ffb400       // Noir: 5.8:1 ✅
 ### 4.7 Images & Icons
 
 **Pattern**:
+
 ```typescript
 // Icon: aria-hidden="true"
 <Pencil size={20} aria-hidden="true" />
@@ -473,6 +499,7 @@ $color-accent: #ffb400       // Noir: 5.8:1 ✅
 ### 4.8 Internationalization (i18n)
 
 **Utilisé partout**:
+
 ```typescript
 const { t } = useI18n()
 // aria-label={t('nav.edition')}
@@ -490,19 +517,20 @@ Support multilingue: FR/EN
 
 **Path**: `/src/components/shared/modal/`
 
-| Composant | Fichier | Status | Issues |
-|-----------|---------|--------|--------|
-| Modal base | Modal.tsx (142 L) | ✅ Ok | Pas de scoped styles |
-| ModalConfirm | modal-confirm/ | ✅ Bon | — |
-| ModalAjout | modal-ajout/ | ⚠️ ? | À vérifier |
-| ModalCategory | modal-category/ | ⚠️ ? | À vérifier |
-| ModalRecompense | modal-recompense/ | ⚠️ ? | À vérifier |
-| ModalQuota | modal-quota/ | ⚠️ ? | À vérifier |
-| DeleteAccountModal | DeleteAccountModal.tsx | ⚠️ ? | À vérifier |
-| PersonalizationModal | modal-personalization/ | ⚠️ ? | À vérifier |
-| SignupPromptModal | modal-signup-prompt/ | ⚠️ ? | À vérifier |
+| Composant            | Fichier                | Status | Issues               |
+| -------------------- | ---------------------- | ------ | -------------------- |
+| Modal base           | Modal.tsx (142 L)      | ✅ Ok  | Pas de scoped styles |
+| ModalConfirm         | modal-confirm/         | ✅ Bon | —                    |
+| ModalAjout           | modal-ajout/           | ⚠️ ?   | À vérifier           |
+| ModalCategory        | modal-category/        | ⚠️ ?   | À vérifier           |
+| ModalRecompense      | modal-recompense/      | ⚠️ ?   | À vérifier           |
+| ModalQuota           | modal-quota/           | ⚠️ ?   | À vérifier           |
+| DeleteAccountModal   | DeleteAccountModal.tsx | ⚠️ ?   | À vérifier           |
+| PersonalizationModal | modal-personalization/ | ⚠️ ?   | À vérifier           |
+| SignupPromptModal    | modal-signup-prompt/   | ⚠️ ?   | À vérifier           |
 
 **Base Modal Pattern**:
+
 ```typescript
 // Accessibilité ✅:
 - role="dialog"
@@ -529,6 +557,7 @@ Support multilingue: FR/EN
 **Pattern**: `<div class="card">` ou `.card-style` SCSS mixin
 
 **À vérifier**:
+
 - [ ] Responsive sur mobile
 - [ ] Touch targets > 44px
 - [ ] Focus states
@@ -539,6 +568,7 @@ Support multilingue: FR/EN
 **Component**: Probablement dans `src/components/`
 
 **Issues**:
+
 - [ ] Compression 100KB (mentionnée en CLAUDE.md)
 - [ ] Signed URLs (1-24h validity)
 - [ ] Magic bytes verification
@@ -549,6 +579,7 @@ Support multilingue: FR/EN
 **Scope**: Non audité (complexe - voir TachesEdition, etc)
 
 **Probable issues**:
+
 - [ ] Fieldsets pour groupes
 - [ ] Legend au lieu de simple label
 - [ ] Error messages aria-describedby (partiel)
@@ -559,6 +590,7 @@ Support multilingue: FR/EN
 **Component**: `TachesDnd.tsx` (@dnd-kit library)
 
 **Accessible?**: ⚠️ À vérifier
+
 - Drag-drop keyboard support (Arrow keys)
 - Screen reader announcements
 - Focus handling during move
@@ -569,36 +601,37 @@ Support multilingue: FR/EN
 
 ### 6.1 Framework/Routing
 
-| Package | Version | Usage |
-|---------|---------|-------|
-| **next** | 16.0.3 | App Router, routing, metadata |
-| **react** | 19.0.0 | Components, hooks |
-| **react-dom** | 19.0.0 | Rendering |
+| Package       | Version | Usage                         |
+| ------------- | ------- | ----------------------------- |
+| **next**      | 16.0.3  | App Router, routing, metadata |
+| **react**     | 19.0.0  | Components, hooks             |
+| **react-dom** | 19.0.0  | Rendering                     |
 
 ### 6.2 UI & Styling
 
-| Package | Version | Usage |
-|---------|---------|-------|
-| **sass** | 1.86.3 | SCSS compilation |
-| **framer-motion** | 12.10.1 | Navbar animations |
-| **@radix-ui/react-select** | 2.2.6 | SelectWithImage (accessible select) |
-| **lucide-react** | 0.553.0 | Icons (accessible SVG) |
+| Package                    | Version | Usage                               |
+| -------------------------- | ------- | ----------------------------------- |
+| **sass**                   | 1.86.3  | SCSS compilation                    |
+| **framer-motion**          | 12.10.1 | Navbar animations                   |
+| **@radix-ui/react-select** | 2.2.6   | SelectWithImage (accessible select) |
+| **lucide-react**           | 0.553.0 | Icons (accessible SVG)              |
 
 ### 6.3 Hooks Navigation
 
-| Hook | Source | Usage |
-|------|--------|-------|
-| `usePathname()` | next/navigation | Route detection |
-| `useRouter()` | next/navigation | Navigation |
-| `useI18n()` | @/hooks | Traductions |
-| `useAuth()` | @/hooks | User state |
-| `usePermissions()` | @/contexts | Role checks |
-| `useDisplay()` | @/contexts | Theme/display prefs |
-| `useSubscriptionStatus()` | @/hooks | Subscription state |
+| Hook                      | Source          | Usage               |
+| ------------------------- | --------------- | ------------------- |
+| `usePathname()`           | next/navigation | Route detection     |
+| `useRouter()`             | next/navigation | Navigation          |
+| `useI18n()`               | @/hooks         | Traductions         |
+| `useAuth()`               | @/hooks         | User state          |
+| `usePermissions()`        | @/contexts      | Role checks         |
+| `useDisplay()`            | @/contexts      | Theme/display prefs |
+| `useSubscriptionStatus()` | @/hooks         | Subscription state  |
 
 ### 6.4 Hooks Accessibilité (Internes)
 
 **À découvrir**:
+
 - `useFocus()` ?
 - `useKeyboard()` ?
 - Gestion focus manuelle dans UserMenu
@@ -609,13 +642,13 @@ Support multilingue: FR/EN
 
 ### 7.1 Architecture Layout
 
-| Aspect | État | Priorité | Notes |
-|--------|------|----------|-------|
-| Route groups | ✅ Bon | — | (public) / (protected) implémentés |
-| Navbar conditionnelle | ✅ Bon | — | Basé sur pathname |
-| Skip link | ✅ Présent | BASSE | Caché avec focus visible |
-| Main content ID | ✅ Présent | — | id="main-content" partout |
-| Layout nesting | ✅ Bon | — | Pas de sidebar à gérer |
+| Aspect                | État       | Priorité | Notes                              |
+| --------------------- | ---------- | -------- | ---------------------------------- |
+| Route groups          | ✅ Bon     | —        | (public) / (protected) implémentés |
+| Navbar conditionnelle | ✅ Bon     | —        | Basé sur pathname                  |
+| Skip link             | ✅ Présent | BASSE    | Caché avec focus visible           |
+| Main content ID       | ✅ Présent | —        | id="main-content" partout          |
+| Layout nesting        | ✅ Bon     | —        | Pas de sidebar à gérer             |
 
 **Priorité Global**: ✅ **VERT - Rien à faire**
 
@@ -623,16 +656,17 @@ Support multilingue: FR/EN
 
 ### 7.2 Composants Navigation
 
-| Composant | État | Issues | Priorité |
-|-----------|------|--------|----------|
-| **Navbar** | ✅ Bon | Icon-only spacing < 44px? | MOYENNE |
-| **UserMenu** | ✅ Excellent | Focus trap impeccable | BASSE |
-| **SettingsMenu** | ⚠️ Bon | Pas d'arrow nav | BASSE |
-| **Footer** | ✅ Bon | Liens petits? | BASSE |
+| Composant        | État         | Issues                    | Priorité |
+| ---------------- | ------------ | ------------------------- | -------- |
+| **Navbar**       | ✅ Bon       | Icon-only spacing < 44px? | MOYENNE  |
+| **UserMenu**     | ✅ Excellent | Focus trap impeccable     | BASSE    |
+| **SettingsMenu** | ⚠️ Bon       | Pas d'arrow nav           | BASSE    |
+| **Footer**       | ✅ Bon       | Liens petits?             | BASSE    |
 
 **Priorité Global**: ⚠️ **JAUNE - Vérifications mineures**
 
 **Action suggérée**:
+
 - Vérifier spacing touch targets (border-box / padding)
 - Tester mobile 320px viewport
 - Vérifier footer links size
@@ -641,17 +675,18 @@ Support multilingue: FR/EN
 
 ### 7.3 Responsive & Mobile-First
 
-| Aspect | État | Issues | Priorité |
-|--------|------|--------|----------|
-| Mobile-first approach | ✅ Oui | — | — |
-| Breakpoints | ✅ 4 defined | — | — |
-| Navbar responsive | ✅ Bon | Icon wrap? | BASSE |
-| Form responsive | ⚠️ Non audité | ? | MOYENNE |
-| Touch targets | ✅ 44px règle | Non partout | MOYENNE |
+| Aspect                | État          | Issues      | Priorité |
+| --------------------- | ------------- | ----------- | -------- |
+| Mobile-first approach | ✅ Oui        | —           | —        |
+| Breakpoints           | ✅ 4 defined  | —           | —        |
+| Navbar responsive     | ✅ Bon        | Icon wrap?  | BASSE    |
+| Form responsive       | ⚠️ Non audité | ?           | MOYENNE  |
+| Touch targets         | ✅ 44px règle | Non partout | MOYENNE  |
 
 **Priorité Global**: ⚠️ **JAUNE - Audit partiellement requis**
 
 **Action suggérée**:
+
 - Audit complet formulaires (Edition, Profil)
 - Vérifier tous les boutons > 44px
 - Test réel sur mobile 320px
@@ -660,17 +695,17 @@ Support multilingue: FR/EN
 
 ### 7.4 Accessibilité (WCAG 2.2 AA)
 
-| Critère | État | Coverage | Priorité |
-|---------|------|----------|----------|
-| **Landmarks** | ✅ Bon | Navbar, Footer, Main | BASSE |
-| **Keyboard Nav** | ✅ Bon | UserMenu excellent | BASSE |
-| **Focus Visible** | ✅ Bon | Partout sauf... | MOYENNE |
-| **Reduced Motion** | ✅ Implémenté | Global + composants | BASSE |
-| **Color Contrast** | ✅ 4.5:1+ | Tous primaires | BASSE |
-| **Alt Text** | ✅ Bon | Icons + images | BASSE |
-| **Form Labels** | ✅ Bon | Input, Checkbox, Select | BASSE |
-| **Screen Reader** | ✅ Bon | Aria roles partout | BASSE |
-| **Touch Targets** | ⚠️ 44px rule | 90% couverts | MOYENNE |
+| Critère            | État          | Coverage                | Priorité |
+| ------------------ | ------------- | ----------------------- | -------- |
+| **Landmarks**      | ✅ Bon        | Navbar, Footer, Main    | BASSE    |
+| **Keyboard Nav**   | ✅ Bon        | UserMenu excellent      | BASSE    |
+| **Focus Visible**  | ✅ Bon        | Partout sauf...         | MOYENNE  |
+| **Reduced Motion** | ✅ Implémenté | Global + composants     | BASSE    |
+| **Color Contrast** | ✅ 4.5:1+     | Tous primaires          | BASSE    |
+| **Alt Text**       | ✅ Bon        | Icons + images          | BASSE    |
+| **Form Labels**    | ✅ Bon        | Input, Checkbox, Select | BASSE    |
+| **Screen Reader**  | ✅ Bon        | Aria roles partout      | BASSE    |
+| **Touch Targets**  | ⚠️ 44px rule  | 90% couverts            | MOYENNE  |
 
 **Priorité Global**: ✅ **VERT - Très bon état**
 
@@ -779,11 +814,13 @@ Support multilingue: FR/EN
 ## 9. CHECKLIST AUDIT COMPLET RECOMMANDÉ
 
 ### 9.1 Layout
+
 - [ ] Vérifier embouteillements `<ClientWrapper>` → Contexts
 - [ ] Tester navigation entre routes (focus management)
 - [ ] Vérifier margin-top: 2rem sur .layout (pourquoi?)
 
 ### 9.2 Navigation
+
 - [ ] Width/height buttons avec icons: vraiment 44px?
 - [ ] Tester mobile 320px, 480px, 768px
 - [ ] Vérifier UserMenu sur mobile (dropdown width, z-index)
@@ -791,12 +828,14 @@ Support multilingue: FR/EN
 - [ ] Navbar z-index vs modal z-index conflict?
 
 ### 9.3 Responsive
+
 - [ ] Form inputs full-width mobile (flex: 1)?
 - [ ] Cards responsive (width 90%, padding adapt)?
 - [ ] Images lazy-load + responsive sizes?
 - [ ] Hamburger menu manquant pour mobile? (SettingsMenu = hamburger only?)
 
 ### 9.4 Accessibilité
+
 - [ ] Axe-core audit complet
 - [ ] NVDA/JAWS test (Windows)
 - [ ] VoiceOver test (Mac)
@@ -806,6 +845,7 @@ Support multilingue: FR/EN
 - [ ] Formulaires aria-label/legend consistency
 
 ### 9.5 Performance
+
 - [ ] Framer Motion animations: smooth?
 - [ ] Lazy load modals?
 - [ ] Icon sprites vs individual?
@@ -815,24 +855,25 @@ Support multilingue: FR/EN
 
 ## 10. RÉSUMÉ PRIORITÉS
 
-| Domaine | État | Priorité | Action |
-|---------|------|----------|--------|
-| **Architecture Layout** | ✅ Bon | BASSE | — |
-| **Navigation Navbar** | ✅ Bon | BASSE | Vérifier touch targets |
-| **Navigation UserMenu** | ✅ Excellent | BASSE | — |
-| **Navigation SettingsMenu** | ⚠️ Bon | BASSE | Tester mobile |
-| **Footer** | ✅ Bon | BASSE | — |
-| **Responsive Mobile** | ⚠️ Théorie ok | MOYENNE | Audit réel 320px-1200px |
-| **Touch Targets (44px)** | ✅ Règle ok | MOYENNE | Vérifier tous composants |
-| **Accessibilité (WCAG 2.2)** | ✅ Très bon | BASSE | Audit axe-core complet |
-| **Forms (Edition, Profil)** | ⚠️ Non audité | MOYENNE | À creuser |
-| **Drag & Drop (dnd-kit)** | ⚠️ Non audité | BASSE | À vérifier plus tard |
+| Domaine                      | État          | Priorité | Action                   |
+| ---------------------------- | ------------- | -------- | ------------------------ |
+| **Architecture Layout**      | ✅ Bon        | BASSE    | —                        |
+| **Navigation Navbar**        | ✅ Bon        | BASSE    | Vérifier touch targets   |
+| **Navigation UserMenu**      | ✅ Excellent  | BASSE    | —                        |
+| **Navigation SettingsMenu**  | ⚠️ Bon        | BASSE    | Tester mobile            |
+| **Footer**                   | ✅ Bon        | BASSE    | —                        |
+| **Responsive Mobile**        | ⚠️ Théorie ok | MOYENNE  | Audit réel 320px-1200px  |
+| **Touch Targets (44px)**     | ✅ Règle ok   | MOYENNE  | Vérifier tous composants |
+| **Accessibilité (WCAG 2.2)** | ✅ Très bon   | BASSE    | Audit axe-core complet   |
+| **Forms (Edition, Profil)**  | ⚠️ Non audité | MOYENNE  | À creuser                |
+| **Drag & Drop (dnd-kit)**    | ⚠️ Non audité | BASSE    | À vérifier plus tard     |
 
 ---
 
 ## 11. OBSERVATIONS FINALES
 
 ### Forces ✅
+
 1. **Architecture Next.js propre** - Route groups bien utilisés
 2. **Accessibilité proactive** - ARIA roles, keyboard nav, focus management
 3. **Mobile-first SCSS** - Breakpoints bien définis
@@ -842,6 +883,7 @@ Support multilingue: FR/EN
 7. **Color Contrast** - Ratios WCAG 2.2 AA déclarés
 
 ### Zones d'Amélioration ⚠️
+
 1. **Audit mobile réel** - Responsive théorie ok, mais test physique requis
 2. **Touch targets** - Règle 44px implémentée, mais vérification complète manquante
 3. **Formulaires complexes** - Edition/Profil non audités
@@ -850,6 +892,7 @@ Support multilingue: FR/EN
 6. **Documentation a11y** - Pas de WCAG compliance matrix
 
 ### Recommandations
+
 1. **Audit axe-core**: `npm install axe-core` (déjà en devDependencies!)
 2. **Test NVDA/JAWS**: Windows screen reader testing
 3. **Mobile physique**: Tester 320px real device

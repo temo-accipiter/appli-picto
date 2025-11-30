@@ -1,0 +1,59 @@
+@use '@styles/abstracts' as *;
+
+// ============================================
+// DND CARD - Draggable Card Wrapper
+// ============================================
+
+.dnd-card {
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  @include safe-transition;
+
+  // Zone de drag transparente qui couvre toute la card
+  &__drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1; // Au-dessus du contenu
+    cursor: grab;
+
+    // Laisser passer les clics sur les éléments interactifs
+    pointer-events: auto;
+
+    // Quand on drag, montrer le curseur grabbing
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // Le contenu doit être au-dessus du drag handle pour les interactions
+  > *:not(.dnd-card__drag-handle) {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto; // Les enfants capturent les events normalement
+  }
+
+  // État dragging
+  &--dragging {
+    z-index: 1000;
+    cursor: grabbing;
+
+    .dnd-card__drag-handle {
+      cursor: grabbing;
+    }
+  }
+
+  // État swapping
+  &--swapping {
+    opacity: 0.8;
+  }
+
+  // Focus visible pour keyboard navigation
+  &:focus-visible {
+    outline: 2px solid var(--color-primary, #4a90d9);
+    outline-offset: 2px;
+  }
+}

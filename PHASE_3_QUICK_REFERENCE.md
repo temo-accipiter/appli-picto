@@ -18,6 +18,7 @@
 ```
 
 **Visual**:
+
 ```
 Mobile (390px)          Desktop (1200px)
 ┌─────────────────────┐ ┌───────────────────────┐
@@ -55,6 +56,7 @@ Mobile (390px)          Desktop (1200px)
 ```
 
 **Visual**:
+
 ```
 Mobile (390px)          Desktop (1200px)
 ┌─────────────────────┐ ┌───────────────────────┐
@@ -79,12 +81,14 @@ Mobile (390px)          Desktop (1200px)
 **No code needed!** Safe-area support is automatic on mobile.
 
 **What it does**:
+
 - iPhone with notch: Content padding shifts right
 - iPhone with Dynamic Island: Smart spacing
 - iPad with home indicator: Bottom padding increases
 - Android with gesture nav: No visible effect (safe-areas = 0)
 
 **Visual**:
+
 ```
 iPhone 14 Pro (393px with notch)
     |‾‾‾‾|
@@ -157,11 +161,7 @@ export default function MobileMenu({ isOpen, onClose }) {
 // No changes needed! Just use normal Modal
 export default function SettingsModal({ isOpen, onClose }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Settings"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Settings">
       {/* Content is automatically safe-area aware */}
     </Modal>
   )
@@ -172,15 +172,15 @@ export default function SettingsModal({ isOpen, onClose }) {
 
 ## 📱 Breakpoints Reference
 
-| Breakpoint | Device | Behavior |
-|-----------|--------|----------|
-| 320px | iPhone SE | Fullscreen/Drawer full width |
-| 390px | iPhone 12-14 | Fullscreen/Drawer perfect fit |
-| 576px | Tablet (small) | Transition point |
-| 768px | iPad | Drawer switches to centered modal |
-| 1024px | iPad Pro | Large desktop sizing |
-| 1200px | Desktop | max-width increases to 600px |
-| 1920px | Full desktop | Large screen optimization |
+| Breakpoint | Device         | Behavior                          |
+| ---------- | -------------- | --------------------------------- |
+| 320px      | iPhone SE      | Fullscreen/Drawer full width      |
+| 390px      | iPhone 12-14   | Fullscreen/Drawer perfect fit     |
+| 576px      | Tablet (small) | Transition point                  |
+| 768px      | iPad           | Drawer switches to centered modal |
+| 1024px     | iPad Pro       | Large desktop sizing              |
+| 1200px     | Desktop        | max-width increases to 600px      |
+| 1920px     | Full desktop   | Large screen optimization         |
 
 ---
 
@@ -239,7 +239,7 @@ In `Modal.scss`, line 329:
 ```scss
 .modal--drawer {
   @media (max-width: 767px) {
-    max-height: 70vh;  // ← Change this (70vh, 80vh, 90vh, etc.)
+    max-height: 70vh; // ← Change this (70vh, 80vh, 90vh, etc.)
   }
 }
 ```
@@ -250,8 +250,8 @@ In `Modal.scss`, lines 336-344:
 
 ```scss
 &::before {
-  width: 40px;    // ← Change width
-  height: 4px;    // ← Change height
+  width: 40px; // ← Change width
+  height: 4px; // ← Change height
   margin: $spacing-sm auto;
 }
 ```
@@ -261,7 +261,7 @@ In `Modal.scss`, lines 336-344:
 In `Modal.scss`, line 274:
 
 ```scss
-border-radius: 0;  // ← Change to $radius-lg for rounded corners
+border-radius: 0; // ← Change to $radius-lg for rounded corners
 ```
 
 ### Change Safe-Area Padding
@@ -326,29 +326,31 @@ Before deploying Phase 3 to production:
 
 ## 📊 Phase Summary
 
-| Aspect | Details |
-|--------|---------|
-| **Total Lines Added** | 195 lines to Modal.scss |
-| **File Size** | 489 lines (was 294 after Phase 2.0) |
-| **CSS Classes** | `.modal--fullscreen`, `.modal--drawer`, `.modal-overlay--drawer` |
-| **Animations** | 1 new (slideUpIn) |
-| **Safe-area** | Automatic, no changes needed |
-| **Breaking Changes** | None |
-| **Browser Support** | All modern browsers (IE 11+ with fallback) |
-| **Mobile Support** | iOS 10+, Android 5+ |
-| **Accessibility** | WCAG AAA maintained |
+| Aspect                | Details                                                          |
+| --------------------- | ---------------------------------------------------------------- |
+| **Total Lines Added** | 195 lines to Modal.scss                                          |
+| **File Size**         | 489 lines (was 294 after Phase 2.0)                              |
+| **CSS Classes**       | `.modal--fullscreen`, `.modal--drawer`, `.modal-overlay--drawer` |
+| **Animations**        | 1 new (slideUpIn)                                                |
+| **Safe-area**         | Automatic, no changes needed                                     |
+| **Breaking Changes**  | None                                                             |
+| **Browser Support**   | All modern browsers (IE 11+ with fallback)                       |
+| **Mobile Support**    | iOS 10+, Android 5+                                              |
+| **Accessibility**     | WCAG AAA maintained                                              |
 
 ---
 
 ## 🎯 Common Use Cases
 
 ### Use Fullscreen When:
+
 - ✅ Creating a new task with many fields
 - ✅ Large form with long list of items
 - ✅ Image preview or gallery
 - ✅ Important confirmation (delete account)
 
 ### Use Drawer When:
+
 - ✅ Mobile navigation menu
 - ✅ Filter options
 - ✅ Sort/order options
@@ -356,6 +358,7 @@ Before deploying Phase 3 to production:
 - ✅ Share/export options
 
 ### Use Default When:
+
 - ✅ Simple confirmation dialog
 - ✅ Short message or alert
 - ✅ Quick action (few buttons)
@@ -366,6 +369,7 @@ Before deploying Phase 3 to production:
 ## 📞 Questions?
 
 All variants are CSS-only and fully documented in:
+
 - `PHASE_3_IMPLEMENTATION_COMPLETE.md` - Full technical details
 - `PHASE_2_MODAL_IMPLEMENTATION.md` - Code examples from exploration
 - `Modal.scss` - Inline comments in the actual code

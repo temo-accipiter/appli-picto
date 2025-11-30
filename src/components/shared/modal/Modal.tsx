@@ -126,7 +126,10 @@ export default function Modal({
   const modalClasses = `modal ${sizeClass} ${className}`.trim()
 
   const content = (
-    <div className="modal-overlay" onClick={closeOnOverlay ? onClose : undefined}>
+    <div
+      className="modal-overlay"
+      onClick={closeOnOverlay ? onClose : undefined}
+    >
       <div
         className={modalClasses}
         role="dialog"

@@ -1,53 +1,154 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
+// ============================================
+// BASE CARD - TSA-FRIENDLY STYLES
+// ============================================
+
+/* Utilitaire : tronquer texte avec ellipsis */
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
 .base-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: $spacing-md;
   background: var(--pastel-color, #f0f8ff);
   border-radius: $radius-md;
-  padding: $spacing-xs;
+  padding: $spacing-sm;
   box-shadow: $box-shadow;
+  border: 2px solid transparent;
   @include transition-smooth;
+  @include safe-transition;
 
-  /* [Mobile-first] Base = mobile (layout colonne) */
-  flex-direction: column;
-  align-items: flex-start;
-  gap: $spacing-sm;
+  /* [Mobile-first] Responsive sizing */
+  &--sm {
+    gap: $spacing-xs;
+    padding: $spacing-xs;
 
-  /* Desktop (576px+) = layout row (côte à côte) */
-  @include respond-to(sm) {
-    flex-direction: row;
-    align-items: center;
+    .base-card__label {
+      font-size: 0.875rem;
+    }
+  }
+
+  &--md {
     gap: $spacing-sm;
+    padding: $spacing-sm;
   }
 
-  &.active {
-    border: rem(2) solid $color-success;
-    background-color: color.adjust($color-success, $lightness: 40%);
+  &--lg {
+    gap: $spacing-md;
+    padding: $spacing-md;
   }
 
-  &__col.image {
+  /* États visuels FRANCS pour TSA */
+  &--checked {
+    border: 2px solid var(--color-success, #4caf50);
+    background-color: #d4f4dd; /* Vert clair pastel comme avant */
+  }
+
+  &--completed {
+    opacity: 0.7;
+    border-color: var(--color-info, #2196f3);
+    background-color: rgba(33, 150, 243, 0.04);
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+
+  &--editable {
+    /* Retiré : la bordure orange n'est plus appliquée */
+  }
+
+  /* Container pour image + actions */
+  &__image-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: $spacing-xs;
   }
 
-  &__col.info {
-    flex: 1;
+  &__image {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Pas de background, pas de wrapper visible - juste l'image */
+  }
+
+  /* Actions : layout optimisé pour mobile (56px touch target min) */
+  &__actions {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    max-width: 11.5rem;
+    gap: $spacing-xs;
+    width: 100%;
+
+    /* Sur desktop : layout horizontal */
+    @include respond-to(sm) {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: $spacing-sm;
+    }
+
+    button,
+    [role='checkbox'] {
+      min-height: 44px; /* Touch target minimum */
+      min-width: 44px;
+      padding: $spacing-xs;
+
+      @include respond-to(sm) {
+        min-height: 40px;
+        min-width: auto;
+      }
+    }
+  }
+
+  /* Contenu : label + catégorie */
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    justify-content: flex-start;
+    min-width: 0; /* Force text truncation */
   }
 
   &__label {
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-text, inherit);
+    @include truncate; /* Ellipsis sur long texte */
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  /* Focus visible pour accessibility clavier */
+  &:focus-within {
+    box-shadow: 0 0 0 3px rgba(135, 206, 250, 0.5); /* Bleu ciel doux */
+    outline: none;
   }
 }
-.base-card__actions {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
+
+/* Responsiveness complète : portrait/landscape mobile */
+@media (max-width: 320px) {
+  .base-card {
+    padding: $spacing-xs;
+    gap: $spacing-xs;
+
+    &__image {
+      max-width: 80px;
+    }
+
+    &__label {
+      font-size: 0.875rem;
+    }
+  }
 }

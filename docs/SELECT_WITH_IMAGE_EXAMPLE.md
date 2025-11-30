@@ -290,6 +290,7 @@ interface SelectWithImageOption {
 Le composant est **WCAG 2.2 AA compliant** :
 
 ### Navigation clavier
+
 - **↑/↓** : Naviguer entre les options
 - **Enter/Space** : Ouvrir/fermer le dropdown
 - **Escape** : Fermer le dropdown
@@ -298,12 +299,14 @@ Le composant est **WCAG 2.2 AA compliant** :
 - **Type-ahead** : Taper pour filtrer (ex: "P" → "Pomme")
 
 ### ARIA
+
 - `aria-invalid` : Signale les erreurs
 - `aria-describedby` : Lie le message d'erreur
 - `aria-required` : Signale les champs obligatoires
 - Support complet screen readers
 
 ### Motion
+
 - Respect `prefers-reduced-motion`
 - Animations désactivées automatiquement si demandé
 
@@ -335,19 +338,20 @@ var(--color-primary-light) // Selection
 
 ## Différences avec l'ancien Select
 
-| Fonctionnalité | Ancien (custom) | Nouveau (Radix UI) |
-|----------------|-----------------|-------------------|
-| Images dans options | ❌ | ✅ |
-| Type-ahead search | ❌ | ✅ |
-| Navigation Home/End | ❌ | ✅ |
-| ARIA complet | ⚠️ Partiel | ✅ Complet |
-| Focus management | ⚠️ Basique | ✅ Robuste |
-| Portal (z-index) | ❌ | ✅ |
-| API identique | - | ✅ Rétrocompatible |
+| Fonctionnalité      | Ancien (custom) | Nouveau (Radix UI) |
+| ------------------- | --------------- | ------------------ |
+| Images dans options | ❌              | ✅                 |
+| Type-ahead search   | ❌              | ✅                 |
+| Navigation Home/End | ❌              | ✅                 |
+| ARIA complet        | ⚠️ Partiel      | ✅ Complet         |
+| Focus management    | ⚠️ Basique      | ✅ Robuste         |
+| Portal (z-index)    | ❌              | ✅                 |
+| API identique       | -               | ✅ Rétrocompatible |
 
 ## Exemples d'utilisation dans le projet
 
 ### 1. Sélection de catégorie (Edition)
+
 ```tsx
 // src/page-components/edition/Edition.tsx
 <SelectWithImage
@@ -360,6 +364,7 @@ var(--color-primary-light) // Selection
 ```
 
 ### 2. Sélection de station métro (Profil)
+
 ```tsx
 // src/page-components/profil/Profil.tsx
 <SelectWithImage
@@ -373,6 +378,7 @@ var(--color-primary-light) // Selection
 ```
 
 ### 3. Sélection de pictogramme (Admin)
+
 ```tsx
 // src/page-components/admin/Admin.tsx
 <SelectWithImage

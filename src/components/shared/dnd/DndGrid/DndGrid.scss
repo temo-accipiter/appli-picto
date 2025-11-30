@@ -1,0 +1,57 @@
+@use '@styles/abstracts' as *;
+
+// ============================================
+// DND GRID - Drag & Drop Grid Container
+// ============================================
+
+.dnd-grid {
+  @include dnd-grid;
+
+  /* Layout variants */
+  &--auto {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  &--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Gap variants */
+  &--gap-small {
+    gap: $spacing-xs;
+  }
+
+  &--gap-medium {
+    gap: $spacing-sm;
+  }
+
+  &--gap-large {
+    gap: $spacing-md;
+  }
+
+  /* Layout presets */
+  &--taches {
+    /* Default for task cards */
+  }
+
+  &--recompenses {
+    /* Default for reward cards */
+  }
+
+  &--custom {
+    /* Custom layout */
+  }
+
+  /* Screen reader only status */
+  &__status {
+    @include visually-hidden;
+  }
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useMemo, ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import {
   InputWithValidation,
   Select,
@@ -8,7 +9,7 @@ import {
   ImagePreview,
   ButtonDelete,
 } from '@/components'
-import { useI18n } from '@/hooks'
+import { useI18n, useReducedMotion } from '@/hooks'
 import {
   makeValidateNotEmpty,
   makeNoEdgeSpaces,
@@ -36,6 +37,9 @@ interface BaseCardProps {
   onToggleCheck?: (checked: boolean) => void
   className?: string
   imageComponent?: ReactNode
+  disabled?: boolean
+  completed?: boolean
+  size?: 'sm' | 'md' | 'lg'
 }
 
 const BaseCard = memo(function BaseCard({
@@ -53,8 +57,12 @@ const BaseCard = memo(function BaseCard({
   onToggleCheck,
   className = '',
   imageComponent,
+  disabled = false,
+  completed = false,
+  size = 'md',
 }: BaseCardProps) {
   const { t } = useI18n()
+  const prefersReducedMotion = useReducedMotion()
 
   // Créer les fonctions de validation i18n avec useMemo
   const validationRules = useMemo(
@@ -62,46 +70,80 @@ const BaseCard = memo(function BaseCard({
     [t]
   )
 
-  return (
-    <div className={`base-card ${className}`}>
-      <div className="base-card__col image">
-        {imageComponent ? (
-          imageComponent
-        ) : (
-          <ImagePreview url={image || ''} size="sm" />
-        )}
-        <div className="base-card__actions">
-          <ButtonDelete onClick={onDelete || (() => {})} />
+  // Classes d'état pour accessibilité TSA
+  const stateClasses = [
+    `base-card--${size}`,
+    checked && 'base-card--checked',
+    completed && 'base-card--completed',
+    disabled && 'base-card--disabled',
+    editable && 'base-card--editable',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
-          <Checkbox
-            id={`base-checkbox-${labelId}`}
-            checked={checked}
-            onChange={e => onToggleCheck?.(e.target.checked)}
-            aria-label={t('card.active')}
-            size="md"
-          />
+  return (
+    <motion.div
+      className={`base-card ${stateClasses}`}
+      role="article"
+      aria-label={`${t('card.item')} ${label}`}
+      data-testid={`base-card-${labelId}`}
+      whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }}
+      transition={
+        prefersReducedMotion ? {} : { duration: 0.2, ease: 'easeOut' }
+      }
+    >
+      <div className="base-card__image-section">
+        <div className="base-card__image">
+          {imageComponent ? (
+            imageComponent
+          ) : (
+            <ImagePreview url={image || ''} size="sm" />
+          )}
+        </div>
+
+        {/* Actions séparées et empilées verticalement sur mobile */}
+        <div className="base-card__actions">
+          {onDelete && (
+            <ButtonDelete
+              onClick={disabled ? () => {} : onDelete}
+              aria-label={t('card.delete')}
+            />
+          )}
+
+          {onToggleCheck && (
+            <Checkbox
+              id={`base-checkbox-${labelId}`}
+              checked={checked}
+              onChange={e => !disabled && onToggleCheck?.(e.target.checked)}
+              aria-label={completed ? t('card.completed') : t('card.active')}
+              size="md"
+            />
+          )}
         </div>
       </div>
 
-      <div className="base-card__col info">
+      <div className="base-card__content">
         {editable ? (
           <InputWithValidation
             id={`input-label-${labelId}`}
             value={label}
-            onValid={val => onLabelChange?.(val)}
+            onValid={val => !disabled && onLabelChange?.(val)}
             rules={validationRules}
             ariaLabel={t('card.name')}
-            onBlur={val => onBlur?.(val)}
+            onBlur={val => !disabled && onBlur?.(val)}
           />
         ) : (
-          <span className="base-card__label">{label}</span>
+          <span className="base-card__label" title={label} role="doc-subtitle">
+            {label}
+          </span>
         )}
 
         {categorieOptions.length > 0 && (
           <Select
             id={`base-categorie-${labelId}`}
             value={categorie || ''}
-            onChange={e => onCategorieChange?.(e.target.value)}
+            onChange={e => !disabled && onCategorieChange?.(e.target.value)}
             options={
               Array.isArray(categorieOptions) && categorieOptions.length > 0
                 ? categorieOptions
@@ -110,7 +152,7 @@ const BaseCard = memo(function BaseCard({
           />
         )}
       </div>
-    </div>
+    </motion.div>
   )
 })
 

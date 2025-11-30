@@ -127,6 +127,7 @@ Accessibility (motor control):
 ### 3️⃣ Modal Structure HTML
 
 **AVANT:**
+
 ```html
 <div class="modal-overlay">
   <div class="modal">
@@ -144,6 +145,7 @@ Accessibility (motor control):
 ❌ Pas de structure sémantique claire
 
 **APRÈS:**
+
 ```html
 <div class="modal-overlay">
   <div class="modal" role="dialog" aria-modal="true">
@@ -159,7 +161,7 @@ Accessibility (motor control):
     {/* FOOTER */}
     <footer class="modal__footer">
       <button variant="secondary">Annuler</button> {/* AUTO */}
-      <button variant="primary">Confirmer</button>   {/* USER */}
+      <button variant="primary">Confirmer</button> {/* USER */}
     </footer>
   </div>
 </div>
@@ -196,29 +198,30 @@ Accessibility (motor control):
 .modal {
   display: flex;
   flex-direction: column;
-  padding: 0;  // ← Padding dans les sections
+  padding: 0; // ← Padding dans les sections
 }
 
 .modal__header {
   padding: $spacing-lg $spacing-md;
   border-bottom: 1px solid gray(200);
-  flex-shrink: 0;  // ← Toujours visible
+  flex-shrink: 0; // ← Toujours visible
 }
 
 .modal__content {
-  flex: 1;  // ← Grandit/rétrécit
+  flex: 1; // ← Grandit/rétrécit
   padding: $spacing-lg $spacing-md;
-  overflow-y: auto;  // ← Scrollable si besoin
+  overflow-y: auto; // ← Scrollable si besoin
 }
 
 .modal__footer {
   padding: $spacing-md;
   border-top: 1px solid gray(200);
-  flex-shrink: 0;  // ← Toujours visible
+  flex-shrink: 0; // ← Toujours visible
 }
 ```
 
 **Avantages:**
+
 - Header/footer TOUJOURS visibles (pas scroll)
 - Content scrollable indépendamment
 - Mieux pour mobile (petit écran)
@@ -371,6 +374,7 @@ Changes:
 ## 🔴 Common Issues During Implementation
 
 ### Issue 1: Double Annuler dans ModalConfirm
+
 ```
 Before fix:
 [Annuler (auto)] [Annuler (custom)] [Confirmer]
@@ -380,6 +384,7 @@ Fix: Adapter ModalConfirm.tsx pour ne pas envoyer action Annuler
 ```
 
 ### Issue 2: Close button pas visible
+
 ```
 ❌ class="button-close" appliquée
    Mais size="large" pas passé
@@ -390,6 +395,7 @@ Fix: Adapter ModalConfirm.tsx pour ne pas envoyer action Annuler
 ```
 
 ### Issue 3: Overlay trop sombre?
+
 ```
 ❌ 75% opacité peut sembler "trop noir"
    Surtout en dark mode
@@ -402,6 +408,7 @@ Fix: Adapter ModalConfirm.tsx pour ne pas envoyer action Annuler
 ```
 
 ### Issue 4: Modal trop grande sur mobile
+
 ```
 ❌ Width 90% sur petit écran = trop petit espace
    Surtout pour formulaires
@@ -461,6 +468,7 @@ Une fois ces critères visuels validés:
 ## 📸 Screenshots Expected
 
 ### Before Phase 1
+
 ```
 [Attach screenshot of old modal]
 - Small overlay, visible content behind
@@ -469,6 +477,7 @@ Une fois ces critères visuels validés:
 ```
 
 ### After Phase 1
+
 ```
 [Attach screenshot of new modal]
 - Dark overlay, isolated focus

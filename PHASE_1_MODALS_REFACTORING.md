@@ -7,6 +7,7 @@
 **Impact TSA:** 🔴 CRITIQUE
 
 ### Objectifs Phase 1
+
 - ✅ Augmenter opacité overlay pour éviter distractions (40% → 75%)
 - ✅ Agrandir bouton fermer pour accessibilité motrice (20px → 48px)
 - ✅ Ajouter bouton "Annuler" explicite en footer
@@ -18,18 +19,22 @@
 ## 📋 Fichiers à Modifier (4 fichiers)
 
 ### 1️⃣ `src/components/shared/modal/Modal.tsx`
+
 **Action:** Refactoriser structure pour ajouter header/footer séparé
 **Ligne à modifier:** 107-140 (structure JSX)
 
 ### 2️⃣ `src/components/shared/modal/Modal.scss`
+
 **Action:** Améliorer styles overlay + modal + animations
 **Ligne à modifier:** 1-90 (tout le fichier)
 
 ### 3️⃣ `src/components/ui/button/button-close/ButtonClose.tsx`
+
 **Action:** Ajouter prop size pour agrandir le bouton
 **Ligne à modifier:** 6-20 (interface + rendu)
 
 ### 4️⃣ `src/components/ui/button/button-close/ButtonClose.scss`
+
 **Action:** Ajouter variant size:large (48px)
 **Ligne à modifier:** 3-32 (tout le fichier)
 
@@ -40,6 +45,7 @@
 ### Modification 1: Modal.tsx - Refactoriser la structure
 
 **Avant:**
+
 ```tsx
 return (
   <div className="modal-overlay" onClick={onClose}>
@@ -58,6 +64,7 @@ return (
 ```
 
 **Après:**
+
 ```tsx
 return (
   <div className="modal-overlay" onClick={onClose}>
@@ -102,6 +109,7 @@ return (
 ```
 
 **Raison du changement:**
+
 - Sépare header/content/footer pour meilleure accessibilité
 - ButtonClose maintenant intégré dans header (position logique)
 - Bouton Annuler explicite ajoute une 2e option de fermeture
@@ -112,9 +120,10 @@ return (
 ### Modification 2: Modal.scss - Styles améliorés
 
 **Avant:**
+
 ```scss
 .modal-overlay {
-  background-color: rgba(gray(900), 0.4);  // 40% opacité
+  background-color: rgba(gray(900), 0.4); // 40% opacité
 }
 
 .modal {
@@ -130,6 +139,7 @@ return (
 ```
 
 **Après:**
+
 ```scss
 @use '@styles/abstracts' as *;
 
@@ -138,7 +148,7 @@ return (
   position: fixed;
   inset: 0;
   background-color: rgba(gray(900), 0.75); // ← 75% opacité au lieu de 40%
-  backdrop-filter: blur(4px);               // ← augmenter blur de 2px à 4px
+  backdrop-filter: blur(4px); // ← augmenter blur de 2px à 4px
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,13 +159,13 @@ return (
 // === MODAL CONTENEUR ===
 .modal {
   background: $color-surface;
-  border: 2px solid $color-primary;        // ← 2px border colorée (au lieu de 1px gray)
+  border: 2px solid $color-primary; // ← 2px border colorée (au lieu de 1px gray)
   border-radius: $radius-lg;
-  padding: 0;                               // ← Padding dans les sections
+  padding: 0; // ← Padding dans les sections
   max-width: 500px;
   width: 90%;
   max-height: 90vh;
-  overflow: hidden;                         // ← Empêcher overflow global
+  overflow: hidden; // ← Empêcher overflow global
   position: relative;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); // ← Ombre plus marquée
   display: flex;
@@ -182,8 +192,8 @@ return (
 .modal__title {
   margin: 0;
   font-size: $font-size-xl;
-  font-weight: $font-weight-bold;           // ← bold au lieu de semibold
-  color: $color-primary;                     // ← couleur primaire
+  font-weight: $font-weight-bold; // ← bold au lieu de semibold
+  color: $color-primary; // ← couleur primaire
   flex: 1;
 }
 
@@ -192,7 +202,7 @@ return (
   flex: 1;
   padding: $spacing-lg $spacing-md;
   overflow-y: auto;
-  min-height: 100px;                         // Éviter collapsing
+  min-height: 100px; // Éviter collapsing
 
   // Scrollbar personnalisée
   &::-webkit-scrollbar {
@@ -230,19 +240,19 @@ return (
 // === FOOTER ===
 .modal__footer {
   display: flex;
-  justify-content: flex-end;                 // Actions à droite
+  justify-content: flex-end; // Actions à droite
   align-items: center;
   gap: $spacing-sm;
   border-top: 1px solid gray(200);
   padding: $spacing-md;
   flex-shrink: 0;
-  flex-wrap: wrap;                           // Responsive
+  flex-wrap: wrap; // Responsive
 
   .btn {
     transition:
       transform $transition-fast ease-out,
       box-shadow $transition-fast ease-out;
-    min-height: 44px;                        // Accessible height
+    min-height: 44px; // Accessible height
 
     &:hover {
       transform: translateY(-2px);
@@ -320,6 +330,7 @@ return (
 ```
 
 **Raisons des changements:**
+
 - ✅ 75% opacité → Évite distractions TSA
 - ✅ 4px blur → Accentue la séparation
 - ✅ Bordure colorée → Meilleur contraste
@@ -333,6 +344,7 @@ return (
 ### Modification 3: ButtonClose.tsx - Ajouter prop `size`
 
 **Avant:**
+
 ```tsx
 interface ButtonCloseProps {
   onClick: () => void
@@ -352,27 +364,28 @@ export default function ButtonClose({
 ```
 
 **Après:**
+
 ```tsx
 interface ButtonCloseProps {
   onClick: () => void
   ariaLabel?: string
-  size?: 'small' | 'large'                  // ← Ajouter
+  size?: 'small' | 'large' // ← Ajouter
 }
 
 export default function ButtonClose({
   onClick,
   ariaLabel = 'Fermer',
-  size = 'small',                            // ← Default 'small'
+  size = 'small', // ← Default 'small'
 }: ButtonCloseProps) {
   // Calculer taille icône selon size
   const iconSize = size === 'large' ? 28 : 20
 
   return (
     <button
-      className={`button-close button-close--${size}`}  // ← Class dynamique
+      className={`button-close button-close--${size}`} // ← Class dynamique
       onClick={onClick}
       aria-label={ariaLabel}
-      type="button"                          // ← Explicite
+      type="button" // ← Explicite
     >
       <X size={iconSize} strokeWidth={2} aria-hidden="true" />
     </button>
@@ -381,6 +394,7 @@ export default function ButtonClose({
 ```
 
 **Raison du changement:**
+
 - Permet réutilisabilité du composant
 - Modal peut utiliser `size="large"` (48px)
 - Autres composants continuent avec default (20px)
@@ -390,6 +404,7 @@ export default function ButtonClose({
 ### Modification 4: ButtonClose.scss - Ajouter variant large
 
 **Avant:**
+
 ```scss
 .button-close {
   position: absolute;
@@ -405,12 +420,13 @@ export default function ButtonClose({
 ```
 
 **Après:**
+
 ```scss
 @use '@styles/abstracts' as *;
 
 .button-close {
-  position: relative;                        // ← Pas absolute
-  width: 2rem;                               // Default 32px (2rem)
+  position: relative; // ← Pas absolute
+  width: 2rem; // Default 32px (2rem)
   height: 2rem;
   background: transparent;
   border: none;
@@ -443,19 +459,19 @@ export default function ButtonClose({
 
   // === VARIANT: LARGE (pour modals) ===
   &--large {
-    width: 3rem;                             // ← 48px (pour accessibilité)
+    width: 3rem; // ← 48px (pour accessibilité)
     height: 3rem;
-    background: gray(100);                   // ← Fond léger pour visibilité
-    border: 2px solid $color-primary;        // ← Bordure pour contraste
+    background: gray(100); // ← Fond léger pour visibilité
+    border: 2px solid $color-primary; // ← Bordure pour contraste
 
     &:hover {
       background: gray(200);
-      transform: scale(1.05);                // Moins de scale
+      transform: scale(1.05); // Moins de scale
     }
 
     &:focus-visible {
       outline: 2px solid $color-accent;
-      outline-offset: 4px;                   // ← Plus d'offset
+      outline-offset: 4px; // ← Plus d'offset
     }
   }
 }
@@ -482,6 +498,7 @@ export default function ButtonClose({
 ```
 
 **Raisons des changements:**
+
 - ✅ 48px pour bouton large (accessibilité motrice)
 - ✅ Fond léger pour visible sur overlay sombre
 - ✅ Bordure colorée pour contraste
@@ -493,7 +510,9 @@ export default function ButtonClose({
 ## 🚀 Ordre d'Implémentation
 
 ### Étape 1: ButtonClose.tsx & ButtonClose.scss (5 min)
+
 Les modifier en premier car Modal.tsx en dépend
+
 ```bash
 # Modifier ces 2 fichiers
 src/components/ui/button/button-close/ButtonClose.tsx
@@ -501,18 +520,23 @@ src/components/ui/button/button-close/ButtonClose.scss
 ```
 
 ### Étape 2: Modal.scss (10 min)
+
 Mettre à jour les styles avant de changer la structure JSX
+
 ```bash
 src/components/shared/modal/Modal.scss
 ```
 
 ### Étape 3: Modal.tsx (15 min)
+
 Refactoriser la structure JSX
+
 ```bash
 src/components/shared/modal/Modal.tsx
 ```
 
 ### Étape 4: Tests & Vérification (15 min)
+
 ```bash
 pnpm check          # Format + Lint
 pnpm type-check     # Types
@@ -540,6 +564,7 @@ Après refactoring Modal.tsx, ces composants doivent être testés:
 ### 🎨 Breaking Changes
 
 **Avant:**
+
 ```tsx
 <Modal isOpen={isOpen} onClose={onClose} actions={[...]}>
   <p>Message</p>
@@ -547,6 +572,7 @@ Après refactoring Modal.tsx, ces composants doivent être testés:
 ```
 
 **Après (nouveau footer automatique):**
+
 ```tsx
 <Modal isOpen={isOpen} onClose={onClose} actions={[...]}>
   {/* Bouton "Annuler" ajouté automatiquement dans footer */}
@@ -618,6 +644,7 @@ Une fois Phase 1 stabilisée, on fera:
 ### Avant / Après
 
 **AVANT:**
+
 ```
 ┌─────────────────────────────┐
 │ Contenu distractif derrière │ ← 40% opacité visible!
@@ -635,6 +662,7 @@ Une fois Phase 1 stabilisée, on fera:
 ```
 
 **APRÈS:**
+
 ```
 ┌─────────────────────────────┐
 │ (Fond complètement noir)    │ ← 75% opacité + blur(4px)

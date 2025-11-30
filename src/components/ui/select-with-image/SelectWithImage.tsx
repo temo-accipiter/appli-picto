@@ -73,7 +73,7 @@ export const SelectWithImage = React.forwardRef<
             }
           }}
           disabled={disabled}
-          name={name}
+          name={name ?? ''}
           required={required}
         >
           <Select.Trigger

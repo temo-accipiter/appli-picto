@@ -440,22 +440,40 @@
 
   .modal__header {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
     }
   }
 
   .modal__content {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
     }
   }
 
   .modal__footer {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
       padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
     }
   }

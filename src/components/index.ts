@@ -52,6 +52,10 @@ export { default as Dropdown } from './shared/dropdown/Dropdown'
 export { default as BaseCard } from './shared/card/base-card/BaseCard'
 export { default as EditionCard } from './shared/card/edition-card/EditionCard'
 export { default as TableauCard } from './shared/card/tableau-card/TableauCard'
+
+// DnD Components
+export { DndCard, DndSlot, DndGrid, useDndGrid } from './shared/dnd'
+export type { DndCardProps, DndSlotProps, DndGridProps } from './shared/dnd'
 export { default as DemoSignedImage } from './shared/demo-signed-image/DemoSignedImage'
 export { default as EditionList } from './shared/edition-list/EditionList'
 export { default as ErrorBoundary } from './shared/error-boundary/ErrorBoundary'
@@ -101,4 +105,7 @@ export { default as Loader } from './ui/loader/Loader'
 export { default as PasswordChecklist } from './ui/password-checklist/PasswordChecklist'
 export { default as Select } from './ui/select/Select'
 export { default as Toast } from './ui/toast/Toast'
-export { default as UploadProgress } from './ui/upload-progress/UploadProgress'
+export {
+  default as UploadProgress,
+  type UploadStep,
+} from './ui/upload-progress/UploadProgress'
