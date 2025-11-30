@@ -2,11 +2,13 @@
 
 // src/components/modal/Modal.tsx
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { Button, ButtonClose } from '@/components'
 import './Modal.scss'
 
 type ButtonVariant = 'primary' | 'secondary' | 'default' | 'danger'
+type ModalSize = 'small' | 'medium' | 'large'
 
 interface ModalAction {
   label: string
@@ -23,6 +25,10 @@ interface ModalProps {
   children: ReactNode
   actions?: ModalAction[]
   className?: string
+  size?: ModalSize
+  closeOnOverlay?: boolean
+  closeOnEscape?: boolean
+  showCloseButton?: boolean
 }
 
 export default function Modal({
@@ -32,15 +38,27 @@ export default function Modal({
   children,
   actions = [],
   className = '',
+  size = 'medium',
+  closeOnOverlay = true,
+  closeOnEscape = true,
+  showCloseButton = true,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
+  const modalRoot = useRef<HTMLElement | null>(null)
+
+  // Initialize portal root on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      modalRoot.current = document.body
+    }
+  }, [])
 
   // Gérer Échap et Entrée
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (!isOpen) return
 
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && closeOnEscape) {
         e.preventDefault()
         onClose()
       } else if (e.key === 'Enter') {
@@ -56,7 +74,7 @@ export default function Modal({
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, closeOnEscape])
 
   // Lock scroll & focus par défaut sur le dernier bouton d'action
   useEffect(() => {
@@ -102,12 +120,15 @@ export default function Modal({
     return () => document.removeEventListener('keydown', handleTab)
   }, [isOpen])
 
-  if (!isOpen) return null
+  if (!isOpen || !modalRoot.current) return null
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
+  const sizeClass = size !== 'medium' ? `modal--${size}` : ''
+  const modalClasses = `modal ${sizeClass} ${className}`.trim()
+
+  const content = (
+    <div className="modal-overlay" onClick={closeOnOverlay ? onClose : undefined}>
       <div
-        className={`modal ${className}`.trim()}
+        className={modalClasses}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
@@ -122,7 +143,7 @@ export default function Modal({
               {title}
             </h2>
           )}
-          <ButtonClose onClick={onClose} size="large" />
+          {showCloseButton && <ButtonClose onClick={onClose} size="large" />}
         </div>
 
         {/* Contenu principal */}
@@ -148,4 +169,6 @@ export default function Modal({
       </div>
     </div>
   )
+
+  return createPortal(content, modalRoot.current)
 }

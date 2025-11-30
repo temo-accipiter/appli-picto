@@ -65,6 +65,37 @@
   &:focus-visible {
     outline: none;
   }
+
+  // === SIZE VARIANTS ===
+  // Small: Compact modals for quick confirmations
+  &--small {
+    max-width: 320px;
+
+    @media (max-width: 575px) {
+      max-width: calc(100vw - 32px);
+    }
+
+    @media (min-width: 1200px) {
+      max-width: 400px;
+    }
+  }
+
+  // Large: For modals with more content
+  &--large {
+    max-width: 700px;
+
+    @media (max-width: 575px) {
+      max-width: calc(100vw - 32px);
+    }
+
+    @media (min-width: 576px) and (max-width: 767px) {
+      max-width: 90vw;
+    }
+
+    @media (min-width: 1200px) {
+      max-width: 800px;
+    }
+  }
 }
 
 // === HEADER ===
