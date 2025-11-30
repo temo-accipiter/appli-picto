@@ -143,7 +143,7 @@ export default function Modal({
               {title}
             </h2>
           )}
-          {showCloseButton && <ButtonClose onClick={onClose} size="large" />}
+          {showCloseButton && <ButtonClose onClick={onClose} size="modal" />}
         </div>
 
         {/* Contenu principal */}

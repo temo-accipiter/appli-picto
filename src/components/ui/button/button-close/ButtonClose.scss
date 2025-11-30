@@ -33,7 +33,7 @@
     outline-offset: 2px;
   }
 
-  // === VARIANT: LARGE (pour modals) ===
+  // === VARIANT: LARGE (deprecated - use --modal instead) ===
   &--large {
     width: 3rem;
     height: 3rem;
@@ -48,6 +48,26 @@
     &:focus-visible {
       outline: 2px solid $color-accent;
       outline-offset: 4px;
+    }
+  }
+
+  // === VARIANT: MODAL (pour fermer les modals - discret) ===
+  &--modal {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: transparent;
+    border: none;
+    color: rgba($color-text, 0.7);
+
+    &:hover {
+      background: rgba($color-primary, 0.08);
+      color: $color-primary;
+      transform: scale(1.1);
+    }
+
+    &:focus-visible {
+      outline: 2px solid $color-accent;
+      outline-offset: 2px;
     }
   }
 

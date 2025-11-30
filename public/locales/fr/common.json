@@ -456,6 +456,8 @@
     "errorTaskCreation": "Erreur lors de la création de la tâche.",
     "errorImageUpload": "Erreur lors de l'upload de l'image",
     "errorImageQuotaCheck": "Erreur lors de la vérification des quotas d'images",
+    "imageUploaded": "Image uploadée avec succès ✅",
+    "uploadNotComplete": "L'upload de l'image n'est pas terminé",
     "imageMissing": "Image manquante.",
     "noCategory": "Pas de catégorie",
     "categoryExists": "Cette catégorie existe déjà.",

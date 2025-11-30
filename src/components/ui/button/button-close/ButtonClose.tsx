@@ -6,7 +6,7 @@ import './ButtonClose.scss'
 interface ButtonCloseProps {
   onClick: () => void
   ariaLabel?: string
-  size?: 'small' | 'large'
+  size?: 'small' | 'large' | 'modal'
 }
 
 export default function ButtonClose({
@@ -14,7 +14,7 @@ export default function ButtonClose({
   ariaLabel = 'Fermer',
   size = 'small',
 }: ButtonCloseProps) {
-  const iconSize = size === 'large' ? 28 : 20
+  const iconSize = size === 'large' ? 28 : size === 'modal' ? 20 : 20
 
   return (
     <button
