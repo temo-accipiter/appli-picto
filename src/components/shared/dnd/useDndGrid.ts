@@ -11,7 +11,7 @@
  * - Batch save : Par 5 items pour optimiser les requêtes
  */
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core'
 
 export interface UseDndGridOptions<T> {
@@ -25,7 +25,7 @@ export interface UseDndGridOptions<T> {
   getItemIndex?: ((itemId: string | number) => number) | undefined
 }
 
-export interface UseDndGridReturn<T> {
+export interface UseDndGridReturn {
   activeId: string | number | null
   swappedPair: [string | number, string | number] | null
   isDragging: boolean
@@ -45,32 +45,31 @@ export function useDndGrid<T>({
   onReorderPosition,
   getItemId,
   getItemIndex,
-}: UseDndGridOptions<T>): UseDndGridReturn<T> {
-  // Defaults
-  const _getItemId = getItemId || ((item: any) => item.id)
-  const _getItemIndex =
-    getItemIndex ||
-    ((id: string | number) => items.findIndex(item => _getItemId(item) === id))
+}: UseDndGridOptions<T>): UseDndGridReturn {
+  // Defaults - wrapped in useMemo to maintain stable references
+  const _getItemId = useMemo(
+    () => getItemId || ((item: T) => (item as { id: string | number }).id),
+    [getItemId]
+  )
+
+  const _getItemIndex = useMemo(
+    () =>
+      getItemIndex ||
+      ((id: string | number) =>
+        items.findIndex(item => _getItemId(item) === id)),
+    [getItemIndex, items, _getItemId]
+  )
   const [activeId, setActiveId] = useState<string | number | null>(null)
   const [swappedPair, setSwappedPair] = useState<
     [string | number, string | number] | null
   >(null)
   const [isDragging, setIsDragging] = useState(false)
-  const positionsMap = new Map<string | number, number>()
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const { active } = event
-      setActiveId(active.id as string | number)
-      setIsDragging(true)
-
-      // Créer la map des positions initiales
-      items.forEach((item, index) => {
-        positionsMap.set(_getItemId(item), index)
-      })
-    },
-    [items, _getItemId]
-  )
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event
+    setActiveId(active.id as string | number)
+    setIsDragging(true)
+  }, [])
 
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {

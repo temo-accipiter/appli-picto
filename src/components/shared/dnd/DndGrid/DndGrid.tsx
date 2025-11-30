@@ -69,7 +69,7 @@ function DndGrid<T>({
   columns = 'auto',
   gap = 'medium',
   layout = 'custom',
-  getItemId = (item: any) => item.id,
+  getItemId = (item: T) => (item as { id: string | number }).id,
   getItemIndex = (id: string | number) =>
     items.findIndex(item => getItemId(item) === id),
   children,
@@ -82,7 +82,7 @@ function DndGrid<T>({
   )
 
   // Utiliser le hook DnD
-  const { activeId, swappedPair, isDragging, handleDragStart, handleDragEnd } =
+  const { swappedPair, isDragging, handleDragStart, handleDragEnd } =
     useDndGrid({
       items,
       onReorder,

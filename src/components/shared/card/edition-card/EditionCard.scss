@@ -1,45 +1,7 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .card-edition {
-  // 📱 Layout hérité de BaseCard (pas besoin de surcharge)
-  // BaseCard gère déjà le mobile-first (column sur mobile, row sur desktop)
-
-  &.active {
-    border: rem(2) solid $color-success;
-    background-color: color.adjust($color-success, $lightness: 40%);
-  }
-
-  &__col.image {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  &__col.info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  &__row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  &__delete-btn {
-    font-size: 1.1rem;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #e63946;
-
-    &:hover {
-      transform: scale(1.2);
-    }
-  }
+  // 📝 EditionCard est un thin wrapper autour de BaseCard
+  // avec editable={true} forcé. BaseCard gère le layout, les animations, et les états.
+  // Aucune surcharge de style spécifique à EditionCard.
 }

@@ -1,14 +1,23 @@
 'use client'
 
-import { Button, ImagePreview, InputWithValidation, Select, UploadProgress } from '@/components'
+import {
+  Button,
+  ImagePreview,
+  InputWithValidation,
+  Select,
+  UploadProgress,
+} from '@/components'
 import { useI18n } from '@/hooks'
 import { useAuth } from '@/hooks'
-import { modernUploadImage, type AssetType, type ProgressInfo } from '@/utils/storage/modernUploadImage'
+import {
+  modernUploadImage,
+  type AssetType,
+  type ProgressInfo,
+} from '@/utils/storage/modernUploadImage'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
   makeValidateImageHeader,
-  makeValidateImagePresence,
   makeValidateImageType,
   makeValidateNotEmpty,
 } from '@/utils'
@@ -27,12 +36,14 @@ interface ItemFormData {
   image: File
 }
 
+type UploadStep = 'validation' | 'uploading' | 'success' | 'error'
+
 interface ItemFormProps {
   includeCategory?: boolean
   categories?: CategoryOption[]
   onSubmit: (data: ItemFormData) => void
-  assetType?: AssetType  // Pour upload (task_image ou reward_image)
-  prefix?: string  // Pour chemin upload (taches ou recompenses)
+  assetType?: AssetType // Pour upload (task_image ou reward_image)
+  prefix?: string // Pour chemin upload (taches ou recompenses)
 }
 
 export default function ItemForm({
@@ -53,8 +64,10 @@ export default function ItemForm({
   // 🆕 States pour upload
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadStep, setUploadStep] = useState('validation')
-  const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(null)
+  const [uploadStep, setUploadStep] = useState<UploadStep>('validation')
+  const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(
+    null
+  )
 
   const confirmRef = useRef<HTMLButtonElement>(null)
   const labelRef = useRef<InputWithValidationRef>(null)
@@ -63,7 +76,6 @@ export default function ItemForm({
   const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
   const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
   const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
-  const validateImagePresence = useMemo(() => makeValidateImagePresence(t), [t])
   const validateImageType = useMemo(() => makeValidateImageType(t), [t])
   const validateImageHeader = useMemo(() => makeValidateImageHeader(t), [t])
 
@@ -144,7 +156,10 @@ export default function ItemForm({
       setUploadedImagePath(result.path)
       setIsUploading(false)
     } catch (error) {
-      const errorMsg = (error as Error).message || t('edition.errorImageUpload') || 'Upload failed'
+      const errorMsg =
+        (error as Error).message ||
+        t('edition.errorImageUpload') ||
+        'Upload failed'
       setImageError(errorMsg)
       setIsUploading(false)
       setUploadedImagePath(null)
@@ -165,7 +180,9 @@ export default function ItemForm({
     // 🆕 Vérifier que l'upload est complété (uploadedImagePath existe)
     const uploadComplete = uploadedImagePath !== null
     if (!uploadComplete) {
-      setImageError(t('edition.uploadNotComplete') || 'Image upload not complete')
+      setImageError(
+        t('edition.uploadNotComplete') || 'Image upload not complete'
+      )
       return
     }
 
@@ -214,7 +231,7 @@ export default function ItemForm({
       {/* 🆕 Afficher progress bar si en cours d'upload */}
       {isUploading && (
         <div className="item-form__progress-section">
-          <UploadProgress progress={uploadProgress} step={uploadStep as any} />
+          <UploadProgress progress={uploadProgress} step={uploadStep} />
         </div>
       )}
 
@@ -224,7 +241,11 @@ export default function ItemForm({
           <ImagePreview url={previewUrl} alt={t('quota.images')} size="lg" />
 
           {uploadedImagePath && (
-            <div className="item-form__success" role="status" aria-live="polite">
+            <div
+              className="item-form__success"
+              role="status"
+              aria-live="polite"
+            >
               ✅ {t('edition.imageUploaded') || 'Image uploaded successfully'}
             </div>
           )}

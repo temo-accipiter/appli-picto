@@ -178,7 +178,8 @@ export default function DemoSelectPage() {
               <kbd>Home</kbd> / <kbd>End</kbd> : Première/dernière option
             </li>
             <li>
-              <kbd>A-Z</kbd> : Type-ahead search (tape "M" → "Matin")
+              <kbd>A-Z</kbd> : Type-ahead search (tape &quot;M&quot; →
+              &quot;Matin&quot;)
             </li>
           </ul>
         </div>

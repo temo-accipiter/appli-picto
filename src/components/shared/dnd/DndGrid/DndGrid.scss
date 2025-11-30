@@ -5,10 +5,7 @@
 // ============================================
 
 .dnd-grid {
-  display: grid;
-  grid-auto-flow: dense;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: $spacing-md;
+  @include dnd-grid;
 
   /* Layout variants */
   &--auto {
@@ -53,32 +50,8 @@
     /* Custom layout */
   }
 
-  /* État dragging global */
-  &--dragging {
-    opacity: 0.95;
-  }
-
-  /* Mobile-first responsive */
-  @media (max-width: 576px) {
-    &--2,
-    &--3,
-    &--4 {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    }
-
-    gap: $spacing-xs;
-  }
-
-  @media (min-width: 768px) {
-    gap: $spacing-sm;
-  }
-
-  @media (min-width: 1024px) {
-    gap: $spacing-md;
-  }
-
   /* Screen reader only status */
   &__status {
-    @include sr-only;
+    @include visually-hidden;
   }
 }
