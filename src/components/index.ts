@@ -105,4 +105,7 @@ export { default as Loader } from './ui/loader/Loader'
 export { default as PasswordChecklist } from './ui/password-checklist/PasswordChecklist'
 export { default as Select } from './ui/select/Select'
 export { default as Toast } from './ui/toast/Toast'
-export { default as UploadProgress } from './ui/upload-progress/UploadProgress'
+export {
+  default as UploadProgress,
+  type UploadStep,
+} from './ui/upload-progress/UploadProgress'

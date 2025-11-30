@@ -5,7 +5,7 @@
 
 import './UploadProgress.scss'
 
-type UploadStep =
+export type UploadStep =
   | 'validation'
   | 'heic_conversion'
   | 'compression'

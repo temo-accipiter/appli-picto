@@ -6,6 +6,7 @@ import {
   InputWithValidation,
   Select,
   UploadProgress,
+  type UploadStep,
 } from '@/components'
 import { useI18n } from '@/hooks'
 import { useAuth } from '@/hooks'
@@ -35,8 +36,6 @@ interface ItemFormData {
   categorie: string
   image: File
 }
-
-type UploadStep = 'validation' | 'uploading' | 'success' | 'error'
 
 interface ItemFormProps {
   includeCategory?: boolean
@@ -144,7 +143,7 @@ export default function ItemForm({
         prefix,
         onProgress: (info: ProgressInfo) => {
           setUploadProgress(info.progress)
-          setUploadStep(info.step)
+          setUploadStep(info.step as UploadStep)
         },
       })
 
