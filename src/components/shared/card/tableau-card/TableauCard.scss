@@ -72,6 +72,19 @@
   }
 }
 
+// Label du tableau
+.tableau-card__label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+// Wrapper checkbox - isolé du drag
+.tableau-card__checkbox-wrapper {
+  pointer-events: auto;
+}
+
 // Animation de swap fluide
 @keyframes card-swap-in {
   0% {
