@@ -12,7 +12,7 @@ import {
   DndGrid,
 } from '@/components'
 import { useI18n } from '@/hooks'
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
 import './TachesEdition.scss'
 
@@ -53,7 +53,6 @@ interface ChecklistTachesEditionProps {
   onReorder?: (ids: (string | number)[]) => void
 }
 
-
 export default function ChecklistTachesEdition({
   items,
   categories,
@@ -82,8 +81,6 @@ export default function ChecklistTachesEdition({
   const [catASupprimer, setCatASupprimer] = useState<string | number | null>(
     null
   )
-  const [announcement, setAnnouncement] = useState('')
-  const announcementRef = useRef<NodeJS.Timeout | null>(null)
 
   const { t } = useI18n()
 
@@ -153,57 +150,8 @@ export default function ChecklistTachesEdition({
     setCatASupprimer(null)
   }
 
-  const handleDragStartAnnouncement = useCallback(
-    (itemId: string | number) => {
-      if (announcementRef.current) clearTimeout(announcementRef.current)
-      const tache = items.find(t => t.id === itemId)
-      if (tache) {
-        setAnnouncement(`Déplacement de "${tache.label}"`)
-      }
-    },
-    [items]
-  )
-
-  const handleDragEndAnnouncement = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      if (announcementRef.current) clearTimeout(announcementRef.current)
-      if (fromIndex === toIndex) {
-        setAnnouncement('Déplacement annulé')
-        return
-      }
-
-      const movedTask = items[fromIndex]
-      const swappedTask = items[toIndex]
-
-      if (!movedTask) return
-
-      if (swappedTask) {
-        setAnnouncement(
-          `"${movedTask.label}" échangé avec "${swappedTask.label}"`
-        )
-      } else {
-        setAnnouncement(`"${movedTask.label}" déplacé`)
-      }
-
-      announcementRef.current = setTimeout(() => {
-        setAnnouncement('')
-      }, 3000)
-    },
-    [items]
-  )
-
   return (
     <div className="checklist-edition">
-      {/* WCAG 4.1.3 - Région d'annonces pour lecteur d'écran */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement}
-      </div>
-
       <div className="edition-section__actions">
         <Button
           label={`➕ ${t('tasks.addTask')}`}
@@ -275,9 +223,7 @@ export default function ChecklistTachesEdition({
               onBlur={val => handleBlur(item.id, val)}
               onDelete={() => onDelete(item)}
               checked={!!item.aujourdhui}
-              onToggleCheck={() =>
-                onToggleAujourdhui(item.id, item.aujourdhui)
-              }
+              onToggleCheck={() => onToggleAujourdhui(item.id, item.aujourdhui)}
               categorie={item.categorie || ''}
               onCategorieChange={val => onUpdateCategorie(item.id, val)}
               categorieOptions={categories}

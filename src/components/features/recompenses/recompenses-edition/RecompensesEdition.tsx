@@ -8,7 +8,7 @@ import {
   DndGrid,
 } from '@/components'
 import { useI18n } from '@/hooks'
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState } from 'react'
 import './RecompensesEdition.scss'
 
 interface RewardItem {
@@ -37,7 +37,6 @@ interface RecompensesEditionProps {
   onReorder?: (ids: (string | number)[]) => void
 }
 
-
 export default function RecompensesEdition({
   items,
   onDelete,
@@ -51,8 +50,6 @@ export default function RecompensesEdition({
   const [drafts, setDrafts] = useState<Record<string | number, string>>({})
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [successIds, setSuccessIds] = useState(new Set<string | number>())
-  const [announcement, setAnnouncement] = useState('')
-  const announcementRef = useRef<NodeJS.Timeout | null>(null)
 
   const { t } = useI18n()
 
@@ -107,46 +104,8 @@ export default function RecompensesEdition({
     }
   }
 
-  const handleDragEndAnnouncement = useCallback(
-    (fromIndex: number, toIndex: number) => {
-      if (announcementRef.current) clearTimeout(announcementRef.current)
-      if (fromIndex === toIndex) {
-        setAnnouncement('Déplacement annulé')
-        return
-      }
-
-      const movedReward = items[fromIndex]
-      const swappedReward = items[toIndex]
-
-      if (!movedReward) return
-
-      if (swappedReward) {
-        setAnnouncement(
-          `"${movedReward.label}" échangé avec "${swappedReward.label}"`
-        )
-      } else {
-        setAnnouncement(`"${movedReward.label}" déplacé`)
-      }
-
-      announcementRef.current = setTimeout(() => {
-        setAnnouncement('')
-      }, 3000)
-    },
-    [items]
-  )
-
   return (
     <div className="checklist-recompenses">
-      {/* WCAG 4.1.3 - Région d'annonces pour lecteur d'écran */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {announcement}
-      </div>
-
       <div className="edition-section__actions">
         <Button
           label={`🏱 ${t('rewards.addReward')}`}
