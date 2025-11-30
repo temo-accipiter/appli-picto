@@ -1,0 +1,84 @@
+@use '@styles/abstracts' as *;
+
+// ============================================
+// DND GRID - Drag & Drop Grid Container
+// ============================================
+
+.dnd-grid {
+  display: grid;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: $spacing-md;
+
+  /* Layout variants */
+  &--auto {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+
+  &--2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &--3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &--4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Gap variants */
+  &--gap-small {
+    gap: $spacing-xs;
+  }
+
+  &--gap-medium {
+    gap: $spacing-sm;
+  }
+
+  &--gap-large {
+    gap: $spacing-md;
+  }
+
+  /* Layout presets */
+  &--taches {
+    /* Default for task cards */
+  }
+
+  &--recompenses {
+    /* Default for reward cards */
+  }
+
+  &--custom {
+    /* Custom layout */
+  }
+
+  /* État dragging global */
+  &--dragging {
+    opacity: 0.95;
+  }
+
+  /* Mobile-first responsive */
+  @media (max-width: 576px) {
+    &--2,
+    &--3,
+    &--4 {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    gap: $spacing-xs;
+  }
+
+  @media (min-width: 768px) {
+    gap: $spacing-sm;
+  }
+
+  @media (min-width: 1024px) {
+    gap: $spacing-md;
+  }
+
+  /* Screen reader only status */
+  &__status {
+    @include sr-only;
+  }
+}

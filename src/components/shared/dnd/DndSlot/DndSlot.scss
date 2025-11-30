@@ -1,0 +1,32 @@
+@use '@styles/abstracts' as *;
+
+// ============================================
+// DND SLOT - Droppable Zone
+// ============================================
+
+.dnd-slot {
+  min-height: 140px;
+  border: 2px dashed transparent;
+  border-radius: $radius-md;
+  background-color: transparent;
+  padding: $spacing-sm;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  // État : drag hover
+  &--over {
+    border-color: var(--color-primary, #4a90d9);
+    background-color: rgba(74, 144, 217, 0.08);
+  }
+
+  // État : dragging from this slot
+  &--dragging-from {
+    border-color: var(--color-primary, #4a90d9);
+    background-color: rgba(74, 144, 217, 0.04);
+  }
+
+  // Focus visible pour keyboard navigation
+  &:focus-visible {
+    outline: 2px solid var(--color-primary, #4a90d9);
+    outline-offset: -2px;
+  }
+}
