@@ -1,7 +1,9 @@
 'use client'
 
-import { Button, ImagePreview, InputWithValidation, Select } from '@/components'
+import { Button, ImagePreview, InputWithValidation, Select, UploadProgress } from '@/components'
 import { useI18n } from '@/hooks'
+import { useAuth } from '@/hooks'
+import { modernUploadImage, type AssetType, type ProgressInfo } from '@/utils/storage/modernUploadImage'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
@@ -29,19 +31,31 @@ interface ItemFormProps {
   includeCategory?: boolean
   categories?: CategoryOption[]
   onSubmit: (data: ItemFormData) => void
+  assetType?: AssetType  // Pour upload (task_image ou reward_image)
+  prefix?: string  // Pour chemin upload (taches ou recompenses)
 }
 
 export default function ItemForm({
   includeCategory = false,
   categories = [],
   onSubmit,
+  assetType = 'task_image',
+  prefix = 'misc',
 }: ItemFormProps) {
   const { t } = useI18n()
+  const { user } = useAuth()
   const [label, setLabel] = useState('')
   const [categorie, setCategorie] = useState('none')
   const [image, setImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [imageError, setImageError] = useState('')
+
+  // 🆕 States pour upload
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadStep, setUploadStep] = useState('validation')
+  const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(null)
+
   const confirmRef = useRef<HTMLButtonElement>(null)
   const labelRef = useRef<InputWithValidationRef>(null)
 
@@ -65,6 +79,8 @@ export default function ItemForm({
       setImage(null)
       setPreviewUrl(null)
       setImageError('')
+      setUploadedImagePath(null)
+      setIsUploading(false)
       return
     }
 
@@ -74,6 +90,7 @@ export default function ItemForm({
       setImage(null)
       setPreviewUrl(null)
       setImageError(typeError)
+      setUploadedImagePath(null)
       return
     }
 
@@ -83,27 +100,77 @@ export default function ItemForm({
       setImage(null)
       setPreviewUrl(null)
       setImageError(headerError)
+      setUploadedImagePath(null)
       return
     }
 
-    // ✅ Pas de compression ici - modernUploadImage() gère tout
-    // (HEIC → JPEG → WebP ≤ 20 KB, 192×192px, SHA-256, déduplication)
+    // ✅ Fichier validé - afficher preview et LANCER UPLOAD AUTOMATIQUEMENT
     setImage(file)
     setPreviewUrl(URL.createObjectURL(file))
     setImageError('')
+    setUploadedImagePath(null)
+
+    // 🆕 Déclencher l'upload automatiquement
+    await handleAutoUpload(file)
+  }
+
+  // 🆕 Auto-upload quand fichier validé
+  const handleAutoUpload = async (file: File) => {
+    if (!user?.id) {
+      setImageError(t('edition.errorUser') || 'User not found')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadProgress(0)
+    setImageError('')
+
+    try {
+      const result = await modernUploadImage(file, {
+        userId: user.id,
+        assetType,
+        prefix,
+        onProgress: (info: ProgressInfo) => {
+          setUploadProgress(info.progress)
+          setUploadStep(info.step)
+        },
+      })
+
+      if (result.error) {
+        throw result.error
+      }
+
+      // ✅ Upload réussi - sauvegarder le chemin
+      setUploadedImagePath(result.path)
+      setIsUploading(false)
+    } catch (error) {
+      const errorMsg = (error as Error).message || t('edition.errorImageUpload') || 'Upload failed'
+      setImageError(errorMsg)
+      setIsUploading(false)
+      setUploadedImagePath(null)
+    }
+  }
+
+  // 🆕 Retry upload
+  const handleRetryUpload = async () => {
+    if (image) {
+      await handleAutoUpload(image)
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     labelRef.current?.validateNow?.()
 
-    const validImage = image !== null
-    if (!validImage) {
-      setImageError(validateImagePresence(image))
+    // 🆕 Vérifier que l'upload est complété (uploadedImagePath existe)
+    const uploadComplete = uploadedImagePath !== null
+    if (!uploadComplete) {
+      setImageError(t('edition.uploadNotComplete') || 'Image upload not complete')
+      return
     }
 
-    if (label && validImage) {
-      onSubmit({ label: cleanLabel, categorie, image })
+    if (label && uploadComplete) {
+      onSubmit({ label: cleanLabel, categorie, image: image! })
     }
   }
 
@@ -144,14 +211,48 @@ export default function ItemForm({
           aria-label={t('quota.images')}
         />
       </div>
-      {imageError && (
-        <div className="input-field__error-message message-erreur">
-          {imageError}
+      {/* 🆕 Afficher progress bar si en cours d'upload */}
+      {isUploading && (
+        <div className="item-form__progress-section">
+          <UploadProgress progress={uploadProgress} step={uploadStep as any} />
         </div>
       )}
 
-      <ImagePreview url={previewUrl || ''} alt={t('quota.images')} size="lg" />
-      <Button type="submit" label={t('actions.add')} />
+      {/* Afficher preview et erreurs si pas en upload */}
+      {!isUploading && previewUrl && (
+        <>
+          <ImagePreview url={previewUrl} alt={t('quota.images')} size="lg" />
+
+          {uploadedImagePath && (
+            <div className="item-form__success" role="status" aria-live="polite">
+              ✅ {t('edition.imageUploaded') || 'Image uploaded successfully'}
+            </div>
+          )}
+        </>
+      )}
+
+      {imageError && (
+        <div className="item-form__error-section">
+          <div className="input-field__error-message message-erreur">
+            {imageError}
+          </div>
+          {/* Bouton retry si erreur upload */}
+          {image && !uploadedImagePath && !isUploading && (
+            <Button
+              type="button"
+              label={t('actions.retry') || 'Retry'}
+              onClick={handleRetryUpload}
+              variant="secondary"
+            />
+          )}
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        label={t('actions.add') || 'Add'}
+        disabled={!uploadedImagePath || isUploading}
+      />
     </form>
   )
 }

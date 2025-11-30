@@ -64,3 +64,50 @@
 .file-input-wrapper:has(.file-input--error) .file-input-label {
   border-color: var(--color-error);
 }
+
+// === 🆕 PROGRESS & SUCCESS STATES ===
+
+.item-form__progress-section {
+  padding: $spacing-md;
+  background: rgba(0, 119, 194, 0.05);
+  border-radius: $radius-md;
+  border: 1px solid $color-primary;
+}
+
+.item-form__success {
+  padding: $spacing-md;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: $radius-sm;
+  color: $color-success;
+  font-weight: $font-weight-semibold;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+}
+
+.item-form__error-section {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+
+  .message-erreur {
+    padding: $spacing-sm;
+    background: rgba(244, 67, 54, 0.1);
+    border-radius: $radius-sm;
+  }
+
+  .btn {
+    align-self: flex-start;
+    margin-top: $spacing-xs;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
