@@ -15,11 +15,11 @@
 
 ## 🎯 Ce qui va changer
 
-| Avant | Après | Impact |
-|-------|-------|--------|
-| Fond 40% transparent | Fond 75% opaque | ✅ Moins de distractions |
-| Close button 20px | Close button 48px | ✅ Facile à cliquer |
-| Pas d'Annuler explicite | Bouton Annuler en footer | ✅ Plus d'options |
+| Avant                   | Après                    | Impact                   |
+| ----------------------- | ------------------------ | ------------------------ |
+| Fond 40% transparent    | Fond 75% opaque          | ✅ Moins de distractions |
+| Close button 20px       | Close button 48px        | ✅ Facile à cliquer      |
+| Pas d'Annuler explicite | Bouton Annuler en footer | ✅ Plus d'options        |
 
 ---
 
@@ -40,6 +40,7 @@
 ## 🚀 Les 3 Options
 
 ### Option 1: Je fais tout 🤖 (Recommandé)
+
 ```
 Tu dis: "Go Phase 1!"
 
@@ -57,6 +58,7 @@ Résultat: Parfait ✨
 ```
 
 ### Option 2: Tu le fais 🏗️
+
 ```
 Tu:
 1. Lis PHASE_1_QUICK_START.md (5 min)
@@ -70,6 +72,7 @@ Résultat: Bon, mais plus long
 ```
 
 ### Option 3: Ensemble 🤝
+
 ```
 Tu: Lis les docs
 Je: Implémente
@@ -104,11 +107,13 @@ R: Phase 1 = desktop. Phase 2 = mobile-first fullscreen + drawer.
 ## 🎯 Résultat Attendu
 
 **Avant:**
+
 ```
 Modal petite, fond transparent, bouton difficile à cliquer
 ```
 
 **Après:**
+
 ```
 Modal claire, fond noir concentrant, bouton 48px évident
 ```
@@ -174,6 +179,7 @@ Duration: ~45 minutes
 ## 🎨 Avant/Après Visual
 
 **AVANT (Distrayant pour TSA):**
+
 ```
 ┌────────────────────────┐
 │ Contenu visible        │
@@ -189,6 +195,7 @@ Duration: ~45 minutes
 ```
 
 **APRÈS (Focalisé pour TSA):**
+
 ```
 ┌────────────────────────┐
 │ ██████████████████████ │ ← 75% opacité + blur
@@ -207,13 +214,13 @@ Duration: ~45 minutes
 
 ## 💼 Impact Business
 
-| Aspect | Impact |
-|--------|--------|
-| Accessibilité TSA | 🔴 CRITIQUE |
-| Accessibilité motrice | 🔴 CRITIQUE |
-| WCAG 2.2 AA | 🟠 Meilleur |
-| UX enfants | 🟢 Excellent |
-| Mobile-first prep | 🟢 Bon |
+| Aspect                | Impact       |
+| --------------------- | ------------ |
+| Accessibilité TSA     | 🔴 CRITIQUE  |
+| Accessibilité motrice | 🔴 CRITIQUE  |
+| WCAG 2.2 AA           | 🟠 Meilleur  |
+| UX enfants            | 🟢 Excellent |
+| Mobile-first prep     | 🟢 Bon       |
 
 ---
 
@@ -259,6 +266,7 @@ Ton timeline:
 ## 🎓 Qu'est-ce que tu Apprends?
 
 Après Phase 1, tu sauras:
+
 - ✅ Comment structurer les modals (header/content/footer)
 - ✅ Accessibilité TSA: opacity + contrast + size
 - ✅ Mobile-first prep: flex layout qui se responsive facilement
@@ -312,6 +320,7 @@ Tu as maintenant:
 ## 📞 Je suis Prêt
 
 **Dis moi:**
+
 - "Go Phase 1!" → Je fais tout
 - "Let me read" → Tu lis d'abord
 - "Questions?" → On discute

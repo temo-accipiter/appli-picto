@@ -1,4 +1,5 @@
 # Patterns Accessibilité Appli-Picto
+
 ## Guide des Bonnes Pratiques Implémentées
 
 **Document**: Patterns & conventions existants pour référence lors de nouvelles implémentations
@@ -10,23 +11,29 @@
 
 ### 1.1 BEM-lite Naming
 
-**Approche**: BEM simplifié (bloc__element--modifier)
+**Approche**: BEM simplifié (bloc\_\_element--modifier)
 
 ```scss
 // Button example:
-.btn {                    // Block
-  &__spinner {            // Element
-    &-dot {               // Sub-element
-      &:nth-child(2) { }
+.btn {
+  // Block
+  &__spinner {
+    // Element
+    &-dot {
+      // Sub-element
+      &:nth-child(2) {
+      }
     }
   }
 
-  &--loading {            // Modifier
-    opacity: 0.8
+  &--loading {
+    // Modifier
+    opacity: 0.8;
   }
 
-  &:disabled {            // Pseudo-class state
-    opacity: 0.5
+  &:disabled {
+    // Pseudo-class state
+    opacity: 0.5;
   }
 }
 ```
@@ -36,8 +43,9 @@
 ### 1.2 Organisation SCSS
 
 **Structure fichier**:
+
 ```scss
-@use '@styles/abstracts' as *;    // Imports abstracts
+@use '@styles/abstracts' as *; // Imports abstracts
 
 // Variables/Maps si besoin locales
 $local-var: value;
@@ -69,7 +77,8 @@ $local-var: value;
   }
 
   // Animations en bas
-  @keyframes fade-in { }
+  @keyframes fade-in {
+  }
 }
 ```
 
@@ -99,8 +108,8 @@ $local-var: value;
 
 // En composant:
 .component {
-  color: var(--color-text);       // ✅
-  background: $color-primary;     // ❌ (SCSS var statique)
+  color: var(--color-text); // ✅
+  background: $color-primary; // ❌ (SCSS var statique)
 }
 ```
 
@@ -115,14 +124,19 @@ $local-var: value;
 ```scss
 @mixin respond-to($breakpoint) {
   @if $breakpoint == sm {
-    @media (min-width: 576px) { @content; }
+    @media (min-width: 576px) {
+      @content;
+    }
   } @else if $breakpoint == md {
-    @media (min-width: 768px) { @content; }
+    @media (min-width: 768px) {
+      @content;
+    }
   }
 }
 ```
 
 **Usage Pattern**:
+
 ```scss
 .component {
   // Mobile (320px+) - DEFAULT
@@ -148,6 +162,7 @@ $local-var: value;
 ```
 
 **Breakpoints**:
+
 ```scss
 $breakpoint-sm:  576px
 $breakpoint-md:  768px
@@ -162,7 +177,7 @@ $breakpoint-xl: 1200px
 ```scss
 .navbar {
   /* Mobile: 320px+ */
-  flex-direction: column;      // Vertical stack
+  flex-direction: column; // Vertical stack
   align-items: flex-start;
   height: auto;
   gap: $spacing-xs;
@@ -170,11 +185,11 @@ $breakpoint-xl: 1200px
 
   /* Desktop: 576px+ */
   @include respond-to(sm) {
-    flex-direction: row;        // Horizontal
+    flex-direction: row; // Horizontal
     justify-content: space-between;
-    height: rem(44);           // Fixed height
+    height: rem(44); // Fixed height
     padding: 0 $spacing-lg;
-    gap: 0;                     // No gap, use justify-content
+    gap: 0; // No gap, use justify-content
   }
 }
 ```
@@ -208,7 +223,7 @@ $breakpoint-xl: 1200px
 ```scss
 @mixin focus-ring($color: $color-accent, $width: 2px, $offset: 2px) {
   &:focus {
-    outline: none;  // Reset default outline
+    outline: none; // Reset default outline
   }
 
   &:focus-visible {
@@ -219,19 +234,23 @@ $breakpoint-xl: 1200px
 ```
 
 **Usage - Button**:
+
 ```scss
 .btn {
-  @include focus-ring;  // Défaut: orange accent
+  @include focus-ring; // Défaut: orange accent
 
   &--secondary {
-    @include focus-ring(white);  // Custom color
+    @include focus-ring(white); // Custom color
   }
 }
 ```
 
 **Output CSS**:
+
 ```css
-.btn:focus { outline: none; }
+.btn:focus {
+  outline: none;
+}
 .btn:focus-visible {
   outline: 2px solid #ffb400;
   outline-offset: 2px;
@@ -244,16 +263,17 @@ $breakpoint-xl: 1200px
 
 ```scss
 @mixin interactive-target {
-  min-height: rem(44);   // 2.75rem = 44px
+  min-height: rem(44); // 2.75rem = 44px
   min-width: rem(44);
 }
 ```
 
 **Usage**:
+
 ```scss
 .btn {
   @include interactive-target;
-  padding: $spacing-xs $spacing-sm;  // Extra padding OK
+  padding: $spacing-xs $spacing-sm; // Extra padding OK
 }
 ```
 
@@ -283,13 +303,14 @@ $breakpoint-xl: 1200px
   animation: spinner-rotate 1s linear infinite;
 
   @media (prefers-reduced-motion: reduce) {
-    animation: none;      // Override global
-    opacity: 0.6;         // Fallback visual
+    animation: none; // Override global
+    opacity: 0.6; // Fallback visual
   }
 }
 ```
 
 **Mixin de sécurité**:
+
 ```scss
 @mixin safe-transition(
   $property: all,
@@ -418,21 +439,18 @@ if (isOpen) {
 ```typescript
 const handleKeyDown = (e: KeyboardEvent) => {
   const items = menuItemsRef.current.filter(Boolean)
-  const currentIndex = items.findIndex(
-    item => item === document.activeElement
-  )
+  const currentIndex = items.findIndex(item => item === document.activeElement)
 
   switch (e.key) {
     case 'Escape':
       setOpen(false)
-      btnRef.current?.focus()  // Retour focus trigger
+      btnRef.current?.focus() // Retour focus trigger
       break
 
     case 'ArrowDown':
       e.preventDefault()
-      const next = currentIndex < items.length - 1
-        ? items[currentIndex + 1]
-        : items[0]  // Loop
+      const next =
+        currentIndex < items.length - 1 ? items[currentIndex + 1] : items[0] // Loop
       next?.focus()
       break
 
@@ -460,7 +478,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
 ```scss
 .skip-link {
   position: absolute;
-  top: -40px;              // Caché
+  top: -40px; // Caché
   left: 0;
   background: var(--color-primary);
   padding: 8px 16px;
@@ -468,7 +486,7 @@ const handleKeyDown = (e: KeyboardEvent) => {
   z-index: 9999;
 
   &:focus {
-    top: 0;                // Visible au focus
+    top: 0; // Visible au focus
     outline: 2px solid $color-accent;
     outline-offset: 2px;
   }
@@ -476,10 +494,9 @@ const handleKeyDown = (e: KeyboardEvent) => {
 ```
 
 **Usage**: Ajouter en première ligne de body
+
 ```html
-<a href="#main-content" class="skip-link">
-  Aller au contenu principal
-</a>
+<a href="#main-content" class="skip-link"> Aller au contenu principal </a>
 ```
 
 ---
@@ -514,6 +531,7 @@ export default function Input({
 ```
 
 **Bénéfices**:
+
 - Extend HTML attrs (inherit all standard props)
 - Omit override (custom onChange/value)
 - Optional props avec defaults
@@ -560,6 +578,7 @@ interface ButtonProps {
 ### 5.1 Container/Wrapper Pattern
 
 **Modal**:
+
 ```typescript
 interface ModalProps {
   isOpen: boolean
@@ -586,6 +605,7 @@ interface ModalProps {
 ### 5.2 State Lifting Pattern
 
 **Navbar.tsx**:
+
 ```typescript
 const [showPersonalizationModal, setShowPersonalizationModal] = useState(false)
 
@@ -630,6 +650,7 @@ title={t('nav.tableau')}
 ### 6.2 Context Hooks (useAuth, usePermissions)
 
 **Pattern**:
+
 ```typescript
 const { user, authReady, signOut } = useAuth()
 const { can, isAdmin, isVisitor, ready } = usePermissions()
@@ -674,6 +695,7 @@ menuItemsRef.current[0]?.focus()
 ```
 
 **Pattern**:
+
 - `initial`: Début (caché)
 - `animate`: État final (visible)
 - `transition`: Timing (respecte prefers-reduced-motion? À vérifier)
@@ -684,21 +706,32 @@ menuItemsRef.current[0]?.focus()
 
 ```scss
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
-  from { transform: translateY(10px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 ```
 
 **Usage SCSS**:
+
 ```scss
 .component {
-  animation: fade-in 0.3s ease-out;  // Sans mixin
-  @include safe-animation(fade-in);  // Avec mixin = prefers-reduced-motion safe
+  animation: fade-in 0.3s ease-out; // Sans mixin
+  @include safe-animation(fade-in); // Avec mixin = prefers-reduced-motion safe
 }
 ```
 
@@ -782,14 +815,14 @@ btnRef.current?.focus()  // Retour sur trigger
 ```scss
 // ❌ MAUVAIS:
 .button {
-  background: #f0f0f0;  // Gray on white = bad contrast
+  background: #f0f0f0; // Gray on white = bad contrast
   color: white;
 }
 
 // ✅ BON:
 .button {
-  background: var(--color-primary);  // #0077c2
-  color: white;  // 4.7:1 ratio
+  background: var(--color-primary); // #0077c2
+  color: white; // 4.7:1 ratio
 }
 ```
 

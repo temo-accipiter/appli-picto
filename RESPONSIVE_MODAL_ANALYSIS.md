@@ -5,18 +5,19 @@
 **Définis dans**: `/src/styles/abstracts/_variables.scss` (lignes 84-88)
 
 ```scss
-$breakpoint-sm: 576px;   // Petits appareils (tablets portrait)
-$breakpoint-md: 768px;   // Appareils moyens (tablets landscape, small desktop)
-$breakpoint-lg: 992px;   // Grands appareils (desktop)
-$breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
+$breakpoint-sm: 576px; // Petits appareils (tablets portrait)
+$breakpoint-md: 768px; // Appareils moyens (tablets landscape, small desktop)
+$breakpoint-lg: 992px; // Grands appareils (desktop)
+$breakpoint-xl: 1200px; // Très grands appareils (large desktop)
 ```
 
 **Mixin responsive disponible** (`_mixins.scss` lignes 17-37):
+
 ```scss
-@include respond-to(sm)  // @media (min-width: 576px)
-@include respond-to(md)  // @media (min-width: 768px)
-@include respond-to(lg)  // @media (min-width: 992px)
-@include respond-to(xl)  // @media (min-width: 1200px)
+@include respond-to(sm) // @media (min-width: 576px)
+  @include respond-to(md) // @media (min-width: 768px)
+  @include respond-to(lg) // @media (min-width: 992px)
+  @include respond-to(xl); // @media (min-width: 1200px)
 ```
 
 **Approche**: Mobile-first (base = mobile, enhancement = desktop avec @include respond-to)
@@ -28,12 +29,13 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 **Fichier**: `/src/components/shared/modal/Modal.scss`
 
 ### Sizing Actuel:
+
 ```scss
 .modal {
   max-width: 500px;
-  width: 90%;              // 90% sur TOUS les appareils
-  max-height: 90vh;        // 90% de la viewport height
-  overflow: hidden;        // Le contenu scroll dans .modal__content
+  width: 90%; // 90% sur TOUS les appareils
+  max-height: 90vh; // 90% de la viewport height
+  overflow: hidden; // Le contenu scroll dans .modal__content
 }
 ```
 
@@ -55,6 +57,7 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
    - Montre que le pattern existe déjà dans le projet ✓
 
 ### Animations de modal:
+
 ```scss
 @media (prefers-reduced-motion: reduce) {
   // Animations disabled pour accessibilité TSA
@@ -69,18 +72,18 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 
 ```scss
 .settings-menu__dialog {
-  width: min(300px, 90vw);        // Min entre 300px et 90% viewport
+  width: min(300px, 90vw); // Min entre 300px et 90% viewport
 
   // Desktop
   @media (min-width: 768px) {
     max-height: calc(100vh - 100px);
     animation: slideInDown 0.18s ease-out;
-    margin: 64px 14px 0 0;         // Top positioning
+    margin: 64px 14px 0 0; // Top positioning
   }
 
   // Mobile: bas-droite pour thumb-friendly
   @media (max-width: 767px) {
-    margin: 0 14px 14px 0;         // Bottom positioning
+    margin: 0 14px 14px 0; // Bottom positioning
     max-height: 70vh;
     animation: slideInUp 0.18s ease-out;
   }
@@ -88,6 +91,7 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 ```
 
 **Pattern clé**:
+
 - Desktop: Top positioning + slideInDown
 - Mobile: Bottom positioning + slideInUp
 - Safe-area support pour notches iPhone
@@ -96,7 +100,7 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 
 ```scss
 .bottom-nav {
-  display: none;  // Desktop: hidden
+  display: none; // Desktop: hidden
 
   @media (max-width: 767px) {
     display: flex;
@@ -111,19 +115,20 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 .bottom-nav--tableau {
   @media (max-width: 767px) {
     top: auto;
-    bottom: 0;  // Mobile: bottom-right
+    bottom: 0; // Mobile: bottom-right
     padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
   }
 
   @media (min-width: 768px) {
     display: flex;
-    top: 0;     // Desktop: top-right
+    top: 0; // Desktop: top-right
     right: 0;
   }
 }
 ```
 
 **Pattern clé**:
+
 - Safe-area insets pour notches/home indicator
 - Contextual positioning (top vs bottom)
 - `env(safe-area-inset-*)` pour devices iOS
@@ -139,8 +144,9 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
   height: auto;
   padding: $spacing-sm $spacing-md;
 
-  @include respond-to(sm) {  // 576px+
-    flex-direction: row;      /* Desktop: row */
+  @include respond-to(sm) {
+    // 576px+
+    flex-direction: row; /* Desktop: row */
     justify-content: space-between;
     height: rem(64);
     padding: 0 $spacing-lg;
@@ -148,12 +154,12 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 }
 
 .navbar-left {
-  width: 100%;  /* Mobile: full width */
+  width: 100%; /* Mobile: full width */
   justify-content: center;
   flex-wrap: wrap;
 
   @include respond-to(sm) {
-    width: auto;  /* Desktop: auto */
+    width: auto; /* Desktop: auto */
     justify-content: flex-start;
     flex-wrap: nowrap;
   }
@@ -161,6 +167,7 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 ```
 
 **Pattern clé**:
+
 - Flex direction switching (column ↔ row)
 - Width adaptation (100% ↔ auto)
 - Gap/spacing scale
@@ -189,13 +196,14 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
   // Sur pages edit/profile (needs higher position)
   &.user-menu-dialog--elevated {
     @media (max-width: 767px) {
-      max-height: 70vh;  // Moins de hauteur
+      max-height: 70vh; // Moins de hauteur
     }
   }
 }
 ```
 
 **Pattern clé**:
+
 - Positional variants avec états (`.--elevated`)
 - Dynamic max-height sur mobile vs desktop
 - Different animations directions
@@ -208,19 +216,20 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
   margin: 20px;
   max-width: 500px;
 
-  @include respond-to(sm) {  // 576px+
+  @include respond-to(sm) {
+    // 576px+
     width: 90vw;
     max-width: 500px;
-    margin: auto;  /* Auto center on desktop */
+    margin: auto; /* Auto center on desktop */
   }
 }
 
 /* Padding adaptation */
 .modal-header {
-  padding: 20px 20px 16px;  /* Mobile */
+  padding: 20px 20px 16px; /* Mobile */
 
   @include respond-to(sm) {
-    padding: 24px 24px 16px;  /* Desktop */
+    padding: 24px 24px 16px; /* Desktop */
   }
 }
 ```
@@ -230,40 +239,44 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 ## 4. COMPOSANTS RESPONSIFS (Patterns à appliquer aux modals)
 
 ### Button (min-height: 44px WCAG)
+
 ```scss
 .btn {
-  min-height: rem(44);  // WCAG 2.2 AA interactive target
+  min-height: rem(44); // WCAG 2.2 AA interactive target
   padding: $spacing-xs $spacing-sm;
   // Pas de media query - sizing fixe (bonne pratique pour accessibilité)
 }
 ```
 
 ### Input Field
+
 ```scss
 .input-field__input {
-  min-height: rem(44);  // WCAG 2.2 AA
+  min-height: rem(44); // WCAG 2.2 AA
   max-width: 11.5rem;
   padding: rem(8);
-  font-size: rem(16);  // Important: 16px min pour éviter zoom iPhone
+  font-size: rem(16); // Important: 16px min pour éviter zoom iPhone
 }
 ```
 
 ### SelectWithImage (Dropdown)
+
 ```scss
 .select-with-image__trigger {
   min-height: rem(44);
-  width: 100%;  // Full width sur mobile
+  width: 100%; // Full width sur mobile
   padding: rem(8) $spacing-sm;
 }
 
 .select-with-image__content {
-  width: var(--radix-select-trigger-width);  // Match trigger width
-  max-height: var(--radix-select-content-available-height);  // Auto height
+  width: var(--radix-select-trigger-width); // Match trigger width
+  max-height: var(--radix-select-content-available-height); // Auto height
   // Radix UI handle responsive positioning!
 }
 ```
 
 ### Interactive Target Size
+
 ```scss
 // WCAG 2.2 AA: minimum 44px x 44px
 @mixin interactive-target {
@@ -277,24 +290,27 @@ $breakpoint-xl: 1200px;  // Très grands appareils (large desktop)
 ## 5. VARIABLES SPACING & SIZING
 
 **Spacing scale** (défini dans `_variables.scss`):
+
 ```scss
-$spacing-xxs: 0.25rem;   // 4px
-$spacing-xs: 0.5rem;     // 8px
-$spacing-sm: 0.75rem;    // 12px
-$spacing-md: 1rem;       // 16px (base)
-$spacing-lg: 1.5rem;     // 24px
-$spacing-xl: 2rem;       // 32px
+$spacing-xxs: 0.25rem; // 4px
+$spacing-xs: 0.5rem; // 8px
+$spacing-sm: 0.75rem; // 12px
+$spacing-md: 1rem; // 16px (base)
+$spacing-lg: 1.5rem; // 24px
+$spacing-xl: 2rem; // 32px
 ```
 
 **Font sizes**:
+
 ```scss
-$font-size-sm: 0.875rem;  // 14px
-$font-size-base: 1rem;    // 16px (minimum pour inputs = évite zoom iPhone)
-$font-size-lg: 1.25rem;   // 20px
-$font-size-xl: 1.5rem;    // 24px
+$font-size-sm: 0.875rem; // 14px
+$font-size-base: 1rem; // 16px (minimum pour inputs = évite zoom iPhone)
+$font-size-lg: 1.25rem; // 20px
+$font-size-xl: 1.5rem; // 24px
 ```
 
 **Helper function `rem()`** (définit dans `_functions.scss`):
+
 ```scss
 @function rem($px) {
   @return math.div($px, 16) * 1rem;
@@ -307,6 +323,7 @@ $font-size-xl: 1.5rem;    // 24px
 ## 6. DARK MODE & ANIMATIONS
 
 ### Dark Mode (CSS Variables + @media query)
+
 ```scss
 // Light mode (default)
 :root {
@@ -332,6 +349,7 @@ $font-size-xl: 1.5rem;    // 24px
 ```
 
 ### Motion Accessibility (prefers-reduced-motion)
+
 ```scss
 @media (prefers-reduced-motion: reduce) {
   // Toutes les animations → duration 0.001ms
@@ -354,9 +372,9 @@ $font-size-xl: 1.5rem;    // 24px
 ## 7. Z-INDEX STACK
 
 ```scss
-$z-overlay: 1000;      // Modal overlay
-$z-modal: 1100;        // Modal content
-$z-tooltip: 1200;      // Tooltips (highest)
+$z-overlay: 1000; // Modal overlay
+$z-modal: 1100; // Modal content
+$z-tooltip: 1200; // Tooltips (highest)
 ```
 
 ---
@@ -365,17 +383,17 @@ $z-tooltip: 1200;      // Tooltips (highest)
 
 ### Current Modal.scss Limits:
 
-| Aspect | Actuel | Problème |
-|--------|--------|---------|
-| **Mobile sizing** | 90% width, 500px max | OK pour >320px, mais peut être amélioré |
-| **Mobile height** | 90vh | Peut être trop sur petits écrans |
-| **Padding** | $spacing-lg $spacing-md (24px 16px) | Peut causer overflow sur très petit mobile |
-| **Title font size** | $font-size-xl (24px) | Peut sembler grand sur 320px mobile |
-| **Content padding** | $spacing-lg $spacing-md | Peut réduire contenu visible |
-| **Media queries** | NONE | Aucune adaptation par breakpoint |
-| **Safe-area** | NOT USED | Pas de support pour notches iPhone |
-| **Fullscreen mode** | NONE | Pas d'option fullscreen mobile |
-| **Drawer/Slide-up** | NONE | Pas de variant slide-up pour mobile |
+| Aspect              | Actuel                              | Problème                                   |
+| ------------------- | ----------------------------------- | ------------------------------------------ |
+| **Mobile sizing**   | 90% width, 500px max                | OK pour >320px, mais peut être amélioré    |
+| **Mobile height**   | 90vh                                | Peut être trop sur petits écrans           |
+| **Padding**         | $spacing-lg $spacing-md (24px 16px) | Peut causer overflow sur très petit mobile |
+| **Title font size** | $font-size-xl (24px)                | Peut sembler grand sur 320px mobile        |
+| **Content padding** | $spacing-lg $spacing-md             | Peut réduire contenu visible               |
+| **Media queries**   | NONE                                | Aucune adaptation par breakpoint           |
+| **Safe-area**       | NOT USED                            | Pas de support pour notches iPhone         |
+| **Fullscreen mode** | NONE                                | Pas d'option fullscreen mobile             |
+| **Drawer/Slide-up** | NONE                                | Pas de variant slide-up pour mobile        |
 
 ---
 
@@ -384,6 +402,7 @@ $z-tooltip: 1200;      // Tooltips (highest)
 ### A. Responsive Modal Variants
 
 **Option 1: Media Query Approach (Similar to SettingsMenu)**
+
 ```scss
 .modal {
   width: 90%;
@@ -392,11 +411,11 @@ $z-tooltip: 1200;      // Tooltips (highest)
   // Mobile (320px - 767px)
   @media (max-width: 767px) {
     width: 95vw;
-    max-width: calc(100% - 32px);  // 16px padding each side
-    max-height: calc(100vh - 40px);  // 20px top/bottom buffer
+    max-width: calc(100% - 32px); // 16px padding each side
+    max-height: calc(100vh - 40px); // 20px top/bottom buffer
 
     .modal__title {
-      font-size: $font-size-lg;  // Reduce from 24px to 20px
+      font-size: $font-size-lg; // Reduce from 24px to 20px
     }
   }
 
@@ -423,15 +442,15 @@ $z-tooltip: 1200;      // Tooltips (highest)
     height: 100vh;
     max-width: 100%;
     max-height: 100vh;
-    border-radius: 0;  // Remove corners on fullscreen
+    border-radius: 0; // Remove corners on fullscreen
 
     .modal__header {
-      padding: $spacing-md;  // Reduce padding
+      padding: $spacing-md; // Reduce padding
     }
 
     .modal__content {
       flex: 1;
-      min-height: 0;  // Important for flex overflow
+      min-height: 0; // Important for flex overflow
     }
   }
 }
@@ -441,10 +460,10 @@ $z-tooltip: 1200;      // Tooltips (highest)
 
 ```scss
 .modal-overlay--drawer {
-  align-items: flex-end;  // Bottom positioning
+  align-items: flex-end; // Bottom positioning
 
   @media (min-width: 768px) {
-    align-items: center;  // Center on desktop
+    align-items: center; // Center on desktop
   }
 }
 
@@ -452,12 +471,12 @@ $z-tooltip: 1200;      // Tooltips (highest)
   width: 100%;
   max-width: 100%;
   max-height: 70vh;
-  border-radius: $radius-lg $radius-lg 0 0;  // Rounded top only
+  border-radius: $radius-lg $radius-lg 0 0; // Rounded top only
 
   @media (min-width: 768px) {
     width: 90%;
     max-width: 500px;
-    border-radius: $radius-lg;  // All corners rounded
+    border-radius: $radius-lg; // All corners rounded
     max-height: 90vh;
   }
 }
@@ -468,7 +487,9 @@ $z-tooltip: 1200;      // Tooltips (highest)
 ```scss
 .modal--safe-area {
   @media (max-width: 767px) {
-    width: calc(100% - 2 * max($spacing-md, env(safe-area-inset-left, $spacing-md)));
+    width: calc(
+      100% - 2 * max($spacing-md, env(safe-area-inset-left, $spacing-md))
+    );
     padding-left: max($spacing-md, env(safe-area-inset-left, $spacing-md));
     padding-right: max($spacing-md, env(safe-area-inset-right, $spacing-md));
   }
@@ -481,10 +502,10 @@ $z-tooltip: 1200;      // Tooltips (highest)
 // iOS-specific landscape detection
 @media (max-height: 500px) {
   .modal {
-    max-height: calc(100vh - 20px);  // Tighter constraints
+    max-height: calc(100vh - 20px); // Tighter constraints
 
     .modal__header {
-      padding: $spacing-sm $spacing-md;  // Reduce vertical padding
+      padding: $spacing-sm $spacing-md; // Reduce vertical padding
     }
   }
 }
@@ -495,12 +516,14 @@ $z-tooltip: 1200;      // Tooltips (highest)
 ## 10. ACCESSIBLE SIZING GUIDELINES (WCAG 2.2 AA)
 
 ### Used Throughout Project:
+
 - **Interactive targets**: minimum 44px × 44px (buttons, inputs, toggles)
 - **Focus ring**: 2px solid with 2px offset
 - **Font sizes**: minimum 16px in inputs (prevents iPhone zoom)
 - **Contrast ratios**: 4.5:1 for text, 3:1 for UI components
 
 ### Modal-Specific:
+
 - Header title should remain readable (16px minimum on mobile)
 - Button footer targets: ensure 44px minimum height
 - Content padding: minimum 12px (avoid edge clipping on notch devices)
@@ -511,26 +534,39 @@ $z-tooltip: 1200;      // Tooltips (highest)
 ## 11. ANIMATION CONTROLS
 
 ### Existing Animations Used:
+
 ```scss
-$transition-fast: 0.2s;    // Quick interactions
-$transition-base: 0.3s;    // Default animations
-$transition-slow: 0.5s;    // Slow emphasis animations
+$transition-fast: 0.2s; // Quick interactions
+$transition-base: 0.3s; // Default animations
+$transition-slow: 0.5s; // Slow emphasis animations
 ```
 
 ### Modal Animations:
+
 ```scss
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 ```
 
 ### Reduced Motion Handling:
+
 ```scss
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay {
@@ -551,6 +587,7 @@ $transition-slow: 0.5s;    // Slow emphasis animations
 ## 12. SAFE-AREA & NOTCH SUPPORT
 
 **Pattern used in BottomNav**:
+
 ```scss
 padding-top: max($spacing-md, env(safe-area-inset-top));
 padding-right: max($spacing-md, env(safe-area-inset-right));
@@ -559,6 +596,7 @@ padding-left: max($spacing-md, env(safe-area-inset-left));
 ```
 
 **Why important for modals**:
+
 - iPhone notch (top)
 - iPhone home indicator (bottom)
 - Android system gestures (sides)
@@ -569,14 +607,20 @@ padding-left: max($spacing-md, env(safe-area-inset-left));
 ## 13. KEY MIXIN REFERENCE
 
 ### `respond-to()` - Mobile-first
+
 ```scss
-@include respond-to(sm) { }   // 576px+
-@include respond-to(md) { }   // 768px+
-@include respond-to(lg) { }   // 992px+
-@include respond-to(xl) { }   // 1200px+
+@include respond-to(sm) {
+} // 576px+
+@include respond-to(md) {
+} // 768px+
+@include respond-to(lg) {
+} // 992px+
+@include respond-to(xl) {
+} // 1200px+
 ```
 
 ### `safe-transition()` - Motion accessibility
+
 ```scss
 @include safe-transition($property, $duration) {
   // Auto-adds prefers-reduced-motion: reduce
@@ -584,11 +628,14 @@ padding-left: max($spacing-md, env(safe-area-inset-left));
 ```
 
 ### `interactive-target()` - WCAG compliance
+
 ```scss
-@include interactive-target { }  // min 44×44px
+@include interactive-target {
+} // min 44×44px
 ```
 
 ### `focus-ring()` - Accessible focus
+
 ```scss
 @include focus-ring($color, $width, $offset) {
   // WCAG 2.4.7 compliant outline
@@ -618,28 +665,27 @@ padding-left: max($spacing-md, env(safe-area-inset-left));
 
 All modals inherit from base Modal component:
 
-| Modal | Location | Usage |
-|-------|----------|-------|
-| Modal | `components/shared/modal/Modal.tsx` | Base component |
-| ModalAjout | `components/shared/modal/modal-ajout/` | Task creation |
-| ModalCategory | `components/shared/modal/modal-category/` | Category management |
-| ModalConfirm | `components/shared/modal/modal-confirm/` | Confirmations |
-| ModalQuota | `components/shared/modal/modal-quota/` | Quota alerts |
-| ModalRecompense | `components/shared/modal/modal-recompense/` | Reward display |
-| PersonalizationModal | `components/shared/modal/modal-personalization/` | Settings |
-| SignupPromptModal | `components/shared/modal/modal-signup-prompt/` | Premium signup |
-| DeleteAccountModal | `components/features/settings/` | Account deletion |
+| Modal                | Location                                         | Usage               |
+| -------------------- | ------------------------------------------------ | ------------------- |
+| Modal                | `components/shared/modal/Modal.tsx`              | Base component      |
+| ModalAjout           | `components/shared/modal/modal-ajout/`           | Task creation       |
+| ModalCategory        | `components/shared/modal/modal-category/`        | Category management |
+| ModalConfirm         | `components/shared/modal/modal-confirm/`         | Confirmations       |
+| ModalQuota           | `components/shared/modal/modal-quota/`           | Quota alerts        |
+| ModalRecompense      | `components/shared/modal/modal-recompense/`      | Reward display      |
+| PersonalizationModal | `components/shared/modal/modal-personalization/` | Settings            |
+| SignupPromptModal    | `components/shared/modal/modal-signup-prompt/`   | Premium signup      |
+| DeleteAccountModal   | `components/features/settings/`                  | Account deletion    |
 
 ---
 
 ## Summary Table: Responsive Patterns
 
-| Component | Mobile | Tablet | Desktop | Pattern |
-|-----------|--------|--------|---------|---------|
-| Modal | 90% width | 90% width | 90% width + max-500px | Fixed |
-| SettingsMenu | Bottom-right + slideInUp | Top-right | Top-right + slideInDown | Positioned |
-| BottomNav | Fixed bottom | Hidden | Hidden | Display toggle |
-| UserMenu | 80vh max-height | 80vh | calc(100vh-100px) | Height variant |
-| Navbar | Column wrap | Row + responsive gap | Row | Flex direction |
-| SignupPrompt | 95vw 20px margin | 90vw centered | 90vw + max-500px | Width variant |
-
+| Component    | Mobile                   | Tablet               | Desktop                 | Pattern        |
+| ------------ | ------------------------ | -------------------- | ----------------------- | -------------- |
+| Modal        | 90% width                | 90% width            | 90% width + max-500px   | Fixed          |
+| SettingsMenu | Bottom-right + slideInUp | Top-right            | Top-right + slideInDown | Positioned     |
+| BottomNav    | Fixed bottom             | Hidden               | Hidden                  | Display toggle |
+| UserMenu     | 80vh max-height          | 80vh                 | calc(100vh-100px)       | Height variant |
+| Navbar       | Column wrap              | Row + responsive gap | Row                     | Flex direction |
+| SignupPrompt | 95vw 20px margin         | 90vw centered        | 90vw + max-500px        | Width variant  |

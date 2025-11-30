@@ -19,6 +19,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 **Objectif**: Enfant ne voit QUE les tâches, rien d'autre. Minimum de distraction = maximum de focus.
 
 #### Page `/tableau` (Child View)
+
 ```
 📱 MOBILE:                    🖥️ DESKTOP:
 ┌─────────────────────────┐
@@ -38,6 +39,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ```
 
 **Key Features**:
+
 - ✅ **No navbar** on /tableau (no visual clutter)
 - ✅ Avatar only interactive element (bottom-right mobile, top-right desktop)
 - ✅ UserMenu hub: all navigation centralized
@@ -47,6 +49,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ---
 
 #### Pages Other Pages (`/edition`, `/profil`, `/abonnement`, `/admin`)
+
 ```
 📱 MOBILE:                    🖥️ DESKTOP:
 ┌─────────────────────────┐
@@ -58,6 +61,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ```
 
 **Features**:
+
 - ✅ Responsive navbar (mobile top-right, desktop top)
 - ✅ Nav-icon-links: Édition + Tableau (contextual)
 - ✅ Hidden when redundant (e.g., no Édition icon when ON /edition)
@@ -67,18 +71,19 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 
 ### 📐 Responsive Navigation Logic
 
-| Page | Mobile | Desktop |
-|------|--------|---------|
+| Page       | Mobile                     | Desktop                 |
+| ---------- | -------------------------- | ----------------------- |
 | `/tableau` | Avatar only (bottom-right) | Avatar only (top-right) |
-| `/edition` | ✏️ + 👤 (top-right) | ✏️ + 👤 (top navbar) |
-| `/profil` | 📊 + ✏️ + 👤 | 📊 + ✏️ + 👤 |
-| `/admin` | 📊 + ✏️ + 👤 | 📊 + ✏️ + 👤 |
+| `/edition` | ✏️ + 👤 (top-right)        | ✏️ + 👤 (top navbar)    |
+| `/profil`  | 📊 + ✏️ + 👤               | 📊 + ✏️ + 👤            |
+| `/admin`   | 📊 + ✏️ + 👤               | 📊 + ✏️ + 👤            |
 
 ---
 
 ### 🔧 Components Structure
 
 #### **BottomNav.tsx** (Responsive Navbar)
+
 - Conditional rendering based on pathname
 - Zen mode: `/tableau` → show ONLY avatar
 - Normal mode: other pages → show nav-icons + avatar
@@ -86,6 +91,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 - Desktop: hidden (navbar at top)
 
 **Features**:
+
 - ✅ 44px touch targets (WCAG 2.5.5)
 - ✅ Focus ring visible (2px outline)
 - ✅ aria-label + title attributes
@@ -93,6 +99,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 - ✅ Conditional Edition icon (hidden if ON /edition)
 
 #### **UserMenu.tsx** (Enhanced)
+
 - Integrate Édition icon (if not on /edition)
 - Add Cookies/RGPD link
 - Keep existing: Settings, Logout, Subscriptions
@@ -103,24 +110,28 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ## 🎨 TSA-Friendly Design Benefits
 
 ### 1. **Tableau Page = Zen Mode**
+
 - ✅ Child focuses ONLY on tasks
 - ✅ No navbar distraction
 - ✅ Reduces sensory overload
 - ✅ Psychological safety (knows what to do)
 
 ### 2. **UserMenu as Central Hub**
+
 - ✅ All actions: Édition, Settings, Cookies, Logout
 - ✅ Single access point (avatar)
 - ✅ Predictable navigation
 - ✅ No scattered UI elements
 
 ### 3. **Responsive = No Double Navigation**
+
 - ✅ One navbar, responsive positioning
 - ✅ No "top nav + bottom nav" conflict
 - ✅ Clean architecture
 - ✅ Easy maintenance
 
 ### 4. **Mobile-First Ergonomics**
+
 - ✅ Avatar at top-right (accessible, doesn't block content)
 - ✅ Fixed position (always accessible)
 - ✅ 44px minimum touch target
@@ -131,30 +142,37 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ## ♿ WCAG 2.2 AA Compliance
 
 ### Implemented
+
 ✅ **Pointer Target Size (2.5.5)**
+
 - Avatar: min 44px
 - Nav icons: 44x44px
 - Spacing: ≥8px between targets
 
 ✅ **Focus Visible (2.4.7)**
+
 - 2px solid outline on all interactive elements
 - Outline-offset: 2px for clarity
 
 ✅ **Keyboard Navigation (2.1.1)**
+
 - Tab: navigate between items
 - Enter/Space: activate
 - Escape: close UserMenu
 
 ✅ **Aria & Labels (1.3.1)**
+
 - aria-label on icon-only buttons
 - title attributes for tooltips
 - Semantic HTML
 
 ✅ **Reduced Motion (2.3.3)**
+
 - Animations disabled if `prefers-reduced-motion`
 - Page fully functional without animations
 
 ✅ **Color Contrast (1.4.3)**
+
 - Primary: 4.7:1 on white
 - Dark mode: high contrast verified
 
@@ -184,6 +202,7 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ✅ Responsive positioning
 
 ### Recommendations for Next Sprint
+
 - [ ] E2E tests for /tableau zen mode
 - [ ] Mobile device testing (real iPhone/Android)
 - [ ] Screen reader testing (NVDA, VoiceOver)
@@ -194,16 +213,19 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 ## 📋 Files Changed
 
 ### Created
+
 - `src/components/layout/bottom-nav/BottomNav.tsx` (75 lines)
 - `src/components/layout/bottom-nav/BottomNav.scss` (79 lines)
 
 ### Modified
+
 - `src/app/providers.tsx` - Add BottomNav integration
 - `src/components/layout/navbar/Navbar.tsx` - Removed redundant components
 - `public/locales/fr/common.json` - Add translations
 - `public/locales/en/common.json` - Add translations
 
 ### Removed
+
 - Breadcrumbs component (unnecessary visual clutter)
 - HomeButton component (redundant with nav-icon-link)
 - BottomNavItem component (simplified to nav-icon-link)
@@ -245,4 +267,3 @@ Créer une navigation **mobile-first** optimisée pour enfants autistes (TSA), a
 
 **Branch Ready for Merge** ✅
 **Sprint 1 Final** ✅
-

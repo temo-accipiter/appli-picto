@@ -29,6 +29,7 @@ Modal.tsx (BASE)
 ### ✅ Zéro Breaking Change (sauf ModalConfirm)
 
 **Modal base fonctionne rétrocompatible:**
+
 - Nouveau footer "Annuler" auto
 - Anciens `actions` props continuent de fonctionner
 - Nouvelle structure HTML, même API
@@ -93,7 +94,9 @@ Ces fichiers doivent être testés après modifications, mais pas modifiés:
 ## 🧪 Pages à Tester Visuellement
 
 ### Tableau (edit mode)
+
 **Modals:** ModalAjout, ModalCategory, ModalConfirm
+
 ```bash
 npm run dev → /edition
 → Clique "+ Ajouter Tâche"
@@ -102,7 +105,9 @@ npm run dev → /edition
 ```
 
 ### Tableau (display mode)
+
 **Modals:** ModalRecompense (lazy), PersonalizationModal
+
 ```bash
 npm run dev → /tableau
 → Complète toutes les tâches
@@ -111,14 +116,18 @@ npm run dev → /tableau
 ```
 
 ### Profil
+
 **Modals:** DeleteAccountModal, autres
+
 ```bash
 npm run dev → /profil
 → Scroll jusqu'à "Supprimer compte"
 ```
 
 ### Navbar
+
 **Modals:** PersonalizationModal
+
 ```bash
 npm run dev → /
 → Visiteur ou pas logged in
@@ -130,6 +139,7 @@ npm run dev → /
 ## 🔄 Flux de Modification
 
 ### Étape 1: ButtonClose (Base)
+
 ```
 1. Lire ButtonClose.tsx
 2. Ajouter prop size
@@ -143,6 +153,7 @@ npm run dev → /
 ---
 
 ### Étape 2: Modal.scss
+
 ```
 1. Lire Modal.scss complet
 2. Remplacer overlay styles (75% opacité, blur 4px)
@@ -156,6 +167,7 @@ npm run dev → /
 ---
 
 ### Étape 3: Modal.tsx (JSX)
+
 ```
 1. Lire Modal.tsx complet
 2. Créer nouveau header avec ButtonClose size="large"
@@ -169,6 +181,7 @@ npm run dev → /
 ---
 
 ### Étape 4: ModalConfirm Adapt
+
 ```
 1. Lire ModalConfirm.tsx
 2. Enlever action "Annuler" (maintenant auto)
@@ -181,6 +194,7 @@ npm run dev → /
 ---
 
 ### Étape 5: Vérifications Globales
+
 ```
 pnpm type-check  → Zéro erreur TS
 pnpm lint:fix    → Format ok
@@ -208,23 +222,29 @@ export { default as ModalConfirm } from './shared/modal/modal-confirm/ModalConfi
 ### Imports dans Pages
 
 #### TachesEdition.tsx
+
 ```typescript
 import { ModalAjout, ModalCategory, ModalConfirm } from '@/components'
 ```
+
 ✅ Pas de changement requis
 
 #### Tableau.tsx
+
 ```typescript
 const ModalRecompense = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalRecompense }))
 )
 ```
+
 ✅ Pas de changement requis
 
 #### Navbar.tsx
+
 ```typescript
 import { PersonalizationModal } from '@/components'
 ```
+
 ✅ Pas de changement requis
 
 ---
@@ -232,23 +252,27 @@ import { PersonalizationModal } from '@/components'
 ## ⚠️ Cas Spéciaux à Vérifier
 
 ### PersonalizationModal.tsx
+
 ```typescript
 // Contient son propre Modal wrapper
 <Modal isOpen={isOpen} onClose={onClose}>
   {/* Custom content */}
 </Modal>
 ```
+
 ✅ Fonctionnera avec nouveau Modal
 ✅ Aura nouveau footer Annuler (peut être redondant)
 → À VÉRIFIER visuellement
 
 ### SignupPromptModal.tsx
+
 ```typescript
 // Contient aussi Modal wrapper custom
 <Modal isOpen={isOpen} onClose={handleClose}>
   {/* Custom content */}
 </Modal>
 ```
+
 ✅ Fonctionnera avec nouveau Modal
 ✅ Footer Annuler peut être bon (double option fermeture)
 → À VÉRIFIER visuellement
@@ -258,14 +282,15 @@ import { PersonalizationModal } from '@/components'
 ## 🧩 Props Compatibility
 
 ### Modal.tsx Props (pas de changement)
+
 ```typescript
 interface ModalProps {
-  isOpen: boolean              // ✅ Inchangé
-  onClose: () => void          // ✅ Inchangé
-  title?: string               // ✅ Inchangé (maintenant dans header)
-  children: ReactNode          // ✅ Inchangé (maintenant dans content)
-  actions?: ModalAction[]       // ✅ Inchangé (maintenant dans footer)
-  className?: string           // ✅ Inchangé (modal + class)
+  isOpen: boolean // ✅ Inchangé
+  onClose: () => void // ✅ Inchangé
+  title?: string // ✅ Inchangé (maintenant dans header)
+  children: ReactNode // ✅ Inchangé (maintenant dans content)
+  actions?: ModalAction[] // ✅ Inchangé (maintenant dans footer)
+  className?: string // ✅ Inchangé (modal + class)
 }
 ```
 
@@ -276,6 +301,7 @@ interface ModalProps {
 ## 🎯 Test Coverage
 
 ### Unit Tests (si existent)
+
 ```
 ✅ Modal.test.tsx
    → Test isOpen/onClose
@@ -315,16 +341,16 @@ pnpm build
 
 ## 📊 Before/After Comparaison
 
-| Aspect | Avant Phase 1 | Après Phase 1 |
-|--------|--------------|---------------|
-| **Files modified** | 0 | 5 |
-| **Breaking changes** | 0 | 0* |
-| **API changes** | None | None |
-| **Visual changes** | Small | Significant (TSA focused) |
-| **Accessibility** | Good | Better |
-| **Mobile ready** | Partial | Better (prep for Phase 2) |
+| Aspect               | Avant Phase 1 | Après Phase 1             |
+| -------------------- | ------------- | ------------------------- |
+| **Files modified**   | 0             | 5                         |
+| **Breaking changes** | 0             | 0\*                       |
+| **API changes**      | None          | None                      |
+| **Visual changes**   | Small         | Significant (TSA focused) |
+| **Accessibility**    | Good          | Better                    |
+| **Mobile ready**     | Partial       | Better (prep for Phase 2) |
 
-*Except ModalConfirm (adaptation needed)
+\*Except ModalConfirm (adaptation needed)
 
 ---
 
@@ -352,6 +378,7 @@ pnpm build
 ## 🎉 Success Criteria Phase 1
 
 ✅ All modals display with:
+
 - 75% opaque overlay (dark, not distracting)
 - Large 48px close button (motor accessible)
 - Clear "Annuler" footer button (explicit close option)
@@ -359,6 +386,7 @@ pnpm build
 - Primary color border (contrast)
 
 ✅ No regressions:
+
 - All modals still close properly
 - All keyboard shortcuts still work
 - All animations smooth

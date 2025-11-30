@@ -1,4 +1,5 @@
 # Action Items - Appli-Picto Layout & Navigation
+
 ## Recommandations Immédiates par Priorité
 
 **Date**: 28 novembre 2024 | **Status**: Analysis Complete
@@ -23,6 +24,7 @@ pnpm test:a11y  # Nouveau script
 ```
 
 **Checklist**:
+
 - [ ] Installer Playwright + axe plugin
 - [ ] Créer tests E2E pour chaque page majeure
 - [ ] Exécuter sur breakpoints: 320px, 768px, 1200px
@@ -30,6 +32,7 @@ pnpm test:a11y  # Nouveau script
 - [ ] Assigner fixes par composant
 
 **Fichiers à créer**:
+
 - `tests/accessibility.spec.ts` - Tests axe-core E2E
 - `tests/keyboard-navigation.spec.ts` - Keyboard flow tests
 
@@ -42,6 +45,7 @@ pnpm test:a11y  # Nouveau script
 **Impact**: Compliance WCAG 2.2 AA (pointer target size)
 
 **À tester**:
+
 - [ ] Navbar buttons mobile (320px width)
   - [ ] Nav icons: largeur réelle >= 44px?
   - [ ] Spacing entre icones: >= 8px?
@@ -64,12 +68,14 @@ pnpm test:a11y  # Nouveau script
 **Outil**: Measure in DevTools (Ctrl+Shift+C)
 
 **Commande Test**:
+
 ```bash
 # Créer utility pour vérifier touch targets:
 pnpm test:touch-targets
 ```
 
 **Fichier à créer**:
+
 - `tests/touch-targets.spec.ts` - Playwright test checking min 44px
 
 ---
@@ -81,11 +87,13 @@ pnpm test:touch-targets
 **Impact**: Découvrir mobile UX issues
 
 **À tester sur device réel OU DevTools emulation**:
+
 - [ ] iPhone SE (375px)
 - [ ] iPhone 12 (390px)
 - [ ] Pixel 6 (412px)
 
 **Checklist**:
+
 - [ ] Navbar: buttons clickable? responsive bien?
 - [ ] UserMenu dropdown: positioning, z-index conflict?
 - [ ] SettingsMenu burger: visible? clickable?
@@ -95,6 +103,7 @@ pnpm test:touch-targets
 - [ ] Images: load? responsive sizes?
 
 **DevTools Steps**:
+
 ```
 1. F12 → DevTools
 2. Ctrl+Shift+M → Device mode
@@ -111,12 +120,14 @@ pnpm test:touch-targets
 **Statut**: ⚠️ Non audité
 **Effort**: 4-6 heures
 **Fichiers clés**:
+
 - `/src/components/features/taches/TachesEdition.tsx`
 - `/src/components/shared/modal/ModalAjout.tsx`
 - `/src/app/(public)/signup/page.tsx`
 - `/src/app/(protected)/profil/page.tsx`
 
 **À vérifier**:
+
 - [ ] Form labels: tous les inputs ont `<label htmlFor={id}>`?
 - [ ] Fieldsets: groupes radio/checkbox dans `<fieldset><legend>`?
 - [ ] Error messages: aria-describedby correct?
@@ -127,6 +138,7 @@ pnpm test:touch-targets
 - [ ] Multipart forms: step indication? aria-current?
 
 **Exemple bon pattern**:
+
 ```typescript
 <form>
   <fieldset>
@@ -157,6 +169,7 @@ pnpm test:touch-targets
 ```
 
 **Fichier à créer**:
+
 - `docs/FORM_AUDIT.md` - Findings + recommendations
 
 ---
@@ -169,6 +182,7 @@ pnpm test:touch-targets
 **Library**: @dnd-kit (version 6.3.1)
 
 **Questions**:
+
 - [ ] Keyboard support: Arrow keys pour déplacer?
 - [ ] Screen reader: annonce des changements?
 - [ ] Focus visible: draggable items highlighted?
@@ -176,10 +190,12 @@ pnpm test:touch-targets
 - [ ] Undo/redo: possibilité annuler?
 
 **Research**:
+
 - Lire: https://docs.dnd-kit.com/api-reference/accessibility
 - Lire: https://www.w3.org/WAI/ARIA/apg/patterns/dragdrop/
 
 **Checklist dnd-kit patterns**:
+
 - [ ] Sortable context: `<DndContext>`
 - [ ] Sensors: Keyboard sensor loaded?
 - [ ] Announcements: aria-live regions?
@@ -192,6 +208,7 @@ pnpm test:touch-targets
 **Statut**: ✅ Base good, ⚠️ Variants unclear
 **Effort**: 2-3 heures
 **Fichiers**:
+
 - `/src/components/shared/modal/ModalConfirm.tsx`
 - `/src/components/shared/modal/ModalAjout.tsx`
 - `/src/components/shared/modal/ModalCategory.tsx`
@@ -201,6 +218,7 @@ pnpm test:touch-targets
 - `/src/components/shared/modal/SignupPromptModal.tsx`
 
 **À vérifier sur chacun**:
+
 - [ ] Hérite Modal.tsx correctement?
 - [ ] Focus management: auto-focus correct?
 - [ ] Keyboard: Escape works?
@@ -209,6 +227,7 @@ pnpm test:touch-targets
 - [ ] Actions: button order logical?
 
 **Décision**:
+
 - Si tous étendent Modal.tsx → ✅ Bon
 - Si custom role="dialog" non-compliant → ⚠️ À fixer
 
@@ -223,20 +242,21 @@ pnpm test:touch-targets
 **Output**: `/docs/WCAG_COMPLIANCE.md`
 
 **Contenu**:
+
 ```markdown
 # WCAG 2.2 AA Compliance Matrix
 
-| Criterion | Status | Component | Notes |
-|-----------|--------|-----------|-------|
-| 1.1.1 Non-text Content | ✅ | Button, Input, Footer | Icons aria-hidden |
-| 2.1.1 Keyboard | ✅ | UserMenu | Full nav + arrow keys |
-| 2.1.1 Keyboard | ⚠️ | SettingsMenu | Escape ok, but no arrow nav |
-| 2.4.3 Focus Order | ✅ | All | Linear, logical |
-| 2.4.7 Focus Visible | ✅ | All | 2px outline + offset |
-| 2.5.5 Target Size | ✅ | Buttons | 44px min-height |
-| 2.5.5 Target Size | ⚠️ | Icons | Check actual width |
-| 3.2.1 On Focus | ✅ | All | No unexpected changes |
-| 4.1.3 Status Messages | ⚠️ | Modals | aria-live needed? |
+| Criterion              | Status | Component             | Notes                       |
+| ---------------------- | ------ | --------------------- | --------------------------- |
+| 1.1.1 Non-text Content | ✅     | Button, Input, Footer | Icons aria-hidden           |
+| 2.1.1 Keyboard         | ✅     | UserMenu              | Full nav + arrow keys       |
+| 2.1.1 Keyboard         | ⚠️     | SettingsMenu          | Escape ok, but no arrow nav |
+| 2.4.3 Focus Order      | ✅     | All                   | Linear, logical             |
+| 2.4.7 Focus Visible    | ✅     | All                   | 2px outline + offset        |
+| 2.5.5 Target Size      | ✅     | Buttons               | 44px min-height             |
+| 2.5.5 Target Size      | ⚠️     | Icons                 | Check actual width          |
+| 3.2.1 On Focus         | ✅     | All                   | No unexpected changes       |
+| 4.1.3 Status Messages  | ⚠️     | Modals                | aria-live needed?           |
 ```
 
 ---
@@ -247,11 +267,13 @@ pnpm test:touch-targets
 **Effort**: 1-2 heures
 
 **À vérifier**:
+
 - [ ] Navbar.tsx Framer Motion (L45-58, L77-91): respecte prefers-reduced-motion?
 - [ ] UserMenu backdrop fade: est-ce Framer ou CSS?
 - [ ] Modal scale animation: respecte prefers-reduced-motion?
 
 **Fix pattern** (si besoin):
+
 ```typescript
 // Déterminer préférence:
 const prefersReducedMotion = window.matchMedia(
@@ -275,6 +297,7 @@ const prefersReducedMotion = window.matchMedia(
 **Fichier**: `/src/components/shared/layout/Layout.scss` L14-31
 
 **Amélioration**:
+
 ```scss
 .skip-link {
   position: absolute;
@@ -284,20 +307,25 @@ const prefersReducedMotion = window.matchMedia(
 
   &:focus {
     top: 0;
-    z-index: 9999;  // Assurer visible au-dessus tout
-    outline: 3px solid $color-accent;  // Plus épais pour TSA
+    z-index: 9999; // Assurer visible au-dessus tout
+    outline: 3px solid $color-accent; // Plus épais pour TSA
     outline-offset: 4px;
-    animation: slide-down 0.2s ease-out;  // Subtile animation
+    animation: slide-down 0.2s ease-out; // Subtile animation
   }
 }
 
 @keyframes slide-down {
-  from { top: -40px; }
-  to { top: 0; }
+  from {
+    top: -40px;
+  }
+  to {
+    top: 0;
+  }
 }
 ```
 
 **Test**:
+
 ```
 1. Ouvrir page
 2. Appuyer Tab une fois
@@ -316,10 +344,12 @@ const prefersReducedMotion = window.matchMedia(
 # Accessibility Guidelines - Appli-Picto
 
 ## Quick Start
+
 - [ ] Lire: ACCESSIBILITY_PATTERNS.md (ce repo)
 - [ ] Lire: https://www.w3.org/WAI/ARIA/apg/
 
 ## Checklist Composant Nouveau
+
 - [ ] Input/Button: min-height 44px
 - [ ] Labels: htmlFor={id}
 - [ ] Error: aria-describedby
@@ -329,6 +359,7 @@ const prefersReducedMotion = window.matchMedia(
 - [ ] Focus: @include focus-ring
 
 ## Testing
+
 - [ ] axe DevTools (Chrome extension)
 - [ ] NVDA (Windows) / VoiceOver (Mac)
 - [ ] Keyboard-only navigation
@@ -343,6 +374,7 @@ const prefersReducedMotion = window.matchMedia(
 **Tool**: Playwright + axe-playwright
 
 **Tests à créer**:
+
 ```typescript
 // tests/e2e/accessibility.spec.ts
 
@@ -367,21 +399,25 @@ test('Modal focus trap', async ({ page }) => {
 ## PRIORITY 5 - BACKLOG (Future Improvements)
 
 ### 5.1 Dark Mode Enhancement
+
 - [ ] Test contrast ratios in dark mode
 - [ ] Ensure smooth transition (current OK)
 - [ ] Add toggle animation control
 
 ### 5.2 Responsive Image Optimization
+
 - [ ] Verify next/image usage
 - [ ] Add responsive srcset
 - [ ] Test WebP/AVIF fallbacks
 
 ### 5.3 Performance Audits
+
 - [ ] Lighthouse scores (target 90+)
 - [ ] Bundle size analysis (current: OK)
 - [ ] Lazy-load modals
 
 ### 5.4 Internationalization Audit
+
 - [ ] Test RTL languages (if future need)
 - [ ] Verify all aria-labels translated
 - [ ] Check form labels i18n
@@ -393,6 +429,7 @@ test('Modal focus trap', async ({ page }) => {
 ### Manual Testing Checklist
 
 **Keyboard Navigation**:
+
 ```
 Tab → Focus through navbar, forms
 Shift+Tab → Reverse direction
@@ -402,6 +439,7 @@ Arrow Up/Down → Menu navigation (UserMenu)
 ```
 
 **Screen Reader (NVDA/VoiceOver)**:
+
 ```
 Announce: All links, buttons, form labels
 Announce: Modal title, description
@@ -409,6 +447,7 @@ Skip: Decorative icons (aria-hidden)
 ```
 
 **Visual**:
+
 ```
 Focus visible: 2px outline + offset (all states)
 Color contrast: 4.5:1 minimum
@@ -421,18 +460,22 @@ Mobile: 320px viewport
 ## TIMELINE RECOMMENDATION
 
 ### Week 1 (Immediate)
+
 - [ ] 1.1 Axe-core audit (2-4h)
 - [ ] 1.2 Touch targets verification (3-4h)
 
 ### Week 2
+
 - [ ] 1.3 Mobile device testing (2-3h)
 - [ ] 2.1 Form audit (4-6h)
 
 ### Week 3
+
 - [ ] 2.2 Drag & drop audit (3-4h)
 - [ ] 2.3 Modal variants check (2-3h)
 
 ### Week 4+
+
 - [ ] 3.x Documentation & polish
 - [ ] Create WCAG compliance doc
 - [ ] Setup automated E2E a11y tests
@@ -442,18 +485,21 @@ Mobile: 320px viewport
 ## RESOURCES
 
 ### Documentation
+
 - [WCAG 2.2 Guidelines](https://www.w3.org/WAI/WCAG22/quickref/)
 - [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 - [Radix UI Docs](https://www.radix-ui.com/docs/primitives/overview/introduction)
 - [Next.js Accessibility](https://nextjs.org/docs/pages/building-your-application/optimizing/accessibility)
 
 ### Tools
+
 - [axe DevTools (Chrome)](https://www.deque.com/axe/devtools/)
 - [WAVE (Firefox)](https://wave.webaim.org/extension/)
 - [Lighthouse](https://developers.google.com/web/tools/lighthouse)
 - [Contrast Ratio Checker](https://contrast-ratio.com/)
 
 ### Screen Readers
+
 - NVDA (Windows) - Free: https://www.nvaccess.org/
 - JAWS (Windows) - Commercial
 - VoiceOver (macOS/iOS) - Built-in
@@ -464,11 +510,13 @@ Mobile: 320px viewport
 ## CONTACT & ESCALATION
 
 **Questions sur accessibilité?**
+
 - Refer to: `/docs/ACCESSIBILITY.md` (à créer)
 - Check: WCAG_COMPLIANCE.md (à créer)
 - Search: GitHub Issues avec tag `a11y`
 
 **Found violation?**
+
 1. Create GitHub issue: `[A11y] Component XYZ: ...`
 2. Link to WCAG criterion
 3. Provide: steps to reproduce, expected vs actual

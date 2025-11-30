@@ -3,18 +3,23 @@
 ## 📖 Quick Navigation
 
 ### For Busy People (5 min)
+
 → Read: **PHASE_1_EXECUTIVE_SUMMARY.md**
 
 ### For Implementers (30 min)
+
 → Read: **PHASE_1_QUICK_START.md** + **PHASE_1_MODALS_REFACTORING.md**
 
 ### For Visual Learners
+
 → Read: **PHASE_1_VISUAL_GUIDE.md**
 
 ### For Architecture Deep-Dive
+
 → Read: **PHASE_1_DEPENDENCIES.md**
 
 ### For Everything
+
 → Read: **PHASE_1_INDEX.md** (master index)
 
 ---
@@ -22,6 +27,7 @@
 ## 🎯 What is Phase 1?
 
 Improving modals (dialogs/overlays) for:
+
 - ✅ TSA (Autistic Children) accessibility
 - ✅ Motor control accessibility
 - ✅ Visual contrast/readability
@@ -32,6 +38,7 @@ Improving modals (dialogs/overlays) for:
 ## 🔴 Why Critical?
 
 **Current Problem:**
+
 ```
 ❌ Overlay 40% transparent = Distraction for autistic kids
 ❌ Close button 20px = Hard to click (motor issues)
@@ -40,6 +47,7 @@ Improving modals (dialogs/overlays) for:
 ```
 
 **Phase 1 Solution:**
+
 ```
 ✅ Overlay 75% opaque = Complete focus
 ✅ Close button 48px = Easy to click
@@ -51,13 +59,13 @@ Improving modals (dialogs/overlays) for:
 
 ## 📊 What Changes?
 
-| Component | Before | After | Why |
-|-----------|--------|-------|-----|
-| Overlay opacity | 40% | 75% | Remove distractions |
-| Close button | 20px | 48px | Motor accessibility |
-| Modal border | 1px gray | 2px primary | Contrast |
-| Structure | Mixed | Header/Content/Footer | Semantics |
-| Footer | Actions only | Auto Annuler + Actions | Double close option |
+| Component       | Before       | After                  | Why                 |
+| --------------- | ------------ | ---------------------- | ------------------- |
+| Overlay opacity | 40%          | 75%                    | Remove distractions |
+| Close button    | 20px         | 48px                   | Motor accessibility |
+| Modal border    | 1px gray     | 2px primary            | Contrast            |
+| Structure       | Mixed        | Header/Content/Footer  | Semantics           |
+| Footer          | Actions only | Auto Annuler + Actions | Double close option |
 
 ---
 
@@ -92,6 +100,7 @@ TOTAL:              ~90-100 min (1.5-2 hours)
 ### Step 1: Choose Your Adventure
 
 **Option A: I Do It**
+
 ```
 You say: "Go Phase 1!"
 I do:
@@ -104,6 +113,7 @@ I do:
 ```
 
 **Option B: You Do It**
+
 ```
 You:
   - Read PHASE_1_QUICK_START.md
@@ -114,12 +124,14 @@ You:
 ```
 
 **Option C: Together**
+
 ```
 You read docs, I implement, you review
 Time: ~60 minutes
 ```
 
 ### Step 2: Verify
+
 ```bash
 pnpm check          # Lint + format
 pnpm type-check     # TypeScript
@@ -159,6 +171,7 @@ PHASE_1_README.md (you are here)
 ## 🎨 Visual Change Overview
 
 ### BEFORE Phase 1
+
 ```
 ┌──────────────────────────────┐
 │ Visible content behind       │ ← Distracting (40% opacity)
@@ -174,6 +187,7 @@ PHASE_1_README.md (you are here)
 ```
 
 ### AFTER Phase 1
+
 ```
 ┌──────────────────────────────┐
 │ ████████████████████████████ │ ← Dark overlay (75%)
@@ -211,18 +225,23 @@ Phase 1 is done when:
 ## 🆘 Troubleshooting
 
 ### "Modal is breaking"
+
 → Check PHASE_1_DEPENDENCIES.md for impacts
 
 ### "I don't understand the changes"
+
 → Read PHASE_1_VISUAL_GUIDE.md for visual explanation
 
 ### "Close button looks wrong"
+
 → Check ButtonClose.scss has --large variant
 
 ### "I see 2 Annuler buttons"
+
 → You forgot to adapt ModalConfirm.tsx
 
 ### "Build fails"
+
 → Check all imports/exports match
 
 ---
@@ -230,11 +249,13 @@ Phase 1 is done when:
 ## 📋 Next Steps
 
 ### Immediate (Today)
+
 1. Choose your adventure (Option A, B, or C)
 2. Reply with your choice
 3. Proceed with implementation
 
 ### After Phase 1
+
 - Phase 2: Mobile-first (fullscreen, drawer variants)
 - Phase 3: Radix UI migration (if needed)
 - Phase 4: E2E tests with Playwright
@@ -244,7 +265,9 @@ Phase 1 is done when:
 ## 💡 Key Insights
 
 ### Gemini's Recommendations
+
 **I agree 90%:**
+
 - ✅ Dimming 75% - CRITICAL for TSA
 - ✅ Large close button - CRITICAL for motor
 - ✅ Explicit annuler - GOOD for UX
@@ -252,6 +275,7 @@ Phase 1 is done when:
 - ⚠️ Drawer - Good but not mandatory
 
 ### My Addition
+
 - Phase it: Visual improvements NOW (Phase 1), architecture refactor LATER (Phase 2+)
 - Mobile-first: Prepare structure now, implement responsive later
 
@@ -280,17 +304,20 @@ Phase 1 is done when:
 ## 📞 Resources
 
 ### For Understanding TSA Needs
+
 - Modal focus = concentration
 - Large buttons = motor accessibility
 - Dark overlay = less cognitive overload
 - Explicit options = reduce confusion
 
 ### For Implementation Help
+
 - PHASE_1_MODALS_REFACTORING.md has exact code
 - PHASE_1_VISUAL_GUIDE.md has visual validation
 - PHASE_1_DEPENDENCIES.md has impact analysis
 
 ### For Questions
+
 - Ask me anytime
 - No silly questions
 - I'll clarify anything

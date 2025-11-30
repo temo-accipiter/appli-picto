@@ -12,6 +12,7 @@
 ## 🎯 4 Sous-Phases
 
 ### Phase 2.0: Responsive Base (2-3h)
+
 ```
 Ajouter media queries à Modal.scss
 - Mobile (< 576px): fullscreen
@@ -22,6 +23,7 @@ Impact: Modals adaptées à tous les écrans
 ```
 
 ### Phase 2.1: Fullscreen Variant (1-2h)
+
 ```
 Ajouter classe .modal--fullscreen
 - width: 100vw, height: 100vh
@@ -32,6 +34,7 @@ Impact: Modals grandes sur petit écran
 ```
 
 ### Phase 2.2: Drawer Variant (2-3h)
+
 ```
 Ajouter classe .modal--drawer
 - Position: fixed bottom
@@ -42,6 +45,7 @@ Impact: UX native-like sur mobile
 ```
 
 ### Phase 2.3: Safe-Area Support (1-2h)
+
 ```
 Ajouter support notch/safe-area
 - env(safe-area-inset-*)
@@ -54,14 +58,14 @@ Impact: Parfait sur tous les devices
 
 ## 📊 État Actuel vs Cible
 
-| Aspect | Phase 1 | Phase 2 |
-|--------|---------|---------|
-| **Mobile** | 90% width | 100% fullscreen |
-| **Tablet** | 90% width | 90% width |
-| **Desktop** | 90% max-500px | 90% max-500px |
-| **Animation** | Scale-in | Fade + slide |
-| **Safe-area** | Non | Oui |
-| **Drawer** | Non | Oui (variant) |
+| Aspect        | Phase 1       | Phase 2         |
+| ------------- | ------------- | --------------- |
+| **Mobile**    | 90% width     | 100% fullscreen |
+| **Tablet**    | 90% width     | 90% width       |
+| **Desktop**   | 90% max-500px | 90% max-500px   |
+| **Animation** | Scale-in      | Fade + slide    |
+| **Safe-area** | Non           | Oui             |
+| **Drawer**    | Non           | Oui (variant)   |
 
 ---
 
@@ -88,7 +92,9 @@ Exploration déjà complète! Tu as:
 ## 🔧 Implementation Order
 
 ### Step 1: Modal.scss (2h)
+
 Ajouter media queries:
+
 ```scss
 // Mobile: fullscreen
 @media (max-width: 575px) {
@@ -111,6 +117,7 @@ Ajouter media queries:
 ```
 
 ### Step 2: Fullscreen Variant (1h)
+
 ```scss
 .modal--fullscreen {
   width: 100% !important;
@@ -122,6 +129,7 @@ Ajouter media queries:
 ```
 
 ### Step 3: Drawer Variant (2h)
+
 ```scss
 .modal--drawer {
   position: fixed;
@@ -135,17 +143,22 @@ Ajouter media queries:
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 ```
 
 ### Step 4: TypeScript Props (1h)
+
 ```tsx
 interface ModalProps {
   // ... existing props
   variant?: 'default' | 'fullscreen' | 'drawer'
-  position?: 'center' | 'bottom'  // drawer only
+  position?: 'center' | 'bottom' // drawer only
 }
 ```
 

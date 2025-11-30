@@ -19,12 +19,14 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 **CSS Class**: `.modal--fullscreen`
 
 **Behavior**:
+
 - **Mobile (< 576px)**: 100vw × 100vh fullscreen, no rounded corners, fixed positioning
 - **Tablet (576-767px)**: 95vw width, 540px max-width, responsive height
 - **Desktop (768px+)**: Returns to standard 90% width, 500px max-width
 - **Large desktop (1200px+)**: 600px max-width
 
 **Code added** (Lines 266-311):
+
 ```scss
 .modal--fullscreen {
   @media (max-width: 575px) {
@@ -42,6 +44,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ```
 
 **When to use**:
+
 - Account creation/login flows
 - Large task lists
 - Content that benefits from full screen real estate
@@ -56,6 +59,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 **CSS Classes**: `.modal--drawer` + `.modal-overlay--drawer`
 
 **Behavior**:
+
 - **Mobile (< 768px)**: Bottom-sheet sliding up from bottom
   - max-height: 70vh (allows scrolling if content too tall)
   - 40px × 4px handle bar at top (visual affordance)
@@ -65,6 +69,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 - **Handle bar**: Accessible pseudo-element `::before` (dims in dark mode)
 
 **Code added** (Lines 255-264 animation, Lines 313-398 drawer styles):
+
 ```scss
 @keyframes slideUpIn {
   from {
@@ -78,16 +83,16 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 }
 
 .modal-overlay--drawer {
-  align-items: flex-end;  // Bottom alignment on mobile
+  align-items: flex-end; // Bottom alignment on mobile
   @media (min-width: 768px) {
-    align-items: center;  // Center on desktop
+    align-items: center; // Center on desktop
   }
 }
 
 .modal--drawer {
   @media (max-width: 767px) {
     width: 100%;
-    border-radius: $radius-lg $radius-lg 0 0;  // Rounded top only
+    border-radius: $radius-lg $radius-lg 0 0; // Rounded top only
     animation: slideUpIn $transition-base ease-out;
 
     &::before {
@@ -101,6 +106,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ```
 
 **When to use**:
+
 - Mobile navigation menus
 - Filter/sort options
 - Confirmation dialogs
@@ -118,6 +124,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 **Feature Detection**: `@supports (padding: max(0px))`
 
 **Behavior**:
+
 - Respects `env(safe-area-inset-left)` and `env(safe-area-inset-right)` on mobile
 - Respects `env(safe-area-inset-bottom)` for drawer modal (home indicator)
 - Uses CSS `max()` function to ensure minimum spacing: `max($spacing-md, calc(env(...) + $spacing-sm))`
@@ -125,6 +132,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 - Drawer has special handling for bottom safe-area
 
 **Code added** (Lines 400-440):
+
 ```scss
 @supports (padding: max(0px)) {
   .modal {
@@ -138,13 +146,20 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
   .modal__content,
   .modal__footer {
     // Similar max() padding to respect notches
-    padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-    padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+    padding-left: max(
+      $spacing-md,
+      calc(env(safe-area-inset-left) + $spacing-sm)
+    );
+    padding-right: max(
+      $spacing-md,
+      calc(env(safe-area-inset-right) + $spacing-sm)
+    );
   }
 }
 ```
 
 **Devices covered**:
+
 - iPhone 12+ (Dynamic Island)
 - iPhone X, 11, 12, 13, 14+ (notch)
 - iPhone 15+ (Dynamic Island)
@@ -158,6 +173,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ### Animations Added
 
 **slideUpIn** (Lines 255-264):
+
 - Enters from bottom (translateY 100% → 0%)
 - Opacity fades in (0 → 1)
 - Used for drawer variant only
@@ -166,6 +182,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ### Accessibility
 
 **Reduced Motion Support** (Lines 455-461):
+
 ```scss
 .modal--drawer {
   @media (prefers-reduced-motion: reduce) {
@@ -177,11 +194,13 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ```
 
 **Touch Targets**:
+
 - Handle bar (40px × 4px) is large enough for visual clarity
 - All buttons maintain 44px minimum height (WCAG AA)
 - Footer buttons 100% width on mobile (easy to tap)
 
 **Semantic Structure**:
+
 - No changes to Modal.tsx (HTML structure stays same)
 - Pure CSS variants - no JavaScript required
 - Accessible focus management unchanged
@@ -189,6 +208,7 @@ Phase 3 adds three optional modal variants for enhanced mobile experience:
 ### Dark Mode
 
 **Already supported**:
+
 - Handle bar dims to `gray(300)` in dark mode (existing color scale)
 - All other styles use CSS variables that already support dark mode
 - No new dark mode code needed (tested in Modal.scss lines 464-489)
@@ -242,9 +262,7 @@ With updated overlay class:
 
 ```tsx
 <div className="modal-overlay modal-overlay--drawer">
-  <div className="modal modal--drawer">
-    {/* Modal content */}
-  </div>
+  <div className="modal modal--drawer">{/* Modal content */}</div>
 </div>
 ```
 
@@ -264,6 +282,7 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 ### Device Sizes
 
 **Must test on:**
+
 - [ ] **375px** (iPhone SE) - smallest screen, fullscreen takes 100%, drawer takes 70%
 - [ ] **390px** (iPhone 12-14) - standard, fullscreen + drawer perfect fit
 - [ ] **393px** (iPhone 14 Pro) - with notch, verify safe-area padding
@@ -276,6 +295,7 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 ### Variant Testing
 
 **Fullscreen variant (.modal--fullscreen)**:
+
 - [ ] **375px**: Modal takes full screen (100vw × 100vh)
 - [ ] **390px**: No horizontal scroll, no overflow
 - [ ] **576px**: Transitions to 95vw, 540px max-width
@@ -284,6 +304,7 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 - [ ] **Orientation change**: Reflows correctly in landscape
 
 **Drawer variant (.modal--drawer)**:
+
 - [ ] **375px**: Slides up from bottom, handle bar visible
 - [ ] **390px**: max-height 70vh allows scrolling of long content
 - [ ] **768px**: Reverts to centered modal (NOT drawer anymore)
@@ -292,6 +313,7 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 - [ ] **Dismiss**: Can scroll down and dismiss (optional - depends on implementation)
 
 **Safe-Area Support**:
+
 - [ ] **iPhone 12 Pro**: Content respects notch on left/right
 - [ ] **iPhone 14+**: Dynamic Island respected
 - [ ] **iPad**: Home indicator respected (bottom padding)
@@ -301,34 +323,40 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 ### Animations
 
 **Drawer animation (slideUpIn)**:
+
 - [ ] **375px**: Smooth slide-up animation (no jank)
 - [ ] **768px+**: Switches to scaleIn animation (centered modal)
 - [ ] **prefers-reduced-motion: reduce**: No animation, instant display
 - [ ] **Dark mode**: Handle bar visible with proper contrast
 
 **Fullscreen animation**:
+
 - [ ] **Inherits from base modal**: scaleIn animation (no new animation)
 - [ ] **prefers-reduced-motion: reduce**: Instant display, no transform
 
 ### Accessibility
 
 **Keyboard Navigation**:
+
 - [ ] Tab cycles through buttons
 - [ ] Escape key closes modal
 - [ ] Enter key activates focused button
 
 **Screen Reader (VoiceOver, TalkBack)**:
+
 - [ ] Dialog role announced
 - [ ] Title read first
 - [ ] Buttons read in order
 - [ ] Handle bar NOT announced (decorative `::before`)
 
 **Visual Contrast**:
+
 - [ ] Dark mode: handle bar (gray 300) visible on dark background
 - [ ] Light mode: handle bar visible on light background
 - [ ] Text contrast AAA on all backgrounds
 
 **Motor Control (TSA-Specific)**:
+
 - [ ] Buttons full-width on mobile (easy to tap)
 - [ ] 44px minimum tap target maintained
 - [ ] No hover-to-activate interactions
@@ -336,16 +364,19 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 ### Content Overflow
 
 **Long title**:
+
 - [ ] **375px**: Title wraps, doesn't overflow
 - [ ] **Fullscreen**: Title has room to wrap safely
 - [ ] **Drawer**: Title visible with handle bar
 
 **Long content**:
+
 - [ ] **375px**: Content scrolls, scrollbar visible
 - [ ] **Fullscreen**: Full viewport scrolling works
 - [ ] **Drawer**: 70vh max-height, scrolls if needed
 
 **Many buttons**:
+
 - [ ] **375px**: Buttons stack vertically (100% width)
 - [ ] **576px+**: Buttons inline (Annuler left, others right)
 - [ ] **Responsive**: Text size scales appropriately
@@ -356,14 +387,14 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 
 ### Before/After Comparison
 
-| Aspect | Before Phase 3 | Phase 3.1 (Fullscreen) | Phase 3.2 (Drawer) |
-|--------|--------|---------|---------|
-| **Mobile 390px** | 95vw centered | 100vw fullscreen | 100% bottom sheet |
-| **Appearance** | Rounded corners | Sharp corners | Rounded top only |
-| **Animation** | scaleIn | scaleIn | slideUpIn |
-| **Handle bar** | None | None | 40×4px bar |
-| **Safe-area** | Supported | Supported | Supported |
-| **Max-height** | calc(100vh - 32px) | 100vh | 70vh |
+| Aspect           | Before Phase 3     | Phase 3.1 (Fullscreen) | Phase 3.2 (Drawer) |
+| ---------------- | ------------------ | ---------------------- | ------------------ |
+| **Mobile 390px** | 95vw centered      | 100vw fullscreen       | 100% bottom sheet  |
+| **Appearance**   | Rounded corners    | Sharp corners          | Rounded top only   |
+| **Animation**    | scaleIn            | scaleIn                | slideUpIn          |
+| **Handle bar**   | None               | None                   | 40×4px bar         |
+| **Safe-area**    | Supported          | Supported              | Supported          |
+| **Max-height**   | calc(100vh - 32px) | 100vh                  | 70vh               |
 
 ### Color in Dark Mode
 
@@ -378,12 +409,12 @@ Safe-area support is **automatic** on mobile devices. No code changes needed!
 
 ### Modal.scss Growth
 
-| Phase | Lines | Type | Purpose |
-|-------|-------|------|---------|
-| Phase 1 | 213 | A11y + Structure | Accessibility, focus, contrast |
-| Phase 2.0 | 294 | Responsive Base | Mobile-first queries |
-| **Phase 3** | **489** | Variants + Safe-area | Fullscreen, drawer, notches |
-| **Total Additions** | **+276 lines** | 3 phases | Complete modal system |
+| Phase               | Lines          | Type                 | Purpose                        |
+| ------------------- | -------------- | -------------------- | ------------------------------ |
+| Phase 1             | 213            | A11y + Structure     | Accessibility, focus, contrast |
+| Phase 2.0           | 294            | Responsive Base      | Mobile-first queries           |
+| **Phase 3**         | **489**        | Variants + Safe-area | Fullscreen, drawer, notches    |
+| **Total Additions** | **+276 lines** | 3 phases             | Complete modal system          |
 
 ### File Structure
 
@@ -524,12 +555,15 @@ Add JSDoc comments to Modal.tsx:
 This implementation completes the three-phase modal refactoring:
 
 ### Phase 1 Documentation (11 files)
+
 - High-level overview, decisions, and implementation details
 
 ### Phase 2 Documentation (8 files)
+
 - Responsive design analysis, patterns, exploration
 
 ### Phase 3 Documentation (This file)
+
 - Complete variant implementation guide
 
 **Total documentation**: 20+ markdown files, ~100+ KB of comprehensive guidance
@@ -578,6 +612,7 @@ All changes are **CSS-only**, **non-breaking**, and **fully accessible**. The ba
 ---
 
 **Next steps**:
+
 1. Test variants on actual mobile devices (devtools are sufficient for most cases)
 2. (Optional) Add TypeScript props for type-safe variant selection
 3. (Optional) Add unit tests for each variant

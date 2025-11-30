@@ -3,6 +3,7 @@
 ## File: `/src/components/shared/modal/Modal.scss`
 
 ### Current Code (Lines 1-35)
+
 ```scss
 @use '@styles/abstracts' as *;
 
@@ -61,11 +62,11 @@
   justify-content: center;
   z-index: $z-overlay;
   animation: fadeIn $transition-fast ease-out;
-  overflow-y: auto;  // Allow scroll if modal too tall
-  padding: $spacing-md;  // Add padding for small screens
+  overflow-y: auto; // Allow scroll if modal too tall
+  padding: $spacing-md; // Add padding for small screens
 
   @media (max-width: 575px) {
-    padding: $spacing-sm;  // Even smaller padding on tiny screens
+    padding: $spacing-sm; // Even smaller padding on tiny screens
   }
 }
 
@@ -88,9 +89,9 @@
   // Mobile optimization (320px - 575px)
   @media (max-width: 575px) {
     width: 95vw;
-    max-width: calc(100vw - 32px);  // 16px padding on each side
-    max-height: calc(100vh - 32px);  // 16px padding top & bottom
-    border-radius: $radius-md;  // Slightly smaller corners
+    max-width: calc(100vw - 32px); // 16px padding on each side
+    max-height: calc(100vh - 32px); // 16px padding top & bottom
+    border-radius: $radius-md; // Slightly smaller corners
   }
 
   // Small tablets (576px - 767px)
@@ -137,12 +138,12 @@
 
   // Mobile optimization
   @media (max-width: 575px) {
-    padding: $spacing-md $spacing-sm;  // Reduced padding
+    padding: $spacing-md $spacing-sm; // Reduced padding
     gap: $spacing-sm;
   }
 
   @media (min-width: 768px) {
-    padding: $spacing-lg $spacing-md;  // Standard padding
+    padding: $spacing-lg $spacing-md; // Standard padding
   }
 }
 
@@ -156,7 +157,7 @@
 
   // Mobile: smaller title
   @media (max-width: 575px) {
-    font-size: $font-size-lg;  // 20px instead of 24px
+    font-size: $font-size-lg; // 20px instead of 24px
   }
 }
 
@@ -169,8 +170,8 @@
 
   // Mobile optimization
   @media (max-width: 575px) {
-    padding: $spacing-md $spacing-sm;  // Reduced padding
-    min-height: 80px;  // Slightly smaller min
+    padding: $spacing-md $spacing-sm; // Reduced padding
+    min-height: 80px; // Slightly smaller min
   }
 
   // Scrollbar personnalisée
@@ -203,7 +204,7 @@
 
   // Mobile: smaller font
   @media (max-width: 575px) {
-    font-size: $font-size-base;  // 16px instead of 20px
+    font-size: $font-size-base; // 16px instead of 20px
   }
 
   p {
@@ -226,10 +227,10 @@
   @media (max-width: 575px) {
     padding: $spacing-sm;
     gap: $spacing-xs;
-    flex-direction: column;  // Stack vertically
+    flex-direction: column; // Stack vertically
 
     .btn {
-      width: 100%;  // Full width buttons on mobile
+      width: 100%; // Full width buttons on mobile
     }
   }
 
@@ -259,7 +260,7 @@
 
     // Mobile: smaller padding
     @media (max-width: 575px) {
-      font-size: $font-size-sm;  // Smaller text on mobile
+      font-size: $font-size-sm; // Smaller text on mobile
       padding: $spacing-sm $spacing-md;
     }
 
@@ -271,14 +272,14 @@
 
       @media (max-width: 575px) {
         // On mobile stacked, no margin-right needed
-        order: 2;  // Put cancel at bottom
+        order: 2; // Put cancel at bottom
       }
     }
 
     // Confirm button (primary action)
     &:last-child {
       @media (max-width: 575px) {
-        order: 1;  // Put confirm at top
+        order: 1; // Put confirm at top
       }
     }
   }
@@ -300,7 +301,7 @@
     max-width: 100vw;
     max-height: 100vh;
     max-width: 100%;
-    border-radius: 0;  // Remove rounded corners
+    border-radius: 0; // Remove rounded corners
     margin: 0;
     position: fixed;
     inset: 0;
@@ -350,7 +351,7 @@
     width: 100%;
     max-width: 100%;
     max-height: 70vh;
-    border-radius: $radius-lg $radius-lg 0 0;  // Rounded top only
+    border-radius: $radius-lg $radius-lg 0 0; // Rounded top only
     margin: 0;
     animation: slideUpIn $transition-base ease-out;
 
@@ -427,8 +428,14 @@
 
   @supports (padding: max(0px)) {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
     }
   }
 }
@@ -438,8 +445,14 @@
 
   @supports (padding: max(0px)) {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
     }
   }
 }
@@ -449,8 +462,14 @@
 
   @supports (padding: max(0px)) {
     @media (max-width: 767px) {
-      padding-left: max($spacing-md, calc(env(safe-area-inset-left) + $spacing-sm));
-      padding-right: max($spacing-md, calc(env(safe-area-inset-right) + $spacing-sm));
+      padding-left: max(
+        $spacing-md,
+        calc(env(safe-area-inset-left) + $spacing-sm)
+      );
+      padding-right: max(
+        $spacing-md,
+        calc(env(safe-area-inset-right) + $spacing-sm)
+      );
       padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
     }
   }
@@ -471,21 +490,21 @@
   }
 
   .modal__header {
-    padding: $spacing-sm $spacing-md;  // Reduce vertical padding
+    padding: $spacing-sm $spacing-md; // Reduce vertical padding
   }
 
   .modal__content {
-    min-height: 50px;  // Smaller minimum
+    min-height: 50px; // Smaller minimum
   }
 
   .modal__footer {
-    padding: $spacing-sm;  // Reduce padding
+    padding: $spacing-sm; // Reduce padding
     gap: $spacing-xs;
 
     .btn {
-      padding: $spacing-xs $spacing-sm;  // Smaller buttons
+      padding: $spacing-xs $spacing-sm; // Smaller buttons
       font-size: $font-size-sm;
-      min-height: 40px;  // Slightly smaller but still accessible
+      min-height: 40px; // Slightly smaller but still accessible
     }
   }
 }
@@ -496,6 +515,7 @@
 ## Testing Checklist for Phase 2
 
 ### Device Sizes to Test:
+
 - [ ] iPhone SE (375px × 667px) - smallest
 - [ ] iPhone 14 (390px × 844px) - standard
 - [ ] iPhone 14 Plus (430px × 932px) - large
@@ -506,15 +526,18 @@
 - [ ] Desktop landscape (1080px × 1920px) - vertical monitor
 
 ### Landscape Mode:
+
 - [ ] iPhone landscape (portrait height ~375px)
 - [ ] iPad landscape (height ~768px)
 
 ### Safe Areas:
+
 - [ ] iPhone with notch (test padding offset)
 - [ ] iPhone with Dynamic Island
 - [ ] iPad with home indicator
 
 ### Accessibility:
+
 - [ ] Test with `prefers-reduced-motion: reduce`
 - [ ] Test with dark mode (`prefers-color-scheme: dark`)
 - [ ] Test with 200% zoom (browser)
@@ -522,6 +545,7 @@
 - [ ] Test screen reader (VoiceOver, TalkBack)
 
 ### Content Overflow:
+
 - [ ] Very long title (multiple lines)
 - [ ] Long content with scroll
 - [ ] Long button labels (3+ words)
@@ -532,27 +556,32 @@
 ## Implementation Order
 
 ### Phase 2.0 - Base Responsive (PRIORITY)
+
 1. Add media queries to `.modal` for 3 breakpoints
 2. Reduce padding on `.modal__header`, `.modal__content`, `.modal__footer` for mobile
 3. Adapt button layout in footer (stack vertically on mobile)
 4. Test on actual devices
 
 ### Phase 2.1 - Fullscreen Variant
+
 1. Add `.modal--fullscreen` class
 2. Create fullscreen tests
 3. Document usage in component props
 
 ### Phase 2.2 - Drawer Variant
+
 1. Add `.modal--drawer` class
 2. Add overlay positional variant
 3. Add slide-up animation
 
 ### Phase 2.3 - Safe Areas
+
 1. Add safe-area-inset support
 2. Test on iOS devices with notches
 3. Test on Android with system gestures
 
 ### Phase 2.4 - Polish
+
 1. Fine-tune animations
 2. Add portrait/landscape media queries
 3. Final accessibility audit
@@ -562,6 +591,7 @@
 ## TypeScript Component Updates
 
 ### Current Modal.tsx Props
+
 ```typescript
 interface ModalProps {
   isOpen: boolean
@@ -574,6 +604,7 @@ interface ModalProps {
 ```
 
 ### Suggested Phase 2 Props
+
 ```typescript
 interface ModalProps {
   isOpen: boolean
@@ -583,10 +614,10 @@ interface ModalProps {
   actions?: ModalAction[]
   className?: string
   // Phase 2 additions:
-  variant?: 'default' | 'fullscreen' | 'drawer'  // Choose layout
-  size?: 'sm' | 'md' | 'lg'  // Override max-width
-  stackButtonsOnMobile?: boolean  // Default true
-  dismissOnBackdrop?: boolean  // Default true
+  variant?: 'default' | 'fullscreen' | 'drawer' // Choose layout
+  size?: 'sm' | 'md' | 'lg' // Override max-width
+  stackButtonsOnMobile?: boolean // Default true
+  dismissOnBackdrop?: boolean // Default true
 }
 ```
 
@@ -595,6 +626,7 @@ interface ModalProps {
 ## References in Codebase
 
 ### Similar Responsive Implementations:
+
 - `SettingsMenu.scss` - Menu positioning variants
 - `UserMenu.scss` - Dropdown height variants
 - `BottomNav.scss` - Safe-area usage
@@ -602,6 +634,7 @@ interface ModalProps {
 - `SignupPromptModal.scss` - Existing responsive modal
 
 ### Utility Functions Available:
+
 - `@mixin respond-to(sm|md|lg|xl)` - Media queries
 - `@mixin safe-transition()` - Motion accessibility
 - `@mixin interactive-target()` - WCAG 2.2 AA
@@ -612,6 +645,7 @@ interface ModalProps {
 ## Notes on Current Modal.tsx Behavior
 
 The Modal component already has:
+
 - ✅ Focus management (focus on last button by default)
 - ✅ Focus trap (Tab cycling)
 - ✅ Escape key handling
@@ -628,9 +662,9 @@ Only CSS needs updates for responsive layout.
 ## Dark Mode Already Working
 
 Modal.scss lines 188-213 already have dark mode support via:
+
 - CSS variables (--color-text, --color-bg, --color-surface)
 - `@media (prefers-color-scheme: dark)` query
 - CSS custom properties override system preference
 
 **No changes needed** - just ensure new responsive rules also use variables.
-

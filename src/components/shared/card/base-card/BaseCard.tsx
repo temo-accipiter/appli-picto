@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useMemo, ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import {
   InputWithValidation,
   Select,
@@ -8,7 +9,7 @@ import {
   ImagePreview,
   ButtonDelete,
 } from '@/components'
-import { useI18n } from '@/hooks'
+import { useI18n, useReducedMotion } from '@/hooks'
 import {
   makeValidateNotEmpty,
   makeNoEdgeSpaces,
@@ -61,6 +62,7 @@ const BaseCard = memo(function BaseCard({
   size = 'md',
 }: BaseCardProps) {
   const { t } = useI18n()
+  const prefersReducedMotion = useReducedMotion()
 
   // Créer les fonctions de validation i18n avec useMemo
   const validationRules = useMemo(
@@ -81,11 +83,15 @@ const BaseCard = memo(function BaseCard({
     .join(' ')
 
   return (
-    <div
+    <motion.div
       className={`base-card ${stateClasses}`}
       role="article"
       aria-label={`${t('card.item')} ${label}`}
       data-testid={`base-card-${labelId}`}
+      whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }}
+      transition={
+        prefersReducedMotion ? {} : { duration: 0.2, ease: 'easeOut' }
+      }
     >
       <div className="base-card__image-section">
         <div className="base-card__image">
@@ -146,7 +152,7 @@ const BaseCard = memo(function BaseCard({
           />
         )}
       </div>
-    </div>
+    </motion.div>
   )
 })
 

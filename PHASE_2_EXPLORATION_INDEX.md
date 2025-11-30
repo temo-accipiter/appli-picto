@@ -10,11 +10,13 @@
 ## 📑 Document Guide
 
 ### 1. 🎯 START HERE → PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md (9 KB)
+
 **Purpose**: Overview of entire exploration + quick navigation  
 **Read Time**: 10 minutes  
 **Best For**: Understanding what was explored and finding the right document
 
 **Contains**:
+
 - What was explored
 - Key findings summary
 - Phase 2 roadmap
@@ -27,11 +29,13 @@
 ---
 
 ### 2. 📊 CODEBASE_EXPLORATION_SUMMARY.md (13 KB)
+
 **Purpose**: Executive summary with actionable insights  
 **Read Time**: 20-30 minutes  
 **Best For**: Understanding findings and planning work
 
 **Contains**:
+
 - Files analyzed (20+)
 - Breakpoints found (576px, 768px, 992px, 1200px)
 - Current modal state (✅ good, ❌ missing)
@@ -50,11 +54,13 @@
 ---
 
 ### 3. 🔧 PHASE_2_MODAL_IMPLEMENTATION.md (14 KB)
+
 **Purpose**: Actual code to implement  
 **Read Time**: 30-40 minutes (while implementing)  
 **Best For**: Writing the code changes
 
 **Contains**:
+
 - Current Modal.scss code (what to change)
 - **Recommendation 1**: Responsive base modal (600+ lines of updated SCSS)
 - **Recommendation 2**: Responsive header/content/footer
@@ -72,11 +78,13 @@
 ---
 
 ### 4. 📚 RESPONSIVE_PATTERNS_REFERENCE.md (16 KB)
+
 **Purpose**: Copy-paste patterns from existing components  
 **Read Time**: 30-40 minutes (reference while coding)  
 **Best For**: Avoiding reinvention and following proven patterns
 
 **Contains**:
+
 - 8 proven responsive patterns from codebase
   - SettingsMenu: Position variants (use this pattern!)
   - BottomNav: Safe-area support (use this pattern!)
@@ -97,11 +105,13 @@
 ---
 
 ### 5. 🔍 RESPONSIVE_MODAL_ANALYSIS.md (15 KB)
+
 **Purpose**: Deep technical analysis  
 **Read Time**: 30-40 minutes  
 **Best For**: Understanding why changes are needed
 
 **Contains**:
+
 - Breakpoints definition and usage
 - Current Modal.scss state (line-by-line analysis)
 - Problems identified in detail
@@ -122,6 +132,7 @@
 ## 📋 Quick Navigation by Role
 
 ### 👨‍💻 Developer Implementing Phase 2
+
 1. **Start**: PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md (understand overview)
 2. **Plan**: CODEBASE_EXPLORATION_SUMMARY.md (understand scope & time)
 3. **Code**: Open PHASE_2_MODAL_IMPLEMENTATION.md in one tab
@@ -129,16 +140,19 @@
 5. **Understand**: Check RESPONSIVE_MODAL_ANALYSIS.md when confused
 
 ### 👔 Project Manager / Team Lead
+
 1. **Check**: CODEBASE_EXPLORATION_SUMMARY.md (Phase 2 checklist & time estimate)
 2. **Plan**: Phase 2 Implementation Roadmap section
 3. **Monitor**: Success Criteria section
 
 ### 🔍 Code Reviewer (PR Review)
+
 1. **Reference**: RESPONSIVE_PATTERNS_REFERENCE.md (verify patterns used)
 2. **Check**: PHASE_2_MODAL_IMPLEMENTATION.md (verify changes match recommendations)
 3. **Verify**: RESPONSIVE_MODAL_ANALYSIS.md (understand why changes were made)
 
 ### 🎓 New Team Member Learning Project
+
 1. **Intro**: PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md (overview)
 2. **Learn**: CODEBASE_EXPLORATION_SUMMARY.md (patterns found)
 3. **Study**: RESPONSIVE_PATTERNS_REFERENCE.md (existing patterns in code)
@@ -149,19 +163,23 @@
 ## 🎯 Key Findings at a Glance
 
 ### Current Modal Status
+
 ✅ **Working Well**:
+
 - Correct base sizing (90% width, 500px max)
 - Good animations (fadeIn, scaleIn)
 - Dark mode support
 - WCAG 2.2 AA compliance
 
 ❌ **Missing for Phase 2**:
+
 - NO media queries (same size on all screens)
 - NO safe-area support
 - NO padding optimization
 - NO fullscreen/drawer variants
 
 ### Best Patterns Found
+
 1. Smart width: `min(300px, 90vw)`
 2. Safe-area: `max($spacing-md, env(safe-area-inset-*))`
 3. Height variants: Different max-height per breakpoint
@@ -174,12 +192,14 @@
 10. WCAG: 44px targets, 16px minimum font
 
 ### Breakpoints
+
 - **sm**: 576px (small tablets)
 - **md**: 768px (tablet landscape)
 - **lg**: 992px (desktop)
 - **xl**: 1200px (large desktop)
 
 ### Estimated Work
+
 - **Phase 2.0** (Core responsive): 2-3 hours
 - **Phase 2.1** (Fullscreen): 1-2 hours
 - **Phase 2.2** (Drawer): 2-3 hours
@@ -192,15 +212,18 @@
 ## 🔗 Files to Implement
 
 **Main file to change**:
+
 - `/src/components/shared/modal/Modal.scss` ← UPDATE THIS
 
 **Reference implementations**:
+
 - `/src/components/shared/modal/modal-signup-prompt/SignupPromptModal.scss` (already responsive)
 - `/src/components/layout/settings-menu/SettingsMenu.scss` (position variants)
 - `/src/components/layout/bottom-nav/BottomNav.scss` (safe-area support)
 - `/src/components/layout/user-menu/UserMenu.scss` (height variants)
 
 **No changes needed**:
+
 - `/src/components/shared/modal/Modal.tsx` (component logic is fine)
 
 ---
@@ -221,6 +244,7 @@
 ## 📱 Testing Devices
 
 Must test on:
+
 - iPhone SE (375px) - smallest
 - iPhone 14 (390px) - standard
 - iPhone 14 Pro (393px) - with notch
@@ -235,19 +259,24 @@ Must test on:
 ## 📚 How to Use These Documents
 
 ### If you have 5 minutes
+
 → Read: PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md (Key Findings section)
 
 ### If you have 30 minutes
+
 → Read: CODEBASE_EXPLORATION_SUMMARY.md (full document)
 
 ### If you're implementing Phase 2
+
 → Use: PHASE_2_MODAL_IMPLEMENTATION.md (keep in tab while coding)
 → Reference: RESPONSIVE_PATTERNS_REFERENCE.md (tab open for patterns)
 
 ### If you need to understand why
+
 → Read: RESPONSIVE_MODAL_ANALYSIS.md (technical deep-dive)
 
 ### If you're reviewing a PR
+
 → Check: All 4 documents to verify implementation against recommendations
 
 ---
@@ -265,14 +294,14 @@ Must test on:
 
 ## 📊 Document Statistics
 
-| Document | Size | Read Time | Best For |
-|----------|------|-----------|----------|
-| PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md | 9 KB | 10 min | Overview & navigation |
-| CODEBASE_EXPLORATION_SUMMARY.md | 13 KB | 25 min | Executive summary |
-| PHASE_2_MODAL_IMPLEMENTATION.md | 14 KB | 30-40 min | Implementation (reference) |
-| RESPONSIVE_PATTERNS_REFERENCE.md | 16 KB | 30-40 min | Copy-paste patterns |
-| RESPONSIVE_MODAL_ANALYSIS.md | 15 KB | 30-40 min | Technical deep-dive |
-| **TOTAL** | **~70 KB** | **~2.5 hours** | Complete knowledge transfer |
+| Document                                | Size       | Read Time      | Best For                    |
+| --------------------------------------- | ---------- | -------------- | --------------------------- |
+| PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md | 9 KB       | 10 min         | Overview & navigation       |
+| CODEBASE_EXPLORATION_SUMMARY.md         | 13 KB      | 25 min         | Executive summary           |
+| PHASE_2_MODAL_IMPLEMENTATION.md         | 14 KB      | 30-40 min      | Implementation (reference)  |
+| RESPONSIVE_PATTERNS_REFERENCE.md        | 16 KB      | 30-40 min      | Copy-paste patterns         |
+| RESPONSIVE_MODAL_ANALYSIS.md            | 15 KB      | 30-40 min      | Technical deep-dive         |
+| **TOTAL**                               | **~70 KB** | **~2.5 hours** | Complete knowledge transfer |
 
 ---
 
@@ -286,7 +315,6 @@ The codebase already has excellent responsive patterns. You don't need to invent
 
 **Exploration Status**: ✅ COMPLETE  
 **Implementation Status**: 🚀 READY TO START  
-**Quality**: Production-ready documentation  
+**Quality**: Production-ready documentation
 
 Start with PHASE_2_RESPONSIVE_MODAL_EXPLORATION.md → choose your path → implement!
-

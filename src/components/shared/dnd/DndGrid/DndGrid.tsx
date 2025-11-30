@@ -35,6 +35,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
+import { AnimatePresence } from 'framer-motion'
 import { ReactNode, useMemo } from 'react'
 import DndCard from '../DndCard/DndCard'
 import DndSlot from '../DndSlot/DndSlot'
@@ -120,36 +121,41 @@ function DndGrid<T>({
       onDragEnd={handleDragEnd as (event: DragEndEvent) => void}
     >
       <div className={gridClasses} role="main" aria-live="polite">
-        {/* Items draggables */}
-        {items.map((item, index) => (
-          <DndCard
-            key={getItemId(item)}
-            id={getItemId(item)}
-            isDraggingGlobal={isDragging}
-            isBeingSwapped={
-              !!(
-                swappedPair &&
-                (swappedPair[0] === getItemId(item) ||
-                  swappedPair[1] === getItemId(item))
-              )
-            }
-            testId={`dnd-item-${index}`}
-          >
-            {renderItem(item, index)}
-          </DndCard>
-        ))}
+        {/* Items draggables avec AnimatePresence pour les entrées/sorties */}
+        <AnimatePresence>
+          {items.map((item, index) => (
+            <DndCard
+              key={getItemId(item)}
+              id={getItemId(item)}
+              isDraggingGlobal={isDragging}
+              isBeingSwapped={
+                !!(
+                  swappedPair &&
+                  (swappedPair[0] === getItemId(item) ||
+                    swappedPair[1] === getItemId(item))
+                )
+              }
+              testId={`dnd-item-${index}`}
+            >
+              {renderItem(item, index)}
+            </DndCard>
+          ))}
+        </AnimatePresence>
 
         {/* Slots droppables (si édition mode) */}
-        {isEditionMode &&
-          slots.map(slot => (
-            <DndSlot key={slot.id} id={slot.id} isDraggingFrom={false}>
-              {renderSlot ? (
-                renderSlot(slot.id, slot.index)
-              ) : (
-                <div style={{ minHeight: '140px' }} />
-              )}
-            </DndSlot>
-          ))}
+        {isEditionMode && (
+          <AnimatePresence>
+            {slots.map(slot => (
+              <DndSlot key={slot.id} id={slot.id} isDraggingFrom={false}>
+                {renderSlot ? (
+                  renderSlot(slot.id, slot.index)
+                ) : (
+                  <div style={{ minHeight: '140px' }} />
+                )}
+              </DndSlot>
+            ))}
+          </AnimatePresence>
+        )}
 
         {/* Contenu optionnel */}
         {children}

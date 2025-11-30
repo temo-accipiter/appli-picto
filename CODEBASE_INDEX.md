@@ -1,4 +1,5 @@
 # Appli-Picto - Index Codebase Complet
+
 ## Localisation fichiers clés + Références croisées
 
 ---
@@ -6,6 +7,7 @@
 ## 1. LAYOUT & ROUTING
 
 ### RootLayout
+
 - **Fichier**: `/src/app/layout.tsx`
 - **Type**: Server Component
 - **Ligne**: 72 lignes
@@ -22,6 +24,7 @@
 - **Lire en priorité**: OUI - comprendre structure
 
 ### PublicLayout
+
 - **Fichier**: `/src/app/(public)/layout.tsx`
 - **Type**: Client Component ('use client')
 - **Ligne**: 26 lignes
@@ -34,6 +37,7 @@
 - **Dépend de**: Navbar, Footer components
 
 ### ProtectedLayout
+
 - **Fichier**: `/src/app/(protected)/layout.tsx`
 - **Type**: Client Component ('use client')
 - **Ligne**: 27 lignes
@@ -46,6 +50,7 @@
 - **Dépend de**: ProtectedRoute, Navbar
 
 ### Legacy Layout Component (à vérifier si utilisé)
+
 - **Fichier**: `/src/components/shared/layout/Layout.tsx`
 - **Type**: Client Component
 - **Ligne**: 40 lignes
@@ -59,6 +64,7 @@
 ## 2. NAVIGATION COMPOSANTES
 
 ### Navbar
+
 - **Dossier**: `/src/components/layout/navbar/`
 - **Fichiers**:
   - `Navbar.tsx` (170 lignes) - Composant principal
@@ -85,6 +91,7 @@
   - `showNavbarRoutes = ['/profil', '/edition', '/abonnement', '/admin']` (protected layout)
 
 ### UserMenu
+
 - **Dossier**: `/src/components/layout/user-menu/`
 - **Fichiers**:
   - `UserMenu.tsx` (359 lignes) - Composant principal avec focus trap
@@ -106,6 +113,7 @@
   - ✅ aria-label personnalisé
   - ✅ aria-expanded sur trigger
 - **Key Logic**:
+
   ```typescript
   // Refs for focus management
   const dialogRef = useRef<HTMLDivElement>(null)
@@ -116,6 +124,7 @@
   // Focus auto on first item (L58-61)
   // Focus retour au close (L72-73)
   ```
+
 - **Dépend de**:
   - `SignedImage` (bucket avatars)
   - `useAuth()` hook
@@ -125,6 +134,7 @@
   - Supabase client
 
 ### SettingsMenu
+
 - **Dossier**: `/src/components/layout/settings-menu/`
 - **Fichiers**:
   - `SettingsMenu.tsx` (162 lignes)
@@ -156,6 +166,7 @@
   - `useParametres()` hook
 
 ### Footer
+
 - **Dossier**: `/src/components/layout/footer/`
 - **Fichiers**:
   - `Footer.tsx` (78 lignes)
@@ -181,6 +192,7 @@
 ## 3. STYLE SYSTEM
 
 ### Variables & Design Tokens
+
 - **Fichier**: `/src/styles/abstracts/_variables.scss` (178 lignes)
 - **Contient**:
   - **Polices**: system-ui, Lexend (pour TSA)
@@ -196,6 +208,7 @@
 - **Utilisation**: `@use '@styles/abstracts' as *;` en haut de tout fichier SCSS
 
 ### Mixins & Fonctions
+
 - **Fichier**: `/src/styles/abstracts/_mixins.scss` (191 lignes)
 - **Mixins clés**:
   - `respond-to($breakpoint)` - Mobile-first media query (L19)
@@ -209,6 +222,7 @@
   - Aussi: `hover-darken`, `clearfix`, `flex-center`, `transition-smooth`
 
 ### Animations
+
 - **Fichier**: `/src/styles/base/_animations.scss` (100+ lignes)
 - **Keyframes définis**:
   - `fade-in` - Opacity 0→1
@@ -221,14 +235,17 @@
   - Etc.
 
 ### Reduced Motion
+
 - **Fichier**: `/src/styles/base/_reduced-motion.scss` (11 lignes)
 - **Contenu**: `@media (prefers-reduced-motion: reduce)` → disable animations
 
 ### Themes
+
 - **Fichier**: `/src/styles/themes/_theme-vars.scss`
 - **Contient**: CSS custom properties pour dark mode
 
 ### Base Styles
+
 - **Dossier**: `/src/styles/base/`
 - **Fichiers**:
   - `_typography.scss` - Font families, heading sizes
@@ -238,6 +255,7 @@
   - `_reduced-motion.scss` - Prefers-reduced-motion
 
 ### Main Entry
+
 - **Fichier**: `/src/styles/main.scss`
 - **Contenu**: Imports tous les fichiers SCSS
 
@@ -246,6 +264,7 @@
 ## 4. UI COMPONENTS (Accessible)
 
 ### Button
+
 - **Dossier**: `/src/components/ui/button/`
 - **Fichiers**:
   - `Button.tsx` (66 lignes) - Main component
@@ -275,6 +294,7 @@
 - **Variants**: primary (blue), secondary (red), default (gray), danger (error color)
 
 ### Input
+
 - **Dossier**: `/src/components/ui/input/`
 - **Fichiers**:
   - `Input.tsx` (97 lignes)
@@ -282,7 +302,8 @@
   - `Input.test.tsx` - Tests
 - **Interface**:
   ```typescript
-  interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
+  interface InputProps
+    extends Omit<InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
     id: string
     label?: string
     value: string | number
@@ -305,6 +326,7 @@
   - Date input lang attribute
 
 ### Checkbox
+
 - **Dossier**: `/src/components/ui/checkbox/`
 - **Fichiers**:
   - `Checkbox.tsx` (74 lignes)
@@ -330,6 +352,7 @@
 - **Forward Ref**: ✅ Yes
 
 ### Select
+
 - **Dossier**: `/src/components/ui/select/`
 - **Fichiers**:
   - `Select.tsx` (79 lignes) - Native <select>
@@ -342,6 +365,7 @@
   - ✅ min-height: rem(44)
 
 ### SelectWithImage
+
 - **Dossier**: `/src/components/ui/select-with-image/`
 - **Fichiers**:
   - `SelectWithImage.tsx` (80+ lignes)
@@ -363,6 +387,7 @@
 - **Usage**: Metro line selector (tableau)
 
 ### Form Components (Others)
+
 - `Toast.tsx` / `Toast.scss` - Notifications
 - `Loader.tsx` - Loading spinner
 - `UploadProgress.tsx` - Progress bar
@@ -375,6 +400,7 @@
 ## 5. MODAL COMPONENTS
 
 ### Base Modal
+
 - **Fichier**: `/src/components/shared/modal/Modal.tsx` (142 lignes)
 - **Fichier Styles**: `/src/components/shared/modal/Modal.scss` (90 lignes)
 - **Responsabilités**:
@@ -392,6 +418,7 @@
 - **Width**: 90% max-width 500px (responsive)
 
 ### Modal Variants
+
 - `ModalConfirm.tsx` - Confirmation dialog
 - `ModalAjout.tsx` - Add item dialog
 - `ModalCategory.tsx` / `ModalCategory.scss` - Category selection
@@ -406,6 +433,7 @@
 ## 6. FEATURE COMPONENTS
 
 ### Taches (Tasks)
+
 - **Dossier**: `/src/components/features/taches/`
 - **Composants**:
   - `TachesEdition.tsx` - Task editor
@@ -414,27 +442,32 @@
 - **Status**: ⚠️ Non fully audited
 
 ### Time Timer
+
 - **Fichier**: `/src/components/features/time-timer/TimeTimer.tsx`
 - **Usage**: Time tracking / countdown timer
 
 ### Settings
+
 - **Dossier**: `/src/components/features/settings/`
 - **Composants**:
   - `DeleteAccountModal.tsx` - Account deletion
   - Autres settings
 
 ### Admin
+
 - **Dossier**: `/src/components/features/admin/`
 - **Composants**:
   - `permissions/PermissionsTable.tsx` - User permissions management
 
 ### Consent (RGPD)
+
 - **Dossier**: `/src/components/features/consent/`
 - **Composants**:
   - `CookieBanner.tsx` - Cookie consent banner
   - `CookiePreferences.tsx` - Cookie preferences dialog
 
 ### Subscription
+
 - **Dossier**: `/src/components/features/subscription/`
 - **Composants**: TBD
 
@@ -443,6 +476,7 @@
 ## 7. UTILITY & CONTEXT HOOKS
 
 ### Hooks (Fichiers)
+
 - **Dossier**: `/src/hooks/`
 - **Principaux**:
   - `useI18n.ts` - i18next wrapper
@@ -459,6 +493,7 @@
   - `withAbortSafe()` - Abort controller wrapper
 
 ### Contexts (Fichiers)
+
 - **Dossier**: `/src/contexts/`
 - **Principaux**:
   - `AuthContext.tsx` - Authentication
@@ -467,6 +502,7 @@
   - `DisplayContext.tsx` - Display preferences
 
 ### Utils
+
 - **Dossier**: `/src/utils/`
 - **Principaux**:
   - `supabaseClient.ts` - Single Supabase instance
@@ -479,6 +515,7 @@
 ## 8. KEY CONSTANTS & CONFIGURATIONS
 
 ### Breakpoints (SCSS)
+
 ```scss
 $breakpoint-sm:  576px
 $breakpoint-md:  768px
@@ -487,6 +524,7 @@ $breakpoint-xl: 1200px
 ```
 
 ### Colors (Primary)
+
 ```scss
 $color-primary: #0077c2      // Buttons (4.7:1 ratio white)
 $color-secondary: #ef5350    // Secondary (5.1:1 ratio)
@@ -496,6 +534,7 @@ $color-success: #4caf50      // Success
 ```
 
 ### Spacing
+
 ```scss
 $spacing-xxs: 0.25rem   // 4px
 $spacing-xs:  0.5rem    // 8px
@@ -506,6 +545,7 @@ $spacing-xl:  2rem      // 32px
 ```
 
 ### Z-Index Stack
+
 ```scss
 $z-overlay:  1000   // Modal backdrop
 $z-modal:    1100   // Modal content, Navbar
@@ -513,6 +553,7 @@ $z-tooltip:  1200   // Tooltips
 ```
 
 ### Routes Navbar Visibility
+
 ```typescript
 // Public layout:
 showNavbarRoutes = ['/tableau', '/time-timer']
@@ -526,25 +567,30 @@ showNavbarRoutes = ['/profil', '/edition', '/abonnement', '/admin']
 ## 9. DEPENDENCIES (Relevant to Layout/Navigation)
 
 ### Framework
+
 - `next` 16.0.3 - App Router, metadata, images
 - `react` 19.0.0 - Components
 - `react-dom` 19.0.0 - Rendering
 
 ### UI & Animation
+
 - `framer-motion` 12.10.1 - Navbar animations
 - `@radix-ui/react-select` 2.2.6 - SelectWithImage (accessible)
 - `lucide-react` 0.553.0 - Icons (SVG-based)
 
 ### Styling
+
 - `sass` 1.86.3 - SCSS compilation
 
 ### Accessibility Testing (DevDependencies)
+
 - `axe-core` 4.11.0 - WCAG audit tool
 - `@testing-library/react` 16.3.0 - Component testing
 - `@testing-library/dom` 10.4.1 - DOM testing utilities
 - `jsdom` 27.2.0 - DOM simulation
 
 ### Backend Integration
+
 - `@supabase/supabase-js` 2.81.1 - Supabase client
 - `@dnd-kit/*` - Drag & drop
 
@@ -714,22 +760,26 @@ showNavbarRoutes = ['/profil', '/edition', '/abonnement', '/admin']
 ## 11. QUICK NAVIGATION
 
 ### Pour comprendre la navigation:
+
 1. Lire: `/src/app/layout.tsx` (root)
 2. Lire: `/src/app/(public)/layout.tsx` et `(protected)/layout.tsx`
 3. Lire: `/src/components/layout/navbar/Navbar.tsx`
 4. Lire: `/src/components/layout/user-menu/UserMenu.tsx` (keyboard nav example)
 
 ### Pour accessibilité:
+
 1. Lire: `/src/styles/abstracts/_mixins.scss` (focus-ring, interactive-target)
 2. Lire: `/src/components/ui/button/Button.tsx` (ARIA patterns)
 3. Lire: `/src/components/shared/modal/Modal.tsx` (focus trap, keyboard)
 
 ### Pour responsive:
+
 1. Lire: `/src/styles/abstracts/_variables.scss` (breakpoints)
 2. Lire: `/src/styles/abstracts/_mixins.scss` (respond-to mixin)
 3. Lire: `/src/components/layout/navbar/Navbar.scss` (exemple mobile-first)
 
 ### Pour animations:
+
 1. Lire: `/src/styles/base/_animations.scss` (keyframes)
 2. Lire: `/src/styles/base/_reduced-motion.scss` (prefers-reduced-motion)
 3. Lire: `/src/components/layout/navbar/Navbar.tsx` (Framer Motion)
