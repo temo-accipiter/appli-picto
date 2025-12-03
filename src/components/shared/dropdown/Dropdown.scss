@@ -72,11 +72,4 @@
   }
 }
 
-// Mobile responsiveness
-@media (max-width: 480px) {
-  .dropdown {
-    max-width: 90vw;
-    max-height: 70vh;
-    overflow-y: auto;
-  }
-}
+// Mobile responsiveness - styles déjà mobile-first dans .dropdown de base
