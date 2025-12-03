@@ -1,24 +1,50 @@
 /**
- * MetricsDashboard - Styles
+ * MetricsDashboard - Styles Mobile-First
  */
 
 .metrics-dashboard {
-  padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 
+  // Mobile par défaut (320px-767px)
+  padding: 1rem;
+
   &__header {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 2rem;
+    // Mobile: empilé verticalement
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
   &__title {
-    font-size: 2rem;
     font-weight: 700;
     color: var(--text-primary, #333);
     margin: 0;
+    // Mobile: titre plus petit
+    font-size: 1.5rem;
+  }
+
+  // Tablette (768px+)
+  @media (min-width: 768px) {
+    padding: 1.5rem;
+
+    &__header {
+      justify-content: space-between;
+      align-items: center;
+      flex-direction: row;
+      gap: 0;
+    }
+  }
+
+  // Desktop (1024px+)
+  @media (min-width: 1024px) {
+    padding: 2rem;
+
+    &__title {
+      font-size: 2rem;
+    }
   }
 
   &__meta {
@@ -110,8 +136,23 @@
 // Grille de métriques
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
+
+  // Mobile par défaut (320px-767px)
+  grid-template-columns: 1fr;
+  gap: 1rem;
+
+  // Tablette (768px+)
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  // Desktop (1024px+)
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 // Carte de métrique
@@ -119,11 +160,13 @@
   background: white;
   border: 2px solid var(--border-color, #e5e7eb);
   border-radius: 12px;
-  padding: 1.5rem;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 1rem;
+
+  // Mobile par défaut (320px-767px)
+  padding: 1rem;
 
   &:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -131,9 +174,10 @@
   }
 
   &__icon {
-    font-size: 2.5rem;
     line-height: 1;
     flex-shrink: 0;
+    // Mobile: icône plus petite
+    font-size: 2rem;
   }
 
   &__content {
@@ -150,16 +194,30 @@
   }
 
   &__value {
-    font-size: 2.5rem;
     font-weight: 700;
     color: var(--text-primary, #333);
     line-height: 1;
     margin-bottom: 0.25rem;
+    // Mobile: valeur plus petite
+    font-size: 2rem;
   }
 
   &__subtitle {
     font-size: 0.875rem;
     color: var(--text-tertiary, #999);
+  }
+
+  // Desktop (1024px+)
+  @media (min-width: 1024px) {
+    padding: 1.5rem;
+
+    &__icon {
+      font-size: 2.5rem;
+    }
+
+    &__value {
+      font-size: 2.5rem;
+    }
   }
 
   // Variantes de couleur
@@ -200,54 +258,4 @@
   }
 }
 
-// Responsive Mobile-First
-// Note: Styles de base ci-dessus sont déjà desktop-optimisés
-// On ajoute des overrides pour tablette et mobile
-
-// Tablette (768px-1023px)
-@media (min-width: 768px) and (max-width: 1023px) {
-  .metrics-dashboard {
-    padding: 1.5rem;
-
-    &__header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-    }
-  }
-
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
-  }
-}
-
-// Mobile (320px-767px)
-@media (max-width: 767px) {
-  .metrics-dashboard {
-    padding: 1rem;
-
-    &__header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
-    }
-
-    &__title {
-      font-size: 1.5rem;
-    }
-  }
-
-  .metrics-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .metric-card {
-    padding: 1rem;
-
-    &__value {
-      font-size: 2rem;
-    }
-  }
-}
+// Mobile-First: Tous les styles responsive sont intégrés dans les classes ci-dessus
