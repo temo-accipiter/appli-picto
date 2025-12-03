@@ -370,7 +370,7 @@
       background: var(--bg-secondary);
       border: 2px solid var(--border-color);
       border-radius: 16px;
-      padding: 1.5rem;
+      padding: 1rem; // Mobile par défaut
       transition: all 0.15s ease;
       position: relative;
       overflow: hidden;
@@ -440,9 +440,11 @@
     /* En-tête utilisateur */
     .user-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
       margin-bottom: 0.5rem;
+      // Mobile par défaut: vertical
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
 
       .user-title {
         display: flex;
@@ -451,7 +453,7 @@
 
         h4 {
           margin: 0;
-          font-size: 1.4rem;
+          font-size: 1.2rem; // Mobile par défaut
           font-weight: 700;
           color: var(--text-primary);
           display: flex;
@@ -548,6 +550,8 @@
           display: flex;
           flex-wrap: wrap;
           gap: 0.5rem;
+          // Mobile par défaut: vertical
+          flex-direction: column;
         }
 
         .role-item {
@@ -564,6 +568,9 @@
           text-transform: uppercase;
           letter-spacing: 0.5px;
           font-size: 0.85rem;
+          // Mobile par défaut: pleine largeur
+          min-width: 100%;
+          justify-content: space-between;
 
           &:hover {
             background: var(--bg-primary);
@@ -1143,30 +1150,33 @@
     }
   }
 
-  // Responsive pour les utilisateurs
-  @include respond-to-below(md) {
+  // Responsive Mobile-First pour les utilisateurs
+  // Note: Ce fichier nécessite un refactoring complet en mobile-first
+  // Pour l'instant, on inverse juste la logique du mixin supprimé
+  @media (min-width: 768px) {
     .users-tab {
       .user-card {
-        padding: 1rem;
+        padding: 1.5rem; // Desktop: plus de padding
       }
 
       .user-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
+        flex-direction: row; // Desktop: horizontal
+        justify-content: space-between;
+        align-items: center;
+        gap: 0;
 
         h4 {
-          font-size: 1.2rem;
+          font-size: 1.4rem; // Desktop: titre plus grand
         }
       }
 
       .user-roles .role-item {
-        min-width: 100%;
-        justify-content: space-between;
+        min-width: auto; // Desktop: largeur auto
+        justify-content: flex-start;
       }
 
       .roles-list {
-        flex-direction: column;
+        flex-direction: row; // Desktop: horizontal
       }
     }
   }
@@ -1725,7 +1735,7 @@
 }
 
 /* Responsive design */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .admin-permissions-page {
     padding: 16px;
 
@@ -1795,7 +1805,7 @@
 }
 
 /* Responsive design */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .permissions-table-container {
     margin: 1rem 0;
   }
@@ -2021,7 +2031,7 @@
 }
 
 /* Responsive pour les contrôles de permissions */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .permission-actions {
     grid-template-columns: 1fr;
   }
@@ -2534,7 +2544,7 @@
 }
 
 /* Responsive pour l'historique */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .history-tab {
     .history-controls .filters-grid {
       grid-template-columns: 1fr;
@@ -2559,7 +2569,7 @@
 }
 
 /* Responsive pour le formulaire de fonctionnalités */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .permissions-header {
     flex-direction: column;
     gap: 1rem;
@@ -2730,7 +2740,7 @@
 }
 
 /* Responsive pour l'onglet Logs */
-@include respond-to-below(md) {
+@media (max-width: 767px) {
   .logs-tab {
     .logs-filters {
       .filter-buttons {
