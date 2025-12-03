@@ -19,6 +19,7 @@ export default defineConfig({
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
       '**/tests/e2e/**', // Exclure les tests Playwright
       '**/tests/accessibility/**', // Exclure les tests d'accessibilité Playwright
+      '**/blueprint-archive/**', // Exclure code temporaire
     ],
     // Configuration du coverage
     coverage: {
@@ -35,6 +36,7 @@ export default defineConfig({
         '**/src/main.jsx',
         '**/src/test/**',
         '**/src/types/**',
+        '**/blueprint-archive/**',
       ],
       // Seuils de couverture - Phase 4: objectif 80%
       thresholds: {

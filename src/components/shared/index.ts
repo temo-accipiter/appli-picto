@@ -37,7 +37,6 @@ export { default as EditionList } from './edition-list/EditionList'
 
 // Composants utilitaires
 export { default as ErrorBoundary } from './error-boundary/ErrorBoundary'
-export { default as LegalConfigTester } from '../../tools/legal-config-tester/LegalConfigTester'
 
 // Web Vitals
 export { default as WebVitals } from './web-vitals/WebVitals'

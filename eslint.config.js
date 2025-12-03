@@ -24,6 +24,7 @@ export default defineConfig([
       '**/build/**',
       '**/.vite/**',
       '**/projet-drag&drop/**',
+      '**/blueprint-archive/**',
     ],
   },
   {
