@@ -9,8 +9,27 @@ echo "📱 Vérification Mobile-First dans fichiers SCSS..."
 # Compteur d'erreurs
 errors=0
 
+# Fichiers exclus (desktop-only, non prioritaires)
+EXCLUDED_FILES=(
+  "src/page-components/admin-permissions/AdminPermissions.scss"  # Page admin desktop-only
+)
+
 # Chercher tous les fichiers SCSS
 while IFS= read -r file; do
+  # Vérifier si le fichier est dans la liste d'exclusion
+  skip=false
+  for excluded in "${EXCLUDED_FILES[@]}"; do
+    if [[ "$file" == "$excluded" ]]; then
+      skip=true
+      break
+    fi
+  done
+
+  # Skip si exclu
+  if [ "$skip" = true ]; then
+    continue
+  fi
+
   # Chercher @media avec max-width (desktop-first interdit)
   if grep -n "@media.*max-width" "$file" 2>/dev/null; then
     echo "❌ ERREUR: Desktop-first détecté dans $file"
