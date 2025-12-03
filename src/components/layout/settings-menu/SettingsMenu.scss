@@ -88,38 +88,33 @@
   &__dropdown {
     // Override les styles du Dropdown pour les besoins de SettingsMenu
 
-    // Desktop: positioned top-right
+    // Mobile par défaut (320px-767px) : positioned bottom-right
+    position: fixed !important;
+    bottom: $spacing-md !important;
+    right: $spacing-md !important;
+    left: auto !important;
+    top: auto !important;
+    width: min(300px, 90vw) !important;
+    border-radius: $radius-lg;
+    overflow-y: auto;
+    max-height: 70vh;
+    animation: slideInUp 0.18s ease-out !important;
+
+    // Desktop (768px+) : positioned top-right
     @media (min-width: 768px) {
       position: fixed !important;
       top: rem(70) !important;
       right: $spacing-md !important;
       left: auto !important;
+      bottom: auto !important;
+      max-height: calc(100vh - 100px);
+      animation: slideInDown 0.18s ease-out !important;
     }
-
-    // Mobile: positioned bottom-right
-    @media (max-width: 767px) {
-      position: fixed !important;
-      bottom: $spacing-md !important;
-      right: $spacing-md !important;
-      left: auto !important;
-      top: auto !important;
-      animation: slideInUp 0.18s ease-out !important;
-    }
-
-    width: min(300px, 90vw) !important;
-    border-radius: $radius-lg;
-    overflow-y: auto;
-    max-height: 70vh;
 
     // Dark mode
     [data-theme='dark'] & {
       background: linear-gradient(145deg, #1e1f25, #2a2d37);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    @media (min-width: 768px) {
-      max-height: calc(100vh - 100px);
-      animation: slideInDown 0.18s ease-out !important;
     }
   }
 
