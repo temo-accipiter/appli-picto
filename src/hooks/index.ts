@@ -20,7 +20,6 @@ export { default as useSubscriptionStatus } from './useSubscriptionStatus'
 export { default as useTaches } from './useTaches'
 export { default as useTachesDnd } from './useTachesDnd'
 export { default as useTachesEdition } from './useTachesEdition'
-export { default as useUserTimezone } from './useUserTimezone'
 
 // Re-export hooks from contexts
 export { useLoading, useToast, usePermissions } from '@/contexts'

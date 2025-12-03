@@ -70,3 +70,4 @@ tests/accessibility/report.html
 supabase/.branches
 supabase/.temp
 supabase/.archive/
+blueprint-archive/

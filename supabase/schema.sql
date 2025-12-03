@@ -805,9 +805,14 @@ DECLARE
   v_quotas jsonb := '[]'::jsonb;
   v_cnt record;
   v_subscription record;
+  v_month_bounds record;
+  v_monthly_tasks int := 0;
+  v_monthly_rewards int := 0;
+  v_monthly_categories int := 0;
 BEGIN
   PERFORM public.assert_self_or_admin(p_user_id);
 
+  -- Récupérer le rôle de l'utilisateur
   SELECT r.id, r.name, r.priority
     INTO v_role
   FROM public.user_roles ur
@@ -816,6 +821,7 @@ BEGIN
   ORDER BY r.priority DESC
   LIMIT 1;
 
+  -- Fallback sur abonnement ou visiteur si pas de rôle explicite
   IF v_role.id IS NULL THEN
     SELECT *
       INTO v_subscription
@@ -832,6 +838,7 @@ BEGIN
     END IF;
   END IF;
 
+  -- Récupérer les quotas du rôle
   IF v_role.id IS NOT NULL THEN
     SELECT COALESCE(jsonb_agg(jsonb_build_object(
              'quota_type', rq.quota_type,
@@ -843,11 +850,46 @@ BEGIN
     WHERE rq.role_id = v_role.id;
   END IF;
 
+  -- Récupérer les compteurs totaux (existant)
   SELECT tasks, rewards, categories
     INTO v_cnt
   FROM public.user_usage_counters
   WHERE user_id = p_user_id;
 
+  -- ✅ NOUVEAU : Calculer les compteurs mensuels
+  -- Utilise get_user_month_bounds_utc() pour respecter le timezone utilisateur
+  BEGIN
+    SELECT * INTO v_month_bounds FROM public.get_user_month_bounds_utc(p_user_id);
+    
+    -- Compter les tâches créées ce mois
+    SELECT COUNT(*)::int INTO v_monthly_tasks
+    FROM public.taches
+    WHERE user_id = p_user_id
+      AND created_at >= v_month_bounds.start_utc
+      AND created_at < v_month_bounds.end_utc;
+    
+    -- Compter les récompenses créées ce mois
+    SELECT COUNT(*)::int INTO v_monthly_rewards
+    FROM public.recompenses
+    WHERE user_id = p_user_id
+      AND created_at >= v_month_bounds.start_utc
+      AND created_at < v_month_bounds.end_utc;
+    
+    -- Compter les catégories créées ce mois
+    SELECT COUNT(*)::int INTO v_monthly_categories
+    FROM public.categories
+    WHERE user_id = p_user_id
+      AND created_at >= v_month_bounds.start_utc
+      AND created_at < v_month_bounds.end_utc;
+  EXCEPTION
+    WHEN OTHERS THEN
+      -- Si erreur (ex: get_user_month_bounds_utc échoue), mettre à 0
+      v_monthly_tasks := 0;
+      v_monthly_rewards := 0;
+      v_monthly_categories := 0;
+  END;
+
+  -- ✅ NOUVEAU : Retourner usage + monthly_usage
   RETURN jsonb_build_object(
     'role', jsonb_build_object(
       'id', v_role.id,
@@ -859,6 +901,11 @@ BEGIN
       'tasks', COALESCE(v_cnt.tasks, 0),
       'rewards', COALESCE(v_cnt.rewards, 0),
       'categories', COALESCE(v_cnt.categories, 0)
+    ),
+    'monthly_usage', jsonb_build_object(
+      'tasks', v_monthly_tasks,
+      'rewards', v_monthly_rewards,
+      'categories', v_monthly_categories
     )
   );
 END
@@ -866,6 +913,10 @@ $$;
 
 
 ALTER FUNCTION "public"."get_usage_fast"("p_user_id" "uuid") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."get_usage_fast"("p_user_id" "uuid") IS 'Retourne role, quotas, usage total ET monthly_usage pour un utilisateur. Supporte quotas mensuels via get_user_month_bounds_utc().';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."get_user_assets_stats"("p_user_id" "uuid") RETURNS "jsonb"

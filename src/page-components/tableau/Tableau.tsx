@@ -7,7 +7,6 @@ import {
   TimeTimer,
   TrainProgressBar,
 } from '@/components'
-import DebugRole from '@/tools/debug-role/DebugRole'
 
 import { useDisplay, usePermissions } from '@/contexts'
 import {
@@ -306,7 +305,6 @@ export default function TableauGrille({
       {/* WCAG 2.4.6 - Structure sémantique avec h1 pour lecteurs d'écran */}
       <h1 className="sr-only">{t('tableau.title')}</h1>
 
-      <DebugRole />
       {showTrain && (
         <section aria-labelledby="progress-heading">
           <h2 id="progress-heading" className="sr-only">

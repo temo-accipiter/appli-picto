@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: '13.0.5'
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -276,15 +296,16 @@ export type Database = {
           compression_ratio: number | null
           conversion_method: string | null
           conversion_ms: number | null
-          created_at: string
+          created_at: string | null
           error_message: string | null
           id: string
           mime_type_final: string | null
           mime_type_original: string | null
           original_size: number
           result: string
+          sha256_hash: string
           upload_ms: number | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           asset_type: string
@@ -292,15 +313,16 @@ export type Database = {
           compression_ratio?: number | null
           conversion_method?: string | null
           conversion_ms?: number | null
-          created_at?: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
           mime_type_final?: string | null
           mime_type_original?: string | null
           original_size: number
           result: string
+          sha256_hash: string
           upload_ms?: number | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           asset_type?: string
@@ -308,15 +330,16 @@ export type Database = {
           compression_ratio?: number | null
           conversion_method?: string | null
           conversion_ms?: number | null
-          created_at?: string
+          created_at?: string | null
           error_message?: string | null
           id?: string
           mime_type_final?: string | null
           mime_type_original?: string | null
           original_size?: number
           result?: string
+          sha256_hash?: string
           upload_ms?: number | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -325,21 +348,21 @@ export type Database = {
           confettis: boolean
           created_at: string
           id: number
-          toasts_enabled: boolean | null
+          toasts_enabled: boolean
           updated_at: string
         }
         Insert: {
           confettis?: boolean
           created_at?: string
           id?: number
-          toasts_enabled?: boolean | null
+          toasts_enabled?: boolean
           updated_at?: string
         }
         Update: {
           confettis?: boolean
           created_at?: string
           id?: number
-          toasts_enabled?: boolean | null
+          toasts_enabled?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -550,7 +573,7 @@ export type Database = {
       role_quotas_backup_legacy: {
         Row: {
           created_at: string | null
-          id: string
+          id: string | null
           quota_limit: number | null
           quota_period: string | null
           quota_type: string | null
@@ -559,7 +582,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          id: string
+          id?: string | null
           quota_limit?: number | null
           quota_period?: string | null
           quota_type?: string | null
@@ -568,7 +591,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
-          id?: string
+          id?: string | null
           quota_limit?: number | null
           quota_period?: string | null
           quota_type?: string | null
@@ -733,52 +756,46 @@ export type Database = {
         Row: {
           asset_type: string
           created_at: string
-          deleted_at: string | null
           dimensions: string | null
           file_path: string
           file_size: number
           height: number | null
           id: string
-          migrated_at: string | null
           mime_type: string | null
           sha256_hash: string | null
           updated_at: string
           user_id: string
-          version: number
+          version: number | null
           width: number | null
         }
         Insert: {
           asset_type: string
           created_at?: string
-          deleted_at?: string | null
           dimensions?: string | null
           file_path: string
           file_size: number
           height?: number | null
           id?: string
-          migrated_at?: string | null
           mime_type?: string | null
           sha256_hash?: string | null
           updated_at?: string
           user_id: string
-          version?: number
+          version?: number | null
           width?: number | null
         }
         Update: {
           asset_type?: string
           created_at?: string
-          deleted_at?: string | null
           dimensions?: string | null
           file_path?: string
           file_size?: number
           height?: number | null
           id?: string
-          migrated_at?: string | null
           mime_type?: string | null
           sha256_hash?: string | null
           updated_at?: string
           user_id?: string
-          version?: number
+          version?: number | null
           width?: number | null
         }
         Relationships: []
@@ -1138,37 +1155,25 @@ export type Database = {
           role_name: string
         }[]
       }
-      get_users_with_roles:
-        | {
-            Args: never
-            Returns: {
-              assigned_at: string
-              email: string
-              expires_at: string
-              is_active: boolean
-              role_name: string
-              user_id: string
-            }[]
-          }
-        | {
-            Args: {
-              page_limit?: number
-              page_num?: number
-              role_filter?: string
-              status_filter?: string
-            }
-            Returns: {
-              account_status: string
-              created_at: string
-              email: string
-              id: string
-              is_online: boolean
-              last_login: string
-              pseudo: string
-              total_count: number
-              user_roles: Json
-            }[]
-          }
+      get_users_with_roles: {
+        Args: {
+          page_limit?: number
+          page_num?: number
+          role_filter?: string
+          status_filter?: string
+        }
+        Returns: {
+          account_status: string
+          created_at: string
+          email: string
+          id: string
+          is_online: boolean
+          last_login: string
+          pseudo: string
+          total_count: number
+          user_roles: Json
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_subscriber: { Args: { p_user?: string }; Returns: boolean }
       is_system_role: { Args: { role_name: string }; Returns: boolean }
@@ -1332,6 +1337,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       transport_type: ['metro', 'bus', 'tram', 'rer'],
