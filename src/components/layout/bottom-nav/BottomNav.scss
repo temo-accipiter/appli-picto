@@ -14,41 +14,39 @@
  */
 
 .bottom-nav {
-  // Desktop >= 768px
-  display: none;
+  // Mobile par défaut (320px-767px)
+  display: flex;
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: $z-modal;
+  padding: $spacing-md;
+  gap: $spacing-md;
+  align-items: center;
+  // Support safe area (iPhone notch)
+  padding-top: max($spacing-md, env(safe-area-inset-top));
+  padding-right: max($spacing-md, env(safe-area-inset-right));
 
-  // Mobile < 768px
-  @media (max-width: #{$breakpoint-md - 1px}) {
-    display: flex;
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: $z-modal;
-    padding: $spacing-md;
-    gap: $spacing-md;
-    align-items: center;
-
-    // Support safe area (iPhone notch)
-    padding-top: max($spacing-md, env(safe-area-inset-top));
-    padding-right: max($spacing-md, env(safe-area-inset-right));
+  // Desktop (768px+)
+  @media (min-width: $breakpoint-md) {
+    display: none;
   }
 }
 
 // Zen mode /tableau: Avatar positioning
 .bottom-nav--tableau {
-  // Mobile: bas-droite (thumb-friendly zone)
-  @media (max-width: #{$breakpoint-md - 1px}) {
-    top: auto;
-    bottom: 0;
-    padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
-    padding-top: $spacing-md;
-  }
+  // Mobile par défaut (320px-767px) : bas-droite (thumb-friendly zone)
+  top: auto;
+  bottom: 0;
+  padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
+  padding-top: $spacing-md;
 
-  // Desktop: haut-droite (standard UI)
+  // Desktop (768px+) : haut-droite (standard UI)
   @media (min-width: $breakpoint-md) {
     display: flex;
     position: fixed;
     top: 0;
+    bottom: auto;
     right: 0;
     z-index: $z-modal;
     padding: $spacing-md;
@@ -59,31 +57,27 @@
 
 // Other pages (/edition, /profil, /admin): Bottom fixed navbar
 .bottom-nav--fixed {
-  // Mobile: bas de l'écran (full width navbar)
-  @media (max-width: #{$breakpoint-md - 1px}) {
-    top: auto;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    padding: $spacing-sm $spacing-md;
-    padding-bottom: max($spacing-sm, env(safe-area-inset-bottom));
-    justify-content: space-around;
-    // Background opaque pour éviter que le contenu soit visible à travers
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--color-border);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-  }
+  // Mobile par défaut (320px-767px) : bas de l'écran (full width navbar)
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  padding-bottom: max($spacing-sm, env(safe-area-inset-bottom));
+  justify-content: space-around;
+  // Background opaque pour éviter que le contenu soit visible à travers
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 
   // Dark mode support
   [data-theme='dark'] & {
-    @media (max-width: #{$breakpoint-md - 1px}) {
-      background: rgba(29, 36, 51, 0.98);
-    }
+    background: rgba(29, 36, 51, 0.98);
   }
 
-  // Desktop: hidden (navbar top remains)
+  // Desktop (768px+) : hidden (navbar top remains)
   @media (min-width: $breakpoint-md) {
     display: none;
   }
