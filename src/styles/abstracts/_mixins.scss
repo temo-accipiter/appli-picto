@@ -36,28 +36,13 @@
   }
 }
 
-/// Générateur de media query desktop-first (legacy support)
-/// @param {String} $breakpoint sm | md | lg | xl
-/// @deprecated Préférer mobile-first avec respond-to()
-@mixin respond-to-below($breakpoint) {
-  @if $breakpoint == sm {
-    @media (max-width: #{$breakpoint-sm - 1}) {
-      @content;
-    }
-  } @else if $breakpoint == md {
-    @media (max-width: #{$breakpoint-md - 1}) {
-      @content;
-    }
-  } @else if $breakpoint == lg {
-    @media (max-width: #{$breakpoint-lg - 1}) {
-      @content;
-    }
-  } @else if $breakpoint == xl {
-    @media (max-width: #{$breakpoint-xl - 1}) {
-      @content;
-    }
-  }
-}
+/// ============================================
+/// RÈGLE MOBILE-FIRST APPLI-PICTO
+/// ============================================
+/// TOUJOURS utiliser respond-to() avec min-width
+/// JAMAIS utiliser max-width (desktop-first interdit)
+/// Breakpoints : sm (576px) | md (768px) | lg (1024px) | xl (1280px)
+/// ============================================
 
 /// Clearfix pour les éléments flottants
 @mixin clearfix {
@@ -242,19 +227,18 @@
 @mixin dnd-grid($min-width: 260px, $gap: var(--spacing-md)) {
   display: grid;
   grid-auto-flow: dense;
-  grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
-  gap: $gap;
 
-  // Responsive mobile-first
-  @media (max-width: 576px) {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: var(--spacing-xs);
-  }
+  // Mobile par défaut (320px-767px)
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--spacing-xs);
 
+  // Tablette (768px+)
   @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
     gap: var(--spacing-sm);
   }
 
+  // Desktop (1024px+)
   @media (min-width: 1024px) {
     gap: $gap;
   }
