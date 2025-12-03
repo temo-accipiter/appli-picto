@@ -45,15 +45,43 @@ Tapez `/` dans Claude Code pour voir la liste complète.
 
 ## 🔧 MCP Servers
 
-Tapez `@` pour activer temporairement un MCP server.
+**3 serveurs MCP actifs** - Configuration détaillée dans [MCP_CONFIGURATION.md](MCP_CONFIGURATION.md)
 
-| MCP         | Description                     | État      | Activation                   |
-| ----------- | ------------------------------- | --------- | ---------------------------- |
-| `@supabase` | Documentation Supabase          | Désactivé | Tapez `@supabase <question>` |
-| `@context7` | Docs libraries (React, Next.js) | Désactivé | Tapez `@context7 <question>` |
-| `@stripe`   | Documentation Stripe            | Désactivé | Tapez `@stripe <question>`   |
+| MCP        | Description                          | Type  | État        | Auto-activé |
+| ---------- | ------------------------------------ | ----- | ----------- | ----------- |
+| `context7` | Docs libraries (React, Next.js, etc) | HTTP  | ✅ Connecté | Oui         |
+| `supabase` | Base de données locale (127.0.0.1)   | HTTP  | ✅ Connecté | Oui         |
+| `exa`      | Recherche web avancée + code context | stdio | ✅ Connecté | Oui         |
 
-**Note** : MCP désactivés par défaut pour économiser tokens. Activer manuellement avec `@` quand nécessaire.
+### Utilisation
+
+Les serveurs MCP sont **automatiquement utilisés** par Claude selon le contexte :
+
+```bash
+# Exemple 1 : Recherche web avec Exa
+"Trouve les best practices Next.js 16 publiées en 2024"
+→ Claude utilise automatiquement mcp__exa__web_search_exa
+
+# Exemple 2 : Documentation React avec Context7
+"Comment utiliser les Server Actions dans Next.js ?"
+→ Claude utilise automatiquement mcp__context7__get-library-docs
+
+# Exemple 3 : Migration Supabase
+/supabase-migrate Ajouter colonne avatar_url à users
+→ Claude utilise automatiquement mcp__supabase__apply_migration
+```
+
+### Test de configuration
+
+```bash
+# Vérifier que tous les serveurs sont connectés
+claude mcp list
+
+# Tester la configuration Exa.ai
+./.claude/scripts/test-exa-mcp.sh
+```
+
+**📘 Documentation complète** : Voir [MCP_CONFIGURATION.md](MCP_CONFIGURATION.md)
 
 ## 🎨 Output Styles
 
@@ -171,5 +199,6 @@ pnpm dev                  # Dev server
 
 ---
 
-**Version** : 1.0.0 (27 novembre 2024)
+**Version** : 1.1.0 (1er décembre 2024)
 **Projet** : Appli-Picto (Next.js 16, pnpm, TypeScript strict)
+**MCP** : Context7 + Supabase + Exa.ai (3 serveurs actifs)

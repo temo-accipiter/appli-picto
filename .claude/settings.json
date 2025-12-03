@@ -1,12 +1,21 @@
 {
-  "model": "haiku",
+  "model": "sonnet",
   "outputStyle": "appli-picto-guide",
 
   "statusLine": {
-    "command": "$CLAUDE_PROJECT_DIR/.claude/status-line/simple.sh"
+    "type": "command",
+    "command": "$CLAUDE_PROJECT_DIR/.claude/status-line/tokens.sh"
   },
 
-  "hooks": {},
+  "hooks": {
+    "pre-tool-use": {
+      "bash(git commit:*)": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh",
+      "bash(git push:*)": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh"
+    },
+    "post-tool-use": {
+      "mcp__supabase__apply_migration": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-migration.sh"
+    }
+  },
 
   "permissions": {
     "bash": "allow",
@@ -15,6 +24,9 @@
   },
 
   "commands": {
+    "claude-memory": {
+      "model": "sonnet"
+    },
     "debug": {
       "model": "sonnet"
     },
