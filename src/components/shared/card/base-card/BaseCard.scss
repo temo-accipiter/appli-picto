@@ -137,18 +137,4 @@
   }
 }
 
-/* Responsiveness complète : portrait/landscape mobile */
-@media (max-width: 320px) {
-  .base-card {
-    padding: $spacing-xs;
-    gap: $spacing-xs;
-
-    &__image {
-      max-width: 80px;
-    }
-
-    &__label {
-      font-size: 0.875rem;
-    }
-  }
-}
+/* Mobile-first: Responsiveness déjà gérée par les modifiers --sm, --md, --lg */
