@@ -1,59 +1,490 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
+// ============================================
+// PAGE PROFIL - REDESIGN MODERNE 2025
+// Architecture: Card-based layout, Mobile-first
+// ============================================
+
+// === PAGE CONTAINER ===
+.profil-page {
+  // Mobile par défaut (320px-767px)
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  padding: $spacing-md;
+  background: var(--color-bg-soft);
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg;
+  }
+
+  // Grand Desktop (1200px+)
+  @include respond-to(xl) {
+    max-width: 900px;
+    padding: $spacing-xl;
+  }
+}
+
+// === HEADER ===
+.profil-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    margin-bottom: $spacing-xl;
+  }
+}
+
+.profil-page__title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  margin: 0;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: 2rem;
+  }
+}
+
+// === CARDS PARTAGÉES ===
+.profil-card {
+  @include card-style;
+  margin-bottom: $spacing-lg;
+  @include safe-transition(box-shadow transform, $transition-fast, ease);
+
+  &:hover {
+    box-shadow: $shadow-lg;
+  }
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    padding: $spacing-xl;
+    margin-bottom: $spacing-xl;
+  }
+}
+
+.profil-card__title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: var(--color-text);
+  margin: 0 0 $spacing-lg 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: 1.75rem;
+  }
+}
+
+.profil-card__icon {
+  font-size: 1.75rem;
+  line-height: 1;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: 2rem;
+  }
+}
+
+.profil-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    gap: $spacing-lg;
+  }
+}
+
+// === CARD 1: AVATAR & IDENTITÉ ===
+.profil-card--identity {
+  text-align: center;
+}
+
+.profil-card__avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+  }
+}
+
+.profil-card__display-name {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: var(--color-text);
+  margin: 0;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: 1.75rem;
+  }
+}
+
+// === STATUS BADGES ===
+.subscription-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  @include safe-transition(transform box-shadow, $transition-fast, ease);
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-base;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &--active {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+    }
+  }
+
+  &--inactive {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: white;
+    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(100, 116, 139, 0.4);
+    }
+  }
+
+  &--loading {
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    color: white;
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+
+    &:hover {
+      box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4);
+    }
+  }
+}
+
+.subscription-badge__icon {
+  font-size: $font-size-lg;
+  line-height: 1;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: $font-size-xl;
+  }
+}
+
+.subscription-badge__text {
+  font-size: $font-size-sm;
+  line-height: 1;
+  white-space: nowrap;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: $font-size-base;
+  }
+}
+
+// === FORM ===
+.profil-card__form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+  text-align: left;
+}
+
+.profil-card__email-display {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding: $spacing-md;
+  background: var(--color-bg-soft);
+  border-radius: $radius-md;
+  border: 1px solid var(--color-border);
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-lg;
+  }
+}
+
+.profil-card__email-label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: $font-size-base;
+  }
+}
+
+.profil-card__email-value {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: var(--color-text);
+  word-break: break-all;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: $font-size-lg;
+    word-break: normal;
+  }
+}
+
+.profil-card__save-btn {
+  width: 100%;
+  min-height: 48px;
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  margin-top: $spacing-md;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+// === CARD 2: SÉCURITÉ ===
+.profil-card--security {
+  border-left: 4px solid $color-info;
+}
+
+.profil-card__action-btn {
+  width: 100%;
+  min-height: 48px;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    max-width: 400px;
+  }
+}
+
+// === CARD 3: ABONNEMENT ===
+.profil-card--subscription {
+  border-left: 4px solid $color-success;
+}
+
+.subscription-details {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: var(--color-bg-soft);
+  border-radius: $radius-md;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    padding: $spacing-lg;
+  }
+}
+
+.subscription-details__status,
+.subscription-details__expiry {
+  margin: 0;
+  font-size: $font-size-base;
+  color: var(--color-text);
+
+  strong {
+    font-weight: $font-weight-bold;
+    color: $color-success;
+  }
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    font-size: $font-size-lg;
+  }
+}
+
+// === CARD 4: ZONE DANGEREUSE ===
+.profil-card--danger {
+  border-left: 4px solid $color-error;
+  background: linear-gradient(
+    to bottom,
+    var(--color-surface),
+    rgba($color-error, 0.02)
+  );
+}
+
+.profil-card__warning-text {
+  margin: 0 0 $spacing-md 0;
+  padding: $spacing-md;
+  background: rgba($color-error, 0.05);
+  border-radius: $radius-md;
+  border: 1px solid rgba($color-error, 0.2);
+  color: var(--color-text);
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    padding: $spacing-lg;
+    font-size: $font-size-base;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+.profil-card__delete-btn {
+  width: 100%;
+  min-height: 48px;
+  background-color: $color-error;
+  color: white;
+  font-weight: $font-weight-bold;
+  border: 2px solid $color-error;
+  @include safe-transition(all, $transition-fast, ease);
+
+  &:hover:not(:disabled) {
+    background-color: color.adjust($color-error, $lightness: -10%);
+    border-color: color.adjust($color-error, $lightness: -10%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba($color-error, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  @include focus-ring($color-error, 2px, 2px);
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    max-width: 300px;
+  }
+}
+
+// === ACCESSIBILITY ===
+// Amélioration contraste pour WCAG 2.2 AA
+.profil-card__title,
+.profil-card__display-name {
+  @media (prefers-contrast: high) {
+    color: #000;
+  }
+}
+
+// Réduction mouvement pour utilisateurs TSA
+@media (prefers-reduced-motion: reduce) {
+  .profil-card,
+  .subscription-badge,
+  .profil-card__save-btn,
+  .profil-card__action-btn,
+  .profil-card__delete-btn {
+    transition: none;
+    transform: none !important;
+  }
+}
+
+// === DARK MODE ===
+@media (prefers-color-scheme: dark) {
+  .profil-page {
+    background: var(--color-bg);
+  }
+
+  .profil-card__email-display,
+  .subscription-details,
+  .profil-card__warning-text {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .profil-card--danger {
+    background: linear-gradient(
+      to bottom,
+      var(--color-surface),
+      rgba($color-error, 0.05)
+    );
+  }
+}
+
+// === LEGACY SUPPORT (À SUPPRIMER SI INUTILISÉ) ===
+// Anciens styles pour compatibilité temporaire
 .profil {
-  /* [Mobile-first] Base = mobile */
-  padding: 1rem;
+  padding: $spacing-md;
+
+  @include respond-to(sm) {
+    padding: $spacing-lg;
+  }
 
   &__container {
     max-width: 600px;
     margin: 0 auto;
     background-color: white;
-    border-radius: 1rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-  }
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+    padding: $spacing-lg;
 
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    padding: 2rem;
+    @include respond-to(md) {
+      padding: $spacing-xl;
+    }
   }
 
   &__heading {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-lg;
   }
 
   &__field {
-    margin-bottom: 1rem;
+    margin-bottom: $spacing-md;
 
     label {
       display: block;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+      font-weight: $font-weight-semibold;
+      margin-bottom: $spacing-xs;
     }
 
     input {
       width: 100%;
-      padding: 0.8rem;
-      border: 1px solid #949494; // WCAG 1.4.3 - Contrast 3:1 (was #ccc)
-      border-radius: 0.5rem;
+      padding: $spacing-sm;
+      border: 1px solid var(--color-border);
+      border-radius: $radius-sm;
     }
   }
 
   &__buttons {
     display: flex;
     justify-content: space-between;
-    margin-top: 2rem;
+    margin-top: $spacing-xl;
 
     button {
-      padding: 0.8rem 1.5rem;
-      font-weight: bold;
+      padding: $spacing-sm $spacing-lg;
+      font-weight: $font-weight-bold;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: $radius-sm;
       cursor: pointer;
-      transition: background-color 140ms ease-in-out;
+      @include safe-transition(background-color, $transition-fast, ease);
 
       &--primary {
         background-color: $color-primary;
@@ -65,28 +496,28 @@
       }
 
       &--secondary {
-        background-color: color.adjust(gray, $lightness: 5%);
-        color: #333;
+        background-color: var(--color-bg-soft);
+        color: var(--color-text);
       }
     }
   }
 
   &__avatar {
-    margin: 1rem 0;
+    margin: $spacing-lg 0;
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: $spacing-md;
 
     img {
       width: 80px;
       height: 80px;
       object-fit: cover;
-      border-radius: 50%;
+      border-radius: $radius-full;
       border: 2px solid $color-primary;
     }
 
     input[type='file'] {
-      font-size: 0.9rem;
+      font-size: $font-size-sm;
     }
   }
 }
@@ -94,8 +525,8 @@
 .profil-buttons {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
 
   .btn {
     width: 100%;
@@ -103,43 +534,38 @@
   }
 }
 
-// Section abonnement
+// Section abonnement (legacy)
 .abonnement-section {
-  margin: 1.5rem 0;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-
-  /* [Mobile-first] Base = mobile */
-  padding: 1rem;
+  margin: $spacing-lg 0;
+  background: var(--color-bg-soft);
+  border-radius: $radius-md;
+  border: 1px solid var(--color-border);
+  padding: $spacing-md;
 
   .abonnement-statut {
-    margin-bottom: 1rem;
+    margin-bottom: $spacing-md;
 
     &.actif {
-      color: var(--success-color);
-      font-weight: 500;
+      color: $color-success;
+      font-weight: $font-weight-medium;
     }
 
     &.inactif {
-      color: var(--error-color);
-      font-weight: 500;
+      color: $color-error;
+      font-weight: $font-weight-medium;
     }
   }
 
   button {
     width: 100%;
-
-    /* [Mobile-first] Base = mobile */
     max-width: 100%;
-  }
 
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    padding: 1.5rem;
-
-    button {
+    @include respond-to(sm) {
       max-width: 300px;
     }
+  }
+
+  @include respond-to(sm) {
+    padding: $spacing-lg;
   }
 }

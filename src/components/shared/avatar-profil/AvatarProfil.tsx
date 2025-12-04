@@ -4,7 +4,7 @@
 // Sélecteur d'avatar. Conserve l'API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
 
 import React, { useRef, useState } from 'react'
-import { Button, ButtonDelete, SignedImage } from '@/components'
+import { SignedImage } from '@/components'
 import {
   compressImageIfNeeded,
   compressionErrorMessage,
@@ -116,7 +116,8 @@ export default function AvatarProfil({
           filePath={avatarPath}
           bucket="avatars"
           alt={avatarAlt}
-          size={80}
+          size={160}
+          className="avatar-profil"
         />
       ) : (
         <div className="avatar-fallback">
@@ -124,17 +125,26 @@ export default function AvatarProfil({
         </div>
       )}
 
-      <div style={{ position: 'absolute', bottom: '8px', right: '8px' }}>
-        <Button
-          onClick={() => inputRef.current?.click()}
-          label="+"
-          variant="default"
-          aria-label="Changer l'avatar"
-        />
-      </div>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="avatar-upload-btn"
+        aria-label="Changer l'avatar"
+        title="Modifier l'avatar"
+      >
+        +
+      </button>
 
       {avatarPath && onDelete && (
-        <ButtonDelete onClick={onDelete} title="Supprimer l'avatar" />
+        <button
+          type="button"
+          onClick={onDelete}
+          className="avatar-delete-btn"
+          aria-label="Supprimer l'avatar"
+          title="Supprimer l'avatar"
+        >
+          ×
+        </button>
       )}
 
       <input

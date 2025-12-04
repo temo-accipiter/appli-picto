@@ -343,85 +343,105 @@ export default function Profil() {
 
   return (
     <div className="profil-page">
-      <h1>{t('profil.myProfile')}</h1>
-      <FloatingPencil className="floating-pencil--profil" />
-      <AvatarProfil
-        key={avatarKey}
-        avatarPath={tempAvatarPath || user.user_metadata?.avatar || null}
-        pseudo={displayPseudo}
-        onUpload={handleAvatarUpload}
-        onDelete={() => setConfirmDeleteAvatar(true)}
-      />
-      <form onSubmit={handleSave}>
-        <InputWithValidation
-          id="pseudo"
-          label={t('profil.pseudo')}
-          value={pseudo}
-          rules={[noEdgeSpaces, noDoubleSpaces]}
-          onChange={val => setPseudo(val)}
-          onValid={val => setPseudo(normalizeSpaces(val))}
-          ariaLabel={t('profil.pseudo')}
-          placeholder="ex. Alex"
-        />
+      <header className="profil-page__header">
+        <h1 className="profil-page__title">{t('profil.myProfile')}</h1>
+        <FloatingPencil className="floating-pencil--profil" />
+      </header>
 
-        <Input
-          id="date-naissance"
-          label={t('profil.birthdate')}
-          type="date"
-          value={dateNaissance}
-          onChange={e => setDateNaissance(e.target.value)}
-        />
+      {/* CARD 1: Avatar & Identité */}
+      <section className="profil-card profil-card--identity">
+        <div className="profil-card__avatar-wrapper">
+          <AvatarProfil
+            key={avatarKey}
+            avatarPath={tempAvatarPath || user.user_metadata?.avatar || null}
+            pseudo={displayPseudo}
+            onUpload={handleAvatarUpload}
+            onDelete={() => setConfirmDeleteAvatar(true)}
+          />
+          <h2 className="profil-card__display-name">{displayPseudo}</h2>
 
-        <InputWithValidation
-          id="ville"
-          label={t('profil.city')}
-          value={ville}
-          rules={[noEdgeSpaces, noDoubleSpaces]}
-          onChange={val => setVille(val)}
-          onValid={val => setVille(normalizeSpaces(val))}
-          ariaLabel={t('profil.city')}
-          placeholder="ex. Paris"
-        />
+          {/* Badge statut abonnement */}
+          {loading ? (
+            <div className="subscription-badge subscription-badge--loading">
+              <span className="subscription-badge__icon">⏳</span>
+              <span className="subscription-badge__text">
+                {t('profil.loading')}
+              </span>
+            </div>
+          ) : isActive ? (
+            <div className="subscription-badge subscription-badge--active">
+              <span className="subscription-badge__icon">✅</span>
+              <span className="subscription-badge__text">
+                {status}
+                {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0
+                  ? ` · ${daysUntilExpiry}j`
+                  : ''}
+              </span>
+            </div>
+          ) : (
+            <div className="subscription-badge subscription-badge--inactive">
+              <span className="subscription-badge__icon">⭕</span>
+              <span className="subscription-badge__text">Free</span>
+            </div>
+          )}
+        </div>
 
-        <p>
-          {t('profil.email')} : {user.email}
-        </p>
+        <form onSubmit={handleSave} className="profil-card__form">
+          <InputWithValidation
+            id="pseudo"
+            label={t('profil.pseudo')}
+            value={pseudo}
+            rules={[noEdgeSpaces, noDoubleSpaces]}
+            onChange={val => setPseudo(val)}
+            onValid={val => setPseudo(normalizeSpaces(val))}
+            ariaLabel={t('profil.pseudo')}
+            placeholder="ex. Alex"
+          />
 
-        {loading ? (
-          <p>{t('profil.loading')}</p>
-        ) : isActive ? (
-          <div className="abonnement-section">
-            <p className="abonnement-statut actif">
-              ✅ {t('profil.subscriptionActive')} ({status}
-              {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0
-                ? ` · ${daysUntilExpiry} ${t('profil.daysRemaining')}`
-                : ''}
-              ){' '}
-            </p>
-            <Button
-              type="button"
-              label={`🔧 ${t('profil.manageSubscription')}`}
-              onClick={() => router.push('/abonnement')}
-              variant="primary"
-            />
+          <Input
+            id="date-naissance"
+            label={t('profil.birthdate')}
+            type="date"
+            value={dateNaissance}
+            onChange={e => setDateNaissance(e.target.value)}
+          />
+
+          <InputWithValidation
+            id="ville"
+            label={t('profil.city')}
+            value={ville}
+            rules={[noEdgeSpaces, noDoubleSpaces]}
+            onChange={val => setVille(val)}
+            onValid={val => setVille(normalizeSpaces(val))}
+            ariaLabel={t('profil.city')}
+            placeholder="ex. Paris"
+          />
+
+          <div className="profil-card__email-display">
+            <span className="profil-card__email-label">
+              {t('profil.email')}
+            </span>
+            <span className="profil-card__email-value">{user.email}</span>
           </div>
-        ) : (
-          <p className="abonnement-statut inactif">
-            ❌ {t('profil.subscriptionInactive')}
-          </p>
-        )}
 
-        {/* ⬇️ Bouton S'abonner retiré */}
-        {/* {!loading && !isActive && <SubscribeButton />} */}
-
-        <div className="profil-buttons">
           <Button
             type="submit"
             label={isSaving ? t('app.loading') : t('profil.save')}
             variant="primary"
             disabled={isSaving}
+            className="profil-card__save-btn"
           />
+        </form>
+      </section>
 
+      {/* CARD 2: Sécurité */}
+      <section className="profil-card profil-card--security">
+        <h2 className="profil-card__title">
+          <span className="profil-card__icon">🔒</span>
+          Sécurité du compte
+        </h2>
+
+        <div className="profil-card__content">
           <Turnstile
             key={captchaKey}
             sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
@@ -433,20 +453,67 @@ export default function Profil() {
 
           <Button
             type="button"
-            label={`🔒 ${t('profil.resetPassword')}`}
+            label={t('profil.resetPassword')}
             onClick={resetPassword}
             variant="secondary"
-            // disabled={!captchaTokenReset}
+            className="profil-card__action-btn"
           />
+        </div>
+      </section>
+
+      {/* CARD 3: Abonnement */}
+      {!loading && isActive && (
+        <section className="profil-card profil-card--subscription">
+          <h2 className="profil-card__title">
+            <span className="profil-card__icon">💳</span>
+            Mon abonnement
+          </h2>
+
+          <div className="profil-card__content">
+            <div className="subscription-details">
+              <p className="subscription-details__status">
+                Statut : <strong>{status}</strong>
+              </p>
+              {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0 && (
+                <p className="subscription-details__expiry">
+                  Expire dans : <strong>{daysUntilExpiry} jours</strong>
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="button"
+              label={t('profil.manageSubscription')}
+              onClick={() => router.push('/abonnement')}
+              variant="primary"
+              className="profil-card__action-btn"
+            />
+          </div>
+        </section>
+      )}
+
+      {/* CARD 4: Zone dangereuse */}
+      <section className="profil-card profil-card--danger">
+        <h2 className="profil-card__title">
+          <span className="profil-card__icon">⚠️</span>
+          Zone dangereuse
+        </h2>
+
+        <div className="profil-card__content">
+          <p className="profil-card__warning-text">
+            La suppression de votre compte est irréversible. Toutes vos données
+            seront définitivement perdues.
+          </p>
 
           <Button
             type="button"
-            label={`🗑 ${t('profil.deleteAccount')}`}
+            label={t('profil.deleteAccount')}
             onClick={() => setModalOpen(true)}
             variant="default"
+            className="profil-card__delete-btn"
           />
         </div>
-      </form>
+      </section>
 
       <DeleteAccountModal
         isOpen={modalOpen}

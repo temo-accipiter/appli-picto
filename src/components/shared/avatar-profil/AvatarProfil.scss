@@ -1,58 +1,187 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
+// ============================================
+// AVATAR PROFIL - REDESIGN MODERNE 2025
+// Taille responsive: 120px mobile → 160px desktop
+// ============================================
+
 .avatar-container {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+// === AVATAR IMAGE & FALLBACK ===
 .avatar-profil,
 .avatar-fallback {
-  width: 80px;
-  height: 80px;
-  border-radius: 9999px;
-  border: 2px solid #ccc;
+  // Mobile par défaut (320px-767px)
+  width: 120px;
+  height: 120px;
+  font-size: 3rem;
+
+  // Styles communs
+  border-radius: $radius-full;
+  border: 3px solid $color-primary;
   background-color: #f0f0ff;
   object-fit: cover;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
   color: #333;
-  transition: all 0.15s ease;
+  box-shadow: $shadow-md;
+  @include safe-transition(
+    transform box-shadow border-color,
+    $transition-fast,
+    ease
+  );
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    width: 160px;
+    height: 160px;
+    font-size: 4rem;
+    border-width: 4px;
+  }
+
+  // Effet hover léger
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: $shadow-lg;
+    border-color: color.adjust($color-primary, $lightness: 10%);
+  }
 }
 
+// === BUTTONS OVERLAY ===
 .avatar-upload-btn,
 .avatar-delete-btn {
   position: absolute;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-full;
   padding: 0;
-  font-size: 1rem;
+  font-size: $font-size-base;
   line-height: 1;
   z-index: 2;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  cursor: pointer;
+  border: 2px solid white;
+  @include safe-transition(transform box-shadow, $transition-fast, ease);
+  @include focus-ring($color-primary, 2px, 2px);
+
+  // Mobile par défaut (320px-767px)
+  width: 36px;
+  height: 36px;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    width: 44px;
+    height: 44px;
+    font-size: $font-size-lg;
+  }
+
+  &:hover,
+  &:focus {
+    transform: scale(1.15);
+    box-shadow: $shadow-lg;
+  }
+
+  &:active {
+    transform: scale(1.05);
+  }
 }
 
 .avatar-upload-btn {
-  bottom: -6px;
-  right: -6px;
+  // Mobile par défaut
+  bottom: -8px;
+  right: -8px;
+  background: linear-gradient(
+    135deg,
+    $color-primary,
+    color.adjust($color-primary, $lightness: 10%)
+  );
+  color: white;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba($color-primary, 0.5);
+  }
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    bottom: -10px;
+    right: -10px;
+  }
 }
 
 .avatar-delete-btn {
-  top: -6px;
-  right: -6px;
+  // Mobile par défaut
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(
+    135deg,
+    $color-error,
+    color.adjust($color-error, $lightness: 10%)
+  );
+  color: white;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba($color-error, 0.5);
+  }
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    top: -10px;
+    right: -10px;
+  }
 }
 
-.avatar-upload-btn:hover,
-.avatar-upload-btn:focus,
-.avatar-delete-btn:hover,
-.avatar-delete-btn:focus {
-  transform: scale(1.15);
-  box-shadow: 0 0 5px rgba(120, 120, 255, 0.4);
-  outline: none;
-}
+// === MESSAGE ERREUR ===
 .message-erreur {
   white-space: pre-line;
+  margin-top: $spacing-md;
+  padding: $spacing-sm $spacing-md;
+  background: rgba($color-error, 0.1);
+  border: 1px solid rgba($color-error, 0.3);
+  border-radius: $radius-sm;
+  color: $color-error;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  text-align: center;
+
+  // Tablette & Desktop (768px+)
+  @include respond-to(md) {
+    padding: $spacing-md $spacing-lg;
+    font-size: $font-size-base;
+  }
+}
+
+// === ACCESSIBILITY ===
+// Réduction mouvement pour utilisateurs TSA
+@media (prefers-reduced-motion: reduce) {
+  .avatar-profil,
+  .avatar-fallback,
+  .avatar-upload-btn,
+  .avatar-delete-btn {
+    transition: none;
+    transform: none !important;
+
+    &:hover {
+      transform: none !important;
+    }
+  }
+}
+
+// === DARK MODE ===
+@media (prefers-color-scheme: dark) {
+  .avatar-fallback {
+    background-color: rgba(240, 240, 255, 0.1);
+    color: white;
+  }
+
+  .message-erreur {
+    background: rgba($color-error, 0.2);
+    border-color: rgba($color-error, 0.4);
+  }
 }
