@@ -19,11 +19,11 @@ $theme-light: (
 
 // === MAP DES COULEURS POUR LE DARK MODE ===
 $theme-dark: (
-  bg: #121212,
-  text: #eeeeee,
-  primary: #4dabf7,
-  secondary: #ff6b6b,
-  accent: #1e1e1e,
+  bg: slate(900),
+  text: slate(200),
+  primary: blue(400),
+  secondary: red(400),
+  accent: gray(900),
   border: gray(600),
   surface: gray(800),
   success: $color-success,
@@ -60,10 +60,10 @@ $theme-dark: (
   }
 
   --color-link: var(--color-primary);
-  --color-hover: rgba(130, 207, 255, 0.1);
+  --color-hover: #{color.change(blue(300), $alpha: 0.1)};
 
   --color-text-rgb:
-    #{color.channel(#eeeeee, 'red', $space: rgb)},
-    #{color.channel(#eeeeee, 'green', $space: rgb)},
-    #{color.channel(#eeeeee, 'blue', $space: rgb)};
+    #{color.channel(slate(200), 'red', $space: rgb)},
+    #{color.channel(slate(200), 'green', $space: rgb)},
+    #{color.channel(slate(200), 'blue', $space: rgb)};
 }

@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 // ===========================================================================
 // TODO REFACTORING MOBILE-FIRST
@@ -152,23 +153,23 @@
 
             &.visitor {
               background: rgba(107, 114, 128, 0.2);
-              color: #6b7280;
+              color: #{gray(500)};
             }
 
             &.abonne {
               background: rgba(34, 197, 94, 0.2);
-              color: #22c55e;
+              color: #{green(500)};
             }
 
             &.admin {
               background: rgba(220, 38, 38, 0.2);
-              color: #dc2626;
+              color: #{red(600)};
             }
           }
 
           .system-badge {
             background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -213,11 +214,11 @@
                 font-size: 1.2rem;
 
                 &.enabled {
-                  color: #22c55e;
+                  color: #{green(500)};
                 }
 
                 &.disabled {
-                  color: #ef4444;
+                  color: #{red(500)};
                 }
               }
             }
@@ -250,7 +251,7 @@
                   left: 0;
                   right: 0;
                   bottom: 0;
-                  background-color: #ccc;
+                  background-color: #{gray(300)};
                   transition: 0.15s;
                   border-radius: 24px;
 
@@ -410,7 +411,7 @@
       }
 
       &.admin-user {
-        border-color: #ef4444;
+        border-color: #{red(500)};
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
@@ -419,16 +420,16 @@
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, #ef4444, #f97316);
+          background: linear-gradient(90deg, #{red(500)}, #{orange(500)});
         }
 
         .user-header h4 {
-          color: #dc2626;
+          color: #{red(600)};
         }
       }
 
       &.regular-user {
-        border-color: #3b82f6;
+        border-color: #{blue(500)};
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
@@ -437,7 +438,7 @@
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+          background: linear-gradient(90deg, #{blue(500)}, #{purple(600)});
         }
 
         .user-header h4 {
@@ -494,13 +495,13 @@
 
           &.online {
             background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
+            color: #{green(500)};
             border: 1px solid rgba(16, 185, 129, 0.3);
           }
 
           &.offline {
             background: rgba(107, 114, 128, 0.1);
-            color: #6b7280;
+            color: #{gray(500)};
             border: 1px solid rgba(107, 114, 128, 0.3);
           }
         }
@@ -516,19 +517,19 @@
 
           &.status-suspended {
             background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
+            color: #{red(500)};
             border: 1px solid rgba(239, 68, 68, 0.3);
           }
 
           &.status-deletion_scheduled {
             background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
+            color: #{orange(500)};
             border: 1px solid rgba(245, 158, 11, 0.3);
           }
 
           &.status-pending_verification {
             background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+            color: #{blue(500)};
             border: 1px solid rgba(59, 130, 246, 0.3);
           }
         }
@@ -590,9 +591,9 @@
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
-            border-color: #dc2626;
+            border-color: #{red(600)};
             box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
             animation: pulse 2s infinite;
 
@@ -607,7 +608,7 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #dc2626, #b91c1c);
+              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
               box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
             }
           }
@@ -618,15 +619,15 @@
               rgba(245, 158, 11, 0.1),
               rgba(217, 119, 6, 0.05)
             );
-            border-color: #f59e0b;
+            border-color: #{orange(500)};
 
             .role-icon {
-              background: #f59e0b;
+              background: #{orange(500)};
               color: white;
             }
 
             .role-name {
-              color: #d97706;
+              color: #{orange(600)};
               font-weight: 600;
             }
           }
@@ -637,15 +638,15 @@
               rgba(139, 92, 246, 0.1),
               rgba(124, 58, 237, 0.05)
             );
-            border-color: #8b5cf6;
+            border-color: #{purple(600)};
 
             .role-icon {
-              background: #8b5cf6;
+              background: #{purple(600)};
               color: white;
             }
 
             .role-name {
-              color: #7c3aed;
+              color: #{purple(600)};
               font-weight: 600;
             }
           }
@@ -656,15 +657,15 @@
               rgba(59, 130, 246, 0.1),
               rgba(37, 99, 235, 0.05)
             );
-            border-color: #3b82f6;
+            border-color: #{blue(500)};
 
             .role-icon {
-              background: #3b82f6;
+              background: #{blue(500)};
               color: white;
             }
 
             .role-name {
-              color: #2563eb;
+              color: #{blue(600)};
               font-weight: 600;
             }
           }
@@ -675,15 +676,15 @@
               rgba(107, 114, 128, 0.1),
               rgba(75, 85, 99, 0.05)
             );
-            border-color: #6b7280;
+            border-color: #{gray(500)};
 
             .role-icon {
-              background: #6b7280;
+              background: #{gray(500)};
               color: white;
             }
 
             .role-name {
-              color: #4b5563;
+              color: #{gray(700)};
               font-weight: 600;
             }
           }
@@ -760,11 +761,11 @@
         }
 
         &.btn-danger {
-          background: #ef4444;
+          background: #{red(500)};
           color: white;
 
           &:hover:not(:disabled) {
-            background: #dc2626;
+            background: #{red(600)};
             transform: translateY(-1px);
           }
 
@@ -850,7 +851,7 @@
         }
 
         .no-login {
-          color: #ef4444;
+          color: #{red(500)};
           font-style: italic;
           font-weight: 500;
         }
@@ -911,9 +912,9 @@
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
-            border-color: #dc2626;
+            border-color: #{red(600)};
             box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
             animation: pulse 2s infinite;
 
@@ -928,7 +929,7 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #dc2626, #b91c1c);
+              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
               box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
             }
           }
@@ -939,15 +940,15 @@
               rgba(245, 158, 11, 0.1),
               rgba(217, 119, 6, 0.05)
             );
-            border-color: #f59e0b;
+            border-color: #{orange(500)};
 
             .role-icon {
-              background: #f59e0b;
+              background: #{orange(500)};
               color: white;
             }
 
             .role-name {
-              color: #d97706;
+              color: #{orange(600)};
               font-weight: 600;
             }
           }
@@ -958,15 +959,15 @@
               rgba(139, 92, 246, 0.1),
               rgba(124, 58, 237, 0.05)
             );
-            border-color: #8b5cf6;
+            border-color: #{purple(600)};
 
             .role-icon {
-              background: #8b5cf6;
+              background: #{purple(600)};
               color: white;
             }
 
             .role-name {
-              color: #7c3aed;
+              color: #{purple(600)};
               font-weight: 600;
             }
           }
@@ -977,15 +978,15 @@
               rgba(59, 130, 246, 0.1),
               rgba(37, 99, 235, 0.05)
             );
-            border-color: #3b82f6;
+            border-color: #{blue(500)};
 
             .role-icon {
-              background: #3b82f6;
+              background: #{blue(500)};
               color: white;
             }
 
             .role-name {
-              color: #2563eb;
+              color: #{blue(600)};
               font-weight: 600;
             }
           }
@@ -996,15 +997,15 @@
               rgba(107, 114, 128, 0.1),
               rgba(75, 85, 99, 0.05)
             );
-            border-color: #6b7280;
+            border-color: #{gray(500)};
 
             .role-icon {
-              background: #6b7280;
+              background: #{gray(500)};
               color: white;
             }
 
             .role-name {
-              color: #4b5563;
+              color: #{gray(700)};
               font-weight: 600;
             }
           }
@@ -1299,27 +1300,27 @@
 
             &.visitor {
               background: rgba(107, 114, 128, 0.2);
-              color: #6b7280;
+              color: #{gray(500)};
             }
 
             &.abonne {
               background: rgba(34, 197, 94, 0.2);
-              color: #22c55e;
+              color: #{green(500)};
             }
 
             &.admin {
               background: rgba(220, 38, 38, 0.2);
-              color: #dc2626;
+              color: #{red(600)};
             }
 
             &.staff {
               background: rgba(59, 130, 246, 0.2);
-              color: #3b82f6;
+              color: #{blue(500)};
             }
 
             &.free {
               background: rgba(16, 185, 129, 0.2);
-              color: #10b981;
+              color: #{green(500)};
             }
           }
 
@@ -1349,7 +1350,7 @@
 
           .system-badge {
             background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -1429,7 +1430,7 @@
     }
 
     &.btn-success {
-      background: #22c55e;
+      background: #{green(500)};
       color: white;
 
       &:hover {
@@ -1448,11 +1449,11 @@
     }
 
     &.btn-danger {
-      background: #ef4444;
+      background: #{red(500)};
       color: white;
 
       &:hover {
-        background: #dc2626;
+        background: #{red(600)};
       }
     }
 
@@ -1474,11 +1475,11 @@
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.3);
       border-radius: 8px;
-      color: #dc2626;
+      color: #{red(600)};
       margin-bottom: 8px;
 
       svg {
-        color: #dc2626;
+        color: #{red(600)};
       }
     }
   }
@@ -1596,12 +1597,12 @@
         transition: all 0.15s ease;
 
         &.enabled {
-          color: var(--success-color, #28a745);
+          color: var(--success-color, #{green(600)});
           background: var(--success-bg, rgba(40, 167, 69, 0.1));
         }
 
         &.disabled {
-          color: var(--danger-color, #dc3545);
+          color: var(--danger-color, #{red(600)});
           background: var(--danger-bg, rgba(220, 53, 69, 0.1));
         }
       }
@@ -1657,7 +1658,7 @@
         }
 
         &.btn-success {
-          background: var(--success-color, #28a745);
+          background: var(--success-color, #{green(600)});
           color: white;
 
           &:hover:not(:disabled) {
@@ -1721,11 +1722,11 @@
         }
 
         &.btn-danger {
-          background: var(--danger-color, #dc3545);
+          background: var(--danger-color, #{red(600)});
           color: white;
 
           &:hover {
-            background: var(--danger-hover, #c82333);
+            background: var(--danger-hover, #{red(700)});
           }
         }
 
@@ -1891,28 +1892,28 @@
   background: #2d3748; /* Fond gris foncé comme un terminal */
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  color: #e2e8f0; /* Texte clair pour contraste */
+  color: #{slate(200)}; /* Texte clair pour contraste */
 
   h3 {
     margin: 0 0 0.5rem 0;
-    color: #f7fafc; /* Titre blanc */
+    color: #{slate(50)}; /* Titre blanc */
     font-size: 1rem;
   }
 
   p {
     margin: 0;
-    color: #e2e8f0; /* Texte gris clair */
+    color: #{slate(200)}; /* Texte gris clair */
     font-size: 0.9rem;
 
     strong {
-      color: #f7fafc; /* Texte fort en blanc */
+      color: #{slate(50)}; /* Texte fort en blanc */
     }
   }
 
   /* Style pour le panel details/summary */
   details {
     summary {
-      color: #f7fafc;
+      color: #{slate(50)};
       cursor: pointer;
       font-weight: 500;
 
@@ -1923,7 +1924,7 @@
 
     pre {
       background: #1a202c; /* Encore plus foncé pour le code */
-      color: #e2e8f0;
+      color: #{slate(200)};
       padding: 1rem;
       border-radius: 4px;
       overflow-x: auto;
@@ -2375,19 +2376,19 @@
 
       // Couleurs par type de table
       &.table-roles {
-        border-left: 4px solid #3b82f6;
+        border-left: 4px solid #{blue(500)};
       }
 
       &.table-features {
-        border-left: 4px solid #10b981;
+        border-left: 4px solid #{green(500)};
       }
 
       &.table-role_permissions {
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid #{orange(500)};
       }
 
       &.table-user_roles {
-        border-left: 4px solid #8b5cf6;
+        border-left: 4px solid #{purple(600)};
       }
 
       .history-header {
@@ -2476,11 +2477,11 @@
               overflow-y: auto;
 
               &.old-values {
-                border-left: 3px solid #ef4444;
+                border-left: 3px solid #{red(500)};
               }
 
               &.new-values {
-                border-left: 3px solid #22c55e;
+                border-left: 3px solid #{green(500)};
               }
             }
           }

@@ -1,19 +1,22 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
 /* BEM-lite, doux & accessible */
 .delete-guard {
   display: grid;
   gap: 12px;
   padding: 16px;
-  background: var(--card-bg, #fff);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--card-bg, #{surface(bg)});
+  border: 1px solid color.change(gray(900), $alpha: 0.08);
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px color.change(gray(900), $alpha: 0.04);
   animation: deleteGuardFadeIn 0.2s ease-out;
 }
 
 @media (prefers-color-scheme: dark) {
   .delete-guard {
-    background: var(--card-bg-dark, #1e1f24);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: var(--card-bg-dark, #{slate(900)});
+    border-color: color.change(#ffffff, $alpha: 0.08);
     box-shadow: none;
   }
 }
@@ -33,23 +36,23 @@
   margin: 0 0 4px;
   font-size: 0.95rem;
   line-height: 1.4;
-  color: var(--text-muted, #475467);
+  color: var(--text-muted, #{gray(600)});
 }
 
 .delete-guard__error {
   margin: 4px 0 0;
   padding: 8px 12px;
   border-radius: 10px;
-  background: var(--danger-50, #fde7eb);
-  border: 1px solid var(--danger-200, #f5c2c7);
-  color: var(--danger-700, #b00020);
+  background: var(--danger-50, #{red(50)});
+  border: 1px solid var(--danger-200, #{red(200)});
+  color: var(--danger-700, #{red(700)});
   font-size: 0.95rem;
 }
 
 .delete-guard__note {
   margin: 2px 0 0;
   font-size: 0.875rem;
-  color: var(--text-muted, #667085);
+  color: var(--text-muted, #{gray(600)});
 }
 
 /* Turnstile a une classe .cf-turnstile */
@@ -59,7 +62,7 @@
 
 /* Focus visible bien lisible (AA) */
 .delete-guard :focus-visible {
-  outline: 3px solid var(--focus, #94c5ff);
+  outline: 3px solid var(--focus, #{blue(300)});
   outline-offset: 2px;
   transition: outline-color 0.15s ease;
 }
