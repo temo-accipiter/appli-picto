@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 /**
  * MetricsDashboard - Styles Mobile-First
  */
@@ -27,7 +29,7 @@
   }
 
   // Tablette (768px+)
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     padding: 1.5rem;
 
     &__header {
@@ -39,7 +41,7 @@
   }
 
   // Desktop (1024px+)
-  @media (min-width: 1024px) {
+  @include respond-to(lg) {
     padding: 2rem;
 
     &__title {
@@ -143,13 +145,13 @@
   gap: 1rem;
 
   // Tablette (768px+)
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
   }
 
   // Desktop (1024px+)
-  @media (min-width: 1024px) {
+  @include respond-to(lg) {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
   }
@@ -208,7 +210,7 @@
   }
 
   // Desktop (1024px+)
-  @media (min-width: 1024px) {
+  @include respond-to(lg) {
     padding: 1.5rem;
 
     &__icon {

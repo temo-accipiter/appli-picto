@@ -31,7 +31,7 @@
       flex-wrap: wrap;
       align-items: flex-start;
 
-      @media (min-width: 1024px) {
+      @include respond-to(lg) {
         flex-wrap: nowrap;
       }
     }
@@ -42,7 +42,7 @@
     width: 100%;
     animation: slide-up $transition-base ease;
 
-    @media (min-width: 1024px) {
+    @include respond-to(lg) {
       width: 350px;
       position: sticky;
       top: $spacing-lg;

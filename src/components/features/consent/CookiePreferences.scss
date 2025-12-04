@@ -232,8 +232,8 @@
     width: 100%;
   }
 
-  /* Desktop (640px+) */
-  @media (min-width: 640px) {
+  /* Desktop (768px+) */
+  @include respond-to(md) {
     flex-direction: row;
     flex-wrap: wrap;
 

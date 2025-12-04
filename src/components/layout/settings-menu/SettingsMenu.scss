@@ -101,7 +101,7 @@
     animation: slideInUp 0.18s ease-out !important;
 
     // Desktop (768px+) : positioned top-right
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       position: fixed !important;
       top: rem(70) !important;
       right: $spacing-md !important;

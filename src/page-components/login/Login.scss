@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 .login-page,
 .signup-page {
   max-width: 400px;
@@ -99,7 +101,7 @@
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 520px) {
+@include respond-to(sm) {
   .password-checklist__list {
     grid-template-columns: 1fr 1fr; /* 2 colonnes sur écrans moyens+ */
   }

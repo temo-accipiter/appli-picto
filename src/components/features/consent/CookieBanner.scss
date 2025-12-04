@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+
 /* src/components/CookieBanner.scss */
 /* Bannière accessible, palette pastel, contraste AA, responsive */
 
@@ -28,7 +30,7 @@
     flex-direction: column;
     gap: 16px;
 
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       flex-direction: row;
       align-items: flex-start;
       gap: 24px;
@@ -84,12 +86,12 @@
     gap: 8px;
     flex-shrink: 0;
 
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       flex-direction: row;
       align-items: center;
     }
 
-    @media (min-width: 480px) {
+    @include respond-to(sm) {
       flex-direction: row;
       justify-content: center;
     }

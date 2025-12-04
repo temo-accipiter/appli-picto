@@ -1,5 +1,14 @@
 @use '@styles/abstracts' as *;
 
+// ===========================================================================
+// TODO REFACTORING MOBILE-FIRST
+// ===========================================================================
+// Ce fichier utilise encore des patterns desktop-first (max-width)
+// pour compatibilité legacy. Un refactoring complet mobile-first est nécessaire
+// dans une PR future dédiée (estimation : 4-6h).
+// Pour l'instant, on utilise le système unifié de breakpoints pour cohérence.
+// ===========================================================================
+
 .admin-permissions-page {
   max-width: 1400px;
   margin: 0 auto;
@@ -1153,7 +1162,7 @@
   // Responsive Mobile-First pour les utilisateurs
   // Note: Ce fichier nécessite un refactoring complet en mobile-first
   // Pour l'instant, on inverse juste la logique du mixin supprimé
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     .users-tab {
       .user-card {
         padding: 1.5rem; // Desktop: plus de padding
@@ -1734,8 +1743,8 @@
   }
 }
 
-/* Responsive design */
-@media (max-width: 767px) {
+/* Responsive design (mobile styles - TODO: refactor to mobile-first) */
+@media (max-width: breakpoint(md) - 1px) {
   .admin-permissions-page {
     padding: 16px;
 
@@ -1805,7 +1814,7 @@
 }
 
 /* Responsive design */
-@media (max-width: 767px) {
+@media (max-width: breakpoint(md) - 1px) {
   .permissions-table-container {
     margin: 1rem 0;
   }
@@ -2031,7 +2040,7 @@
 }
 
 /* Responsive pour les contrôles de permissions */
-@media (max-width: 767px) {
+@media (max-width: breakpoint(md) - 1px) {
   .permission-actions {
     grid-template-columns: 1fr;
   }
@@ -2544,7 +2553,7 @@
 }
 
 /* Responsive pour l'historique */
-@media (max-width: 767px) {
+@media (max-width: breakpoint(md) - 1px) {
   .history-tab {
     .history-controls .filters-grid {
       grid-template-columns: 1fr;
@@ -2569,7 +2578,7 @@
 }
 
 /* Responsive pour le formulaire de fonctionnalités */
-@media (max-width: 767px) {
+@media (max-width: breakpoint(md) - 1px) {
   .permissions-header {
     flex-direction: column;
     gap: 1rem;
@@ -2740,7 +2749,7 @@
 }
 
 /* Responsive pour l'onglet Logs */
-@media (max-width: 767px) {
+@media (max-width: breakpoint(md) - 1px) {
   .logs-tab {
     .logs-filters {
       .filter-buttons {

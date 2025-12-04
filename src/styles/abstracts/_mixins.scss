@@ -1,3 +1,4 @@
+@use 'breakpoints' as *;
 @use 'variables' as *;
 @use 'sass:color';
 @use 'sass:map';
@@ -16,34 +17,25 @@
   }
 }
 
-/// Générateur de media query (mobile-first)
-/// @param {String} $breakpoint sm | md | lg | xl
-@mixin respond-to($breakpoint) {
-  @if $breakpoint == sm {
-    @media (min-width: $breakpoint-sm) {
-      @content;
-    }
-  } @else if $breakpoint == md {
-    @media (min-width: $breakpoint-md) {
-      @content;
-    }
-  } @else if $breakpoint == lg {
-    @media (min-width: $breakpoint-lg) {
-      @content;
-    }
-  } @else if $breakpoint == xl {
-    @media (min-width: $breakpoint-xl) {
-      @content;
-    }
-  }
-}
-
 /// ============================================
-/// RÈGLE MOBILE-FIRST APPLI-PICTO
+/// BREAKPOINTS & MEDIA QUERIES
 /// ============================================
+/// Le mixin respond-to() et la map $breakpoints sont maintenant dans :
+/// @see src/styles/abstracts/_breakpoints.scss
+///
+/// RÈGLE MOBILE-FIRST APPLI-PICTO :
 /// TOUJOURS utiliser respond-to() avec min-width
 /// JAMAIS utiliser max-width (desktop-first interdit)
-/// Breakpoints : sm (576px) | md (768px) | lg (1024px) | xl (1280px)
+///
+/// Breakpoints disponibles :
+/// - sm  : 576px  (Mobile landscape / Petites tablettes)
+/// - md  : 768px  (Tablettes portrait)
+/// - lg  : 1024px (Desktop / Tablettes landscape)
+/// - xl  : 1200px (Large desktop)
+/// - xxl : 1536px (Extra large desktop)
+///
+/// Usage :
+/// @include respond-to(md) { ... }
 /// ============================================
 
 /// Clearfix pour les éléments flottants
@@ -235,13 +227,13 @@
   gap: var(--spacing-xs);
 
   // Tablette (768px+)
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     grid-template-columns: repeat(auto-fill, minmax($min-width, 1fr));
     gap: var(--spacing-sm);
   }
 
   // Desktop (1024px+)
-  @media (min-width: 1024px) {
+  @include respond-to(lg) {
     gap: $gap;
   }
 
@@ -382,11 +374,17 @@
     }
   }
 
-  // Responsive : scroll horizontal sur mobile
-  @media (max-width: $breakpoint-md - 1) {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
+  // Responsive : scroll horizontal sur mobile (mobile-first pattern)
+  // Mobile par défaut : table scrollable
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+
+  // Tablette+ (768px+) : table normale
+  @include respond-to(md) {
+    display: table;
+    overflow-x: visible;
+    white-space: normal;
   }
 }
 

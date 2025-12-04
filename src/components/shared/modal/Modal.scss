@@ -16,7 +16,7 @@
   padding: $spacing-sm;
 
   // Tablette & Desktop (576px+)
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     padding: $spacing-md;
   }
 }
@@ -40,7 +40,7 @@
   border-radius: $radius-md;
 
   // Petite tablette (576px+)
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     width: 90vw;
     max-width: 540px;
     max-height: calc(100vh - 64px);
@@ -48,14 +48,14 @@
   }
 
   // Tablette & Desktop (768px+)
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
   }
 
   // Grand Desktop (1200px+)
-  @media (min-width: 1200px) {
+  @include respond-to(xl) {
     max-width: 600px;
   }
 
@@ -70,12 +70,12 @@
     max-width: calc(100vw - 32px);
 
     // Petite tablette (576px+)
-    @media (min-width: 576px) {
+    @include respond-to(sm) {
       max-width: 320px;
     }
 
     // Grand Desktop (1200px+)
-    @media (min-width: 1200px) {
+    @include respond-to(xl) {
       max-width: 400px;
     }
   }
@@ -86,17 +86,17 @@
     max-width: calc(100vw - 32px);
 
     // Petite tablette (576px+)
-    @media (min-width: 576px) {
+    @include respond-to(sm) {
       max-width: 90vw;
     }
 
     // Tablette & Desktop (768px+)
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       max-width: 700px;
     }
 
     // Grand Desktop (1200px+)
-    @media (min-width: 1200px) {
+    @include respond-to(xl) {
       max-width: 800px;
     }
   }
@@ -115,13 +115,13 @@
   gap: $spacing-sm;
 
   // Petite tablette (576px+)
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     padding: $spacing-lg $spacing-md;
     gap: $spacing-md;
   }
 
   // Tablette & Desktop (768px+)
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     padding: $spacing-lg $spacing-md;
   }
 }
@@ -137,7 +137,7 @@
   font-size: $font-size-lg;
 
   // Petite tablette (576px+): titre normal
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     font-size: $font-size-xl;
   }
 }
@@ -152,7 +152,7 @@
   min-height: 80px;
 
   // Petite tablette (576px+)
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     padding: $spacing-lg $spacing-md;
     min-height: 100px;
   }
@@ -188,7 +188,7 @@
   font-size: $font-size-base;
 
   // Petite tablette (576px+): texte normal
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     font-size: $font-size-lg;
   }
 
@@ -216,7 +216,7 @@
   }
 
   // Petite tablette (576px+): boutons en ligne
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     padding: $spacing-md;
     gap: $spacing-sm;
     flex-direction: row;
@@ -243,7 +243,7 @@
     }
 
     // Bouton Annuler à gauche (desktop uniquement)
-    @media (min-width: 576px) {
+    @include respond-to(sm) {
       &:first-child {
         margin-right: auto;
       }
@@ -296,7 +296,7 @@
   }
 
   // Petite tablette (576px+): sizing responsive
-  @media (min-width: 576px) {
+  @include respond-to(sm) {
     width: 95vw;
     max-width: 540px;
     max-height: calc(100vh - 64px);
@@ -305,14 +305,14 @@
   }
 
   // Tablette & Desktop (768px+): modal normal
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
   }
 
   // Grand Desktop (1200px+)
-  @media (min-width: 1200px) {
+  @include respond-to(xl) {
     max-width: 600px;
   }
 }
@@ -324,7 +324,7 @@
   justify-content: stretch;
 
   // Tablette & Desktop (768px+): alignement centré
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     align-items: center;
     justify-content: center;
   }
@@ -371,7 +371,7 @@
   }
 
   // Tablette & Desktop (768px+): centered normal modal
-  @media (min-width: 768px) {
+  @include respond-to(md) {
     width: 90%;
     max-width: 500px;
     max-height: 90vh;
@@ -386,7 +386,7 @@
   }
 
   // Grand Desktop (1200px+)
-  @media (min-width: 1200px) {
+  @include respond-to(xl) {
     max-width: 600px;
   }
 }
@@ -400,7 +400,7 @@
     margin-right: max(0, calc(env(safe-area-inset-right) - $spacing-md));
 
     // Tablette & Desktop (768px+): pas de safe areas
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       margin-left: 0;
       margin-right: 0;
     }
@@ -417,7 +417,7 @@
     );
 
     // Tablette & Desktop (768px+): padding normal
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       padding-left: $spacing-md;
       padding-right: $spacing-md;
     }
@@ -434,7 +434,7 @@
     );
 
     // Tablette & Desktop (768px+): padding normal
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       padding-left: $spacing-md;
       padding-right: $spacing-md;
     }
@@ -452,7 +452,7 @@
     padding-bottom: max($spacing-md, env(safe-area-inset-bottom));
 
     // Tablette & Desktop (768px+): padding normal
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       padding-left: $spacing-md;
       padding-right: $spacing-md;
       padding-bottom: $spacing-md;
@@ -466,7 +466,7 @@
     margin-bottom: max(0, env(safe-area-inset-bottom));
 
     // Tablette & Desktop (768px+): marges normales
-    @media (min-width: 768px) {
+    @include respond-to(md) {
       margin-left: 0;
       margin-right: 0;
       margin-bottom: 0;
