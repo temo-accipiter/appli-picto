@@ -1,8 +1,10 @@
 @use 'variables' as *;
-/// Applique une version foncée d’une couleur au hover
+@use 'sass:color';
+@use 'sass:map';
+
+/// Applique une version foncée d'une couleur au hover
 /// @param {Color} $color Couleur de base
 /// @param {Number} $amount Pourcentage de fonçage (par défaut 10%)
-@use 'sass:color';
 
 /// ==============================================
 ///  MIXINS UTILES POUR DESIGN MODULAIRE ET RÉACTIF
@@ -252,4 +254,192 @@
 /// Alias pour dnd-layout (compatibilité future)
 @mixin dnd-layout {
   @include dnd-grid;
+}
+
+// ============================================
+// ADMIN PATTERNS MIXINS (Réutilisables)
+// ============================================
+
+/// Badge rôle utilisateur (admin, abonné, visitor, etc.)
+/// Génère automatiquement gradient, couleurs, ombres depuis $role-colors map
+/// @param {String} $role Nom du rôle (admin | abonne | visitor | free | staff)
+/// @example
+///   &[data-role='admin'] { @include role-badge(admin); }
+@mixin role-badge($role) {
+  $colors: map.get($role-colors, $role);
+
+  @if $colors {
+    $base-color: nth($colors, 1);
+    $gradient-end: nth($colors, 2);
+
+    background: linear-gradient(135deg, $gradient-end, $base-color);
+    color: white;
+    border-color: $base-color;
+    box-shadow: 0 3px 10px rgba($gradient-end, 0.4);
+    font-weight: $font-weight-semibold;
+    padding: $spacing-xs $spacing-md;
+    border-radius: $radius-md;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+
+    @include safe-transition(transform box-shadow, $transition-fast, ease);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba($gradient-end, 0.5);
+    }
+  } @else {
+    @warn "Rôle '#{$role}' non trouvé dans $role-colors map";
+  }
+}
+
+/// Card admin avec header coloré et contenu
+/// Pattern réutilisable pour QuotaManagement, AccountManagement, etc.
+/// @param {Color} $header-color Couleur de fond du header (défaut: primary)
+@mixin admin-card($header-color: $color-primary) {
+  background: var(--color-surface);
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+
+  .card-header {
+    background: linear-gradient(
+      135deg,
+      $header-color,
+      color.adjust($header-color, $lightness: -10%)
+    );
+    color: white;
+    padding: $spacing-lg;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+
+    h2,
+    h3 {
+      margin: 0;
+      font-weight: $font-weight-bold;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+    }
+  }
+
+  .card-body {
+    padding: $spacing-lg;
+  }
+
+  .card-footer {
+    padding: $spacing-md $spacing-lg;
+    background: var(--color-bg-soft);
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+/// Table admin responsive avec styles cohérents
+/// Pattern pour AccountManagement, Logs, etc.
+@mixin admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+
+  thead {
+    background: var(--color-bg-soft);
+    border-bottom: 2px solid var(--color-border);
+
+    th {
+      padding: $spacing-md;
+      text-align: left;
+      font-weight: $font-weight-semibold;
+      color: var(--color-text);
+      font-size: $font-size-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid var(--color-border);
+      @include safe-transition(background-color, $transition-fast, ease);
+
+      &:hover {
+        background: var(--color-bg-hover);
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      padding: $spacing-md;
+      vertical-align: middle;
+    }
+  }
+
+  // Responsive : scroll horizontal sur mobile
+  @media (max-width: $breakpoint-md - 1) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/// Button action admin (éditer, supprimer, etc.)
+/// @param {Color} $color Couleur du bouton (défaut: primary)
+/// @param {String} $variant solid | outline | ghost
+@mixin admin-action-button($color: $color-primary, $variant: 'solid') {
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  border: 1px solid transparent;
+  @include safe-transition(all, $transition-fast, ease);
+
+  @if $variant == 'solid' {
+    background: $color;
+    color: white;
+    border-color: $color;
+
+    &:hover:not(:disabled) {
+      background: color.adjust($color, $lightness: -10%);
+      transform: translateY(-1px);
+      box-shadow: $shadow-sm;
+    }
+  } @else if $variant == 'outline' {
+    background: transparent;
+    color: $color;
+    border-color: $color;
+
+    &:hover:not(:disabled) {
+      background: rgba($color, 0.1);
+      border-color: color.adjust($color, $lightness: -10%);
+    }
+  } @else if $variant == 'ghost' {
+    background: transparent;
+    color: $color;
+
+    &:hover:not(:disabled) {
+      background: rgba($color, 0.1);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: 2px;
+  }
 }

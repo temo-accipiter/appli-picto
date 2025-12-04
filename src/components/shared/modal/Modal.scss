@@ -274,37 +274,8 @@
   }
 }
 
-// === ANIMATIONS ===
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes slideUpIn {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+// Animations centralisées dans src/styles/base/_animations.scss
+// fadeIn, scaleIn, slideUpIn (alias: slideInBottom)
 
 // === FULLSCREEN VARIANT (Phase 3.1) ===
 .modal--fullscreen {

@@ -166,6 +166,7 @@ pnpm context:update # DOIT mettre à jour schema.sql + types TypeScript
 ```
 
 **Génère** :
+
 - `supabase/schema.sql` : Schéma PostgreSQL
 - `src/types/supabase.ts` : Types TypeScript
 
@@ -213,11 +214,11 @@ pnpm context:update # DOIT mettre à jour schema.sql + types TypeScript
 
 ```json
 {
-  "noImplicitAny": false,        // Autorise types any implicites
-  "noImplicitReturns": false,    // Autorise return statements manquants
-  "noUnusedLocals": false,       // Autorise variables locales inutilisées
-  "noUnusedParameters": false,   // Autorise paramètres inutilisés
-  "strictNullChecks": true,      // MAINTENU
+  "noImplicitAny": false, // Autorise types any implicites
+  "noImplicitReturns": false, // Autorise return statements manquants
+  "noUnusedLocals": false, // Autorise variables locales inutilisées
+  "noUnusedParameters": false, // Autorise paramètres inutilisés
+  "strictNullChecks": true, // MAINTENU
   "exactOptionalPropertyTypes": true // MAINTENU
 }
 ```
@@ -313,6 +314,7 @@ src/
 ### Structure backend
 
 **Supabase Edge Functions** (`supabase/functions/`) :
+
 - `create-checkout-session/` - Création session checkout Stripe
 - `stripe-webhook/` - Handler webhook Stripe (cycle vie abonnement)
 - `delete-account/` - Suppression compte utilisateur (RGPD)
@@ -320,6 +322,7 @@ src/
 - `cleanup-unconfirmed/` - Suppression comptes non-confirmés
 
 **Templates email** (`supabase/email-templates/`) :
+
 - `confirm-signup.html` - Email bilingue confirmation compte
 - `reset-password.html` - Email bilingue réinitialisation mot de passe
 - `invite-user.html` - Email bilingue invitation utilisateurs (optionnel)
@@ -329,6 +332,7 @@ src/
 ### Tables Supabase
 
 **Tables principales** :
+
 - `taches` - Tâches utilisateurs (label, fait, aujourdhui, imagePath, position, category_id)
 - `recompenses` - Récompenses (label, imagePath, selected)
 - `parametres` - Paramètres globaux (toggle confettis)
@@ -384,6 +388,7 @@ export default function EditionPage() {
 **Par défaut** : Server Components (pas de `'use client'`)
 
 **Requis `'use client'`** si utilisation de :
+
 - Hooks React (`useState`, `useEffect`, `useContext`, etc.)
 - Event handlers (`onClick`, `onChange`, etc.)
 - Browser APIs (`window`, `document`, `localStorage`)
@@ -459,6 +464,7 @@ const { taches, loading } = useTaches()
 **Hooks disponibles** (voir `src/hooks/index.ts`) :
 
 **Données** :
+
 - `useTaches()` - CRUD tâches (lecture seule)
 - `useTachesEdition()` - Édition tâches (create, update, delete)
 - `useTachesDnd()` - Drag & drop tâches (réorganisation)
@@ -469,6 +475,7 @@ const { taches, loading } = useTaches()
 - `useDemoCards()` - Cartes démo visiteurs
 
 **Authentification & Permissions** :
+
 - `useAuth()` - Utilitaires authentification
 - `useRBAC()` - Contrôle accès basé rôles (Role-Based Access Control)
 - `useSubscriptionStatus()` - Statut abonnement Stripe
@@ -478,6 +485,7 @@ const { taches, loading } = useTaches()
 - `useAdminPermissions()` - Permissions admin spécifiques
 
 **Utilitaires** :
+
 - `useDebounce()` - Debounce valeurs
 - `useFallbackData()` - Données fallback pendant chargement
 - `useDragAnimation()` - Animations drag & drop
@@ -486,6 +494,7 @@ const { taches, loading } = useTaches()
 - `useI18n()` - Internationalisation
 
 **Depuis contextes** (via `@/contexts`) :
+
 - `useLoading()` - État chargement global
 - `useToast()` - Notifications toast
 - `usePermissions()` - Permissions utilisateur

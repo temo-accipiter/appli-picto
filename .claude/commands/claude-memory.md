@@ -14,6 +14,7 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 **TOUJOURS inclure ces spécificités dans TOUS les CLAUDE.md** :
 
 ### Stack technique obligatoire
+
 - **Framework** : Next.js 16 (App Router, Turbopack)
 - **Runtime** : Node.js 20.19.4 (géré par Volta)
 - **Package Manager** : **pnpm 9.15.0** (JAMAIS yarn, JAMAIS npm)
@@ -24,6 +25,7 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 - **Dev Server** : Port 3000 (Next.js avec Turbopack)
 
 ### Règles d'architecture CRITIQUES
+
 - ✅ **TOUJOURS utiliser hooks custom** : `useTaches`, `useRecompenses`, `useQuotas`, etc.
 - ❌ **JAMAIS query Supabase directe** : Interdit de faire `supabase.from('taches').select()`
 - ✅ **Next.js App Router** : `useRouter` de `next/navigation`
@@ -32,11 +34,13 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 - ✅ **Accessibilité TSA d'abord** : WCAG 2.2 AA, animations douces (max 0.3s ease), couleurs pastel
 
 ### Workflows obligatoires
+
 - **AVANT commit** : `pnpm check` (lint + format) + `pnpm test` (OBLIGATOIRE)
 - **APRÈS modification DB** : `pnpm context:update` (dump schema + generate types)
 - **AVANT deploy** : `pnpm build` + `pnpm preview` + `pnpm test:coverage`
 
 ### Quotas utilisateurs (RGPD/CNIL)
+
 - **Free** : 5 tâches, 2 récompenses, 2 catégories
 - **Abonné** : 40 tâches, 10 récompenses, 50 catégories
 - **Vérification obligatoire** : Utiliser `useQuotas()` AVANT toute création
@@ -78,7 +82,7 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 
 ## Template CLAUDE.md Global (Appli-Picto)
 
-```markdown
+````markdown
 # CLAUDE.md
 
 Ce fichier guide Claude Code lors du travail sur Appli-Picto.
@@ -95,6 +99,7 @@ pnpm build            # Build production Next.js
 pnpm build:analyze    # Build avec analyse bundle
 pnpm start            # Démarrer serveur production
 ```
+````
 
 ### Qualité de code (OBLIGATOIRE avant commit)
 
@@ -195,6 +200,7 @@ const { taches, loading } = useTaches()
 ```
 
 **Hooks disponibles** :
+
 - `useTaches()` : CRUD tâches
 - `useRecompenses()` : CRUD récompenses
 - `useQuotas()` : Gestion quotas (Free: 5 tâches, Abonné: 40)
@@ -232,6 +238,7 @@ export default function Interactive() {
 ```
 
 **Ajouter `'use client'` SEULEMENT si** :
+
 - Hooks React (useState, useEffect, useContext, etc.)
 - Event handlers (onClick, onChange, etc.)
 - Browser APIs (window, document, localStorage)
@@ -253,6 +260,7 @@ if (!canCreateTache) {
 ```
 
 **Quotas** :
+
 - **Free** : 5 tâches, 2 récompenses, 2 catégories
 - **Abonné** : 40 tâches, 10 récompenses, 50 catégories
 
@@ -269,18 +277,21 @@ if (!canCreateTache) {
 ## Style & Conventions
 
 ### SCSS
+
 - **BEM-lite** : `.block__element--modifier`
 - **Palette pastel** : Utiliser CSS custom properties
 - **Animations** : Toujours douces (max 0.3s ease)
 - **Chaque composant** : Son dossier avec `.tsx` + `.scss`
 
 ### TypeScript
+
 - **Strict mode** : Temporairement relaxé pour migration Next.js
 - **329 erreurs non-bloquantes** : Build fonctionne, tests passent
 - **Types Supabase** : Générés automatiquement par `pnpm db:types`
 - **Pas de `any`** : Sauf temporairement pour migration
 
 ### Imports
+
 - **Alias `@/`** : Pointe vers `src/`
 - **Toujours absolus** : `@/components/shared/Modal` pas `../../Modal`
 
@@ -302,6 +313,7 @@ pnpm context:update  # Dump schema + generate types (OBLIGATOIRE)
 ```
 
 **Génère** :
+
 - `supabase/schema.sql` : Schema PostgreSQL
 - `src/types/supabase.ts` : Types TypeScript
 
@@ -364,7 +376,8 @@ pnpm test:coverage  # DOIT maintenir couverture
 - ✅ Ajouter `'use client'` si interactivité
 - ✅ Vérifier quotas avant création
 - ✅ Tester avec `pnpm check` + `pnpm test`
-```
+
+````
 
 ## Template CLAUDE.md Dossier (Spécifique)
 
@@ -385,7 +398,7 @@ pnpm test:coverage  # DOIT maintenir couverture
 
 ```bash
 # Commandes build/test/lint spécifiques au dossier
-```
+````
 
 ## Important
 
@@ -395,7 +408,8 @@ pnpm test:coverage  # DOIT maintenir couverture
 
 - `@/components/shared/Modal` : Pattern modal réutilisable
 - `@/hooks/useTaches` : Hook CRUD tâches
-```
+
+````
 
 ## Techniques d'emphase et priorité (CRITIQUE pour efficacité CLAUDE.md)
 
@@ -428,7 +442,7 @@ pnpm test:coverage  # DOIT maintenir couverture
 - **JAMAIS** importer depuis dossiers packages internes directement
 - **AVANT commit** : Exécuter `pnpm check` et `pnpm test`
 - **OBLIGATOIRE** : Utiliser composants shadcn/ui uniquement (pas de frameworks CSS custom)
-```
+````
 
 ## Stratégie collecte contenu
 

@@ -68,7 +68,7 @@ Tu accompagnes un développeur débutant travaillant sur **Appli-Picto**, une ap
 
 // ❌ INTERDIT - Zone tactile trop petite
 .button-tiny {
-  width: 24px;  // ❌ Trop petit pour enfant
+  width: 24px; // ❌ Trop petit pour enfant
   height: 24px; // ❌ Trop petit pour TSA
 }
 ```
@@ -79,7 +79,7 @@ Tu accompagnes un développeur débutant travaillant sur **Appli-Picto**, une ap
 // ✅ CORRECT - Animations douces 60fps
 const variants = {
   tap: { scale: 0.95 },
-  drag: { scale: 1.05, transition: { duration: 0.2 } }
+  drag: { scale: 1.05, transition: { duration: 0.2 } },
 }
 
 // ❌ INTERDIT - Animations complexes qui lag
@@ -87,7 +87,7 @@ const badVariants = {
   drag: {
     rotate: [0, 360], // ❌ Trop complexe
     scale: [1, 2, 0.5], // ❌ Trop brutal pour TSA
-  }
+  },
 }
 ```
 
@@ -225,6 +225,7 @@ const { taches, loading } = useTaches()
 **Hooks disponibles** (voir `src/hooks/index.ts`) :
 
 **Données** :
+
 - `useTaches()` - CRUD tâches (lecture seule)
 - `useTachesEdition()` - Édition tâches (create, update, delete)
 - `useTachesDnd()` - Drag & drop tâches (réorganisation)
@@ -235,6 +236,7 @@ const { taches, loading } = useTaches()
 - `useDemoCards()` - Cartes démo visiteurs
 
 **Authentification & Permissions** :
+
 - `useAuth()` - Utilitaires authentification
 - `useRBAC()` - Contrôle accès basé rôles
 - `useSubscriptionStatus()` - Statut abonnement Stripe
@@ -244,6 +246,7 @@ const { taches, loading } = useTaches()
 - `useAdminPermissions()` - Permissions admin
 
 **Utilitaires** :
+
 - `useDebounce()` - Debounce valeurs
 - `useFallbackData()` - Données fallback pendant chargement
 - `useDragAnimation()` - Animations drag & drop
@@ -252,6 +255,7 @@ const { taches, loading } = useTaches()
 - `useI18n()` - Internationalisation
 
 **Depuis contextes** (via `@/contexts`) :
+
 - `useLoading()` - État chargement global
 - `useToast()` - Notifications toast
 - `usePermissions()` - Permissions utilisateur
@@ -314,7 +318,8 @@ export default function Interactive() {
 .card-wrong {
   padding: 24px; // Desktop par défaut
 
-  @media (max-width: 768px) { // ❌ max-width = desktop-first
+  @media (max-width: 768px) {
+    // ❌ max-width = desktop-first
     padding: 12px;
   }
 }
@@ -459,6 +464,7 @@ Utilise ces émojis pour clarté :
 ## Checklist avant toute modification
 
 **📱 Mobile-First** :
+
 - [ ] Code testé sur tablette (768px-1024px)
 - [ ] Code testé sur smartphone (320px-767px)
 - [ ] SCSS utilise `min-width` (pas `max-width`)
@@ -468,6 +474,7 @@ Utilise ces émojis pour clarté :
 - [ ] Images optimisées (lazy loading, WebP)
 
 **♿ Accessibilité TSA** :
+
 - [ ] UX calme et prévisible
 - [ ] Animations douces (max 0.3s ease)
 - [ ] Couleurs pastel apaisantes
@@ -476,12 +483,14 @@ Utilise ces émojis pour clarté :
 - [ ] Pas de surcharge visuelle
 
 **🔒 Sécurité & Quotas** :
+
 - [ ] Quotas vérifiés (Free: 5 tâches/2 récompenses, Abonné: 40/10)
 - [ ] RLS policies respectées
 - [ ] RGPD respecté si données personnelles
 - [ ] Hooks custom utilisés (JAMAIS query directe)
 
 **✅ Qualité Code** :
+
 - [ ] `'use client'` SEULEMENT si interactivité
 - [ ] Imports absolus avec `@/`
 - [ ] Types TypeScript explicites
@@ -520,14 +529,16 @@ export default function Button({ children, onClick, variant = 'primary' }: Butto
 // Button.scss - Mobile-First TSA-friendly
 .button {
   // Mobile par défaut (320px-767px)
-  min-width: 44px;  // ✅ Touch target WCAG 2.2 AA
+  min-width: 44px; // ✅ Touch target WCAG 2.2 AA
   min-height: 44px; // ✅ Touch target WCAG 2.2 AA
   padding: 12px 20px;
   font-size: 16px;
   border-radius: 12px;
 
   // ✅ Animations douces TSA-friendly
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 
   // ✅ Touch feedback (pas de hover)
   &:active {
@@ -591,14 +602,16 @@ export default function TacheCard({ tache, isDragging }: TacheCardProps) {
 // TacheCard.scss - Mobile-First TSA-friendly
 .tache-card {
   // Mobile par défaut (320px-767px)
-  min-width: 120px;  // ✅ Touch target large
+  min-width: 120px; // ✅ Touch target large
   min-height: 120px; // ✅ Touch target large
   padding: 16px;
   border-radius: 16px;
   background-color: var(--color-card-pastel);
 
   // ✅ Animations douces 60fps
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   will-change: transform; // ✅ Performance mobile
 
   // ✅ Touch feedback

@@ -9,23 +9,27 @@ Scripts automatiques pour garantir la qualité du code et le respect des règles
 **Exécution** : Automatique avant `git commit` et `git push`
 
 **Vérifications effectuées** :
+
 1. ✅ Lint + format (`pnpm check`)
 2. ✅ Tests unitaires (`pnpm test`)
 3. ✅ Mobile-First (pas de `@media max-width`)
 4. ✅ Architecture hooks (pas de query Supabase directe)
 
 **Usage manuel** :
+
 ```bash
 .claude/scripts/pre-commit.sh
 ```
 
 **Sortie si erreur** :
+
 ```
 ❌ ÉCHEC : 2 vérification(s) échouée(s)
 ⚠️ Corriger les erreurs avant de commit
 ```
 
 **Sortie si OK** :
+
 ```
 ✅ SUCCÈS : Toutes les vérifications passées !
 ✓ Code prêt pour commit
@@ -38,15 +42,18 @@ Scripts automatiques pour garantir la qualité du code et le respect des règles
 **Exécution** : Automatique après migration Supabase (`mcp__supabase__apply_migration`)
 
 **Actions effectuées** :
+
 1. 📦 Dump schéma PostgreSQL → `supabase/schema.sql`
 2. 🔧 Génération types TypeScript → `src/types/supabase.ts`
 
 **Usage manuel** :
+
 ```bash
 .claude/scripts/post-migration.sh
 ```
 
 **OU utiliser commande pnpm** :
+
 ```bash
 pnpm context:update
 ```
@@ -56,37 +63,42 @@ pnpm context:update
 ### 3. `check-mobile-first.sh` - Détection desktop-first
 
 **Ce qu'il fait** :
+
 - Scanne tous les fichiers `.scss`
 - Détecte les `@media (max-width: ...)` interdits
 - Rappelle la règle Mobile-First
 
 **Usage manuel** :
+
 ```bash
 .claude/scripts/check-mobile-first.sh
 ```
 
 **Erreur détectée** :
+
 ```
 ❌ ERREUR: Desktop-first détecté dans src/components/Button/Button.scss
    → Remplacer @media (max-width: ...) par @media (min-width: ...)
 ```
 
 **Règle Mobile-First** :
+
 ```scss
 // ✅ CORRECT - Mobile-First
 .button {
-  padding: 12px;  // Mobile par défaut
+  padding: 12px; // Mobile par défaut
 
   @media (min-width: 768px) {
-    padding: 20px;  // Tablette
+    padding: 20px; // Tablette
   }
 }
 
 // ❌ INTERDIT - Desktop-first
 .button {
-  padding: 20px;  // Desktop par défaut
+  padding: 20px; // Desktop par défaut
 
-  @media (max-width: 768px) {  // ❌ max-width interdit
+  @media (max-width: 768px) {
+    // ❌ max-width interdit
     padding: 12px;
   }
 }
@@ -97,22 +109,26 @@ pnpm context:update
 ### 4. `check-supabase-hooks.sh` - Détection queries directes
 
 **Ce qu'il fait** :
+
 - Scanne les composants `.tsx` / `.ts`
 - Détecte les queries Supabase directes interdites
 - Rappelle les hooks custom disponibles
 
 **Usage manuel** :
+
 ```bash
 .claude/scripts/check-supabase-hooks.sh
 ```
 
 **Erreur détectée** :
+
 ```
 ❌ ERREUR: Query Supabase directe dans src/components/TaskList/TaskList.tsx:42
    → Utiliser hooks custom au lieu de query directe
 ```
 
 **Hooks disponibles** :
+
 - `useTaches()` - CRUD tâches
 - `useTachesEdition()` - Édition tâches
 - `useTachesDnd()` - Drag & drop tâches
@@ -121,6 +137,7 @@ pnpm context:update
 - `useAuth()` - Authentification
 
 **Règle architecture** :
+
 ```typescript
 // ✅ CORRECT - Hook custom
 import { useTaches } from '@/hooks'
@@ -146,6 +163,7 @@ Les scripts sont automatiquement exécutés via hooks Claude Code (`.claude/sett
 ```
 
 **Déclenchement** :
+
 - AVANT tout `git commit`
 - AVANT tout `git push`
 
@@ -160,6 +178,7 @@ Les scripts sont automatiquement exécutés via hooks Claude Code (`.claude/sett
 ```
 
 **Déclenchement** :
+
 - APRÈS toute migration Supabase
 
 **Action** : Régénère automatiquement `schema.sql` + `types.ts`
@@ -233,12 +252,14 @@ git commit --no-verify -m "fix: urgence"
 ### Script ne s'exécute pas
 
 **Vérifier permissions** :
+
 ```bash
 ls -la .claude/scripts/
 # Tous les .sh doivent être exécutables (x)
 ```
 
 **Réparer permissions** :
+
 ```bash
 chmod +x .claude/scripts/*.sh
 ```
@@ -246,6 +267,7 @@ chmod +x .claude/scripts/*.sh
 ### Hook ne se déclenche pas
 
 **Vérifier configuration** :
+
 ```bash
 cat .claude/settings.json | grep -A 10 hooks
 ```
@@ -255,6 +277,7 @@ cat .claude/settings.json | grep -A 10 hooks
 ### Script échoue à l'exécution
 
 **Tester manuellement** :
+
 ```bash
 .claude/scripts/pre-commit.sh
 # Lire message d'erreur

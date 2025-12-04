@@ -1,6 +1,18 @@
 ---
 description: Analyse ultra-approfondie pour bugs sérieux avec troubleshooting systématique
-allowed-tools: ['Bash', 'Read', 'Edit', 'MultiEdit', 'Write', 'Grep', 'Glob', 'Task', 'WebSearch', 'WebFetch']
+allowed-tools:
+  [
+    'Bash',
+    'Read',
+    'Edit',
+    'MultiEdit',
+    'Write',
+    'Grep',
+    'Glob',
+    'Task',
+    'WebSearch',
+    'WebFetch',
+  ]
 argument-hint: <description-du-bug>
 model: sonnet
 ---
@@ -41,6 +53,7 @@ Tu es un spécialiste du debugging systématique. Effectue une analyse ULTRA-APP
 ## Phase 3 : ULTRA-THINK ROOT CAUSE ANALYSIS
 
 **Technique WHY (minimum 5 fois)** :
+
 1. Pourquoi ce symptôme apparaît ? → Cause immédiate
 2. Pourquoi cette cause immédiate existe ? → Cause sous-jacente
 3. Pourquoi cette cause sous-jacente existe ? → Cause plus profonde
@@ -48,16 +61,19 @@ Tu es un spécialiste du debugging systématique. Effectue une analyse ULTRA-APP
 5. Pourquoi cette cause racine existe ? → CAUSE RACINE FINALE
 
 **Mapper la chaîne complète d'erreur** :
+
 ```
 Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 ```
 
 **Hypothèses multiples** (minimum 3) :
+
 1. **Hypothèse 1** : [Description] - Probabilité : [Haute/Moyenne/Basse] - Raisonnement : [Pourquoi]
 2. **Hypothèse 2** : [Description] - Probabilité : [Haute/Moyenne/Basse] - Raisonnement : [Pourquoi]
 3. **Hypothèse 3** : [Description] - Probabilité : [Haute/Moyenne/Basse] - Raisonnement : [Pourquoi]
 
 **Considérer TOUS les types de causes** :
+
 - Erreurs logique code
 - Problèmes configuration (env vars, Next.js config, Supabase)
 - Problèmes environnement (Node version, packages)
@@ -71,12 +87,14 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 ## Phase 4 : RESEARCH & INVESTIGATION
 
 **Recherche de solutions** :
+
 1. **Task(explore-docs)** : Consulter documentation officielle des librairies (Next.js, Supabase, React, etc.)
 2. **WebSearch** : Chercher erreurs similaires, solutions connues, workarounds
 3. **WebFetch** : Récupérer pages de documentation spécifiques
 4. **Recherche interne** : Grep pour patterns similaires dans le codebase
 
 **Tester hypothèses systématiquement** :
+
 1. Valider hypothèse la plus probable en premier
 2. Ajouter logs/debugging si nécessaire
 3. Exécuter tests pertinents : `pnpm test <component>`
@@ -90,12 +108,14 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 **Choisir solution optimale** basée sur l'analyse complète.
 
 **Implémenter correctif minimal** :
+
 1. **Edit/MultiEdit** : Modifier fichiers nécessaires
 2. **Suivre patterns existants** : Respecter conventions du codebase
 3. **Pas de sur-ingénierie** : Fix ciblé, minimal, élégant
 4. **Defensive programming** : Ajouter guards si approprié
 
 **Vérifications spécifiques Appli-Picto** :
+
 - **Supabase RLS** : Vérifier policies si échec accès données
 - **Quotas** : Vérifier avec `useQuotas` si lié aux limites (Free: 5 tâches, Abonné: 40)
 - **État Auth** : Vérifier `AuthContext` si lié utilisateur (vérifier `authReady`)
@@ -113,6 +133,7 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 ## Phase 6 : VÉRIFIER (COMPREHENSIVE TESTING)
 
 **Tests exhaustifs** :
+
 1. **Scénario exact qui échouait** : Vérifier résolution complète
 2. **Tests automatisés** : Exécuter `pnpm test` (doit passer)
 3. **Tests de régression** : Vérifier qu'aucune autre fonctionnalité n'est cassée
@@ -125,17 +146,20 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 ## Techniques d'analyse approfondie
 
 ### Analyse de logs
+
 - Extraire timestamps, codes erreur, stack traces complètes
 - Identifier patterns de propagation d'erreur
 - Chercher corrélations avec événements système
 
 ### Investigation de code
+
 - Tracer chemin d'exécution jusqu'à localisation erreur
 - Vérifier états variables et flux de données
 - Examiner patterns de gestion d'erreur
 - Reviewer commits récents affectant la zone
 
 ### Root Cause Mapping
+
 - **Technique WHY** : Demander "pourquoi" 5 fois minimum
 - Considérer facteurs environnementaux
 - Vérifier problèmes timing/concurrence
