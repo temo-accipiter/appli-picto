@@ -1,10 +1,11 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 // === OVERLAY ===
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(gray(900), 0.75);
+  background-color: color.change(gray(900), $alpha: 0.75);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;

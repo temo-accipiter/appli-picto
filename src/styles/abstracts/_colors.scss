@@ -1,0 +1,386 @@
+@use 'sass:map';
+
+// =============================================================================
+// SYSTÈME DE COULEURS CENTRALISÉ
+// =============================================================================
+// Ce fichier centralise toutes les couleurs utilisées dans Appli-Picto.
+// Utilise des maps SCSS pour organisation et maintenance facile.
+//
+// Usage:
+//   @use '@styles/abstracts' as *;
+//   .my-class { background: color(primary); }
+//   .my-class { color: blue(500); }
+//   .my-class { border-color: semantic(success); }
+// =============================================================================
+
+// === COULEURS PRINCIPALES ===
+// Couleurs de marque et accents principaux
+$primary-colors: (
+  base: #0077c2,
+  // Bleu principal (buttons, liens)
+  light: #4dabf7,
+  // Bleu clair (hover, accents)
+  dark: #1565c0, // Bleu foncé (états actifs)
+);
+
+$secondary-colors: (
+  base: #ef5350, // Rouge secondaire
+);
+
+$accent-colors: (
+  base: #ffb400,
+  // Jaune accent
+  light: #fbbf24,
+  // Jaune clair
+  dark: #f59e0b, // Ambre foncé
+);
+
+// === COULEURS SÉMANTIQUES ===
+// Couleurs pour états et feedback utilisateur
+$semantic-colors: (
+  success: #4caf50,
+  // Vert succès
+  warning: #ff9800,
+  // Orange avertissement
+  error: #f44336,
+  // Rouge erreur
+  info: #d1ecf9,
+  // Bleu clair info
+  info-primary: #66c3f7, // Bleu info principal
+);
+
+// === PALETTE BLEUE ===
+// Nuances de bleu (inspirées design moderne)
+$blue-palette: (
+  50: #eff6ff,
+  100: #dbeafe,
+  200: #bfdbfe,
+  300: #93c5fd,
+  400: #60a5fa,
+  500: #3b82f6,
+  // Bleu standard
+  600: #2563eb,
+  700: #1d4ed8,
+  800: #1e3a8a,
+  900: #1e40af,
+);
+
+// === PALETTE ROUGE ===
+// Nuances de rouge
+$red-palette: (
+  50: #fef2f2,
+  100: #fee2e2,
+  200: #fecaca,
+  300: #fca5a5,
+  400: #f87171,
+  500: #ef4444,
+  // Rouge standard
+  600: #dc2626,
+  700: #b91c1c,
+  800: #991b1b,
+  900: #7f1d1d,
+);
+
+// === PALETTE VERTE ===
+// Nuances de vert
+$green-palette: (
+  50: #f0fdf4,
+  // green-50 pastel
+  100: #dcfce7,
+  200: #bbf7d0,
+  // green-200
+  300: #86efac,
+  400: #4ade80,
+  500: #22c55e,
+  600: #16a34a,
+  700: #15803d,
+  800: #166534,
+  // green-800
+  900: #14532d,
+);
+
+// === PALETTE ORANGE/AMBRE ===
+// Nuances d'orange et ambre
+$orange-palette: (
+  50: #fff7ed,
+  // orange-50 pastel
+  100: #ffedd5,
+  200: #fed7aa,
+  // orange-200
+  300: #fdba74,
+  400: #fb923c,
+  500: #f97316,
+  600: #ea580c,
+  700: #c2410c,
+  800: #9a3412,
+  900: #7c2d12, // orange-900
+);
+
+// === PALETTE JAUNE ===
+// Nuances de jaune
+$yellow-palette: (
+  50: #fefce8,
+  100: #fef9c3,
+  200: #fef08a,
+  300: #fde047,
+  400: #facc15,
+  500: #eab308,
+  600: #ca8a04,
+  700: #a16207,
+  800: #854d0e,
+  900: #713f12,
+);
+
+// === PALETTE VIOLETTE ===
+// Nuances de violet (pour rôle staff)
+$purple-palette: (
+  50: #faf5ff,
+  100: #f3e8ff,
+  200: #e9d5ff,
+  300: #d8b4fe,
+  400: #c084fc,
+  500: #a855f7,
+  600: #9333ea,
+  700: #7e22ce,
+  800: #6b21a8,
+  900: #581c87,
+);
+
+// === PALETTE SLATE/GRIS FONCÉ ===
+// Nuances de gris foncé (pour texte et UI)
+$slate-palette: (
+  50: #f8fafc,
+  100: #f1f5f9,
+  200: #e2e8f0,
+  300: #cbd5e1,
+  400: #94a3b8,
+  500: #64748b,
+  600: #475569,
+  700: #334155,
+  // slate-700 (texte principal)
+  800: #1e293b,
+  900: #0f172a,
+);
+
+// === PALETTE GRAY NEUTRE ===
+// Nuances de gris neutre (déjà définie dans _variables.scss)
+// Référencée ici pour cohérence - utiliser gray() function
+$gray-palette: (
+  50: #fafafa,
+  100: #f7f7f7,
+  200: #e1e1e1,
+  300: #cfcfcf,
+  400: #b1b1b1,
+  500: #9e9e9e,
+  600: #7e7e7e,
+  700: #626262,
+  800: #515151,
+  900: #3b3b3b,
+);
+
+// === COULEURS RÔLES ===
+// Couleurs pour badges et indicateurs de rôles
+$role-colors: (
+  admin: (
+    base: #dc2626,
+    // Rouge admin
+    gradient: #ef4444,
+  ),
+  abonne: (
+    base: #0077c2,
+    // Bleu abonné
+    gradient: #4dabf7,
+  ),
+  visitor: (
+    base: #9e9e9e,
+    // Gris visiteur
+    gradient: #cfcfcf,
+  ),
+  free: (
+    base: #9e9e9e,
+    // Alias visitor
+    gradient: #cfcfcf,
+  ),
+  staff: (
+    base: #8b5cf6,
+    // Violet staff
+    gradient: #a78bfa,
+  ),
+);
+
+// === COULEURS TEXTE & SURFACES ===
+$text-colors: (
+  default: #333333,
+  // Texte principal
+  invert: #ffffff,
+  // Texte inversé
+  light: #64748b,
+  // Texte secondaire
+  dark: #1f2937,
+  // Texte accentué
+  muted: #6b7280, // Texte désactivé
+);
+
+$surface-colors: (
+  bg: #ffffff,
+  // Background principal
+  surface: #f7f7f7,
+  // Surface secondaire
+  border: #e1e1e1,
+  // Bordures
+  soft: #f8fafc,
+  // Background doux
+  hover: #f9fafb, // Hover state
+);
+
+// =============================================================================
+// FONCTIONS D'ACCÈS
+// =============================================================================
+
+/// Récupère une couleur principale
+/// @param {String} $key - Clé de la couleur (base, light, dark)
+/// @param {String} $type - Type de couleur (primary, secondary, accent)
+/// @return {Color} La couleur demandée
+@function color($key, $type: 'primary') {
+  $map: $primary-colors;
+
+  @if $type == 'secondary' {
+    $map: $secondary-colors;
+  } @else if $type == 'accent' {
+    $map: $accent-colors;
+  }
+
+  @if map.has-key($map, $key) {
+    @return map.get($map, $key);
+  }
+
+  @error "Color '#{$key}' not found in #{$type} colors";
+}
+
+/// Récupère une couleur sémantique
+/// @param {String} $name - Nom de la couleur (success, warning, error, info)
+/// @return {Color} La couleur demandée
+@function semantic($name) {
+  @if map.has-key($semantic-colors, $name) {
+    @return map.get($semantic-colors, $name);
+  }
+
+  @error "Semantic color '#{$name}' not found";
+}
+
+/// Récupère une nuance de bleu
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function blue($shade) {
+  @if map.has-key($blue-palette, $shade) {
+    @return map.get($blue-palette, $shade);
+  }
+
+  @error "Blue shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance de rouge
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function red($shade) {
+  @if map.has-key($red-palette, $shade) {
+    @return map.get($red-palette, $shade);
+  }
+
+  @error "Red shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance de vert
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function green($shade) {
+  @if map.has-key($green-palette, $shade) {
+    @return map.get($green-palette, $shade);
+  }
+
+  @error "Green shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance d'orange
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function orange($shade) {
+  @if map.has-key($orange-palette, $shade) {
+    @return map.get($orange-palette, $shade);
+  }
+
+  @error "Orange shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance de jaune
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function yellow($shade) {
+  @if map.has-key($yellow-palette, $shade) {
+    @return map.get($yellow-palette, $shade);
+  }
+
+  @error "Yellow shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance de violet
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function purple($shade) {
+  @if map.has-key($purple-palette, $shade) {
+    @return map.get($purple-palette, $shade);
+  }
+
+  @error "Purple shade '#{$shade}' not found";
+}
+
+/// Récupère une nuance de slate
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function slate($shade) {
+  @if map.has-key($slate-palette, $shade) {
+    @return map.get($slate-palette, $shade);
+  }
+
+  @error "Slate shade '#{$shade}' not found";
+}
+
+/// Récupère une couleur de rôle
+/// @param {String} $role - Nom du rôle (admin, abonne, visitor, free, staff)
+/// @param {String} $variant - Variante (base, gradient)
+/// @return {Color} La couleur demandée
+@function role-color($role, $variant: 'base') {
+  @if map.has-key($role-colors, $role) {
+    $role-map: map.get($role-colors, $role);
+
+    @if map.has-key($role-map, $variant) {
+      @return map.get($role-map, $variant);
+    }
+
+    @error "Role color variant '#{$variant}' not found for role '#{$role}'";
+  }
+
+  @error "Role '#{$role}' not found in role-colors";
+}
+
+/// Récupère une couleur de texte
+/// @param {String} $type - Type de texte (default, invert, light, dark, muted)
+/// @return {Color} La couleur demandée
+@function text($type: 'default') {
+  @if map.has-key($text-colors, $type) {
+    @return map.get($text-colors, $type);
+  }
+
+  @error "Text color '#{$type}' not found";
+}
+
+/// Récupère une couleur de surface
+/// @param {String} $type - Type de surface (bg, surface, border, soft, hover)
+/// @return {Color} La couleur demandée
+@function surface($type) {
+  @if map.has-key($surface-colors, $type) {
+    @return map.get($surface-colors, $type);
+  }
+
+  @error "Surface color '#{$type}' not found";
+}
