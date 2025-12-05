@@ -1,4 +1,5 @@
 // src/components/features/admin/ImageAnalytics.scss
+@use 'sass:color';
 // Styles dashboard analytics images (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
@@ -9,21 +10,21 @@
 
   &__title {
     margin-bottom: 1.5rem;
-    color: var(--text-dark, #333);
+    color: var(--text-dark, #{slate(700)});
     font-size: 1.5rem;
     font-weight: 600;
   }
 
   &__error {
-    color: var(--pastel-red, #e57373);
+    color: var(--pastel-red, #{red(400)});
     padding: 1rem;
-    background: var(--pastel-red-lightest, #ffebee);
+    background: var(--pastel-red-lightest, #{red(50)});
     border-radius: 8px;
-    border-left: 4px solid var(--pastel-red, #e57373);
+    border-left: 4px solid var(--pastel-red, #{red(400)});
   }
 
   &__empty {
-    color: var(--text-muted, #666);
+    color: var(--text-muted, #{gray(600)});
     text-align: center;
     padding: 2rem;
   }
@@ -45,19 +46,19 @@
   background: var(--white, #fff);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px #{color.change(gray(900), $alpha: 0.15)};
   }
 
   h3 {
     font-size: 0.875rem;
-    color: var(--text-muted, #666);
+    color: var(--text-muted, #{gray(600)});
     margin: 0 0 0.5rem 0;
     font-weight: 500;
     text-transform: uppercase;
@@ -67,52 +68,52 @@
   &__value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--text-dark, #333);
+    color: var(--text-dark, #{slate(700)});
     margin: 0;
     line-height: 1.2;
   }
 
   &--success {
-    border-left: 4px solid var(--pastel-green, #81c784);
+    border-left: 4px solid var(--pastel-green, #{green(400)});
     background: linear-gradient(
       135deg,
       var(--white, #fff) 0%,
-      var(--pastel-green-lightest, #f1f8f4) 100%
+      var(--pastel-green-lightest, #{green(50)}) 100%
     );
 
     .stat-card__value {
-      color: var(--pastel-green-dark, #388e3c);
+      color: var(--pastel-green-dark, #{green(700)});
     }
   }
 
   &--error {
-    border-left: 4px solid var(--pastel-red, #e57373);
+    border-left: 4px solid var(--pastel-red, #{red(400)});
     background: linear-gradient(
       135deg,
       var(--white, #fff) 0%,
-      var(--pastel-red-lightest, #ffebee) 100%
+      var(--pastel-red-lightest, #{red(50)}) 100%
     );
 
     .stat-card__value {
-      color: var(--pastel-red-dark, #c62828);
+      color: var(--pastel-red-dark, #{red(700)});
     }
   }
 
   &--highlight {
     background: linear-gradient(
       135deg,
-      var(--pastel-blue-light, #a8d5ff) 0%,
-      var(--pastel-green-light, #b8e0d0) 100%
+      var(--pastel-blue-light, #{blue(200)}) 0%,
+      var(--pastel-green-light, #{green(200)}) 100%
     );
-    border: 2px solid var(--pastel-blue, #64b5f6);
+    border: 2px solid var(--pastel-blue, #{blue(400)});
 
     h3 {
-      color: var(--text-dark, #333);
+      color: var(--text-dark, #{slate(700)});
       font-weight: 600;
     }
 
     .stat-card__value {
-      color: var(--text-dark, #333);
+      color: var(--text-dark, #{slate(700)});
       font-size: 2.25rem;
     }
   }
