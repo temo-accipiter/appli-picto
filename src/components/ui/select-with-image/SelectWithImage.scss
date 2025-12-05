@@ -41,11 +41,11 @@
       box-shadow $transition-fast ease;
 
     &:hover:not([data-disabled]) {
-      background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.02));
+      background-color: var(--color-hover-bg, #{color.change(gray(900), $alpha: 0.02)});
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-focus, #0077c2);
+      outline: 2px solid var(--color-focus, #{blue(700)});
       outline-offset: 2px;
     }
 
@@ -63,8 +63,8 @@
     }
 
     &[data-state='open'] {
-      border-color: var(--color-focus, #0077c2);
-      box-shadow: 0 0 0 3px rgba(0, 119, 194, 0.1);
+      border-color: var(--color-focus, #{blue(700)});
+      box-shadow: 0 0 0 3px #{color.change(blue(700), $alpha: 0.1)};
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -129,7 +129,7 @@
     background-color: var(--color-surface);
     border: 2px solid var(--color-border);
     border-radius: $radius-md;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
 
     // Animation douce pour TSA
     &[data-state='open'] {
@@ -171,7 +171,7 @@
     }
 
     &[data-state='checked'] {
-      background-color: var(--color-primary-light, rgba(0, 119, 194, 0.1));
+      background-color: var(--color-primary-light, #{color.change(blue(700), $alpha: 0.1)});
       font-weight: 600;
     }
 
@@ -211,7 +211,7 @@
   &__indicator {
     position: absolute;
     right: $spacing-sm;
-    color: var(--color-primary, #0077c2);
+    color: var(--color-primary, #{blue(700)});
     font-weight: 600;
   }
 

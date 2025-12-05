@@ -6,7 +6,7 @@
   gap: $spacing-md;
   padding: $spacing-lg;
   border-radius: $radius-lg;
-  background-color: #f0f8ff; // Bleu pastel comme checklist-edition
+  background-color: #{blue(50)}; // Bleu pastel comme checklist-edition
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
   transition:
     box-shadow 0.3s ease,
@@ -14,8 +14,8 @@
 
   // Dark mode
   [data-theme='dark'] & {
-    background: linear-gradient(145deg, #222530, #2a2d37);
-    box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg, #{slate(900)}, #{slate(800)});
+    box-shadow: 0 0 24px #{color.change(white, $alpha: 0.15)};
   }
 
   h2 {
@@ -43,16 +43,16 @@
     margin-bottom: $spacing-md;
     align-items: center;
     padding: $spacing-md;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: #{color.change(white, $alpha: 0.7)};
     border-radius: $radius-md;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(155, 89, 182, 0.15);
+    box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.08)};
+    border: 1px solid #{color.change(purple(500), $alpha: 0.15)};
 
     // Dark mode
     [data-theme='dark'] & {
-      background-color: rgba(34, 37, 48, 0.6);
-      border-color: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      background-color: #{color.change(slate(900), $alpha: 0.6)};
+      border-color: #{color.change(white, $alpha: 0.1)};
+      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.3)};
     }
   }
 
@@ -65,7 +65,7 @@
   .edition-section__empty {
     grid-column: 1 / -1;
     font-size: 1.1rem;
-    color: var(--c-text-secondary, #666);
+    color: var(--c-text-secondary, #{gray(600)});
     padding: $spacing-lg;
     border: 2px dashed var(--c-border, #ccc);
     border-radius: $radius-lg;
@@ -82,12 +82,12 @@
 
     &.over {
       border-color: var(--color-primary, #9b59b6);
-      background-color: rgba(155, 89, 182, 0.1);
+      background-color: #{color.change(purple(500), $alpha: 0.1)};
     }
 
     &.dragging-from {
       border-color: var(--color-primary, #9b59b6);
-      background-color: rgba(155, 89, 182, 0.05);
+      background-color: #{color.change(purple(500), $alpha: 0.05)};
     }
   }
 }

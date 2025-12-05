@@ -29,7 +29,7 @@
   padding: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px #{color.change(gray(900), $alpha: 0.3)};
   display: flex;
   flex-direction: column;
   animation: scaleIn $transition-fast ease-out;
@@ -236,7 +236,7 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
     }
 
     &:active {
@@ -270,7 +270,7 @@
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
     }
   }
 }

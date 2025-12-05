@@ -26,7 +26,7 @@
     );
     border-radius: 16px;
     color: white;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px #{color.change(gray(900), $alpha: 0.1)};
 
     h1 {
       margin: 0 0 16px 0;
@@ -126,7 +126,7 @@
         border: 1px solid var(--border-color);
         border-radius: 12px;
         padding: 24px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px #{color.change(gray(900), $alpha: 0.05)};
 
         .role-header {
           display: flex;
@@ -152,23 +152,23 @@
             letter-spacing: 0.5px;
 
             &.visitor {
-              background: rgba(107, 114, 128, 0.2);
+              background: #{color.change(gray(500), $alpha: 0.2)};
               color: #{gray(500)};
             }
 
             &.abonne {
-              background: rgba(34, 197, 94, 0.2);
+              background: #{color.change(green(500), $alpha: 0.2)};
               color: #{green(500)};
             }
 
             &.admin {
-              background: rgba(220, 38, 38, 0.2);
+              background: #{color.change(red(600), $alpha: 0.2)};
               color: #{red(600)};
             }
           }
 
           .system-badge {
-            background: rgba(59, 130, 246, 0.2);
+            background: #{color.change(blue(500), $alpha: 0.2)};
             color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
@@ -365,7 +365,7 @@
       background: var(--bg-secondary);
       border-radius: 12px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.05)};
     }
 
     /* Liste des utilisateurs */
@@ -384,12 +384,12 @@
       transition: all 0.15s ease;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
       /* Effet de survol */
       &:hover {
         border-color: var(--primary-color);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 25px #{color.change(gray(900), $alpha: 0.1)};
         transform: translateY(-2px);
       }
 
@@ -415,7 +415,7 @@
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
-          rgba(239, 68, 68, 0.05) 100%
+          #{color.change(red(500), $alpha: 0.05)} 100%
         );
 
         &::before {
@@ -433,7 +433,7 @@
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
-          rgba(59, 130, 246, 0.05) 100%
+          #{color.change(blue(500), $alpha: 0.05)} 100%
         );
 
         &::before {
@@ -442,7 +442,7 @@
         }
 
         .user-header h4 {
-          color: #1d4ed8;
+          color: #{blue(700)};
         }
       }
     }
@@ -494,15 +494,15 @@
           letter-spacing: 0.5px;
 
           &.online {
-            background: rgba(16, 185, 129, 0.1);
+            background: #{color.change(green(500), $alpha: 0.1)};
             color: #{green(500)};
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            border: 1px solid #{color.change(green(500), $alpha: 0.3)};
           }
 
           &.offline {
-            background: rgba(107, 114, 128, 0.1);
+            background: #{color.change(gray(500), $alpha: 0.1)};
             color: #{gray(500)};
-            border: 1px solid rgba(107, 114, 128, 0.3);
+            border: 1px solid #{color.change(gray(500), $alpha: 0.3)};
           }
         }
 
@@ -516,21 +516,21 @@
           white-space: nowrap;
 
           &.status-suspended {
-            background: rgba(239, 68, 68, 0.1);
+            background: #{color.change(red(500), $alpha: 0.1)};
             color: #{red(500)};
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            border: 1px solid #{color.change(red(500), $alpha: 0.3)};
           }
 
           &.status-deletion_scheduled {
-            background: rgba(245, 158, 11, 0.1);
+            background: #{color.change(orange(500), $alpha: 0.1)};
             color: #{orange(500)};
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            border: 1px solid #{color.change(orange(500), $alpha: 0.3)};
           }
 
           &.status-pending_verification {
-            background: rgba(59, 130, 246, 0.1);
+            background: #{color.change(blue(500), $alpha: 0.1)};
             color: #{blue(500)};
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            border: 1px solid #{color.change(blue(500), $alpha: 0.3)};
           }
         }
       }
@@ -586,7 +586,7 @@
             background: var(--bg-primary);
             border-color: var(--primary-color);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
           }
 
           /* Styles spécifiques selon le type de rôle */
@@ -594,11 +594,11 @@
             background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
             border-color: #{red(600)};
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: rgba(255, 255, 255, 0.2);
+              background: #{color.change(white, $alpha: 0.2)};
               color: white;
             }
 
@@ -609,15 +609,15 @@
 
             &:hover {
               background: linear-gradient(135deg, #{red(600)}, #{red(700)});
-              box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
+              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
             }
           }
 
           &[data-role='abonne'] {
             background: linear-gradient(
               135deg,
-              rgba(245, 158, 11, 0.1),
-              rgba(217, 119, 6, 0.05)
+              #{color.change(orange(500), $alpha: 0.1)},
+              #{color.change(orange(600), $alpha: 0.05)}
             );
             border-color: #{orange(500)};
 
@@ -635,8 +635,8 @@
           &[data-role='staff'] {
             background: linear-gradient(
               135deg,
-              rgba(139, 92, 246, 0.1),
-              rgba(124, 58, 237, 0.05)
+              #{color.change(purple(500), $alpha: 0.1)},
+              #{color.change(purple(600), $alpha: 0.05)}
             );
             border-color: #{purple(600)};
 
@@ -654,7 +654,7 @@
           &[data-role='free'] {
             background: linear-gradient(
               135deg,
-              rgba(59, 130, 246, 0.1),
+              #{color.change(blue(500), $alpha: 0.1)},
               rgba(37, 99, 235, 0.05)
             );
             border-color: #{blue(500)};
@@ -673,7 +673,7 @@
           &[data-role='visitor'] {
             background: linear-gradient(
               135deg,
-              rgba(107, 114, 128, 0.1),
+              #{color.change(gray(500), $alpha: 0.1)},
               rgba(75, 85, 99, 0.05)
             );
             border-color: #{gray(500)};
@@ -770,7 +770,7 @@
           }
 
           &:disabled {
-            background: #9ca3af;
+            background: #{gray(400)};
             cursor: not-allowed;
             opacity: 0.6;
           }
@@ -907,7 +907,7 @@
             background: var(--bg-primary);
             border-color: var(--primary-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
           }
 
           /* Styles spécifiques selon le type de rôle */
@@ -915,11 +915,11 @@
             background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
             border-color: #{red(600)};
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: rgba(255, 255, 255, 0.2);
+              background: #{color.change(white, $alpha: 0.2)};
               color: white;
             }
 
@@ -930,15 +930,15 @@
 
             &:hover {
               background: linear-gradient(135deg, #{red(600)}, #{red(700)});
-              box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
+              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
             }
           }
 
           &[data-role='abonne'] {
             background: linear-gradient(
               135deg,
-              rgba(245, 158, 11, 0.1),
-              rgba(217, 119, 6, 0.05)
+              #{color.change(orange(500), $alpha: 0.1)},
+              #{color.change(orange(600), $alpha: 0.05)}
             );
             border-color: #{orange(500)};
 
@@ -956,8 +956,8 @@
           &[data-role='staff'] {
             background: linear-gradient(
               135deg,
-              rgba(139, 92, 246, 0.1),
-              rgba(124, 58, 237, 0.05)
+              #{color.change(purple(500), $alpha: 0.1)},
+              #{color.change(purple(600), $alpha: 0.05)}
             );
             border-color: #{purple(600)};
 
@@ -975,7 +975,7 @@
           &[data-role='free'] {
             background: linear-gradient(
               135deg,
-              rgba(59, 130, 246, 0.1),
+              #{color.change(blue(500), $alpha: 0.1)},
               rgba(37, 99, 235, 0.05)
             );
             border-color: #{blue(500)};
@@ -994,7 +994,7 @@
           &[data-role='visitor'] {
             background: linear-gradient(
               135deg,
-              rgba(107, 114, 128, 0.1),
+              #{color.change(gray(500), $alpha: 0.1)},
               rgba(75, 85, 99, 0.05)
             );
             border-color: #{gray(500)};
@@ -1299,22 +1299,22 @@
             margin-right: 8px;
 
             &.visitor {
-              background: rgba(107, 114, 128, 0.2);
+              background: #{color.change(gray(500), $alpha: 0.2)};
               color: #{gray(500)};
             }
 
             &.abonne {
-              background: rgba(34, 197, 94, 0.2);
+              background: #{color.change(green(500), $alpha: 0.2)};
               color: #{green(500)};
             }
 
             &.admin {
-              background: rgba(220, 38, 38, 0.2);
+              background: #{color.change(red(600), $alpha: 0.2)};
               color: #{red(600)};
             }
 
             &.staff {
-              background: rgba(59, 130, 246, 0.2);
+              background: #{color.change(blue(500), $alpha: 0.2)};
               color: #{blue(500)};
             }
 
@@ -1349,7 +1349,7 @@
           }
 
           .system-badge {
-            background: rgba(59, 130, 246, 0.2);
+            background: #{color.change(blue(500), $alpha: 0.2)};
             color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
@@ -1434,7 +1434,7 @@
       color: white;
 
       &:hover {
-        background: #16a34a;
+        background: #{green(600)};
       }
     }
 
@@ -1472,8 +1472,8 @@
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: #{color.change(red(500), $alpha: 0.1)};
+      border: 1px solid #{color.change(red(500), $alpha: 0.3)};
       border-radius: 8px;
       color: #{red(600)};
       margin-bottom: 8px;
@@ -1501,7 +1501,7 @@
   margin: 2rem 0;
   overflow-x: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
 }
 
 .permissions-table {
@@ -1635,7 +1635,7 @@
 
         &:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &:disabled {
@@ -1718,7 +1718,7 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &.btn-danger {
@@ -1857,7 +1857,7 @@
 
 // Note admin
 .admin-note {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #{indigo(500)} 0%, #{purple(600)} 100%);
   color: white;
   padding: 1rem;
   border-radius: 8px;
@@ -1877,7 +1877,7 @@
     font-size: 0.9rem;
 
     code {
-      background: rgba(255, 255, 255, 0.2);
+      background: #{color.change(white, $alpha: 0.2)};
       padding: 0.2rem 0.4rem;
       border-radius: 4px;
       font-family: 'Monaco', 'Menlo', monospace;
@@ -1889,7 +1889,7 @@
 .debug-info {
   margin-top: 2rem;
   padding: 1rem;
-  background: #2d3748; /* Fond gris foncé comme un terminal */
+  background: #{gray(800)}; /* Fond gris foncé comme un terminal */
   border-radius: 6px;
   border: 1px solid var(--border-color);
   color: #{slate(200)}; /* Texte clair pour contraste */
@@ -1918,12 +1918,12 @@
       font-weight: 500;
 
       &:hover {
-        color: #90cdf4;
+        color: #{cyan(300)};
       }
     }
 
     pre {
-      background: #1a202c; /* Encore plus foncé pour le code */
+      background: #{gray(900)}; /* Encore plus foncé pour le code */
       color: #{slate(200)};
       padding: 1rem;
       border-radius: 4px;
@@ -2087,7 +2087,7 @@
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
       }
     }
   }
@@ -2100,7 +2100,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2147,7 +2147,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2207,7 +2207,7 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &.btn-success {
@@ -2238,7 +2238,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2370,7 +2370,7 @@
       transition: all 0.15s ease;
 
       &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.1)};
         transform: translateY(-1px);
       }
 

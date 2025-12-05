@@ -177,7 +177,7 @@
   cursor: grabbing;
 
   // Ombre plus prononcée pour l'effet de levée
-  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 8px 16px #{color.change(gray(900), $alpha: 0.2)});
 
   // Légère rotation pour l'effet de soulèvement
   transform: rotate(3deg) scale(1.05);
