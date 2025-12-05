@@ -1,4 +1,5 @@
 // src/components/shared/search-input/SearchInput.scss
+@use '@styles/abstracts' as *;
 @use 'sass:color';
 // Styles TSA-friendly pour input de recherche avec debounce
 

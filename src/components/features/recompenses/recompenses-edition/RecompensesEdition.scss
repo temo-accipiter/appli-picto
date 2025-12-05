@@ -1,5 +1,3 @@
-/*
-@use 'sass:color';
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
@@ -90,8 +88,6 @@
   padding-top: $spacing-xs;
 }
 */
-@use '@styles/abstracts' as *;
-
 .checklist-recompenses {
   display: flex;
   flex-direction: column;
