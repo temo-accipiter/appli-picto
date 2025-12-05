@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 // src/components/features/time-timer/TimeTimer.scss
 @use '@/styles/abstracts' as *;
 
@@ -44,7 +46,7 @@
   &__circle {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+    filter: drop-shadow(0 2px 8px #{color.change(gray(900), $alpha: 0.1)});
   }
 
   // Cercle de fond
@@ -111,7 +113,7 @@
     font-weight: $font-weight-semibold;
     cursor: pointer;
     transition: all $transition-base ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
 
     .time-timer--compact & {
       padding: $spacing-sm $spacing-md;
@@ -125,7 +127,7 @@
 
     &:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
     }
 
     &:disabled {

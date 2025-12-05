@@ -30,7 +30,7 @@
   align-items: center;
   justify-content: center;
   font-weight: $font-weight-bold;
-  color: #333;
+  color: #{slate(700)};
   box-shadow: $shadow-md;
   @include safe-transition(
     transform box-shadow border-color,

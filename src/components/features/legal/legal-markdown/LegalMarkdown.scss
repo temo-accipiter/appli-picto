@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .legal-content {
   max-width: 860px;
   margin: 0 auto;
@@ -45,7 +47,7 @@
     }
     p,
     li {
-      color: #333;
+      color: #{slate(700)};
     }
     a {
       text-decoration: underline;

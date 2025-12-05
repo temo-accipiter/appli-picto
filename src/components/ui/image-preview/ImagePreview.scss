@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .image-preview {
   display: flex;
   justify-content: center;

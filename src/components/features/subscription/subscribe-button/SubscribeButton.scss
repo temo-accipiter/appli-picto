@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .btn-subscribe {
   background-color: #635bff;
   color: #fff;

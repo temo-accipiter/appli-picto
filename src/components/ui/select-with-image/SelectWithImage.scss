@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 .select-with-image {
   display: flex;
@@ -166,7 +167,7 @@
       color $transition-fast ease;
 
     &[data-highlighted] {
-      background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
+      background-color: var(--color-hover-bg, #{color.change(gray(900), $alpha: 0.05)});
     }
 
     &[data-state='checked'] {

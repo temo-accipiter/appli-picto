@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .toast {
   position: fixed;
   bottom: 1.5rem;
