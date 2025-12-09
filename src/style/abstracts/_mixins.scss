@@ -1,0 +1,37 @@
+// src/style/abstracts/_mixins.scss
+// Mixins réutilisables du projet
+
+@use 'sass:map';
+@use './breakpoints' as *;
+
+// =============================================================================
+// RESPONSIVE - Mixin mobile-first
+// =============================================================================
+
+/// Mixin mobile-first pour media queries responsive
+/// Génère automatiquement @media (min-width: ...) depuis la map $breakpoints
+/// @param {String} $breakpoint Nom du breakpoint (sm | md | lg | xl | xxl)
+/// @example
+///   .component {
+///     // Styles mobile par défaut (320px-575px)
+///     font-size: 14px;
+///
+///     @include respond-to(md) {
+///       // Styles tablette+ (768px+)
+///       font-size: 16px;
+///     }
+///
+///     @include respond-to(xl) {
+///       // Styles large desktop+ (1200px+)
+///       font-size: 18px;
+///     }
+///   }
+@mixin respond-to($breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (min-width: map.get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint '#{$breakpoint}' non défini dans $breakpoints. Valeurs disponibles : #{map.keys($breakpoints)}";
+  }
+}

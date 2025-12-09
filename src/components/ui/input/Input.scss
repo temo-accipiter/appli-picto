@@ -110,11 +110,14 @@ input[type='file'].input-field__input {
 
   &:hover {
     opacity: 1;
-    background-color: var(--color-hover-bg, rgba(0, 0, 0, 0.05));
+    background-color: var(
+      --color-hover-bg,
+      #{color.change(gray(900), $alpha: 0.05)}
+    );
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-focus, #0077c2);
+    outline: 2px solid var(--color-focus, #{blue(700)});
     outline-offset: 2px;
     opacity: 1;
   }

@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 // ===========================================================================
 // TODO REFACTORING MOBILE-FIRST
@@ -25,7 +26,7 @@
     );
     border-radius: 16px;
     color: white;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px #{color.change(gray(900), $alpha: 0.1)};
 
     h1 {
       margin: 0 0 16px 0;
@@ -125,7 +126,7 @@
         border: 1px solid var(--border-color);
         border-radius: 12px;
         padding: 24px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px #{color.change(gray(900), $alpha: 0.05)};
 
         .role-header {
           display: flex;
@@ -151,24 +152,24 @@
             letter-spacing: 0.5px;
 
             &.visitor {
-              background: rgba(107, 114, 128, 0.2);
-              color: #6b7280;
+              background: #{color.change(gray(500), $alpha: 0.2)};
+              color: #{gray(500)};
             }
 
             &.abonne {
-              background: rgba(34, 197, 94, 0.2);
-              color: #22c55e;
+              background: #{color.change(green(500), $alpha: 0.2)};
+              color: #{green(500)};
             }
 
             &.admin {
-              background: rgba(220, 38, 38, 0.2);
-              color: #dc2626;
+              background: #{color.change(red(600), $alpha: 0.2)};
+              color: #{red(600)};
             }
           }
 
           .system-badge {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            background: #{color.change(blue(500), $alpha: 0.2)};
+            color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -213,11 +214,11 @@
                 font-size: 1.2rem;
 
                 &.enabled {
-                  color: #22c55e;
+                  color: #{green(500)};
                 }
 
                 &.disabled {
-                  color: #ef4444;
+                  color: #{red(500)};
                 }
               }
             }
@@ -250,7 +251,7 @@
                   left: 0;
                   right: 0;
                   bottom: 0;
-                  background-color: #ccc;
+                  background-color: #{gray(300)};
                   transition: 0.15s;
                   border-radius: 24px;
 
@@ -364,7 +365,7 @@
       background: var(--bg-secondary);
       border-radius: 12px;
       border: 1px solid var(--border-color);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.05)};
     }
 
     /* Liste des utilisateurs */
@@ -383,12 +384,12 @@
       transition: all 0.15s ease;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
       /* Effet de survol */
       &:hover {
         border-color: var(--primary-color);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 8px 25px #{color.change(gray(900), $alpha: 0.1)};
         transform: translateY(-2px);
       }
 
@@ -410,38 +411,38 @@
       }
 
       &.admin-user {
-        border-color: #ef4444;
+        border-color: #{red(500)};
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
-          rgba(239, 68, 68, 0.05) 100%
+          #{color.change(red(500), $alpha: 0.05)} 100%
         );
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, #ef4444, #f97316);
+          background: linear-gradient(90deg, #{red(500)}, #{orange(500)});
         }
 
         .user-header h4 {
-          color: #dc2626;
+          color: #{red(600)};
         }
       }
 
       &.regular-user {
-        border-color: #3b82f6;
+        border-color: #{blue(500)};
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
-          rgba(59, 130, 246, 0.05) 100%
+          #{color.change(blue(500), $alpha: 0.05)} 100%
         );
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+          background: linear-gradient(90deg, #{blue(500)}, #{purple(600)});
         }
 
         .user-header h4 {
-          color: #1d4ed8;
+          color: #{blue(700)};
         }
       }
     }
@@ -493,15 +494,15 @@
           letter-spacing: 0.5px;
 
           &.online {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: #{color.change(green(500), $alpha: 0.1)};
+            color: #{green(500)};
+            border: 1px solid #{color.change(green(500), $alpha: 0.3)};
           }
 
           &.offline {
-            background: rgba(107, 114, 128, 0.1);
-            color: #6b7280;
-            border: 1px solid rgba(107, 114, 128, 0.3);
+            background: #{color.change(gray(500), $alpha: 0.1)};
+            color: #{gray(500)};
+            border: 1px solid #{color.change(gray(500), $alpha: 0.3)};
           }
         }
 
@@ -515,21 +516,21 @@
           white-space: nowrap;
 
           &.status-suspended {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: #{color.change(red(500), $alpha: 0.1)};
+            color: #{red(500)};
+            border: 1px solid #{color.change(red(500), $alpha: 0.3)};
           }
 
           &.status-deletion_scheduled {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: #{color.change(orange(500), $alpha: 0.1)};
+            color: #{orange(500)};
+            border: 1px solid #{color.change(orange(500), $alpha: 0.3)};
           }
 
           &.status-pending_verification {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: #{color.change(blue(500), $alpha: 0.1)};
+            color: #{blue(500)};
+            border: 1px solid #{color.change(blue(500), $alpha: 0.3)};
           }
         }
       }
@@ -585,19 +586,19 @@
             background: var(--bg-primary);
             border-color: var(--primary-color);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
           }
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
-            border-color: #dc2626;
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
+            border-color: #{red(600)};
+            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: rgba(255, 255, 255, 0.2);
+              background: #{color.change(white, $alpha: 0.2)};
               color: white;
             }
 
@@ -607,26 +608,26 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #dc2626, #b91c1c);
-              box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
+              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
+              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
             }
           }
 
           &[data-role='abonne'] {
             background: linear-gradient(
               135deg,
-              rgba(245, 158, 11, 0.1),
-              rgba(217, 119, 6, 0.05)
+              #{color.change(orange(500), $alpha: 0.1)},
+              #{color.change(orange(600), $alpha: 0.05)}
             );
-            border-color: #f59e0b;
+            border-color: #{orange(500)};
 
             .role-icon {
-              background: #f59e0b;
+              background: #{orange(500)};
               color: white;
             }
 
             .role-name {
-              color: #d97706;
+              color: #{orange(600)};
               font-weight: 600;
             }
           }
@@ -634,18 +635,18 @@
           &[data-role='staff'] {
             background: linear-gradient(
               135deg,
-              rgba(139, 92, 246, 0.1),
-              rgba(124, 58, 237, 0.05)
+              #{color.change(purple(500), $alpha: 0.1)},
+              #{color.change(purple(600), $alpha: 0.05)}
             );
-            border-color: #8b5cf6;
+            border-color: #{purple(600)};
 
             .role-icon {
-              background: #8b5cf6;
+              background: #{purple(600)};
               color: white;
             }
 
             .role-name {
-              color: #7c3aed;
+              color: #{purple(600)};
               font-weight: 600;
             }
           }
@@ -653,18 +654,18 @@
           &[data-role='free'] {
             background: linear-gradient(
               135deg,
-              rgba(59, 130, 246, 0.1),
-              rgba(37, 99, 235, 0.05)
+              #{color.change(blue(500), $alpha: 0.1)},
+              #{admin-ui(item-bg)}
             );
-            border-color: #3b82f6;
+            border-color: #{blue(500)};
 
             .role-icon {
-              background: #3b82f6;
+              background: #{blue(500)};
               color: white;
             }
 
             .role-name {
-              color: #2563eb;
+              color: #{blue(600)};
               font-weight: 600;
             }
           }
@@ -672,18 +673,18 @@
           &[data-role='visitor'] {
             background: linear-gradient(
               135deg,
-              rgba(107, 114, 128, 0.1),
-              rgba(75, 85, 99, 0.05)
+              #{color.change(gray(500), $alpha: 0.1)},
+              #{admin-ui(item-alt)}
             );
-            border-color: #6b7280;
+            border-color: #{gray(500)};
 
             .role-icon {
-              background: #6b7280;
+              background: #{gray(500)};
               color: white;
             }
 
             .role-name {
-              color: #4b5563;
+              color: #{gray(700)};
               font-weight: 600;
             }
           }
@@ -760,16 +761,16 @@
         }
 
         &.btn-danger {
-          background: #ef4444;
+          background: #{red(500)};
           color: white;
 
           &:hover:not(:disabled) {
-            background: #dc2626;
+            background: #{red(600)};
             transform: translateY(-1px);
           }
 
           &:disabled {
-            background: #9ca3af;
+            background: #{gray(400)};
             cursor: not-allowed;
             opacity: 0.6;
           }
@@ -850,7 +851,7 @@
         }
 
         .no-login {
-          color: #ef4444;
+          color: #{red(500)};
           font-style: italic;
           font-weight: 500;
         }
@@ -906,19 +907,19 @@
             background: var(--bg-primary);
             border-color: var(--primary-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
           }
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
+            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
             color: white;
-            border-color: #dc2626;
-            box-shadow: 0 3px 10px rgba(239, 68, 68, 0.4);
+            border-color: #{red(600)};
+            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: rgba(255, 255, 255, 0.2);
+              background: #{color.change(white, $alpha: 0.2)};
               color: white;
             }
 
@@ -928,26 +929,26 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #dc2626, #b91c1c);
-              box-shadow: 0 5px 15px rgba(239, 68, 68, 0.5);
+              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
+              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
             }
           }
 
           &[data-role='abonne'] {
             background: linear-gradient(
               135deg,
-              rgba(245, 158, 11, 0.1),
-              rgba(217, 119, 6, 0.05)
+              #{color.change(orange(500), $alpha: 0.1)},
+              #{color.change(orange(600), $alpha: 0.05)}
             );
-            border-color: #f59e0b;
+            border-color: #{orange(500)};
 
             .role-icon {
-              background: #f59e0b;
+              background: #{orange(500)};
               color: white;
             }
 
             .role-name {
-              color: #d97706;
+              color: #{orange(600)};
               font-weight: 600;
             }
           }
@@ -955,18 +956,18 @@
           &[data-role='staff'] {
             background: linear-gradient(
               135deg,
-              rgba(139, 92, 246, 0.1),
-              rgba(124, 58, 237, 0.05)
+              #{color.change(purple(500), $alpha: 0.1)},
+              #{color.change(purple(600), $alpha: 0.05)}
             );
-            border-color: #8b5cf6;
+            border-color: #{purple(600)};
 
             .role-icon {
-              background: #8b5cf6;
+              background: #{purple(600)};
               color: white;
             }
 
             .role-name {
-              color: #7c3aed;
+              color: #{purple(600)};
               font-weight: 600;
             }
           }
@@ -974,18 +975,18 @@
           &[data-role='free'] {
             background: linear-gradient(
               135deg,
-              rgba(59, 130, 246, 0.1),
-              rgba(37, 99, 235, 0.05)
+              #{color.change(blue(500), $alpha: 0.1)},
+              #{admin-ui(item-bg)}
             );
-            border-color: #3b82f6;
+            border-color: #{blue(500)};
 
             .role-icon {
-              background: #3b82f6;
+              background: #{blue(500)};
               color: white;
             }
 
             .role-name {
-              color: #2563eb;
+              color: #{blue(600)};
               font-weight: 600;
             }
           }
@@ -993,18 +994,18 @@
           &[data-role='visitor'] {
             background: linear-gradient(
               135deg,
-              rgba(107, 114, 128, 0.1),
-              rgba(75, 85, 99, 0.05)
+              #{color.change(gray(500), $alpha: 0.1)},
+              #{admin-ui(item-alt)}
             );
-            border-color: #6b7280;
+            border-color: #{gray(500)};
 
             .role-icon {
-              background: #6b7280;
+              background: #{gray(500)};
               color: white;
             }
 
             .role-name {
-              color: #4b5563;
+              color: #{gray(700)};
               font-weight: 600;
             }
           }
@@ -1262,7 +1263,7 @@
         &.inactive {
           opacity: 0.6;
           border-color: var(--danger-color);
-          background: rgba(220, 53, 69, 0.05);
+          background: #{admin-ui(danger-bg)};
         }
 
         &.system-role {
@@ -1298,28 +1299,28 @@
             margin-right: 8px;
 
             &.visitor {
-              background: rgba(107, 114, 128, 0.2);
-              color: #6b7280;
+              background: #{color.change(gray(500), $alpha: 0.2)};
+              color: #{gray(500)};
             }
 
             &.abonne {
-              background: rgba(34, 197, 94, 0.2);
-              color: #22c55e;
+              background: #{color.change(green(500), $alpha: 0.2)};
+              color: #{green(500)};
             }
 
             &.admin {
-              background: rgba(220, 38, 38, 0.2);
-              color: #dc2626;
+              background: #{color.change(red(600), $alpha: 0.2)};
+              color: #{red(600)};
             }
 
             &.staff {
-              background: rgba(59, 130, 246, 0.2);
-              color: #3b82f6;
+              background: #{color.change(blue(500), $alpha: 0.2)};
+              color: #{blue(500)};
             }
 
             &.free {
-              background: rgba(16, 185, 129, 0.2);
-              color: #10b981;
+              background: #{shadow(success-strong)};
+              color: #{green(500)};
             }
           }
 
@@ -1334,22 +1335,22 @@
               font-weight: 600;
 
               &.active {
-                background: rgba(40, 167, 69, 0.1);
+                background: #{admin-ui(success-bg)};
                 color: var(--success-color);
-                border: 1px solid rgba(40, 167, 69, 0.3);
+                border: 1px solid #{admin-ui(success-border)};
               }
 
               &.inactive {
-                background: rgba(220, 53, 69, 0.1);
+                background: #{admin-ui(danger-bg)};
                 color: var(--danger-color);
-                border: 1px solid rgba(220, 53, 69, 0.3);
+                border: 1px solid #{admin-ui(danger-border)};
               }
             }
           }
 
           .system-badge {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            background: #{color.change(blue(500), $alpha: 0.2)};
+            color: #{blue(500)};
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -1429,11 +1430,11 @@
     }
 
     &.btn-success {
-      background: #22c55e;
+      background: #{green(500)};
       color: white;
 
       &:hover {
-        background: #16a34a;
+        background: #{green(600)};
       }
     }
 
@@ -1448,11 +1449,11 @@
     }
 
     &.btn-danger {
-      background: #ef4444;
+      background: #{red(500)};
       color: white;
 
       &:hover {
-        background: #dc2626;
+        background: #{red(600)};
       }
     }
 
@@ -1471,14 +1472,14 @@
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: #{color.change(red(500), $alpha: 0.1)};
+      border: 1px solid #{color.change(red(500), $alpha: 0.3)};
       border-radius: 8px;
-      color: #dc2626;
+      color: #{red(600)};
       margin-bottom: 8px;
 
       svg {
-        color: #dc2626;
+        color: #{red(600)};
       }
     }
   }
@@ -1500,7 +1501,7 @@
   margin: 2rem 0;
   overflow-x: auto;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
 }
 
 .permissions-table {
@@ -1596,13 +1597,13 @@
         transition: all 0.15s ease;
 
         &.enabled {
-          color: var(--success-color, #28a745);
-          background: var(--success-bg, rgba(40, 167, 69, 0.1));
+          color: var(--success-color, #{green(600)});
+          background: var(--success-bg, #{admin-ui(success-bg)});
         }
 
         &.disabled {
-          color: var(--danger-color, #dc3545);
-          background: var(--danger-bg, rgba(220, 53, 69, 0.1));
+          color: var(--danger-color, #{red(600)});
+          background: var(--danger-bg, #{admin-ui(danger-bg)});
         }
       }
     }
@@ -1634,7 +1635,7 @@
 
         &:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &:disabled {
@@ -1648,29 +1649,29 @@
         }
 
         &.btn-primary {
-          background: var(--primary-color, #007bff);
+          background: var(--primary-color, #{admin-ui(primary)});
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--primary-hover, #0056b3);
+            background: var(--primary-hover, #{admin-ui(primary-hover)});
           }
         }
 
         &.btn-success {
-          background: var(--success-color, #28a745);
+          background: var(--success-color, #{green(600)});
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--success-hover, #1e7e34);
+            background: var(--success-hover, #{admin-ui(success-hover)});
           }
         }
 
         &.btn-secondary {
-          background: var(--secondary-color, #6c757d);
+          background: var(--secondary-color, #{admin-ui(secondary)});
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--secondary-hover, #545b62);
+            background: var(--secondary-hover, #{admin-ui(secondary-hover)});
           }
         }
       }
@@ -1717,15 +1718,15 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &.btn-danger {
-          background: var(--danger-color, #dc3545);
+          background: var(--danger-color, #{red(600)});
           color: white;
 
           &:hover {
-            background: var(--danger-hover, #c82333);
+            background: var(--danger-hover, #{red(700)});
           }
         }
 
@@ -1843,20 +1844,20 @@
 @media (prefers-color-scheme: dark) {
   .admin-permissions-page {
     .page-header {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 32px #{shadow(black-strong)};
     }
 
     .role-permissions-card,
     .create-role-form,
     .role-card {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 20px #{shadow(black-medium)};
     }
   }
 }
 
 // Note admin
 .admin-note {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #{indigo(500)} 0%, #{purple(600)} 100%);
   color: white;
   padding: 1rem;
   border-radius: 8px;
@@ -1876,7 +1877,7 @@
     font-size: 0.9rem;
 
     code {
-      background: rgba(255, 255, 255, 0.2);
+      background: #{color.change(white, $alpha: 0.2)};
       padding: 0.2rem 0.4rem;
       border-radius: 4px;
       font-family: 'Monaco', 'Menlo', monospace;
@@ -1888,42 +1889,42 @@
 .debug-info {
   margin-top: 2rem;
   padding: 1rem;
-  background: #2d3748; /* Fond gris foncé comme un terminal */
+  background: #{gray(800)}; /* Fond gris foncé comme un terminal */
   border-radius: 6px;
   border: 1px solid var(--border-color);
-  color: #e2e8f0; /* Texte clair pour contraste */
+  color: #{slate(200)}; /* Texte clair pour contraste */
 
   h3 {
     margin: 0 0 0.5rem 0;
-    color: #f7fafc; /* Titre blanc */
+    color: #{slate(50)}; /* Titre blanc */
     font-size: 1rem;
   }
 
   p {
     margin: 0;
-    color: #e2e8f0; /* Texte gris clair */
+    color: #{slate(200)}; /* Texte gris clair */
     font-size: 0.9rem;
 
     strong {
-      color: #f7fafc; /* Texte fort en blanc */
+      color: #{slate(50)}; /* Texte fort en blanc */
     }
   }
 
   /* Style pour le panel details/summary */
   details {
     summary {
-      color: #f7fafc;
+      color: #{slate(50)};
       cursor: pointer;
       font-weight: 500;
 
       &:hover {
-        color: #90cdf4;
+        color: #{cyan(300)};
       }
     }
 
     pre {
-      background: #1a202c; /* Encore plus foncé pour le code */
-      color: #e2e8f0;
+      background: #{gray(900)}; /* Encore plus foncé pour le code */
+      color: #{slate(200)};
       padding: 1rem;
       border-radius: 4px;
       overflow-x: auto;
@@ -2086,7 +2087,7 @@
 
       &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
       }
     }
   }
@@ -2099,7 +2100,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2146,7 +2147,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2206,7 +2207,7 @@
 
         &:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
         }
 
         &.btn-success {
@@ -2237,7 +2238,7 @@
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.05)};
 
   h3 {
     margin: 0 0 1rem 0;
@@ -2369,25 +2370,25 @@
       transition: all 0.15s ease;
 
       &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.1)};
         transform: translateY(-1px);
       }
 
       // Couleurs par type de table
       &.table-roles {
-        border-left: 4px solid #3b82f6;
+        border-left: 4px solid #{blue(500)};
       }
 
       &.table-features {
-        border-left: 4px solid #10b981;
+        border-left: 4px solid #{green(500)};
       }
 
       &.table-role_permissions {
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid #{orange(500)};
       }
 
       &.table-user_roles {
-        border-left: 4px solid #8b5cf6;
+        border-left: 4px solid #{purple(600)};
       }
 
       .history-header {
@@ -2476,11 +2477,11 @@
               overflow-y: auto;
 
               &.old-values {
-                border-left: 3px solid #ef4444;
+                border-left: 3px solid #{red(500)};
               }
 
               &.new-values {
-                border-left: 3px solid #22c55e;
+                border-left: 3px solid #{green(500)};
               }
             }
           }

@@ -1,9 +1,11 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .image-preview {
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: #f5f5f5;
+  background-color: #{gray(100)};
   padding: 0.5rem;
   border-radius: 0.5rem;
   box-sizing: border-box;

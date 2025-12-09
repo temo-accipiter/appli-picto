@@ -1,0 +1,37 @@
+// abstracts/_tokens.scss
+// Maps SCSS pures (aucun CSS g�n�r�)
+
+// === UI MODERN GRADIENTS ===
+// Gradients modernes pour composants UI (boutons, containers)
+$ui-gradients: (
+  purple-modern: (
+    start: #667eea,
+    end: #764ba2,
+  ),
+  purple-modern-hover: (
+    start: #5568d3,
+    end: #653a8b,
+  ),
+  blue-soft: (
+    start: #f5f7fa,
+    end: #e8ecf1,
+  ),
+);
+
+// === BADGE SHADOWS ===
+// Ombres pour badges (box-shadow)
+$badge-shadows: (
+  abonne: rgba(34, 197, 94, 0.3),
+  abonne-hover: rgba(34, 197, 94, 0.4),
+  free: rgba(100, 116, 139, 0.3),
+  free-hover: rgba(100, 116, 139, 0.4),
+  visitor: rgba(234, 88, 12, 0.3),
+  visitor-hover: rgba(234, 88, 12, 0.4),
+);
+
+// === BRAND COLORS ===
+// Couleurs de marques tierces (Stripe, etc.)
+$brand-colors: (
+  stripe: #635bff,
+  stripe-hover: #5a50f0,
+);

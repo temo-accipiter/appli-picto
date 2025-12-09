@@ -24,13 +24,13 @@
   // Styles communs
   border-radius: $radius-full;
   border: 3px solid $color-primary;
-  background-color: #f0f0ff;
+  background-color: #{purple(50)};
   object-fit: cover;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: $font-weight-bold;
-  color: #333;
+  color: #{slate(700)};
   box-shadow: $shadow-md;
   @include safe-transition(
     transform box-shadow border-color,
@@ -67,7 +67,7 @@
   line-height: 1;
   z-index: 2;
   cursor: pointer;
-  border: 2px solid white;
+  border: 2px solid #{text(invert)};
   @include safe-transition(transform box-shadow, $transition-fast, ease);
   @include focus-ring($color-primary, 2px, 2px);
 
@@ -102,7 +102,7 @@
     $color-primary,
     color.adjust($color-primary, $lightness: 10%)
   );
-  color: white;
+  color: #{text(invert)};
 
   &:hover {
     box-shadow: 0 4px 16px rgba($color-primary, 0.5);
@@ -124,7 +124,7 @@
     $color-error,
     color.adjust($color-error, $lightness: 10%)
   );
-  color: white;
+  color: #{text(invert)};
 
   &:hover {
     box-shadow: 0 4px 16px rgba($color-error, 0.5);
@@ -176,8 +176,8 @@
 // === DARK MODE ===
 @media (prefers-color-scheme: dark) {
   .avatar-fallback {
-    background-color: rgba(240, 240, 255, 0.1);
-    color: white;
+    background-color: #{color.change(purple(50), $alpha: 0.1)};
+    color: #{text(invert)};
   }
 
   .message-erreur {

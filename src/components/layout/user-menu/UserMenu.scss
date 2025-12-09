@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 .user-menu-trigger {
   border: none;
@@ -18,9 +19,9 @@
   border-radius: 999px;
   font-weight: 700;
   font-size: 14px;
-  color: #24324a;
-  background: #ffd9ec; /* pastel */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  color: #{slate(800)};
+  background: #{red(100)}; /* pastel */
+  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.12)};
 }
 .avatar-circle.header {
   width: 44px;
@@ -31,7 +32,7 @@
 .user-menu-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(20, 24, 31, 0.36);
+  background: #{color.change(slate(900), $alpha: 0.36)};
   backdrop-filter: blur(2px);
   z-index: 1099;
   display: grid;
@@ -47,10 +48,10 @@
 
 .user-menu-dialog {
   width: min(92vw, 320px);
-  background: #fff;
-  color: #1d2433;
+  background: #{surface(bg)};
+  color: #{slate(900)};
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 20px 40px #{color.change(gray(900), $alpha: 0.18)};
   overflow: hidden;
 
   // Mobile par défaut (320px-767px) : en bas à droite (accessible au pouce droit)
@@ -79,10 +80,10 @@
   gap: 12px;
   align-items: center;
   padding: 14px 14px 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #{color.change(gray(900), $alpha: 0.06)};
 }
 .user-infos small {
-  color: #64748b;
+  color: #{slate(500)};
 }
 
 /* Préférences (langue + thème) */
@@ -92,7 +93,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid #{color.change(gray(900), $alpha: 0.06)};
 }
 
 .user-menu-list {
@@ -102,7 +103,7 @@
 
 .user-menu-separator {
   height: 1px;
-  background: rgba(0, 0, 0, 0.06);
+  background: #{color.change(gray(900), $alpha: 0.06)};
   margin: 4px 0;
 }
 
@@ -121,45 +122,45 @@
   text-decoration: none;
   color: inherit;
   &:hover {
-    background: #f3f6ff;
+    background: #{blue(50)};
   }
 
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
-    background: #f3f6ff;
-    outline: 2px solid #2563eb;
+    background: #{blue(50)};
+    outline: 2px solid #{blue(600)};
     outline-offset: -2px;
   }
 
   &.danger:hover {
-    background: #fff5f5;
+    background: #{red(50)};
   }
 
   &.danger:focus-visible {
-    background: #fff5f5;
-    outline: 2px solid #dc2626;
+    background: #{red(50)};
+    outline: 2px solid #{red(600)};
     outline-offset: -2px;
   }
 
   &.admin:hover {
-    background: #fef3c7;
-    color: #92400e;
+    background: #{yellow(100)};
+    color: #{yellow(800)};
   }
 
   &.admin:focus-visible {
-    background: #fef3c7;
-    color: #92400e;
-    outline: 2px solid #d97706;
+    background: #{yellow(100)};
+    color: #{yellow(800)};
+    outline: 2px solid #{orange(600)};
     outline-offset: -2px;
   }
 
   &.legal:hover {
-    background: #f0f4ff;
+    background: #{purple(50)};
   }
 
   &.legal:focus-visible {
-    background: #f0f4ff;
-    outline: 2px solid #4f46e5;
+    background: #{purple(50)};
+    outline: 2px solid #{purple(600)};
     outline-offset: -2px;
   }
 
@@ -177,10 +178,10 @@
   &.submenu-item {
     padding-left: 40px;
     font-size: 14px;
-    color: #64748b;
+    color: #{slate(500)};
 
     &:hover {
-      color: #1d2433;
+      color: #{slate(900)};
     }
   }
 }

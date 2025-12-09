@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 /**
  * Page Admin : Metrics - Styles
  */
@@ -18,12 +20,12 @@
     h1 {
       font-size: 2.5rem;
       margin-bottom: 1rem;
-      color: var(--text-primary, #333);
+      color: var(--text-primary, #{slate(700)});
     }
 
     p {
       font-size: 1.125rem;
-      color: var(--text-secondary, #666);
+      color: var(--text-secondary, #{gray(600)});
     }
   }
 }

@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 // src/components/shared/error-boundary/ErrorBoundary.scss
 // Styles TSA-friendly : couleurs pastel, animations douces, layout apaisant
@@ -10,7 +11,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e3eaf2 100%);
+  background: linear-gradient(135deg, #{slate(50)} 0%, #{slate(200)} 100%);
 
   &__content {
     max-width: 500px;
@@ -18,7 +19,7 @@
     background: white;
     padding: 3rem 2rem;
     border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px #{shadow(black-light)};
 
     // Animation douce d'apparition (TSA-friendly)
     animation: fadeInScale 0.3s ease;
@@ -35,14 +36,14 @@
   &__title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #2d3748;
+    color: #{slate(700)};
     margin-bottom: 1rem;
     line-height: 1.4;
   }
 
   &__message {
     font-size: 1rem;
-    color: #4a5568;
+    color: #{slate(600)};
     margin-bottom: 2rem;
     line-height: 1.6;
   }
@@ -73,18 +74,18 @@
     min-width: 120px;
 
     &:focus {
-      outline: 3px solid #4299e1;
+      outline: 3px solid #{blue(500)};
       outline-offset: 2px;
     }
 
     &--primary {
-      background: #4299e1;
+      background: #{blue(500)};
       color: white;
 
       &:hover:not(:disabled) {
-        background: #3182ce;
+        background: #{blue(600)};
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        box-shadow: 0 4px 12px #{shadow(primary-medium)};
       }
 
       &:active {
@@ -93,11 +94,11 @@
     }
 
     &--secondary {
-      background: #e2e8f0;
-      color: #2d3748;
+      background: #{slate(200)};
+      color: #{slate(700)};
 
       &:hover:not(:disabled) {
-        background: #cbd5e0;
+        background: #{slate(300)};
         transform: translateY(-2px);
       }
 
@@ -110,21 +111,21 @@
   &__details {
     margin-top: 2rem;
     text-align: left;
-    background: #f7fafc;
+    background: #{slate(50)};
     padding: 1rem;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #{slate(200)};
   }
 
   &__details-summary {
     cursor: pointer;
     font-weight: 600;
-    color: #4a5568;
+    color: #{slate(600)};
     padding: 0.5rem;
     user-select: none;
 
     &:hover {
-      color: #2d3748;
+      color: #{slate(700)};
     }
   }
 
@@ -134,7 +135,7 @@
     background: white;
     border-radius: 4px;
     font-size: 0.875rem;
-    color: #e53e3e;
+    color: #{red(500)};
     overflow-x: auto;
     white-space: pre-wrap;
     word-break: break-word;

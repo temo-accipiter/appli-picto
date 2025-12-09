@@ -1,0 +1,42 @@
+@charset "UTF-8";
+
+/* ============================================
+  📦 1) VENDORS — normalize en tout premier (vendor immutable)
+   ============================================ */
+@use '@styles/vendors/normalize' as *;
+
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
+@use '@styles/abstracts' as *;
+
+/* ============================================
+  💡 3) ABSTRACTS — SYSTÈMES RUNTIME (génèrent des CSS vars)
+  - IMPORTS EXPLICITES, UNE SEULE FOIS, DANS CET ORDRE
+   ============================================ */
+@use '@styles/abstracts/colors' as *;
+@use '@styles/abstracts/typography' as *;
+@use '@styles/abstracts/spacing' as *;
+@use '@styles/abstracts/motion' as *;
+@use '@styles/abstracts/radius' as *;
+@use '@styles/abstracts/shadows' as *;
+@use '@styles/abstracts/forms' as *;
+
+/* ============================================
+  🧱 4) BASE — styles globaux appliqués au DOM (ordre contrôlé)
+  - reset puis policies/accessibilité puis helpers puis application typo
+   ============================================ */
+@use '@styles/base/reset' as *;
+@use '@styles/base/reduced-motion' as *;
+@use '@styles/base/accessibility' as *;
+@use '@styles/base/helpers' as *;
+@use '@styles/base/typography-base' as *;
+
+/* ============================================
+  🎨 5) THEMES — overrides runtime (CSS vars)
+  - importés après base pour que les overrides s'appliquent correctement
+   ============================================ */
+@use '@styles/themes/light' as *;
+@use '@styles/themes/dark' as *;
+@use '@styles/themes/calm' as *;

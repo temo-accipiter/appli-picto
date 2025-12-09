@@ -1,3 +1,5 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
 .legal-content {
   max-width: 860px;
   margin: 0 auto;
@@ -6,7 +8,7 @@
   &__back-button {
     background: none;
     border: none;
-    color: var(--color-primary, #6366f1);
+    color: var(--color-primary, #{purple(500)});
     font-size: 16px;
     cursor: pointer;
     padding: 8px 12px;
@@ -21,7 +23,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-primary, #6366f1);
+      outline: 2px solid var(--color-primary, #{purple(500)});
       outline-offset: 2px;
       border-radius: 4px;
     }
@@ -45,7 +47,7 @@
     }
     p,
     li {
-      color: #333;
+      color: #{slate(700)};
     }
     a {
       text-decoration: underline;
@@ -55,14 +57,14 @@
       padding-left: 22px;
     }
     code {
-      background: #f3f3f3;
+      background: #{gray(100)};
       padding: 2px 6px;
       border-radius: 4px;
     }
     blockquote {
-      border-left: 3px solid #ddd;
+      border-left: 3px solid #{gray(300)};
       padding-left: 12px;
-      color: #555;
+      color: #{gray(600)};
     }
   }
 }

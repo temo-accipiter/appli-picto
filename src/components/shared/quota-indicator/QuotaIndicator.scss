@@ -1,4 +1,5 @@
 // src/components/shared/QuotaIndicator.scss
+@use 'sass:color';
 @use '@styles/abstracts' as *;
 
 .quota-indicator {
@@ -17,7 +18,7 @@
 
     &:hover {
       border-color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
     }
   }
 
@@ -75,19 +76,19 @@
 
   // ✅ PHASE 5: États de warning améliorés
   &.near-limit {
-    border-color: #f59e0b;
-    background: rgba(245, 158, 11, 0.05);
+    border-color: #{orange(500)};
+    background: #{color.change(orange(500), $alpha: 0.05)};
   }
 
   &.limit-warning {
-    border-color: #f97316;
-    background: rgba(249, 115, 22, 0.08);
+    border-color: #{warning(warning-border)};
+    background: #{warning(warning-bg)};
     animation: warning-pulse 2s ease-in-out infinite;
   }
 
   &.at-limit {
     border-color: var(--error);
-    background: rgba(239, 68, 68, 0.08);
+    background: #{warning(error-bg)};
     animation: error-pulse 1.5s ease-in-out infinite;
   }
 
@@ -135,15 +136,23 @@
       transition: width 0.15s ease;
 
       &.near-limit {
-        background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+        background: linear-gradient(
+          90deg,
+          #{orange(500)} 0%,
+          #{orange(400)} 100%
+        );
       }
 
       &.limit-warning {
-        background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+        background: linear-gradient(
+          90deg,
+          #{warning(warning)} 0%,
+          #{warning(warning-light)} 100%
+        );
       }
 
       &.at-limit {
-        background: linear-gradient(90deg, var(--error) 0%, #f87171 100%);
+        background: linear-gradient(90deg, var(--error) 0%, #{red(400)} 100%);
       }
     }
 
@@ -155,7 +164,7 @@
       font-size: 0.75em;
       font-weight: 600;
       color: var(--background);
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 1px 2px #{color.change(gray(900), $alpha: 0.3)};
     }
   }
 
@@ -232,24 +241,24 @@
 @keyframes warning-pulse {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);
-    border-color: #f97316;
+    box-shadow: 0 2px 8px #{warning(warning-bg-strong)};
+    border-color: #{warning(warning-border)};
   }
   50% {
-    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
-    border-color: #fb923c;
+    box-shadow: 0 4px 16px #{warning(error-border)};
+    border-color: #{warning(warning-light)};
   }
 }
 
 @keyframes error-pulse {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 2px 8px #{warning(error-bg-strong)};
     border-color: var(--error);
   }
   50% {
-    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-    border-color: #f87171;
+    box-shadow: 0 4px 16px #{warning(error-border)};
+    border-color: #{red(400)};
   }
 }
 
@@ -313,23 +322,23 @@
 @media (prefers-color-scheme: dark) {
   .quota-indicator {
     &.near-limit {
-      background: rgba(245, 158, 11, 0.1);
-      border-color: #f59e0b;
+      background: #{color.change(orange(500), $alpha: 0.1)};
+      border-color: #{orange(500)};
     }
 
     &.at-limit {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #ef4444;
+      background: #{warning(error-bg-strong)};
+      border-color: #{red(500)};
     }
 
     .quota-warning {
-      background: rgba(239, 68, 68, 0.2);
-      color: #f87171;
+      background: #{warning(error-hover)};
+      color: #{red(400)};
     }
 
     .quota-upgrade {
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
+      background: #{color.change(blue(500), $alpha: 0.2)};
+      color: #{blue(400)};
     }
   }
 }

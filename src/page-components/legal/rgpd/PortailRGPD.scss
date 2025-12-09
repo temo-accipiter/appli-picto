@@ -1,3 +1,6 @@
+@use '@styles/abstracts' as *;
+@use 'sass:color';
+
 .rgpd-portal {
   max-width: 980px;
   margin: 0 auto;
@@ -13,7 +16,7 @@
   }
 
   &__subtitle {
-    color: #555;
+    color: gray(600);
     margin: 0;
     line-height: 1.5;
   }
@@ -27,10 +30,10 @@
 }
 
 .rgpd-card {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: surface(bg);
+  border: 1px solid color.change(gray(900), $alpha: 0.06);
   border-radius: 14px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px color.change(gray(900), $alpha: 0.04);
   padding: 16px;
 
   h2 {
@@ -40,14 +43,14 @@
 
   p {
     margin: 0 0 12px;
-    color: #404040;
+    color: gray(700);
   }
 
   .btn {
     appearance: none;
     border: none;
-    background: #e6f0ff;
-    color: #174ea6;
+    background: blue(50);
+    color: blue(700);
     padding: 8px 12px;
     border-radius: 10px;
     font-weight: 600;
@@ -59,7 +62,7 @@
 
     // WCAG 2.4.7 - Focus visible avec bon contraste
     &:focus-visible {
-      outline: 2px solid #2563eb;
+      outline: 2px solid blue(600);
       outline-offset: 2px;
     }
 
@@ -70,8 +73,8 @@
   }
 
   .btn-danger {
-    background: #ffe7e7;
-    color: #a61717;
+    background: red(50);
+    color: red(700);
 
     &:hover,
     &:focus-visible {

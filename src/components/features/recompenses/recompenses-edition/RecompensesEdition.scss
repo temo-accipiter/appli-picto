@@ -1,112 +1,21 @@
-/*
 @use '@styles/abstracts' as *;
 @use 'sass:color';
-
-.checklist-recompenses {
-  h2 {
-    text-align: center;
-    margin-bottom: $spacing-lg;
-    font-size: $font-size-lg;
-    color: var(--color-primary);
-  }
-
-  .liste-recompenses {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-md;
-    justify-content: center;
-  }
-
-  .recompense-item {
-    position: relative;
-    text-align: center;
-    background-color: var(--pastel-color, #eaf6ff);
-    border-radius: $radius-md;
-    box-shadow: $box-shadow;
-    transition:
-      transform $transition-fast ease,
-      box-shadow $transition-fast ease;
-
-    &:hover {
-      transform: translateY(rem(-2));
-      box-shadow: 0 rem(4) rem(12) rgba($color-text, 0.1);
-    }
-
-    &.active {
-      background-color: $color-info;
-      border: rem(2) solid $color-info-primary;
-    }
-
-    .recompense-delete-btn {
-      position: absolute;
-      top: $spacing-xxs;
-      right: $spacing-xxs;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: $font-size-sm;
-      color: gray(600);
-      transition: color $transition-fast ease;
-
-      @include on-event {
-        color: $color-error;
-      }
-    }
-
-    .recompense-label {
-      margin-bottom: $spacing-xs;
-      font-weight: $font-weight-medium;
-      font-size: $font-size-base;
-      display: block;
-    }
-
-    .recompense-icon {
-      margin: 0 auto $spacing-sm auto;
-    }
-
-    // 🔁 Responsive pour petits écrans
-    @include respond-to(sm) {
-      width: rem(90);
-      max-width: 100%;
-      padding: $spacing-sm;
-
-      .recompense-icon {
-        width: rem(48);
-        height: rem(48);
-      }
-
-      .recompense-label {
-        font-size: $font-size-sm;
-      }
-    }
-  }
-}
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: $spacing-sm;
-  padding-top: $spacing-xs;
-}
-*/
-@use '@styles/abstracts' as *;
-
 .checklist-recompenses {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
   padding: $spacing-lg;
   border-radius: $radius-lg;
-  background-color: #f0f8ff; // Bleu pastel comme checklist-edition
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  background-color: #{blue(50)}; // Bleu pastel comme checklist-edition
+  box-shadow: 0 0 24px #{color.change(gray(900), $alpha: 0.35)};
   transition:
     box-shadow 0.3s ease,
     background-color 0.3s ease;
 
   // Dark mode
   [data-theme='dark'] & {
-    background: linear-gradient(145deg, #222530, #2a2d37);
-    box-shadow: 0 0 24px rgba(255, 255, 255, 0.15);
+    background: linear-gradient(145deg, #{slate(900)}, #{slate(800)});
+    box-shadow: 0 0 24px #{color.change(text(invert), $alpha: 0.15)};
   }
 
   h2 {
@@ -134,16 +43,16 @@
     margin-bottom: $spacing-md;
     align-items: center;
     padding: $spacing-md;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: #{color.change(surface(bg), $alpha: 0.7)};
     border-radius: $radius-md;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(155, 89, 182, 0.15);
+    box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.08)};
+    border: 1px solid #{color.change(purple(500), $alpha: 0.15)};
 
     // Dark mode
     [data-theme='dark'] & {
-      background-color: rgba(34, 37, 48, 0.6);
-      border-color: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      background-color: #{color.change(slate(900), $alpha: 0.6)};
+      border-color: #{color.change(text(invert), $alpha: 0.1)};
+      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.3)};
     }
   }
 
@@ -156,9 +65,9 @@
   .edition-section__empty {
     grid-column: 1 / -1;
     font-size: 1.1rem;
-    color: var(--c-text-secondary, #666);
+    color: var(--c-text-secondary, #{gray(600)});
     padding: $spacing-lg;
-    border: 2px dashed var(--c-border, #ccc);
+    border: 2px dashed var(--c-border, #{gray(300)});
     border-radius: $radius-lg;
     text-align: center;
   }
@@ -172,13 +81,13 @@
       background-color 0.2s ease;
 
     &.over {
-      border-color: var(--color-primary, #9b59b6);
-      background-color: rgba(155, 89, 182, 0.1);
+      border-color: var(--color-primary, #{purple(500)});
+      background-color: #{color.change(purple(500), $alpha: 0.1)};
     }
 
     &.dragging-from {
-      border-color: var(--color-primary, #9b59b6);
-      background-color: rgba(155, 89, 182, 0.05);
+      border-color: var(--color-primary, #{purple(500)});
+      background-color: #{color.change(purple(500), $alpha: 0.05)};
     }
   }
 }

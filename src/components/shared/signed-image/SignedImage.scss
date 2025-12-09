@@ -25,7 +25,12 @@
     height: 100%;
     border-radius: 8px;
     border: 2px solid var(--border);
-    background: linear-gradient(135deg, #dcdcdc 30%, #f5f5f5 50%, #dcdcdc 70%);
+    background: linear-gradient(
+      135deg,
+      #{gray(300)} 30%,
+      #{gray(100)} 50%,
+      #{gray(300)} 70%
+    );
     background-size: 200% 200%;
     animation: skeleton-loading 1.2s ease-in-out infinite;
     filter: blur(2px);
@@ -35,25 +40,30 @@
     width: 100%;
     height: 100%;
     border-radius: 8px;
-    background: linear-gradient(135deg, #ffe6e6 30%, #ffcccc 50%, #ffe6e6 70%);
-    border: 2px dashed #ff6b6b;
+    background: linear-gradient(
+      135deg,
+      #{red(50)} 30%,
+      #{red(100)} 50%,
+      #{red(50)} 70%
+    );
+    border: 2px dashed #{red(400)};
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     transition: all 0.15s ease;
-    color: #d63031;
+    color: #{red(600)};
     font-size: 1.2em;
 
     &:hover {
       background: linear-gradient(
         135deg,
-        #ffcccc 30%,
-        #ffb3b3 50%,
-        #ffcccc 70%
+        #{red(100)} 30%,
+        #{red(200)} 50%,
+        #{red(100)} 70%
       );
-      border-color: #e74c3c;
+      border-color: #{red(500)};
       transform: scale(1.05);
     }
 

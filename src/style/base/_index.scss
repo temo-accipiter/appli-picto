@@ -1,0 +1,8 @@
+// base/_index.scss
+// Forward tous les fichiers base (fondations globales)
+
+@forward './reset';
+@forward './reduced-motion';
+@forward './helpers';
+@forward './accessibility';
+@forward './typography-base';

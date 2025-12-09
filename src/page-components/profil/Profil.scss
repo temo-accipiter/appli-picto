@@ -1,5 +1,6 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
+@use 'sass:map';
 
 // ============================================
 // PAGE PROFIL - REDESIGN MODERNE 2025
@@ -160,32 +161,35 @@
   }
 
   &--active {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
+    // Gradient vert abonné
+    background: linear-gradient(135deg, #{green(400)}, #{green(500)});
     color: white;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 4px 12px #{badge-shadow(abonne)};
 
     &:hover {
-      box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+      box-shadow: 0 6px 16px #{badge-shadow(abonne-hover)};
     }
   }
 
   &--inactive {
-    background: linear-gradient(135deg, #94a3b8, #64748b);
+    // Gradient gris free
+    background: linear-gradient(135deg, #{slate(400)}, #{slate(600)});
     color: white;
-    box-shadow: 0 4px 12px rgba(100, 116, 139, 0.3);
+    box-shadow: 0 4px 12px #{badge-shadow(free)};
 
     &:hover {
-      box-shadow: 0 6px 16px rgba(100, 116, 139, 0.4);
+      box-shadow: 0 6px 16px #{badge-shadow(free-hover)};
     }
   }
 
   &--loading {
-    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    // Gradient orange visitor
+    background: linear-gradient(135deg, #{orange(500)}, #{orange(600)});
     color: white;
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+    box-shadow: 0 4px 12px #{badge-shadow(visitor)};
 
     &:hover {
-      box-shadow: 0 6px 16px rgba(234, 88, 12, 0.4);
+      box-shadow: 0 6px 16px #{badge-shadow(visitor-hover)};
     }
   }
 }
@@ -415,8 +419,8 @@
   .profil-card__email-display,
   .subscription-details,
   .profil-card__warning-text {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: #{color.change(white, $alpha: 0.05)};
+    border-color: #{color.change(white, $alpha: 0.1)};
   }
 
   .profil-card--danger {

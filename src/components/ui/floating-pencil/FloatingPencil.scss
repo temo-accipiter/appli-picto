@@ -1,14 +1,15 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 .floating-pencil {
   position: fixed;
   top: 1rem;
   left: 1rem;
   z-index: $z-tooltip;
-  background-color: var(--accent-color, #e6f0ff);
+  background-color: var(--accent-color, #{blue(50)});
   padding: 0.5rem;
   border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,7 +26,7 @@
 
   &:hover,
   &:focus-within {
-    background-color: var(--accent-color-hover, #cce2ff);
+    background-color: var(--accent-color-hover, #{blue(100)});
     transform: scale(1.1);
   }
 }

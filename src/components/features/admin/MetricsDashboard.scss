@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 /**
  * MetricsDashboard - Styles Mobile-First
@@ -22,7 +23,7 @@
 
   &__title {
     font-weight: 700;
-    color: var(--text-primary, #333);
+    color: var(--text-primary, #{slate(700)});
     margin: 0;
     // Mobile: titre plus petit
     font-size: 1.5rem;
@@ -56,11 +57,11 @@
 
     .last-update {
       font-size: 0.875rem;
-      color: var(--text-secondary, #666);
+      color: var(--text-secondary, #{gray(600)});
     }
 
     .btn-refresh {
-      background: var(--color-primary, #6b4fbb);
+      background: var(--color-primary, #{purple(500)});
       border: none;
       border-radius: 8px;
       padding: 0.5rem 1rem;
@@ -70,26 +71,26 @@
 
       &:hover {
         transform: scale(1.1);
-        background: var(--color-primary-dark, #5a3fa0);
+        background: var(--color-primary-dark, #{purple(700)});
       }
     }
   }
 
   &__error {
-    background: #fee;
-    border: 2px solid #fcc;
+    background: #{red(50)};
+    border: 2px solid #{red(200)};
     border-radius: 12px;
     padding: 2rem;
     text-align: center;
 
     p {
-      color: #c00;
+      color: #{red(700)};
       margin-bottom: 1rem;
     }
 
     .btn-retry {
-      background: #c00;
-      color: white;
+      background: #{red(700)};
+      color: #{text(invert)};
       border: none;
       border-radius: 8px;
       padding: 0.75rem 1.5rem;
@@ -98,14 +99,14 @@
       transition: background 0.2s ease;
 
       &:hover {
-        background: #a00;
+        background: #{red(800)};
       }
     }
   }
 
   &__empty {
     text-align: center;
-    color: var(--text-secondary, #666);
+    color: var(--text-secondary, #{gray(600)});
     padding: 3rem;
   }
 }
@@ -121,16 +122,16 @@
   h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--text-primary, #{slate(700)});
     margin-bottom: 1.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--border-color, #e5e7eb);
+    border-bottom: 2px solid var(--border-color, #{slate(200)});
   }
 
   &--health {
     h2 {
-      color: #10b981;
-      border-bottom-color: #10b981;
+      color: #{green(500)};
+      border-bottom-color: #{green(500)};
     }
   }
 }
@@ -159,8 +160,8 @@
 
 // Carte de métrique
 .metric-card {
-  background: white;
-  border: 2px solid var(--border-color, #e5e7eb);
+  background: #{surface(bg)};
+  border: 2px solid var(--border-color, #{slate(200)});
   border-radius: 12px;
   transition: all 0.3s ease;
   display: flex;
@@ -171,7 +172,7 @@
   padding: 1rem;
 
   &:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 16px #{color.change(gray(900), $alpha: 0.1)};
     transform: translateY(-2px);
   }
 
@@ -189,7 +190,7 @@
   &__label {
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-secondary, #666);
+    color: var(--text-secondary, #{gray(600)});
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 0.5rem;
@@ -197,7 +198,7 @@
 
   &__value {
     font-weight: 700;
-    color: var(--text-primary, #333);
+    color: var(--text-primary, #{slate(700)});
     line-height: 1;
     margin-bottom: 0.25rem;
     // Mobile: valeur plus petite
@@ -206,7 +207,7 @@
 
   &__subtitle {
     font-size: 0.875rem;
-    color: var(--text-tertiary, #999);
+    color: var(--text-tertiary, #{gray(500)});
   }
 
   // Desktop (1024px+)
@@ -224,38 +225,38 @@
 
   // Variantes de couleur
   &--good {
-    border-color: #10b981;
-    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+    border-color: #{green(500)};
+    background: linear-gradient(135deg, #{surface(bg)} 0%, #{green(50)} 100%);
 
     .metric-card__value {
-      color: #10b981;
+      color: #{green(500)};
     }
   }
 
   &--warning {
-    border-color: #f59e0b;
-    background: linear-gradient(135deg, #fff 0%, #fffbeb 100%);
+    border-color: #{orange(500)};
+    background: linear-gradient(135deg, #{surface(bg)} 0%, #{yellow(50)} 100%);
 
     .metric-card__value {
-      color: #f59e0b;
+      color: #{orange(500)};
     }
   }
 
   &--error {
-    border-color: #ef4444;
-    background: linear-gradient(135deg, #fff 0%, #fef2f2 100%);
+    border-color: #{red(500)};
+    background: linear-gradient(135deg, #{surface(bg)} 0%, #{red(50)} 100%);
 
     .metric-card__value {
-      color: #ef4444;
+      color: #{red(500)};
     }
   }
 
   &--highlight {
-    border-color: var(--color-primary, #6b4fbb);
-    background: linear-gradient(135deg, #fff 0%, #f5f3ff 100%);
+    border-color: var(--color-primary, #{purple(500)});
+    background: linear-gradient(135deg, #{surface(bg)} 0%, #{purple(50)} 100%);
 
     .metric-card__value {
-      color: var(--color-primary, #6b4fbb);
+      color: var(--color-primary, #{purple(500)});
     }
   }
 }

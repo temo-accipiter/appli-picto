@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 .login-page,
 .signup-page {
@@ -7,14 +8,14 @@
   padding: 2rem;
   background-color: #fff;
   border-radius: 1.5rem;
-  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 12px #{color.change(gray(900), $alpha: 0.05)};
   font-family: sans-serif;
 
   h1 {
     text-align: center;
     margin-bottom: 2rem;
     font-size: 1.8rem;
-    color: #333;
+    color: #{slate(700)};
   }
 
   form {
@@ -25,14 +26,14 @@
 
   input {
     padding: 0.8rem;
-    border: 1px solid #949494; // WCAG 1.4.3 - Contrast 3:1 (was #ccc)
+    border: 1px solid #{gray(400)}; // WCAG 1.4.3 - Contrast 3:1 (was #ccc)
     border-radius: 0.5rem;
     font-size: 1rem;
   }
 
   button {
     padding: 0.8rem;
-    background-color: #1e88e5;
+    background-color: #{blue(600)};
     color: white;
     font-weight: bold;
     border: none;
@@ -42,18 +43,18 @@
     transition: background 140ms ease-in-out;
 
     &:hover {
-      background-color: #1565c0;
+      background-color: #{blue(700)};
     }
   }
 
   hr {
     margin: 2rem 0;
     border: none;
-    border-top: 1px solid #eee;
+    border-top: 1px solid #{gray(200)};
   }
 
   .error {
-    color: red;
+    color: #{red(600)};
     font-size: 0.9rem;
     margin-top: -0.5rem;
   }
@@ -63,7 +64,7 @@
     font-size: 0.95rem;
 
     a {
-      color: #1e88e5;
+      color: #{blue(600)};
       text-decoration: none;
       font-weight: 500;
 
@@ -81,15 +82,15 @@
   margin-top: 0.5rem;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  background: var(--pc-bg, #f8fafc); /* gris très clair apaisant */
-  border: 1px solid var(--pc-border, #e5e7eb); /* gris doux */
+  background: var(--pc-bg, #{slate(50)}); /* gris très clair apaisant */
+  border: 1px solid var(--pc-border, #{slate(200)}); /* gris doux */
 }
 
 .password-checklist__title {
   margin: 0 0 0.5rem 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #334155; /* slate-700 : bon contraste */
+  color: #{slate(700)}; /* slate-700 : bon contraste */
 }
 
 .password-checklist__list {
@@ -118,9 +119,9 @@
 }
 
 .password-checklist__item:focus-visible {
-  outline: 2px solid #2563eb; /* bleu accessible */
+  outline: 2px solid #{blue(600)}; /* bleu accessible */
   outline-offset: 2px;
-  background: #eff6ff; /* bleu très clair */
+  background: #{blue(50)}; /* bleu très clair */
 }
 
 .password-checklist__icon {
@@ -134,28 +135,28 @@
 
 /* ✅ Critère rempli */
 .password-checklist__item.is-ok {
-  background: #ecfdf5; /* green-50 pastel */
-  border-color: #a7f3d0; /* green-200 pastel */
+  background: #{green(50)}; /* green-50 pastel */
+  border-color: #{green(200)}; /* green-200 pastel */
 }
 .password-checklist__item.is-ok .password-checklist__text {
-  color: #065f46; /* green-800 : contraste AA */
+  color: #{green(800)}; /* green-800 : contraste AA */
   font-weight: 600;
 }
 .password-checklist__item.is-ok .password-checklist__icon {
-  background: rgba(16, 185, 129, 0.12); /* vert translucide */
+  background: #{color.change(green(500), $alpha: 0.12)}; /* vert translucide */
   border-radius: 50%;
 }
 
 /* ⏳ Critère non rempli (doucement, pas “alarme rouge”) */
 .password-checklist__item.is-ko {
-  background: #fff7ed; /* orange-50 pastel (plus doux que rouge) */
-  border-color: #fed7aa; /* orange-200 */
+  background: #{orange(50)}; /* orange-50 pastel (plus doux que rouge) */
+  border-color: #{orange(200)}; /* orange-200 */
 }
 .password-checklist__item.is-ko .password-checklist__text {
-  color: #7c2d12; /* orange-900 : lisible/AA */
+  color: #{orange(900)}; /* orange-900 : lisible/AA */
 }
 .password-checklist__item.is-ko .password-checklist__icon {
-  background: rgba(251, 146, 60, 0.12); /* orange translucide */
+  background: #{color.change(orange(400), $alpha: 0.12)}; /* orange translucide */
   border-radius: 50%;
 }
 
@@ -175,19 +176,19 @@
 /* 🌙 Optionnel dark mode (si thème sombre) */
 @media (prefers-color-scheme: dark) {
   .password-checklist {
-    background: #0b1220;
-    border-color: #1e293b;
+    background: #{slate(900)};
+    border-color: #{slate(800)};
   }
   .password-checklist__title {
-    color: #e2e8f0;
+    color: #{slate(200)};
   }
   .password-checklist__item.is-ok {
-    background: rgba(16, 185, 129, 0.12);
-    border-color: rgba(16, 185, 129, 0.28);
+    background: #{color.change(green(500), $alpha: 0.12)};
+    border-color: #{color.change(green(500), $alpha: 0.28)};
   }
   .password-checklist__item.is-ko {
-    background: rgba(251, 146, 60, 0.12);
-    border-color: rgba(251, 146, 60, 0.28);
+    background: #{color.change(orange(400), $alpha: 0.12)};
+    border-color: #{color.change(orange(400), $alpha: 0.28)};
   }
 }
 /* ===========================
@@ -196,13 +197,13 @@
 .password-checklist__toggle {
   margin: 0.5rem 0 0;
   background: transparent;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #{slate(200)};
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
   width: 100%;
   text-align: left;
   font-size: 0.95rem;
-  color: #334155; /* slate-700 */
+  color: #{slate(700)}; /* slate-700 */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -210,10 +211,10 @@
   cursor: pointer;
 }
 .password-checklist__toggle:hover {
-  background: #f8fafc; /* gris très clair */
+  background: #{slate(50)}; /* gris très clair */
 }
 .password-checklist__toggle:focus-visible {
-  outline: 2px solid #2563eb; /* accessible */
+  outline: 2px solid #{blue(600)}; /* accessible */
   outline-offset: 2px;
 }
 
