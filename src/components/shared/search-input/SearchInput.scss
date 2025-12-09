@@ -13,7 +13,7 @@
   &__icon {
     position: absolute;
     left: 12px;
-    color: #718096;
+    color: #{slate(500)};
     pointer-events: none;
   }
 
@@ -21,7 +21,7 @@
     width: 100%;
     padding: 0.75rem 2.5rem 0.75rem 2.75rem;
     font-size: 1rem;
-    color: #2d3748;
+    color: #{slate(700)};
     background: white;
     border: 2px solid #{slate(200)};
     border-radius: 8px;
@@ -32,13 +32,13 @@
 
     &::placeholder {
       // WCAG 2.2 AA compliant - Ratio ~4.5:1
-      color: #718096;
+      color: #{slate(500)};
     }
 
     &:focus {
       outline: none;
-      border-color: #4299e1;
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+      border-color: #{blue(500)};
+      box-shadow: 0 0 0 3px #{shadow(primary-light)};
     }
 
     &:hover:not(:focus) {
@@ -57,7 +57,7 @@
     background: #{slate(200)};
     border: none;
     border-radius: 50%;
-    color: #4a5568;
+    color: #{slate(600)};
     cursor: pointer;
     font-size: 14px;
     transition: all 0.15s ease;
@@ -68,7 +68,7 @@
     }
 
     &:focus {
-      outline: 2px solid #4299e1;
+      outline: 2px solid #{blue(500)};
       outline-offset: 2px;
     }
 

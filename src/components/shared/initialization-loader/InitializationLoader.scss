@@ -10,7 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--couleur-fond, #f5f5f5);
+  background: var(--couleur-fond, #{gray(100)});
   z-index: 9999;
 }
 
@@ -23,6 +23,6 @@
 
 .initialization-loader__text {
   font-size: 1rem;
-  color: var(--couleur-texte, #555);
+  color: var(--couleur-texte, #{gray(600)});
   margin: 0;
 }

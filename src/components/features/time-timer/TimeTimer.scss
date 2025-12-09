@@ -1,7 +1,7 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
+@use 'sass:map';
 // src/components/features/time-timer/TimeTimer.scss
-@use '@/styles/abstracts' as *;
 
 .time-timer {
   display: flex;
@@ -10,7 +10,12 @@
   justify-content: center;
   gap: $spacing-xl;
   padding: $spacing-xl;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  $gradient: ui-gradient(blue-soft);
+  background: linear-gradient(
+    135deg,
+    #{map.get($gradient, start)} 0%,
+    #{map.get($gradient, end)} 100%
+  );
   border-radius: $radius-lg;
   box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.08)};
 
@@ -142,11 +147,21 @@
 
     // Bouton principal (Play/Pause)
     &--primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      $gradient: ui-gradient(purple-modern);
+      background: linear-gradient(
+        135deg,
+        #{map.get($gradient, start)} 0%,
+        #{map.get($gradient, end)} 100%
+      );
       color: $color-text-invert;
 
       &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        $gradient-hover: ui-gradient(purple-modern-hover);
+        background: linear-gradient(
+          135deg,
+          #{map.get($gradient-hover, start)} 0%,
+          #{map.get($gradient-hover, end)} 100%
+        );
       }
     }
 
@@ -227,14 +242,24 @@
     }
 
     &--active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      $gradient: ui-gradient(purple-modern);
+      background: linear-gradient(
+        135deg,
+        #{map.get($gradient, start)} 0%,
+        #{map.get($gradient, end)} 100%
+      );
       color: $color-text-invert;
       border-color: transparent;
       font-weight: $font-weight-bold;
       animation: pop $transition-base ease;
 
       &:hover {
-        background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        $gradient-hover: ui-gradient(purple-modern-hover);
+        background: linear-gradient(
+          135deg,
+          #{map.get($gradient-hover, start)} 0%,
+          #{map.get($gradient-hover, end)} 100%
+        );
       }
     }
   }

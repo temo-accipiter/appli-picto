@@ -86,7 +86,7 @@
       font-size: 10px;
       font-weight: 600;
       color: var(--text-primary, #{slate(900)});
-      text-shadow: 0 0 2px #{color.change(#ffffff, $alpha: 0.8)};
+      text-shadow: 0 0 2px #{color.change(surface(bg), $alpha: 0.8)};
     }
   }
 

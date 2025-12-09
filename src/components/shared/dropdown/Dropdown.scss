@@ -69,7 +69,7 @@
   .dropdown {
     background: var(--color-surface);
     border-color: var(--color-border);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.4)};
   }
 }
 

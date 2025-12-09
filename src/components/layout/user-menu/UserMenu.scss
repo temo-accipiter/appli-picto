@@ -48,7 +48,7 @@
 
 .user-menu-dialog {
   width: min(92vw, 320px);
-  background: #fff;
+  background: #{surface(bg)};
   color: #{slate(900)};
   border-radius: 16px;
   box-shadow: 0 20px 40px #{color.change(gray(900), $alpha: 0.18)};

@@ -75,7 +75,7 @@
 
   // Dark mode support
   [data-theme='dark'] & {
-    background: rgba(29, 36, 51, 0.98);
+    background: #{color.change(slate(900), $alpha: 0.98)};
   }
 
   // Desktop (768px+) : hidden (navbar top remains)

@@ -41,7 +41,10 @@
       box-shadow $transition-fast ease;
 
     &:hover:not([data-disabled]) {
-      background-color: var(--color-hover-bg, #{color.change(gray(900), $alpha: 0.02)});
+      background-color: var(
+        --color-hover-bg,
+        #{color.change(gray(900), $alpha: 0.02)}
+      );
     }
 
     &:focus-visible {
@@ -96,7 +99,7 @@
   }
 
   &__placeholder {
-    color: var(--color-text, rgba(0, 0, 0, 0.5));
+    color: var(--color-text, #{color.change(gray(900), $alpha: 0.5)});
     opacity: 0.6;
   }
 
@@ -167,11 +170,17 @@
       color $transition-fast ease;
 
     &[data-highlighted] {
-      background-color: var(--color-hover-bg, #{color.change(gray(900), $alpha: 0.05)});
+      background-color: var(
+        --color-hover-bg,
+        #{color.change(gray(900), $alpha: 0.05)}
+      );
     }
 
     &[data-state='checked'] {
-      background-color: var(--color-primary-light, #{color.change(blue(700), $alpha: 0.1)});
+      background-color: var(
+        --color-primary-light,
+        #{color.change(blue(700), $alpha: 0.1)}
+      );
       font-weight: 600;
     }
 

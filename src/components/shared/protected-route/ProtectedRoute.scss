@@ -8,7 +8,7 @@
   align-items: center;
   min-height: 60vh;
   font-size: 1.2rem;
-  color: #555;
+  color: #{gray(600)};
   animation: fadeIn 0.15s ease-in-out;
   text-align: center;
   padding: 2rem;
@@ -25,7 +25,7 @@
   margin-top: 1rem;
   width: 32px;
   height: 32px;
-  border: 3px solid #bbb;
+  border: 3px solid #{gray(300)};
   border-top: 3px solid #{blue(500)};
   border-radius: 50%;
   animation: spin 1s linear infinite;

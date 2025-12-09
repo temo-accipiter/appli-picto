@@ -1,8 +1,8 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 .btn-subscribe {
-  background-color: #635bff;
-  color: #fff;
+  background-color: #{brand(stripe)};
+  color: #{text(invert)};
   font-weight: bold;
   padding: 0.8rem 1.2rem;
   border-radius: 12px;
@@ -10,11 +10,11 @@
   cursor: pointer;
   transition: background-color 0.15s ease;
   &:hover {
-    background-color: #5a50f0;
+    background-color: #{brand(stripe-hover)};
   }
 
   &:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid #{text(invert)};
     outline-offset: 2px;
   }
 }

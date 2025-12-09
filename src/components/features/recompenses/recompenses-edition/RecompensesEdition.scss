@@ -7,7 +7,7 @@
   padding: $spacing-lg;
   border-radius: $radius-lg;
   background-color: #{blue(50)}; // Bleu pastel comme checklist-edition
-  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 24px #{color.change(gray(900), $alpha: 0.35)};
   transition:
     box-shadow 0.3s ease,
     background-color 0.3s ease;
@@ -15,7 +15,7 @@
   // Dark mode
   [data-theme='dark'] & {
     background: linear-gradient(145deg, #{slate(900)}, #{slate(800)});
-    box-shadow: 0 0 24px #{color.change(white, $alpha: 0.15)};
+    box-shadow: 0 0 24px #{color.change(text(invert), $alpha: 0.15)};
   }
 
   h2 {
@@ -43,7 +43,7 @@
     margin-bottom: $spacing-md;
     align-items: center;
     padding: $spacing-md;
-    background-color: #{color.change(white, $alpha: 0.7)};
+    background-color: #{color.change(surface(bg), $alpha: 0.7)};
     border-radius: $radius-md;
     box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.08)};
     border: 1px solid #{color.change(purple(500), $alpha: 0.15)};
@@ -51,7 +51,7 @@
     // Dark mode
     [data-theme='dark'] & {
       background-color: #{color.change(slate(900), $alpha: 0.6)};
-      border-color: #{color.change(white, $alpha: 0.1)};
+      border-color: #{color.change(text(invert), $alpha: 0.1)};
       box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.3)};
     }
   }
@@ -67,7 +67,7 @@
     font-size: 1.1rem;
     color: var(--c-text-secondary, #{gray(600)});
     padding: $spacing-lg;
-    border: 2px dashed var(--c-border, #ccc);
+    border: 2px dashed var(--c-border, #{gray(300)});
     border-radius: $radius-lg;
     text-align: center;
   }
@@ -81,12 +81,12 @@
       background-color 0.2s ease;
 
     &.over {
-      border-color: var(--color-primary, #9b59b6);
+      border-color: var(--color-primary, #{purple(500)});
       background-color: #{color.change(purple(500), $alpha: 0.1)};
     }
 
     &.dragging-from {
-      border-color: var(--color-primary, #9b59b6);
+      border-color: var(--color-primary, #{purple(500)});
       background-color: #{color.change(purple(500), $alpha: 0.05)};
     }
   }

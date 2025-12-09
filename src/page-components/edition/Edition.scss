@@ -2,7 +2,7 @@
 @use 'sass:color';
 
 :root {
-  --pastel-color: #eaf6ff;
+  --pastel-color: #{tsa-pastel(blue-light)};
 }
 
 .page-edition {
@@ -96,7 +96,12 @@
     margin: $spacing-xl auto;
     max-width: 600px;
     width: 100%;
-    background: linear-gradient(to right, transparent, #ccc, transparent);
+    background: linear-gradient(
+      to right,
+      transparent,
+      #{gray(300)},
+      transparent
+    );
     border-radius: 1px;
   }
 }
@@ -105,9 +110,9 @@
 .quota-indicators {
   margin-bottom: 12px;
   padding: 8px;
-  background: var(--bg-secondary, #f8f9fa);
+  background: var(--bg-secondary, #{slate(50)});
   border-radius: 6px;
-  border: 1px solid var(--border-color, #e9ecef);
+  border: 1px solid var(--border-color, #{surface(border)});
 }
 //----- Button styles -----//
 .button-label {

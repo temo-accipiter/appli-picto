@@ -4,7 +4,7 @@
 .loader-overlay {
   position: fixed;
   inset: 0;
-  background-color: #fff; // ou var(--background-color)
+  background-color: #{surface(bg)}; // ou var(--background-color)
   display: flex;
   justify-content: center;
   align-items: center;

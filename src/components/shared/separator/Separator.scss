@@ -2,8 +2,8 @@
 @use 'sass:color';
 
 :root {
-  --c-accent: #7fb2f0;
-  --c-accent-light: #b3d4fc;
+  --c-accent: #{blue(400)};
+  --c-accent-light: #{blue(300)};
 }
 
 .separator {

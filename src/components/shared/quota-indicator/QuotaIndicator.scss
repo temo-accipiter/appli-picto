@@ -77,18 +77,18 @@
   // ✅ PHASE 5: États de warning améliorés
   &.near-limit {
     border-color: #{orange(500)};
-    background: rgba(245, 158, 11, 0.05);
+    background: #{color.change(orange(500), $alpha: 0.05)};
   }
 
   &.limit-warning {
-    border-color: #f97316;
-    background: rgba(249, 115, 22, 0.08);
+    border-color: #{warning(warning-border)};
+    background: #{warning(warning-bg)};
     animation: warning-pulse 2s ease-in-out infinite;
   }
 
   &.at-limit {
     border-color: var(--error);
-    background: rgba(239, 68, 68, 0.08);
+    background: #{warning(error-bg)};
     animation: error-pulse 1.5s ease-in-out infinite;
   }
 
@@ -136,11 +136,19 @@
       transition: width 0.15s ease;
 
       &.near-limit {
-        background: linear-gradient(90deg, #{orange(500)} 0%, #{orange(400)} 100%);
+        background: linear-gradient(
+          90deg,
+          #{orange(500)} 0%,
+          #{orange(400)} 100%
+        );
       }
 
       &.limit-warning {
-        background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+        background: linear-gradient(
+          90deg,
+          #{warning(warning)} 0%,
+          #{warning(warning-light)} 100%
+        );
       }
 
       &.at-limit {
@@ -233,23 +241,23 @@
 @keyframes warning-pulse {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.1);
-    border-color: #f97316;
+    box-shadow: 0 2px 8px #{warning(warning-bg-strong)};
+    border-color: #{warning(warning-border)};
   }
   50% {
-    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
-    border-color: #fb923c;
+    box-shadow: 0 4px 16px #{warning(error-border)};
+    border-color: #{warning(warning-light)};
   }
 }
 
 @keyframes error-pulse {
   0%,
   100% {
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 2px 8px #{warning(error-bg-strong)};
     border-color: var(--error);
   }
   50% {
-    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 16px #{warning(error-border)};
     border-color: #{red(400)};
   }
 }
@@ -319,18 +327,18 @@
     }
 
     &.at-limit {
-      background: rgba(239, 68, 68, 0.1);
+      background: #{warning(error-bg-strong)};
       border-color: #{red(500)};
     }
 
     .quota-warning {
-      background: rgba(239, 68, 68, 0.2);
+      background: #{warning(error-hover)};
       color: #{red(400)};
     }
 
     .quota-upgrade {
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
+      background: #{color.change(blue(500), $alpha: 0.2)};
+      color: #{blue(400)};
     }
   }
 }

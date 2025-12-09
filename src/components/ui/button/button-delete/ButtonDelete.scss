@@ -1,4 +1,5 @@
 @use '@styles/abstracts' as *;
+@use 'sass:color';
 
 .button-delete {
   background: transparent;
@@ -17,7 +18,7 @@
 
   &:hover,
   &:focus {
-    background-color: rgba(255, 102, 102, 0.15); // rouge pastel doux
+    background-color: #{color.change(red(400), $alpha: 0.15)}; // rouge pastel doux
     transform: scale(1.1);
     outline: none;
   }

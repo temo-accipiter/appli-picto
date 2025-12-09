@@ -655,7 +655,7 @@
             background: linear-gradient(
               135deg,
               #{color.change(blue(500), $alpha: 0.1)},
-              rgba(37, 99, 235, 0.05)
+              #{admin-ui(item-bg)}
             );
             border-color: #{blue(500)};
 
@@ -674,7 +674,7 @@
             background: linear-gradient(
               135deg,
               #{color.change(gray(500), $alpha: 0.1)},
-              rgba(75, 85, 99, 0.05)
+              #{admin-ui(item-alt)}
             );
             border-color: #{gray(500)};
 
@@ -976,7 +976,7 @@
             background: linear-gradient(
               135deg,
               #{color.change(blue(500), $alpha: 0.1)},
-              rgba(37, 99, 235, 0.05)
+              #{admin-ui(item-bg)}
             );
             border-color: #{blue(500)};
 
@@ -995,7 +995,7 @@
             background: linear-gradient(
               135deg,
               #{color.change(gray(500), $alpha: 0.1)},
-              rgba(75, 85, 99, 0.05)
+              #{admin-ui(item-alt)}
             );
             border-color: #{gray(500)};
 
@@ -1263,7 +1263,7 @@
         &.inactive {
           opacity: 0.6;
           border-color: var(--danger-color);
-          background: rgba(220, 53, 69, 0.05);
+          background: #{admin-ui(danger-bg)};
         }
 
         &.system-role {
@@ -1319,7 +1319,7 @@
             }
 
             &.free {
-              background: rgba(16, 185, 129, 0.2);
+              background: #{shadow(success-strong)};
               color: #{green(500)};
             }
           }
@@ -1335,15 +1335,15 @@
               font-weight: 600;
 
               &.active {
-                background: rgba(40, 167, 69, 0.1);
+                background: #{admin-ui(success-bg)};
                 color: var(--success-color);
-                border: 1px solid rgba(40, 167, 69, 0.3);
+                border: 1px solid #{admin-ui(success-border)};
               }
 
               &.inactive {
-                background: rgba(220, 53, 69, 0.1);
+                background: #{admin-ui(danger-bg)};
                 color: var(--danger-color);
-                border: 1px solid rgba(220, 53, 69, 0.3);
+                border: 1px solid #{admin-ui(danger-border)};
               }
             }
           }
@@ -1598,12 +1598,12 @@
 
         &.enabled {
           color: var(--success-color, #{green(600)});
-          background: var(--success-bg, rgba(40, 167, 69, 0.1));
+          background: var(--success-bg, #{admin-ui(success-bg)});
         }
 
         &.disabled {
           color: var(--danger-color, #{red(600)});
-          background: var(--danger-bg, rgba(220, 53, 69, 0.1));
+          background: var(--danger-bg, #{admin-ui(danger-bg)});
         }
       }
     }
@@ -1649,11 +1649,11 @@
         }
 
         &.btn-primary {
-          background: var(--primary-color, #007bff);
+          background: var(--primary-color, #{admin-ui(primary)});
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--primary-hover, #0056b3);
+            background: var(--primary-hover, #{admin-ui(primary-hover)});
           }
         }
 
@@ -1662,16 +1662,16 @@
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--success-hover, #1e7e34);
+            background: var(--success-hover, #{admin-ui(success-hover)});
           }
         }
 
         &.btn-secondary {
-          background: var(--secondary-color, #6c757d);
+          background: var(--secondary-color, #{admin-ui(secondary)});
           color: white;
 
           &:hover:not(:disabled) {
-            background: var(--secondary-hover, #545b62);
+            background: var(--secondary-hover, #{admin-ui(secondary-hover)});
           }
         }
       }
@@ -1844,13 +1844,13 @@
 @media (prefers-color-scheme: dark) {
   .admin-permissions-page {
     .page-header {
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 32px #{shadow(black-strong)};
     }
 
     .role-permissions-card,
     .create-role-form,
     .role-card {
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 20px #{shadow(black-medium)};
     }
   }
 }

@@ -130,7 +130,7 @@
 
     // Dark mode
     [data-theme='dark'] & {
-      border-color: color.change(#ffffff, $alpha: 0.1);
+      border-color: color.change(text(invert), $alpha: 0.1);
     }
   }
 
@@ -158,10 +158,10 @@
 
       // Dark mode
       [data-theme='dark'] & {
-        background: color.change(#ffffff, $alpha: 0.05);
+        background: color.change(text(invert), $alpha: 0.05);
 
         &:hover {
-          background: color.change(#ffffff, $alpha: 0.1);
+          background: color.change(text(invert), $alpha: 0.1);
         }
       }
     }

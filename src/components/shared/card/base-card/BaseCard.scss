@@ -18,7 +18,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   grid-gap: $spacing-md;
-  background: var(--pastel-color, #f0f8ff);
+  background: var(--pastel-color, #{tsa-pastel(bg-soft)});
   border-radius: $radius-md;
   padding: $spacing-sm;
   box-shadow: $box-shadow;
@@ -49,13 +49,13 @@
   /* États visuels FRANCS pour TSA */
   &--checked {
     border: 2px solid var(--color-success, #{green(600)});
-    background-color: #d4f4dd; /* Vert clair pastel comme avant */
+    background-color: #{tsa-pastel(green-soft)}; /* Vert clair pastel comme avant */
   }
 
   &--completed {
     opacity: 0.7;
     border-color: var(--color-info, #{blue(600)});
-    background-color: rgba(33, 150, 243, 0.04);
+    background-color: #{color.change(blue(500), $alpha: 0.04)};
   }
 
   &--disabled {
@@ -132,7 +132,7 @@
 
   /* Focus visible pour accessibility clavier */
   &:focus-within {
-    box-shadow: 0 0 0 3px rgba(135, 206, 250, 0.5); /* Bleu ciel doux */
+    box-shadow: 0 0 0 3px #{color.change(blue(300), $alpha: 0.5)}; /* Bleu ciel doux */
     outline: none;
   }
 }

@@ -27,7 +27,7 @@
 
     @include on-event {
       transform: translateY(rem(-4));
-      box-shadow: 0 rem(4) rem(12) rgba($color-text, 0.15);
+      box-shadow: 0 rem(4) rem(12) #{shadow(black-medium)};
     }
 
     &:focus-visible {

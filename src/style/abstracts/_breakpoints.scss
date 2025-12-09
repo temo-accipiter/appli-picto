@@ -1,0 +1,70 @@
+@use 'sass:map';
+
+// =============================================================================
+// BREAKPOINTS SYSTÈME UNIFIÉ (Mobile-First)
+// =============================================================================
+// Règle CRITIQUE : TOUJOURS utiliser min-width (mobile-first)
+// JAMAIS utiliser max-width (desktop-first interdit)
+// =============================================================================
+
+/// Map centralisée des breakpoints du projet
+/// Valeurs basées sur usages réels et standards modernes
+/// @type Map
+$breakpoints: (
+  'sm': 576px,
+  // Mobile landscape / Petites tablettes (Bootstrap standard)
+  'md': 768px,
+  // Tablettes portrait (iPad, Android tablets)
+  'lg': 1024px,
+  // Desktop / Tablettes landscape (iPad Pro)
+  'xl': 1200px,
+  // Large desktop (écrans 1080p+)
+  'xxl': 1536px, // Extra large desktop (2K displays, future-proof)
+);
+
+/// Récupère une valeur de breakpoint depuis la map
+/// @param {String} $name Nom du breakpoint (sm, md, lg, xl, xxl)
+/// @return {Number} Valeur du breakpoint en px
+/// @example
+///   $tablet-width: breakpoint(md); // 768px
+@function breakpoint($name) {
+  @if map.has-key($breakpoints, $name) {
+    @return map.get($breakpoints, $name);
+  } @else {
+    @error "Breakpoint '#{$name}' non trouvé dans $breakpoints. Valeurs disponibles : #{map.keys($breakpoints)}";
+  }
+}
+
+// NOTE : Le mixin respond-to() a été déplacé dans abstracts/_mixins.scss
+// Pour l'utiliser : @use '@style/abstracts' as *; puis @include respond-to('md')
+
+// =============================================================================
+// VARIABLES LEGACY (Rétrocompatibilité)
+// =============================================================================
+// Ces variables sont conservées pour compatibilité avec le code existant
+// IMPORTANT : Préférer l'usage de la map $breakpoints et du mixin respond-to()
+// pour nouveau code
+
+$breakpoint-sm: map.get($breakpoints, 'sm'); // 576px
+$breakpoint-md: map.get($breakpoints, 'md'); // 768px
+$breakpoint-lg: map.get($breakpoints, 'lg'); // 1024px (FIX: était 992px)
+$breakpoint-xl: map.get($breakpoints, 'xl'); // 1200px
+
+// =============================================================================
+// MIGRATION NOTES
+// =============================================================================
+// AVANT (ancien système) :
+//   $breakpoint-lg: 992px; (incohérent avec usages réels)
+//
+// APRÈS (nouveau système) :
+//   $breakpoint-lg: 1024px; (aligné avec 6 usages hardcodés)
+//
+// CHANGEMENTS BREAKING :
+//   - Aucun ! Les valeurs 576px, 768px, 1200px sont conservées
+//   - Seul lg: 992px → 1024px (mais 992px jamais utilisé dans le projet)
+//
+// TODO MIGRATION :
+//   1. Remplacer @media (min-width: 1024px) par @include respond-to(lg)
+//   2. Supprimer max-width anti-patterns (AdminPermissions)
+//   3. Uniformiser breakpoints isolés (480px, 520px, 640px)
+// =============================================================================

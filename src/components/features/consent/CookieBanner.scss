@@ -10,7 +10,7 @@
   right: 0;
   bottom: 0;
   z-index: 9999;
-  background: #{color.change(#ffffff, $alpha: 0.96)};
+  background: #{color.change(surface(bg), $alpha: 0.96)};
   backdrop-filter: blur(6px);
   box-shadow: 0 -10px 30px #{color.change(gray(900), $alpha: 0.08)};
   border-top: 1px solid #{slate(200)};
@@ -127,7 +127,7 @@
 
   .btn {
     background: #{blue(600)}; /* bleu AA */
-    color: #fff;
+    color: #{text(invert)};
     border-color: #{blue(600)};
 
     &:hover {

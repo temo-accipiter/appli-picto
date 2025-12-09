@@ -16,7 +16,7 @@
 @media (prefers-color-scheme: dark) {
   .delete-guard {
     background: var(--card-bg-dark, #{slate(900)});
-    border-color: color.change(#ffffff, $alpha: 0.08);
+    border-color: color.change(text(invert), $alpha: 0.08);
     box-shadow: none;
   }
 }

@@ -498,7 +498,7 @@
 // === DARK MODE ===
 @media (prefers-color-scheme: dark) {
   .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.85);
+    background-color: #{color.change(gray(900), $alpha: 0.85)};
   }
 
   .modal {
