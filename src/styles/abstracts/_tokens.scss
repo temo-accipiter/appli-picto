@@ -347,10 +347,30 @@ $spacing-tokens: (
 );
 
 // =============================================================================
-// FONT-SIZE TOKENS - Tailles de texte
+// FONT-SIZE TOKENS - Tailles de texte [✅ CANONICAL SOURCE]
 // =============================================================================
 
-/// Font size scale
+/// 🔴 CANONICAL SOURCE pour ALL font-sizes - xs → 5xl (Tailwind-like/Option B)
+///
+/// Cette map est la SEULE source de vérité pour les tailles de police.
+/// Option B (Tailwind-like) - industry standard, accessible TSA friendly
+///
+/// ⚠️ RÈGLES DE MIGRATION:
+///   1. _typography.scss.$font-size-scale est DEPRECATED - ne plus l'utiliser
+///   2. font-size() function DOIT lire depuis $font-size-tokens ici (canonical)
+///   3. Tout usage hardcodé (0.65rem, 0.7rem, 1.1rem, etc.) est À REFACTORER
+///   4. Components DOIVENT utiliser font-size() function
+///
+/// 📝 NON-NEGOTIABLE Scale (Option B - Tailwind-like):
+///   xs: 0.75rem (12px) - très petit texte
+///   sm: 0.875rem (14px) - petit texte
+///   base: 1rem (16px) - standard (body)
+///   lg: 1.125rem (18px) - largement lisible
+///   xl: 1.25rem (20px) - grand texte
+///   2xl: 1.5rem (24px) - section titles
+///   3xl: 1.875rem (30px) - page titles
+///   4xl: 2.25rem (36px) - large titles
+///   5xl: 3rem (48px) - hero titles
 $font-size-tokens: (
   'xs': 0.75rem,     // 12px
   'sm': 0.875rem,    // 14px
@@ -361,14 +381,15 @@ $font-size-tokens: (
   '3xl': 1.875rem,   // 30px
   '4xl': 2.25rem,    // 36px
   '5xl': 3rem,       // 48px
-  
-  // === Specific values ===
-  '0-75': 0.75rem,   // 12px
-  '0-875': 0.875rem, // 14px
-  '0-9': 0.9rem,     // 14.4px
-  '0-95': 0.95rem,   // 15.2px
-  '1-125': 1.125rem, // 18px
-  '1-5': 1.5rem,     // 24px
+
+  // === Deprecated legacy values (backward compat only) ===
+  // DO NOT USE - these are OLD fragmentary values from pre-Option-B era
+  '0-75': 0.75rem,   // 12px - DEPRECATED, use 'xs'
+  '0-875': 0.875rem, // 14px - DEPRECATED, use 'sm'
+  '0-9': 0.9rem,     // 14.4px - DEPRECATED, NOT in Option B
+  '0-95': 0.95rem,   // 15.2px - DEPRECATED, NOT in Option B
+  '1-125': 1.125rem, // 18px - DEPRECATED, use 'lg'
+  '1-5': 1.5rem,     // 24px - DEPRECATED, use '2xl'
 );
 
 // =============================================================================
