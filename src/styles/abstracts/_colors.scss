@@ -488,26 +488,41 @@ $surface-colors: (
   @error "Slate shade '#{$shade}' not found";
 }
 
-/// Récupère une couleur de rôle
+/// Récupère une couleur de rôle (CANONICAL - lire depuis _tokens.scss)
 /// @param {String} $role - Nom du rôle (admin, abonne, visitor, free, staff)
-/// @param {String} $variant - Variante (base, gradient)
+/// @param {String} $variant - Variante (base, light, dark, gradient-start, gradient-end)
+///                            or legacy 'gradient' (alias for 'gradient-start')
 /// @return {Color} La couleur demandée
 ///
-/// ⚠️ TODO (Phase 2): Cette fonction DOIT proxer vers _tokens.$role-color-tokens
-///    au lieu de lire depuis la map locale $role-colors (deprecated).
-///    Voir _tokens.scss pour source canonical.
+/// ✅ Phase 2 UPDATE: Cette fonction proxe maintenant vers _tokens.$role-color-tokens
+///    (source de vérité canonical) au lieu de lire la map locale deprecated.
+///
+/// 📝 Exemples:
+///   role-color('admin', 'base') → #667eea (violet)
+///   role-color('admin', 'gradient-start') → #667eea
+///   role-color('admin', 'gradient-end') → #764ba2
+///   role-color('admin', 'gradient') → #667eea (legacy alias, redirects to 'gradient-start')
+///
+/// ⚠️ NOTE: La map locale $role-colors est NOW READ-ONLY (deprecated).
 @function role-color($role, $variant: 'base') {
-  @if map.has-key($role-colors, $role) {
-    $role-map: map.get($role-colors, $role);
-
-    @if map.has-key($role-map, $variant) {
-      @return map.get($role-map, $variant);
-    }
-
-    @error "Role color variant '#{$variant}' not found for role '#{$role}'";
+  // Legacy alias support: 'gradient' → 'gradient-start'
+  $normalized-variant: $variant;
+  @if $variant == 'gradient' {
+    $normalized-variant: 'gradient-start';
   }
 
-  @error "Role '#{$role}' not found in role-colors";
+  // CANONICAL SOURCE: _tokens.$role-color-tokens
+  @if map.has-key($role-color-tokens, $role) {
+    $role-map: map.get($role-color-tokens, $role);
+
+    @if map.has-key($role-map, $normalized-variant) {
+      @return map.get($role-map, $normalized-variant);
+    }
+
+    @error "Role color variant '#{$normalized-variant}' (requested: '#{$variant}') not found for role '#{$role}'. Available: base, light, dark, gradient-start, gradient-end. See _tokens.scss for canonical values.";
+  }
+
+  @error "Role '#{$role}' not found in $role-color-tokens (canonical source in _tokens.scss)";
 }
 
 /// Récupère une couleur de texte

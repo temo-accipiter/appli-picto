@@ -77,6 +77,14 @@ $role-color-tokens: (
     'gradient-start': #ea580c,
     'gradient-end': #c2410c,
   ),
+  'staff': (
+    'base': #8b5cf6,
+    // Violet staff
+    'light': #a78bfa,
+    'dark': #7c3aed,
+    'gradient-start': #8b5cf6,
+    'gradient-end': #a78bfa,
+  ),
 );
 
 // =============================================================================
