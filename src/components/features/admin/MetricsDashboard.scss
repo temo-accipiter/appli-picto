@@ -18,7 +18,7 @@
     // Mobile: empilé verticalement
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: spacing('md');
   }
 
   &__title {
@@ -53,7 +53,7 @@
   &__meta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: spacing('md');
 
     .last-update {
       font-size: 0.875rem;
@@ -139,22 +139,22 @@
 // Grille de métriques
 .metrics-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: spacing('lg');
 
   // Mobile par défaut (320px-767px)
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: spacing('md');
 
   // Tablette (768px+)
   @include respond-to(md) {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    gap: spacing('md');
   }
 
   // Desktop (1024px+)
   @include respond-to(lg) {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: spacing('lg');
   }
 }
 
@@ -166,7 +166,7 @@
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: spacing('md');
 
   // Mobile par défaut (320px-767px)
   padding: spacing('md');

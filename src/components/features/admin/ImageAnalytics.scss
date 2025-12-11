@@ -33,7 +33,7 @@
     /* [Mobile-first] Base = mobile */
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: spacing('md');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
@@ -45,7 +45,7 @@
 .stat-card {
   background: var(--white, #{surface(bg)});
   border-radius: radius('md');
-  padding: 1.5rem;
+  padding: spacing('lg');
   box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
   transition:
     transform 0.2s ease,
