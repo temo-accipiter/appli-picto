@@ -10,7 +10,7 @@
 
   button {
     background: none;
-    border: rem(1) solid transparent;
+    border: spacing('1') solid transparent;
     border-radius: $radius-sm;
     font-size: $font-size-lg;
     padding: $spacing-xs $spacing-sm;
@@ -34,8 +34,8 @@
     }
 
     &:focus-visible {
-      outline: rem(2) dashed var(--color-accent);
-      outline-offset: rem(2);
+      outline: spacing('2') dashed var(--color-accent);
+      outline-offset: spacing('2');
     }
 
     /* Desktop (576px+) */

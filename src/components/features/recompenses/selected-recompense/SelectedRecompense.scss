@@ -12,7 +12,7 @@
   cursor: pointer;
 
   /* [Mobile-first] Base = mobile (320px+) */
-  width: rem(100);
+  width: spacing('100');
   padding: $spacing-sm;
 
   @include transition-smooth;
@@ -27,12 +27,12 @@
 
     @include on-event {
       transform: translateY(rem(-4));
-      box-shadow: 0 rem(4) rem(12) #{shadow(black-medium)};
+      box-shadow: 0 spacing('4') spacing('12') #{shadow(black-medium)};
     }
 
     &:focus-visible {
-      outline: rem(2) solid $color-accent;
-      outline-offset: rem(2);
+      outline: spacing('2') solid $color-accent;
+      outline-offset: spacing('2');
     }
   }
 
@@ -52,13 +52,13 @@
     flex-shrink: 0;
 
     /* [Mobile-first] Base = mobile */
-    width: rem(64);
-    height: rem(64);
+    width: spacing('64');
+    height: spacing('64');
   }
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    width: rem(300);
+    width: spacing('300');
     padding: $spacing-md;
 
     .label {

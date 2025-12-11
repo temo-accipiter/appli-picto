@@ -25,7 +25,7 @@
     @include transition-smooth;
 
     /* [Mobile-first] Base = mobile (plus petit) */
-    font-size: rem(14);
+    font-size: spacing('14');
     padding: $spacing-xs $spacing-md;
 
     /* Desktop (576px+) = plus grand */
@@ -134,7 +134,7 @@
   }
 
   &:focus-visible {
-    outline: rem(2) solid $color-accent;
-    outline-offset: rem(2);
+    outline: spacing('2') solid $color-accent;
+    outline-offset: spacing('2');
   }
 }

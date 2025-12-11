@@ -26,8 +26,8 @@
   opacity: 0.95;
 
   &:focus-visible {
-    outline: rem(2) solid $color-accent;
-    outline-offset: rem(2);
+    outline: spacing('2') solid $color-accent;
+    outline-offset: spacing('2');
   }
 
   .card-edition.no-actions {

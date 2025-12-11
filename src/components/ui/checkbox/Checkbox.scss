@@ -5,14 +5,14 @@
 .checkbox-field {
   display: inline-flex;
   align-items: center;
-  min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
+  min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
   position: relative;
 
   &__input {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: rem(2) solid $color-primary;
+    border: spacing('2') solid $color-primary;
     background-color: $color-bg;
     border-radius: $radius-sm;
     align-self: center;
@@ -25,13 +25,13 @@
     z-index: 1;
 
     // Mobile-first: base = mobile (petit)
-    width: rem(20);
-    height: rem(20);
+    width: spacing('20');
+    height: spacing('20');
 
     // Desktop (576px+) = taille normale
     @include respond-to(sm) {
-      width: rem(24);
-      height: rem(24);
+      width: spacing('24');
+      height: spacing('24');
     }
 
     &:checked {
@@ -64,8 +64,8 @@
     z-index: 2;
 
     svg {
-      width: rem(16);
-      height: rem(16);
+      width: spacing('16');
+      height: spacing('16');
       stroke: currentColor;
     }
   }
@@ -79,38 +79,38 @@
 
   &__error {
     margin-top: $spacing-xs;
-    margin-left: calc(rem(24) + $spacing-sm);
+    margin-left: calc(spacing('24') + $spacing-sm);
     font-size: $font-size-sm;
     color: $color-error;
   }
 
   // Variante sm (compacte)
   &--sm &__input {
-    width: rem(16);
-    height: rem(16);
+    width: spacing('16');
+    height: spacing('16');
 
     &:checked::after {
-      font-size: rem(10);
+      font-size: spacing('10');
     }
   }
 
   // Variante md (défaut explicite)
   &--md &__input {
-    width: rem(20);
-    height: rem(20);
+    width: spacing('20');
+    height: spacing('20');
 
     &:checked::after {
-      font-size: rem(12);
+      font-size: spacing('12');
     }
   }
 
   // Variante lg (grande taille pour meilleure accessibilité)
   &--lg &__input {
-    width: rem(28);
-    height: rem(28);
+    width: spacing('28');
+    height: spacing('28');
 
     &:checked::after {
-      font-size: rem(18);
+      font-size: spacing('18');
     }
   }
 }

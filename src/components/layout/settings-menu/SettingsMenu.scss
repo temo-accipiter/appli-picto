@@ -8,8 +8,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: rem(40);
-    height: rem(40);
+    width: spacing('40');
+    height: spacing('40');
     padding: 0;
     background: var(--color-bg-soft, #{gray(100)});
     border: 1px solid var(--color-border, #{gray(300)});
@@ -104,7 +104,7 @@
     // Desktop (768px+) : positioned top-right
     @include respond-to(md) {
       position: fixed !important;
-      top: rem(70) !important;
+      top: spacing('70') !important;
       right: $spacing-md !important;
       left: auto !important;
       bottom: auto !important;

@@ -7,26 +7,26 @@
 
   &__label {
     font-weight: $font-weight-semibold;
-    font-size: rem(18);
+    font-size: spacing('18');
     color: var(--color-text);
     white-space: nowrap;
   }
 
   &__select {
-    padding: rem(8) rem(12);
-    font-size: rem(16);
+    padding: spacing('8') spacing('12');
+    font-size: spacing('16');
     border: 2px solid var(--color-border);
     border-radius: $radius-md;
     background-color: var(--color-bg);
     color: var(--color-text);
     width: 100%;
-    min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
+    min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
     cursor: pointer;
     transition:
       border-color $transition-fast,
       box-shadow $transition-fast;
 
-    box-shadow: 0 rem(2) rem(6) rgba(var(--color-text-rgb), 0.1);
+    box-shadow: 0 spacing('2') spacing('6') rgba(var(--color-text-rgb), 0.1);
 
     // Focus ring unifié
     @include focus-ring;

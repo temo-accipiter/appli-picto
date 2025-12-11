@@ -11,8 +11,8 @@
   cursor: pointer;
 
   /* [Mobile-first] Base = mobile (320px+) */
-  width: rem(36);
-  height: rem(36);
+  width: spacing('36');
+  height: spacing('36');
 
   @include transition-smooth;
 
@@ -31,19 +31,19 @@
     display: block;
 
     /* [Mobile-first] Base = mobile */
-    width: rem(20);
-    height: rem(20);
+    width: spacing('20');
+    height: spacing('20');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      width: rem(24);
-      height: rem(24);
+      width: spacing('24');
+      height: spacing('24');
     }
   }
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    width: rem(40);
-    height: rem(40);
+    width: spacing('40');
+    height: spacing('40');
   }
 }

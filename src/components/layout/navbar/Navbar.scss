@@ -23,7 +23,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    height: rem(64);
+    height: spacing('64');
     padding: 0 $spacing-lg;
     gap: 0;
   }
@@ -157,7 +157,7 @@
     left: 0;
     bottom: 0;
     width: 0;
-    height: rem(2);
+    height: spacing('2');
     background-color: var(--color-primary);
     transition: width $transition-base ease;
   }
