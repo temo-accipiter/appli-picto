@@ -1,5 +1,6 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use './tokens' as *;  // Import tokens for canonical font-size-tokens access
 
 /// ============================================================================
 /// TYPOGRAPHY SYSTEM - Centralisé
@@ -295,22 +296,27 @@ $typography-tokens: (
 // FUNCTIONS - Accesseurs pour typographie
 // =============================================================================
 
-/// Récupère une taille de police depuis la scale
-/// @param {String} $key - Clé dans $font-size-scale
+/// Récupère une taille de police (CANONICAL - lire depuis _tokens.scss)
+/// @param {String} $key - Clé dans $font-size-tokens
 /// @return {String} Font-size CSS
 ///
-/// ⚠️ TODO (Phase 2.1b): Cette fonction doit proxer vers _tokens.$font-size-tokens
-///    au lieu de lire depuis la map locale $font-size-scale (deprecated).
-///    Voir _tokens.scss pour source canonical.
+/// ✅ Phase 2.1b UPDATE: Cette fonction proxe maintenant vers _tokens.$font-size-tokens
+///    (source de vérité canonical) au lieu de lire la map locale deprecated.
+///
+/// 📝 Exemples:
+///   font-size('xs') → 0.75rem (12px)
+///   font-size('base') → 1rem (16px)
+///   font-size('2xl') → 1.5rem (24px)
+///
+/// ⚠️ NOTE: La map locale $font-size-scale est NOW READ-ONLY (deprecated).
 ///
 /// @example
-///   font-size: font-size(lg);
+///   font-size: font-size('lg');
 @function font-size($key) {
-  // NOTE: Reads from deprecated $font-size-scale (Phase 2.1a)
-  // Will proxy to _tokens.$font-size-tokens in Phase 2.1b (canonical source)
-  $value: map.get($font-size-scale, $key);
+  // CANONICAL SOURCE: _tokens.$font-size-tokens
+  $value: map.get($font-size-tokens, $key);
   @if $value == null {
-    @error 'Font size key "#{$key}" not found. Available: #{map.keys($font-size-scale)}. See _tokens.scss for canonical $font-size-tokens.';
+    @error 'Font size key "#{$key}" not found in $font-size-tokens. Available: #{map.keys($font-size-tokens)}. See _tokens.scss for canonical values.';
   }
   @return $value;
 }

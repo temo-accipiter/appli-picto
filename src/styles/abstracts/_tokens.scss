@@ -472,16 +472,9 @@ $transition-tokens: (
   @return $value;
 }
 
-/// Récupère une taille de police
-/// @param {String} $key - Clé dans $font-size-tokens
-/// @return {Length} Font size value (rem)
-@function font-size($key) {
-  $value: map.get($font-size-tokens, $key);
-  @if $value == null {
-    @error 'Font-size key "#{$key}" not found. Available: #{map.keys($font-size-tokens)}';
-  }
-  @return $value;
-}
+/// NOTE: font-size() function is now defined in _typography.scss (canonical implementation)
+/// See _typography.scss @function font-size($key) for the authoritative implementation.
+/// This avoids duplication and centralizes all typography logic in _typography.scss.
 
 /// Récupère une hauteur de ligne
 /// @param {String} $key - Clé dans $line-height-tokens
