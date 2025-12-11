@@ -24,7 +24,7 @@
 .logs-filters {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: spacing('lg');
   margin-bottom: 2rem;
   border: 1px solid var(--border-color);
 
@@ -36,7 +36,7 @@
 
   .filter-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: spacing('sm');
     margin-bottom: 1rem;
     flex-wrap: wrap;
 
@@ -64,7 +64,7 @@
 .logs-list {
   background: var(--bg-secondary);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: spacing('lg');
   margin-bottom: 2rem;
   border: 1px solid var(--border-color);
 
@@ -87,7 +87,7 @@
   .logs-header {
     display: grid;
     grid-template-columns: 180px 120px 1fr 2fr;
-    gap: 1rem;
+    gap: spacing('md');
     padding: 0.75rem;
     background: var(--bg-primary);
     border-radius: 8px;
@@ -102,7 +102,7 @@
   .log-row {
     display: grid;
     grid-template-columns: 180px 120px 1fr 2fr;
-    gap: 1rem;
+    gap: spacing('md');
     padding: 0.75rem;
     border-bottom: 1px solid var(--border-color);
     align-items: start;
@@ -192,7 +192,7 @@
 
   .filter-info {
     flex-direction: column;
-    gap: 1rem;
+    gap: spacing('md');
     text-align: center;
   }
 }
@@ -201,8 +201,8 @@
   .logs-header,
   .log-row {
     grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: spacing('sm');
+    padding: spacing('md');
   }
 
   .logs-header {
@@ -290,7 +290,7 @@
     .logs-header,
     .log-row {
       grid-template-columns: 180px 120px 1fr 2fr;
-      gap: 1rem;
+      gap: spacing('md');
     }
   }
 }

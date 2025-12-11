@@ -7,7 +7,7 @@
     padding: spacing('lg');
 
     .personalization-icon {
-      font-size: 4rem;
+      font-size: font-size('5xl');
       margin-bottom: spacing('lg');
       animation: bounce 2s infinite;
     }
@@ -15,7 +15,7 @@
     h3 {
       color: var(--primary);
       margin-bottom: 30px;
-      font-size: 1.5rem;
+      font-size: font-size('2xl');
       font-weight: 600;
     }
 
@@ -40,7 +40,7 @@
         }
 
         .feature-icon {
-          font-size: 1.5rem;
+          font-size: font-size('2xl');
           margin-right: 15px;
           min-width: 30px;
         }
@@ -125,7 +125,7 @@
     }
 
     h3 {
-      font-size: 1.3rem;
+      font-size: font-size('xl');
     }
 
     .personalization-actions {
@@ -146,11 +146,11 @@
       padding: spacing('lg');
 
       .personalization-icon {
-        font-size: 4rem;
+        font-size: font-size('5xl');
       }
 
       h3 {
-        font-size: 1.5rem;
+        font-size: font-size('2xl');
       }
 
       .personalization-actions {

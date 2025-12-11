@@ -51,7 +51,7 @@
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: 2rem;
+    font-size: font-size('3xl');
   }
 }
 
@@ -93,7 +93,7 @@
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: 2rem;
+    font-size: font-size('3xl');
   }
 }
 

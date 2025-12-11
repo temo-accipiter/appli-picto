@@ -1,5 +1,6 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use './tokens' as *; // Import tokens for canonical font-size-tokens access
 
 /// ============================================================================
 /// TYPOGRAPHY SYSTEM - Centralisé
@@ -65,10 +66,31 @@ $font-size-1-3rem: 1.3rem; // 20.8px
 $font-size-1-4rem: 1.4rem; // 22.4px
 
 // =============================================================================
-// FONT SIZES MAP - Tous les font-sizes disponibles
+// FONT SIZES MAP - [⚠️ DEPRECATED - READ FROM _tokens.scss INSTEAD]
 // =============================================================================
 
-/// Map centralisée contenant toutes les tailles de police
+/// 🔴 DEPRECATION WARNING (Phase 2.1 - Commit 2.1a)
+///
+/// Cette map $font-size-scale est DÉPRÉCIÉ depuis la canonicalisation de _tokens.scss.
+///
+/// ❌ ANCIEN ÉTAT (NON-AUTORITATIF):
+///   - Contient scale fragmentée : 0.65rem, 0.7rem, 0.9rem, 0.95rem, 1.1rem, 1.2rem, etc.
+///   - NON-STANDARDISÉE - pas Tailwind-like
+///   - Source de confusion avec _tokens.$font-size-tokens
+///
+/// ✅ NOUVEL ÉTAT (AUTHORITATIVE):
+///   - Lire depuis @use './tokens' et $font-size-tokens (ligne 374 dans _tokens.scss)
+///   - Option B (Tailwind-like) : xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl
+///   - font-size() function DOIT proxer vers tokens
+///
+/// 📝 MIGRATION TIMELINE:
+///   Phase 2.1a (NOW): Canonicalisation dans _tokens.scss + warnings ici
+///   Phase 2.1b: Propager font-size() function vers tokens (proxer)
+///   Phase 2.1c: Corriger usages hardcodés dans components
+///   Phase 2.2+: Supprimer cette map DEPRECATED (après vérification)
+///
+/// Pour maintenant: Cette map est FIGÉE - ne pas la modifier.
+/// Tout nouveau code DOIT lire depuis _tokens.$font-size-tokens.
 $font-size-scale: (
   'xxs': $font-size-xxs,
   // 10.4px
@@ -274,15 +296,27 @@ $typography-tokens: (
 // FUNCTIONS - Accesseurs pour typographie
 // =============================================================================
 
-/// Récupère une taille de police depuis la scale
-/// @param {String} $key - Clé dans $font-size-scale
+/// Récupère une taille de police (CANONICAL - lire depuis _tokens.scss)
+/// @param {String} $key - Clé dans $font-size-tokens
 /// @return {String} Font-size CSS
+///
+/// ✅ Phase 2.1b UPDATE: Cette fonction proxe maintenant vers _tokens.$font-size-tokens
+///    (source de vérité canonical) au lieu de lire la map locale deprecated.
+///
+/// 📝 Exemples:
+///   font-size('xs') → 0.75rem (12px)
+///   font-size('base') → 1rem (16px)
+///   font-size('2xl') → 1.5rem (24px)
+///
+/// ⚠️ NOTE: La map locale $font-size-scale est NOW READ-ONLY (deprecated).
+///
 /// @example
-///   font-size: font-size(lg);
+///   font-size: font-size('lg');
 @function font-size($key) {
-  $value: map.get($font-size-scale, $key);
+  // CANONICAL SOURCE: _tokens.$font-size-tokens
+  $value: map.get($font-size-tokens, $key);
   @if $value == null {
-    @error 'Font size key "#{$key}" not found. Available: #{map.keys($font-size-scale)}';
+    @error 'Font size key "#{$key}" not found in $font-size-tokens. Available: #{map.keys($font-size-tokens)}. See _tokens.scss for canonical values.';
   }
   @return $value;
 }

@@ -34,7 +34,7 @@
 
   h2 {
     margin: 0;
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 700;
     color: slate(900);
   }
@@ -81,7 +81,7 @@
   p {
     margin: 0;
     color: blue(800);
-    font-size: 0.95rem;
+    font-size: font-size('sm');
     line-height: 1.5;
   }
 }
@@ -103,7 +103,7 @@
   margin: 0 0 16px 0;
   padding: 0;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: font-size('lg');
   color: slate(900);
 }
 
@@ -111,7 +111,7 @@
   display: inline-block;
   padding: spacing('xs') spacing('sm');
   border-radius: radius('xl');
-  font-size: 0.9rem;
+  font-size: font-size('sm');
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -190,7 +190,7 @@
 
   p {
     margin: 0 0 8px 0;
-    font-size: 0.9rem;
+    font-size: font-size('sm');
     line-height: 1.5;
     color: blue(900);
 
@@ -250,7 +250,7 @@
   border-radius: radius('md');
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: font-size('sm');
   transition: all 0.15s ease;
   min-width: spacing('120');
 

@@ -18,7 +18,7 @@
     // Mobile: empilé verticalement
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: spacing('md');
   }
 
   &__title {
@@ -26,7 +26,7 @@
     color: var(--text-primary, #{slate(700)});
     margin: 0;
     // Mobile: titre plus petit
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
   }
 
   // Tablette (768px+)
@@ -53,7 +53,7 @@
   &__meta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: spacing('md');
 
     .last-update {
       font-size: 0.875rem;
@@ -120,7 +120,7 @@
   }
 
   h2 {
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 600;
     color: var(--text-primary, #{slate(700)});
     margin-bottom: 1.5rem;
@@ -139,22 +139,22 @@
 // Grille de métriques
 .metrics-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: spacing('lg');
 
   // Mobile par défaut (320px-767px)
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: spacing('md');
 
   // Tablette (768px+)
   @include respond-to(md) {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+    gap: spacing('md');
   }
 
   // Desktop (1024px+)
   @include respond-to(lg) {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: spacing('lg');
   }
 }
 
@@ -166,7 +166,7 @@
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: spacing('md');
 
   // Mobile par défaut (320px-767px)
   padding: spacing('md');
@@ -215,11 +215,11 @@
     padding: 1.5rem;
 
     &__icon {
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
     }
 
     &__value {
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
     }
   }
 

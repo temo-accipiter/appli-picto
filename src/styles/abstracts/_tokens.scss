@@ -2,25 +2,52 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// TOKENS SYSTEM - Source de Vérité Centrale
+/// 🚀 TOKENS SYSTEM - SOURCE DE VÉRITÉ UNIQUE & CANONIQUE
 /// ============================================================================
-/// Tous les design tokens du système centralisés en UN SEUL ENDROIT.
-/// Tous les autres fichiers abstracts dérivent de ces tokens.
-/// JAMAIS de valeur magique en dehors de cette file.
+/// ⚠️ CRITICAL: Ce fichier est la SOURCE DE VÉRITÉ UNIQUE du design system.
+/// TOUS les autres fichiers (colors, typography, spacing, etc.) DOIVENT dériver
+/// des tokens définis ici. AUCUNE duplication, AUCUNE définition locale.
 ///
-/// Structure:
-///   - Couleurs (roles, brands, semantic)
-///   - Gradient (UI, badge)
+/// 📋 Structure:
+///   - Role-based colors ($role-color-tokens) - CANONICAL pour tous les rôles
+///   - Gradients (UI, badge)
 ///   - Opacités (alpha values)
 ///   - Z-index scale
 ///   - Autres tokens globaux
+///
+/// 🔴 RÈGLE STRICTE:
+///   1. Toutes les couleurs de rôles DOIVENT venir de $role-color-tokens (ici)
+///   2. _colors.scss NE DOIT PAS redéfinir $role-colors (deprecated - see note below)
+///   3. _variables.scss NE DOIT PAS faire de shadow copies (use functions only)
+///   4. Components DOIVENT utiliser var(--color-admin) ou role-color() function
+///
+/// 📚 Exemple usage:
+///   - Sass: $admin-color: map-get(map-get($role-color-tokens, 'admin'), 'base');
+///   - CSS:  background: var(--color-admin);
+///   - Function: @function role-color($role) { ... lire depuis ici ... }
 /// ============================================================================
 
 // =============================================================================
-// ROLE-BASED COLOR TOKENS - Rôles utilisateurs
+// ROLE-BASED COLOR TOKENS - Rôles utilisateurs [✅ CANONICAL SOURCE]
 // =============================================================================
 
-/// Tokens de couleur par rôle utilisateur (admin, abonné, free, visitor)
+/// 🔴 CANONICAL SOURCE pour ALL role colors - admin, abonné, free, visitor, staff
+///
+/// Cette map est la SEULE source de vérité pour les couleurs de rôles.
+/// - Admin = #667eea (violet) - décidé et IMMUABLE
+/// - Autres rôles = voir définitions ci-dessous
+///
+/// ⚠️ RÈGLES DE MIGRATION:
+///   1. _colors.scss.$role-colors est DEPRECATED - ne plus l'utiliser
+///   2. role-color() function DOIT lire depuis $role-color-tokens ici
+///   3. Tout usage hardcodé (red(600), #dc2626) est À REFACTORER
+///   4. Components DOIVENT utiliser var(--color-admin) ou role-color()
+///
+/// 📝 NON-NEGOTIABLE pour Admin (violet):
+///   - base: #667eea (primary violet - identité admin)
+///   - light: #8b9ff4 (hover lighter)
+///   - dark: #4c5ac4 (active darker)
+///   - gradient: #667eea → #764ba2 (modern UI gradient)
 $role-color-tokens: (
   'admin': (
     'base': #667eea,
@@ -49,6 +76,14 @@ $role-color-tokens: (
     'dark': #c2410c,
     'gradient-start': #ea580c,
     'gradient-end': #c2410c,
+  ),
+  'staff': (
+    'base': #8b5cf6,
+    // Violet staff
+    'light': #a78bfa,
+    'dark': #7c3aed,
+    'gradient-start': #8b5cf6,
+    'gradient-end': #a78bfa,
   ),
 );
 
@@ -271,7 +306,6 @@ $semantic-tokens: (
   ),
 );
 
-
 // =============================================================================
 // SPACING TOKENS - Espacement cohérent (padding, margin, gaps)
 // =============================================================================
@@ -279,61 +313,123 @@ $semantic-tokens: (
 /// Spacing scale (utiliser plutôt que px hardcodés)
 $spacing-tokens: (
   'none': 0,
-  'xs': 0.25rem,     // 4px
-  'sm': 0.5rem,      // 8px
-  'md': 1rem,        // 16px
-  'lg': 1.5rem,      // 24px
-  'xl': 2rem,        // 32px
-  '2xl': 3rem,       // 48px
-  '3xl': 4rem,       // 64px
-  
+  'xs': 0.25rem,
+  // 4px
+  'sm': 0.5rem,
+  // 8px
+  'md': 1rem,
+  // 16px
+  'lg': 1.5rem,
+  // 24px
+  'xl': 2rem,
+  // 32px
+  '2xl': 3rem,
+  // 48px
+  '3xl': 4rem,
+
+  // 64px
   // === Specific common values ===
-  '2': 0.125rem,     // 2px
-  '4': 0.25rem,      // 4px
-  '6': 0.375rem,     // 6px
-  '8': 0.5rem,       // 8px
-  '10': 0.625rem,    // 10px
-  '12': 0.75rem,     // 12px
-  '14': 0.875rem,    // 14px
-  '16': 1rem,        // 16px
-  '20': 1.25rem,     // 20px
-  '24': 1.5rem,      // 24px
-  '28': 1.75rem,     // 28px
-  '32': 2rem,        // 32px
-  '36': 2.25rem,     // 36px
-  '40': 2.5rem,      // 40px
-  '44': 2.75rem,     // 44px (touch target)
-  '48': 3rem,        // 48px
-  '60': 3.75rem,     // 60px
-  '80': 5rem,        // 80px
-  '100': 6.25rem,    // 100px
-  '120': 7.5rem,     // 120px
-  '160': 10rem,      // 160px
+  '2': 0.125rem,
+  // 2px
+  '4': 0.25rem,
+  // 4px
+  '6': 0.375rem,
+  // 6px
+  '8': 0.5rem,
+  // 8px
+  '10': 0.625rem,
+  // 10px
+  '12': 0.75rem,
+  // 12px
+  '14': 0.875rem,
+  // 14px
+  '16': 1rem,
+  // 16px
+  '20': 1.25rem,
+  // 20px
+  '24': 1.5rem,
+  // 24px
+  '28': 1.75rem,
+  // 28px
+  '32': 2rem,
+  // 32px
+  '36': 2.25rem,
+  // 36px
+  '40': 2.5rem,
+  // 40px
+  '44': 2.75rem,
+  // 44px (touch target)
+  '48': 3rem,
+  // 48px
+  '60': 3.75rem,
+  // 60px
+  '80': 5rem,
+  // 80px
+  '100': 6.25rem,
+  // 100px
+  '120': 7.5rem,
+  // 120px
+  '160': 10rem, // 160px
 );
 
 // =============================================================================
-// FONT-SIZE TOKENS - Tailles de texte
+// FONT-SIZE TOKENS - Tailles de texte [✅ CANONICAL SOURCE]
 // =============================================================================
 
-/// Font size scale
+/// 🔴 CANONICAL SOURCE pour ALL font-sizes - xs → 5xl (Tailwind-like/Option B)
+///
+/// Cette map est la SEULE source de vérité pour les tailles de police.
+/// Option B (Tailwind-like) - industry standard, accessible TSA friendly
+///
+/// ⚠️ RÈGLES DE MIGRATION:
+///   1. _typography.scss.$font-size-scale est DEPRECATED - ne plus l'utiliser
+///   2. font-size() function DOIT lire depuis $font-size-tokens ici (canonical)
+///   3. Tout usage hardcodé (0.65rem, 0.7rem, 1.1rem, etc.) est À REFACTORER
+///   4. Components DOIVENT utiliser font-size() function
+///
+/// 📝 NON-NEGOTIABLE Scale (Option B - Tailwind-like):
+///   xs: 0.75rem (12px) - très petit texte
+///   sm: 0.875rem (14px) - petit texte
+///   base: 1rem (16px) - standard (body)
+///   lg: 1.125rem (18px) - largement lisible
+///   xl: 1.25rem (20px) - grand texte
+///   2xl: 1.5rem (24px) - section titles
+///   3xl: 1.875rem (30px) - page titles
+///   4xl: 2.25rem (36px) - large titles
+///   5xl: 3rem (48px) - hero titles
 $font-size-tokens: (
-  'xs': 0.75rem,     // 12px
-  'sm': 0.875rem,    // 14px
-  'base': 1rem,      // 16px (default)
-  'lg': 1.125rem,    // 18px
-  'xl': 1.25rem,     // 20px
-  '2xl': 1.5rem,     // 24px
-  '3xl': 1.875rem,   // 30px
-  '4xl': 2.25rem,    // 36px
-  '5xl': 3rem,       // 48px
-  
-  // === Specific values ===
-  '0-75': 0.75rem,   // 12px
-  '0-875': 0.875rem, // 14px
-  '0-9': 0.9rem,     // 14.4px
-  '0-95': 0.95rem,   // 15.2px
-  '1-125': 1.125rem, // 18px
-  '1-5': 1.5rem,     // 24px
+  'xs': 0.75rem,
+  // 12px
+  'sm': 0.875rem,
+  // 14px
+  'base': 1rem,
+  // 16px (default)
+  'lg': 1.125rem,
+  // 18px
+  'xl': 1.25rem,
+  // 20px
+  '2xl': 1.5rem,
+  // 24px
+  '3xl': 1.875rem,
+  // 30px
+  '4xl': 2.25rem,
+  // 36px
+  '5xl': 3rem,
+
+  // 48px
+  // === Deprecated legacy values (backward compat only) ===
+  // DO NOT USE - these are OLD fragmentary values from pre-Option-B era
+  '0-75': 0.75rem,
+  // 12px - DEPRECATED, use 'xs'
+  '0-875': 0.875rem,
+  // 14px - DEPRECATED, use 'sm'
+  '0-9': 0.9rem,
+  // 14.4px - DEPRECATED, NOT in Option B
+  '0-95': 0.95rem,
+  // 15.2px - DEPRECATED, NOT in Option B
+  '1-125': 1.125rem,
+  // 18px - DEPRECATED, use 'lg'
+  '1-5': 1.5rem, // 24px - DEPRECATED, use '2xl'
 );
 
 // =============================================================================
@@ -357,17 +453,21 @@ $line-height-tokens: (
 /// Transition duration + timing function pairs
 $transition-tokens: (
   // === Duration only (ms) ===
-  'fast': 150ms,      // Quick interactions
-  'base': 200ms,      // Standard transitions
-  'slow': 300ms,      // More deliberate
-  'slower': 500ms,    // Very deliberate
-  
+  'fast': 150ms,
+  // Quick interactions
+  'base': 200ms,
+  // Standard transitions
+  'slow': 300ms,
+  // More deliberate
+  'slower': 500ms,
+
+  // Very deliberate
   // === Easing functions ===
   'ease-in': ease-in,
   'ease-out': ease-out,
   'ease-in-out': ease-in-out,
   'ease-linear': linear,
-  
+
   // === Combined: duration + easing for direct use ===
   'fast-ease': 150ms ease,
   'base-ease': 200ms ease,
@@ -375,9 +475,8 @@ $transition-tokens: (
   'fast-in-out': 150ms ease-in-out,
   'base-in-out': 200ms ease-in-out,
   'slow-in-out': 300ms ease-in-out,
-  'base-cubic': 200ms cubic-bezier(0.25, 1, 0.5, 1),
+  'base-cubic': 200ms cubic-bezier(0.25, 1, 0.5, 1)
 );
-
 
 // =============================================================================
 // FUNCTIONS - Accesseurs pour tokens
@@ -416,16 +515,9 @@ $transition-tokens: (
   @return $value;
 }
 
-/// Récupère une taille de police
-/// @param {String} $key - Clé dans $font-size-tokens
-/// @return {Length} Font size value (rem)
-@function font-size($key) {
-  $value: map.get($font-size-tokens, $key);
-  @if $value == null {
-    @error 'Font-size key "#{$key}" not found. Available: #{map.keys($font-size-tokens)}';
-  }
-  @return $value;
-}
+/// NOTE: font-size() function is now defined in _typography.scss (canonical implementation)
+/// See _typography.scss @function font-size($key) for the authoritative implementation.
+/// This avoids duplication and centralizes all typography logic in _typography.scss.
 
 /// Récupère une hauteur de ligne
 /// @param {String} $key - Clé dans $line-height-tokens
@@ -448,8 +540,6 @@ $transition-tokens: (
   }
   @return $value;
 }
-
-
 
 // Note: role-color() function is defined in _colors.scss (not here)
 // This file only contains DATA tokens (maps), not functions

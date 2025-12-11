@@ -26,7 +26,7 @@
   }
 
   &__icon {
-    font-size: 4rem;
+    font-size: font-size('5xl');
     margin-bottom: 1rem;
 
     // Animation douce de balancement
@@ -34,7 +34,7 @@
   }
 
   &__title {
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 600;
     color: #{slate(700)};
     margin-bottom: 1rem;
