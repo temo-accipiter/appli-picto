@@ -17,9 +17,9 @@
 .avatar-profil,
 .avatar-fallback {
   // Mobile par défaut (320px-767px)
-  width: 120px;
-  height: 120px;
-  font-size: 3rem;
+  width: spacing('120');
+  height: spacing('120');
+  font-size: font-size('5xl');
 
   // Styles communs
   border-radius: $radius-full;
@@ -40,8 +40,8 @@
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    width: 160px;
-    height: 160px;
+    width: spacing('160');
+    height: spacing('160');
     font-size: 4rem;
     border-width: 4px;
   }
@@ -72,13 +72,13 @@
   @include focus-ring($color-primary, 2px, 2px);
 
   // Mobile par défaut (320px-767px)
-  width: 36px;
-  height: 36px;
+  width: spacing('36');
+  height: spacing('36');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    width: 44px;
-    height: 44px;
+    width: spacing('44');
+    height: spacing('44');
     font-size: $font-size-lg;
   }
 

@@ -1,2 +1,8 @@
-// src/styles/themes/_index.scss
 @forward './theme-vars';
+
+// Forward UNIQUEMENT les thèmes (ils génèrent tous du CSS volontairement)
+// Aucun risque de duplication car ils ne seront utilisés QU'EN UN SEUL ENDROIT : main.scss
+
+@forward './light';
+@forward './dark';
+@forward './calm';

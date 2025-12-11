@@ -1,37 +1,498 @@
-// abstracts/_tokens.scss
-// Maps SCSS pures (aucun CSS g�n�r�)
+@charset 'UTF-8';
+@use 'sass:map';
 
-// === UI MODERN GRADIENTS ===
-// Gradients modernes pour composants UI (boutons, containers)
+/// ============================================================================
+/// TOKENS SYSTEM - Source de Vérité Centrale
+/// ============================================================================
+/// Tous les design tokens du système centralisés en UN SEUL ENDROIT.
+/// Tous les autres fichiers abstracts dérivent de ces tokens.
+/// JAMAIS de valeur magique en dehors de cette file.
+///
+/// Structure:
+///   - Couleurs (roles, brands, semantic)
+///   - Gradient (UI, badge)
+///   - Opacités (alpha values)
+///   - Z-index scale
+///   - Autres tokens globaux
+/// ============================================================================
+
+// =============================================================================
+// ROLE-BASED COLOR TOKENS - Rôles utilisateurs
+// =============================================================================
+
+/// Tokens de couleur par rôle utilisateur (admin, abonné, free, visitor)
+$role-color-tokens: (
+  'admin': (
+    'base': #667eea,
+    'light': #8b9ff4,
+    'dark': #4c5ac4,
+    'gradient-start': #667eea,
+    'gradient-end': #764ba2,
+  ),
+  'abonne': (
+    'base': #22c55e,
+    'light': #4ade80,
+    'dark': #16a34a,
+    'gradient-start': #22c55e,
+    'gradient-end': #16a34a,
+  ),
+  'free': (
+    'base': #64748b,
+    'light': #94a3b8,
+    'dark': #475569,
+    'gradient-start': #64748b,
+    'gradient-end': #475569,
+  ),
+  'visitor': (
+    'base': #ea580c,
+    'light': #f97316,
+    'dark': #c2410c,
+    'gradient-start': #ea580c,
+    'gradient-end': #c2410c,
+  ),
+);
+
+// =============================================================================
+// GRADIENT TOKENS - Dégradés UI
+// =============================================================================
+
+/// Gradient color pairs as MAPS (use with map.get($gradient, start/end))
+/// Format: 'name': (start: color, end: color)
 $ui-gradients: (
-  purple-modern: (
+  'purple-modern': (
     start: #667eea,
     end: #764ba2,
   ),
-  purple-modern-hover: (
+  'purple-modern-hover': (
     start: #5568d3,
     end: #653a8b,
   ),
-  blue-soft: (
+  'blue-soft': (
     start: #f5f7fa,
     end: #e8ecf1,
   ),
+  'green-gradient': (
+    start: #22c55e,
+    end: #16a34a,
+  ),
+  'orange-gradient': (
+    start: #ea580c,
+    end: #c2410c,
+  ),
+  'slate-gradient': (
+    start: #64748b,
+    end: #475569,
+  ),
 );
 
-// === BADGE SHADOWS ===
-// Ombres pour badges (box-shadow)
+/// Badge gradient color pairs (rôles)
+$badge-gradients: (
+  'admin': (
+    start: #667eea,
+    end: #764ba2,
+  ),
+  'abonne': (
+    start: #22c55e,
+    end: #16a34a,
+  ),
+  'free': (
+    start: #64748b,
+    end: #475569,
+  ),
+  'visitor': (
+    start: #ea580c,
+    end: #c2410c,
+  ),
+);
+
+// =============================================================================
+// SHADOW TOKENS - Ombres par contexte
+// =============================================================================
+
+/// Badge shadows (pour distinguer rôles)
+$badge-shadow-tokens: (
+  'admin': (
+    'default': rgba(102, 126, 234, 0.3),
+    'hover': rgba(102, 126, 234, 0.4),
+  ),
+  'abonne': (
+    'default': rgba(34, 197, 94, 0.3),
+    'hover': rgba(34, 197, 94, 0.4),
+  ),
+  'free': (
+    'default': rgba(100, 116, 139, 0.3),
+    'hover': rgba(100, 116, 139, 0.4),
+  ),
+  'visitor': (
+    'default': rgba(234, 88, 12, 0.3),
+    'hover': rgba(234, 88, 12, 0.4),
+  ),
+);
+
+// Legacy compatibility
 $badge-shadows: (
-  abonne: rgba(34, 197, 94, 0.3),
-  abonne-hover: rgba(34, 197, 94, 0.4),
-  free: rgba(100, 116, 139, 0.3),
-  free-hover: rgba(100, 116, 139, 0.4),
-  visitor: rgba(234, 88, 12, 0.3),
-  visitor-hover: rgba(234, 88, 12, 0.4),
+  'abonne': rgba(34, 197, 94, 0.3),
+  'abonne-hover': rgba(34, 197, 94, 0.4),
+  'free': rgba(100, 116, 139, 0.3),
+  'free-hover': rgba(100, 116, 139, 0.4),
+  'visitor': rgba(234, 88, 12, 0.3),
+  'visitor-hover': rgba(234, 88, 12, 0.4),
 );
 
-// === BRAND COLORS ===
-// Couleurs de marques tierces (Stripe, etc.)
-$brand-colors: (
-  stripe: #635bff,
-  stripe-hover: #5a50f0,
+// =============================================================================
+// OPACITY TOKENS - Valeurs d'alpha/transparence
+// =============================================================================
+
+/// Opacity scale pour toutes les transparences
+$opacity-tokens: (
+  'none': 0,
+  'xs': 0.05,
+  'sm': 0.1,
+  'md': 0.15,
+  'lg': 0.2,
+  'xl': 0.3,
+  '2xl': 0.4,
+  'half': 0.5,
+  'opaque': 1,
+
+  // === Specific values ===
+  '0-08': 0.08,
+  '0-12': 0.12,
+  '0-15': 0.15,
+  '0-2': 0.2,
+  '0-25': 0.25,
+  '0-3': 0.3,
+  '0-35': 0.35,
+  '0-4': 0.4,
+  '0-45': 0.45,
 );
+
+// =============================================================================
+// Z-INDEX TOKENS - Stacking order
+// =============================================================================
+
+/// Z-index scale pour hiérarchie de profondeur
+$z-index-tokens: (
+  'hide': -1,
+  'base': 0,
+  'dropdown': 100,
+  'sticky': 200,
+  'fixed': 300,
+  'offcanvas': 400,
+  'modal-backdrop': 900,
+  'modal': 1000,
+  'popover': 1050,
+  'tooltip': 1100,
+  'notification': 1200,
+  'max': 9999,
+);
+
+/// Variables pour utilisation directe dans les composants
+/// (pref use z-index($key) function, ou ces variables pour legacy)
+$z-overlay: map.get($z-index-tokens, 'modal');
+$z-modal: map.get($z-index-tokens, 'tooltip');
+$z-tooltip: map.get($z-index-tokens, 'notification');
+
+// =============================================================================
+// BRAND COLOR TOKENS - Marques tierces
+// =============================================================================
+
+/// Couleurs de partenaires/services externes
+$brand-color-tokens: (
+  'stripe': (
+    'base': #635bff,
+    'hover': #5a50f0,
+    'dark': #4c47d8,
+  ),
+  'google': (
+    'base': #1f2937,
+    'hover': #111827,
+  ),
+  'apple': (
+    'base': #000000,
+    'hover': #1f2937,
+  ),
+);
+
+// Legacy compatibility
+$brand-colors: (
+  'stripe': #635bff,
+  'stripe-hover': #5a50f0,
+);
+
+// =============================================================================
+// BREAKPOINT TOKENS - Responsive design
+// =============================================================================
+
+/// Breakpoint scales (cf. _breakpoints.scss)
+$breakpoint-tokens: (
+  'mobile': 0,
+  'sm': 576px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1200px,
+  'xxl': 1536px,
+);
+
+// =============================================================================
+// DESIGN SYSTEM SEMANTIC TOKENS
+/// Tokens sémantiques (success, warning, error, info)
+/// Utiliser plutôt que les couleurs brutes
+// =============================================================================
+
+$semantic-tokens: (
+  'success': (
+    'base': #4caf50,
+    'light': #81c784,
+    'dark': #2e7d32,
+    'bg': #f1f8e9,
+    'border': #c8e6c9,
+  ),
+  'warning': (
+    'base': #ff9800,
+    'light': #ffb74d,
+    'dark': #e65100,
+    'bg': #fff3e0,
+    'border': #ffe0b2,
+  ),
+  'error': (
+    'base': #f44336,
+    'light': #ef5350,
+    'dark': #c62828,
+    'bg': #ffebee,
+    'border': #ffcdd2,
+  ),
+  'info': (
+    'base': #2196f3,
+    'light': #64b5f6,
+    'dark': #1565c0,
+    'bg': #e3f2fd,
+    'border': #bbdefb,
+  ),
+);
+
+
+// =============================================================================
+// SPACING TOKENS - Espacement cohérent (padding, margin, gaps)
+// =============================================================================
+
+/// Spacing scale (utiliser plutôt que px hardcodés)
+$spacing-tokens: (
+  'none': 0,
+  'xs': 0.25rem,     // 4px
+  'sm': 0.5rem,      // 8px
+  'md': 1rem,        // 16px
+  'lg': 1.5rem,      // 24px
+  'xl': 2rem,        // 32px
+  '2xl': 3rem,       // 48px
+  '3xl': 4rem,       // 64px
+  
+  // === Specific common values ===
+  '2': 0.125rem,     // 2px
+  '4': 0.25rem,      // 4px
+  '6': 0.375rem,     // 6px
+  '8': 0.5rem,       // 8px
+  '10': 0.625rem,    // 10px
+  '12': 0.75rem,     // 12px
+  '14': 0.875rem,    // 14px
+  '16': 1rem,        // 16px
+  '20': 1.25rem,     // 20px
+  '24': 1.5rem,      // 24px
+  '28': 1.75rem,     // 28px
+  '32': 2rem,        // 32px
+  '36': 2.25rem,     // 36px
+  '40': 2.5rem,      // 40px
+  '44': 2.75rem,     // 44px (touch target)
+  '48': 3rem,        // 48px
+  '60': 3.75rem,     // 60px
+  '80': 5rem,        // 80px
+  '100': 6.25rem,    // 100px
+  '120': 7.5rem,     // 120px
+  '160': 10rem,      // 160px
+);
+
+// =============================================================================
+// FONT-SIZE TOKENS - Tailles de texte
+// =============================================================================
+
+/// Font size scale
+$font-size-tokens: (
+  'xs': 0.75rem,     // 12px
+  'sm': 0.875rem,    // 14px
+  'base': 1rem,      // 16px (default)
+  'lg': 1.125rem,    // 18px
+  'xl': 1.25rem,     // 20px
+  '2xl': 1.5rem,     // 24px
+  '3xl': 1.875rem,   // 30px
+  '4xl': 2.25rem,    // 36px
+  '5xl': 3rem,       // 48px
+  
+  // === Specific values ===
+  '0-75': 0.75rem,   // 12px
+  '0-875': 0.875rem, // 14px
+  '0-9': 0.9rem,     // 14.4px
+  '0-95': 0.95rem,   // 15.2px
+  '1-125': 1.125rem, // 18px
+  '1-5': 1.5rem,     // 24px
+);
+
+// =============================================================================
+// LINE-HEIGHT TOKENS - Hauteurs de ligne
+// =============================================================================
+
+/// Line height scale (unitless ratios for flexibility)
+$line-height-tokens: (
+  'none': 1,
+  'tight': 1.25,
+  'snug': 1.375,
+  'normal': 1.5,
+  'relaxed': 1.625,
+  'loose': 2,
+);
+
+// =============================================================================
+// TRANSITION TOKENS - Durées et timing functions
+// =============================================================================
+
+/// Transition duration + timing function pairs
+$transition-tokens: (
+  // === Duration only (ms) ===
+  'fast': 150ms,      // Quick interactions
+  'base': 200ms,      // Standard transitions
+  'slow': 300ms,      // More deliberate
+  'slower': 500ms,    // Very deliberate
+  
+  // === Easing functions ===
+  'ease-in': ease-in,
+  'ease-out': ease-out,
+  'ease-in-out': ease-in-out,
+  'ease-linear': linear,
+  
+  // === Combined: duration + easing for direct use ===
+  'fast-ease': 150ms ease,
+  'base-ease': 200ms ease,
+  'slow-ease': 300ms ease,
+  'fast-in-out': 150ms ease-in-out,
+  'base-in-out': 200ms ease-in-out,
+  'slow-in-out': 300ms ease-in-out,
+  'base-cubic': 200ms cubic-bezier(0.25, 1, 0.5, 1),
+);
+
+
+// =============================================================================
+// FUNCTIONS - Accesseurs pour tokens
+// =============================================================================
+
+/// Récupère une valeur d'opacité
+/// @param {String} $key - Clé dans $opacity-tokens
+/// @return {Number} Opacity value (0-1)
+@function opacity($key) {
+  $value: map.get($opacity-tokens, $key);
+  @if $value == null {
+    @error 'Opacity key "#{$key}" not found. Available: #{map.keys($opacity-tokens)}';
+  }
+  @return $value;
+}
+
+/// Récupère un z-index
+/// @param {String} $key - Clé dans $z-index-tokens
+/// @return {Number} Z-index value
+@function z-index($key) {
+  $value: map.get($z-index-tokens, $key);
+  @if $value == null {
+    @error 'Z-index key "#{$key}" not found. Available: #{map.keys($z-index-tokens)}';
+  }
+  @return $value;
+}
+
+/// Récupère une valeur d'espacement
+/// @param {String} $key - Clé dans $spacing-tokens
+/// @return {Length} Spacing value (rem)
+@function spacing($key) {
+  $value: map.get($spacing-tokens, $key);
+  @if $value == null {
+    @error 'Spacing key "#{$key}" not found. Available: #{map.keys($spacing-tokens)}';
+  }
+  @return $value;
+}
+
+/// Récupère une taille de police
+/// @param {String} $key - Clé dans $font-size-tokens
+/// @return {Length} Font size value (rem)
+@function font-size($key) {
+  $value: map.get($font-size-tokens, $key);
+  @if $value == null {
+    @error 'Font-size key "#{$key}" not found. Available: #{map.keys($font-size-tokens)}';
+  }
+  @return $value;
+}
+
+/// Récupère une hauteur de ligne
+/// @param {String} $key - Clé dans $line-height-tokens
+/// @return {Number} Line height value (unitless)
+@function line-height($key) {
+  $value: map.get($line-height-tokens, $key);
+  @if $value == null {
+    @error 'Line-height key "#{$key}" not found. Available: #{map.keys($line-height-tokens)}';
+  }
+  @return $value;
+}
+
+/// Récupère une durée/timing de transition
+/// @param {String} $key - Clé dans $transition-tokens
+/// @return {String|Number} Transition value (ms or easing function)
+@function transition($key) {
+  $value: map.get($transition-tokens, $key);
+  @if $value == null {
+    @error 'Transition key "#{$key}" not found. Available: #{map.keys($transition-tokens)}';
+  }
+  @return $value;
+}
+
+
+
+// Note: role-color() function is defined in _colors.scss (not here)
+// This file only contains DATA tokens (maps), not functions
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES - Pour accès runtime
+// =============================================================================
+
+:root {
+  // === Opacity ===
+  --opacity-xs: #{opacity('xs')};
+  --opacity-sm: #{opacity('sm')};
+  --opacity-md: #{opacity('md')};
+  --opacity-lg: #{opacity('lg')};
+  --opacity-xl: #{opacity('xl')};
+
+  // === Z-Index ===
+  --z-dropdown: #{z-index('dropdown')};
+  --z-sticky: #{z-index('sticky')};
+  --z-fixed: #{z-index('fixed')};
+  --z-modal-backdrop: #{z-index('modal-backdrop')};
+  --z-modal: #{z-index('modal')};
+  --z-popover: #{z-index('popover')};
+  --z-tooltip: #{z-index('tooltip')};
+  --z-notification: #{z-index('notification')};
+
+  // === Role colors ===
+  --color-admin: #{role-color('admin', 'base')};
+  --color-abonne: #{role-color('abonne', 'base')};
+  --color-free: #{role-color('free', 'base')};
+  --color-visitor: #{role-color('visitor', 'base')};
+}
+
+// ============================================================================
+// GUIDELINES
+// ============================================================================
+// 1. _tokens.scss = SOURCE DE VÉRITÉ UNIQUE (pas d'autres hardcodes)
+// 2. Tous les autres abstracts (_spacing, _colors, _motion, etc.) dérivent
+// 3. Jamais hardcoder couleur, opacity, z-index, gradient ailleurs
+// 4. Pour ajouter token: définir ici PUIS utiliser dans autres files
+// 5. Tokens = design system source (1 change = partout changé)
+// 6. Format: maps organisées par catégorie, functions pour accès
+// 7. Respecter nommage semantic vs technical (success vs green-500)
+// 8. CSS vars pour accès JS (@root)
+// 9. Legacy compatibility: garder ancien noms si migration en cours
+// 10. Documenter contexte d'usage (où/pourquoi token existe)

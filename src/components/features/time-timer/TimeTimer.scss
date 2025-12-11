@@ -43,7 +43,7 @@
     max-width: 280px;
 
     .time-timer--compact & {
-      max-width: 160px;
+      max-width: spacing('160');
     }
   }
 
@@ -82,7 +82,7 @@
   }
 
   &__time-text {
-    font-size: 3rem;
+    font-size: font-size('5xl');
     font-weight: $font-weight-bold;
     color: $color-text;
     line-height: 1;

@@ -1,0 +1,161 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// BORDER RADIUS SYSTEM - Centralis�
+/// ============================================================================
+/// Source de v�rit� pour tous les border-radius du design system.
+/// Assure coh�rence et pr�dictibilit� visuelle.
+///
+/// Utilisation:
+///   border-radius: radius(md);
+///   border-radius: radius-value(lg);
+/// ============================================================================
+
+// =============================================================================
+// RADIUS - Variables individuelles
+// =============================================================================
+
+/// Border radius values - progression de 2px (standard)
+$radius-xs: 2px; // Subtly rounded corners
+$radius-sm: 4px; // Slightly rounded
+$radius-md: 8px; // Standard rounded corners
+$radius-lg: 16px; // Large rounded corners
+$radius-xl: 20px; // Extra large
+$radius-2xl: 24px; // 2XL (rare)
+$radius-full: 50%; // Completely rounded (circles, pills)
+
+// =============================================================================
+// RADIUS MAP - Tous les border-radius disponibles
+// =============================================================================
+
+/// Map centralis�e contenant tous les border-radius du syst�me
+$radius-scale: (
+  // === Scale primaire ===
+  'xs': $radius-xs,
+  // 2px
+  'sm': $radius-sm,
+  // 4px
+  'md': $radius-md,
+  // 8px
+  'lg': $radius-lg,
+  // 16px
+  'xl': $radius-xl,
+  // 20px
+  '2xl': $radius-2xl,
+  // 24px
+  'full': $radius-full,
+
+  // 50%
+  // === Aliases fr�quents ===
+  'none': 0,
+  'default': $radius-md,
+  'card': $radius-lg,
+  'button': $radius-md,
+  'input': $radius-md,
+  'avatar': $radius-full,
+  'badge': $radius-full,
+  'modal': $radius-lg,
+  'drawer': $radius-lg,
+  'tooltip': $radius-sm,
+
+  // === Component specific ===
+  'rounded-2px': 2px,
+  // Subtlest curve
+  'rounded-4px': 4px,
+  'rounded-6px': 6px,
+  'rounded-8px': 8px,
+  'rounded-10px': 10px,
+  'rounded-12px': 12px,
+  'rounded-14px': 14px,
+  'rounded-16px': 16px,
+  'rounded-20px': 20px,
+  'rounded-24px': 24px
+);
+
+// =============================================================================
+// FUNCTIONS - Accesseurs pour border-radius
+// =============================================================================
+
+/// R�cup�re une valeur de border-radius depuis la scale
+/// @param {String} $key - Cl� dans $radius-scale
+/// @return {String} Border-radius value
+/// @example
+///   border-radius: radius(md);
+///   border-radius: radius(button);
+@function radius($key) {
+  $value: map.get($radius-scale, $key);
+  @if $value == null {
+    @error 'Radius key "#{$key}" not found. Available: #{map.keys($radius-scale)}';
+  }
+  @return $value;
+}
+
+/// Alias pour radius() - utiliser quand nom explicite n�cessaire
+/// @param {String} $key - Cl� dans $radius-scale
+/// @return {String} Border-radius value
+@function radius-value($key) {
+  @return radius($key);
+}
+
+// =============================================================================
+// MIXINS - Helper pour border-radius courants
+// =============================================================================
+
+/// Applique un radius standard (card/container)
+/// @param {String} $size - Taille du radius (d�faut: md)
+@mixin rounded($size: md) {
+  border-radius: radius($size);
+}
+
+/// Cr�e un bouton avec border-radius (button specific)
+@mixin button-radius {
+  border-radius: radius(button);
+}
+
+/// Cr�e un input/select avec border-radius (input specific)
+@mixin input-radius {
+  border-radius: radius(input);
+}
+
+/// Cr�e un avatar circulaire
+@mixin avatar-radius {
+  border-radius: radius(avatar);
+}
+
+/// Cr�e un badge/pill shape
+@mixin badge-radius {
+  border-radius: radius(badge);
+}
+
+/// Cr�e un modal/drawer avec radius
+@mixin modal-radius {
+  border-radius: radius(modal);
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES - Pour acc�s runtime
+// =============================================================================
+
+:root {
+  --radius-xs: #{$radius-xs};
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-full: #{$radius-full};
+}
+
+// ============================================================================
+// GUIDELINES
+// ============================================================================
+// 1. JAMAIS hardcoder border-radius - utiliser radius($key)
+// 2. Utiliser aliases (card, button, input, avatar) pour clart�
+// 3. radius-full (50%) uniquement pour cercles/pills
+// 4. Coh�rence: respecter progression 2px-4px-8px-16px
+// 5. Mobile-first: radius consistent across breakpoints (exception: rare responsive changes)
+// 6. Accessibilit�: radius ne doit pas g�ner interaction (min 44x44 touch targets)
+// 7. Pour nouvelles valeurs, ajouter � $radius-scale map
+// 8. Documenter radius custom avec commentaires
+// 9. WCAG: Assurer contraste sufficient autour des corners arrondis
+// 10. Performance: �viter border-radius excessive sur animations (reflow cost)

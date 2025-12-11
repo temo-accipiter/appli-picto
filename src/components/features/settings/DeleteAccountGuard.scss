@@ -4,11 +4,11 @@
 /* BEM-lite, doux & accessible */
 .delete-guard {
   display: grid;
-  gap: 12px;
-  padding: 16px;
+  gap: spacing('sm');
+  padding: spacing('md');
   background: var(--card-bg, #{surface(bg)});
   border: 1px solid color.change(gray(900), $alpha: 0.08);
-  border-radius: 16px;
+  border-radius: radius('lg');
   box-shadow: 0 1px 2px color.change(gray(900), $alpha: 0.04);
   animation: deleteGuardFadeIn 0.2s ease-out;
 }
@@ -41,8 +41,8 @@
 
 .delete-guard__error {
   margin: 4px 0 0;
-  padding: 8px 12px;
-  border-radius: 10px;
+  padding: spacing('sm') spacing('sm');
+  border-radius: radius('rounded-10px');
   background: var(--danger-50, #{red(50)});
   border: 1px solid var(--danger-200, #{red(200)});
   color: var(--danger-700, #{red(700)});

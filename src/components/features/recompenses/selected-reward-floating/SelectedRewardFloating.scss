@@ -21,7 +21,7 @@
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  z-index: 999;
+  z-index: z-index('modal');
   pointer-events: none;
   opacity: 0.95;
 
@@ -32,7 +32,7 @@
 
   .card-edition.no-actions {
     animation: pulse-light 2s infinite;
-    border-radius: 0.5rem;
+    border-radius: radius('md');
     overflow: hidden;
   }
 

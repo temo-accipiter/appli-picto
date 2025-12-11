@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: z-index('max');
   animation: fadeIn 0.2s ease-in-out;
 }
 
@@ -29,7 +29,7 @@
   width: 14px;
   height: 14px;
   background-color: var(--accent-color, #{blue(500)});
-  border-radius: 50%;
+  border-radius: radius('full');
   animation: bounce 0.6s infinite ease-in-out;
 }
 

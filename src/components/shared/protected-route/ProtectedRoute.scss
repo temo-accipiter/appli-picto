@@ -11,7 +11,7 @@
   color: #{gray(600)};
   animation: fadeIn 0.15s ease-in-out;
   text-align: center;
-  padding: 2rem;
+  padding: spacing('xl');
   opacity: 0;
   animation-fill-mode: forwards;
 }
@@ -23,11 +23,11 @@
 
 .protected-route .spinner {
   margin-top: 1rem;
-  width: 32px;
-  height: 32px;
+  width: spacing('32');
+  height: spacing('32');
   border: 3px solid #{gray(300)};
   border-top: 3px solid #{blue(500)};
-  border-radius: 50%;
+  border-radius: radius('full');
   animation: spin 1s linear infinite;
 }
 

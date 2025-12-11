@@ -6,25 +6,25 @@
   align-items: center;
   overflow: hidden;
   background-color: #{gray(100)};
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  padding: spacing('sm');
+  border-radius: radius('md');
   box-sizing: border-box;
 }
 
 .image-preview--sm {
-  width: 60px;
-  height: 60px;
+  width: spacing('60');
+  height: spacing('60');
 }
 
 .image-preview--md {
-  width: 100px;
-  height: 100px;
+  width: spacing('100');
+  height: spacing('100');
 }
 
 .image-preview--lg {
-  width: 160px;
-  height: 160px;
-  min-height: 160px;
+  width: spacing('160');
+  height: spacing('160');
+  min-height: spacing('160');
   display: flex; // ✅ essentiel ici
   justify-content: center;
   align-items: center;

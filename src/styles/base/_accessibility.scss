@@ -1,0 +1,466 @@
+@charset 'UTF-8';
+
+/// ============================================================================
+/// ACCESSIBILITY - WCAG 2.2 AA Compliance
+/// ============================================================================
+/// Styles et helpers pour accessibilit� conforme � WCAG AA.
+/// Respecte pr�f�rences utilisateur (prefers-reduced-motion, prefers-color-scheme).
+/// Optimis� pour enfants TSA (clear, predictable, calm design).
+/// ============================================================================
+
+// =============================================================================
+// FOCUS MANAGEMENT - Keyboard navigation
+// =============================================================================
+
+/// Supprime outline par d�faut et applique focus ring custom
+:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px var(--focus-ring-color);
+}
+
+/// Focus visible sur les inputs
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--focus-ring-color);
+  box-shadow: 0 0 0 3px rgba(0, 119, 194, 0.1);
+}
+
+/// Focus visible sur buttons
+button:focus-visible,
+a:focus-visible,
+[role='button']:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px var(--focus-ring-color);
+}
+
+/// Focus visible sur checkboxes et radios
+input[type='checkbox']:focus-visible,
+input[type='radio']:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+// =============================================================================
+// SCREEN READER ONLY TEXT - Accessible labels
+// =============================================================================
+
+/// Text visible uniquement aux lecteurs d'�cran
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+/// Interactive sr-only (pour skip links)
+.sr-only:focus,
+.visually-hidden:focus {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+// =============================================================================
+// SKIP NAVIGATION - Keyboard shortcut
+// =============================================================================
+
+/// Skip to main content link (first focusable element)
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: var(--color-text-invert);
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: z-index('tooltip');
+
+  &:focus {
+    top: 0;
+  }
+}
+
+// =============================================================================
+// TEXT AND CONTRAST - WCAG AA requirement
+// =============================================================================
+
+/// Min line-height for readability (WCAG 1.5)
+body {
+  line-height: 1.5;
+}
+
+p,
+li,
+label {
+  line-height: 1.5;
+}
+
+/// Text spacing - generous for dyslexia (TSA)
+/// Letter spacing, word spacing, line height, paragraph spacing
+body {
+  letter-spacing: 0.02em;
+  word-spacing: 0.16em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em; // Headings slightly tighter
+}
+
+// =============================================================================
+// COLOR AND CONTRAST - Minimum 4.5:1 for normal text (WCAG AA)
+// =============================================================================
+
+/// Ensure minimum contrast ratios
+/// Text on backgrounds: 4.5:1 (normal), 3:1 (large)
+body {
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  // Contrast: Meets WCAG AA (dark text on light/light on dark)
+}
+
+/// Links - underline for clarity (not color alone)
+a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+
+  &:visited {
+    color: var(--color-primary);
+  }
+}
+
+/// Text on colored backgrounds (must maintain 4.5:1)
+.badge,
+[role='badge'] {
+  color: var(--color-text-invert);
+  // Dark text on light badge, light on dark badge
+}
+
+// =============================================================================
+// TOUCH TARGETS - Minimum 44x44px (WCAG AAA)
+// =============================================================================
+
+/// Interactive elements must be >= 44x44px
+button,
+a,
+input[type='checkbox'],
+input[type='radio'],
+[role='button'],
+[role='menuitem'] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/// Touch target padding for smaller elements
+a[href],
+button,
+input[type='button'],
+input[type='submit'],
+input[type='reset'],
+input[type='checkbox'],
+input[type='radio'] {
+  // Already sized to 44x44 via mixin
+  // Add padding to reach minimum if needed
+}
+
+// =============================================================================
+// REDUCED MOTION - Accessibility first
+// =============================================================================
+
+/// Respect user preference for reduced motion (OS + app calm mode)
+/// Already handled in _motion.scss, but duplication ensures coverage
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/// Calm mode override (app-specific)
+[data-calm-mode='true'],
+.calm-mode {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// =============================================================================
+// FORCED COLORS MODE - High contrast windows mode
+// =============================================================================
+
+@media (forced-colors: active) {
+  * {
+    outline-width: 1px;
+  }
+
+  button,
+  a,
+  input {
+    outline: 1px solid currentColor;
+  }
+
+  ::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}
+
+// =============================================================================
+// IMAGES AND ICONS - Alt text requirement
+// =============================================================================
+
+/// Ensure all images have alt text (validate in HTML)
+/// This is enforcement for missing alt text (debugging)
+img:not([alt]),
+[role='img']:not([aria-label]):not([aria-labelledby]) {
+  outline: 2px dashed #f44336;
+  outline-offset: 2px;
+  // Visible in dev - remove in prod if needed
+}
+
+// =============================================================================
+// FORM LABELS - Always visible
+// =============================================================================
+
+/// Labels must always be visible (never placeholder-only)
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/// Required field indicator
+label[required]::after,
+label[aria-required='true']::after {
+  content: ' *';
+  color: var(--color-error);
+  aria-label: 'required';
+}
+
+/// Error messages visible and linked to input
+[role='alert'],
+.error-message {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+
+/// Disabled form controls
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+// =============================================================================
+// TABLES - Accessibility structure
+// =============================================================================
+
+/// Table headers semantic
+th {
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+}
+
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+// =============================================================================
+// HEADINGS - Hierarchy
+// =============================================================================
+
+/// Heading hierarchy (h1 > h2 > h3...)
+/// Must use semantic tags, not divs with role
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+h5,
+h6 {
+  font-size: 0.875rem;
+}
+
+// =============================================================================
+// LISTS - Proper semantics
+// =============================================================================
+
+/// Ordered and unordered lists
+ol,
+ul {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+
+  li {
+    margin-bottom: 0.5em;
+  }
+}
+
+// =============================================================================
+// LANGUAGE IDENTIFICATION - i18n
+// =============================================================================
+
+/// Mark language changes (helps screen readers)
+// HTML should have lang="fr" at document root
+[lang] {
+  // Content in different language - screen readers will switch
+}
+
+// =============================================================================
+// LIVE REGIONS - Dynamic content
+// =============================================================================
+
+/// Live region for status updates (toasts, alerts)
+[role='status'],
+[role='alert'],
+[aria-live] {
+  // Already marked with ARIA - just ensure visibility
+}
+
+// =============================================================================
+// MODAL DIALOGS - Proper semantics
+// =============================================================================
+
+[role='dialog'] {
+  // Must trap focus within dialog
+  // Must restore focus when dialog closes
+  // Must have aria-labelledby or aria-label
+}
+
+// =============================================================================
+// CAROUSEL / SLIDER - Keyboard navigation
+// =============================================================================
+
+[role='region'][aria-label*='carousel'],
+[role='region'][aria-label*='slider'] {
+  // Must support keyboard arrows
+  // Must have pause button for auto-play
+}
+
+// =============================================================================
+// GUIDELINES FOR IMPLEMENTATION
+// =============================================================================
+
+// ============================================================================
+// WCAG 2.2 REQUIREMENTS CHECKLIST
+// ============================================================================
+// 1. PERCEIVED
+//     Distinguishable:
+//      - Color not sole means of conveying info (use labels + icons)
+//      - Contrast >= 4.5:1 (normal), 3:1 (large text)
+//      - Resize text up to 200% without loss of content
+//      - Images of text avoided
+//
+// 2. OPERABLE
+//     Keyboard accessible:
+//      - All functionality available via keyboard
+//      - No keyboard trap (except intentional like modals)
+//      - Focus visible and in logical order
+//      - Skip links for repetitive content
+//     Enough time:
+//      - No auto-play animations (or user can pause)
+//      - Respect prefers-reduced-motion
+//      - No time-limited interactions (or extend time)
+//     Seizure prevention:
+//      - No flashing > 3/sec
+//      - No animated GIFs with strobes
+//     Touch targets:
+//      - >= 44x44px (WCAG AAA)
+//      - >= 24x24px minimum (WCAG AA)
+//
+// 3. UNDERSTANDABLE
+//     Readable:
+//      - Page lang declared (html lang="fr")
+//      - Avoid jargon, use clear language
+//      - Lists structured semantically
+//     Predictable:
+//      - Consistent navigation
+//      - Consistent component behavior
+//      - No unexpected context changes
+//     Input assistance:
+//      - Clear labels (not just placeholder)
+//      - Error detection & suggestions
+//      - Confirmation for important actions
+//
+// 4. ROBUST
+//     Compatible:
+//      - Valid HTML markup
+//      - Proper ARIA roles/attributes
+//      - No conflicting ids
+//      - Test with screen readers (NVDA, JAWS, VoiceOver)
+
+// ============================================================================
+// TSA SPECIFIC CONSIDERATIONS
+// ============================================================================
+// - Calm visual design (smooth animations, <0.3s)
+// - Predictable, simple navigation
+// - Clear visual hierarchy
+// - Avoid sensory overload (reduce animations, clear focus)
+// - High contrast text on buttons/links
+// - Generous spacing between interactive elements
+// - Clear feedback on interactions
+// - Consistent terminology throughout app
+// - Simple language, avoid idioms
+// - Provide context and help text

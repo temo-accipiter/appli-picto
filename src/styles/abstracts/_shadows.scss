@@ -1,0 +1,289 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// SHADOWS SYSTEM - Centralis�
+/// ============================================================================
+/// Source de v�rit� pour tous les box-shadow et text-shadow.
+/// Cr�e la hi�rarchie d'�l�vation (elevation system) du design.
+///
+/// Utilisation:
+///   box-shadow: shadow(sm);
+///   box-shadow: shadow(card, hover);
+///   box-shadow: shadow(admin-ui, admin);
+/// ============================================================================
+
+// =============================================================================
+// SHADOW VARIABLES - Ombres de base
+// =============================================================================
+
+/// Box shadows - elevation scale (distance from surface)
+$shadow-none: none;
+$shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.12);
+$shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.15);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+$shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.1);
+$shadow-2xl: 0 10px 40px rgba(0, 0, 0, 0.3);
+
+// Legacy compatibility
+$box-shadow: $shadow-sm;
+$box-shadow-hover: $shadow-lg;
+
+// =============================================================================
+// SHADOW MAPS - Tous les shadows par cat�gorie
+// =============================================================================
+
+/// Elevation shadows - standard elevation scale
+$elevation-shadows: (
+  'none': $shadow-none,
+  'xs': $shadow-xs,
+  // Subtle, nearly flat
+  'sm': $shadow-sm,
+  // Slightly elevated
+  'md': $shadow-md,
+  // Medium elevation
+  'lg': $shadow-lg,
+  // Higher elevation
+  'xl': $shadow-xl,
+  // Much higher
+  '2xl': $shadow-2xl,
+
+  // Maximum elevation
+  // === Aliases ===
+  'default': $shadow-sm,
+  'subtle': $shadow-xs,
+  'raised': $shadow-md,
+  'floating': $shadow-lg,
+  'modal': $shadow-2xl,
+);
+
+/// Card/Container shadows - specific to card components
+$card-shadows: (
+  'default': $shadow-sm,
+  'hover': $shadow-lg,
+  'focus': $shadow-lg,
+  'active': $shadow-lg,
+  'disabled': $shadow-none,
+  'flat': $shadow-none,
+  'elevated': $shadow-lg,
+);
+
+/// Role-specific shadows (admin, abonn�, free, visitor)
+$role-shadows: (
+  'admin': (
+    'default': 0 0 24px rgba(0, 0, 0, 0.35),
+    'hover': 0 0 32px rgba(0, 0, 0, 0.45),
+  ),
+  'abonne': (
+    'default': 0 2px 8px rgba(34, 197, 94, 0.3),
+    'hover': 0 4px 16px rgba(34, 197, 94, 0.4),
+  ),
+  'free': (
+    'default': 0 2px 8px rgba(100, 116, 139, 0.3),
+    'hover': 0 4px 16px rgba(100, 116, 139, 0.4),
+  ),
+  'visitor': (
+    'default': 0 2px 8px rgba(234, 88, 12, 0.3),
+    'hover': 0 4px 16px rgba(234, 88, 12, 0.4),
+  ),
+);
+
+/// Button shadows
+$button-shadows: (
+  'default': $shadow-sm,
+  'hover': $shadow-md,
+  'active': $shadow-xs,
+  'focus': $shadow-md,
+  'disabled': $shadow-none,
+);
+
+/// Badge/Pill shadows
+$badge-shadows: (
+  'default': $shadow-xs,
+  'hover': $shadow-sm,
+);
+
+/// Input/Form shadows
+$input-shadows: (
+  'default': $shadow-xs,
+  'hover': $shadow-sm,
+  'focus': 0 0 0 3px rgba(0, 119, 194, 0.1),
+  // Focus ring effect
+  'error': 0 0 0 3px rgba(244, 67, 54, 0.1),
+  // Error highlight
+  'disabled': $shadow-none,
+);
+
+/// Admin UI specific shadows
+$admin-ui-shadows: (
+  'default': 0 4px 12px rgba(0, 0, 0, 0.15),
+  'hover': 0 8px 24px rgba(0, 0, 0, 0.2),
+  'panel': 0 2px 8px rgba(0, 0, 0, 0.08),
+  'dropdown': 0 10px 40px rgba(0, 0, 0, 0.3),
+  'modal': 0 25px 50px rgba(0, 0, 0, 0.3),
+);
+
+/// Modal/Overlay shadows
+$modal-shadows: (
+  'default': $shadow-2xl,
+  'inner': inset 0 0 24px rgba(0, 0, 0, 0.1),
+);
+
+/// Text shadows (pour readability sur images)
+$text-shadows: (
+  'none': none,
+  'sm': 0 1px 3px rgba(0, 0, 0, 0.3),
+  'md': 0 2px 4px rgba(0, 0, 0, 0.4),
+  'lg': 0 4px 8px rgba(0, 0, 0, 0.5),
+);
+
+// =============================================================================
+// FUNCTIONS - Accesseurs pour shadows
+// =============================================================================
+
+/// R�cup�re une shadow depuis la elevation scale
+/// @param {String} $key - Cl� dans $elevation-shadows
+/// @return {String} Box-shadow value
+/// @example
+///   box-shadow: shadow(lg);
+@function shadow($key) {
+  $value: map.get($elevation-shadows, $key);
+  @if $value == null {
+    @error 'Shadow key "#{$key}" not found in $elevation-shadows';
+  }
+  @return $value;
+}
+
+/// R�cup�re une card shadow (default ou hover state)
+/// @param {String} $state - 'default', 'hover', 'focus', 'active'
+/// @return {String} Box-shadow value
+/// @example
+///   &:hover { box-shadow: card-shadow(hover); }
+@function card-shadow($state: 'default') {
+  $value: map.get($card-shadows, $state);
+  @if $value == null {
+    @error 'Card shadow state "#{$state}" not found. Available: #{map.keys($card-shadows)}';
+  }
+  @return $value;
+}
+
+/// R�cup�re une shadow sp�cifique � un r�le
+/// @param {String} $role - 'admin', 'abonne', 'free', 'visitor'
+/// @param {String} $state - 'default', 'hover'
+/// @return {String} Box-shadow value
+/// @example
+///   box-shadow: role-shadow(admin, hover);
+@function role-shadow($role, $state: 'default') {
+  $role-map: map.get($role-shadows, $role);
+  @if $role-map == null {
+    @error 'Role "#{$role}" not found in $role-shadows';
+  }
+  $value: map.get($role-map, $state);
+  @if $value == null {
+    @error 'State "#{$state}" not found for role "#{$role}"';
+  }
+  @return $value;
+}
+
+/// R�cup�re une admin UI shadow
+/// @param {String} $key - 'default', 'hover', 'panel', 'dropdown', 'modal'
+/// @return {String} Box-shadow value
+/// @example
+///   box-shadow: admin-shadow(dropdown);
+@function admin-shadow($key: 'default') {
+  $value: map.get($admin-ui-shadows, $key);
+  @if $value == null {
+    @error 'Admin shadow key "#{$key}" not found. Available: #{map.keys($admin-ui-shadows)}';
+  }
+  @return $value;
+}
+
+/// R�cup�re une button shadow
+/// @param {String} $state - 'default', 'hover', 'active', 'focus'
+/// @return {String} Box-shadow value
+/// @example
+///   &:hover { box-shadow: button-shadow(hover); }
+@function button-shadow($state: 'default') {
+  $value: map.get($button-shadows, $state);
+  @if $value == null {
+    @error 'Button shadow state "#{$state}" not found. Available: #{map.keys($button-shadows)}';
+  }
+  @return $value;
+}
+
+/// R�cup�re une text shadow
+/// @param {String} $key - 'sm', 'md', 'lg'
+/// @return {String} Text-shadow value
+/// @example
+///   text-shadow: text-shadow(lg);
+@function text-shadow($key: 'md') {
+  $value: map.get($text-shadows, $key);
+  @if $value == null {
+    @error 'Text shadow key "#{$key}" not found. Available: #{map.keys($text-shadows)}';
+  }
+  @return $value;
+}
+
+// =============================================================================
+// MIXINS - Helper pour shadows courants
+// =============================================================================
+
+/// Applique une card shadow avec transition
+@mixin card-shadow-interactive {
+  box-shadow: card-shadow(default);
+  transition: box-shadow timing(xs) easing(smooth);
+
+  &:hover,
+  &:focus-within {
+    box-shadow: card-shadow(hover);
+  }
+
+  &:active {
+    box-shadow: card-shadow(active);
+  }
+}
+
+/// Applique une elevation shadow
+@mixin elevated($level: 'md') {
+  box-shadow: shadow($level);
+}
+
+/// Applique un modal/overlay backdrop shadow
+@mixin modal-shadow {
+  box-shadow: shadow(2xl);
+}
+
+/// Reset shadow (remove entirely)
+@mixin shadow-none {
+  box-shadow: none;
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES - Pour acc�s runtime
+// =============================================================================
+
+:root {
+  // === Elevation shadows ===
+  --shadow-xs: #{$shadow-xs};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+  --shadow-2xl: #{$shadow-2xl};
+}
+
+// ============================================================================
+// GUIDELINES
+// ============================================================================
+// 1. JAMAIS hardcoder box-shadow - utiliser shadow($key) ou card-shadow()
+// 2. Utiliser elevation system pour hi�rarchie (xs > sm > md > lg > xl > 2xl)
+// 3. Shadows renforcent hi�rarchie visuelle - coh�rent avec z-index
+// 4. Role-specific shadows pour distinction admin/abonn�/free/visitor
+// 5. Ajouter transition au hover (shadow() � shadow(hover))
+// 6. Input focus: utiliser shadow() + outline pour accessibilit�
+// 7. Modal/overlay: toujours utiliser shadow(2xl)
+// 8. Performance: Ombres peut co�ter en perf - limiter animations
+// 9. Couleur shadow: noir (dark) ou accent (colored emphasis)
+// 10. pour nouvelles ombres, ajouter � map correspondante
+// 11. Respecter contraste (ombre ne doit pas r�duire lisibilit�)

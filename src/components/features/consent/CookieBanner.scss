@@ -9,7 +9,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: z-index('max');
   background: #{color.change(surface(bg), $alpha: 0.96)};
   backdrop-filter: blur(6px);
   box-shadow: 0 -10px 30px #{color.change(gray(900), $alpha: 0.08)};
@@ -29,12 +29,12 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: spacing('md');
 
     @include respond-to(md) {
       flex-direction: row;
       align-items: flex-start;
-      gap: 24px;
+      gap: spacing('lg');
     }
   }
 
@@ -76,7 +76,7 @@
       &:focus-visible {
         outline: 2px solid #{blue(300)};
         outline-offset: 2px;
-        border-radius: 4px;
+        border-radius: radius('sm');
       }
     }
   }
@@ -84,7 +84,7 @@
   &__actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: spacing('sm');
     flex-shrink: 0;
 
     @include respond-to(md) {
@@ -106,7 +106,7 @@
     font: inherit;
     font-weight: 600;
     font-size: 0.9rem;
-    border-radius: 8px;
+    border-radius: radius('md');
     padding: 10px 16px;
     cursor: pointer;
     border: 1px solid #{gray(300)};

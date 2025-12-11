@@ -4,7 +4,7 @@
 @use '@styles/abstracts' as *;
 
 .image-analytics {
-  padding: 2rem;
+  padding: spacing('xl');
   max-width: 1200px;
   margin: 0 auto;
 
@@ -17,16 +17,16 @@
 
   &__error {
     color: var(--pastel-red, #{red(400)});
-    padding: 1rem;
+    padding: spacing('md');
     background: var(--pastel-red-lightest, #{red(50)});
-    border-radius: 8px;
+    border-radius: radius('md');
     border-left: 4px solid var(--pastel-red, #{red(400)});
   }
 
   &__empty {
     color: var(--text-muted, #{gray(600)});
     text-align: center;
-    padding: 2rem;
+    padding: spacing('xl');
   }
 
   &__grid {
@@ -44,7 +44,7 @@
 
 .stat-card {
   background: var(--white, #{surface(bg)});
-  border-radius: 8px;
+  border-radius: radius('md');
   padding: 1.5rem;
   box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
   transition:
@@ -66,7 +66,7 @@
   }
 
   &__value {
-    font-size: 2rem;
+    font-size: font-size('2xl');
     font-weight: 700;
     color: var(--text-dark, #{slate(700)});
     margin: 0;
@@ -114,7 +114,7 @@
 
     .stat-card__value {
       color: var(--text-dark, #{slate(700)});
-      font-size: 2.25rem;
+      font-size: font-size('4xl');
     }
   }
 }

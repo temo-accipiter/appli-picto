@@ -1,0 +1,85 @@
+@charset 'UTF-8';
+
+/// ============================================================================
+/// LIGHT THEME
+/// ============================================================================
+/// Variables CSS pour le th�me clair (d�faut).
+/// Peut �tre surcharg� par prefers-color-scheme: light ou [data-theme="light"]
+/// ============================================================================
+
+:root {
+  // === COLORS - LIGHT THEME ===
+  --color-primary: #0077c2; // Bleu principal
+  --color-secondary: #ef5350; // Rouge accent
+  --color-accent: #ffb400; // Jaune accent
+
+  // === TEXT COLORS ===
+  --color-text: #333333; // Texte sombre sur fond clair
+  --color-text-rgb: 51, 51, 51;
+  --color-text-invert: #ffffff; // Texte clair sur fond sombre
+  --color-text-muted: #6c757d; // Texte att�nu�
+
+  // === BACKGROUND COLORS ===
+  --color-bg: #ffffff; // Fond principal blanc
+  --color-surface: #f7f7f7; // Surface secondaire (cards, containers)
+  --color-border: #d0d7e0; // Bordures
+  --color-bg-soft: #f9f9f9; // Fond tr�s doux
+  --color-bg-hover: #f0f0f0; // Hover background
+
+  // === SEMANTIC COLORS ===
+  --color-success: #4caf50; // Succ�s vert
+  --color-warning: #ff9800; // Alerte orange
+  --color-error: #f44336; // Erreur rouge
+  --color-info: #2196f3; // Info bleu
+
+  // === SCROLLBAR ===
+  --c-scroll-thumb: #c0c0c0; // Thumb scrollbar gris
+  --c-scroll-track: #f5f5f5; // Track scrollbar
+
+  // === FOCUS RING ===
+  --focus-ring-color: #0077c2; // Focus ring bleu
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+// Light theme explicit (for clarity)
+@media (prefers-color-scheme: light) {
+  :root {
+    // Variables already set above for light (default)
+  }
+}
+
+// Data attribute override (for theme switcher)
+[data-theme='light'] {
+  // Light theme colors
+  --color-primary: #0077c2;
+  --color-secondary: #ef5350;
+  --color-accent: #ffb400;
+  --color-text: #333333;
+  --color-text-rgb: 51, 51, 51;
+  --color-text-invert: #ffffff;
+  --color-text-muted: #6c757d;
+  --color-bg: #ffffff;
+  --color-surface: #f7f7f7;
+  --color-border: #d0d7e0;
+  --color-bg-soft: #f9f9f9;
+  --color-bg-hover: #f0f0f0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  --c-scroll-thumb: #c0c0c0;
+  --c-scroll-track: #f5f5f5;
+  --focus-ring-color: #0077c2;
+}
+
+// ============================================================================
+// LIGHT THEME SPECIFICS
+// ============================================================================
+
+// Light theme background for body
+[data-theme='light'] {
+  color-scheme: light;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}

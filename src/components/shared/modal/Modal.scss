@@ -150,12 +150,12 @@
 
   // Mobile par défaut (320px-575px)
   padding: $spacing-md $spacing-sm;
-  min-height: 80px;
+  min-height: spacing('80');
 
   // Petite tablette (576px+)
   @include respond-to(sm) {
     padding: $spacing-lg $spacing-md;
-    min-height: 100px;
+    min-height: spacing('100');
   }
 
   // Scrollbar personnalisée
@@ -169,7 +169,7 @@
 
   &::-webkit-scrollbar-thumb {
     background: gray(400);
-    border-radius: 4px;
+    border-radius: radius('sm');
 
     &:hover {
       background: gray(500);
@@ -232,7 +232,7 @@
     transition:
       transform $transition-fast ease-out,
       box-shadow $transition-fast ease-out;
-    min-height: 44px;
+    min-height: spacing('44');
 
     &:hover {
       transform: translateY(-2px);
@@ -266,7 +266,7 @@
     transition:
       transform $transition-fast ease-out,
       box-shadow $transition-fast ease-out;
-    min-height: 44px;
+    min-height: spacing('44');
 
     &:hover {
       transform: translateY(-2px);
@@ -285,7 +285,7 @@
   height: 100vh;
   max-width: 100vw;
   max-height: 100vh;
-  border-radius: 0;
+  border-radius: radius('none');
   margin: 0;
   position: fixed;
   inset: 0;
@@ -345,10 +345,10 @@
   &::before {
     content: '';
     display: block;
-    width: 40px;
+    width: spacing('40');
     height: 4px;
     background-color: gray(300);
-    border-radius: 2px;
+    border-radius: radius('xs');
     margin: $spacing-sm auto;
     flex-shrink: 0;
   }

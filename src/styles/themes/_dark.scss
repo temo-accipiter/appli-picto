@@ -1,0 +1,132 @@
+@charset 'UTF-8';
+
+/// ============================================================================
+/// DARK THEME
+/// ============================================================================
+/// Variables CSS pour le th�me sombre.
+/// Activ� via prefers-color-scheme: dark ou [data-theme="dark"]
+/// ============================================================================
+
+// Dark theme via OS preference
+@media (prefers-color-scheme: dark) {
+  :root {
+    // === COLORS - DARK THEME ===
+    --color-primary: #4dabf7; // Bleu clair en dark mode
+    --color-secondary: #ff8a80; // Rouge clair
+    --color-accent: #ffd54f; // Jaune clair
+
+    // === TEXT COLORS ===
+    --color-text: #e2e8f0; // Texte clair sur fond sombre
+    --color-text-rgb: 226, 232, 240;
+    --color-text-invert: #0f172a; // Texte sombre sur fond clair (rare en dark)
+    --color-text-muted: #94a3b8; // Texte att�nu�
+
+    // === BACKGROUND COLORS ===
+    --color-bg: #0f172a; // Fond principal tr�s sombre (quasi noir)
+    --color-surface: #1e293b; // Surface secondaire (cards)
+    --color-border: #334155; // Bordures sombres
+    --color-bg-soft: #1a222f; // Fond tr�s doux
+    --color-bg-hover: #1e293b; // Hover background
+
+    // === SEMANTIC COLORS ===
+    --color-success: #4ade80; // Succ�s vert clair
+    --color-warning: #fbbf24; // Alerte orange clair
+    --color-error: #f87171; // Erreur rouge clair
+    --color-info: #60a5fa; // Info bleu clair
+
+    // === SCROLLBAR ===
+    --c-scroll-thumb: #475569; // Thumb scrollbar gris sombre
+    --c-scroll-track: #1e293b; // Track scrollbar sombre
+
+    // === FOCUS RING ===
+    --focus-ring-color: #4dabf7; // Focus ring bleu clair
+  }
+}
+
+// Dark theme explicit (data attribute)
+[data-theme='dark'] {
+  // === COLORS - DARK THEME ===
+  --color-primary: #4dabf7;
+  --color-secondary: #ff8a80;
+  --color-accent: #ffd54f;
+
+  // === TEXT COLORS ===
+  --color-text: #e2e8f0;
+  --color-text-rgb: 226, 232, 240;
+  --color-text-invert: #0f172a;
+  --color-text-muted: #94a3b8;
+
+  // === BACKGROUND COLORS ===
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-bg-soft: #1a222f;
+  --color-bg-hover: #1e293b;
+
+  // === SEMANTIC COLORS ===
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+
+  // === SCROLLBAR ===
+  --c-scroll-thumb: #475569;
+  --c-scroll-track: #1e293b;
+
+  // === FOCUS RING ===
+  --focus-ring-color: #4dabf7;
+}
+
+// ============================================================================
+// DARK THEME SPECIFICS
+// ============================================================================
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+
+  // Scrollbar in dark mode
+  scrollbar-color: var(--c-scroll-thumb) var(--c-scroll-track);
+}
+
+// Dark mode specific adjustments
+[data-theme='dark'] {
+  // Inputs should have darker background
+  input,
+  select,
+  textarea {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
+
+    &:focus {
+      background-color: #2d3748;
+    }
+  }
+
+  // Cards should have subtle elevation
+  .card,
+  [role='region'] {
+    background-color: var(--color-surface);
+  }
+
+  // Links should be brighter in dark mode
+  a {
+    color: var(--color-primary);
+  }
+}
+
+// ============================================================================
+// DARK MODE GUIDELINES
+// ============================================================================
+// 1. Background: #0f172a (very dark, OLED friendly)
+// 2. Surface: #1e293b (containers, cards)
+// 3. Text: #e2e8f0 (light gray, good contrast)
+// 4. Border: #334155 (subtle separation)
+// 5. Colors: Bright variants for visibility
+// 6. No pure white (#fff) - use light gray (#e2e8f0)
+// 7. Respect user preference (prefers-color-scheme)
+// 8. Test contrast in dark mode (still 4.5:1 WCAG AA)
+// 9. Avoid color alone - use patterns, icons for distinction
+// 10. TSA: Dark mode should still be calm, predictable, accessible

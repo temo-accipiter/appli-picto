@@ -174,7 +174,7 @@
   &:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 4px;
-    border-radius: 4px;
+    border-radius: radius('sm');
   }
 
   &.active {
@@ -188,7 +188,7 @@
 
 .nav-icon-link {
   font-size: 1.5rem;
-  padding: 0.5rem;
+  padding: spacing('sm');
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -199,7 +199,7 @@
   background: #{blue(500)};
   color: #{text(invert)};
   border: none;
-  border-radius: 8px;
+  border-radius: radius('md');
   padding: 0.4rem 0.8rem;
   font-size: 0.9rem;
   margin-left: 1rem;
@@ -223,9 +223,9 @@
   margin-left: 1rem;
 
   .navbar-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: spacing('36');
+    height: spacing('36');
+    border-radius: radius('full');
     overflow: hidden;
     border: 2px solid #{gray(300)};
 
@@ -237,9 +237,9 @@
   }
 
   .navbar-avatar-fallback {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: spacing('36');
+    height: spacing('36');
+    border-radius: radius('full');
     // WCAG 2.2 AA compliant - Ratio ~4.5:1
     background: #{gray(600)};
     display: flex;

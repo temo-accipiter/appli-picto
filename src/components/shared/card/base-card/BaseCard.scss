@@ -100,12 +100,12 @@
 
     button,
     [role='checkbox'] {
-      min-height: 44px; /* Touch target minimum */
-      min-width: 44px;
+      min-height: spacing('44'); /* Touch target minimum */
+      min-width: spacing('44');
       padding: $spacing-xs;
 
       @include respond-to(sm) {
-        min-height: 40px;
+        min-height: spacing('40');
         min-width: auto;
       }
     }

@@ -2,7 +2,8 @@
 // Forward uniquement les OUTILS (aucun CSS généré)
 
 // --- Outils SCSS (safe) ---
-@forward './tokens'; // maps SCSS
+@forward './tokens'; // maps SCSS + opacity/z-index functions
+@forward './borders'; // border-width() function + mixins
 @forward './functions'; // helpers
 @forward './breakpoints'; // map $breakpoints + function breakpoint()
 @forward './mixins'; // respond-to() + autres mixins

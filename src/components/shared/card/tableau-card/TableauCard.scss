@@ -26,7 +26,7 @@
     opacity: 0.5;
     cursor: grabbing;
     transform: scale(0.98);
-    z-index: 999;
+    z-index: z-index('modal');
   }
 
   // Carte cochée (tâche accomplie)

@@ -10,7 +10,7 @@
   margin: 0 auto;
 
   // Mobile par défaut (320px-767px)
-  padding: 1rem;
+  padding: spacing('md');
 
   &__header {
     display: flex;
@@ -43,10 +43,10 @@
 
   // Desktop (1024px+)
   @include respond-to(lg) {
-    padding: 2rem;
+    padding: spacing('xl');
 
     &__title {
-      font-size: 2rem;
+      font-size: font-size('2xl');
     }
   }
 
@@ -63,7 +63,7 @@
     .btn-refresh {
       background: var(--color-primary, #{purple(500)});
       border: none;
-      border-radius: 8px;
+      border-radius: radius('md');
       padding: 0.5rem 1rem;
       font-size: 1.25rem;
       cursor: pointer;
@@ -79,8 +79,8 @@
   &__error {
     background: #{red(50)};
     border: 2px solid #{red(200)};
-    border-radius: 12px;
-    padding: 2rem;
+    border-radius: radius('rounded-12px');
+    padding: spacing('xl');
     text-align: center;
 
     p {
@@ -92,7 +92,7 @@
       background: #{red(700)};
       color: #{text(invert)};
       border: none;
-      border-radius: 8px;
+      border-radius: radius('md');
       padding: 0.75rem 1.5rem;
       font-size: 1rem;
       cursor: pointer;
@@ -162,14 +162,14 @@
 .metric-card {
   background: #{surface(bg)};
   border: 2px solid var(--border-color, #{slate(200)});
-  border-radius: 12px;
+  border-radius: radius('rounded-12px');
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 1rem;
 
   // Mobile par défaut (320px-767px)
-  padding: 1rem;
+  padding: spacing('md');
 
   &:hover {
     box-shadow: 0 8px 16px #{color.change(gray(900), $alpha: 0.1)};
@@ -180,7 +180,7 @@
     line-height: 1;
     flex-shrink: 0;
     // Mobile: icône plus petite
-    font-size: 2rem;
+    font-size: font-size('2xl');
   }
 
   &__content {
@@ -202,7 +202,7 @@
     line-height: 1;
     margin-bottom: 0.25rem;
     // Mobile: valeur plus petite
-    font-size: 2rem;
+    font-size: font-size('2xl');
   }
 
   &__subtitle {

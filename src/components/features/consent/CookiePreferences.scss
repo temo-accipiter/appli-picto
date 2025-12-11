@@ -5,10 +5,10 @@
   position: fixed;
   inset: 0;
   background: color.change(gray(900), $alpha: 0.5);
-  z-index: 10000;
+  z-index: z-index('max');
   display: grid;
   place-items: center;
-  padding: 20px;
+  padding: spacing('lg');
 }
 
 .cookie-prefs__dialog {
@@ -17,7 +17,7 @@
   max-width: 800px;
   width: min(95vw, 800px);
   max-height: 90vh;
-  border-radius: 16px;
+  border-radius: radius('lg');
   box-shadow: 0 24px 64px color.change(gray(900), $alpha: 0.2);
   display: flex;
   flex-direction: column;
@@ -42,11 +42,11 @@
   .icon {
     background: transparent;
     border: none;
-    font-size: 24px;
+    font-size: font-size('2xl');
     line-height: 1;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 8px;
+    padding: spacing('sm');
+    border-radius: radius('md');
     color: gray(500);
     transition: all 0.15s ease;
 
@@ -64,18 +64,18 @@
 
 .cookie-prefs__body {
   flex: 1;
-  padding: 24px;
+  padding: spacing('lg');
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: spacing('lg');
 }
 
 .cookie-prefs__intro {
   background: blue(50);
   border: 1px solid blue(100);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: radius('rounded-12px');
+  padding: spacing('md');
   margin: 0;
 
   p {
@@ -88,8 +88,8 @@
 
 .cookie-prefs__fieldset {
   border: 1px solid gray(200);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: radius('rounded-12px');
+  padding: spacing('lg');
   background: gray(50);
   margin: 0;
 
@@ -109,8 +109,8 @@
 
 .cookie-prefs__category {
   display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: spacing('xs') spacing('sm');
+  border-radius: radius('xl');
   font-size: 0.9rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -159,11 +159,11 @@
 .cookie-prefs__checkbox {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: spacing('sm');
 
   input[type='checkbox'] {
-    width: 20px;
-    height: 20px;
+    width: spacing('20');
+    height: spacing('20');
     accent-color: blue(500);
     cursor: pointer;
 
@@ -184,8 +184,8 @@
 .cookie-prefs__info {
   background: blue(50);
   border: 1px solid blue(200);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: radius('rounded-12px');
+  padding: spacing('md');
   margin: 0;
 
   p {
@@ -210,7 +210,7 @@
       &:focus-visible {
         outline: 2px solid blue(500);
         outline-offset: 2px;
-        border-radius: 4px;
+        border-radius: radius('sm');
       }
     }
   }
@@ -225,7 +225,7 @@
 .cookie-prefs__actions {
   /* [Mobile-first] Base = mobile */
   display: flex;
-  gap: 12px;
+  gap: spacing('sm');
   justify-content: flex-end;
   flex-direction: column;
 
@@ -247,12 +247,12 @@
 .btn {
   border: 1px solid gray(300);
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: radius('md');
   cursor: pointer;
   font-weight: 600;
   font-size: 0.95rem;
   transition: all 0.15s ease;
-  min-width: 120px;
+  min-width: spacing('120');
 
   &:focus-visible {
     outline: 2px solid blue(500);
@@ -312,7 +312,7 @@
 
 /* [Mobile-first] Base = mobile */
 .cookie-prefs {
-  padding: 16px;
+  padding: spacing('md');
 }
 
 .cookie-prefs__dialog {
@@ -323,13 +323,13 @@
 .cookie-prefs__header,
 .cookie-prefs__body,
 .cookie-prefs__footer {
-  padding: 20px;
+  padding: spacing('lg');
 }
 
 /* Desktop (576px+) */
 @include respond-to(sm) {
   .cookie-prefs {
-    padding: 20px;
+    padding: spacing('lg');
   }
 
   .cookie-prefs__dialog {
@@ -342,7 +342,7 @@
   }
 
   .cookie-prefs__body {
-    padding: 24px;
+    padding: spacing('lg');
   }
 
   .cookie-prefs__footer {

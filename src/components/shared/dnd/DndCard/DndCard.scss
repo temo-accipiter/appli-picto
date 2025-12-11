@@ -39,7 +39,7 @@
 
   // État dragging
   &--dragging {
-    z-index: 1000;
+    z-index: z-index('modal');
     cursor: grabbing;
 
     .dnd-card__drag-handle {

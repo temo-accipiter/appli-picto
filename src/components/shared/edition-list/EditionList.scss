@@ -24,7 +24,7 @@
   &__empty {
     font-size: 1.1rem;
     color: var(--c-text-secondary);
-    padding: 1rem;
+    padding: spacing('md');
     border: 2px dashed var(--c-border);
     border-radius: var(--radius-lg);
     text-align: center;

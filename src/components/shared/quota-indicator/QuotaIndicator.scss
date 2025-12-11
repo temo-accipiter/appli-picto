@@ -5,11 +5,11 @@
 .quota-indicator {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
+  gap: spacing('sm');
+  padding: spacing('sm');
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: radius('md');
   transition: all 0.15s ease;
 
   &.clickable {
@@ -24,7 +24,7 @@
 
   // Tailles
   &.small {
-    padding: 8px;
+    padding: spacing('sm');
     gap: 6px;
 
     .quota-label {
@@ -41,8 +41,8 @@
   }
 
   &.medium {
-    padding: 12px;
-    gap: 8px;
+    padding: spacing('sm');
+    gap: spacing('sm');
 
     .quota-label {
       font-size: 0.875rem;
@@ -58,7 +58,7 @@
   }
 
   &.large {
-    padding: 16px;
+    padding: spacing('md');
     gap: 10px;
 
     .quota-label {
@@ -103,7 +103,7 @@
   .quota-label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: spacing('sm');
     font-weight: 600;
     color: var(--foreground);
 
@@ -122,7 +122,7 @@
     position: relative;
     width: 100%;
     background: var(--muted);
-    border-radius: 4px;
+    border-radius: radius('sm');
     overflow: hidden;
 
     .quota-fill {
@@ -132,7 +132,7 @@
         var(--primary) 0%,
         var(--primary-light) 100%
       );
-      border-radius: 4px;
+      border-radius: radius('sm');
       transition: width 0.15s ease;
 
       &.near-limit {
@@ -201,7 +201,7 @@
     padding: 6px 8px;
     background: var(--error-light);
     color: var(--error-dark);
-    border-radius: 4px;
+    border-radius: radius('sm');
     font-size: 0.75em;
     font-weight: 600;
 
@@ -217,7 +217,7 @@
     padding: 6px 8px;
     background: var(--primary-light);
     color: var(--primary-dark);
-    border-radius: 4px;
+    border-radius: radius('sm');
     font-size: 0.75em;
     font-weight: 600;
 
@@ -265,8 +265,8 @@
 // [Mobile-first] Base = mobile
 .quota-indicator {
   &.large {
-    padding: 12px;
-    gap: 8px;
+    padding: spacing('sm');
+    gap: spacing('sm');
 
     .quota-label {
       font-size: 0.875rem;
@@ -292,7 +292,7 @@
   /* Desktop (576px+) */
   @include respond-to(sm) {
     &.large {
-      padding: 16px;
+      padding: spacing('md');
       gap: 10px;
 
       .quota-label {
@@ -348,10 +348,10 @@
   &.compact {
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: spacing('sm');
 
     .quota-label {
-      min-width: 80px;
+      min-width: spacing('80');
     }
 
     .quota-bar {
@@ -359,13 +359,13 @@
     }
 
     .quota-details {
-      min-width: 60px;
+      min-width: spacing('60');
       justify-content: flex-end;
     }
   }
 
   &.minimal {
-    padding: 8px;
+    padding: spacing('sm');
     gap: 6px;
     border: none;
     background: transparent;

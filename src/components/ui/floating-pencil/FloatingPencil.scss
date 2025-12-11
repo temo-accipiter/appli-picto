@@ -7,8 +7,8 @@
   left: 1rem;
   z-index: $z-tooltip;
   background-color: var(--accent-color, #{blue(50)});
-  padding: 0.5rem;
-  border-radius: 9999px;
+  padding: spacing('sm');
+  border-radius: radius('full');
   box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
   display: inline-flex;
   align-items: center;

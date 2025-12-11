@@ -8,7 +8,7 @@
   font-size: 14px;
 
   .app-footer__nav {
-    margin-bottom: 8px;
+    margin-bottom: spacing('sm');
   }
 
   .app-footer__list {
@@ -37,7 +37,7 @@
         text-decoration: underline;
         outline: 2px solid currentColor;
         outline-offset: 3px;
-        border-radius: 2px;
+        border-radius: radius('xs');
       }
     }
   }

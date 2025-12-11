@@ -6,10 +6,10 @@
   left: 50%;
   transform: translateX(-50%);
   padding: 0.8rem 1.2rem;
-  border-radius: 8px;
+  border-radius: radius('md');
   font-size: 1rem;
   color: #{text(invert)};
-  z-index: 1000;
+  z-index: z-index('modal');
   box-shadow: 0 4px 8px #{color.change(gray(900), $alpha: 0.2)};
   max-width: 90%;
   text-align: center;

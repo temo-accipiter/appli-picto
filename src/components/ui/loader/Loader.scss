@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: z-index('max');
 }
 
 .loader-bounce {
@@ -20,7 +20,7 @@
   width: 12px;
   height: 12px;
   background-color: var(--accent-color, #{blue(600)});
-  border-radius: 50%;
+  border-radius: radius('full');
   animation: bounce 0.6s infinite ease-in-out;
 }
 

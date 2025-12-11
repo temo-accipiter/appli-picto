@@ -125,7 +125,7 @@
 
   // Dropdown content (Radix Portal)
   &__content {
-    z-index: 1000;
+    z-index: z-index('modal');
     width: var(--radix-select-trigger-width);
     max-height: var(--radix-select-content-available-height);
     overflow: hidden;

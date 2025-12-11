@@ -19,7 +19,7 @@
   background-color: var(--pastel-color);
   background-size: 200% auto;
   animation: shimmer 2s linear infinite;
-  border-radius: 2px;
+  border-radius: radius('xs');
   opacity: 0.8;
 }
 

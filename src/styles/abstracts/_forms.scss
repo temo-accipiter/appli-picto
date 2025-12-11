@@ -1,0 +1,313 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// FORMS SYSTEM - Centralis�
+/// ============================================================================
+/// Variables et mixins centralis�s pour les contr�les de formulaire.
+/// Assure coh�rence et accessibilit� WCAG AA pour inputs, selects, etc.
+///
+/// Utilisation:
+///   @include form-control();
+///   @include input-focus();
+///   border-radius: form-radius(input);
+/// ============================================================================
+
+// =============================================================================
+// FORM CONTROL DIMENSIONS
+// =============================================================================
+
+/// Hauteur standard des contr�les (buttons, inputs, selects)
+/// Respecte WCAG AA min 44x44px pour touch targets
+$form-control-height: 2.75rem; // 44px (44px mobile touch)
+$form-control-height-sm: 2.25rem; // 36px (small variant)
+$form-control-height-lg: 3.25rem; // 52px (large variant)
+
+/// Padding pour contr�les
+$form-control-padding-x: 1rem; // Horizontal padding
+$form-control-padding-y: 0.5rem; // Vertical padding (auto-adjusted per height)
+$form-control-padding-x-sm: 0.75rem; // Small variant
+$form-control-padding-x-lg: 1.25rem; // Large variant
+
+/// Border radius pour contr�les
+$form-control-radius: 0.5rem; // 8px (standard border-radius)
+$form-control-radius-sm: 0.375rem; // 6px (subtle)
+$form-control-radius-lg: 0.75rem; // 12px (generous)
+
+// =============================================================================
+// FORM CONTROL STATES COLORS
+// =============================================================================
+
+/// Colors pour les �tats de contr�les
+$form-control-border-color: #d0d7e0; // Default border
+$form-control-border-color-hover: #b8bfd1; // Hover border
+$form-control-border-color-focus: #0077c2; // Focus border (primary)
+$form-control-border-color-error: #f44336; // Error border
+$form-control-border-color-disabled: #e8e8e8; // Disabled
+
+$form-control-bg: #ffffff; // Default background
+$form-control-bg-hover: #f9f9f9; // Hover background
+$form-control-bg-focus: #f5f7fa; // Focus background
+$form-control-bg-disabled: #f5f5f5; // Disabled background
+
+// =============================================================================
+// FORM CONTROL FOCUS/OUTLINE STYLES
+// =============================================================================
+
+/// Focus ring (outline) values
+$form-focus-ring-width: 2px;
+$form-focus-ring-offset: 2px;
+$form-focus-ring-color: rgba(0, 119, 194, 0.5); // Primary with transparency
+
+// =============================================================================
+// FORM CONTROL MAP - Configurations pr�d�finies
+// =============================================================================
+
+/// Configurations compl�tes par taille
+$form-control-sizes: (
+  'sm': (
+    height: $form-control-height-sm,
+    padding-x: $form-control-padding-x-sm,
+    font-size: 0.875rem,
+  ),
+  'md': (
+    height: $form-control-height,
+    padding-x: $form-control-padding-x,
+    font-size: 1rem,
+  ),
+  'lg': (
+    height: $form-control-height-lg,
+    padding-x: $form-control-padding-x-lg,
+    font-size: 1.1rem,
+  ),
+);
+
+/// Border radius par contexte
+$form-radius-map: (
+  'input': $form-control-radius,
+  'select': $form-control-radius,
+  'button': $form-control-radius,
+  'checkbox': 0.25rem,
+  // Slight curve pour checkboxes
+  'radio': 50%,
+  // Full circle pour radio
+  'pill': 50%, // Full circle pour badges/pills
+);
+
+// =============================================================================
+// FUNCTIONS
+// =============================================================================
+
+/// R�cup�re la hauteur d'un contr�le de formulaire
+/// @param {String} $size - 'sm', 'md', 'lg'
+/// @return {String} Height value
+@function form-height($size: 'md') {
+  $config: map.get($form-control-sizes, $size);
+  @if $config == null {
+    @error 'Form size "#{$size}" not found. Available: #{map.keys($form-control-sizes)}';
+  }
+  @return map.get($config, height);
+}
+
+/// R�cup�re le padding horizontal d'un contr�le
+/// @param {String} $size - 'sm', 'md', 'lg'
+/// @return {String} Padding value
+@function form-padding($size: 'md') {
+  $config: map.get($form-control-sizes, $size);
+  @if $config == null {
+    @error 'Form size "#{$size}" not found';
+  }
+  @return map.get($config, padding-x);
+}
+
+/// R�cup�re le font-size d'un contr�le
+/// @param {String} $size - 'sm', 'md', 'lg'
+/// @return {String} Font-size value
+@function form-font-size($size: 'md') {
+  $config: map.get($form-control-sizes, $size);
+  @if $config == null {
+    @error 'Form size "#{$size}" not found';
+  }
+  @return map.get($config, font-size);
+}
+
+/// R�cup�re le border-radius pour un contexte
+/// @param {String} $context - 'input', 'select', 'button', 'radio', 'pill'
+/// @return {String} Border-radius value
+@function form-radius($context: 'input') {
+  $value: map.get($form-radius-map, $context);
+  @if $value == null {
+    @error 'Form radius context "#{$context}" not found. Available: #{map.keys($form-radius-map)}';
+  }
+  @return $value;
+}
+
+// =============================================================================
+// MIXINS - Form control styles
+// =============================================================================
+
+/// Base styles pour input/select/textarea
+/// @param {String} $size - 'sm', 'md', 'lg'
+@mixin form-control($size: 'md') {
+  display: block;
+  width: 100%;
+  padding: form-padding($size);
+  font-size: form-font-size($size);
+  line-height: 1.4;
+  font-family: var(--font-family-lexend);
+  color: var(--color-text);
+  background-color: $form-control-bg;
+  border: 1px solid $form-control-border-color;
+  border-radius: form-radius(input);
+  transition: all timing(xs) easing(smooth);
+
+  &:hover:not(:disabled) {
+    background-color: $form-control-bg-hover;
+    border-color: $form-control-border-color-hover;
+  }
+
+  &:focus-visible {
+    outline: none;
+    background-color: $form-control-bg-focus;
+    border-color: $form-control-border-color-focus;
+    box-shadow: 0 0 0 $form-focus-ring-width $form-focus-ring-color;
+  }
+
+  &:disabled {
+    background-color: $form-control-bg-disabled;
+    border-color: $form-control-border-color-disabled;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // Error state
+  &[aria-invalid='true'],
+  &.error,
+  &.is-invalid {
+    border-color: $form-control-border-color-error;
+    background-color: rgba(244, 67, 54, 0.02);
+
+    &:focus-visible {
+      box-shadow: 0 0 0 $form-focus-ring-width rgba(244, 67, 54, 0.3);
+    }
+  }
+}
+
+/// Applique height pour control (input, select, button)
+/// @param {String} $size - 'sm', 'md', 'lg'
+@mixin form-control-height($size: 'md') {
+  height: form-height($size);
+  display: flex;
+  align-items: center;
+}
+
+/// Applique padding pour control
+/// @param {String} $size - 'sm', 'md', 'lg'
+@mixin form-control-padding($size: 'md') {
+  padding: 0 form-padding($size);
+}
+
+/// Applique border-radius pour control
+/// @param {String} $context - 'input', 'button', 'radio', 'pill'
+@mixin form-control-radius($context: 'input') {
+  border-radius: form-radius($context);
+}
+
+/// Focus ring accessible
+@mixin form-focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 $form-focus-ring-width $form-focus-ring-color;
+}
+
+/// Input placeholder style
+@mixin form-placeholder {
+  color: var(--color-border);
+  opacity: 1;
+
+  &::placeholder {
+    color: var(--color-border);
+    opacity: 0.8;
+  }
+}
+
+/// Label style (accessible)
+@mixin form-label {
+  display: block;
+  font-size: form-font-size(sm);
+  font-weight: font-weight(medium);
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-family: var(--font-family-lexend);
+
+  &[aria-required='true']::after,
+  &.required::after {
+    content: ' *';
+    color: $form-control-border-color-error;
+  }
+}
+
+/// Error message style
+@mixin form-error {
+  font-size: 0.75rem;
+  color: $form-control-border-color-error;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/// Helper text style
+@mixin form-helper-text {
+  font-size: 0.75rem;
+  color: var(--color-border);
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/// Checkbox/Radio base style
+@mixin form-checkbox-radio {
+  margin: 0;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  accent-color: #0077c2;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES - Pour acc�s runtime
+// =============================================================================
+
+:root {
+  // === Dimensions ===
+  --form-control-height: #{$form-control-height};
+  --form-control-height-sm: #{$form-control-height-sm};
+  --form-control-height-lg: #{$form-control-height-lg};
+  --form-control-padding-x: #{$form-control-padding-x};
+
+  // === Colors ===
+  --form-control-border: #{$form-control-border-color};
+  --form-control-border-focus: #{$form-control-border-color-focus};
+  --form-control-border-error: #{$form-control-border-color-error};
+  --form-control-bg: #{$form-control-bg};
+  --form-control-bg-focus: #{$form-control-bg-focus};
+  --form-control-bg-disabled: #{$form-control-bg-disabled};
+
+  // === Radius ===
+  --form-control-radius: #{$form-control-radius};
+}
+
+// ============================================================================
+// GUIDELINES
+// ============================================================================
+// 1. Utiliser @include form-control() pour base input/select/textarea
+// 2. WCAG AA: height >= 44px (touch target minimum)
+// 3. Focus ring obligatoire: 2px, couleur contrast�e
+// 4. Labels accessibles: toujours associer <label for="id">
+// 5. Error handling: utiliser aria-invalid="true" pour screen readers
+// 6. Placeholder vs label: jamais UNIQUEMENT placeholder
+// 7. Font: Lexend pour labels/buttons (TSA accessibility)
+// 8. Color contrast: 4.5:1 pour labels, 3:1 pour helpers
+// 9. Spacing: gap min 0.5rem entre label et input
+// 10. Responsive: form-control adapte � taille (sm, md, lg)

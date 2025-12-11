@@ -2,7 +2,7 @@
 
 .demo-signed-image {
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: radius('md');
   border: 2px solid var(--border);
   transition: all 0.15s ease;
 
@@ -17,15 +17,15 @@
   align-items: center;
   justify-content: center;
   background: var(--muted);
-  border-radius: 8px;
+  border-radius: radius('md');
   border: 2px solid var(--border);
 
   .loading-spinner {
-    width: 20px;
-    height: 20px;
+    width: spacing('20');
+    height: spacing('20');
     border: 2px solid var(--border);
     border-top: 2px solid var(--primary);
-    border-radius: 50%;
+    border-radius: radius('full');
     animation: spin 1s linear infinite;
   }
 }
@@ -37,7 +37,7 @@
   justify-content: center;
   background: var(--destructive-light);
   border: 2px solid var(--destructive);
-  border-radius: 8px;
+  border-radius: radius('md');
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -68,22 +68,22 @@
 
 // [Mobile-first] Base = mobile
 .demo-signed-image {
-  border-radius: 6px;
+  border-radius: radius('rounded-6px');
 }
 
 .demo-image-loading,
 .demo-image-error {
-  border-radius: 6px;
+  border-radius: radius('rounded-6px');
 }
 
 /* Desktop (576px+) */
 @include respond-to(sm) {
   .demo-signed-image {
-    border-radius: 8px;
+    border-radius: radius('md');
   }
 
   .demo-image-loading,
   .demo-image-error {
-    border-radius: 8px;
+    border-radius: radius('md');
   }
 }
