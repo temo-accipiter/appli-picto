@@ -14,12 +14,17 @@
 
 /// Échelle de largeurs de bordure
 $border-widths: (
-  'thin': 1px,           // Bordures légères (dividers, subtle)
-  'base': 2px,           // Standard (default, focus rings)
-  'focus': 2px,          // Outline focus (WCAG AA)
-  'medium': 3px,         // Moyen (accents, thick lines)
-  'thick': 4px,          // Épais (special emphasis)
-  'extra': 6px,          // Très épais (strong visual)
+  'thin': 1px,
+  // Bordures légères (dividers, subtle)
+  'base': 2px,
+  // Standard (default, focus rings)
+  'focus': 2px,
+  // Outline focus (WCAG AA)
+  'medium': 3px,
+  // Moyen (accents, thick lines)
+  'thick': 4px,
+  // Épais (special emphasis)
+  'extra': 6px, // Très épais (strong visual)
 );
 
 /// Mappings sémantiques par contexte d'utilisation
@@ -52,7 +57,7 @@ $border-context-widths: (
   // Borders génériques
   'border-light': 1px,
   'border-base': 2px,
-  'border-thick': 3px,
+  'border-thick': 3px
 );
 
 /// ============================================================================
