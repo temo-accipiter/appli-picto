@@ -24,8 +24,8 @@
 }
 
 .slot {
-  min-height: rem(160);
-  border: rem(2) dashed transparent;
+  min-height: spacing('160');
+  border: spacing('2') dashed transparent;
   border-radius: $radius-md;
   overflow: visible; // Permet à l'image de dépasser lors du hover
 
@@ -98,15 +98,15 @@
     flex-shrink: 1;
 
     /* [Mobile-first] Base = mobile */
-    width: rem(32);
-    height: rem(32);
+    width: spacing('32');
+    height: spacing('32');
   }
 
   input[type='checkbox'] {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: rem(2) solid $color-primary;
+    border: spacing('2') solid $color-primary;
     background-color: #{surface(bg)};
     border-radius: $radius-sm;
     flex-shrink: 0;
@@ -115,8 +115,8 @@
     transition: background $transition-fast;
 
     /* [Mobile-first] Base = mobile */
-    width: rem(16);
-    height: rem(16);
+    width: spacing('16');
+    height: spacing('16');
 
     &:checked {
       background-color: $color-primary;
@@ -131,7 +131,7 @@
       color: #{text(invert)};
 
       /* [Mobile-first] Base = mobile */
-      font-size: rem(12);
+      font-size: spacing('12');
     }
   }
 
@@ -142,14 +142,14 @@
   }
 
   &.dragging {
-    box-shadow: 0 0 0 rem(3) $color-primary;
+    box-shadow: 0 0 0 spacing('3') $color-primary;
     opacity: 0.8;
   }
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    height: rem(300);
-    min-height: rem(260);
+    height: spacing('300');
+    min-height: spacing('260');
     padding: $spacing-sm;
 
     span {
@@ -162,11 +162,11 @@
     }
 
     input[type='checkbox'] {
-      width: rem(20);
-      height: rem(20);
+      width: spacing('20');
+      height: spacing('20');
 
       &:checked::after {
-        font-size: rem(14);
+        font-size: spacing('14');
       }
     }
   }

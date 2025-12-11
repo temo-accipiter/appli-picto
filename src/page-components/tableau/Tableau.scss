@@ -72,11 +72,11 @@
     animation: moveMetro 6s linear infinite;
 
     /* [Mobile-first] Base = mobile */
-    max-width: rem(260);
+    max-width: spacing('260');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      max-width: rem(400);
+      max-width: spacing('400');
     }
   }
 
@@ -86,11 +86,11 @@
 }
 
 .recompense-final {
-  margin-top: rem(48);
+  margin-top: spacing('48');
   text-align: center;
   background-color: gray(200);
   border-radius: $radius-lg;
-  box-shadow: 0 rem(6) rem(15) rgba(var(--color-text-rgb), 0.2);
+  box-shadow: 0 spacing('6') spacing('15') rgba(var(--color-text-rgb), 0.2);
   transition:
     transform $transition-base ease,
     filter $transition-base ease,
@@ -101,12 +101,12 @@
 
   /* [Mobile-first] Base = mobile */
   padding: $spacing-lg;
-  max-width: rem(260);
+  max-width: spacing('260');
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    padding: rem(24);
-    max-width: rem(300);
+    padding: spacing('24');
+    max-width: spacing('300');
   }
 
   img {
@@ -114,13 +114,13 @@
     margin-bottom: $spacing-md;
 
     /* [Mobile-first] Base = mobile */
-    width: rem(100);
-    height: rem(100);
+    width: spacing('100');
+    height: spacing('100');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      width: rem(150);
-      height: rem(150);
+      width: spacing('150');
+      height: spacing('150');
     }
   }
 
@@ -128,7 +128,7 @@
     margin-top: $spacing-xs;
 
     /* [Mobile-first] Base = mobile */
-    font-size: rem(18);
+    font-size: spacing('18');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {

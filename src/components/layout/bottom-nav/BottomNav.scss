@@ -98,8 +98,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: rem(44);
-  min-height: rem(44);
+  min-width: spacing('44');
+  min-height: spacing('44');
   padding: $spacing-sm;
   color: var(--color-primary);
   text-decoration: none;

@@ -78,8 +78,8 @@
 /// @param {Color} $color Couleur du focus (défaut: primary)
 @mixin focus-accessible($color: $color-primary) {
   &:focus-visible {
-    outline: rem(2) solid $color;
-    outline-offset: rem(2);
+    outline: spacing('2') solid $color;
+    outline-offset: spacing('2');
     @content;
   }
 }
@@ -163,8 +163,8 @@
 
 /// Zone interactive minimum WCAG 2.2 AA (44x44px)
 @mixin interactive-target {
-  min-height: rem(44);
-  min-width: rem(44);
+  min-height: spacing('44');
+  min-width: spacing('44');
 }
 
 // ============================================

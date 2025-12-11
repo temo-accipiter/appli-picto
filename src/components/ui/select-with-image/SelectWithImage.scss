@@ -25,14 +25,14 @@
     justify-content: space-between;
     gap: $spacing-xs;
     width: 100%;
-    min-height: rem(44); // WCAG 2.2 AA
-    padding: rem(8) $spacing-sm;
+    min-height: spacing('44'); // WCAG 2.2 AA
+    padding: spacing('8') $spacing-sm;
     background-color: var(--color-bg);
     border: 2px solid var(--color-border);
     border-radius: $radius-md;
     cursor: pointer;
     color: var(--color-text);
-    font-size: rem(16);
+    font-size: spacing('16');
     font-family: inherit;
     user-select: none;
     transition:
@@ -85,8 +85,8 @@
   }
 
   &__selected-image {
-    width: rem(32);
-    height: rem(32);
+    width: spacing('32');
+    height: spacing('32');
     object-fit: contain;
     flex-shrink: 0;
     border-radius: $radius-sm;
@@ -107,11 +107,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: rem(24);
-    height: rem(24);
+    width: spacing('24');
+    height: spacing('24');
     flex-shrink: 0;
     color: var(--color-text);
-    font-size: rem(12);
+    font-size: spacing('12');
     transition: transform $transition-fast ease;
 
     [data-state='open'] & {
@@ -159,7 +159,7 @@
     align-items: center;
     gap: $spacing-xs;
     padding: $spacing-xs $spacing-sm;
-    font-size: rem(14);
+    font-size: spacing('14');
     color: var(--color-text);
     border-radius: $radius-sm;
     cursor: pointer;
@@ -204,8 +204,8 @@
   }
 
   &__item-image {
-    width: rem(28);
-    height: rem(28);
+    width: spacing('28');
+    height: spacing('28');
     object-fit: contain;
     flex-shrink: 0;
     border-radius: $radius-sm;

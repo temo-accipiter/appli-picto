@@ -11,7 +11,7 @@
   font-weight: $font-weight-semibold;
   font-size: $font-size-base;
   line-height: 1.2;
-  min-height: rem(44); // WCAG 2.2 AA - zone interactive minimum
+  min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
   cursor: pointer;
   border: none;
   box-shadow: $box-shadow;
