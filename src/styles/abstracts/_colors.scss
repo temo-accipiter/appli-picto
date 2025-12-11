@@ -179,12 +179,32 @@ $gray-palette: (
   900: #3b3b3b,
 );
 
-// === COULEURS RÔLES ===
-// Couleurs pour badges et indicateurs de rôles
+// === COULEURS RÔLES [⚠️ DEPRECATED - READ FROM _tokens.scss INSTEAD] ===
+/// 🔴 DEPRECATION WARNING (Phase 1 - Commit 1)
+///
+/// Cette map $role-colors est DÉPRÉCIÉ depuis la canonicalisation de _tokens.scss.
+///
+/// ❌ ANCIEN ÉTAT (NON-AUTORITATIF):
+///   - admin base: #dc2626 (ROUGE - ANCIEN, INCORRECT)
+///   - Autres: conflictant avec _tokens.scss
+///
+/// ✅ NOUVEL ÉTAT (AUTHORITATIVE):
+///   - Lire depuis @use './tokens' et $role-color-tokens (ligne 24 dans _tokens.scss)
+///   - Admin base: #667eea (VIOLET - NOUVEAU, CORRECT)
+///   - role-color() function DOIT proxer vers tokens
+///
+/// 📝 MIGRATION TIMELINE:
+///   Phase 1 (NOW): Canonicalisation dans _tokens.scss + warnings ici
+///   Phase 2: Propager aux variables & functions (proxer vers tokens)
+///   Phase 3: Corriger usages hardcodés dans components
+///   Phase 4+: Supprimer cette map DEPRECATED (après vérification)
+///
+/// Pour maintenant: Cette map est FIGÉE - ne pas la modifier.
+/// Tout nouveau code DOIT lire depuis _tokens.$role-color-tokens.
 $role-colors: (
   admin: (
     base: #dc2626,
-    // Rouge admin
+    // ⚠️ DEPRECATED - Admin should be #667eea (violet) - see _tokens.scss
     gradient: #ef4444,
   ),
   abonne: (
@@ -472,6 +492,10 @@ $surface-colors: (
 /// @param {String} $role - Nom du rôle (admin, abonne, visitor, free, staff)
 /// @param {String} $variant - Variante (base, gradient)
 /// @return {Color} La couleur demandée
+///
+/// ⚠️ TODO (Phase 2): Cette fonction DOIT proxer vers _tokens.$role-color-tokens
+///    au lieu de lire depuis la map locale $role-colors (deprecated).
+///    Voir _tokens.scss pour source canonical.
 @function role-color($role, $variant: 'base') {
   @if map.has-key($role-colors, $role) {
     $role-map: map.get($role-colors, $role);

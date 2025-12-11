@@ -2,25 +2,52 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// TOKENS SYSTEM - Source de Vérité Centrale
+/// 🚀 TOKENS SYSTEM - SOURCE DE VÉRITÉ UNIQUE & CANONIQUE
 /// ============================================================================
-/// Tous les design tokens du système centralisés en UN SEUL ENDROIT.
-/// Tous les autres fichiers abstracts dérivent de ces tokens.
-/// JAMAIS de valeur magique en dehors de cette file.
+/// ⚠️ CRITICAL: Ce fichier est la SOURCE DE VÉRITÉ UNIQUE du design system.
+/// TOUS les autres fichiers (colors, typography, spacing, etc.) DOIVENT dériver
+/// des tokens définis ici. AUCUNE duplication, AUCUNE définition locale.
 ///
-/// Structure:
-///   - Couleurs (roles, brands, semantic)
-///   - Gradient (UI, badge)
+/// 📋 Structure:
+///   - Role-based colors ($role-color-tokens) - CANONICAL pour tous les rôles
+///   - Gradients (UI, badge)
 ///   - Opacités (alpha values)
 ///   - Z-index scale
 ///   - Autres tokens globaux
+///
+/// 🔴 RÈGLE STRICTE:
+///   1. Toutes les couleurs de rôles DOIVENT venir de $role-color-tokens (ici)
+///   2. _colors.scss NE DOIT PAS redéfinir $role-colors (deprecated - see note below)
+///   3. _variables.scss NE DOIT PAS faire de shadow copies (use functions only)
+///   4. Components DOIVENT utiliser var(--color-admin) ou role-color() function
+///
+/// 📚 Exemple usage:
+///   - Sass: $admin-color: map-get(map-get($role-color-tokens, 'admin'), 'base');
+///   - CSS:  background: var(--color-admin);
+///   - Function: @function role-color($role) { ... lire depuis ici ... }
 /// ============================================================================
 
 // =============================================================================
-// ROLE-BASED COLOR TOKENS - Rôles utilisateurs
+// ROLE-BASED COLOR TOKENS - Rôles utilisateurs [✅ CANONICAL SOURCE]
 // =============================================================================
 
-/// Tokens de couleur par rôle utilisateur (admin, abonné, free, visitor)
+/// 🔴 CANONICAL SOURCE pour ALL role colors - admin, abonné, free, visitor, staff
+///
+/// Cette map est la SEULE source de vérité pour les couleurs de rôles.
+/// - Admin = #667eea (violet) - décidé et IMMUABLE
+/// - Autres rôles = voir définitions ci-dessous
+///
+/// ⚠️ RÈGLES DE MIGRATION:
+///   1. _colors.scss.$role-colors est DEPRECATED - ne plus l'utiliser
+///   2. role-color() function DOIT lire depuis $role-color-tokens ici
+///   3. Tout usage hardcodé (red(600), #dc2626) est À REFACTORER
+///   4. Components DOIVENT utiliser var(--color-admin) ou role-color()
+///
+/// 📝 NON-NEGOTIABLE pour Admin (violet):
+///   - base: #667eea (primary violet - identité admin)
+///   - light: #8b9ff4 (hover lighter)
+///   - dark: #4c5ac4 (active darker)
+///   - gradient: #667eea → #764ba2 (modern UI gradient)
 $role-color-tokens: (
   'admin': (
     'base': #667eea,
