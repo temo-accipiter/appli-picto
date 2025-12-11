@@ -162,8 +162,9 @@
             }
 
             &.admin {
-              background: #{color.change(red(600), $alpha: 0.2)};
-              color: #{red(600)};
+              // ✅ Phase 3: Utiliser role-color() canonical
+              background: #{color.change(role-color('admin', 'base'), $alpha: 0.2)};
+              color: #{role-color('admin', 'base')};
             }
           }
 
@@ -411,20 +412,21 @@
       }
 
       &.admin-user {
-        border-color: #{red(500)};
+        // ✅ Phase 3: Utiliser role-color() canonical au lieu de hardcoded red
+        border-color: #{role-color('admin', 'base')};
         background: linear-gradient(
           135deg,
           var(--bg-secondary) 0%,
-          #{color.change(red(500), $alpha: 0.05)} 100%
+          #{color.change(role-color('admin', 'base'), $alpha: 0.05)} 100%
         );
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, #{red(500)}, #{orange(500)});
+          background: linear-gradient(90deg, #{role-color('admin', 'base')}, #{orange(500)});
         }
 
         .user-header h4 {
-          color: #{red(600)};
+          color: #{role-color('admin', 'dark')};
         }
       }
 
@@ -591,10 +593,11 @@
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
+            // ✅ Phase 3: Utiliser role-color() canonical au lieu de hardcoded red(500/600/700)
+            background: linear-gradient(135deg, #{role-color('admin', 'base')}, #{role-color('admin', 'gradient-end')});
             color: white;
-            border-color: #{red(600)};
-            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
+            border-color: #{role-color('admin', 'dark')};
+            box-shadow: 0 3px 10px #{color.change(role-color('admin', 'base'), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
@@ -608,8 +611,8 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
-              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
+              background: linear-gradient(135deg, #{role-color('admin', 'dark')}, #{purple(600)});
+              box-shadow: 0 5px 15px #{color.change(role-color('admin', 'base'), $alpha: 0.5)};
             }
           }
 
@@ -912,10 +915,11 @@
 
           /* Styles spécifiques selon le type de rôle */
           &[data-role='admin'] {
-            background: linear-gradient(135deg, #{red(500)}, #{red(600)});
+            // ✅ Phase 3: Utiliser role-color() canonical au lieu de hardcoded red(500/600/700)
+            background: linear-gradient(135deg, #{role-color('admin', 'base')}, #{role-color('admin', 'gradient-end')});
             color: white;
-            border-color: #{red(600)};
-            box-shadow: 0 3px 10px #{color.change(red(500), $alpha: 0.4)};
+            border-color: #{role-color('admin', 'dark')};
+            box-shadow: 0 3px 10px #{color.change(role-color('admin', 'base'), $alpha: 0.4)};
             animation: pulse 2s infinite;
 
             .role-icon {
@@ -929,8 +933,8 @@
             }
 
             &:hover {
-              background: linear-gradient(135deg, #{red(600)}, #{red(700)});
-              box-shadow: 0 5px 15px #{color.change(red(500), $alpha: 0.5)};
+              background: linear-gradient(135deg, #{role-color('admin', 'dark')}, #{purple(600)});
+              box-shadow: 0 5px 15px #{color.change(role-color('admin', 'base'), $alpha: 0.5)};
             }
           }
 
@@ -1309,8 +1313,9 @@
             }
 
             &.admin {
-              background: #{color.change(red(600), $alpha: 0.2)};
-              color: #{red(600)};
+              // ✅ Phase 3: Utiliser role-color() canonical
+              background: #{color.change(role-color('admin', 'base'), $alpha: 0.2)};
+              color: #{role-color('admin', 'base')};
             }
 
             &.staff {
