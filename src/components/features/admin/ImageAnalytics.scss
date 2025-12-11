@@ -11,7 +11,7 @@
   &__title {
     margin-bottom: 1.5rem;
     color: var(--text-dark, #{slate(700)});
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 600;
   }
 

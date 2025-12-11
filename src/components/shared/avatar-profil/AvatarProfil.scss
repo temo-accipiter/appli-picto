@@ -42,7 +42,7 @@
   @include respond-to(md) {
     width: spacing('160');
     height: spacing('160');
-    font-size: 4rem;
+    font-size: font-size('5xl');
     border-width: 4px;
   }
 

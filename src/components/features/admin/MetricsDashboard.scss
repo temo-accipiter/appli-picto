@@ -26,7 +26,7 @@
     color: var(--text-primary, #{slate(700)});
     margin: 0;
     // Mobile: titre plus petit
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
   }
 
   // Tablette (768px+)
@@ -120,7 +120,7 @@
   }
 
   h2 {
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 600;
     color: var(--text-primary, #{slate(700)});
     margin-bottom: 1.5rem;
@@ -215,11 +215,11 @@
     padding: 1.5rem;
 
     &__icon {
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
     }
 
     &__value {
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
     }
   }
 

@@ -15,14 +15,14 @@
 
   &__title {
     /* [Mobile-first] Base = mobile */
-    font-size: 2rem;
+    font-size: font-size('3xl');
     font-weight: $font-weight-bold;
     color: $color-text;
     margin: 0 0 $spacing-sm 0;
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
     }
   }
 

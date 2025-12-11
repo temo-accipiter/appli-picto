@@ -78,7 +78,7 @@ $form-control-sizes: (
   'lg': (
     height: $form-control-height-lg,
     padding-x: $form-control-padding-x-lg,
-    font-size: 1.1rem,
+    font-size: font-size('lg'),
   ),
 );
 

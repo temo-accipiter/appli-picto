@@ -34,7 +34,7 @@
 
 .delete-guard__intro {
   margin: 0 0 4px;
-  font-size: 0.95rem;
+  font-size: font-size('sm');
   line-height: 1.4;
   color: var(--text-muted, #{gray(600)});
 }
@@ -46,12 +46,12 @@
   background: var(--danger-50, #{red(50)});
   border: 1px solid var(--danger-200, #{red(200)});
   color: var(--danger-700, #{red(700)});
-  font-size: 0.95rem;
+  font-size: font-size('sm');
 }
 
 .delete-guard__note {
   margin: 2px 0 0;
-  font-size: 0.875rem;
+  font-size: font-size('sm');
   color: var(--text-muted, #{gray(600)});
 }
 

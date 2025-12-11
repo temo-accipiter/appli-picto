@@ -14,7 +14,7 @@
   h1 {
     text-align: center;
     margin-bottom: 2rem;
-    font-size: 1.8rem;
+    font-size: font-size('3xl');
     color: #{slate(700)};
   }
 
@@ -55,13 +55,13 @@
 
   .error {
     color: #{red(600)};
-    font-size: 0.9rem;
+    font-size: font-size('sm');
     margin-top: -0.5rem;
   }
 
   p {
     text-align: center;
-    font-size: 0.95rem;
+    font-size: font-size('sm');
 
     a {
       color: #{blue(600)};
@@ -88,7 +88,7 @@
 
 .password-checklist__title {
   margin: 0 0 0.5rem 0;
-  font-size: 0.95rem;
+  font-size: font-size('sm');
   font-weight: 600;
   color: #{slate(700)}; /* slate-700 : bon contraste */
 }
@@ -129,7 +129,7 @@
   height: 1.25rem;
   display: inline-grid;
   place-items: center;
-  font-size: 0.95rem;
+  font-size: font-size('sm');
   flex: 0 0 1.25rem;
 }
 
@@ -202,7 +202,7 @@
   padding: 0.5rem 0.75rem;
   width: 100%;
   text-align: left;
-  font-size: 0.95rem;
+  font-size: font-size('sm');
   color: #{slate(700)}; /* slate-700 */
   display: flex;
   align-items: center;

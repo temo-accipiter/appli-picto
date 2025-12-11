@@ -30,7 +30,7 @@
 
     h1 {
       margin: 0 0 16px 0;
-      font-size: 2.5rem;
+      font-size: font-size('4xl');
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -40,7 +40,7 @@
 
     .page-description {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: font-size('lg');
       opacity: 0.9;
       line-height: 1.6;
       max-width: 600px;
@@ -65,7 +65,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.95rem;
+      font-size: font-size('sm');
       font-weight: 500;
       color: var(--text-secondary);
       transition: all 0.15s ease;
@@ -98,7 +98,7 @@
     .history-tab {
       h2 {
         margin: 0 0 16px 0;
-        font-size: 1.8rem;
+        font-size: font-size('3xl');
         font-weight: 600;
         color: var(--text-primary);
         display: flex;
@@ -109,7 +109,7 @@
       > p {
         margin: 0 0 30px 0;
         color: var(--text-secondary);
-        font-size: 1.1rem;
+        font-size: font-size('lg');
       }
     }
   }
@@ -138,7 +138,7 @@
 
           h3 {
             margin: 0;
-            font-size: 1.3rem;
+            font-size: font-size('xl');
             font-weight: 600;
             color: var(--text-primary);
           }
@@ -212,7 +212,7 @@
 
             .permission-status {
               .status {
-                font-size: 1.2rem;
+                font-size: font-size('xl');
 
                 &.enabled {
                   color: #{green(500)};
@@ -305,7 +305,7 @@
         gap: 0.25rem;
 
         .stat-number {
-          font-size: 1.5rem;
+          font-size: font-size('2xl');
           font-weight: 700;
           color: var(--primary-color);
         }
@@ -335,7 +335,7 @@
           gap: 0.5rem;
 
           label {
-            font-size: 0.9rem;
+            font-size: font-size('sm');
             font-weight: 600;
             color: var(--text-primary);
           }
@@ -346,7 +346,7 @@
             border-radius: 6px;
             background: var(--bg-primary);
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: font-size('sm');
             min-width: 150px;
 
             &:focus {
@@ -465,7 +465,7 @@
 
         h4 {
           margin: 0;
-          font-size: 1.2rem; // Mobile par défaut
+          font-size: font-size('xl'); // Mobile par défaut
           font-weight: 700;
           color: var(--text-primary);
           display: flex;
@@ -475,7 +475,7 @@
           /* Icône utilisateur */
           &::before {
             content: '👤';
-            font-size: 1.2rem;
+            font-size: font-size('xl');
             opacity: 0.7;
           }
         }
@@ -713,7 +713,7 @@
           margin: 0;
           color: var(--text-muted);
           font-style: italic;
-          font-size: 0.9rem;
+          font-size: font-size('sm');
         }
       }
     }
@@ -793,7 +793,7 @@
       .user-email {
         margin: 0.25rem 0;
         color: var(--text-secondary);
-        font-size: 0.95rem;
+        font-size: font-size('sm');
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -801,7 +801,7 @@
 
         &::before {
           content: '📧';
-          font-size: 0.9rem;
+          font-size: font-size('sm');
         }
 
         .email-label {
@@ -818,21 +818,21 @@
       .user-created {
         margin: 0.25rem 0;
         color: var(--text-tertiary);
-        font-size: 0.9rem;
+        font-size: font-size('sm');
         display: flex;
         align-items: center;
         gap: 0.5rem;
 
         &::before {
           content: '📅';
-          font-size: 0.9rem;
+          font-size: font-size('sm');
         }
       }
 
       .user-last-login {
         margin: 0.25rem 0;
         color: var(--text-tertiary);
-        font-size: 0.9rem;
+        font-size: font-size('sm');
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -844,7 +844,7 @@
 
           &::before {
             content: '🔒';
-            font-size: 0.9rem;
+            font-size: font-size('sm');
           }
         }
 
@@ -872,7 +872,7 @@
 
         h5 {
           margin: 0;
-          font-size: 1.1rem;
+          font-size: font-size('lg');
           font-weight: 600;
           color: var(--text-primary);
           display: flex;
@@ -1036,7 +1036,7 @@
         .no-roles {
           color: var(--text-tertiary);
           font-style: italic;
-          font-size: 0.9rem;
+          font-size: font-size('sm');
         }
       }
 
@@ -1055,7 +1055,7 @@
 
         .pagination-info {
           color: var(--text-secondary);
-          font-size: 0.9rem;
+          font-size: font-size('sm');
           font-weight: 500;
         }
 
@@ -1070,7 +1070,7 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-primary);
-            font-size: 0.9rem;
+            font-size: font-size('sm');
             cursor: pointer;
             transition: all 0.15s ease;
 
@@ -1095,7 +1095,7 @@
               border: 1px solid var(--border-color);
               border-radius: 6px;
               color: var(--text-primary);
-              font-size: 0.9rem;
+              font-size: font-size('sm');
               cursor: pointer;
               transition: all 0.15s ease;
               min-width: 40px;
@@ -1133,14 +1133,14 @@
       h3 {
         margin: 0 0 1rem 0;
         color: var(--text-primary);
-        font-size: 1.5rem;
+        font-size: font-size('2xl');
         font-weight: 600;
       }
 
       p {
         margin: 0;
         color: var(--text-secondary);
-        font-size: 1.1rem;
+        font-size: font-size('lg');
       }
     }
 
@@ -1149,7 +1149,7 @@
       text-align: center;
       padding: 3rem 2rem;
       color: var(--text-secondary);
-      font-size: 1.1rem;
+      font-size: font-size('lg');
     }
   }
 
@@ -1180,7 +1180,7 @@
         gap: 0;
 
         h4 {
-          font-size: 1.4rem; // Desktop: titre plus grand
+          font-size: font-size('2xl'); // Desktop: titre plus grand
         }
       }
 
@@ -1206,7 +1206,7 @@
 
       h3 {
         margin: 0 0 16px 0;
-        font-size: 1.2rem;
+        font-size: font-size('xl');
         font-weight: 600;
         color: var(--text-primary);
       }
@@ -1223,7 +1223,7 @@
           border-radius: 8px;
           background: var(--bg-primary);
           color: var(--text-primary);
-          font-size: 0.9rem;
+          font-size: font-size('sm');
 
           &:focus {
             outline: none;
@@ -1246,7 +1246,7 @@
         margin-bottom: 20px;
         padding-bottom: 10px;
         border-bottom: 2px solid var(--border-color);
-        font-size: 1.3rem;
+        font-size: font-size('xl');
       }
     }
 
@@ -1281,7 +1281,7 @@
         .role-info {
           h4 {
             margin: 0 0 8px 0;
-            font-size: 1.1rem;
+            font-size: font-size('lg');
             font-weight: 600;
             color: var(--text-primary);
           }
@@ -1289,7 +1289,7 @@
           p {
             margin: 8px 0 0 0;
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            font-size: font-size('sm');
           }
 
           .role-badge {
@@ -1378,7 +1378,7 @@
               border-radius: 6px;
               background: var(--bg-primary);
               color: var(--text-primary);
-              font-size: 0.9rem;
+              font-size: font-size('sm');
 
               &:focus {
                 outline: none;
@@ -1410,7 +1410,7 @@
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: font-size('sm');
     font-weight: 500;
     transition: all 0.15s ease;
     text-decoration: none;
@@ -1496,7 +1496,7 @@
 
     p {
       margin-top: 16px;
-      font-size: 1.1rem;
+      font-size: font-size('lg');
     }
   }
 }
@@ -1596,7 +1596,7 @@
       align-items: center;
 
       .status {
-        font-size: 1.2rem;
+        font-size: font-size('xl');
         padding: 0.25rem;
         border-radius: 4px;
         transition: all 0.15s ease;
@@ -1632,7 +1632,7 @@
         padding: 0.5rem 1rem;
         border: none;
         border-radius: 6px;
-        font-size: 0.9rem;
+        font-size: font-size('sm');
         font-weight: 500;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -1759,7 +1759,7 @@
       margin-bottom: 32px;
 
       h1 {
-        font-size: 2rem;
+        font-size: font-size('3xl');
         flex-direction: column;
         gap: 12px;
       }
@@ -1879,7 +1879,7 @@
 
   p {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: font-size('sm');
 
     code {
       background: #{color.change(white, $alpha: 0.2)};
@@ -1908,7 +1908,7 @@
   p {
     margin: 0;
     color: #{slate(200)}; /* Texte gris clair */
-    font-size: 0.9rem;
+    font-size: font-size('sm');
 
     strong {
       color: #{slate(50)}; /* Texte fort en blanc */
@@ -2072,7 +2072,7 @@
   h2 {
     margin: 0;
     color: var(--text-primary);
-    font-size: 1.8rem;
+    font-size: font-size('3xl');
     font-weight: 600;
   }
 
@@ -2086,7 +2086,7 @@
       align-items: center;
       gap: 8px;
       padding: 10px 20px;
-      font-size: 0.95rem;
+      font-size: font-size('sm');
       font-weight: 500;
       transition: all 0.15s ease;
 
@@ -2110,7 +2110,7 @@
   h3 {
     margin: 0 0 1rem 0;
     color: var(--text-primary);
-    font-size: 1.3rem;
+    font-size: font-size('xl');
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -2129,7 +2129,7 @@
       border-radius: 8px;
       background: var(--bg-primary);
       color: var(--border-color);
-      font-size: 0.95rem;
+      font-size: font-size('sm');
       transition: all 0.15s ease;
 
       &:focus {
@@ -2157,7 +2157,7 @@
   h3 {
     margin: 0 0 1rem 0;
     color: var(--text-primary);
-    font-size: 1.3rem;
+    font-size: font-size('xl');
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -2176,7 +2176,7 @@
       border-radius: 8px;
       background: var(--bg-primary);
       color: var(--text-primary);
-      font-size: 0.95rem;
+      font-size: font-size('sm');
       transition: all 0.15s ease;
 
       &:focus {
@@ -2248,7 +2248,7 @@
   h3 {
     margin: 0 0 1rem 0;
     color: var(--text-primary);
-    font-size: 1.3rem;
+    font-size: font-size('xl');
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -2268,7 +2268,7 @@
         margin-bottom: 0.5rem;
         color: var(--text-primary);
         font-weight: 500;
-        font-size: 0.95rem;
+        font-size: font-size('sm');
       }
 
       .form-select {
@@ -2278,7 +2278,7 @@
         border-radius: 8px;
         background: var(--bg-primary);
         color: var(--text-primary);
-        font-size: 0.95rem;
+        font-size: font-size('sm');
         transition: all 0.15s ease;
 
         &:focus {
@@ -2311,14 +2311,14 @@
   h3 {
     margin: 0 0 1rem 0;
     color: var(--text-primary);
-    font-size: 1.5rem;
+    font-size: font-size('2xl');
     font-weight: 600;
   }
 
   p {
     margin: 0 0 1.5rem 0;
     color: var(--text-secondary);
-    font-size: 1.1rem;
+    font-size: font-size('lg');
   }
 
   ul {
@@ -2410,7 +2410,7 @@
           gap: 0.5rem;
 
           .table-icon {
-            font-size: 1.2rem;
+            font-size: font-size('xl');
           }
 
           .change-label {
@@ -2526,7 +2526,7 @@
     h3 {
       margin: 0 0 1rem 0;
       color: var(--text-primary);
-      font-size: 1.1rem;
+      font-size: font-size('lg');
     }
 
     .stats-grid {
@@ -2551,7 +2551,7 @@
         span {
           color: var(--text-primary);
           font-weight: 600;
-          font-size: 1.1rem;
+          font-size: font-size('lg');
         }
       }
     }
@@ -2617,7 +2617,7 @@
     h3 {
       margin: 0 0 0.5rem 0;
       color: var(--text-primary);
-      font-size: 1.5rem;
+      font-size: font-size('2xl');
     }
 
     p {
@@ -2637,7 +2637,7 @@
     h4 {
       margin: 0 0 1rem 0;
       color: var(--text-primary);
-      font-size: 1.1rem;
+      font-size: font-size('lg');
     }
 
     .filter-buttons {
@@ -2657,7 +2657,7 @@
       p {
         margin: 0;
         color: var(--text-secondary);
-        font-size: 0.9rem;
+        font-size: font-size('sm');
       }
     }
   }
@@ -2666,7 +2666,7 @@
     h4 {
       margin: 0 0 1rem 0;
       color: var(--text-primary);
-      font-size: 1.1rem;
+      font-size: font-size('lg');
     }
 
     .no-logs {
@@ -2694,7 +2694,7 @@
         border-bottom: 1px solid var(--border-color);
         font-weight: 600;
         color: var(--text-primary);
-        font-size: 0.9rem;
+        font-size: font-size('sm');
       }
 
       .log-row {
@@ -2722,12 +2722,12 @@
         .log-user {
           color: var(--primary-color);
           font-weight: 500;
-          font-size: 0.9rem;
+          font-size: font-size('sm');
         }
 
         .log-event {
           color: var(--text-primary);
-          font-size: 0.9rem;
+          font-size: font-size('sm');
           font-weight: 500;
         }
 
