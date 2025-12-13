@@ -1,6 +1,26 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
+/// ============================================================================
+/// ⚠️ DEPRECATED - COUCHE DE COMPATIBILITÉ TEMPORAIRE
+/// ============================================================================
+/// Ce fichier est conservé UNIQUEMENT pour compatibilité avec ancien code.
+/// NOUVEAU CODE : Utiliser directement _light.scss et _dark.scss
+///
+/// MIGRATION EN COURS :
+///   - Les maps $theme-light et $theme-dark sont dupliquées dans :
+///     - themes/_light.scss (source de vérité)
+///     - themes/_dark.scss (source de vérité)
+///   - Ce fichier sera SUPPRIMÉ après validation
+///   - Ne pas ajouter nouveaux thèmes ici
+///
+/// ALTERNATIVE MODERNE :
+///   - Utiliser var(--color-bg), var(--color-text) directement
+///   - Définir overrides dans _light.scss / _dark.scss
+///
+/// DATE PRÉVUE SUPPRESSION : Après validation complète tokens-first refactor
+/// ============================================================================
+
 // === MAP DES COULEURS POUR LE LIGHT MODE ===
 $theme-light: (
   bg: $color-bg,

@@ -25,6 +25,7 @@ export default defineConfig([
       '**/.vite/**',
       '**/projet-drag&drop/**',
       '**/blueprint-archive/**',
+      '**/scripts/**', // Exclude scripts (ESM modules with different config)
     ],
   },
   {

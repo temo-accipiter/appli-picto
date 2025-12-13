@@ -1,5 +1,6 @@
 @use 'breakpoints' as *;
 @use 'variables' as *;
+@use 'a11y-tokens' as *;
 @use 'sass:map';
 
 /// Applique une version foncée d'une couleur au hover
@@ -97,6 +98,62 @@
   &:focus-visible {
     outline: $width solid $color;
     outline-offset: $offset;
+  }
+}
+
+/// Touch target minimum conforme WCAG 2.2 AA + TSA friendly
+/// Applique min-width/min-height selon la taille demandée
+/// @param {String} $size - Taille du touch target ('preferred' | 'min' | 'optimal')
+///   - 'preferred': 56px (recommandé TSA - enfants)
+///   - 'min': 44px (minimum WCAG 2.2 AA)
+///   - 'optimal': 48px (compromis UX)
+///
+/// @example scss - Touch target préféré (défaut, 56px)
+///   .btn { @include touch-target(); }
+///
+/// @example scss - Touch target minimum (44px)
+///   .small-icon-btn { @include touch-target('min'); }
+///
+/// @example scss - Touch target optimal (48px)
+///   .card-action { @include touch-target('optimal'); }
+@mixin touch-target($size: 'preferred') {
+  @if $size == 'preferred' {
+    min-width: a11y('preferred-touch-target');
+    min-height: a11y('preferred-touch-target');
+  } @else if $size == 'min' {
+    min-width: a11y('min-touch-target');
+    min-height: a11y('min-touch-target');
+  } @else if $size == 'optimal' {
+    min-width: a11y('optimal-touch-target');
+    min-height: a11y('optimal-touch-target');
+  } @else {
+    @warn "Touch target size '#{$size}' unknown. Use 'preferred', 'min', or 'optimal'. Defaulting to 'preferred'.";
+    min-width: a11y('preferred-touch-target');
+    min-height: a11y('preferred-touch-target');
+  }
+}
+
+/// Focus ring non-invasif utilisant box-shadow au lieu de outline
+/// Meilleur pour design moderne, sans perturber layout (pas de outline-offset bugs)
+/// Utilise les tokens a11y pour width/offset conformes WCAG 2.2 AA
+///
+/// @param {Color} $color - Couleur du focus ring (défaut: var(--focus-ring-color))
+///
+/// @example scss - Focus ring par défaut
+///   .input { @include non-invasive-focus(); }
+///
+/// @example scss - Focus ring avec couleur custom
+///   .btn-primary { @include non-invasive-focus($color-primary); }
+@mixin non-invasive-focus($color: var(--focus-ring-color)) {
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 a11y('focus-ring-width') $color;
+    outline-offset: a11y('focus-ring-offset');
+  }
+
+  // Remove default focus outline (avoid double outline)
+  &:focus {
+    outline: none;
   }
 }
 

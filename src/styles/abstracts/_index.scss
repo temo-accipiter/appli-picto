@@ -3,9 +3,11 @@
 
 // --- Outils SCSS (safe) ---
 @forward './tokens'; // maps SCSS + opacity/z-index functions
+@forward './a11y-tokens' show a11y; // a11y() function (CSS vars importées dans main.scss)
 @forward './borders'; // border-width() function + mixins
 @forward './functions'; // helpers
 @forward './breakpoints'; // map $breakpoints + function breakpoint()
+@forward './container-queries'; // container() + respond-container() mixins
 @forward './mixins'; // respond-to() + autres mixins
 @forward './variables'; // z-index, constants compile-time ONLY
 

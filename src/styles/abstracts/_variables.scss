@@ -1,6 +1,24 @@
 @use 'sass:map';
 @use 'colors' as *;
 
+/// ============================================================================
+/// ⚠️ DEPRECATED - COUCHE DE COMPATIBILITÉ TEMPORAIRE
+/// ============================================================================
+/// Ce fichier est conservé UNIQUEMENT pour compatibilité avec ancien code.
+/// NOUVEAU CODE : Utiliser directement les systèmes tokens/wrappers :
+///   - Couleurs : color(), role-color(), semantic() depuis _colors.scss
+///   - Spacing : spacing() depuis _spacing.scss
+///   - Typography : font-size() depuis _typography.scss
+///   - etc.
+///
+/// MIGRATION EN COURS :
+///   - Les variables ci-dessous pointent vers les nouveaux systèmes
+///   - Après validation finale, ce fichier sera SUPPRIMÉ
+///   - Éviter d'ajouter nouvelles variables ici
+///
+/// DATE PRÉVUE SUPPRESSION : Après validation complète tokens-first refactor
+/// ============================================================================
+
 // — Polices
 $text-font-stack:
   system-ui,
