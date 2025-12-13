@@ -13,7 +13,7 @@
   // Skip link pour accessibilité clavier (WCAG 2.4.1)
   .skip-link {
     position: absolute;
-    top: spacing('-40');
+    top: calc(-1 * #{spacing('40')});
     left: 0;
     background: var(--color-primary);
     color: white;

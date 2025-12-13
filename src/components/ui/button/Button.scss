@@ -77,7 +77,7 @@
 .btn__spinner {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: spacing('4');
   margin-right: $spacing-xs;
   animation: spinner-rotate 1s linear infinite;
 
@@ -89,8 +89,8 @@
 
 .btn__spinner-dot {
   display: inline-block;
-  width: 0.4rem;
-  height: 0.4rem;
+  width: spacing('6');
+  height: spacing('6');
   border-radius: radius('full');
   background-color: currentColor;
   opacity: 0.6;

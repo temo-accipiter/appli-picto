@@ -9,7 +9,7 @@
   margin: 0 auto;
 
   &__title {
-    margin-bottom: 1.5rem;
+    margin-bottom: spacing('24');
     color: var(--text-dark, #{slate(700)});
     font-size: font-size('2xl');
     font-weight: 600;
@@ -20,7 +20,7 @@
     padding: spacing('md');
     background: var(--pastel-red-lightest, #{red(50)});
     border-radius: radius('md');
-    border-left: 4px solid var(--pastel-red, #{red(400)});
+    border-left: spacing('4') solid var(--pastel-red, #{red(400)});
   }
 
   &__empty {
@@ -74,7 +74,7 @@
   }
 
   &--success {
-    border-left: 4px solid var(--pastel-green, #{green(400)});
+    border-left: spacing('4') solid var(--pastel-green, #{green(400)});
     background: linear-gradient(
       135deg,
       var(--white, #{surface(bg)}) 0%,
@@ -87,7 +87,7 @@
   }
 
   &--error {
-    border-left: 4px solid var(--pastel-red, #{red(400)});
+    border-left: spacing('4') solid var(--pastel-red, #{red(400)});
     background: linear-gradient(
       135deg,
       var(--white, #{surface(bg)}) 0%,

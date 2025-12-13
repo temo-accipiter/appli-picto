@@ -35,7 +35,7 @@
   max-height: 100%;
   object-fit: contain;
   display: block;
-  animation: image-fade-zoom 0.15s ease-in;
+  animation: image-fade-zoom transition('fast') ease-in;
 }
 
 @keyframes image-fade-zoom {

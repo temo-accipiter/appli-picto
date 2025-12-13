@@ -71,7 +71,7 @@
   background: #{color.change(white, $alpha: 0.98)};
   backdrop-filter: blur(spacing('10'));
   border-top: spacing('1') solid var(--color-border);
-  box-shadow: 0 spacing('-2') spacing('10')
+  box-shadow: 0 calc(-1 * #{spacing('2')}) spacing('10')
     #{color.change(gray(900), $alpha: 0.05)};
 
   // Dark mode support

@@ -31,19 +31,19 @@
 
   // Transition fluide pour le border et background
   transition:
-    border-color 200ms ease,
-    background-color 200ms ease;
+    border-color transition('base') ease,
+    background-color transition('base') ease;
 
   // Slot survolé pendant un drag
   &.over {
     border-color: $color-primary;
-    background-color: rgba($color-primary, 0.1);
+    background-color: rgba($color-primary, opacity('sm'));
   }
 
   // Slot source (d'où vient la carte draggée)
   &.dragging-from {
     border-color: $color-primary;
-    background-color: rgba($color-primary, 0.05);
+    background-color: rgba($color-primary, opacity('xs'));
   }
 }
 

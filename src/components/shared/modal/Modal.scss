@@ -5,8 +5,8 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background-color: color.change(gray(900), $alpha: 0.75);
-  backdrop-filter: blur(4px);
+  background-color: color.change(gray(900), $alpha: opacity('half'));
+  backdrop-filter: blur(spacing('4'));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -25,11 +25,12 @@
 // === MODAL CONTENEUR ===
 .modal {
   background: $color-surface;
-  border: 2px solid $color-primary;
+  border: spacing('2') solid $color-primary;
   padding: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 10px 40px #{color.change(gray(900), $alpha: 0.3)};
+  box-shadow: 0 spacing('10') spacing('40')
+    #{color.change(gray(900), $alpha: opacity('xl'))};
   display: flex;
   flex-direction: column;
   animation: scaleIn $transition-fast ease-out;
@@ -108,7 +109,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid gray(200);
+  border-bottom: spacing('1') solid gray(200);
   flex-shrink: 0;
 
   // Mobile par défaut (320px-575px)
@@ -160,7 +161,7 @@
 
   // Scrollbar personnalisée
   &::-webkit-scrollbar {
-    width: 8px;
+    width: spacing('8');
   }
 
   &::-webkit-scrollbar-track {

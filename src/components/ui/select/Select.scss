@@ -7,14 +7,14 @@
 
   &__label {
     font-weight: $font-weight-semibold;
-    font-size: spacing('18');
+    font-size: font-size('lg');
     color: var(--color-text);
     white-space: nowrap;
   }
 
   &__select {
     padding: spacing('8') spacing('12');
-    font-size: spacing('16');
+    font-size: font-size('base');
     border: 2px solid var(--color-border);
     border-radius: $radius-md;
     background-color: var(--color-bg);
@@ -26,7 +26,8 @@
       border-color $transition-fast,
       box-shadow $transition-fast;
 
-    box-shadow: 0 spacing('2') spacing('6') rgba(var(--color-text-rgb), 0.1);
+    box-shadow: 0 spacing('2') spacing('6')
+      rgba(var(--color-text-rgb), opacity('sm'));
 
     // Focus ring unifié
     @include focus-ring;

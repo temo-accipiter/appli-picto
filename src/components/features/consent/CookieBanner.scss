@@ -13,8 +13,8 @@
   background: #{color.change(surface(bg), $alpha: 0.96)};
   backdrop-filter: blur(6px);
   box-shadow: 0 -10px 30px #{color.change(gray(900), $alpha: 0.08)};
-  border-top: 1px solid #{slate(200)};
-  padding: 20px 16px;
+  border-top: spacing('1') solid #{slate(200)};
+  padding: spacing('20') spacing('16');
 
   /* Motion sûre */
   @media (prefers-reduced-motion: reduce) {
@@ -46,7 +46,7 @@
     color: #{slate(800)};
 
     .cookie-banner__title {
-      margin: 0 0 12px 0;
+      margin: 0 0 spacing('12') 0;
       font-size: font-size('lg');
       font-weight: 700;
       color: #{slate(900)};

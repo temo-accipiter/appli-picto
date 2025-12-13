@@ -4,13 +4,13 @@
 .button-delete {
   background: transparent;
   border: none;
-  padding: 0.4rem;
+  padding: spacing('6');
   border-radius: radius('rounded-6px');
   cursor: pointer;
   color: var(--color-text);
   transition:
-    background-color 120ms ease,
-    transform 120ms ease;
+    background-color transition('fast') ease,
+    transform transition('fast') ease;
 
   display: flex;
   align-items: center;
@@ -18,7 +18,7 @@
 
   &:hover,
   &:focus {
-    background-color: #{color.change(red(400), $alpha: 0.15)}; // rouge pastel doux
+    background-color: #{color.change(red(400), $alpha: opacity('md'))}; // rouge pastel doux
     transform: scale(1.1);
     outline: none;
   }
@@ -28,8 +28,8 @@
   }
 
   &__icon {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: spacing('22');
+    height: spacing('22');
     pointer-events: none;
   }
 }

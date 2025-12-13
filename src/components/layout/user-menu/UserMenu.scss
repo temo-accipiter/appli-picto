@@ -48,7 +48,7 @@
 }
 
 .user-menu-dialog {
-  width: min(92vw, spacing('320'));
+  width: min(92vw, 320px); // Valeur fixe : token '320' n'existe pas
   background: #{surface(bg)};
   color: #{slate(900)};
   border-radius: radius('lg');
@@ -131,7 +131,7 @@
   &:focus-visible {
     background: #{blue(50)};
     outline: a11y('focus-ring-width') solid #{blue(600)};
-    outline-offset: spacing('-2');
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.danger:hover {
@@ -141,7 +141,7 @@
   &.danger:focus-visible {
     background: #{red(50)};
     outline: a11y('focus-ring-width') solid #{red(600)};
-    outline-offset: spacing('-2');
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.admin:hover {
@@ -153,7 +153,7 @@
     background: #{yellow(100)};
     color: #{yellow(800)};
     outline: a11y('focus-ring-width') solid #{orange(600)};
-    outline-offset: spacing('-2');
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.legal:hover {
@@ -163,7 +163,7 @@
   &.legal:focus-visible {
     background: #{purple(50)};
     outline: a11y('focus-ring-width') solid #{purple(600)};
-    outline-offset: spacing('-2');
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   .icon {
@@ -198,7 +198,7 @@
 // Animation pour desktop (depuis le haut)
 @keyframes slideInDown {
   from {
-    transform: translateY(spacing('-6'));
+    transform: translateY(calc(-1 * #{spacing('6')}));
     opacity: 0;
   }
   to {
@@ -225,7 +225,7 @@
   width: spacing('1');
   height: spacing('1');
   padding: 0;
-  margin: spacing('-1');
+  margin: calc(-1 * #{spacing('1')});
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;

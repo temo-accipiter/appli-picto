@@ -8,15 +8,15 @@
   text-align: center;
   background: var(--pastel-blue-lightest, #{blue(50)});
   border-radius: radius('md');
-  border: 2px solid var(--pastel-blue-light, #{blue(100)});
+  border: spacing('2') solid var(--pastel-blue-light, #{blue(100)});
 
   &__bar {
     width: 100%;
-    height: 8px;
+    height: spacing('8');
     background-color: var(--pastel-blue-light, #{blue(100)});
     border-radius: radius('sm');
     overflow: hidden;
-    margin-bottom: 0.75rem;
+    margin-bottom: spacing('12');
   }
 
   &__fill {
@@ -27,14 +27,14 @@
       var(--pastel-green, #{green(100)})
     );
     // Animation DOUCE (TSA-friendly : max 0.3s ease)
-    transition: width 0.15s ease;
+    transition: width transition('fast') ease;
     border-radius: radius('sm');
   }
 
   &__message {
     font-size: font-size('sm');
     color: var(--text-dark, #{text(default)});
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 spacing('4') 0;
     font-weight: 500;
   }
 
