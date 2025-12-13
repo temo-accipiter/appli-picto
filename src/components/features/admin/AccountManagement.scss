@@ -6,14 +6,14 @@
   padding: spacing('lg');
   background: var(--background);
   border-radius: radius('rounded-12px');
-  border: 1px solid var(--border);
+  border: spacing('1') solid var(--border);
 
   &.loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: spacing('200');
     gap: spacing('md');
 
     .loading-spinner {
@@ -24,16 +24,16 @@
 
   &.no-permission {
     text-align: center;
-    padding: 48px 24px;
+    padding: spacing('48') spacing('24');
     color: var(--muted-foreground);
   }
 
   .account-header {
-    margin-bottom: 32px;
+    margin-bottom: spacing('32');
     text-align: center;
 
     h2 {
-      margin: 0 0 8px 0;
+      margin: 0 0 spacing('8') 0;
       color: var(--foreground);
       font-size: font-size('2xl');
     }
@@ -41,7 +41,7 @@
     p {
       margin: 0;
       color: var(--muted-foreground);
-      font-size: 0.875rem;
+      font-size: font-size('sm');
     }
   }
 
@@ -53,36 +53,37 @@
 
     .search-box {
       flex: 1;
-      min-width: 200px;
+      min-width: spacing('200');
 
       input {
         width: 100%;
         padding: spacing('sm') spacing('sm');
-        border: 1px solid var(--border);
+        border: spacing('1') solid var(--border);
         border-radius: radius('rounded-6px');
         background: var(--background);
         color: var(--foreground);
-        font-size: 0.875rem;
+        font-size: font-size('sm');
 
         &:focus {
           outline: none;
           border-color: var(--primary);
-          box-shadow: 0 0 0 3px #{color.change(blue(500), $alpha: 0.1)};
+          box-shadow: 0 0 0 spacing('3')
+            #{color.change(blue(500), $alpha: opacity('sm'))};
         }
       }
     }
 
     .filter-select {
-      min-width: 150px;
+      min-width: spacing('150');
 
       select {
         width: 100%;
         padding: spacing('sm') spacing('sm');
-        border: 1px solid var(--border);
+        border: spacing('1') solid var(--border);
         border-radius: radius('rounded-6px');
         background: var(--background);
         color: var(--foreground);
-        font-size: 0.875rem;
+        font-size: font-size('sm');
 
         &:focus {
           outline: none;
@@ -105,7 +106,7 @@
     padding: spacing('md');
     background: var(--muted);
     border-radius: radius('md');
-    border: 1px solid var(--border);
+    border: spacing('1') solid var(--border);
     transition: all 0.15s ease;
 
     &:hover {
@@ -158,13 +159,13 @@
         .user-email {
           margin: 0 0 8px 0;
           color: var(--muted-foreground);
-          font-size: 0.875rem;
+          font-size: font-size('sm');
         }
 
         .user-meta {
           display: flex;
           gap: spacing('sm');
-          font-size: 0.75rem;
+          font-size: font-size('xs');
           color: var(--muted-foreground);
 
           .user-role {
@@ -179,10 +180,10 @@
       .status-badge {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: spacing('6');
         padding: spacing('xs') spacing('sm');
         border-radius: radius('xl');
-        font-size: 0.75rem;
+        font-size: font-size('xs');
         font-weight: 500;
 
         &.success {
@@ -219,7 +220,7 @@
         color: var(--primary-foreground);
         border: none;
         border-radius: radius('rounded-6px');
-        font-size: 0.875rem;
+        font-size: font-size('sm');
         font-weight: 500;
         cursor: pointer;
         transition: all 0.15s ease;
@@ -267,7 +268,7 @@
       padding: spacing('lg');
       width: 90%;
       max-width: 600px;
-      border: 1px solid var(--border);
+      border: spacing('1') solid var(--border);
       box-shadow: 0 20px 25px -5px #{color.change(gray(900), $alpha: 0.1)};
 
       h3 {
@@ -285,7 +286,7 @@
         p {
           margin: 0 0 8px 0;
           color: var(--foreground);
-          font-size: 0.875rem;
+          font-size: font-size('sm');
 
           &:last-child {
             margin-bottom: 0;
@@ -311,13 +312,13 @@
             padding: 10px 16px;
             border: none;
             border-radius: radius('rounded-6px');
-            font-size: 0.875rem;
+            font-size: font-size('sm');
             font-weight: 500;
             cursor: pointer;
             transition: all 0.15s ease;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: spacing('6');
 
             &:hover:not(:disabled) {
               transform: translateY(-1px);
@@ -367,7 +368,7 @@
           padding: spacing('sm') spacing('md');
           background: var(--muted);
           color: var(--muted-foreground);
-          border: 1px solid var(--border);
+          border: spacing('1') solid var(--border);
           border-radius: radius('rounded-6px');
           font-weight: 500;
           cursor: pointer;

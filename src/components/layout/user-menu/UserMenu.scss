@@ -5,7 +5,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  outline-offset: 3px;
+  outline-offset: spacing('3');
   display: inline-flex;
   align-items: center;
 }
@@ -18,22 +18,23 @@
   height: spacing('36');
   border-radius: radius('full');
   font-weight: 700;
-  font-size: 14px;
+  font-size: font-size('sm');
   color: #{slate(800)};
   background: #{red(100)}; /* pastel */
-  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.12)};
+  box-shadow: 0 spacing('2') spacing('8')
+    #{color.change(gray(900), $alpha: 0.12)};
 }
 .avatar-circle.header {
   width: spacing('44');
   height: spacing('44');
-  font-size: 16px;
+  font-size: font-size('base');
 }
 
 .user-menu-backdrop {
   position: fixed;
   inset: 0;
   background: #{color.change(slate(900), $alpha: 0.36)};
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(spacing('2'));
   z-index: z-index('tooltip');
   display: grid;
 
@@ -47,30 +48,31 @@
 }
 
 .user-menu-dialog {
-  width: min(92vw, 320px);
+  width: min(92vw, 320px); // Valeur fixe : token '320' n'existe pas
   background: #{surface(bg)};
   color: #{slate(900)};
   border-radius: radius('lg');
-  box-shadow: 0 20px 40px #{color.change(gray(900), $alpha: 0.18)};
+  box-shadow: 0 spacing('20') spacing('40')
+    #{color.change(gray(900), $alpha: 0.18)};
   overflow: hidden;
 
   // Mobile par défaut (320px-767px) : en bas à droite (accessible au pouce droit)
-  margin: 0 14px 14px 0;
+  margin: 0 spacing('14') spacing('14') 0;
   max-height: 80vh;
   overflow-y: auto;
-  animation: slideInUp 0.18s ease-out;
+  animation: slideInUp transition('fast') ease-out;
 
   // Desktop (768px+) : en haut à droite
   @include respond-to(md) {
-    margin: 64px 14px 0 0;
+    margin: spacing('64') spacing('14') 0 0;
     max-height: none;
     overflow-y: visible;
-    animation: slideInDown 0.18s ease-out;
+    animation: slideInDown transition('fast') ease-out;
   }
 
   /* Remonter le menu sur mobile pour pages edition/profil/admin */
   &.user-menu-dialog--elevated {
-    margin: 0 14px 14px 0;
+    margin: 0 spacing('14') spacing('14') 0;
     max-height: 70vh;
   }
 }
@@ -79,8 +81,8 @@
   display: flex;
   gap: spacing('sm');
   align-items: center;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid #{color.change(gray(900), $alpha: 0.06)};
+  padding: spacing('14') spacing('14') spacing('10');
+  border-bottom: spacing('1') solid #{color.change(gray(900), $alpha: 0.06)};
 }
 .user-infos small {
   color: #{slate(500)};
@@ -91,34 +93,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 10px 12px;
-  border-bottom: 1px solid #{color.change(gray(900), $alpha: 0.06)};
+  gap: spacing('10');
+  padding: spacing('10') spacing('12');
+  border-bottom: spacing('1') solid #{color.change(gray(900), $alpha: 0.06)};
 }
 
 .user-menu-list {
   display: grid;
-  padding: 6px;
+  padding: spacing('6');
 }
 
 .user-menu-separator {
-  height: 1px;
+  height: spacing('1');
   background: #{color.change(gray(900), $alpha: 0.06)};
-  margin: 4px 0;
+  margin: spacing('4') 0;
 }
 
 .user-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: spacing('10');
   width: 100%;
-  padding: 10px 12px;
+  padding: spacing('10') spacing('12');
   border: none;
   background: transparent;
   border-radius: radius('rounded-10px');
   cursor: pointer;
   text-align: left;
-  font-size: 15px;
+  font-size: font-size('lg');
   text-decoration: none;
   color: inherit;
   &:hover {
@@ -128,8 +130,8 @@
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
     background: #{blue(50)};
-    outline: 2px solid #{blue(600)};
-    outline-offset: -2px;
+    outline: a11y('focus-ring-width') solid #{blue(600)};
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.danger:hover {
@@ -138,8 +140,8 @@
 
   &.danger:focus-visible {
     background: #{red(50)};
-    outline: 2px solid #{red(600)};
-    outline-offset: -2px;
+    outline: a11y('focus-ring-width') solid #{red(600)};
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.admin:hover {
@@ -150,8 +152,8 @@
   &.admin:focus-visible {
     background: #{yellow(100)};
     color: #{yellow(800)};
-    outline: 2px solid #{orange(600)};
-    outline-offset: -2px;
+    outline: a11y('focus-ring-width') solid #{orange(600)};
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   &.legal:hover {
@@ -160,14 +162,14 @@
 
   &.legal:focus-visible {
     background: #{purple(50)};
-    outline: 2px solid #{purple(600)};
-    outline-offset: -2px;
+    outline: a11y('focus-ring-width') solid #{purple(600)};
+    outline-offset: calc(-1 * #{spacing('2')});
   }
 
   .icon {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
+    width: spacing('18');
+    height: spacing('18');
+    flex: 0 0 spacing('18');
 
     &.chevron {
       margin-left: auto;
@@ -176,8 +178,8 @@
 
   // Item dans sous-menu (indent)
   &.submenu-item {
-    padding-left: 40px;
-    font-size: 14px;
+    padding-left: spacing('40');
+    font-size: font-size('sm');
     color: #{slate(500)};
 
     &:hover {
@@ -189,14 +191,14 @@
 // Sous-menu collapsible
 .user-menu-submenu {
   display: grid;
-  gap: 2px;
-  padding: 4px 0;
+  gap: spacing('2');
+  padding: spacing('4') 0;
 }
 
 // Animation pour desktop (depuis le haut)
 @keyframes slideInDown {
   from {
-    transform: translateY(-6px);
+    transform: translateY(calc(-1 * #{spacing('6')}));
     opacity: 0;
   }
   to {
@@ -208,7 +210,7 @@
 // Animation pour mobile (depuis le bas)
 @keyframes slideInUp {
   from {
-    transform: translateY(6px);
+    transform: translateY(spacing('6'));
     opacity: 0;
   }
   to {
@@ -220,10 +222,10 @@
 /* a11y util */
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: spacing('1');
+  height: spacing('1');
   padding: 0;
-  margin: -1px;
+  margin: calc(-1 * #{spacing('1')});
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;

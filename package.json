@@ -37,6 +37,8 @@
     "verify:quick": "pnpm type-check && pnpm lint && pnpm build",
     "verify:ci": "pnpm type-check && pnpm lint && pnpm format:check && pnpm test:coverage && pnpm build:prod",
     "check-bundle": "node scripts/check-bundle-size.js",
+    "lint:hardcoded": "node scripts/check-hardcoded.js",
+    "validate:touch-targets": "node scripts/check-touch-targets.js",
     "db:link": "dotenv -e .env -- sh -lc 'supabase link --project-ref \"$SUPABASE_PROJECT_REF\"'",
     "db:dump": "supabase db dump --schema public,storage -f supabase/schema.sql --local",
     "db:types": "mkdir -p src/types && supabase gen types typescript --local > src/types/supabase.ts",

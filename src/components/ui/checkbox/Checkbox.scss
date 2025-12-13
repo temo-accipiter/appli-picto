@@ -90,7 +90,7 @@
     height: spacing('16');
 
     &:checked::after {
-      font-size: spacing('10');
+      font-size: font-size('xs');
     }
   }
 
@@ -100,7 +100,7 @@
     height: spacing('20');
 
     &:checked::after {
-      font-size: spacing('12');
+      font-size: font-size('xs');
     }
   }
 
@@ -110,7 +110,7 @@
     height: spacing('28');
 
     &:checked::after {
-      font-size: spacing('18');
+      font-size: font-size('lg');
     }
   }
 }

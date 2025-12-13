@@ -1,0 +1,230 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// CONTAINER QUERIES - Modern responsive design
+/// ============================================================================
+/// Container queries permettent un design responsive basé sur la taille
+/// du conteneur parent plutôt que du viewport (alternative à @media).
+///
+/// Cas d'usage :
+///   - Composants réutilisables qui s'adaptent à leur conteneur
+///   - Design systems modulaires (cards, grids, layouts)
+///   - Responsive components sans dépendance au viewport
+///
+/// Compatibilité :
+///   - Chrome 105+, Safari 16+, Firefox 110+
+///   - Fallback recommandé pour navigateurs anciens
+///
+/// Usage :
+///   @use '@styles/abstracts' as *;
+///   .my-container { @include container(); }
+///   @include respond-container(400px) { ... }
+/// ============================================================================
+
+// =============================================================================
+// CONTAINER QUERY TOKENS - Breakpoints pour containers
+// =============================================================================
+
+/// Breakpoints pour container queries (similaires aux breakpoints globaux)
+/// Utilisés avec @include respond-container($breakpoint)
+$container-breakpoints: (
+  'xs': 320px,
+  // Very small containers
+  'sm': 400px,
+  // Small containers
+  'md': 600px,
+  // Medium containers
+  'lg': 800px,
+  // Large containers
+  'xl': 1000px,
+  // Extra large containers
+  '2xl': 1200px, // Very large containers
+);
+
+// =============================================================================
+// MIXIN: container() - Définit un container query context
+// =============================================================================
+
+/// Définit un élément comme container query context
+/// Par défaut, utilise container-type: inline-size (largeur uniquement)
+///
+/// @param {String} $type - Type de container ('inline-size', 'size', 'normal')
+///   - 'inline-size': Queries basées sur la largeur uniquement (défaut, plus performant)
+///   - 'size': Queries basées sur largeur ET hauteur
+///   - 'normal': Pas de container query (restore default)
+/// @param {String} $name - Nom optionnel du container (pour cibler spécifiquement)
+///
+/// @example scss - Container basique (largeur)
+///   .card-grid {
+///     @include container();
+///   }
+///
+/// @example scss - Container nommé avec taille complète
+///   .sidebar {
+///     @include container($type: 'size', $name: 'sidebar');
+///   }
+///
+/// @example scss - Restore normal (désactiver container query)
+///   .no-container {
+///     @include container($type: 'normal');
+///   }
+@mixin container($type: 'inline-size', $name: null) {
+  @if $name {
+    container-name: $name;
+  }
+  container-type: $type;
+}
+
+// =============================================================================
+// MIXIN: respond-container() - Container media query
+// =============================================================================
+
+/// Crée une container query pour responsive design basé sur le container
+/// Fonctionne comme @media mais pour containers (min-width du container)
+///
+/// @param {Length|String} $min-width - Largeur minimale du container
+///   - Si String: clé dans $container-breakpoints ('sm', 'md', 'lg', etc.)
+///   - Si Length: valeur directe (400px, 20rem, etc.)
+/// @param {String} $container-name - Nom optionnel du container à cibler
+///
+/// @content - Styles à appliquer quand container >= $min-width
+///
+/// @throws Warning si clé de breakpoint inexistante
+///
+/// @example scss - Usage avec token de breakpoint
+///   .card {
+///     padding: 1rem;
+///
+///     @include respond-container('md') {
+///       padding: 2rem;
+///     }
+///   }
+///
+/// @example scss - Usage avec valeur directe
+///   .sidebar-widget {
+///     @include respond-container(500px) {
+///       display: grid;
+///       grid-template-columns: 1fr 1fr;
+///     }
+///   }
+///
+/// @example scss - Cibler container nommé spécifique
+///   .nested-card {
+///     @include respond-container('lg', $container-name: 'sidebar') {
+///       // S'applique uniquement si container 'sidebar' >= lg
+///       width: 100%;
+///     }
+///   }
+@mixin respond-container($min-width, $container-name: null) {
+  // Résoudre token de breakpoint ou utiliser valeur directe
+  $resolved-width: $min-width;
+
+  // Si c'est une string, chercher dans $container-breakpoints
+  @if type-of($min-width) == 'string' {
+    @if map.has-key($container-breakpoints, $min-width) {
+      $resolved-width: map.get($container-breakpoints, $min-width);
+    } @else {
+      @warn 'Container breakpoint "#{$min-width}" not found. Available: #{map.keys($container-breakpoints)}. Using value as-is.';
+    }
+  }
+
+  // Construire container query
+  @if $container-name {
+    @container #{$container-name} (min-width: #{$resolved-width}) {
+      @content;
+    }
+  } @else {
+    @container (min-width: #{$resolved-width}) {
+      @content;
+    }
+  }
+}
+
+// =============================================================================
+// UTILITY MIXINS - Shortcuts pour patterns communs
+// =============================================================================
+
+/// Container avec nom auto-généré basé sur le sélecteur
+/// Utile pour éviter conflits de noms dans composants complexes
+///
+/// @example scss
+///   .my-component {
+///     @include container-named();
+///     // Génère container-name: my-component
+///   }
+@mixin container-named() {
+  @at-root {
+    #{&} {
+      container-name: #{&};
+      container-type: inline-size;
+    }
+  }
+}
+
+/// Container avec fallback pour navigateurs non-supportés
+/// Utilise @supports pour détecter support container queries
+///
+/// @param {String} $type - Type de container (inline-size, size)
+/// @example scss
+///   .responsive-card {
+///     @include container-with-fallback();
+///   }
+@mixin container-with-fallback($type: 'inline-size') {
+  @supports (container-type: inline-size) {
+    container-type: $type;
+  }
+
+  // Fallback: utiliser width: 100% pour responsive basique
+  @supports not (container-type: inline-size) {
+    width: 100%;
+  }
+}
+
+// =============================================================================
+// GUIDELINES & USAGE NOTES
+// =============================================================================
+// 1. Préférer container-type: inline-size (largeur) à size (largeur+hauteur)
+// 2. Utiliser @include container() sur le PARENT du composant responsive
+// 3. @include respond-container() s'applique sur les ENFANTS du container
+// 4. Container queries ne remplacent pas @media (utiliser les deux selon besoin)
+// 5. Tester support navigateur avec @supports (container-type: inline-size)
+// 6. Container nommés utiles pour containers imbriqués (éviter ambiguïté)
+// 7. Performance : container queries peuvent être plus performants que @media
+// 8. Mobile-first : commencer sans query, ajouter respond-container pour large
+// 9. Éviter container-type: size sauf besoin précis (moins performant)
+// 10. Documenter containers nommés pour maintenance (commentaires)
+// =============================================================================
+
+// =============================================================================
+// EXEMPLES PRATIQUES
+// =============================================================================
+// --- Exemple 1 : Card responsive basée sur container ---
+// .card-grid {
+//   @include container(); // Définit le container
+// }
+//
+// .card {
+//   display: block;
+//
+//   @include respond-container('sm') {
+//     display: flex; // Flex quand container >= 400px
+//   }
+// }
+//
+// --- Exemple 2 : Sidebar avec container nommé ---
+// .sidebar {
+//   @include container($name: 'sidebar');
+// }
+//
+// .sidebar-widget {
+//   @include respond-container('md', $container-name: 'sidebar') {
+//     // Styles uniquement pour sidebar >= 600px
+//   }
+// }
+//
+// --- Exemple 3 : Container avec fallback ---
+// .modern-component {
+//   @include container-with-fallback();
+// }
+// =============================================================================

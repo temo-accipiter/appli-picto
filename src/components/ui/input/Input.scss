@@ -10,13 +10,13 @@
 
 .input-field__input {
   padding: spacing('8');
-  font-size: spacing('16');
+  font-size: font-size('base');
   border: 2px solid var(--color-border);
   border-radius: $radius-md;
   box-sizing: border-box;
   background-color: var(--color-bg);
   color: var(--color-text);
-  max-width: 11.5rem;
+  max-width: spacing('200'); // ~11.5rem intentional pour inputs courts
   min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
   transition:
     border $transition-fast ease,
@@ -37,7 +37,7 @@
 }
 
 .input-field__error {
-  min-height: 1rem;
+  min-height: spacing('16');
   font-size: $font-size-sm;
   color: $color-error;
   line-height: 1.2;
@@ -78,7 +78,7 @@
 
 /* Optionnel : adapter le file input */
 input[type='file'].input-field__input {
-  padding: 0.4rem;
+  padding: spacing('6');
   border-radius: radius('rounded-6px');
   cursor: pointer;
 }
@@ -89,7 +89,7 @@ input[type='file'].input-field__input {
 
 .input-field__toggle {
   position: absolute;
-  right: 0.75rem;
+  right: spacing('12');
   top: 50%;
   transform: translateY(-50%);
   min-width: spacing('44');
@@ -99,7 +99,7 @@ input[type='file'].input-field__input {
   justify-content: center;
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: font-size('base');
   cursor: pointer;
   opacity: 0.6;
   padding: 0;

@@ -17,18 +17,19 @@
     #{map.get($gradient, end)} 100%
   );
   border-radius: $radius-lg;
-  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.08)};
+  box-shadow: 0 spacing('4') spacing('12')
+    #{color.change(gray(900), $alpha: opacity('0-08'))};
 
   // Mode plein écran
   &--full {
-    min-height: 600px;
-    max-width: 600px;
+    min-height: spacing('600');
+    max-width: spacing('600');
     margin: 0 auto;
   }
 
   // Mode compact (pour affichage à côté d'autres composants)
   &--compact {
-    max-width: 300px;
+    max-width: spacing('300');
     padding: $spacing-lg;
     gap: $spacing-md;
   }
@@ -40,7 +41,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: 280px;
+    max-width: spacing('280');
 
     .time-timer--compact & {
       max-width: spacing('160');
@@ -51,17 +52,20 @@
   &__circle {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 2px 8px #{color.change(gray(900), $alpha: 0.1)});
+    filter: drop-shadow(
+      0 spacing('2') spacing('8')
+        #{color.change(gray(900), $alpha: opacity('sm'))}
+    );
   }
 
   // Cercle de fond
   &__circle-bg {
-    opacity: 0.2;
+    opacity: opacity('lg');
   }
 
   // Cercle de progression
   &__circle-progress {
-    transition: stroke 0.15s ease;
+    transition: stroke transition('fast') ease;
 
     .time-timer--compact & {
       stroke-width: 10;
@@ -89,7 +93,7 @@
     font-variant-numeric: tabular-nums;
 
     .time-timer--compact & {
-      font-size: 1.75rem;
+      font-size: font-size('xl');
     }
   }
 
@@ -118,7 +122,8 @@
     font-weight: $font-weight-semibold;
     cursor: pointer;
     transition: all $transition-base ease;
-    box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
+    box-shadow: 0 spacing('2') spacing('4')
+      #{color.change(gray(900), $alpha: opacity('sm'))};
 
     .time-timer--compact & {
       padding: $spacing-sm $spacing-md;
@@ -126,23 +131,25 @@
     }
 
     &:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px #{color.change(gray(900), $alpha: 0.15)};
+      transform: translateY(-#{spacing('2')});
+      box-shadow: 0 spacing('4') spacing('8')
+        #{color.change(gray(900), $alpha: opacity('md'))};
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
+      box-shadow: 0 spacing('2') spacing('4')
+        #{color.change(gray(900), $alpha: opacity('sm'))};
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: opacity('half');
       cursor: not-allowed;
     }
 
     &:focus-visible {
-      outline: 3px solid $color-info-primary;
-      outline-offset: 2px;
+      outline: spacing('3') solid $color-info-primary;
+      outline-offset: spacing('2');
     }
 
     // Bouton principal (Play/Pause)
@@ -169,7 +176,7 @@
     &--secondary {
       background: $color-bg;
       color: $color-text;
-      border: 2px solid gray(300);
+      border: spacing('2') solid gray(300);
 
       &:hover:not(:disabled) {
         background: gray(100);
@@ -179,11 +186,11 @@
   }
 
   &__icon {
-    font-size: 1.25rem;
+    font-size: font-size('lg');
     line-height: 1;
 
     .time-timer--compact & {
-      font-size: 1rem;
+      font-size: font-size('base');
     }
   }
 
@@ -193,7 +200,7 @@
     padding: $spacing-lg;
     background: $color-bg;
     border-radius: $radius-md;
-    border: 2px solid gray(200);
+    border: spacing('2') solid gray(200);
     animation: slide-up $transition-base ease;
   }
 
@@ -229,7 +236,7 @@
     &:hover {
       background: gray(100);
       border-color: $color-primary;
-      transform: translateY(-2px);
+      transform: translateY(-#{spacing('2')});
     }
 
     &:active {
@@ -237,8 +244,8 @@
     }
 
     &:focus-visible {
-      outline: 3px solid $color-info-primary;
-      outline-offset: 2px;
+      outline: spacing('3') solid $color-info-primary;
+      outline-offset: spacing('2');
     }
 
     &--active {
@@ -268,10 +275,10 @@
 // Classe utilitaire pour le contenu accessible uniquement aux lecteurs d'écran
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: spacing('1');
+  height: spacing('1');
   padding: 0;
-  margin: -1px;
+  margin: -#{spacing('1')};
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;

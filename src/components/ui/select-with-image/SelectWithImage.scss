@@ -32,7 +32,7 @@
     border-radius: $radius-md;
     cursor: pointer;
     color: var(--color-text);
-    font-size: spacing('16');
+    font-size: font-size('base');
     font-family: inherit;
     user-select: none;
     transition:
@@ -67,7 +67,8 @@
 
     &[data-state='open'] {
       border-color: var(--color-focus, #{blue(700)});
-      box-shadow: 0 0 0 3px #{color.change(blue(700), $alpha: 0.1)};
+      box-shadow: 0 0 0 spacing('3')
+        #{color.change(blue(700), $alpha: opacity('sm'))};
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -111,7 +112,7 @@
     height: spacing('24');
     flex-shrink: 0;
     color: var(--color-text);
-    font-size: spacing('12');
+    font-size: font-size('xs');
     transition: transform $transition-fast ease;
 
     [data-state='open'] & {
@@ -159,7 +160,7 @@
     align-items: center;
     gap: $spacing-xs;
     padding: $spacing-xs $spacing-sm;
-    font-size: spacing('14');
+    font-size: font-size('sm');
     color: var(--color-text);
     border-radius: $radius-sm;
     cursor: pointer;
@@ -226,7 +227,7 @@
 
   // Message d'erreur
   &__error {
-    min-height: 1rem;
+    min-height: spacing('16');
     font-size: $font-size-sm;
     color: $color-error;
     line-height: 1.2;
@@ -247,7 +248,7 @@
 @keyframes slideDownAndFade {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-4px); // Valeur fixe animation OK
   }
   to {
     opacity: 1;
@@ -262,6 +263,6 @@
   }
   to {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-4px); // Valeur fixe animation OK
   }
 }

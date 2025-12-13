@@ -1,0 +1,147 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// ACCESSIBILITY TOKENS - WCAG 2.2 AA Compliance
+/// ============================================================================
+/// Tokens d'accessibilité centralisés pour garantir conformité WCAG 2.2 AA.
+/// Utilisé par mixins (touch-target, focus-ring, etc.) et composants.
+///
+/// Spécificités TSA (Troubles du Spectre Autistique) :
+///   - Zones tactiles préférées plus grandes (56px vs 44px minimum WCAG)
+///   - Focus rings clairs et prévisibles
+///   - Contraste élevé recommandé (7.0 pour enhanced)
+///   - Animations réduites au strict minimum
+///
+/// Usage :
+///   @use '@styles/abstracts/a11y-tokens' as *;
+///   min-height: a11y('preferred-touch-target');
+///   outline-width: a11y('focus-ring-width');
+/// ============================================================================
+
+// =============================================================================
+// A11Y TOKENS MAP - Source de vérité unique
+// =============================================================================
+
+/// Tokens d'accessibilité conformes WCAG 2.2 AA + TSA friendly
+///
+/// Ratios de contraste :
+///   - 'contrast-min': 4.5 = WCAG AA texte normal
+///   - 'contrast-enhanced': 7.0 = WCAG AAA texte normal (recommandé TSA)
+///
+/// Touch targets (WCAG 2.5.5 Target Size) :
+///   - 'min-touch-target': 44px = Minimum WCAG 2.2 Level AA
+///   - 'preferred-touch-target': 56px = Recommandé pour TSA (enfants)
+///
+/// Focus indicators (WCAG 2.4.7 Focus Visible) :
+///   - 'focus-ring-width': 2px = Épaisseur visible claire
+///   - 'focus-ring-offset': 2px = Espacement pour distinction
+///
+/// Animations (prefers-reduced-motion) :
+///   - 'reduced-motion-duration': 0.01ms = Quasi-instantané (safe pour TSA)
+$a11y-tokens: (
+  // === Contrast ratios (WCAG) ===
+  'contrast-min': 4.5,
+  // WCAG AA normal text
+  'contrast-enhanced': 7,
+  // WCAG AAA normal text (TSA recommended)
+  'contrast-large-text': 3,
+  // WCAG AA large text (18px+)
+  // === Touch target sizes (WCAG 2.5.5) ===
+  'min-touch-target': 44px,
+  // WCAG 2.2 Level AA minimum
+  'preferred-touch-target': 56px,
+  // Recommended for children/TSA (Material Design baseline)
+  'optimal-touch-target': 48px,
+  // Compromise between AA and UX
+  // === Focus indicators (WCAG 2.4.7) ===
+  'focus-ring-width': 2px,
+  // Visible outline thickness
+  'focus-ring-offset': 2px,
+  // Offset for clear separation
+  'focus-ring-width-enhanced': 3px,
+  // Enhanced for low vision
+  // === Motion (prefers-reduced-motion) ===
+  'reduced-motion-duration': 0.01ms,
+  // Near-instant for reduced-motion users
+  'safe-animation-duration': 200ms,
+  // Max duration for TSA-friendly animations
+  'safe-transition-duration': 150ms,
+  // Max transition for interactive elements
+  // === Spacing for readability ===
+  'line-spacing-min': 1.5,
+  // WCAG 1.4.12 line-height minimum
+  'paragraph-spacing-min': 1.5em,
+  // WCAG 1.4.12 paragraph spacing
+  'letter-spacing-min': 0.12em,
+  // WCAG 1.4.12 letter spacing
+  'word-spacing-min': 0.16em // WCAG 1.4.12 word spacing
+);
+
+// =============================================================================
+// ACCESSOR FUNCTION - Récupère un token A11Y
+// =============================================================================
+
+/// Récupère une valeur de token d'accessibilité
+/// @param {String} $key - Clé dans $a11y-tokens
+/// @return {Number|Length} Valeur du token
+/// @throws Error si clé inexistante
+///
+/// @example scss - Usage basique
+///   min-height: a11y('preferred-touch-target'); // -> 56px
+///   outline-width: a11y('focus-ring-width'); // -> 2px
+@function a11y($key) {
+  $value: map.get($a11y-tokens, $key);
+  @if $value == null {
+    @error 'A11Y token "#{$key}" not found. Available: #{map.keys($a11y-tokens)}';
+  }
+  @return $value;
+}
+
+// =============================================================================
+// CSS CUSTOM PROPERTIES - Export pour accès runtime JS
+// =============================================================================
+
+/// CSS variables pour accès JavaScript et runtime
+/// Utile pour :
+///   - Vérifications dynamiques de contraste
+///   - Ajustements de touch targets en JS
+///   - Détection prefers-reduced-motion
+:root {
+  // === Touch targets ===
+  --a11y-min-touch-target: #{a11y('min-touch-target')};
+  --a11y-preferred-touch-target: #{a11y('preferred-touch-target')};
+  --a11y-optimal-touch-target: #{a11y('optimal-touch-target')};
+
+  // === Focus indicators ===
+  --a11y-focus-ring-width: #{a11y('focus-ring-width')};
+  --a11y-focus-ring-offset: #{a11y('focus-ring-offset')};
+
+  // === Motion ===
+  --a11y-reduced-motion-duration: #{a11y('reduced-motion-duration')};
+  --a11y-safe-animation-duration: #{a11y('safe-animation-duration')};
+  --a11y-safe-transition-duration: #{a11y('safe-transition-duration')};
+
+  // === Contrast ratios (informational - for JS checks) ===
+  --a11y-contrast-min: #{a11y('contrast-min')};
+  --a11y-contrast-enhanced: #{a11y('contrast-enhanced')};
+
+  // === Spacing ===
+  --a11y-line-spacing-min: #{a11y('line-spacing-min')};
+  --a11y-paragraph-spacing-min: #{a11y('paragraph-spacing-min')};
+}
+
+// =============================================================================
+// GUIDELINES & USAGE NOTES
+// =============================================================================
+// 1. Toujours utiliser a11y() function pour accès tokens
+// 2. Préférer 'preferred-touch-target' (56px) pour enfants TSA
+// 3. Utiliser 'min-touch-target' (44px) uniquement si contraintes d'espace
+// 4. Focus rings doivent toujours être visibles (outline + offset)
+// 5. Animations/transitions : tester avec prefers-reduced-motion
+// 6. Contraste 'enhanced' (7.0) recommandé pour texte important
+// 7. Touch targets s'appliquent à : buttons, links, inputs, interactive elements
+// 8. Ne jamais hardcoder ces valeurs - toujours passer par tokens
+// 9. Mixins (touch-target, focus-ring) doivent utiliser ces tokens
+// 10. Valider accessibilité avec outils (axe, WAVE, Lighthouse)
+// =============================================================================

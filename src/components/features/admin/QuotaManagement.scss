@@ -6,14 +6,14 @@
   padding: spacing('lg');
   background: var(--background);
   border-radius: radius('rounded-12px');
-  border: 1px solid var(--border);
+  border: spacing('1') solid var(--border);
 
   &.loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    min-height: spacing('200');
     gap: spacing('md');
 
     .loading-spinner {
@@ -24,16 +24,16 @@
 
   &.no-permission {
     text-align: center;
-    padding: 48px 24px;
+    padding: spacing('48') spacing('24');
     color: var(--muted-foreground);
   }
 
   .quota-header {
-    margin-bottom: 32px;
+    margin-bottom: spacing('32');
     text-align: center;
 
     h2 {
-      margin: 0 0 8px 0;
+      margin: 0 0 spacing('8') 0;
       color: var(--foreground);
       font-size: font-size('2xl');
     }
@@ -41,7 +41,7 @@
     p {
       margin: 0;
       color: var(--muted-foreground);
-      font-size: 0.875rem;
+      font-size: font-size('sm');
     }
   }
 
@@ -55,7 +55,7 @@
     background: var(--muted);
     border-radius: radius('md');
     padding: spacing('lg');
-    border: 1px solid var(--border);
+    border: spacing('1') solid var(--border);
 
     .role-title {
       margin: 0 0 16px 0;
@@ -66,7 +66,7 @@
       gap: spacing('sm');
 
       .role-name {
-        font-size: 0.875rem;
+        font-size: font-size('sm');
         color: var(--muted-foreground);
         font-weight: 400;
       }
@@ -85,13 +85,13 @@
       padding: spacing('sm') spacing('md');
       background: var(--background);
       border-radius: radius('rounded-6px');
-      border: 1px solid var(--border);
+      border: spacing('1') solid var(--border);
 
       .quota-info {
         display: flex;
         align-items: center;
         gap: spacing('sm');
-        font-size: 0.875rem;
+        font-size: font-size('sm');
 
         .quota-type {
           font-weight: 600;
@@ -165,7 +165,7 @@
       padding: spacing('lg');
       width: 90%;
       max-width: 500px;
-      border: 1px solid var(--border);
+      border: spacing('1') solid var(--border);
       box-shadow: 0 20px 25px -5px #{color.change(gray(900), $alpha: 0.1)};
 
       h3 {
@@ -182,18 +182,18 @@
           margin-bottom: 6px;
           font-weight: 500;
           color: var(--foreground);
-          font-size: 0.875rem;
+          font-size: font-size('sm');
         }
 
         input,
         select {
           width: 100%;
           padding: spacing('sm') spacing('sm');
-          border: 1px solid var(--border);
+          border: spacing('1') solid var(--border);
           border-radius: radius('rounded-6px');
           background: var(--background);
           color: var(--foreground);
-          font-size: 0.875rem;
+          font-size: font-size('sm');
 
           &:focus {
             outline: none;
@@ -228,7 +228,7 @@
           padding: spacing('sm') spacing('md');
           background: var(--muted);
           color: var(--muted-foreground);
-          border: 1px solid var(--border);
+          border: spacing('1') solid var(--border);
           border-radius: radius('rounded-6px');
           font-weight: 500;
           cursor: pointer;
@@ -305,7 +305,7 @@
     padding: spacing('lg');
 
     .quota-header {
-      margin-bottom: 32px;
+      margin-bottom: spacing('32');
 
       h2 {
         font-size: font-size('2xl');
