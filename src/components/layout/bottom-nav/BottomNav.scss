@@ -69,9 +69,10 @@
   justify-content: space-around;
   // Background opaque pour éviter que le contenu soit visible à travers
   background: #{color.change(white, $alpha: 0.98)};
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--color-border);
-  box-shadow: 0 -2px 10px #{color.change(gray(900), $alpha: 0.05)};
+  backdrop-filter: blur(spacing('10'));
+  border-top: spacing('1') solid var(--color-border);
+  box-shadow: 0 spacing('-2') spacing('10')
+    #{color.change(gray(900), $alpha: 0.05)};
 
   // Dark mode support
   [data-theme='dark'] & {
@@ -117,8 +118,8 @@
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: a11y('focus-ring-width') solid var(--color-primary);
+    outline-offset: a11y('focus-ring-offset');
   }
 }
 

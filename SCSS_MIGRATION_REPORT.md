@@ -9,17 +9,20 @@
 ## ✅ Phase 1 - Architecture Tokens (TERMINÉE)
 
 ### Fichiers Créés
+
 - ✅ `src/styles/abstracts/_a11y-tokens.scss` (138 lignes)
 - ✅ `src/styles/abstracts/_container-queries.scss` (256 lignes)
 - ✅ `scripts/check-hardcoded.js` (273 lignes)
 - ✅ `scripts/check-touch-targets.js` (243 lignes)
 
 ### Modifications
+
 - ✅ Mixins A11Y : `touch-target()`, `non-invasive-focus()`
 - ✅ Marqueurs DEPRECATED sur `_variables.scss` et `_theme-vars.scss`
 - ✅ Scripts npm : `lint:hardcoded`, `validate:touch-targets`
 
 ### Validation
+
 - ✅ Build Next.js : **SUCCÈS** (76s)
 - ✅ Lint + Format : **SUCCÈS** (0 errors)
 - ✅ Architecture : **100% conforme** plan tokens-first
@@ -39,11 +42,11 @@
 
 ### Répartition par Type
 
-| Type | Nombre | % |
-|------|--------|---|
-| **PX Spacing** | ~520 | 97% |
-| **RGB Colors** | ~10 | 2% |
-| **Hex Colors** | ~5 | 1% |
+| Type           | Nombre | %   |
+| -------------- | ------ | --- |
+| **PX Spacing** | ~520   | 97% |
+| **RGB Colors** | ~10    | 2%  |
+| **Hex Colors** | ~5     | 1%  |
 
 ### Top 10 Fichiers (plus de hardcodes)
 
@@ -63,12 +66,15 @@
 ## 🎯 Phase 2 - Migration Composants (PLANIFIÉE)
 
 ### Objectif
+
 Migrer les **535 hardcodes** vers le système tokens-first.
 
 ### Stratégie de Migration (Priorités)
 
 #### **Priorité 1 : Layout & Navigation** (High Impact)
+
 Fichiers critiques utilisés partout :
+
 - [ ] `layout/navbar/Navbar.scss` (35 hardcodes)
 - [ ] `layout/bottom-nav/BottomNav.scss` (28 hardcodes)
 - [ ] `layout/user-menu/UserMenu.scss` (27 hardcodes)
@@ -79,7 +85,9 @@ Fichiers critiques utilisés partout :
 ---
 
 #### **Priorité 2 : Pages Principales** (User-Facing)
+
 Pages à forte visibilité :
+
 - [ ] `page-components/tableau/Tableau.scss` (38 hardcodes)
 - [ ] `page-components/edition/Edition.scss` (20 hardcodes)
 - [ ] `page-components/profil/Profil.scss` (12 hardcodes)
@@ -90,7 +98,9 @@ Pages à forte visibilité :
 ---
 
 #### **Priorité 3 : Composants UI Réutilisables** (Design System)
+
 Composants utilisés partout :
+
 - [ ] `ui/button/Button.scss` (10 hardcodes)
 - [ ] `ui/input/Input.scss` (8 hardcodes)
 - [ ] `ui/select/Select.scss` (6 hardcodes)
@@ -102,6 +112,7 @@ Composants utilisés partout :
 ---
 
 #### **Priorité 4 : Features Métier** (Business Logic)
+
 - [ ] `features/taches/taches-dnd/TachesDnd.scss` (15 hardcodes)
 - [ ] `features/recompenses/recompenses-edition/RecompensesEdition.scss` (10 hardcodes)
 - [ ] `features/admin/AccountManagement.scss` (17 hardcodes)
@@ -112,6 +123,7 @@ Composants utilisés partout :
 ---
 
 #### **Priorité 5 : Features Accessoires** (Low Priority)
+
 - [ ] `features/consent/CookiePreferences.scss` (22 hardcodes)
 - [ ] `features/consent/CookieBanner.scss` (11 hardcodes)
 - [ ] `features/legal/legal-markdown/LegalMarkdown.scss` (8 hardcodes)
@@ -123,6 +135,7 @@ Composants utilisés partout :
 ### Plan de Migration (Recommandé)
 
 #### **Sprint 1 : Layout (2-3h)**
+
 Migrer navigation + layout → Impact immédiat sur cohérence
 
 ```scss
@@ -136,6 +149,7 @@ gap: spacing('8');
 ```
 
 #### **Sprint 2 : Pages (3-4h)**
+
 Migrer Tableau + Edition → UX uniforme
 
 ```scss
@@ -149,6 +163,7 @@ margin-bottom: spacing('24');
 ```
 
 #### **Sprint 3 : Components UI (2-3h)**
+
 Migrer Button, Input, Modal → Design system clean
 
 ```scss
@@ -162,9 +177,11 @@ border-radius: radius('md');
 ```
 
 #### **Sprint 4 : Features (3-4h)**
+
 Migrer features métier → Maintenance long-terme
 
 #### **Sprint 5 : Cleanup (1-2h)**
+
 - Derniers hardcodes accessoires
 - Suppression `_variables.scss` DEPRECATED
 - Validation finale
@@ -174,17 +191,20 @@ Migrer features métier → Maintenance long-terme
 ## 🔧 Commandes Utiles
 
 ### Détecter Hardcodes
+
 ```bash
 pnpm lint:hardcoded              # Liste tous les hardcodes
 pnpm lint:hardcoded > report.txt # Export vers fichier
 ```
 
 ### Vérifier Touch Targets
+
 ```bash
 pnpm validate:touch-targets      # Vérifie WCAG AA
 ```
 
 ### Build & Test
+
 ```bash
 pnpm build                       # Compilation
 pnpm check                       # Lint + Format
@@ -229,9 +249,9 @@ min-height: 44px;
 min-width: 44px;
 
 // ✅ APRÈS
-@include touch-target('min');  // 44px WCAG AA
+@include touch-target('min'); // 44px WCAG AA
 // OU
-@include touch-target();       // 56px TSA preferred
+@include touch-target(); // 56px TSA preferred
 ```
 
 ---
@@ -239,16 +259,19 @@ min-width: 44px;
 ## ⚠️ Points d'Attention
 
 ### Compatibilité
+
 - ✅ Ne pas casser l'apparence actuelle (pixel-perfect)
 - ✅ Tester sur mobile ET desktop après chaque migration
 - ✅ Vérifier animations TSA (<0.3s)
 
 ### Progressivité
+
 - ✅ Migrer fichier par fichier (pas tout d'un coup)
 - ✅ Commit après chaque groupe de fichiers
 - ✅ Valider `pnpm build` après chaque commit
 
 ### Performance
+
 - ✅ Les tokens n'impactent PAS les perfs runtime
 - ✅ Tokens = variables SCSS compilées → CSS final identique
 
@@ -256,20 +279,21 @@ min-width: 44px;
 
 ## 📅 Timeline Estimée
 
-| Phase | Durée | Description |
-|-------|-------|-------------|
-| **Sprint 1** | 2-3h | Layout + Navigation (90 hardcodes) |
-| **Sprint 2** | 3-4h | Pages principales (78 hardcodes) |
-| **Sprint 3** | 2-3h | Components UI (40 hardcodes) |
-| **Sprint 4** | 3-4h | Features métier (54 hardcodes) |
-| **Sprint 5** | 1-2h | Cleanup + validation (reste ~270) |
-| **TOTAL** | **12-16h** | Migration complète 535 hardcodes |
+| Phase        | Durée      | Description                        |
+| ------------ | ---------- | ---------------------------------- |
+| **Sprint 1** | 2-3h       | Layout + Navigation (90 hardcodes) |
+| **Sprint 2** | 3-4h       | Pages principales (78 hardcodes)   |
+| **Sprint 3** | 2-3h       | Components UI (40 hardcodes)       |
+| **Sprint 4** | 3-4h       | Features métier (54 hardcodes)     |
+| **Sprint 5** | 1-2h       | Cleanup + validation (reste ~270)  |
+| **TOTAL**    | **12-16h** | Migration complète 535 hardcodes   |
 
 ---
 
 ## 🎯 Success Metrics
 
 ### Objectifs Phase 2
+
 - [ ] **0 hardcodes** détectés par `pnpm lint:hardcoded`
 - [ ] **100% composants** utilisent tokens/wrappers
 - [ ] **Aucun changement visuel** (pixel-perfect)
@@ -277,6 +301,7 @@ min-width: 44px;
 - [ ] **Suppression** `_variables.scss` DEPRECATED
 
 ### Bénéfices Attendus
+
 - ✅ **Maintenance** : 1 changement = partout
 - ✅ **Cohérence** : Design system unifié
 - ✅ **Accessibilité** : WCAG 2.2 AA garanti
