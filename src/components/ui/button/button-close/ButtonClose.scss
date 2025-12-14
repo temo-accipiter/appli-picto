@@ -15,12 +15,12 @@
     background $transition-fast,
     color $transition-fast,
     transform $transition-fast;
-  color: $color-text;
+  color: text();
   flex-shrink: 0;
 
   &:hover {
     background: gray(200);
-    color: $color-primary;
+    color: color('base');
     transform: scale(1.1);
   }
 
@@ -29,7 +29,7 @@
   }
 
   &:focus-visible {
-    outline: spacing('2') solid $color-accent;
+    outline: spacing('2') solid color('base', 'accent');
     outline-offset: spacing('2');
   }
 
@@ -38,7 +38,7 @@
     width: spacing('48');
     height: spacing('48');
     background: gray(100);
-    border: spacing('2') solid $color-primary;
+    border: spacing('2') solid color('base');
 
     &:hover {
       background: gray(200);
@@ -46,7 +46,7 @@
     }
 
     &:focus-visible {
-      outline: spacing('2') solid $color-accent;
+      outline: spacing('2') solid color('base', 'accent');
       outline-offset: spacing('4');
     }
   }
@@ -57,16 +57,16 @@
     height: spacing('40');
     background: transparent;
     border: none;
-    color: rgba($color-text, opacity('0-35'));
+    color: rgba(text(), opacity('0-35'));
 
     &:hover {
-      background: rgba($color-primary, opacity('0-08'));
-      color: $color-primary;
+      background: rgba(color('base'), opacity('0-08'));
+      color: color('base');
       transform: scale(1.1);
     }
 
     &:focus-visible {
-      outline: spacing('2') solid $color-accent;
+      outline: spacing('2') solid color('base', 'accent');
       outline-offset: spacing('2');
     }
   }
