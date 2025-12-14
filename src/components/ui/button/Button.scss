@@ -26,8 +26,8 @@
   }
 
   &--default {
-    background-color: $color-surface;
-    color: $color-text;
+    background-color: surface('surface');
+    color: text();
 
     @include on-event {
       background-color: gray(200);
@@ -35,31 +35,31 @@
   }
 
   &--secondary {
-    background-color: $color-secondary;
-    color: $color-text-invert;
+    background-color: color('base', 'secondary');
+    color: text('invert');
 
     @include on-event {
-      background-color: color.adjust($color-secondary, $lightness: -6%);
+      background-color: color.adjust(color('base', 'secondary'), $lightness: -6%);
     }
   }
 
   &--primary {
     // WCAG 2.2 AA compliant - Ratio ~4.7:1 (blanc sur bleu)
-    background-color: $color-primary;
-    color: $color-text-invert;
+    background-color: color('base');
+    color: text('invert');
 
     @include on-event {
-      background-color: color.adjust($color-primary, $lightness: -6%);
+      background-color: color.adjust(color('base'), $lightness: -6%);
     }
   }
 
   &--danger {
     // Variant pour actions destructives (suppression, annulation)
-    background-color: $color-error;
-    color: $color-text-invert;
+    background-color: semantic('error');
+    color: text('invert');
 
     @include on-event {
-      background-color: color.adjust($color-error, $lightness: -8%);
+      background-color: color.adjust(semantic('error'), $lightness: -8%);
     }
   }
 

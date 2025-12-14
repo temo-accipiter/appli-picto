@@ -24,8 +24,8 @@
 
 // === MODAL CONTENEUR ===
 .modal {
-  background: $color-surface;
-  border: spacing('2') solid $color-primary;
+  background: surface('surface');
+  border: spacing('2') solid color('base');
   padding: 0;
   overflow: hidden;
   position: relative;
@@ -132,7 +132,7 @@
 .modal__title {
   margin: 0;
   font-weight: $font-weight-bold;
-  color: $color-primary;
+  color: color('base');
   flex: 1;
 
   // Mobile par défaut (320px-575px): titre plus petit
@@ -183,7 +183,7 @@
   text-align: center;
   font-weight: $font-weight-semibold;
   margin: 0;
-  color: $color-text;
+  color: text();
   line-height: $line-height-base;
 
   // Mobile par défaut (320px-575px): texte plus petit
@@ -503,7 +503,7 @@
   }
 
   .modal {
-    border-color: $color-primary;
+    border-color: color('base');
   }
 
   .modal__header,

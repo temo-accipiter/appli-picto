@@ -36,14 +36,14 @@
 
   // Slot survolé pendant un drag
   &.over {
-    border-color: $color-primary;
-    background-color: rgba($color-primary, opacity('sm'));
+    border-color: color('base');
+    background-color: rgba(color('base'), opacity('sm'));
   }
 
   // Slot source (d'où vient la carte draggée)
   &.dragging-from {
-    border-color: $color-primary;
-    background-color: rgba($color-primary, opacity('xs'));
+    border-color: color('base');
+    background-color: rgba(color('base'), opacity('xs'));
   }
 }
 
@@ -78,9 +78,9 @@
 
   // ✅ Focus visible accessible (WCAG 2.4.7)
   &:focus-visible {
-    outline: 3px solid $color-accent;
+    outline: 3px solid color('base', 'accent');
     outline-offset: 3px;
-    box-shadow: 0 0 0 6px rgba($color-accent, 0.2);
+    box-shadow: 0 0 0 6px rgba(color('base', 'accent'), 0.2);
   }
 
   span {
@@ -106,7 +106,7 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: spacing('2') solid $color-primary;
+    border: spacing('2') solid color('base');
     background-color: #{surface(bg)};
     border-radius: $radius-sm;
     flex-shrink: 0;
@@ -119,7 +119,7 @@
     height: spacing('16');
 
     &:checked {
-      background-color: $color-primary;
+      background-color: color('base');
     }
 
     &:checked::after {
@@ -142,7 +142,7 @@
   }
 
   &.dragging {
-    box-shadow: 0 0 0 spacing('3') $color-primary;
+    box-shadow: 0 0 0 spacing('3') color('base');
     opacity: 0.8;
   }
 
