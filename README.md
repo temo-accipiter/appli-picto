@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-20.19.4-brightgreen.svg)](https://nodejs.org/)
 
-Un tableau de motivation interactif et personnalisable, conçu pour aider les enfants autistes à accomplir des tâches quotidiennes avec des pictogrammes, des récompenses et une interface apaisante.
+Un tableau de motivation interactif et personnalisable, conçu pour aider les enfants autistes à accomplir des tâches quotidiennes avec des pictogrammes, des récompenses et interface apaisante.
 
 ---
 
