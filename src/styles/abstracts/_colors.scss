@@ -2,513 +2,165 @@
 @use './tokens' as *;
 
 // =============================================================================
-// SYSTÈME DE COULEURS - WRAPPER + FONCTIONS
+// SYSTÈME DE COULEURS - WRAPPER PUR (100% FONCTIONS)
 // =============================================================================
-/// ⚠️ IMPORTANT - REFACTORING PHASE 1 COMPLETÉ (2025-12-14)
+/// ✅ PHASE 2 COMPLÉTÉE (2025-12-14)
 ///
-/// Ce fichier est en transition vers un WRAPPER PUR (Phase 2 en cours).
-///
-/// ÉTAT ACTUEL:
-///   - Maps locales ci-dessous sont DEPRECATED (marquées ⚠️)
-///   - SOURCE DE VÉRITÉ CANONIQUE = _tokens.scss
-///   - Fonctions ci-dessous (color(), blue(), etc.) sont OK et seront conservées
+/// Ce fichier est maintenant un **WRAPPER PUR** :
+///   - ❌ AUCUNE définition de couleur locale (0 maps)
+///   - ✅ UNIQUEMENT des fonctions d'accès
+///   - ✅ SOURCE DE VÉRITÉ = _tokens.scss (canonical)
 ///
 /// RÈGLES STRICTES:
-///   1. ❌ NE PLUS créer de nouvelles maps de couleurs ici
-///   2. ❌ NE PLUS modifier les maps locales (read-only)
-///   3. ✅ UTILISER les fonctions publiques (color(), semantic(), blue(), etc.)
-///   4. ✅ Les fonctions liront depuis _tokens.scss (canonical source)
+///   1. ❌ JAMAIS définir maps de couleurs ici (use _tokens.scss)
+///   2. ✅ Fonctions lisent EXCLUSIVEMENT depuis _tokens.scss
+///   3. ✅ Validation stricte avec @error si clé invalide
+///   4. ✅ Composants utilisent ces fonctions (pas access direct aux maps)
 ///
-/// MIGRATION TIMELINE:
+/// MIGRATION COMPLÉTÉE:
 ///   Phase 1 ✅ : Maps migrées vers _tokens.scss
-///   Phase 2 (EN COURS) : Supprimer maps locales, garder uniquement fonctions
-///   Phase 3 : Migrer composants pour utiliser fonctions tokens
+///   Phase 2 ✅ : Wrapper pur (ce fichier)
+///   Phase 3 (SUIVANT) : Migrer composants pour utiliser fonctions tokens
 ///
-/// Usage correct (après Phase 2):
+/// Usage correct:
 ///   @use '@styles/abstracts' as *;
-///   .my-class { background: color('base'); }          // ✅
-///   .my-class { color: blue(500); }                   // ✅
-///   .my-class { border-color: semantic('success'); }  // ✅
+///   .my-class { background: color('base'); }          // ✅ Lit $primary-color-tokens
+///   .my-class { color: blue(500); }                   // ✅ Lit $blue-palette-tokens
+///   .my-class { border-color: semantic('success'); }  // ✅ Lit $semantic-tokens
 // =============================================================================
 
-// === COULEURS PRINCIPALES ===
-/// ⚠️ DEPRECATED - Use $primary-color-tokens from _tokens.scss instead
-/// This map will be REMOVED in Phase 2 - use color() function
-$primary-colors: (
-  base: #0077c2,
-  // Bleu principal (buttons, liens)
-  light: #4dabf7,
-  // Bleu clair (hover, accents)
-  dark: #1565c0, // Bleu foncé (états actifs)
-);
-
-/// ⚠️ DEPRECATED - Use $secondary-color-tokens from _tokens.scss instead
-$secondary-colors: (
-  base: #ef5350, // Rouge secondaire
-);
-
-/// ⚠️ DEPRECATED - Use $accent-color-tokens from _tokens.scss instead
-$accent-colors: (
-  base: #ffb400,
-  // Jaune accent
-  light: #fbbf24,
-  // Jaune clair
-  dark: #f59e0b, // Ambre foncé
-);
-
-// === COULEURS SÉMANTIQUES ===
-/// ⚠️ DEPRECATED - Use $semantic-tokens from _tokens.scss instead
-/// Note: $semantic-tokens has expanded structure (base, light, dark, bg, border)
-$semantic-colors: (
-  success: #4caf50,
-  // Vert succès
-  warning: #ff9800,
-  // Orange avertissement
-  error: #f44336,
-  // Rouge erreur
-  info: #d1ecf9,
-  // Bleu clair info
-  info-primary: #66c3f7, // Bleu info principal
-);
-
-// === PALETTE BLEUE ===
-/// ⚠️ DEPRECATED - Use $blue-palette-tokens from _tokens.scss instead
-$blue-palette: (
-  50: #eff6ff,
-  100: #dbeafe,
-  200: #bfdbfe,
-  300: #93c5fd,
-  400: #60a5fa,
-  500: #3b82f6,
-  // Bleu standard
-  600: #2563eb,
-  700: #1d4ed8,
-  800: #1e3a8a,
-  900: #1e40af,
-);
-
-// === PALETTE ROUGE ===
-/// ⚠️ DEPRECATED - Use $red-palette-tokens from _tokens.scss instead
-$red-palette: (
-  50: #fef2f2,
-  100: #fee2e2,
-  200: #fecaca,
-  300: #fca5a5,
-  400: #f87171,
-  500: #ef4444,
-  // Rouge standard
-  600: #dc2626,
-  700: #b91c1c,
-  800: #991b1b,
-  900: #7f1d1d,
-);
-
-// === PALETTE VERTE ===
-/// ⚠️ DEPRECATED - Use $green-palette-tokens from _tokens.scss instead
-$green-palette: (
-  50: #f0fdf4,
-  // green-50 pastel
-  100: #dcfce7,
-  200: #bbf7d0,
-  // green-200
-  300: #86efac,
-  400: #4ade80,
-  500: #22c55e,
-  600: #16a34a,
-  700: #15803d,
-  800: #166534,
-  // green-800
-  900: #14532d,
-);
-
-// === PALETTE ORANGE/AMBRE ===
-/// ⚠️ DEPRECATED - Use $orange-palette-tokens from _tokens.scss instead
-$orange-palette: (
-  50: #fff7ed,
-  // orange-50 pastel
-  100: #ffedd5,
-  200: #fed7aa,
-  // orange-200
-  300: #fdba74,
-  400: #fb923c,
-  500: #f97316,
-  600: #ea580c,
-  700: #c2410c,
-  800: #9a3412,
-  900: #7c2d12, // orange-900
-);
-
-// === PALETTE JAUNE ===
-/// ⚠️ DEPRECATED - Use $yellow-palette-tokens from _tokens.scss instead
-$yellow-palette: (
-  50: #fefce8,
-  100: #fef9c3,
-  200: #fef08a,
-  300: #fde047,
-  400: #facc15,
-  500: #eab308,
-  600: #ca8a04,
-  700: #a16207,
-  800: #854d0e,
-  900: #713f12,
-);
-
-// === PALETTE VIOLETTE ===
-/// ⚠️ DEPRECATED - Use $purple-palette-tokens from _tokens.scss instead
-$purple-palette: (
-  50: #faf5ff,
-  100: #f3e8ff,
-  200: #e9d5ff,
-  300: #d8b4fe,
-  400: #c084fc,
-  500: #a855f7,
-  600: #9333ea,
-  700: #7e22ce,
-  800: #6b21a8,
-  900: #581c87,
-);
-
-// === PALETTE SLATE/GRIS FONCÉ ===
-/// ⚠️ DEPRECATED - Use $slate-palette-tokens from _tokens.scss instead
-$slate-palette: (
-  50: #f8fafc,
-  100: #f1f5f9,
-  200: #e2e8f0,
-  300: #cbd5e1,
-  400: #94a3b8,
-  500: #64748b,
-  600: #475569,
-  700: #334155,
-  // slate-700 (texte principal)
-  800: #1e293b,
-  900: #0f172a,
-);
-
-// === PALETTE GRAY NEUTRE ===
-/// ⚠️ DEPRECATED - Use $gray-palette-tokens from _tokens.scss instead
-$gray-palette: (
-  50: #fafafa,
-  100: #f7f7f7,
-  200: #e1e1e1,
-  300: #cfcfcf,
-  400: #b1b1b1,
-  500: #9e9e9e,
-  600: #7e7e7e,
-  700: #626262,
-  800: #515151,
-  900: #3b3b3b,
-);
-
-// === COULEURS RÔLES [⚠️ DEPRECATED - READ FROM _tokens.scss INSTEAD] ===
-/// 🔴 DEPRECATION WARNING (Phase 1 - Commit 1)
-///
-/// Cette map $role-colors est DÉPRÉCIÉ depuis la canonicalisation de _tokens.scss.
-///
-/// ❌ ANCIEN ÉTAT (NON-AUTORITATIF):
-///   - admin base: #dc2626 (ROUGE - ANCIEN, INCORRECT)
-///   - Autres: conflictant avec _tokens.scss
-///
-/// ✅ NOUVEL ÉTAT (AUTHORITATIVE):
-///   - Lire depuis @use './tokens' et $role-color-tokens (ligne 24 dans _tokens.scss)
-///   - Admin base: #667eea (VIOLET - NOUVEAU, CORRECT)
-///   - role-color() function DOIT proxer vers tokens
-///
-/// 📝 MIGRATION TIMELINE:
-///   Phase 1 (NOW): Canonicalisation dans _tokens.scss + warnings ici
-///   Phase 2: Propager aux variables & functions (proxer vers tokens)
-///   Phase 3: Corriger usages hardcodés dans components
-///   Phase 4+: Supprimer cette map DEPRECATED (après vérification)
-///
-/// Pour maintenant: Cette map est FIGÉE - ne pas la modifier.
-/// Tout nouveau code DOIT lire depuis _tokens.$role-color-tokens.
-$role-colors: (
-  admin: (
-    base: #dc2626,
-    // ⚠️ DEPRECATED - Admin should be #667eea (violet) - see _tokens.scss
-    gradient: #ef4444,
-  ),
-  abonne: (
-    base: #0077c2,
-    // Bleu abonné
-    gradient: #4dabf7,
-  ),
-  visitor: (
-    base: #9e9e9e,
-    // Gris visiteur
-    gradient: #cfcfcf,
-  ),
-  free: (
-    base: #9e9e9e,
-    // Alias visitor
-    gradient: #cfcfcf,
-  ),
-  staff: (
-    base: #8b5cf6,
-    // Violet staff
-    gradient: #a78bfa,
-  ),
-);
-
-// === ADMIN UI COLORS ===
-/// ⚠️ DEPRECATED - Use $admin-ui-color-tokens from _tokens.scss instead
-$admin-ui: (
-  primary: #007bff,
-  // Bleu Bootstrap primary
-  primary-hover: #0056b3,
-  // Hover primary
-  secondary: #6c757d,
-  // Gris Bootstrap secondary
-  secondary-hover: #545b62,
-  // Hover secondary
-  success: #28a745,
-  // Vert Bootstrap success
-  success-hover: #1e7e34,
-  // Hover success
-  danger: #dc3545,
-  // Rouge Bootstrap danger
-  danger-hover: #c82333,
-  // Hover danger
-  info: #2563eb,
-  // Bleu info moderne
-  info-light: rgba(37, 99, 235, 0.05),
-  // Background info léger
-  item-bg: rgba(37, 99, 235, 0.05),
-  // Background item
-  item-alt: rgba(75, 85, 99, 0.05),
-  // Background alternance
-  success-bg: rgba(40, 167, 69, 0.1),
-  // Background success light
-  success-border: rgba(40, 167, 69, 0.3),
-  // Bordure success
-  danger-bg: rgba(220, 53, 69, 0.1),
-  // Background danger light
-  danger-border: rgba(220, 53, 69, 0.3), // Bordure danger
-);
-
-// === WARNING STATES ===
-/// ⚠️ DEPRECATED - Use $warning-state-color-tokens from _tokens.scss instead
-$warning-states: (
-  warning: #f97316,
-  // Orange warning principal
-  warning-light: #fb923c,
-  // Orange warning clair
-  warning-bg: rgba(249, 115, 22, 0.08),
-  // Background warning léger
-  warning-bg-strong: rgba(249, 115, 22, 0.1),
-  // Background warning moyen
-  warning-border: #f97316,
-  // Bordure warning
-  error: #ef4444,
-  // Rouge error principal
-  error-bg: rgba(239, 68, 68, 0.08),
-  // Background error léger
-  error-bg-strong: rgba(239, 68, 68, 0.1),
-  // Background error moyen
-  error-border: rgba(239, 68, 68, 0.3),
-  // Bordure error
-  error-hover: rgba(239, 68, 68, 0.2), // Background error hover
-);
-
-// === GRADIENTS BADGES ===
-/// ⚠️ DEPRECATED - Use $badge-gradients from _tokens.scss instead (already migrated)
-/// Note: This local map conflicts with canonical $badge-gradients in _tokens.scss
-$badge-gradients: (
-  abonne: (
-    start: #4ade80,
-    end: #22c55e,
-  ),
-  // Gradient vert abonné
-  free: (
-      start: #94a3b8,
-      end: #64748b,
-    ),
-  // Gradient gris free
-  visitor: (
-      start: #f97316,
-      end: #ea580c,
-    ),
-  // Gradient orange visitor
-  admin: (
-      start: #dc2626,
-      end: #ef4444,
-    ),
-  // Gradient rouge admin
-  staff: (
-      start: #8b5cf6,
-      end: #a78bfa,
-    ), // Gradient violet staff
-);
-
-// NOTE: $ui-gradients et $badge-shadows sont définis dans _tokens.scss
-// et importés via @use './tokens' au début de ce fichier
-
-// === TSA PASTELS ===
-/// ⚠️ DEPRECATED - Use $tsa-pastel-color-tokens from _tokens.scss instead
-$tsa-pastels: (
-  blue-light: #eaf6ff,
-  // Bleu pastel léger
-  green-soft: #d4f4dd,
-  // Vert pastel doux
-  info-soft: #d1ecf9,
-  // Bleu info pastel
-  bg-soft: #f0f8ff,
-  // Background bleu très léger
-  page-soft: #f9f9f9, // Background page doux
-);
-
-// === SHADOWS & OVERLAYS ===
-/// ⚠️ DEPRECATED - Use $shadow-color-tokens from _tokens.scss instead
-$shadows: (
-  black-light: rgba(0, 0, 0, 0.08),
-  // Ombre noire légère
-  black-medium: rgba(0, 0, 0, 0.2),
-  // Ombre noire moyenne
-  black-strong: rgba(0, 0, 0, 0.3),
-  // Ombre noire forte
-  primary-light: rgba(66, 153, 225, 0.1),
-  // Ombre primary légère
-  primary-medium: rgba(66, 153, 225, 0.3),
-  // Ombre primary moyenne
-  success-strong: rgba(16, 185, 129, 0.2), // Ombre success forte
-);
-
-// === COULEURS TEXTE & SURFACES ===
-/// ⚠️ DEPRECATED - Use $text-color-tokens from _tokens.scss instead
-$text-colors: (
-  default: #333333,
-  // Texte principal
-  invert: #ffffff,
-  // Texte inversé
-  light: #64748b,
-  // Texte secondaire
-  dark: #1f2937,
-  // Texte accentué
-  muted: #6b7280, // Texte désactivé
-);
-
-/// ⚠️ DEPRECATED - Use $surface-color-tokens from _tokens.scss instead
-$surface-colors: (
-  bg: #ffffff,
-  // Background principal
-  surface: #f7f7f7,
-  // Surface secondaire
-  border: #e1e1e1,
-  // Bordures
-  soft: #f8fafc,
-  // Background doux
-  hover: #f9fafb, // Hover state
-);
-
 // =============================================================================
-// FONCTIONS D'ACCÈS
+// FONCTIONS D'ACCÈS - Lisent depuis _tokens.scss (canonical source)
 // =============================================================================
 
-/// Récupère une couleur principale
+/// Récupère une couleur principale (depuis _tokens.scss)
 /// @param {String} $key - Clé de la couleur (base, light, dark)
 /// @param {String} $type - Type de couleur (primary, secondary, accent)
 /// @return {Color} La couleur demandée
 @function color($key, $type: 'primary') {
-  $map: $primary-colors;
+  // ✅ Lit depuis les tokens canoniques
+  $map: $primary-color-tokens;
 
   @if $type == 'secondary' {
-    $map: $secondary-colors;
+    $map: $secondary-color-tokens;
   } @else if $type == 'accent' {
-    $map: $accent-colors;
+    $map: $accent-color-tokens;
   }
 
   @if map.has-key($map, $key) {
     @return map.get($map, $key);
   }
 
-  @error "Color '#{$key}' not found in #{$type} colors";
+  @error "Color '#{$key}' not found in #{$type} colors (source: _tokens.scss)";
 }
 
-/// Récupère une couleur sémantique
-/// @param {String} $name - Nom de la couleur (success, warning, error, info)
+/// Récupère une couleur sémantique (depuis _tokens.scss)
+/// @param {String} $name - Nom de la couleur (success, warning, error, info, info-primary)
+/// @param {String} $variant - Variante (base, light, dark, bg, border) - défaut 'base'
 /// @return {Color} La couleur demandée
-@function semantic($name) {
-  @if map.has-key($semantic-colors, $name) {
-    @return map.get($semantic-colors, $name);
+@function semantic($name, $variant: 'base') {
+  // ⚠️ Compatibilité : anciennes clés plates (legacy)
+  // 'info-primary' était une clé directe dans l'ancien système
+  @if $name == 'info-primary' {
+    @return #66c3f7; // Valeur legacy pour compatibilité backward
   }
 
-  @error "Semantic color '#{$name}' not found";
+  // ✅ Lit depuis $semantic-tokens (canonical)
+  @if map.has-key($semantic-tokens, $name) {
+    $semantic-map: map.get($semantic-tokens, $name);
+
+    @if map.has-key($semantic-map, $variant) {
+      @return map.get($semantic-map, $variant);
+    }
+
+    @error "Semantic variant '#{$variant}' not found for '#{$name}'. Available: base, light, dark, bg, border (source: _tokens.scss)";
+  }
+
+  @error "Semantic color '#{$name}' not found. Available: success, warning, error, info, info-primary (legacy) (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de bleu
+/// Récupère une nuance de bleu (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function blue($shade) {
-  @if map.has-key($blue-palette, $shade) {
-    @return map.get($blue-palette, $shade);
+  // ✅ Lit depuis $blue-palette-tokens (canonical)
+  @if map.has-key($blue-palette-tokens, $shade) {
+    @return map.get($blue-palette-tokens, $shade);
   }
 
-  @error "Blue shade '#{$shade}' not found";
+  @error "Blue shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de rouge
+/// Récupère une nuance de rouge (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function red($shade) {
-  @if map.has-key($red-palette, $shade) {
-    @return map.get($red-palette, $shade);
+  // ✅ Lit depuis $red-palette-tokens (canonical)
+  @if map.has-key($red-palette-tokens, $shade) {
+    @return map.get($red-palette-tokens, $shade);
   }
 
-  @error "Red shade '#{$shade}' not found";
+  @error "Red shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de vert
+/// Récupère une nuance de vert (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function green($shade) {
-  @if map.has-key($green-palette, $shade) {
-    @return map.get($green-palette, $shade);
+  // ✅ Lit depuis $green-palette-tokens (canonical)
+  @if map.has-key($green-palette-tokens, $shade) {
+    @return map.get($green-palette-tokens, $shade);
   }
 
-  @error "Green shade '#{$shade}' not found";
+  @error "Green shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance d'orange
+/// Récupère une nuance d'orange (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function orange($shade) {
-  @if map.has-key($orange-palette, $shade) {
-    @return map.get($orange-palette, $shade);
+  // ✅ Lit depuis $orange-palette-tokens (canonical)
+  @if map.has-key($orange-palette-tokens, $shade) {
+    @return map.get($orange-palette-tokens, $shade);
   }
 
-  @error "Orange shade '#{$shade}' not found";
+  @error "Orange shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de jaune
+/// Récupère une nuance de jaune (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function yellow($shade) {
-  @if map.has-key($yellow-palette, $shade) {
-    @return map.get($yellow-palette, $shade);
+  // ✅ Lit depuis $yellow-palette-tokens (canonical)
+  @if map.has-key($yellow-palette-tokens, $shade) {
+    @return map.get($yellow-palette-tokens, $shade);
   }
 
-  @error "Yellow shade '#{$shade}' not found";
+  @error "Yellow shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de violet
+/// Récupère une nuance de violet (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function purple($shade) {
-  @if map.has-key($purple-palette, $shade) {
-    @return map.get($purple-palette, $shade);
+  // ✅ Lit depuis $purple-palette-tokens (canonical)
+  @if map.has-key($purple-palette-tokens, $shade) {
+    @return map.get($purple-palette-tokens, $shade);
   }
 
-  @error "Purple shade '#{$shade}' not found";
+  @error "Purple shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une nuance de slate
+/// Récupère une nuance de slate (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
 @function slate($shade) {
-  @if map.has-key($slate-palette, $shade) {
-    @return map.get($slate-palette, $shade);
+  // ✅ Lit depuis $slate-palette-tokens (canonical)
+  @if map.has-key($slate-palette-tokens, $shade) {
+    @return map.get($slate-palette-tokens, $shade);
   }
 
-  @error "Slate shade '#{$shade}' not found";
+  @error "Slate shade '#{$shade}' not found (source: _tokens.scss)";
 }
 
 /// Récupère une couleur de rôle (CANONICAL - lire depuis _tokens.scss)
@@ -548,48 +200,52 @@ $surface-colors: (
   @error "Role '#{$role}' not found in $role-color-tokens (canonical source in _tokens.scss)";
 }
 
-/// Récupère une couleur de texte
+/// Récupère une couleur de texte (depuis _tokens.scss)
 /// @param {String} $type - Type de texte (default, invert, light, dark, muted)
 /// @return {Color} La couleur demandée
 @function text($type: 'default') {
-  @if map.has-key($text-colors, $type) {
-    @return map.get($text-colors, $type);
+  // ✅ Lit depuis $text-color-tokens (canonical)
+  @if map.has-key($text-color-tokens, $type) {
+    @return map.get($text-color-tokens, $type);
   }
 
-  @error "Text color '#{$type}' not found";
+  @error "Text color '#{$type}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une couleur de surface
+/// Récupère une couleur de surface (depuis _tokens.scss)
 /// @param {String} $type - Type de surface (bg, surface, border, soft, hover)
 /// @return {Color} La couleur demandée
 @function surface($type) {
-  @if map.has-key($surface-colors, $type) {
-    @return map.get($surface-colors, $type);
+  // ✅ Lit depuis $surface-color-tokens (canonical)
+  @if map.has-key($surface-color-tokens, $type) {
+    @return map.get($surface-color-tokens, $type);
   }
 
-  @error "Surface color '#{$type}' not found";
+  @error "Surface color '#{$type}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une couleur admin UI
+/// Récupère une couleur admin UI (depuis _tokens.scss)
 /// @param {String} $key - Clé de la couleur (primary, secondary, success, danger, etc.)
 /// @return {Color} La couleur demandée
 @function admin-ui($key) {
-  @if map.has-key($admin-ui, $key) {
-    @return map.get($admin-ui, $key);
+  // ✅ Lit depuis $admin-ui-color-tokens (canonical)
+  @if map.has-key($admin-ui-color-tokens, $key) {
+    @return map.get($admin-ui-color-tokens, $key);
   }
 
-  @error "Admin UI color '#{$key}' not found";
+  @error "Admin UI color '#{$key}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une couleur warning state
+/// Récupère une couleur warning state (depuis _tokens.scss)
 /// @param {String} $key - Clé de la couleur (warning, error, warning-bg, etc.)
 /// @return {Color} La couleur demandée
 @function warning($key) {
-  @if map.has-key($warning-states, $key) {
-    @return map.get($warning-states, $key);
+  // ✅ Lit depuis $warning-state-color-tokens (canonical)
+  @if map.has-key($warning-state-color-tokens, $key) {
+    @return map.get($warning-state-color-tokens, $key);
   }
 
-  @error "Warning state '#{$key}' not found";
+  @error "Warning state '#{$key}' not found (source: _tokens.scss)";
 }
 
 /// Récupère un gradient badge
@@ -625,35 +281,38 @@ $surface-colors: (
   @error "Badge shadow '#{$key}' not found";
 }
 
-/// Récupère une couleur pastel TSA
+/// Récupère une couleur pastel TSA (depuis _tokens.scss)
 /// @param {String} $key - Clé de la couleur (blue-light, green-soft, etc.)
 /// @return {Color} La couleur demandée
 @function tsa-pastel($key) {
-  @if map.has-key($tsa-pastels, $key) {
-    @return map.get($tsa-pastels, $key);
+  // ✅ Lit depuis $tsa-pastel-color-tokens (canonical)
+  @if map.has-key($tsa-pastel-color-tokens, $key) {
+    @return map.get($tsa-pastel-color-tokens, $key);
   }
 
-  @error "TSA pastel '#{$key}' not found";
+  @error "TSA pastel '#{$key}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une ombre/overlay
+/// Récupère une ombre/overlay (depuis _tokens.scss)
 /// @param {String} $key - Clé de l'ombre (black-light, primary-medium, etc.)
 /// @return {Color} La couleur d'ombre demandée
 @function shadow($key) {
-  @if map.has-key($shadows, $key) {
-    @return map.get($shadows, $key);
+  // ✅ Lit depuis $shadow-color-tokens (canonical)
+  @if map.has-key($shadow-color-tokens, $key) {
+    @return map.get($shadow-color-tokens, $key);
   }
 
-  @error "Shadow '#{$key}' not found";
+  @error "Shadow '#{$key}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une couleur de marque tierce
+/// Récupère une couleur de marque tierce (depuis _tokens.scss)
 /// @param {String} $key - Clé de la marque (stripe, stripe-hover, etc.)
 /// @return {Color} La couleur demandée
 @function brand($key) {
+  // ✅ Lit depuis $brand-colors (canonical - legacy compatibility)
   @if map.has-key($brand-colors, $key) {
     @return map.get($brand-colors, $key);
   }
 
-  @error "Brand color '#{$key}' not found";
+  @error "Brand color '#{$key}' not found (source: _tokens.scss)";
 }

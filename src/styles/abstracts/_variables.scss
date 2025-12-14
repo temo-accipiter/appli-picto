@@ -1,4 +1,5 @@
 @use 'sass:map';
+@use 'tokens' as *;
 @use 'colors' as *;
 
 /// ============================================================================
@@ -90,9 +91,9 @@ $role-colors: (
   ),
 );
 
-// Gris déclinés en map - importée depuis _colors.scss
+// Gris déclinés en map - importée depuis _tokens.scss
 // Utiliser gray($key) comme avant
-$gray: $gray-palette;
+$gray: $gray-palette-tokens;
 
 /// Accès à la map $gray pour récupérer un gris par niveau
 /// Exemple : gray(300) -> #cfcfcf
