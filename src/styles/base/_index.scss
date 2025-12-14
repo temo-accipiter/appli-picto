@@ -1,5 +1,21 @@
-// _index.scss
+// =============================================================================
+// BASE — styles globaux appliqués au DOM
+// Génèrent du CSS runtime
+// Ordre IMPORTANT : fondations → politiques → aides → rendu final
+// =============================================================================
+
+// 1) Reset — fondation du DOM
 @forward './reset';
-@forward './helpers';
-@forward './animations';
+
+// 2) Politiques globales
 @forward './reduced-motion';
+@forward './accessibility';
+
+// 3) Utilitaires globaux
+@forward './helpers';
+
+// 4) Animations globales (non conditionnelles)
+@forward './animations';
+
+// 5) Typographie appliquée au DOM
+@forward './typography-base';

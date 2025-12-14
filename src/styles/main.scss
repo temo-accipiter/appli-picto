@@ -27,11 +27,7 @@
   🧱 4) BASE — styles globaux appliqués au DOM (ordre contrôlé)
   - reset puis policies/accessibilité puis helpers puis application typo
    ============================================ */
-@use '@styles/base/reset' as *;
-@use '@styles/base/reduced-motion' as *;
-@use '@styles/base/accessibility' as *;
-@use '@styles/base/helpers' as *;
-@use '@styles/base/typography-base' as *;
+@use '@styles/base' as *;
 
 /* ============================================
   🎨 5) THEMES — overrides runtime (CSS vars)
