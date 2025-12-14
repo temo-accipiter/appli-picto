@@ -12,8 +12,8 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: spacing('2') solid $color-primary;
-    background-color: $color-bg;
+    border: spacing('2') solid color('base');
+    background-color: surface('bg');
     border-radius: $radius-sm;
     align-self: center;
     cursor: pointer;
@@ -35,8 +35,8 @@
     }
 
     &:checked {
-      background-color: $color-primary;
-      border-color: $color-primary;
+      background-color: color('base');
+      border-color: color('base');
       animation: checkbox-bounce $transition-fast
         cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -48,7 +48,7 @@
     }
 
     // Focus ring unifié avec le reste du design system
-    @include focus-ring($color-primary);
+    @include focus-ring(color('base'));
   }
 
   &__checkmark {
@@ -56,7 +56,7 @@
     top: 50%;
     left: $spacing-xs;
     transform: translateY(-50%);
-    color: $color-text-invert;
+    color: text('invert');
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,7 +73,7 @@
   &__label {
     margin-left: $spacing-sm;
     font-size: $font-size-base;
-    color: $color-text;
+    color: text();
     cursor: pointer;
   }
 
@@ -81,7 +81,7 @@
     margin-top: $spacing-xs;
     margin-left: calc(spacing('24') + $spacing-sm);
     font-size: $font-size-sm;
-    color: $color-error;
+    color: semantic('error');
   }
 
   // Variante sm (compacte)

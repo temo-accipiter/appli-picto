@@ -26,20 +26,20 @@
 }
 
 .input-field__input--error {
-  border: 2px solid $color-error;
-  outline: 2px solid $color-error;
+  border: 2px solid semantic('error');
+  outline: 2px solid semantic('error');
   animation: error-glow $transition-fast ease-in-out;
 }
 
 .input-field__input--success {
-  outline: 2px solid $color-success;
+  outline: 2px solid semantic('success');
   animation: success-glow $transition-fast ease-in-out;
 }
 
 .input-field__error {
   min-height: spacing('16');
   font-size: $font-size-sm;
-  color: $color-error;
+  color: semantic('error');
   line-height: 1.2;
   margin: 0;
   overflow: visible;
@@ -57,7 +57,7 @@
     box-shadow: none;
   }
   50% {
-    box-shadow: 0 0 6px 2px color.adjust($color-error, $alpha: -0.5);
+    box-shadow: 0 0 6px 2px color.adjust(semantic('error'), $alpha: -0.5);
   }
   100% {
     box-shadow: none;
@@ -69,7 +69,7 @@
     box-shadow: none;
   }
   50% {
-    box-shadow: 0 0 6px 2px color.adjust($color-success, $alpha: -0.5);
+    box-shadow: 0 0 6px 2px color.adjust(semantic('success'), $alpha: -0.5);
   }
   100% {
     box-shadow: none;
