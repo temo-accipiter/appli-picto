@@ -25,7 +25,7 @@
 
     &:focus {
       top: 0;
-      outline: a11y('focus-ring-width') solid $color-accent;
+      outline: a11y('focus-ring-width') solid color('base', 'accent');
       outline-offset: a11y('focus-ring-offset');
     }
   }

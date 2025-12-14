@@ -72,14 +72,14 @@
   padding: $spacing-md;
   background: #{color.change(color(base), $alpha: 0.05)};
   border-radius: $radius-md;
-  border: 1px solid $color-primary;
+  border: 1px solid color('base');
 }
 
 .item-form__success {
   padding: $spacing-md;
   background: #{color.change(green(500), $alpha: 0.1)};
   border-radius: $radius-sm;
-  color: $color-success;
+  color: semantic('success');
   font-weight: $font-weight-semibold;
   text-align: center;
   animation: slideDown 0.3s ease-out;

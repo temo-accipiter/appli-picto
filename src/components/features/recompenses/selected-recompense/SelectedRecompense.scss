@@ -31,7 +31,7 @@
     }
 
     &:focus-visible {
-      outline: spacing('2') solid $color-accent;
+      outline: spacing('2') solid color('base', 'accent');
       outline-offset: spacing('2');
     }
   }
