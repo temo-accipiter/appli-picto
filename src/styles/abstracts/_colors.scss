@@ -2,20 +2,38 @@
 @use './tokens' as *;
 
 // =============================================================================
-// SYSTÈME DE COULEURS CENTRALISÉ
+// SYSTÈME DE COULEURS - WRAPPER + FONCTIONS
 // =============================================================================
-// Ce fichier centralise toutes les couleurs utilisées dans Appli-Picto.
-// Utilise des maps SCSS pour organisation et maintenance facile.
-//
-// Usage:
-//   @use '@styles/abstracts' as *;
-//   .my-class { background: color(primary); }
-//   .my-class { color: blue(500); }
-//   .my-class { border-color: semantic(success); }
+/// ⚠️ IMPORTANT - REFACTORING PHASE 1 COMPLETÉ (2025-12-14)
+///
+/// Ce fichier est en transition vers un WRAPPER PUR (Phase 2 en cours).
+///
+/// ÉTAT ACTUEL:
+///   - Maps locales ci-dessous sont DEPRECATED (marquées ⚠️)
+///   - SOURCE DE VÉRITÉ CANONIQUE = _tokens.scss
+///   - Fonctions ci-dessous (color(), blue(), etc.) sont OK et seront conservées
+///
+/// RÈGLES STRICTES:
+///   1. ❌ NE PLUS créer de nouvelles maps de couleurs ici
+///   2. ❌ NE PLUS modifier les maps locales (read-only)
+///   3. ✅ UTILISER les fonctions publiques (color(), semantic(), blue(), etc.)
+///   4. ✅ Les fonctions liront depuis _tokens.scss (canonical source)
+///
+/// MIGRATION TIMELINE:
+///   Phase 1 ✅ : Maps migrées vers _tokens.scss
+///   Phase 2 (EN COURS) : Supprimer maps locales, garder uniquement fonctions
+///   Phase 3 : Migrer composants pour utiliser fonctions tokens
+///
+/// Usage correct (après Phase 2):
+///   @use '@styles/abstracts' as *;
+///   .my-class { background: color('base'); }          // ✅
+///   .my-class { color: blue(500); }                   // ✅
+///   .my-class { border-color: semantic('success'); }  // ✅
 // =============================================================================
 
 // === COULEURS PRINCIPALES ===
-// Couleurs de marque et accents principaux
+/// ⚠️ DEPRECATED - Use $primary-color-tokens from _tokens.scss instead
+/// This map will be REMOVED in Phase 2 - use color() function
 $primary-colors: (
   base: #0077c2,
   // Bleu principal (buttons, liens)
@@ -24,10 +42,12 @@ $primary-colors: (
   dark: #1565c0, // Bleu foncé (états actifs)
 );
 
+/// ⚠️ DEPRECATED - Use $secondary-color-tokens from _tokens.scss instead
 $secondary-colors: (
   base: #ef5350, // Rouge secondaire
 );
 
+/// ⚠️ DEPRECATED - Use $accent-color-tokens from _tokens.scss instead
 $accent-colors: (
   base: #ffb400,
   // Jaune accent
@@ -37,7 +57,8 @@ $accent-colors: (
 );
 
 // === COULEURS SÉMANTIQUES ===
-// Couleurs pour états et feedback utilisateur
+/// ⚠️ DEPRECATED - Use $semantic-tokens from _tokens.scss instead
+/// Note: $semantic-tokens has expanded structure (base, light, dark, bg, border)
 $semantic-colors: (
   success: #4caf50,
   // Vert succès
@@ -51,7 +72,7 @@ $semantic-colors: (
 );
 
 // === PALETTE BLEUE ===
-// Nuances de bleu (inspirées design moderne)
+/// ⚠️ DEPRECATED - Use $blue-palette-tokens from _tokens.scss instead
 $blue-palette: (
   50: #eff6ff,
   100: #dbeafe,
@@ -67,7 +88,7 @@ $blue-palette: (
 );
 
 // === PALETTE ROUGE ===
-// Nuances de rouge
+/// ⚠️ DEPRECATED - Use $red-palette-tokens from _tokens.scss instead
 $red-palette: (
   50: #fef2f2,
   100: #fee2e2,
@@ -83,7 +104,7 @@ $red-palette: (
 );
 
 // === PALETTE VERTE ===
-// Nuances de vert
+/// ⚠️ DEPRECATED - Use $green-palette-tokens from _tokens.scss instead
 $green-palette: (
   50: #f0fdf4,
   // green-50 pastel
@@ -101,7 +122,7 @@ $green-palette: (
 );
 
 // === PALETTE ORANGE/AMBRE ===
-// Nuances d'orange et ambre
+/// ⚠️ DEPRECATED - Use $orange-palette-tokens from _tokens.scss instead
 $orange-palette: (
   50: #fff7ed,
   // orange-50 pastel
@@ -118,7 +139,7 @@ $orange-palette: (
 );
 
 // === PALETTE JAUNE ===
-// Nuances de jaune
+/// ⚠️ DEPRECATED - Use $yellow-palette-tokens from _tokens.scss instead
 $yellow-palette: (
   50: #fefce8,
   100: #fef9c3,
@@ -133,7 +154,7 @@ $yellow-palette: (
 );
 
 // === PALETTE VIOLETTE ===
-// Nuances de violet (pour rôle staff)
+/// ⚠️ DEPRECATED - Use $purple-palette-tokens from _tokens.scss instead
 $purple-palette: (
   50: #faf5ff,
   100: #f3e8ff,
@@ -148,7 +169,7 @@ $purple-palette: (
 );
 
 // === PALETTE SLATE/GRIS FONCÉ ===
-// Nuances de gris foncé (pour texte et UI)
+/// ⚠️ DEPRECATED - Use $slate-palette-tokens from _tokens.scss instead
 $slate-palette: (
   50: #f8fafc,
   100: #f1f5f9,
@@ -164,8 +185,7 @@ $slate-palette: (
 );
 
 // === PALETTE GRAY NEUTRE ===
-// Nuances de gris neutre (déjà définie dans _variables.scss)
-// Référencée ici pour cohérence - utiliser gray() function
+/// ⚠️ DEPRECATED - Use $gray-palette-tokens from _tokens.scss instead
 $gray-palette: (
   50: #fafafa,
   100: #f7f7f7,
@@ -230,7 +250,7 @@ $role-colors: (
 );
 
 // === ADMIN UI COLORS ===
-// Couleurs spécifiques pour l'interface admin
+/// ⚠️ DEPRECATED - Use $admin-ui-color-tokens from _tokens.scss instead
 $admin-ui: (
   primary: #007bff,
   // Bleu Bootstrap primary
@@ -266,7 +286,7 @@ $admin-ui: (
 );
 
 // === WARNING STATES ===
-// États d'avertissement et erreur avec variantes
+/// ⚠️ DEPRECATED - Use $warning-state-color-tokens from _tokens.scss instead
 $warning-states: (
   warning: #f97316,
   // Orange warning principal
@@ -290,7 +310,8 @@ $warning-states: (
 );
 
 // === GRADIENTS BADGES ===
-// Gradients pour badges de rôles et composants
+/// ⚠️ DEPRECATED - Use $badge-gradients from _tokens.scss instead (already migrated)
+/// Note: This local map conflicts with canonical $badge-gradients in _tokens.scss
 $badge-gradients: (
   abonne: (
     start: #4ade80,
@@ -322,7 +343,7 @@ $badge-gradients: (
 // et importés via @use './tokens' au début de ce fichier
 
 // === TSA PASTELS ===
-// Couleurs pastel apaisantes (conformes UX TSA)
+/// ⚠️ DEPRECATED - Use $tsa-pastel-color-tokens from _tokens.scss instead
 $tsa-pastels: (
   blue-light: #eaf6ff,
   // Bleu pastel léger
@@ -336,7 +357,7 @@ $tsa-pastels: (
 );
 
 // === SHADOWS & OVERLAYS ===
-// Ombres et overlays utilitaires
+/// ⚠️ DEPRECATED - Use $shadow-color-tokens from _tokens.scss instead
 $shadows: (
   black-light: rgba(0, 0, 0, 0.08),
   // Ombre noire légère
@@ -352,6 +373,7 @@ $shadows: (
 );
 
 // === COULEURS TEXTE & SURFACES ===
+/// ⚠️ DEPRECATED - Use $text-color-tokens from _tokens.scss instead
 $text-colors: (
   default: #333333,
   // Texte principal
@@ -364,6 +386,7 @@ $text-colors: (
   muted: #6b7280, // Texte désactivé
 );
 
+/// ⚠️ DEPRECATED - Use $surface-color-tokens from _tokens.scss instead
 $surface-colors: (
   bg: #ffffff,
   // Background principal
