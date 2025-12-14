@@ -35,16 +35,19 @@ jobs:
           run_install: false # On gère l'installation manuellement pour le cache
 
       - name: 📥 Get pnpm store path
-        id: pnpm-cache
+        # Ajout de l'ID pour que l'output soit accessible
+        id: pnpm-cache-path
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          # Définir le chemin en tant que 'output' de cette étape
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
       - name: 💾 Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.STORE_PATH }}
-          # Utilise le hash du lockfile pour valider le cache
+          # Référence à l'output de l'étape précédente
+          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
+          # Utilisation directe du hash du lockfile
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
@@ -107,6 +110,9 @@ jobs:
 
       - name: 📝 Run TypeScript compiler (pnpm)
         run: pnpm type-check
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
 
   # =========================================================================
   # JOB 3 : Tests Unitaires + Coverage
@@ -131,6 +137,15 @@ jobs:
         run: pnpm test:coverage
         env:
           CI: true
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: 📊 Upload coverage to Codecov
         uses: codecov/codecov-action@v4
@@ -170,6 +185,23 @@ jobs:
 
       - name: 🏗️ Build project (pnpm)
         run: pnpm build
+        # --- ATTENTION : 'env' doit être au même niveau que 'name' et 'run' ---
+        env:
+          # Les commentaires doivent aussi être indentés ici
+          # --- Clés Publiques (Next.js les embed) ---
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_STRIPE_PRICE_ID: ${{ secrets.NEXT_PUBLIC_STRIPE_PRICE_ID }}
+          NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+          NEXT_PUBLIC_GA4_ID: ${{ secrets.NEXT_PUBLIC_GA4_ID }}
+          NEXT_PUBLIC_GA_SALT: ${{ secrets.NEXT_PUBLIC_GA_SALT }}
+          # --- Clés Secrètes (Next.js les utilise côté serveur durant le build) ---
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          # Ajoutez ici les autres secrets si nécessaires pour les tests (SERVICE_ROLE, etc.)
 
       - name: 📦 Upload build artifacts
         uses: actions/upload-artifact@v4
