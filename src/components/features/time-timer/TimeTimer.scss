@@ -1,24 +1,46 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 @use 'sass:map';
+
 // src/components/features/time-timer/TimeTimer.scss
 
+// =============================================================================
+// LOCAL MIXINS (DRY Pattern)
+// =============================================================================
+
+/// Applique un gradient UI défini dans les tokens
+/// @param {String} $name - Nom du gradient dans $ui-gradients
+@mixin _local-gradient($name) {
+  $gradient: ui-gradient($name);
+  background: linear-gradient(
+    135deg,
+    map.get($gradient, start) 0%,
+    map.get($gradient, end) 100%
+  );
+}
+
+// =============================================================================
+// COMPONENT STYLES
+// =============================================================================
+
 .time-timer {
+  // Layout & Spacing
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $spacing-xl;
-  padding: $spacing-xl;
-  $gradient: ui-gradient(blue-soft);
-  background: linear-gradient(
-    135deg,
-    #{map.get($gradient, start)} 0%,
-    #{map.get($gradient, end)} 100%
-  );
-  border-radius: $radius-lg;
+  gap: spacing('xl');
+  padding: spacing('xl');
+
+  // Appearance
+  @include _local-gradient('blue-soft');
+  border-radius: radius('lg');
+
+  // Shadow constructed from tokens: 0 4px 12px rgba(slate-900, 0.08)
   box-shadow: 0 spacing('4') spacing('12')
-    #{color.change(gray(900), $alpha: opacity('0-08'))};
+    #{color.change(slate(900), $alpha: opacity('0-08'))};
+
+  // --- Modifiers (BEM) ---
 
   // Mode plein écran
   &--full {
@@ -27,14 +49,15 @@
     margin: 0 auto;
   }
 
-  // Mode compact (pour affichage à côté d'autres composants)
+  // Mode compact
   &--compact {
     max-width: spacing('300');
-    padding: $spacing-lg;
-    gap: $spacing-md;
+    padding: spacing('lg');
+    gap: spacing('md');
   }
 
-  // Container du cercle
+  // --- Elements (BEM) ---
+
   &__circle-container {
     position: relative;
     display: flex;
@@ -43,36 +66,34 @@
     width: 100%;
     max-width: spacing('280');
 
-    .time-timer--compact & {
+    @include when-inside('.time-timer--compact') {
       max-width: spacing('160');
     }
   }
 
-  // SVG du cercle
   &__circle {
     width: 100%;
     height: auto;
+    // Drop shadow soft
     filter: drop-shadow(
       0 spacing('2') spacing('8')
-        #{color.change(gray(900), $alpha: opacity('sm'))}
+        #{color.change(slate(900), $alpha: opacity('sm'))}
     );
   }
 
-  // Cercle de fond
   &__circle-bg {
     opacity: opacity('lg');
   }
 
-  // Cercle de progression
   &__circle-progress {
-    transition: stroke transition('fast') ease;
+    // Usage strict de timing() et easing()
+    transition: stroke timing('base') easing('smooth');
 
-    .time-timer--compact & {
-      stroke-width: 10;
+    @include when-inside('.time-timer--compact') {
+      stroke-width: 10; // SVG unitless prop controlled by CSS usually needs check, keeping as is but cautious
     }
   }
 
-  // Affichage du temps au centre
   &__time-display {
     position: absolute;
     top: 50%;
@@ -81,32 +102,32 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: $spacing-xs;
+    gap: spacing('xs');
     text-align: center;
   }
 
   &__time-text {
+    // Usage de font-size() et font-weight()
     font-size: font-size('5xl');
-    font-weight: $font-weight-bold;
-    color: $color-text;
-    line-height: 1;
+    font-weight: font-weight('bold');
+    color: text('default');
+    line-height: line-height('solid'); // 1
     font-variant-numeric: tabular-nums;
 
-    .time-timer--compact & {
+    @include when-inside('.time-timer--compact') {
       font-size: font-size('xl');
     }
   }
 
   &__duration-label {
-    font-size: $font-size-sm;
-    color: gray(600);
-    font-weight: $font-weight-medium;
+    font-size: font-size('sm');
+    color: slate(600); // Remplacement de gray() par slate() (modern)
+    font-weight: font-weight('medium');
   }
 
-  // Contrôles
   &__controls {
     display: flex;
-    gap: $spacing-md;
+    gap: spacing('md');
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -114,32 +135,36 @@
   &__btn {
     display: flex;
     align-items: center;
-    gap: $spacing-xs;
-    padding: $spacing-md $spacing-lg;
+    gap: spacing('xs');
+    padding: spacing('md') spacing('lg');
     border: none;
-    border-radius: $radius-md;
-    font-size: $font-size-base;
-    font-weight: $font-weight-semibold;
+    border-radius: radius('md');
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
     cursor: pointer;
-    transition: all $transition-base ease;
-    box-shadow: 0 spacing('2') spacing('4')
-      #{color.change(gray(900), $alpha: opacity('sm'))};
 
-    .time-timer--compact & {
-      padding: $spacing-sm $spacing-md;
-      font-size: $font-size-sm;
+    // Transition tokenisée
+    @include safe-transition(all, timing('base'), easing('smooth'));
+
+    box-shadow: 0 spacing('2') spacing('4')
+      #{color.change(slate(900), $alpha: opacity('sm'))};
+
+    @include when-inside('.time-timer--compact') {
+      padding: spacing('sm') spacing('md');
+      font-size: font-size('sm');
     }
 
+    // Interactive States
     &:hover:not(:disabled) {
       transform: translateY(-#{spacing('2')});
       box-shadow: 0 spacing('4') spacing('8')
-        #{color.change(gray(900), $alpha: opacity('md'))};
+        #{color.change(slate(900), $alpha: opacity('md'))};
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
       box-shadow: 0 spacing('2') spacing('4')
-        #{color.change(gray(900), $alpha: opacity('sm'))};
+        #{color.change(slate(900), $alpha: opacity('sm'))};
     }
 
     &:disabled {
@@ -147,95 +172,87 @@
       cursor: not-allowed;
     }
 
-    &:focus-visible {
-      outline: spacing('3') solid $color-info-primary;
-      outline-offset: spacing('2');
-    }
+    // A11y Focus
+    @include non-invasive-focus(semantic('info-primary'));
 
-    // Bouton principal (Play/Pause)
+    // Variant: Primary
     &--primary {
-      $gradient: ui-gradient(purple-modern);
-      background: linear-gradient(
-        135deg,
-        #{map.get($gradient, start)} 0%,
-        #{map.get($gradient, end)} 100%
-      );
-      color: $color-text-invert;
+      @include _local-gradient('purple-modern');
+      color: text('invert');
 
       &:hover:not(:disabled) {
-        $gradient-hover: ui-gradient(purple-modern-hover);
-        background: linear-gradient(
-          135deg,
-          #{map.get($gradient-hover, start)} 0%,
-          #{map.get($gradient-hover, end)} 100%
-        );
+        @include _local-gradient('purple-modern-hover');
       }
     }
 
-    // Boutons secondaires (Reset, Settings)
+    // Variant: Secondary
     &--secondary {
-      background: $color-bg;
-      color: $color-text;
-      border: spacing('2') solid gray(300);
+      background: surface('bg');
+      color: text('default');
+      border: border-width('base') solid slate(300);
 
       &:hover:not(:disabled) {
-        background: gray(100);
-        border-color: gray(400);
+        background: slate(100);
+        border-color: slate(400);
       }
     }
   }
 
   &__icon {
     font-size: font-size('lg');
-    line-height: 1;
+    line-height: line-height('solid');
 
-    .time-timer--compact & {
+    @include when-inside('.time-timer--compact') {
       font-size: font-size('base');
     }
   }
 
-  // Panneau de réglages
+  // --- Settings Panel ---
+
   &__settings {
     width: 100%;
-    padding: $spacing-lg;
-    background: $color-bg;
-    border-radius: $radius-md;
-    border: spacing('2') solid gray(200);
-    animation: slide-up $transition-base ease;
+    padding: spacing('lg');
+    background: surface('bg');
+    border-radius: radius('md');
+    border: border-width('base') solid slate(200);
+
+    // Animation via motion tokens
+    animation: slide-up timing('base') easing('smooth');
   }
 
   &__settings-title {
-    margin: 0 0 $spacing-md 0;
-    font-size: $font-size-lg;
-    font-weight: $font-weight-semibold;
-    color: $color-text;
+    margin: 0 0 spacing('md') 0;
+    font-size: font-size('lg');
+    font-weight: font-weight('semibold');
+    color: text('default');
     text-align: center;
   }
 
   &__preset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: $spacing-sm;
+    // Remplacement du 80px hardcodé par spacing('80')
+    grid-template-columns: repeat(auto-fit, minmax(spacing('80'), 1fr));
+    gap: spacing('sm');
 
-    .time-timer--compact & {
+    @include when-inside('.time-timer--compact') {
       grid-template-columns: repeat(3, 1fr);
     }
   }
 
   &__preset-btn {
-    padding: $spacing-md;
-    border: 2px solid gray(300);
-    border-radius: $radius-sm;
-    background: $color-bg;
-    color: $color-text;
-    font-size: $font-size-base;
-    font-weight: $font-weight-medium;
+    padding: spacing('md');
+    border: border-width('base') solid slate(300);
+    border-radius: radius('sm');
+    background: surface('bg');
+    color: text('default');
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
     cursor: pointer;
-    transition: all $transition-fast ease;
+    @include safe-transition(all, timing('fast'), easing('smooth'));
 
     &:hover {
-      background: gray(100);
-      border-color: $color-primary;
+      background: slate(100);
+      border-color: color('primary');
       transform: translateY(-#{spacing('2')});
     }
 
@@ -243,83 +260,58 @@
       transform: translateY(0);
     }
 
-    &:focus-visible {
-      outline: spacing('3') solid $color-info-primary;
-      outline-offset: spacing('2');
-    }
+    @include non-invasive-focus(semantic('info-primary'));
 
     &--active {
-      $gradient: ui-gradient(purple-modern);
-      background: linear-gradient(
-        135deg,
-        #{map.get($gradient, start)} 0%,
-        #{map.get($gradient, end)} 100%
-      );
-      color: $color-text-invert;
+      @include _local-gradient('purple-modern');
+      color: text('invert');
       border-color: transparent;
-      font-weight: $font-weight-bold;
-      animation: pop $transition-base ease;
+      font-weight: font-weight('bold');
+      animation: pop timing('base') easing('smooth');
 
       &:hover {
-        $gradient-hover: ui-gradient(purple-modern-hover);
-        background: linear-gradient(
-          135deg,
-          #{map.get($gradient-hover, start)} 0%,
-          #{map.get($gradient-hover, end)} 100%
-        );
+        @include _local-gradient('purple-modern-hover');
       }
     }
   }
 }
 
-// Classe utilitaire pour le contenu accessible uniquement aux lecteurs d'écran
+// Utility class (should ideally be global, but kept if local specific needed)
 .sr-only {
-  position: absolute;
-  width: spacing('1');
-  height: spacing('1');
-  padding: 0;
-  margin: -#{spacing('1')};
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+  @include visually-hidden;
 }
 
-// Variables CSS pour les couleurs (accessibles depuis le JS)
+// =============================================================================
+// RUNTIME EXPORTS (:root)
+// =============================================================================
+// Note: Ces variables servent au code JS (React) pour colorer le SVG.
+// On mappe ici les tokens SCSS vers des CSS vars locales.
+
 :root {
-  --color-success: #{$color-success};
-  --color-warning: #{$color-warning};
-  --color-danger: #{$color-error};
-  --color-gray-light: #{gray(200)};
+  --color-success: #{semantic('success')};
+  --color-warning: #{semantic('warning')};
+  --color-danger: #{semantic('error')};
+  --color-gray-light: #{slate(200)};
 }
 
-// Support pour prefers-reduced-motion
+// =============================================================================
+// ACCESSIBILITY (Reduced Motion)
+// =============================================================================
+
 @media (prefers-reduced-motion: reduce) {
   .time-timer {
-    &__circle-progress {
-      transition: none;
-    }
-
-    &__btn {
-      transition: none;
-
-      &:hover:not(:disabled) {
-        transform: none;
-      }
-    }
-
+    &__circle-progress,
+    &__btn,
     &__preset-btn {
       transition: none;
-
-      &:hover {
-        transform: none;
-      }
-
-      &--active {
-        animation: none;
-      }
     }
 
+    &__btn:hover:not(:disabled),
+    &__preset-btn:hover {
+      transform: none;
+    }
+
+    &__preset-btn--active,
     &__settings {
       animation: none;
     }

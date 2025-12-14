@@ -1,4 +1,4 @@
-name: CI
+name: CI (pnpm Unified)
 
 on:
   push:
@@ -12,80 +12,124 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
+  # JOB 0 : SETUP BASE (Node, pnpm & Cache)
+  # Ce job installe les dépendances une seule fois pour être partagé.
+  # =========================================================================
+  setup-pnpm:
+    name: ⚙️ Setup pnpm & Install
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          # Pas de cache ici, on utilise l'action pnpm dédiée pour une meilleure performance
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false # On gère l'installation manuellement pour le cache
+
+      - name: 📥 Get pnpm store path
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          # Utilise le hash du lockfile pour valider le cache
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        # Utilise --frozen-lockfile pour garantir une installation reproductible
+        run: pnpm install --frozen-lockfile
+
+      - name: 💾 Persist node_modules for subsequent jobs
+        # Sauvegarde node_modules pour que les jobs suivants n'aient pas à réinstaller
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules
+          retention-days: 1 # Garder juste le temps du run CI
+
+  # =========================================================================
   # JOB 1 : Lint & Format Check
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   lint:
     name: 🔍 Lint & Format
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: [setup-pnpm] # Dépend de l'installation des dépendances
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 💾 Restore node_modules
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20.19.4'
-          cache: 'yarn'
+          name: node_modules
+          path: node_modules
 
-      - name: 📦 Install dependencies
-        run: yarn install --immutable
+      - name: 🔍 Run ESLint (pnpm)
+        run: pnpm lint
 
-      - name: 🔍 Run ESLint
-        run: yarn lint
+      - name: 💅 Check Prettier formatting (pnpm)
+        run: pnpm format:check
 
-      - name: 💅 Check Prettier formatting
-        run: yarn format --check
-
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   # JOB 2 : Type Check TypeScript
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   typecheck:
     name: 📝 TypeScript Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    needs: [setup-pnpm]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 💾 Restore node_modules
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20.19.4'
-          cache: 'yarn'
+          name: node_modules
+          path: node_modules
 
-      - name: 📦 Install dependencies
-        run: yarn install --immutable
+      - name: 📝 Run TypeScript compiler (pnpm)
+        run: pnpm type-check
 
-      - name: 📝 Run TypeScript compiler
-        run: yarn type-check
-
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   # JOB 3 : Tests Unitaires + Coverage
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   test-unit:
     name: 🧪 Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    needs: [setup-pnpm]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - name: 💾 Restore node_modules
+        uses: actions/download-artifact@v4
         with:
-          node-version: '20.19.4'
-          cache: 'yarn'
+          name: node_modules
+          path: node_modules
 
-      - name: 📦 Install dependencies
-        run: yarn install --immutable
-
-      - name: 🧪 Run unit tests with coverage
-        run: yarn test:coverage
+      - name: 🧪 Run unit tests with coverage (pnpm)
+        run: pnpm test:coverage
         env:
           CI: true
 
@@ -106,20 +150,49 @@ jobs:
           path: coverage/
           retention-days: 30
 
-  # ═══════════════════════════════════════════════════════════════
-  # JOB 4 : Tests E2E Playwright
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
+  # JOB 4 : Build Production
+  # =========================================================================
+  build:
+    name: 🏗️ Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [setup-pnpm]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 💾 Restore node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules
+
+      - name: 🏗️ Build project (pnpm)
+        run: pnpm build
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: .next/ # Assurez-vous que Next.js build va dans .next/ ou dist/
+          retention-days: 7
+
+  # =========================================================================
+  # JOB 5 : Tests E2E Playwright
+  # Ce job est coûteux en temps, donc placé à la fin (ou parallélisé si possible)
+  # Ne pas dépendre du node_modules artifact, Playwright doit s'installer proprement
+  # =========================================================================
   test-e2e:
     name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # ✅ Phase 5: E2E tests are now complete and required to pass
+    needs: [setup-pnpm]
 
     strategy:
       fail-fast: false
       matrix:
-        # Tester uniquement Chromium en CI pour économiser du temps
-        # Firefox et WebKit peuvent être testés localement
         browser: [chromium]
 
     steps:
@@ -130,16 +203,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.4'
-          cache: 'yarn'
 
-      - name: 📦 Install dependencies
-        run: yarn install --immutable
+      - name: 📦 Setup pnpm & Install (Redundant but safe for E2E)
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: true
 
       - name: 🎭 Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        # Utilise pnpm exec pour s'assurer que le binaire Playwright est trouvé
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
-      - name: 🎭 Run E2E tests
-        run: yarn test:e2e --project=${{ matrix.browser }}
+      - name: 🎭 Run E2E tests (pnpm)
+        run: pnpm test:e2e --project=${{ matrix.browser }}
         env:
           CI: true
 
@@ -151,65 +227,26 @@ jobs:
           path: playwright-report/
           retention-days: 30
 
-      - name: 📸 Upload screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: playwright-screenshots-${{ matrix.browser }}
-          path: test-results/
-          retention-days: 7
-
-  # ═══════════════════════════════════════════════════════════════
-  # JOB 5 : Build Production
-  # ═══════════════════════════════════════════════════════════════
-  build:
-    name: 🏗️ Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.19.4'
-          cache: 'yarn'
-
-      - name: 📦 Install dependencies
-        run: yarn install --immutable
-
-      - name: 🏗️ Build project
-        run: yarn build
-
-      - name: 📦 Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
-
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   # JOB 6 : Check All (gate final)
-  # ═══════════════════════════════════════════════════════════════
+  # =========================================================================
   check-all:
     name: ✅ All Checks Passed
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test-unit, test-e2e, build]
-    if: always()
+    # Dépend de tous les jobs principaux
+    needs: [lint, typecheck, test-unit, build, test-e2e]
+    if: always() # S'exécute même si un job a échoué
 
     steps:
       - name: ✅ Verify all jobs succeeded
         run: |
-          # ✅ Phase 5: E2E tests are now required to pass
+          # Cette logique vérifie l'état de chaque job précédent
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.typecheck.result }}" != "success" ]] || \
              [[ "${{ needs.test-unit.result }}" != "success" ]] || \
-             [[ "${{ needs.test-e2e.result }}" != "success" ]] || \
-             [[ "${{ needs.build.result }}" != "success" ]]; then
-            echo "❌ One or more checks failed"
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.test-e2e.result }}" != "success" ]]; then
+            echo "❌ Un ou plusieurs checks ont échoué."
             exit 1
           fi
-
-          echo "✅ All checks passed!"
+          echo "✅ Tous les checks sont passés avec succès !"
