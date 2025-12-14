@@ -14,7 +14,7 @@
   }
 
   &__required {
-    color: $color-error;
+    color: semantic('error');
   }
 
   // Trigger (bouton Radix UI)
@@ -58,10 +58,10 @@
     }
 
     &--error {
-      border-color: $color-error;
+      border-color: semantic('error');
 
       &:focus-visible {
-        outline-color: $color-error;
+        outline-color: semantic('error');
       }
     }
 
@@ -229,7 +229,7 @@
   &__error {
     min-height: spacing('16');
     font-size: $font-size-sm;
-    color: $color-error;
+    color: semantic('error');
     line-height: 1.2;
     margin: 0;
     transition: opacity $transition-fast ease;
