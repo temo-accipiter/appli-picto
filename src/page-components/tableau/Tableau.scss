@@ -137,7 +137,7 @@
   }
 
   &.active {
-    background-color: color.adjust($color-success, $lightness: 20%);
+    background-color: color.adjust(semantic('success'), $lightness: 20%);
     filter: none;
     opacity: 1;
     transform: scale(1.05);

@@ -16,8 +16,8 @@
     display: block;
     margin: 0 auto $spacing-xl;
     font-weight: $font-weight-bold;
-    background-color: $color-success;
-    color: $color-bg;
+    background-color: semantic('success');
+    color: surface('bg');
     border: none;
     border-radius: $radius-sm;
     cursor: pointer;
@@ -35,7 +35,7 @@
     }
 
     @include on-event {
-      background-color: color.adjust($color-success, $lightness: -10%);
+      background-color: color.adjust(semantic('success'), $lightness: -10%);
     }
   }
 }
@@ -64,12 +64,12 @@
 
     &:hover {
       transform: scale(1.4);
-      color: $color-error;
+      color: semantic('error');
     }
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 2px rgba($color-primary, 0.5);
+      box-shadow: 0 0 0 2px rgba(color('base'), 0.5);
     }
   }
 }
@@ -77,7 +77,7 @@
   padding: $spacing-md;
   font-size: $font-size-base;
   text-align: center;
-  color: $color-primary;
+  color: color('base');
   font-style: italic;
 }
 
@@ -134,7 +134,7 @@
   }
 
   &:focus-visible {
-    outline: spacing('2') solid $color-accent;
+    outline: spacing('2') solid color('base', 'accent');
     outline-offset: spacing('2');
   }
 }

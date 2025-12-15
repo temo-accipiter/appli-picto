@@ -46,7 +46,7 @@
 .profil-page__title {
   font-size: $font-size-xl;
   font-weight: $font-weight-bold;
-  color: $color-primary;
+  color: color('base');
   margin: 0;
 
   // Tablette & Desktop (768px+)
@@ -284,7 +284,7 @@
 
 // === CARD 2: SÉCURITÉ ===
 .profil-card--security {
-  border-left: 4px solid $color-info;
+  border-left: 4px solid semantic('info');
 }
 
 .profil-card__action-btn {
@@ -299,7 +299,7 @@
 
 // === CARD 3: ABONNEMENT ===
 .profil-card--subscription {
-  border-left: 4px solid $color-success;
+  border-left: 4px solid semantic('success');
 }
 
 .subscription-details {
@@ -324,7 +324,7 @@
 
   strong {
     font-weight: $font-weight-bold;
-    color: $color-success;
+    color: semantic('success');
   }
 
   // Tablette & Desktop (768px+)
@@ -335,20 +335,20 @@
 
 // === CARD 4: ZONE DANGEREUSE ===
 .profil-card--danger {
-  border-left: 4px solid $color-error;
+  border-left: 4px solid semantic('error');
   background: linear-gradient(
     to bottom,
     var(--color-surface),
-    rgba($color-error, 0.02)
+    rgba(semantic('error'), 0.02)
   );
 }
 
 .profil-card__warning-text {
   margin: 0 0 $spacing-md 0;
   padding: $spacing-md;
-  background: rgba($color-error, 0.05);
+  background: rgba(semantic('error'), 0.05);
   border-radius: $radius-md;
-  border: 1px solid rgba($color-error, 0.2);
+  border: 1px solid rgba(semantic('error'), 0.2);
   color: var(--color-text);
   font-size: $font-size-sm;
   line-height: $line-height-base;
@@ -364,24 +364,24 @@
 .profil-card__delete-btn {
   width: 100%;
   min-height: 48px;
-  background-color: $color-error;
+  background-color: semantic('error');
   color: white;
   font-weight: $font-weight-bold;
-  border: 2px solid $color-error;
+  border: 2px solid semantic('error');
   @include safe-transition(all, $transition-fast, ease);
 
   &:hover:not(:disabled) {
-    background-color: color.adjust($color-error, $lightness: -10%);
-    border-color: color.adjust($color-error, $lightness: -10%);
+    background-color: color.adjust(semantic('error'), $lightness: -10%);
+    border-color: color.adjust(semantic('error'), $lightness: -10%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba($color-error, 0.4);
+    box-shadow: 0 6px 16px rgba(semantic('error'), 0.4);
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
   }
 
-  @include focus-ring($color-error, 2px, 2px);
+  @include focus-ring(semantic('error'), 2px, 2px);
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
@@ -427,7 +427,7 @@
     background: linear-gradient(
       to bottom,
       var(--color-surface),
-      rgba($color-error, 0.05)
+      rgba(semantic('error'), 0.05)
     );
   }
 }
@@ -491,11 +491,11 @@
       @include safe-transition(background-color, $transition-fast, ease);
 
       &--primary {
-        background-color: $color-primary;
+        background-color: color('base');
         color: white;
 
         &:hover {
-          background-color: color.adjust($color-primary, $lightness: -10%);
+          background-color: color.adjust(color('base'), $lightness: -10%);
         }
       }
 
@@ -517,7 +517,7 @@
       height: 80px;
       object-fit: cover;
       border-radius: $radius-full;
-      border: 2px solid $color-primary;
+      border: 2px solid color('base');
     }
 
     input[type='file'] {
@@ -550,12 +550,12 @@
     margin-bottom: $spacing-md;
 
     &.actif {
-      color: $color-success;
+      color: semantic('success');
       font-weight: $font-weight-medium;
     }
 
     &.inactif {
-      color: $color-error;
+      color: semantic('error');
       font-weight: $font-weight-medium;
     }
   }
