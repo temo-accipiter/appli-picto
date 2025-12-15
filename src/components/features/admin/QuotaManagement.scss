@@ -164,12 +164,12 @@
       border-radius: radius('rounded-12px');
       padding: spacing('lg');
       width: 90%;
-      max-width: 500px;
+      max-width: spacing('500');
       border: spacing('1') solid var(--border);
       box-shadow: 0 20px 25px -5px #{color.change(gray(900), $alpha: 0.1)};
 
       h3 {
-        margin: 0 0 20px 0;
+        margin: 0 0 spacing('20') 0;
         color: var(--foreground);
         font-size: 1.25rem;
       }
@@ -334,7 +334,7 @@
     .quota-modal {
       .modal-content {
         width: 90%;
-        max-width: 500px;
+        max-width: spacing('500');
         padding: spacing('lg');
 
         .modal-actions {

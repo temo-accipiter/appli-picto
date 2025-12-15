@@ -14,8 +14,8 @@
 .cookie-prefs__dialog {
   background: surface(bg);
   color: slate(800);
-  max-width: 800px;
-  width: min(95vw, 800px);
+  max-width: spacing('800');
+  width: min(95vw, spacing('800'));
   max-height: 90vh;
   border-radius: radius('lg');
   box-shadow: 0 24px 64px color.change(gray(900), $alpha: 0.2);
@@ -145,7 +145,7 @@
   }
 
   ul {
-    margin: 0 0 0 20px;
+    margin: 0 0 0 spacing('20');
     padding: 0;
     color: gray(500);
     line-height: 1.5;
@@ -218,7 +218,7 @@
 
 .cookie-prefs__footer {
   padding: spacing('20') spacing('24');
-  border-top: 1px solid gray(200);
+  border-top: spacing('1') solid gray(200);
   background: slate(50);
 }
 
@@ -333,7 +333,7 @@
   }
 
   .cookie-prefs__dialog {
-    width: min(95vw, 800px);
+    width: min(95vw, spacing('800'));
     max-height: 90vh;
   }
 

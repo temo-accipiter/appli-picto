@@ -8,7 +8,7 @@
  * Détecte les sélecteurs interactifs (button, a, [role=button], etc.)
  * qui n'utilisent PAS :
  *   - Mixin touch-target() ou @include touch-target
- *   - Annotation /* touch-target */ dans le fichier
+ *   - Annotation "touch-target" comment dans le fichier
  *   - Mixin interactive-target (legacy)
  *
  * Mode heuristique :

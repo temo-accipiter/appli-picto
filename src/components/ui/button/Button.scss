@@ -39,7 +39,10 @@
     color: text('invert');
 
     @include on-event {
-      background-color: color.adjust(color('base', 'secondary'), $lightness: -6%);
+      background-color: color.adjust(
+        color('base', 'secondary'),
+        $lightness: -6%
+      );
     }
   }
 
