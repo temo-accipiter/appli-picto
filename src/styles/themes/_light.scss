@@ -3,8 +3,8 @@
 /// ============================================================================
 /// LIGHT THEME
 /// ============================================================================
-/// Variables CSS pour le th�me clair (d�faut).
-/// Peut �tre surcharg� par prefers-color-scheme: light ou [data-theme="light"]
+/// Variables CSS pour le théme clair (défaut).
+/// Peut être surchargé par prefers-color-scheme: light ou [data-theme="light"]
 /// ============================================================================
 
 :root {
@@ -17,17 +17,17 @@
   --color-text: #333333; // Texte sombre sur fond clair
   --color-text-rgb: 51, 51, 51;
   --color-text-invert: #ffffff; // Texte clair sur fond sombre
-  --color-text-muted: #6c757d; // Texte att�nu�
+  --color-text-muted: #6c757d; // Texte atténué
 
   // === BACKGROUND COLORS ===
   --color-bg: #ffffff; // Fond principal blanc
   --color-surface: #f7f7f7; // Surface secondaire (cards, containers)
   --color-border: #d0d7e0; // Bordures
-  --color-bg-soft: #f9f9f9; // Fond tr�s doux
+  --color-bg-soft: #f9f9f9; // Fond trés doux
   --color-bg-hover: #f0f0f0; // Hover background
 
   // === SEMANTIC COLORS ===
-  --color-success: #4caf50; // Succ�s vert
+  --color-success: #4caf50; // Succés vert
   --color-warning: #ff9800; // Alerte orange
   --color-error: #f44336; // Erreur rouge
   --color-info: #2196f3; // Info bleu

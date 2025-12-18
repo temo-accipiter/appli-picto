@@ -10,6 +10,7 @@
 @forward './container-queries'; // container() + respond-container() mixins
 @forward './mixins'; // respond-to() + autres mixins
 @forward './variables'; // z-index, constants compile-time ONLY
+@forward './size'; // ⭐ NOUVEAU - size() function pour dimensions structurelles
 
 // --- Fonctions couleurs (sans CSS généré) ---
 // Forward uniquement les fonctions de _colors.scss (pas les maps ni CSS vars)

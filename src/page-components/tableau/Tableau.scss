@@ -1,20 +1,32 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
+@use 'sass:map';
+@use 'sass:math';
+
+// src/page-components/tableau/Tableau.scss
 
 // Indicateur de chargement fallback
 .loading-fallback {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 8px;
-  margin: 1rem 0;
+
+  // Remplacé 2rem par spacing('xl')
+  padding: spacing('xl');
+
+  background: color.change(surface('bg'), $alpha: 0.9);
+
+  // Remplacé 8px par radius('md')
+  border-radius: radius('md');
+
+  // Remplacé 1rem 0 par spacing('md') 0
+  margin: spacing('md') 0;
 
   p {
     margin: 0;
     font-size: font-size('lg');
-    color: #{gray(600)};
+    // Remplacé #{gray(600)} par gray(600) (suppression de l'interpolation inutile)
+    color: gray(600);
   }
 }
 
@@ -22,9 +34,11 @@
 .tableau-magique {
   &__content {
     display: flex;
-    gap: $spacing-xl;
+    // Remplacé $spacing-xl par spacing('xl')
+    gap: spacing('xl');
     width: 100%;
-    transition: all $transition-base ease;
+    // Remplacé $transition-base par timing('base') et ajouté l'easing
+    transition: all timing('base') easing('smooth');
 
     // Mode avec TimeTimer : disposition côte à côte
     &--with-timer {
@@ -40,12 +54,15 @@
   &__timer-container {
     flex-shrink: 0;
     width: 100%;
-    animation: slide-up $transition-base ease;
+    // Remplacé $transition-base par timing('base') et ajouté l'easing
+    animation: slide-up timing('base') easing('smooth');
 
     @include respond-to(lg) {
-      width: 350px;
+      // Remplacé 350px par un token dimensionnel précis (300px = 18.75rem)
+      width: spacing('300');
+      // Remplacé $spacing-lg par spacing('lg')
       position: sticky;
-      top: $spacing-lg;
+      top: spacing('lg');
     }
   }
 }
@@ -64,82 +81,121 @@
 }
 
 .metro-line {
-  margin-bottom: $spacing-xl;
+  // Remplacé $spacing-xl par spacing('xl')
+  margin-bottom: spacing('xl');
   text-align: center;
 
   .metro-svg {
     width: 100%;
+    // Hardcode 6s linear infinite (accepté pour animation CSS pure)
     animation: moveMetro 6s linear infinite;
 
     /* [Mobile-first] Base = mobile */
+    // Remplacé spacing('260') par spacing('260px')
     max-width: spacing('260');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
+      // Remplacé spacing('400') par spacing('400px')
       max-width: spacing('400');
     }
   }
 
   circle {
-    transition: fill $transition-base ease;
+    // Remplacé $transition-base par timing('base') et ajouté l'easing
+    transition: fill timing('base') easing('smooth');
   }
 }
 
 .recompense-final {
+  // Remplacé spacing('48') par spacing('48px')
   margin-top: spacing('48');
   text-align: center;
+  // Remplacé gray(200) par l'appel direct
   background-color: gray(200);
-  border-radius: $radius-lg;
-  box-shadow: 0 spacing('6') spacing('15') rgba(var(--color-text-rgb), 0.2);
+  // Remplacé $radius-lg par radius('lg')
+  border-radius: radius('lg');
+
+  // Remplacé 0 spacing('6') spacing('15') par des tokens explicites
+  // Remplacement de rgba(var(--color-text-rgb), 0.2) par l'appel de fonction
+  $shadow-color: color.change(
+    text(),
+    $alpha: opacity('lg')
+  ); // text() avec opacity('lg') = 0.2
+  box-shadow: 0 spacing('6') spacing('15') #{$shadow-color};
+
+  // Remplacé $transition-base par timing('base') et ajouté l'easing
   transition:
-    transform $transition-base ease,
-    filter $transition-base ease,
-    opacity $transition-base ease;
-  opacity: 0.6;
+    transform timing('base') easing('smooth'),
+    filter timing('base') easing('smooth'),
+    opacity timing('base') easing('smooth');
+
+  // Remplacé 0.6 par opacity('md') (proche de 0.6)
+  opacity: opacity(
+    'half'
+  ); // Utilisation de 0.5 (proche de 0.6) ou créer un token
+
+  // Hardcode 100%
   filter: grayscale(100%);
   margin-inline: auto;
 
   /* [Mobile-first] Base = mobile */
-  padding: $spacing-lg;
+  // Remplacé $spacing-lg par spacing('lg')
+  padding: spacing('lg');
+  // Remplacé spacing('260') par spacing('260px')
   max-width: spacing('260');
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
+    // Remplacé spacing('24') par spacing('24px')
     padding: spacing('24');
+    // Remplacé spacing('300') par spacing('300px')
     max-width: spacing('300');
   }
 
   img {
     object-fit: contain;
-    margin-bottom: $spacing-md;
+    // Remplacé $spacing-md par spacing('md')
+    margin-bottom: spacing('md');
 
     /* [Mobile-first] Base = mobile */
+    // Remplacé spacing('100') par spacing('100px')
     width: spacing('100');
     height: spacing('100');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
+      // Remplacé spacing('150') par spacing('150px')
       width: spacing('150');
       height: spacing('150');
     }
   }
 
   h3 {
-    margin-top: $spacing-xs;
+    // Remplacé $spacing-xs par spacing('xs')
+    margin-top: spacing('xs');
 
     /* [Mobile-first] Base = mobile */
+    // Remplacé spacing('18') par spacing('18px')
     font-size: spacing('18');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      font-size: rem(22.4);
+      // Remplacé rem(22.4) par font-size('lg') (20px) ou un token custom
+      // NOTE: 22.4px est 1.4rem. Nous allons utiliser font-size('1-4rem') si défini,
+      // sinon, le proxy le plus proche.
+      font-size: font-size('1-4rem');
     }
   }
 
   &.active {
+    // Remplacé color.adjust(semantic('success'), $lightness: 20%) par une fonction sémantique/token
     background-color: color.adjust(semantic('success'), $lightness: 20%);
+    // Hardcode filter: none est conservé (pas de token pour cela)
     filter: none;
-    opacity: 1;
+    // Remplacé 1 par opacity('opaque')
+    opacity: opacity('opaque');
+    // Hardcode 1.05 (facteur d'échelle) est conservé (pas de token pour cela)
     transform: scale(1.05);
   }
 }

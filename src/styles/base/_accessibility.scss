@@ -3,16 +3,16 @@
 /// ============================================================================
 /// ACCESSIBILITY - WCAG 2.2 AA Compliance
 /// ============================================================================
-/// Styles et helpers pour accessibilit� conforme � WCAG AA.
-/// Respecte pr�f�rences utilisateur (prefers-reduced-motion, prefers-color-scheme).
-/// Optimis� pour enfants TSA (clear, predictable, calm design).
+/// Styles et helpers pour accessibilité conforme é WCAG AA.
+/// Respecte préférences utilisateur (prefers-reduced-motion, prefers-color-scheme).
+/// Optimisé pour enfants TSA (clear, predictable, calm design).
 /// ============================================================================
 
 // =============================================================================
 // FOCUS MANAGEMENT - Keyboard navigation
 // =============================================================================
 
-/// Supprime outline par d�faut et applique focus ring custom
+/// Supprime outline par défaut et applique focus ring custom
 :focus-visible {
   outline: none;
   box-shadow:
@@ -50,7 +50,7 @@ input[type='radio']:focus-visible {
 // SCREEN READER ONLY TEXT - Accessible labels
 // =============================================================================
 
-/// Text visible uniquement aux lecteurs d'�cran
+/// Text visible uniquement aux lecteurs d'écran
 .sr-only,
 .visually-hidden {
   position: absolute !important;

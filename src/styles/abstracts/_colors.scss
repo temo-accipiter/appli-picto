@@ -316,3 +316,67 @@
 
   @error "Brand color '#{$key}' not found (source: _tokens.scss)";
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🌈 FONCTION GRADIENT - Dégradés rôles utilisateurs
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+// USAGE :
+//   gradient($role, $direction: '135deg')
+//
+// EXEMPLES :
+//   background: gradient('admin');              // Dégradé admin 135deg (défaut)
+//   background: gradient('abonne', '90deg');    // Dégradé abonné horizontal
+//   background: gradient('free', 'to bottom');  // Dégradé free vertical
+//
+// ROLES DISPONIBLES :
+//   'admin', 'abonne', 'free', 'visitor', 'staff'
+//
+// DIRECTIONS :
+//   - Angle : '45deg', '90deg', '135deg' (défaut), '180deg'
+//   - Keyword : 'to right', 'to bottom', 'to top', 'to left'
+//   - Diagonal : 'to bottom right', 'to top left'
+//
+// VALIDATION STRICTE :
+//   @error si rôle invalide ou clés gradient manquantes
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@function gradient($role, $direction: '135deg') {
+  // Valider que le rôle existe
+  @if not map.has-key($role-color-tokens, $role) {
+    @error "Gradient role '#{$role}' not found. Available: #{map.keys($role-color-tokens)}";
+  }
+
+  $role-map: map.get($role-color-tokens, $role);
+
+  // Valider que gradient-start existe
+  @if not map.has-key($role-map, 'gradient-start') {
+    @error "Gradient 'gradient-start' not found for role '#{$role}'. Keys: #{map.keys($role-map)}";
+  }
+
+  // Valider que gradient-end existe
+  @if not map.has-key($role-map, 'gradient-end') {
+    @error "Gradient 'gradient-end' not found for role '#{$role}'. Keys: #{map.keys($role-map)}";
+  }
+
+  $start: map.get($role-map, 'gradient-start');
+  $end: map.get($role-map, 'gradient-end');
+
+  @return linear-gradient(#{$direction}, $end, $start);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🌈 FONCTION GRADIENT-RADIAL - Dégradés radiaux (optionnel)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@function gradient-radial($role, $shape: 'circle', $position: 'center') {
+  @if not map.has-key($role-color-tokens, $role) {
+    @error "Gradient role '#{$role}' not found. Available: #{map.keys($role-color-tokens)}";
+  }
+
+  $role-map: map.get($role-color-tokens, $role);
+  $start: map.get($role-map, 'gradient-start');
+  $end: map.get($role-map, 'gradient-end');
+
+  @return radial-gradient(#{$shape} at #{$position}, $start, $end);
+}

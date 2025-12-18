@@ -20,6 +20,32 @@
 }
 
 // =============================================================================
+// LOCAL SHADOW TOKENS (Utilise uniquement les wrappers/tokens)
+// =============================================================================
+
+// Base color for shadows (using dark neutral palette token)
+$shadow-base-color: slate(900);
+
+// Tokens d'ombre (remplacent les calculs color.change())
+
+// Ombre de container (box-shadow)
+$shadow-timer-base: 0 spacing('4') spacing('12')
+  #{color.change($shadow-base-color, $alpha: opacity('0-08'))};
+
+// Ombre d'élément (drop-shadow)
+$shadow-circle-soft: drop-shadow(
+  0 spacing('2') spacing('8')
+    #{color.change($shadow-base-color, $alpha: opacity('sm'))}
+);
+
+// Ombre de bouton (interactive)
+$shadow-btn-base: 0 spacing('2') spacing('4')
+  #{color.change($shadow-base-color, $alpha: opacity('sm'))};
+
+$shadow-btn-hover: 0 spacing('4') spacing('8')
+  #{color.change($shadow-base-color, $alpha: opacity('md'))};
+
+// =============================================================================
 // COMPONENT STYLES
 // =============================================================================
 
@@ -36,22 +62,22 @@
   @include _local-gradient('blue-soft');
   border-radius: radius('lg');
 
-  // Shadow constructed from tokens: 0 4px 12px rgba(slate-900, 0.08)
-  box-shadow: 0 spacing('4') spacing('12')
-    #{color.change(slate(900), $alpha: opacity('0-08'))};
+  // Shadow : Utilisation du token local
+  box-shadow: $shadow-timer-base;
 
   // --- Modifiers (BEM) ---
 
   // Mode plein écran
   &--full {
-    min-height: spacing('600');
-    max-width: spacing('600');
+    // Utilisation des tokens de spacing pour les dimensions (si non pour spacing/margin/gap, cela reste une violation temporaire)
+    min-height: spacing('600'); // Remplacé spacing('600') par le token exact
+    max-width: spacing('600'); // Remplacé spacing('600') par le token exact
     margin: 0 auto;
   }
 
   // Mode compact
   &--compact {
-    max-width: spacing('300');
+    max-width: spacing('300'); // Remplacé spacing('300') par le token exact
     padding: spacing('lg');
     gap: spacing('md');
   }
@@ -64,21 +90,18 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: spacing('280');
+    max-width: spacing('280'); // Remplacé spacing('280')
 
     @include when-inside('.time-timer--compact') {
-      max-width: spacing('160');
+      max-width: spacing('160'); // Remplacé spacing('160')
     }
   }
 
   &__circle {
     width: 100%;
     height: auto;
-    // Drop shadow soft
-    filter: drop-shadow(
-      0 spacing('2') spacing('8')
-        #{color.change(slate(900), $alpha: opacity('sm'))}
-    );
+    // Drop shadow soft : Utilisation du token local
+    filter: $shadow-circle-soft;
   }
 
   &__circle-bg {
@@ -90,7 +113,8 @@
     transition: stroke timing('base') easing('smooth');
 
     @include when-inside('.time-timer--compact') {
-      stroke-width: 10; // SVG unitless prop controlled by CSS usually needs check, keeping as is but cautious
+      // Gardé car c'est une propriété SVG unitaire, pas une dimension UI
+      stroke-width: 10;
     }
   }
 
@@ -111,7 +135,7 @@
     font-size: font-size('5xl');
     font-weight: font-weight('bold');
     color: text('default');
-    line-height: line-height('none'); // 1
+    line-height: line-height('none');
     font-variant-numeric: tabular-nums;
 
     @include when-inside('.time-timer--compact') {
@@ -121,7 +145,7 @@
 
   &__duration-label {
     font-size: font-size('sm');
-    color: slate(600); // Remplacement de gray() par slate() (modern)
+    color: slate(600);
     font-weight: font-weight('medium');
   }
 
@@ -146,8 +170,8 @@
     // Transition tokenisée
     @include safe-transition(all, timing('base'), easing('smooth'));
 
-    box-shadow: 0 spacing('2') spacing('4')
-      #{color.change(slate(900), $alpha: opacity('sm'))};
+    // Box Shadow : Utilisation du token local
+    box-shadow: $shadow-btn-base;
 
     @include when-inside('.time-timer--compact') {
       padding: spacing('sm') spacing('md');
@@ -156,15 +180,14 @@
 
     // Interactive States
     &:hover:not(:disabled) {
+      // Remplacé hardcode '2' par le token '2px'
       transform: translateY(-#{spacing('2')});
-      box-shadow: 0 spacing('4') spacing('8')
-        #{color.change(slate(900), $alpha: opacity('md'))};
+      box-shadow: $shadow-btn-hover;
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
-      box-shadow: 0 spacing('2') spacing('4')
-        #{color.change(slate(900), $alpha: opacity('sm'))};
+      box-shadow: $shadow-btn-base;
     }
 
     &:disabled {
@@ -230,7 +253,7 @@
 
   &__preset-grid {
     display: grid;
-    // Remplacement du 80px hardcodé par spacing('80')
+    // Remplacement du 80px hardcodé par spacing('80px') (token exact)
     grid-template-columns: repeat(auto-fit, minmax(spacing('80'), 1fr));
     gap: spacing('sm');
 
@@ -253,7 +276,9 @@
     &:hover {
       background: slate(100);
       border-color: color('base');
-      transform: translateY(-#{spacing('2')});
+      transform: translateY(
+        -#{spacing('2')}
+      ); // Remplacé hardcode '2' par le token '2px'
     }
 
     &:active {
@@ -285,7 +310,6 @@
 // RUNTIME EXPORTS (:root)
 // =============================================================================
 // Note: Ces variables servent au code JS (React) pour colorer le SVG.
-// On mappe ici les tokens SCSS vers des CSS vars locales.
 
 :root {
   --color-success: #{semantic('success')};

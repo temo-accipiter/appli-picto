@@ -2,10 +2,10 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// SHADOWS SYSTEM - Centralis�
+/// SHADOWS SYSTEM - Centralisé
 /// ============================================================================
-/// Source de v�rit� pour tous les box-shadow et text-shadow.
-/// Cr�e la hi�rarchie d'�l�vation (elevation system) du design.
+/// Source de vérité pour tous les box-shadow et text-shadow.
+/// Crée la hiérarchie d'élévation (elevation system) du design.
 ///
 /// Utilisation:
 ///   box-shadow: shadow(sm);
@@ -31,7 +31,7 @@ $box-shadow: $shadow-sm;
 $box-shadow-hover: $shadow-lg;
 
 // =============================================================================
-// SHADOW MAPS - Tous les shadows par cat�gorie
+// SHADOW MAPS - Tous les shadows par catégorie
 // =============================================================================
 
 /// Elevation shadows - standard elevation scale
@@ -69,7 +69,7 @@ $card-shadows: (
   'elevated': $shadow-lg,
 );
 
-/// Role-specific shadows (admin, abonn�, free, visitor)
+/// Role-specific shadows (admin, abonné, free, visitor)
 $role-shadows: (
   'admin': (
     'default': 0 0 24px rgba(0, 0, 0, 0.35),
@@ -142,8 +142,8 @@ $text-shadows: (
 // FUNCTIONS - Accesseurs pour shadows
 // =============================================================================
 
-/// R�cup�re une shadow depuis la elevation scale
-/// @param {String} $key - Cl� dans $elevation-shadows
+/// Récupère une shadow depuis la elevation scale
+/// @param {String} $key - Clé dans $elevation-shadows
 /// @return {String} Box-shadow value
 /// @example
 ///   box-shadow: shadow(lg);
@@ -155,7 +155,7 @@ $text-shadows: (
   @return $value;
 }
 
-/// R�cup�re une card shadow (default ou hover state)
+/// Récupère une card shadow (default ou hover state)
 /// @param {String} $state - 'default', 'hover', 'focus', 'active'
 /// @return {String} Box-shadow value
 /// @example
@@ -168,7 +168,7 @@ $text-shadows: (
   @return $value;
 }
 
-/// R�cup�re une shadow sp�cifique � un r�le
+/// Récupère une shadow spécifique é un réle
 /// @param {String} $role - 'admin', 'abonne', 'free', 'visitor'
 /// @param {String} $state - 'default', 'hover'
 /// @return {String} Box-shadow value
@@ -186,7 +186,7 @@ $text-shadows: (
   @return $value;
 }
 
-/// R�cup�re une admin UI shadow
+/// Récupère une admin UI shadow
 /// @param {String} $key - 'default', 'hover', 'panel', 'dropdown', 'modal'
 /// @return {String} Box-shadow value
 /// @example
@@ -199,7 +199,7 @@ $text-shadows: (
   @return $value;
 }
 
-/// R�cup�re une button shadow
+/// Récupère une button shadow
 /// @param {String} $state - 'default', 'hover', 'active', 'focus'
 /// @return {String} Box-shadow value
 /// @example
@@ -212,7 +212,7 @@ $text-shadows: (
   @return $value;
 }
 
-/// R�cup�re une text shadow
+/// Récupère une text shadow
 /// @param {String} $key - 'sm', 'md', 'lg'
 /// @return {String} Text-shadow value
 /// @example
@@ -260,7 +260,7 @@ $text-shadows: (
 }
 
 // =============================================================================
-// CSS CUSTOM PROPERTIES - Pour acc�s runtime
+// CSS CUSTOM PROPERTIES - Pour accès runtime
 // =============================================================================
 
 :root {
@@ -277,13 +277,13 @@ $text-shadows: (
 // GUIDELINES
 // ============================================================================
 // 1. JAMAIS hardcoder box-shadow - utiliser shadow($key) ou card-shadow()
-// 2. Utiliser elevation system pour hi�rarchie (xs > sm > md > lg > xl > 2xl)
-// 3. Shadows renforcent hi�rarchie visuelle - coh�rent avec z-index
-// 4. Role-specific shadows pour distinction admin/abonn�/free/visitor
-// 5. Ajouter transition au hover (shadow() � shadow(hover))
-// 6. Input focus: utiliser shadow() + outline pour accessibilit�
+// 2. Utiliser elevation system pour hiérarchie (xs > sm > md > lg > xl > 2xl)
+// 3. Shadows renforcent hiérarchie visuelle - cohérent avec z-index
+// 4. Role-specific shadows pour distinction admin/abonné/free/visitor
+// 5. Ajouter transition au hover (shadow() é shadow(hover))
+// 6. Input focus: utiliser shadow() + outline pour accessibilité
 // 7. Modal/overlay: toujours utiliser shadow(2xl)
-// 8. Performance: Ombres peut co�ter en perf - limiter animations
+// 8. Performance: Ombres peut coéter en perf - limiter animations
 // 9. Couleur shadow: noir (dark) ou accent (colored emphasis)
-// 10. pour nouvelles ombres, ajouter � map correspondante
-// 11. Respecter contraste (ombre ne doit pas r�duire lisibilit�)
+// 10. pour nouvelles ombres, ajouter à map correspondante
+// 11. Respecter contraste (ombre ne doit pas réduire lisibilité)

@@ -1,6 +1,6 @@
 ---
 description: Créer et mettre à jour les fichiers CLAUDE.md avec les meilleures pratiques pour Appli-Picto
-allowed-tools: ['Read', 'Write', 'Edit', 'MultiEdit', 'Glob', 'Grep', 'Bash']
+allowed-tools: Read, Write, Edit, MultiEdit, Glob, Grep, Bash
 argument-hint: <action> <chemin> - ex. "create global", "update src/components/CLAUDE.md"
 model: sonnet
 ---
@@ -26,7 +26,7 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 
 ### Règles d'architecture CRITIQUES
 
-- ✅ **TOUJOURS utiliser hooks custom** : `useTaches`, `useRecompenses`, `useQuotas`, etc.
+- ✅ **TOUJOURS utiliser hooks custom** : `useTaches`, `useRecompenses`, `useAccountStatus`, etc.
 - ❌ **JAMAIS query Supabase directe** : Interdit de faire `supabase.from('taches').select()`
 - ✅ **Next.js App Router** : `useRouter` de `next/navigation`
 - ❌ **JAMAIS react-router-dom** : Projet migré vers Next.js App Router
@@ -43,7 +43,7 @@ Tu es un spécialiste CLAUDE.md pour **Appli-Picto**, une application Next.js 16
 
 - **Free** : 5 tâches, 2 récompenses, 2 catégories
 - **Abonné** : 40 tâches, 10 récompenses, 50 catégories
-- **Vérification obligatoire** : Utiliser `useQuotas()` AVANT toute création
+- **Vérification obligatoire** : Utiliser `useAccountStatus()` AVANT toute création
 
 ## Workflow de la commande
 
@@ -173,7 +173,7 @@ src/
 │   ├── taches/         # Composants tâches (TacheCard, TachesDnd)
 │   └── recompenses/    # Composants récompenses
 ├── contexts/           # State global (AuthContext, PermissionsContext, ToastContext)
-├── hooks/              # Hooks custom Supabase (useTaches, useRecompenses, useQuotas)
+├── hooks/              # Hooks custom Supabase (useTaches, useRecompenses, useAccountStatus)
 ├── page-components/    # Composants pages (Tableau, Edition, Profil)
 ├── utils/              # Utilitaires (supabaseClient, compressImage)
 └── styles/             # SCSS global (main.scss, animations.scss)
@@ -203,9 +203,9 @@ const { taches, loading } = useTaches()
 
 - `useTaches()` : CRUD tâches
 - `useRecompenses()` : CRUD récompenses
-- `useQuotas()` : Gestion quotas (Free: 5 tâches, Abonné: 40)
+- `useAccountStatus()` : Gestion quotas (Free: 5 tâches, Abonné: 40)
 - `useAuth()` : Authentification
-- `useEntitlements()` : Contrôle accès features
+- `useRBAC()` : Contrôle accès features
 
 ### 2. Next.js App Router (OBLIGATOIRE)
 
@@ -222,57 +222,61 @@ router.push('/edition')
 ### 3. Server vs Client Components
 
 ```typescript
-// ✅ Server Component par défaut (pas de 'use client')
-export default function Page() {
-  return <h1>Page statique</h1>
+// ❌ INTERDIT - 'use client' non nécessaire
+'use client'
+export default function StaticCard({ title }) {
+  return <div>{title}</div>
 }
 
-// ✅ Client Component SEULEMENT si interactivité
+// ✅ CORRECT - Server Component par défaut
+export default function StaticCard({ title }) {
+  return <div>{title}</div>
+}
+
+// ✅ CORRECT - 'use client' SEULEMENT si hooks/events
 'use client'
 import { useState } from 'react'
-
-export default function Interactive() {
+export default function InteractiveCard() {
   const [count, setCount] = useState(0)
   return <button onClick={() => setCount(c => c + 1)}>{count}</button>
 }
 ```
 
-**Ajouter `'use client'` SEULEMENT si** :
-
-- Hooks React (useState, useEffect, useContext, etc.)
-- Event handlers (onClick, onChange, etc.)
-- Browser APIs (window, document, localStorage)
-
-### 4. Quotas utilisateurs (RGPD/CNIL)
-
-**TOUJOURS vérifier quotas AVANT création** :
+### 4. Imports absolus (OBLIGATOIRE)
 
 ```typescript
-import { useQuotas } from '@/hooks'
+// ❌ INTERDIT - Imports relatifs
+import Modal from '../../components/shared/Modal'
 
-const { canCreateTache, quotas } = useQuotas()
-
-if (!canCreateTache) {
-  return <QuotaExceeded message="Limite Free : 5 tâches" />
-}
-
-// OK pour créer
+// ✅ CORRECT - Alias @ (pointe vers src/)
+import Modal from '@/components/shared/Modal'
 ```
-
-**Quotas** :
-
-- **Free** : 5 tâches, 2 récompenses, 2 catégories
-- **Abonné** : 40 tâches, 10 récompenses, 50 catégories
 
 ### 5. Accessibilité TSA (WCAG 2.2 AA)
 
-**CRITIQUE** : UX calme et prévisible pour enfants autistes
+**CRITIQUE** : Application pour enfants autistes
 
-- **Animations** : Max 0.3s ease, douces et prévisibles
-- **Couleurs** : Palette pastel apaisante (CSS custom properties)
-- **Contraste** : WCAG 2.2 AA minimum
-- **Focus** : Toujours visible pour navigation clavier
-- **Pas de surcharge visuelle** : Design minimaliste
+- ✅ **Animations douces** : Max 0.3s ease, jamais brusques
+- ✅ **Couleurs pastel** : Palette apaisante, contraste minimum 4.5:1
+- ✅ **Focus visible** : Toujours visible pour navigation clavier
+- ✅ **Pas de clignotement** : Rien > 3Hz (risque épilepsie)
+- ✅ **Cibles tactiles** : Minimum 44×44px
+
+### 6. Gestion Quotas (RGPD/CNIL)
+
+```typescript
+import { useAccountStatus } from '@/hooks'
+
+function CreateTaskButton() {
+  const { canCreateTask, quotas } = useAccountStatus()
+
+  if (!canCreateTask) {
+    return <QuotaExceeded message="Limite Free : 5 tâches atteinte" />
+  }
+
+  return <button onClick={handleCreate}>Créer tâche</button>
+}
+```
 
 ## Style & Conventions
 
@@ -330,7 +334,7 @@ pnpm test:coverage  # DOIT maintenir couverture
 **Toujours vérifier** :
 
 - ✅ **Supabase RLS** : Policies activées sur toutes tables privées
-- ✅ **Quotas** : Vérifier avec `useQuotas()` avant création
+- ✅ **Quotas** : Vérifier avec `useAccountStatus()` avant création
 - ✅ **Auth** : Vérifier `authReady` avant accès `user`
 - ✅ **Images** : Compression 100KB max (`compressImageIfNeeded`)
 - ✅ **Hydration Next.js** : Éviter mismatches SSR/client
@@ -441,7 +445,7 @@ pnpm test:coverage  # DOIT maintenir couverture
 - **CRITIQUE** : TOUJOURS utiliser hooks custom (@/hooks/useTaches)
 - **JAMAIS** importer depuis dossiers packages internes directement
 - **AVANT commit** : Exécuter `pnpm check` et `pnpm test`
-- **OBLIGATOIRE** : Utiliser composants shadcn/ui uniquement (pas de frameworks CSS custom)
+- **OBLIGATOIRE** : Utiliser `pnpm` uniquement (JAMAIS yarn/npm)
 ````
 
 ## Stratégie collecte contenu

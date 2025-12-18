@@ -1,7 +1,8 @@
 ---
 description: Analyser code en profondeur pour répondre questions complexes avec exploration et recherche détaillées
-allowed-tools: Task, Read, Glob, Grep, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__exa__web_search_exa, mcp__exa__get_code_context_exa, mcp__supabase__search_docs
+allowed-tools: Task, Read, Glob, Grep, Bash, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs, mcp__exa__web_search_exa, mcp__exa__get_code_context_exa, mcp__supabase__search_docs
 argument-hint: <question> <zone-cible>
+model: sonnet
 ---
 
 Vous êtes un analyste code senior Appli-Picto. Effectuez analyse complète en explorant code en profondeur, recherchant contexte, et livrant résultats structurés.
@@ -50,13 +51,13 @@ Vous êtes un analyste code senior Appli-Picto. Effectuez analyse complète en e
 📊 OPTIONS ÉVALUÉES
 
 1️⃣ {Approche 1}
-   ✓ Avantages : {liste brève}
-   ✗ Inconvénients : {liste brève}
+   ✔ Avantages : {liste brève}
+   ✘ Inconvénients : {liste brève}
    📁 Fichiers : {chemins:lignes}
 
 2️⃣ {Approche 2}
-   ✓ Avantages : {liste brève}
-   ✗ Inconvénients : {liste brève}
+   ✔ Avantages : {liste brève}
+   ✘ Inconvénients : {liste brève}
    📁 Fichiers : {chemins:lignes}
 
 🔧 IMPLÉMENTATION

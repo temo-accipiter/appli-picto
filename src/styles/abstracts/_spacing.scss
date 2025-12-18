@@ -2,41 +2,41 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// SPACING SYSTEM - Centralis�
+/// SPACING SYSTEM - Centralisé
 /// ============================================================================
-/// Source de v�rit� pour tous les espacements du design system.
+/// Source de vérité pour tous les espacements du design system.
 /// Utiliser comme source, ne jamais hardcoder px/rem/em en composants.
 ///
 /// Utilisation:
 ///   margin: spacing(md);         // Variables existantes
-///   padding: spacing(nav-mobile);// Espacements sp�cialis�s
+///   padding: spacing(nav-mobile);// Espacements spécialisés
 ///   gap: spacing-value(lg);      // Valeur directe si needed
 /// ============================================================================
 
 // =============================================================================
-// SCALE PRIMAIRE - Variables individuelles pour compatibilit�
+// SCALE PRIMAIRE - Variables individuelles pour compatibilité
 // =============================================================================
 
 /// Espacements de base - scale 4px (mobile-first)
-/// Bas�s sur 16px = 1rem
-$spacing-xxs: 0.25rem; // 4px - Tr�s petit spacing (s�parateurs)
-$spacing-xs: 0.5rem; // 8px - Petit spacing (padding entre �l�ments)
+/// Basés sur 16px = 1rem
+$spacing-xxs: 0.25rem; // 4px - Très petit spacing (séparateurs)
+$spacing-xs: 0.5rem; // 8px - Petit spacing (padding entre éléments)
 $spacing-sm: 0.75rem; // 12px - Small padding
 $spacing-md: 1rem; // 16px - Default, section padding
 $spacing-lg: 1.5rem; // 24px - Large spacing, cards
 $spacing-xl: 2rem; // 32px - Extra large
 
-// Variables suppl�mentaires fr�quemment utilis�es
+// Variables supplémentaires fréquemment utilisées
 $spacing-2xl: 2.5rem; // 40px
 $spacing-3xl: 3rem; // 48px
 $spacing-4xl: 4rem; // 64px
 
 // =============================================================================
-// SCALE MAP - Tous les espacements du syst�me
+// SCALE MAP - Tous les espacements du système
 // =============================================================================
 
-/// Map centralis�e contenant TOUS les espacements du projet
-/// Organis�e par cat�gorie pour clart�
+/// Map centralisée contenant TOUS les espacements du projet
+/// Organisée par catégorie pour clarté
 $spacing-scale: (
   // === Scale primaire ===
   'xxs': $spacing-xxs,
@@ -58,7 +58,7 @@ $spacing-scale: (
   '4xl': $spacing-4xl,
 
   // 64px
-  // === Espacements sp�cialis�s (composants) ===
+  // === Espacements spécialisés (composants) ===
   'nav-mobile': 56px,
   // Mobile bottom nav height
   'modal-padding': 32px,
@@ -175,11 +175,11 @@ $spacing-scale: (
 );
 
 // =============================================================================
-// FUNCTIONS - Helper pour acc�der aux spacings
+// FUNCTIONS - Helper pour accéder aux spacings
 // =============================================================================
 
-/// R�cup�re une valeur de spacing depuis la map
-/// @param {String} $key - Cl� dans $spacing-scale
+/// Récupère une valeur de spacing depuis la map
+/// @param {String} $key - Clé dans $spacing-scale
 /// @return {String} Valeur du spacing
 /// @example
 ///   padding: spacing(md);           // 1rem
@@ -192,20 +192,20 @@ $spacing-scale: (
   @return $value;
 }
 
-/// Alias pour r�cup�rer une valeur spacing
-/// Utiliser quand le nom de fonction doit �tre explicite
-/// @param {String} $key - Cl� dans $spacing-scale
+/// Alias pour récupérer une valeur spacing
+/// Utiliser quand le nom de fonction doit être explicite
+/// @param {String} $key - Clé dans $spacing-scale
 /// @return {String} Valeur du spacing
 @function spacing-value($key) {
   @return spacing($key);
 }
 
 // =============================================================================
-// CSS CUSTOM PROPERTIES - Pour acc�s runtime en JavaScript
+// CSS CUSTOM PROPERTIES - Pour accès runtime en JavaScript
 // =============================================================================
 
 :root {
-  // Scale primaire (utilis�e partout)
+  // Scale primaire (utilisée partout)
   --spacing-xxs: #{$spacing-xxs};
   --spacing-xs: #{$spacing-xs};
   --spacing-sm: #{$spacing-sm};
@@ -216,7 +216,7 @@ $spacing-scale: (
   --spacing-3xl: #{$spacing-3xl};
   --spacing-4xl: #{$spacing-4xl};
 
-  // Espacements sp�cialis�s
+  // Espacements spécialisés
   --spacing-nav-mobile: 56px;
   --spacing-modal-padding: 32px;
   --spacing-touch-target: 44px;
@@ -239,8 +239,8 @@ $spacing-scale: (
 // GUIDELINES
 // ============================================================================
 // 1. JAMAIS hardcoder px/rem/em pour spacing - utiliser spacing($key)
-// 2. Mobile-first: d�finir valeurs de base, puis utiliser respond-to() breakpoints
-// 3. Pour nouveaux espacements, ajouter � $spacing-scale map
-// 4. Garder coh�rence entre spacings (4px base, multiples de 4)
-// 5. Consid�rer touch targets (min 44x44px per WCAG AA)
-// 6. Documenter espacements sp�cialis�s avec commentaires
+// 2. Mobile-first: définir valeurs de base, puis utiliser respond-to() breakpoints
+// 3. Pour nouveaux espacements, ajouter à $spacing-scale map
+// 4. Garder cohérence entre spacings (4px base, multiples de 4)
+// 5. Considérer touch targets (min 44x44px per WCAG AA)
+// 6. Documenter espacements spécialisés avec commentaires

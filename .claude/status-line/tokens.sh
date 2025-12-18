@@ -19,7 +19,6 @@ total_tokens=0
 # Si le transcript existe, extraire les tokens
 if [ -f "$transcript_path" ]; then
     # Lire la dernière entrée avec usage (skip sidechains et erreurs)
-    # IMPORTANT: Pas de -s car le transcript est un fichier JSONL (une ligne = un JSON)
     last_usage=$(jq 'select(.message.usage and .isSidechain != true and .isApiErrorMessage != true) | .message.usage' "$transcript_path" 2>/dev/null | tail -1)
 
     if [ -n "$last_usage" ]; then
@@ -67,15 +66,15 @@ else
     token_emoji="🔴"
 fi
 
-# Couleur pour coût
+# Couleur pour coût (utiliser awk au lieu de bc pour compatibilité)
 cost_formatted=$(printf "%.3f" "$cost")
-if (( $(echo "$cost < 0.01" | bc -l) )); then
+if awk -v cost="$cost" 'BEGIN { exit (cost < 0.01) ? 0 : 1 }'; then
     cost_color="$GREEN"
     cost_emoji="💚"
-elif (( $(echo "$cost < 0.05" | bc -l) )); then
+elif awk -v cost="$cost" 'BEGIN { exit (cost < 0.05) ? 0 : 1 }'; then
     cost_color="$CYAN"
     cost_emoji="💙"
-elif (( $(echo "$cost < 0.10" | bc -l) )); then
+elif awk -v cost="$cost" 'BEGIN { exit (cost < 0.10) ? 0 : 1 }'; then
     cost_color="$ORANGE"
     cost_emoji="💛"
 else

@@ -10,60 +10,25 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash(git commit:*|git push:*)",
         "hooks": [
           {
             "type": "command",
-            "command": "bun $CLAUDE_PROJECT_DIR/.claude/scripts/validate-command.js"
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh"
           }
         ]
       }
     ],
-    "pre-tool-use": {
-      "bash(git commit:*)": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh",
-      "bash(git push:*)": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh"
-    },
-    "post-tool-use": {
-      "mcp__supabase__apply_migration": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-migration.sh"
-    }
-  },
-
-  "permissions": {
-    "bash": "allow",
-    "read_files": "allow",
-    "write_files": "ask"
-  },
-
-  "commands": {
-    "claude-memory": {
-      "model": "sonnet"
-    },
-    "debug": {
-      "model": "sonnet"
-    },
-    "explore": {
-      "model": "sonnet"
-    },
-    "verify-quick": {
-      "model": "haiku"
-    },
-    "verify-full": {
-      "model": "haiku"
-    }
-  },
-
-  "agents": {
-    "explore-codebase": {
-      "model": "haiku"
-    },
-    "explore-docs": {
-      "model": "haiku"
-    },
-    "action": {
-      "model": "haiku"
-    },
-    "websearch": {
-      "model": "haiku"
-    }
+    "PostToolUse": [
+      {
+        "matcher": "mcp__supabase__apply_migration",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-migration.sh"
+          }
+        ]
+      }
+    ]
   }
 }

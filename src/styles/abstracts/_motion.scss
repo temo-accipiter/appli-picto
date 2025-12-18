@@ -2,10 +2,10 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// MOTION SYSTEM - Centralis�
+/// MOTION SYSTEM - Centralisé
 /// ============================================================================
-/// Source de v�rit� pour toutes les animations, transitions et durations.
-/// Garantit accessibilit� (prefers-reduced-motion) et coh�rence design.
+/// Source de vérité pour toutes les animations, transitions et durations.
+/// Garantit accessibilité (prefers-reduced-motion) et cohérence design.
 ///
 /// Utilisation:
 ///   transition: color timing(xs) easing(smooth);
@@ -13,28 +13,28 @@
 /// ============================================================================
 
 // =============================================================================
-// DUR�ES / TIMINGS - Variables individuelles pour compatibilit�
+// DURéES / TIMINGS - Variables individuelles pour compatibilité
 // =============================================================================
 
-/// Timings de transition - appliqu�es � motion fluide
-/// Coh�rents avec design system TSA (douceur, pr�visibilit�)
-$transition-xs: 0.15s; // Hyper-rapide (feedback imm�diat)
+/// Timings de transition - appliquées é motion fluide
+/// Cohérents avec design system TSA (douceur, prévisibilité)
+$transition-xs: 0.15s; // Hyper-rapide (feedback immédiat)
 $transition-fast: 0.2s; // Rapide (state change)
-$transition-base: 0.3s; // Standard (motion par d�faut, WCAG compliant)
+$transition-base: 0.3s; // Standard (motion par défaut, WCAG compliant)
 $transition-slow: 0.5s; // Lent (flourish, important reveals)
-$transition-slower: 0.8s; // Tr�s lent (complex animations)
+$transition-slower: 0.8s; // Très lent (complex animations)
 $transition-slowest: 1.2s; // Max durable pour animations
 
 // =============================================================================
 // TIMINGS MAP - Tous les timings disponibles
 // =============================================================================
 
-/// Map centralis�e contenant toutes les durations d'animation
-/// Utilis� pour s�lectionner le timing appropri� par contexte
+/// Map centralisée contenant toutes les durations d'animation
+/// Utilisé pour sélectionner le timing approprié par contexte
 $timing-scale: (
   // === Transitions rapides (feedback, state changes) ===
   'xs': 0.15s,
-  // 150ms - Imm�diate (focus, hover)
+  // 150ms - Immédiate (focus, hover)
   'sm': 0.2s,
   // 200ms - Rapide (color transitions)
   'base': 0.3s,
@@ -42,7 +42,7 @@ $timing-scale: (
   'lg': 0.5s,
   // 500ms - Lent (reveals, transforms)
   'xl': 0.8s,
-  // 800ms - Tr�s lent (complex sequences)
+  // 800ms - Très lent (complex sequences)
   '2xl': 1.2s,
 
   // 1200ms - Max standard
@@ -79,11 +79,11 @@ $timing-scale: (
 );
 
 // =============================================================================
-// EASING FUNCTIONS - Courbes d'acc�l�ration
+// EASING FUNCTIONS - Courbes d'accélération
 // =============================================================================
 
 /// Map des easing functions (timing-function CSS)
-/// Coh�rentes avec WCAG AA et design TSA (douceur, pr�visibilit�)
+/// Cohérentes avec WCAG AA et design TSA (douceur, prévisibilité)
 $easing-scale: (
   // === Easings standards ===
   'linear': linear,
@@ -97,7 +97,7 @@ $easing-scale: (
   'ease-in-out': ease-in-out,
 
   // Both sides slow
-  // === Cubic-bezier pour plus de contr�le ===
+  // === Cubic-bezier pour plus de contréle ===
   'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
   // Overshoot for pop
   'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
@@ -111,8 +111,8 @@ $easing-scale: (
 // MOTION TOKENS (timing + easing combinations)
 // =============================================================================
 
-/// Paires timing+easing pr�d�finies pour patterns courants
-/// Utiliser pour coh�rence design maximale
+/// Paires timing+easing prédéfinies pour patterns courants
+/// Utiliser pour cohérence design maximale
 $motion-tokens: (
   // === Feedback rapide (interactions utilisateur) ===
   'quick-feedback': (
@@ -120,13 +120,13 @@ $motion-tokens: (
       easing: ease,
     ),
 
-  // === �tat change (hover, focus, active) ===
+  // === état change (hover, focus, active) ===
   'state-change': (
       duration: $transition-fast,
       easing: ease,
     ),
 
-  // === Motion standard (par d�faut) ===
+  // === Motion standard (par défaut) ===
   'standard': (
       duration: $transition-base,
       easing: ease,
@@ -155,9 +155,9 @@ $motion-tokens: (
 // FUNCTIONS - Accesseurs pour timings et easings
 // =============================================================================
 
-/// R�cup�re une dur�e depuis la timing scale
-/// @param {String} $key - Cl� dans $timing-scale
-/// @return {String|Number} Dur�e d'animation (ex: 0.3s, infinite)
+/// Récupère une durée depuis la timing scale
+/// @param {String} $key - Clé dans $timing-scale
+/// @return {String|Number} Durée d'animation (ex: 0.3s, infinite)
 /// @example
 ///   transition: all timing(base) ease;
 ///   animation: fade-in timing(sm) ease forwards;
@@ -169,8 +169,8 @@ $motion-tokens: (
   @return $value;
 }
 
-/// R�cup�re une easing function depuis la easing scale
-/// @param {String} $key - Cl� dans $easing-scale
+/// Récupère une easing function depuis la easing scale
+/// @param {String} $key - Clé dans $easing-scale
 /// @return {String} Easing function CSS
 /// @example
 ///   transition: all 0.3s #{easing(smooth)};
@@ -182,8 +182,8 @@ $motion-tokens: (
   @return $value;
 }
 
-/// R�cup�re un motion token complet (duration + easing)
-/// @param {String} $key - Cl� dans $motion-tokens
+/// Récupère un motion token complet (duration + easing)
+/// @param {String} $key - Clé dans $motion-tokens
 /// @return {Map} Map contenant duration et easing
 /// @example
 ///   $motion: motion-token(pop);
@@ -200,8 +200,8 @@ $motion-tokens: (
 // ACCESSIBILITY - Respects prefers-reduced-motion
 // =============================================================================
 
-/// R�duit les durations si l'utilisateur pr�f�re une motion r�duite
-/// � appliquer au :root ou parent container
+/// Réduit les durations si l'utilisateur préfére une motion réduite
+/// é appliquer au :root ou parent container
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -211,7 +211,7 @@ $motion-tokens: (
 }
 
 // =============================================================================
-// CSS CUSTOM PROPERTIES - Pour acc�s runtime
+// CSS CUSTOM PROPERTIES - Pour accès runtime
 // =============================================================================
 
 :root {
@@ -234,11 +234,11 @@ $motion-tokens: (
 // ============================================================================
 // GUIDELINES
 // ============================================================================
-// 1. JAMAIS hardcoder dur�es (0.3s, 200ms, etc.) - utiliser timing($key)
+// 1. JAMAIS hardcoder durées (0.3s, 200ms, etc.) - utiliser timing($key)
 // 2. JAMAIS hardcoder easing - utiliser easing($key)
-// 3. Accessibilit�: TOUJOURS respecter prefers-reduced-motion
+// 3. Accessibilité: TOUJOURS respecter prefers-reduced-motion
 // 4. TSA design: Motion < 0.4s pour feedback, < 0.8s pour reveals
-// 5. Coh�rence: Utiliser motion-tokens pour patterns r�p�t�s
-// 6. Pr�visibilit�: Animations douces, jamais jarring/chaotic
-// 7. Pour animations nouvelles, ajouter � maps (pas hardcode)
-// 8. Consid�rer contexte utilisateur (enfants TSA = pr�f�rence calme)
+// 5. Cohérence: Utiliser motion-tokens pour patterns répétés
+// 6. Prévisibilité: Animations douces, jamais jarring/chaotic
+// 7. Pour animations nouvelles, ajouter à maps (pas hardcode)
+// 8. Considérer contexte utilisateur (enfants TSA = préférence calme)

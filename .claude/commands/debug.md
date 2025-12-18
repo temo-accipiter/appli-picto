@@ -1,18 +1,6 @@
 ---
 description: Analyse ultra-approfondie pour bugs sérieux avec troubleshooting systématique
-allowed-tools:
-  [
-    'Bash',
-    'Read',
-    'Edit',
-    'MultiEdit',
-    'Write',
-    'Grep',
-    'Glob',
-    'Task',
-    'WebSearch',
-    'WebFetch',
-  ]
+allowed-tools: Bash, Read, Edit, MultiEdit, Write, Grep, Glob, Task, WebSearch, WebFetch
 argument-hint: <description-du-bug>
 model: sonnet
 ---
@@ -117,7 +105,7 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 **Vérifications spécifiques Appli-Picto** :
 
 - **Supabase RLS** : Vérifier policies si échec accès données
-- **Quotas** : Vérifier avec `useQuotas` si lié aux limites (Free: 5 tâches, Abonné: 40)
+- **Quotas** : Vérifier avec `useAccountStatus` si lié aux limites (Free: 5 tâches, Abonné: 40)
 - **État Auth** : Vérifier `AuthContext` si lié utilisateur (vérifier `authReady`)
 - **Upload images** : Vérifier compression (100KB max) si problème storage
 - **Hydration Next.js** : Vérifier mismatches SSR/client (server vs client components)
@@ -178,8 +166,8 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 ## Format de sortie
 
 ```
-🐛 RAPPORT DE DEBUG ULTRA-APPROFONDI
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛠️ RAPPORT DE DEBUG ULTRA-APPROFONDI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 Symptôme observé : [Description précise]
 📂 Localisation : [Fichier:Ligne]
 🔍 Cause racine identifiée : [Explication WHY 5x]
@@ -189,7 +177,7 @@ Cause racine → Cause intermédiaire → Cause immédiate → Symptôme visible
 🧪 Vérifications effectuées : [Tests passés + edge cases]
 🔒 Impact sécurité/quotas : [Si applicable]
 ♿ Impact accessibilité TSA : [Si changement UI]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## Priorité

@@ -1,6 +1,6 @@
 ---
 allowed-tools: Read, Write, Edit, Glob, Grep
-argument-hint: <action> <name> - ex. "create explore-api", "refactor @agents/websearch.md"
+argument-hint: <action> <n> - ex. "create explore-api", "refactor @agents/websearch.md"
 description: Créer et optimiser des agents avec patterns spécialisés pour Appli-Picto
 ---
 
@@ -9,7 +9,7 @@ Vous êtes un spécialiste en création d'agents Claude. Créez des agents focal
 ## Workflow
 
 1. **PARSER ARGUMENTS** : Déterminer le type d'action
-   - `create <name>` : Nouvel agent depuis template
+   - `create <n>` : Nouvel agent depuis template
    - `refactor @path` : Améliorer agent existant
    - `update @path` : Modifier sections spécifiques
 
@@ -19,7 +19,7 @@ Vous êtes un spécialiste en création d'agents Claude. Créez des agents focal
    - Garder agents spécialisés et focalisés
 
 3. **ÉCRIRE/METTRE À JOUR FICHIER** : Sauvegarder dans `.claude/agents/`
-   - Nouveaux agents : `.claude/agents/<name>.md`
+   - Nouveaux agents : `.claude/agents/<n>.md`
    - Mises à jour : Préserver tout le contenu existant
 
 ## Template Agent Standard
@@ -52,12 +52,9 @@ Vous êtes un [rôle spécialiste]. [But principal en une phrase].
 ## Format de Sortie
 
 [Exactement comment structurer la réponse]
-```
 
 - Utiliser exemples spécifiques quand utile
 - Garder format minimal et scannable
-
-```
 
 ## Règles d'Exécution
 
@@ -123,6 +120,26 @@ Vous êtes un [rôle spécialiste]. [But principal en une phrase].
 
 [Actions à prendre]
 ```
+
+## 🆚 Agents vs Commands - Quand utiliser quoi ?
+
+### Créer un Agent quand :
+
+- Tâche nécessite **contexte isolé** (éviter pollution conversation principale)
+- Workflow **exploratoire** (search, analyse, découverte)
+- Besoin de **parallélisation** (plusieurs agents simultanés)
+- Résultats doivent être **retournés et synthétisés** par l'agent principal
+- Tâche **complexe** nécessitant raisonnement approfondi
+- Besoin de **spécialisation** (expert dans un domaine)
+
+### Créer une Command quand :
+
+- Workflow **linéaire déterministe** (étapes claires A→B→C)
+- Actions **utilisateur directes** (slash command explicite)
+- Pas besoin de contexte séparé (conversation principale suffit)
+- **Exécution unique simple** sans besoin de retour complexe
+- **Wrapper CLI** ou référence de commandes
+- **Automatisation** via hooks
 
 ## Outils Disponibles Appli-Picto
 
@@ -278,6 +295,16 @@ Vous êtes un auditeur quotas Appli-Picto. Vérifiez que TOUS composants respect
 
 - [Liste chemins avec checks présents]
 ```
+
+## ❌ Anti-Patterns à Éviter
+
+- Agents trop génériques sans spécialisation claire
+- Output verbeux qui surcharge le contexte
+- Manque de focus (agent qui fait trop de choses différentes)
+- Pas de format de sortie structuré défini
+- Oubli du contexte stateless (ne pas supposer mémoire entre appels)
+- Utilisation excessive d'outils MCP coûteux
+- Description vague qui ne guide pas l'invocation automatique
 
 ## Priorité
 

@@ -702,6 +702,157 @@ $spacing-tokens: (
   '800': 50rem, // 800px
 );
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📐 SIZE TOKENS - Dimensions structurelles (width, height, min/max)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+// USAGE : Pour dimensions structurelles (PAS respiration)
+// - width, height
+// - min-width, max-width, min-height, max-height
+// - top, left, right, bottom (positionnement)
+//
+// ❌ NE PAS utiliser pour : margin, padding, gap (utiliser $spacing-tokens)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$size-tokens: (
+  // Touch Targets (Accessibilité WCAG / TSA)
+  'touch-target-min': 2.75rem,
+  // 44px - WCAG 2.2 AA minimum
+  'touch-target-optimal': 3rem,
+  // 48px - Compromis idéal
+  'touch-target-preferred': 3.5rem,
+  // 56px - TSA préféré (confortable)
+  'touch-target-large': 4rem,
+
+  // 64px - TSA extra-confortable
+  // Navigation
+  'nav-height-mobile': 3.5rem,
+  // 56px
+  'nav-height-desktop': 4rem,
+  // 64px
+  'nav-width-sidebar': 17.5rem,
+
+  // 280px
+  // Formulaires
+  'input-height-sm': 2rem,
+  // 32px
+  'input-height-md': 2.5rem,
+  // 40px
+  'input-height-lg': 3rem,
+
+  // 48px
+  // Boutons
+  'button-height-sm': 2rem,
+  // 32px
+  'button-height-md': 2.75rem,
+  // 44px (touch target min)
+  'button-height-lg': 3.5rem,
+
+  // 56px (touch target preferred)
+  // Cards
+  'card-min-height': 8.75rem,
+  // 140px
+  'card-image-height': 12.5rem,
+
+  // 200px
+  // Avatar
+  'avatar-xs': 1.5rem,
+  // 24px
+  'avatar-sm': 2rem,
+  // 32px
+  'avatar-md': 2.5rem,
+  // 40px
+  'avatar-lg': 3rem,
+  // 48px
+  'avatar-xl': 4rem,
+
+  // 64px
+  // Icons
+  'icon-xs': 0.75rem,
+  // 12px
+  'icon-sm': 1rem,
+  // 16px
+  'icon-md': 1.5rem,
+  // 24px
+  'icon-lg': 2rem,
+  // 32px
+  'icon-xl': 3rem,
+
+  // 48px
+  // Modals
+  'modal-width-sm': 20rem,
+  // 320px - Mobile
+  'modal-width-md': 33.75rem,
+  // 540px - Tablette
+  'modal-width-lg': 48rem,
+  // 768px - Desktop
+  'modal-width-xl': 64rem,
+  // 1024px - Large desktop
+  'modal-max-height': 90vh,
+  // Max 90% viewport
+  'modal-content-min-height': 12.5rem,
+
+  // 200px
+  // Container (Layout)
+  'container-sm': 36rem,
+  // 576px
+  'container-md': 48rem,
+  // 768px
+  'container-lg': 64rem,
+  // 1024px
+  'container-xl': 75rem,
+  // 1200px
+  'container-xxl': 96rem,
+
+  // 1536px
+  // Sections
+  'section-min-height': 20rem,
+  // 320px
+  'hero-height': 31.25rem,
+
+  // 500px
+  // Sidebar
+  'sidebar-width': 17.5rem,
+  // 280px
+  'sidebar-collapsed': 4rem,
+
+  // 64px
+  // Header/Footer
+  'header-height': 4rem,
+  // 64px
+  'footer-height': 20rem,
+
+  // 320px
+  // DnD (Drag & Drop)
+  'dnd-card-min-width': 16.25rem,
+  // 260px
+  'dnd-card-min-height': 8.75rem,
+  // 140px
+  'dnd-slot-min-height': 8.75rem,
+  // 140px
+  'dnd-grid-min-width': 16.25rem,
+
+  // 260px
+  // Images & Media
+  'thumbnail-xs': 3rem,
+  // 48px
+  'thumbnail-sm': 4rem,
+  // 64px
+  'thumbnail-md': 6rem,
+  // 96px
+  'thumbnail-lg': 8rem,
+  // 128px
+  'thumbnail-xl': 12rem,
+  // 192px
+  'image-preview': 12.5rem,
+  // 200px
+  'image-feature': 18.75rem,
+  // 300px
+  'image-hero': 31.25rem,
+  // 500px
+  'video-player-min-height': 18.75rem // 300px
+) !default;
+
 // =============================================================================
 // FONT-SIZE TOKENS - Tailles de texte [✅ CANONICAL SOURCE]
 // =============================================================================

@@ -1,0 +1,1115 @@
+@charset "UTF-8";
+/* ============================================
+  📦 1) VENDORS — normalize en tout premier (vendor immutable)
+   ============================================ */
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+/* Document
+   ========================================================================== */
+/**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
+ */
+html {
+  line-height: 1.15; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/* Sections
+   ========================================================================== */
+/**
+ * Remove the margin in all browsers.
+ */
+body {
+  margin: 0;
+}
+
+/**
+ * Render the `main` element consistently in IE.
+ */
+main {
+  display: block;
+}
+
+/**
+ * Correct the font size and margin on `h1` elements within `section` and
+ * `article` contexts in Chrome, Firefox, and Safari.
+ */
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+/* Grouping content
+   ========================================================================== */
+/**
+ * 1. Add the correct box sizing in Firefox.
+ * 2. Show the overflow in Edge and IE.
+ */
+hr {
+  box-sizing: content-box; /* 1 */
+  height: 0; /* 1 */
+  overflow: visible; /* 2 */
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+pre {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/* Text-level semantics
+   ========================================================================== */
+/**
+ * Remove the gray background on active links in IE 10.
+ */
+a {
+  background-color: transparent;
+}
+
+/**
+ * 1. Remove the bottom border in Chrome 57-
+ * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ */
+abbr[title] {
+  border-bottom: none; /* 1 */
+  text-decoration: underline; /* 2 */
+  text-decoration: underline dotted; /* 2 */
+}
+
+/**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+b,
+strong {
+  font-weight: bolder;
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+code,
+kbd,
+samp {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/**
+ * Add the correct font size in all browsers.
+ */
+small {
+  font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` elements from affecting the line height in
+ * all browsers.
+ */
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/* Embedded content
+   ========================================================================== */
+/**
+ * Remove the border on images inside links in IE 10.
+ */
+img {
+  border-style: none;
+}
+
+/* Forms
+   ========================================================================== */
+/**
+ * 1. Change the font styles in all browsers.
+ * 2. Remove the margin in Firefox and Safari.
+ */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  line-height: 1.15; /* 1 */
+  margin: 0; /* 2 */
+}
+
+/**
+ * Show the overflow in IE.
+ * 1. Show the overflow in Edge.
+ */
+button,
+input {
+  /* 1 */
+  overflow: visible;
+}
+
+/**
+ * Remove the inheritance of text transform in Edge, Firefox, and IE.
+ * 1. Remove the inheritance of text transform in Firefox.
+ */
+button,
+select {
+  /* 1 */
+  text-transform: none;
+}
+
+/**
+ * Correct the inability to style clickable types in iOS and Safari.
+ */
+button,
+[type=button],
+[type=reset],
+[type=submit] {
+  -webkit-appearance: button;
+}
+
+/**
+ * Remove the inner border and padding in Firefox.
+ */
+button::-moz-focus-inner,
+[type=button]::-moz-focus-inner,
+[type=reset]::-moz-focus-inner,
+[type=submit]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/**
+ * Restore the focus styles unset by the previous rule.
+ */
+button:-moz-focusring,
+[type=button]:-moz-focusring,
+[type=reset]:-moz-focusring,
+[type=submit]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+/**
+ * Correct the padding in Firefox.
+ */
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+/**
+ * 1. Correct the text wrapping in Edge and IE.
+ * 2. Correct the color inheritance from `fieldset` elements in IE.
+ * 3. Remove the padding so developers are not caught out when they zero out
+ *    `fieldset` elements in all browsers.
+ */
+legend {
+  box-sizing: border-box; /* 1 */
+  color: inherit; /* 2 */
+  display: table; /* 1 */
+  max-width: 100%; /* 1 */
+  padding: 0; /* 3 */
+  white-space: normal; /* 1 */
+}
+
+/**
+ * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ */
+progress {
+  vertical-align: baseline;
+}
+
+/**
+ * Remove the default vertical scrollbar in IE 10+.
+ */
+textarea {
+  overflow: auto;
+}
+
+/**
+ * 1. Add the correct box sizing in IE 10.
+ * 2. Remove the padding in IE 10.
+ */
+[type=checkbox],
+[type=radio] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+
+/**
+ * Correct the cursor style of increment and decrement buttons in Chrome.
+ */
+[type=number]::-webkit-inner-spin-button,
+[type=number]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/**
+ * 1. Correct the odd appearance in Chrome and Safari.
+ * 2. Correct the outline style in Safari.
+ */
+[type=search] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/**
+ * Remove the inner padding in Chrome and Safari on macOS.
+ */
+[type=search]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/**
+ * 1. Correct the inability to style clickable types in iOS and Safari.
+ * 2. Change font properties to `inherit` in Safari.
+ */
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/* Interactive
+   ========================================================================== */
+/*
+ * Add the correct display in Edge, IE 10+, and Firefox.
+ */
+details {
+  display: block;
+}
+
+/*
+ * Add the correct display in all browsers.
+ */
+summary {
+  display: list-item;
+}
+
+/* Misc
+   ========================================================================== */
+/**
+ * Add the correct display in IE 10+.
+ */
+template {
+  display: none;
+}
+
+/**
+ * Add the correct display in IE 10.
+ */
+[hidden] {
+  display: none;
+}
+
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
+:root {
+  --opacity-xs: 0.05;
+  --opacity-sm: 0.1;
+  --opacity-md: 0.15;
+  --opacity-lg: 0.2;
+  --opacity-xl: 0.3;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 900;
+  --z-modal: 1000;
+  --z-popover: 1050;
+  --z-tooltip: 1100;
+  --z-notification: 1200;
+  --color-admin: role-color("admin", "base");
+  --color-abonne: role-color("abonne", "base");
+  --color-free: role-color("free", "base");
+  --color-visitor: role-color("visitor", "base");
+}
+
+:root {
+  --a11y-min-touch-target: 44px;
+  --a11y-preferred-touch-target: 56px;
+  --a11y-optimal-touch-target: 48px;
+  --a11y-focus-ring-width: 2px;
+  --a11y-focus-ring-offset: 2px;
+  --a11y-reduced-motion-duration: 0.01ms;
+  --a11y-safe-animation-duration: 200ms;
+  --a11y-safe-transition-duration: 150ms;
+  --a11y-contrast-min: 4.5;
+  --a11y-contrast-enhanced: 7;
+  --a11y-line-spacing-min: 1.5;
+  --a11y-paragraph-spacing-min: 1.5em;
+}
+
+:root {
+  --border-width-thin: 1px;
+  --border-width-base: 2px;
+  --border-width-focus: 2px;
+  --border-width-medium: 3px;
+  --border-width-thick: 4px;
+  --border-width-extra: 6px;
+  --border-input: 2px;
+  --border-button-focus: 2px;
+  --border-divider: 1px;
+}
+
+:root {
+  --color-primary: #0077c2;
+  --color-primary-rgb: 0, 119, 194;
+  --color-secondary: #ef5350;
+  --color-accent: #ffb400;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  --color-text: #333333;
+  --color-text-rgb: 51, 51, 51;
+  --color-text-invert: #ffffff;
+  --color-bg: #ffffff;
+  --color-surface: #f7f7f7;
+  --color-border: #e1e1e1;
+  --color-bg-soft: #f8fafc;
+  --color-bg-hover: #f9fafb;
+  --c-scroll-thumb: #b1b1b1;
+  --focus-ring-color: #ffb400;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text: #e2e8f0;
+    --color-text-rgb: 226, 232, 240;
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-bg-soft: #1e293b;
+    --color-bg-hover: #334155;
+    --c-scroll-thumb: #7e7e7e;
+  }
+}
+[data-theme=dark] {
+  --color-text: #e2e8f0;
+  --color-text-rgb: 226, 232, 240;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-bg-soft: #1e293b;
+  --color-bg-hover: #334155;
+  --c-scroll-thumb: #7e7e7e;
+}
+
+/* ============================================
+  💡 3) ABSTRACTS — SYSTÈMES RUNTIME (génèrent des CSS vars)
+  - IMPORTS EXPLICITES, UNE SEULE FOIS, DANS CET ORDRE
+   ============================================ */
+:root {
+  --font-family-text: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --font-family-heading: Georgia, Times New Roman, Times, serif;
+  --font-family-lexend: Lexend, system-ui, -apple-system, Segoe UI, sans-serif;
+  --font-family-mono: Monaco, Menlo, Ubuntu Mono, Courier New, monospace;
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-2xl: 1.8rem;
+  --font-size-3xl: 2.5rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-base: 1.5;
+  --line-height-relaxed: 1.75;
+}
+
+:root {
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3rem;
+  --spacing-4xl: 4rem;
+  --spacing-nav-mobile: 56px;
+  --spacing-modal-padding: 32px;
+  --spacing-touch-target: 44px;
+  --spacing-card-gap: 24px;
+  --spacing-grid-gap: 16px;
+  --spacing-modal-xs: 320px;
+  --spacing-modal-sm: 400px;
+  --spacing-modal-md: 540px;
+  --spacing-modal-lg: 600px;
+  --spacing-modal-xl: 700px;
+  --spacing-modal-2xl: 800px;
+  --spacing-container-max: 1200px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+:root {
+  --timing-xs: 0.15s;
+  --timing-sm: 0.2s;
+  --timing-base: 0.3s;
+  --timing-lg: 0.5s;
+  --timing-xl: 0.8s;
+  --timing-2xl: 1.2s;
+  --easing-linear: linear;
+  --easing-smooth: ease;
+  --easing-smooth-in: ease-in;
+  --easing-smooth-out: ease-out;
+  --easing-smooth-in-out: ease-in-out;
+}
+
+:root {
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 50%;
+}
+
+:root {
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+:root {
+  --form-control-height: 2.75rem;
+  --form-control-height-sm: 2.25rem;
+  --form-control-height-lg: 3.25rem;
+  --form-control-padding-x: 1rem;
+  --form-control-border: #d0d7e0;
+  --form-control-border-focus: #0077c2;
+  --form-control-border-error: #f44336;
+  --form-control-bg: #ffffff;
+  --form-control-bg-focus: #f5f7fa;
+  --form-control-bg-disabled: #f5f5f5;
+  --form-control-radius: 0.5rem;
+}
+
+/* ============================================
+  🧱 4) BASE — styles globaux appliqués au DOM (ordre contrôlé)
+  - reset puis policies/accessibilité puis helpers puis application typo
+   ============================================ */
+/* Minimal, accessible reset - safe for production */
+/* Box sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margins for root elements */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* Ensure smooth scroll only if user allows motion */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Base body */
+body {
+  min-height: 100vh;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--surface-bg, #ffffff);
+  color: var(--text-primary, #111111);
+}
+
+/* Responsive media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inputs & buttons baseline (accessible, not destructive) */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Buttons - safe reset (keeps keyboard focus & semantics) */
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  /* keep default focus behavior; style focus in base/accessibility */
+}
+
+/* Lists & tables baseline */
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* Accessibility: hide content only visually */
+[hidden] {
+  display: none !important;
+}
+
+/* Global reduced motion policy - apply early in main.scss (just after reset) */
+/* Respect user OS preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Optional app-driven calm mode (toggle via attribute on <html> or <body>) */
+[data-calm-mode=true] *,
+[data-calm-mode=true] *::before,
+[data-calm-mode=true] *::after {
+  animation-duration: 0.1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--focus-ring-color);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--focus-ring-color);
+  box-shadow: 0 0 0 3px rgba(0, 119, 194, 0.1);
+}
+
+button:focus-visible,
+a:focus-visible,
+[role=button]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--focus-ring-color);
+}
+
+input[type=checkbox]:focus-visible,
+input[type=radio]:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+.sr-only,
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+.sr-only:focus,
+.visually-hidden:focus {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: inherit !important;
+  margin: inherit !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-primary);
+  color: var(--color-text-invert);
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: z-index("tooltip");
+}
+.skip-to-main:focus {
+  top: 0;
+}
+
+body {
+  line-height: 1.5;
+}
+
+p,
+li,
+label {
+  line-height: 1.5;
+}
+
+body {
+  letter-spacing: 0.02em;
+  word-spacing: 0.16em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+}
+
+body {
+  color: var(--color-text);
+  background-color: var(--color-bg);
+}
+
+a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+a:visited {
+  color: var(--color-primary);
+}
+
+.badge,
+[role=badge] {
+  color: var(--color-text-invert);
+}
+
+button,
+a,
+input[type=checkbox],
+input[type=radio],
+[role=button],
+[role=menuitem] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+[data-calm-mode=true] *,
+.calm-mode * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (forced-colors: active) {
+  * {
+    outline-width: 1px;
+  }
+  button,
+  a,
+  input {
+    outline: 1px solid currentColor;
+  }
+  ::selection {
+    background-color: Highlight;
+    color: HighlightText;
+  }
+}
+img:not([alt]),
+[role=img]:not([aria-label]):not([aria-labelledby]) {
+  outline: 2px dashed #f44336;
+  outline-offset: 2px;
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+label[required]::after,
+label[aria-required=true]::after {
+  content: " *";
+  color: var(--color-error);
+  aria-label: "required";
+}
+
+[role=alert],
+.error-message {
+  color: var(--color-error);
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+th {
+  font-weight: 600;
+  text-align: left;
+  padding: 8px 12px;
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-border);
+}
+
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: font-size("3xl");
+}
+
+h2 {
+  font-size: font-size("2xl");
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+h5,
+h6 {
+  font-size: 0.875rem;
+}
+
+ol,
+ul {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+ol li,
+ul li {
+  margin-bottom: 0.5em;
+}
+
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
+/* Container - mobile-first, uses CSS var with fallback */
+.container {
+  width: 100%;
+  max-width: var(--container-max, 1200px);
+  margin-inline: auto;
+  padding-inline: var(--spacing-4, 1rem);
+}
+
+/* Visually hidden (WCAG) */
+.visually-hidden,
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Keep-space variant - hides visually but keeps layout space */
+.visually-hidden-keep-space {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Touch targets - minimum 44x44 recommended */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+}
+
+/* Enhanced focus for keyboard users */
+.focus-visible-enhanced:focus-visible {
+  outline: 3px solid var(--focus-ring, #2563eb);
+  outline-offset: 2px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus-ring, #2563eb) 12%, transparent);
+}
+
+/* Safe button reset helper (use this where you need full reset) */
+.btn-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Utility stacks & rows */
+.u-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4, 1rem);
+}
+
+.u-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--spacing-3, 0.75rem);
+}
+
+/* Responsive visibility helpers */
+.navbar-desktop-only {
+  display: none;
+}
+@media (min-width: 768px) {
+  .navbar-desktop-only {
+    display: block;
+  }
+}
+
+.footer-desktop-only {
+  display: none;
+}
+@media (min-width: 768px) {
+  .footer-desktop-only {
+    display: block;
+  }
+}
+
+/* Small helper to opt components out of animations (component-level) */
+@media (prefers-reduced-motion: reduce) {
+  .u-anim--reduced {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ============================================
+  🎨 5) THEMES — overrides runtime (CSS vars)
+  - importés après base pour que les overrides s'appliquent correctement
+   ============================================ */
+:root {
+  --color-primary: #0077c2;
+  --color-secondary: #ef5350;
+  --color-accent: #ffb400;
+  --color-text: #333333;
+  --color-text-rgb: 51, 51, 51;
+  --color-text-invert: #ffffff;
+  --color-text-muted: #6c757d;
+  --color-bg: #ffffff;
+  --color-surface: #f7f7f7;
+  --color-border: #d0d7e0;
+  --color-bg-soft: #f9f9f9;
+  --color-bg-hover: #f0f0f0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  --c-scroll-thumb: #c0c0c0;
+  --c-scroll-track: #f5f5f5;
+  --focus-ring-color: #0077c2;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+[data-theme=light] {
+  --color-primary: #0077c2;
+  --color-secondary: #ef5350;
+  --color-accent: #ffb400;
+  --color-text: #333333;
+  --color-text-rgb: 51, 51, 51;
+  --color-text-invert: #ffffff;
+  --color-text-muted: #6c757d;
+  --color-bg: #ffffff;
+  --color-surface: #f7f7f7;
+  --color-border: #d0d7e0;
+  --color-bg-soft: #f9f9f9;
+  --color-bg-hover: #f0f0f0;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+  --color-info: #2196f3;
+  --c-scroll-thumb: #c0c0c0;
+  --c-scroll-track: #f5f5f5;
+  --focus-ring-color: #0077c2;
+}
+
+[data-theme=light] {
+  color-scheme: light;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #4dabf7;
+    --color-secondary: #ff8a80;
+    --color-accent: #ffd54f;
+    --color-text: #e2e8f0;
+    --color-text-rgb: 226, 232, 240;
+    --color-text-invert: #0f172a;
+    --color-text-muted: #94a3b8;
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-border: #334155;
+    --color-bg-soft: #1a222f;
+    --color-bg-hover: #1e293b;
+    --color-success: #4ade80;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+    --color-info: #60a5fa;
+    --c-scroll-thumb: #475569;
+    --c-scroll-track: #1e293b;
+    --focus-ring-color: #4dabf7;
+  }
+}
+[data-theme=dark] {
+  --color-primary: #4dabf7;
+  --color-secondary: #ff8a80;
+  --color-accent: #ffd54f;
+  --color-text: #e2e8f0;
+  --color-text-rgb: 226, 232, 240;
+  --color-text-invert: #0f172a;
+  --color-text-muted: #94a3b8;
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-border: #334155;
+  --color-bg-soft: #1a222f;
+  --color-bg-hover: #1e293b;
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+  --c-scroll-thumb: #475569;
+  --c-scroll-track: #1e293b;
+  --focus-ring-color: #4dabf7;
+}
+
+[data-theme=dark] {
+  color-scheme: dark;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  scrollbar-color: var(--c-scroll-thumb) var(--c-scroll-track);
+}
+
+[data-theme=dark] input,
+[data-theme=dark] select,
+[data-theme=dark] textarea {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+[data-theme=dark] input:focus,
+[data-theme=dark] select:focus,
+[data-theme=dark] textarea:focus {
+  background-color: #2d3748;
+}
+[data-theme=dark] .card,
+[data-theme=dark] [role=region] {
+  background-color: var(--color-surface);
+}
+[data-theme=dark] a {
+  color: var(--color-primary);
+}

@@ -1,5 +1,5 @@
 // src/styles/base/_helpers.scss
-@use '@styles/abstracts' as *; // doit forwarder seulement tokens maps, functions, mixins, breakpoints
+@use '../abstracts' as *; // doit forwarder seulement tokens maps, functions, mixins, breakpoints
 
 /* Container - mobile-first, uses CSS var with fallback */
 .container {

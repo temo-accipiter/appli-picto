@@ -424,6 +424,16 @@ Vous êtes un gestionnaire migrations Supabase. Créer migrations propres et ré
 Sécurité données > Rapidité. Vérifier migrations avant appliquer.
 ```
 
+## ❌ Anti-Patterns à Éviter
+
+- Commandes trop génériques sans contexte spécifique
+- Oubli de `$ARGUMENTS` pour commandes paramétrées
+- `allowed-tools` trop permissifs (donner accès minimal nécessaire)
+- Workflows sans étapes de vérification/validation
+- Descriptions vagues dans frontmatter (être explicite sur le "quand utiliser")
+- Mélanger plusieurs responsabilités dans une commande (garder focalisé)
+- Abstractions au lieu de commandes exactes exécutables
+
 ## Priorité
 
 Actionnabilité > Complétude. Rendre chaque étape exécutable.

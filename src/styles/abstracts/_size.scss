@@ -1,0 +1,117 @@
+@charset 'UTF-8';
+@use 'sass:map';
+@use 'tokens' as *;
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📐 SIZE SYSTEM - Dimensions structurelles (width, height, min/max)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+// 🎯 RÔLE : Gestion des dimensions structurelles (PAS la respiration)
+//
+// ✅ UTILISABLE POUR :
+//   - width, height
+//   - min-width, max-width, min-height, max-height
+//   - top, left, right, bottom (positionnement absolu)
+//   - Dimensions de composants (modals, sidebars, cards)
+//   - Touch targets (accessibilité WCAG/TSA)
+//
+// ❌ INTERDIT POUR :
+//   - margin, padding → Utiliser spacing() depuis _spacing.scss
+//   - gap, row-gap, column-gap → Utiliser spacing()
+//   - inset, scroll-margin → Utiliser spacing()
+//
+// 🔑 POURQUOI SÉPARER size() et spacing() ?
+//   1. Responsabilités différentes : Dimension ≠ Respiration
+//   2. Noms sémantiques explicites : size('touch-target-min') > spacing('44')
+//   3. Évolutivité : Facile de changer tailles sans affecter espacements
+//   4. Export facile : JSON pour mobile native ou Storybook
+//
+// 📚 EXEMPLES :
+//   .button {
+//     min-height: size('touch-target-min');  // ✅ 44px (dimension)
+//     padding: spacing('sm');                // ✅ 8px (respiration)
+//   }
+//
+//   .modal {
+//     max-width: size('modal-width-md');     // ✅ 540px (dimension)
+//     padding: spacing('lg');                // ✅ 24px (respiration)
+//   }
+//
+// ⚠️ MIGRATION PHASE 5 → PHASE 6 :
+//   Phase 5 (actuelle) : Tolérance temporaire spacing() pour dimensions legacy
+//   Phase 6 (future) : Migration complète vers size() avec tokens sémantiques
+//
+//   Exemple migration :
+//     spacing('44') → size('touch-target-min')  // Phase 6
+//     spacing('540') → size('modal-width-md')   // Phase 6
+//
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+/// Fonction size() - Retourne une dimension structurelle depuis $size-tokens
+///
+/// @param {String} $key - Clé du token size
+/// @return {Length} Valeur de dimension (rem ou px)
+///
+/// @throws {Error} Si la clé n'existe pas dans $size-tokens
+///
+/// @example scss - Touch targets accessibilité
+///   .button {
+///     min-height: size('touch-target-min');       // 44px WCAG AA
+///     min-width: size('touch-target-min');        // 44px
+///   }
+///
+/// @example scss - Modal responsive
+///   .modal {
+///     width: 90vw;
+///     max-width: size('modal-width-md');          // 540px
+///     min-height: size('modal-content-min-height'); // 200px
+///   }
+///
+/// @example scss - Sidebar layout
+///   .sidebar {
+///     width: size('sidebar-width');               // 280px
+///     &--collapsed {
+///       width: size('sidebar-collapsed');         // 64px
+///     }
+///   }
+///
+/// @example scss - Icons
+///   .icon {
+///     &--sm { width: size('icon-sm'); }           // 16px
+///     &--md { width: size('icon-md'); }           // 24px
+///     &--lg { width: size('icon-lg'); }           // 32px
+///   }
+@function size($key) {
+  @if not map.has-key($size-tokens, $key) {
+    @error "Size token '#{$key}' not found in $size-tokens. Available keys: #{map.keys($size-tokens)}. If you need a new size token, add it to src/styles/abstracts/_tokens.scss in the $size-tokens map.";
+  }
+  @return map.get($size-tokens, $key);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🎨 CSS CUSTOM PROPERTIES (optionnel - pour accès runtime)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+// Note: CSS variables générées uniquement si nécessaires pour accès JavaScript
+// Commenté par défaut pour éviter surcharge CSS inutile
+
+// :root {
+//   @each $key, $value in $size-tokens {
+//     --size-#{$key}: #{$value};
+//   }
+// }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📝 GUIDELINES & BEST PRACTICES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//
+// 1. TOUJOURS utiliser size() pour dimensions structurelles
+// 2. JAMAIS hardcoder px/rem dans width, height, min/max
+// 3. Préférer tokens sémantiques ('touch-target-min') vs numériques
+// 4. Ajouter nouveaux tokens dans _tokens.scss (source de vérité)
+// 5. Documenter usage spécifique si token très contextualisé
+// 6. Vérifier accessibilité : touch targets ≥ 44px (WCAG AA)
+// 7. Penser mobile-first : tailles adaptatives via @include respond-to()
+// 8. TSA-friendly : tailles confortables (préférer 'preferred' vs 'min')
+//
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
