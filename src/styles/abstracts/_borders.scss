@@ -1,89 +1,43 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
 /// ============================================================================
-/// BORDER WIDTHS - Échelle de largeurs de bordure standardisées
+/// BORDER WIDTHS - Wrapper pur pour largeurs de bordure
 /// ============================================================================
-/// Système centralisé pour toutes les largeurs de bordure (border, outline, etc.)
-/// Évite les hardcodes px et garantit la cohérence.
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de $border-width-tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+///
+/// SOURCE DE VÉRITÉ : $border-width-tokens dans _tokens.scss
 ///
 /// Usage:
 ///   border: border-width('focus') solid var(--color-border);
-///   outline: border-width('light') solid var(--color-primary);
+///   outline: border-width('input-focus') solid var(--color-primary);
+///   @include border-style('base', var(--color-border));
 ///
-
-/// Échelle de largeurs de bordure
-$border-widths: (
-  'thin': 1px,
-  // Bordures légères (dividers, subtle)
-  'base': 2px,
-  // Standard (default, focus rings)
-  'focus': 2px,
-  // Outline focus (WCAG AA)
-  'medium': 3px,
-  // Moyen (accents, thick lines)
-  'thick': 4px,
-  // Épais (special emphasis)
-  'extra': 6px, // Très épais (strong visual)
-);
-
-/// Mappings sémantiques par contexte d'utilisation
-$border-context-widths: (
-  // Inputs & Forms
-  'input-default': 2px,
-  'input-hover': 2px,
-  'input-focus': 2px,
-  'input-error': 2px,
-
-  // Buttons
-  'button-default': 0px,
-  'button-outline': 2px,
-  'button-focus': 2px,
-
-  // Cards
-  'card-subtle': 1px,
-  'card-default': 1px,
-  'card-hover': 2px,
-
-  // Dividers
-  'divider-light': 1px,
-  'divider-strong': 2px,
-
-  // Outlines & Focus
-  'outline-light': 1px,
-  'outline-base': 2px,
-  'outline-strong': 3px,
-
-  // Borders génériques
-  'border-light': 1px,
-  'border-base': 2px,
-  'border-thick': 3px
-);
+/// Migration v2.1:
+///   - ✅ Supprimé $border-widths (duplication)
+///   - ✅ Supprimé $border-context-widths (duplication)
+///   - ✅ Fonction border-width() lit uniquement depuis $border-width-tokens
+///   - ✅ Mixins conservés pour DX (border-style, subtle-border)
+/// ============================================================================
 
 /// ============================================================================
 /// FUNCTIONS
 /// ============================================================================
 
-/// Récupère une largeur de bordure de l'échelle
+/// Récupère une largeur de bordure depuis $border-width-tokens
 /// @param {String} $key - Clé de largeur de bordure
 /// @return {Number} Largeur en pixels
 /// @example
 ///   border-width: border-width('focus');  // 2px
 ///   outline-width: border-width('base');  // 2px
+///   border: border-width('input-default') solid var(--color-border);
 @function border-width($key) {
-  // D'abord chercher dans les contextes sémantiques
-  $value: map.get($border-context-widths, $key);
-
-  // Sinon chercher dans l'échelle principale
-  @if $value == null {
-    $value: map.get($border-widths, $key);
+  @if not map.has-key($border-width-tokens, $key) {
+    @error "Border width key '#{$key}' not found in $border-width-tokens. Available keys: #{map.keys($border-width-tokens)}";
   }
-
-  @if $value == null {
-    @error 'Border width key "#{$key}" not found. Available: #{map.keys($border-widths)}, #{map.keys($border-context-widths)}';
-  }
-
-  @return $value;
+  @return map.get($border-width-tokens, $key);
 }
 
 /// ============================================================================
@@ -91,9 +45,12 @@ $border-context-widths: (
 /// ============================================================================
 
 /// Mixin pour appliquer un style de bordure complet
-/// @param {String} $width - Clé de largeur (ex: 'focus')
-/// @param {Color} $color - Couleur de bordure
-/// @param {Number} $radius - Rayon de bordure (optionnel)
+/// @param {String} $width - Clé de largeur (ex: 'focus', 'input-default')
+/// @param {Color} $color - Couleur de bordure (défaut: currentColor)
+/// @param {Number} $radius - Rayon de bordure optionnel
+/// @example
+///   @include border-style('base', var(--color-border), 8px);
+///   @include border-style('input-focus', var(--color-primary));
 @mixin border-style($width: 'base', $color: currentColor, $radius: null) {
   border: border-width($width) solid $color;
   @if $radius {
@@ -101,17 +58,23 @@ $border-context-widths: (
   }
 }
 
-/// Mixin pour une bordure subtile (divider)
+/// Mixin pour une bordure subtile (divider, séparateur)
+/// @param {String} $direction - Direction de la bordure ('top', 'bottom', 'left', 'right')
+/// @param {Color} $color - Couleur de bordure (défaut: var(--color-border))
+/// @example
+///   @include subtle-border('bottom');
+///   @include subtle-border('top', var(--color-divider));
 @mixin subtle-border($direction: 'bottom', $color: var(--color-border)) {
-  border-#{$direction}: border-width('light') solid $color;
+  border-#{$direction}: border-width('thin') solid $color;
 }
 
 /// ============================================================================
-/// CSS CUSTOM PROPERTIES - Borderwidths (optionnel pour JavaScript)
+/// CSS CUSTOM PROPERTIES - Border widths (optionnel pour JavaScript)
 /// ============================================================================
 
 :root {
   // Largeurs principales
+  --border-width-none: #{border-width('none')};
   --border-width-thin: #{border-width('thin')};
   --border-width-base: #{border-width('base')};
   --border-width-focus: #{border-width('focus')};
@@ -119,8 +82,9 @@ $border-context-widths: (
   --border-width-thick: #{border-width('thick')};
   --border-width-extra: #{border-width('extra')};
 
-  // Contextes courants
+  // Contextes courants (pour JavaScript/CSS direct si besoin)
   --border-input: #{border-width('input-default')};
   --border-button-focus: #{border-width('button-focus')};
   --border-divider: #{border-width('divider-light')};
+  --border-card: #{border-width('card-default')};
 }

@@ -353,6 +353,7 @@ template {
 }
 
 :root {
+  --border-width-none: 0;
   --border-width-thin: 1px;
   --border-width-base: 2px;
   --border-width-focus: 2px;
@@ -362,6 +363,7 @@ template {
   --border-input: 2px;
   --border-button-focus: 2px;
   --border-divider: 1px;
+  --border-card: 1px;
 }
 
 :root {
