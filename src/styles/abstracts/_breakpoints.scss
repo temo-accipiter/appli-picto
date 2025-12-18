@@ -1,95 +1,114 @@
+@charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
-// =============================================================================
-// BREAKPOINTS SYSTÈME UNIFIÉ (Mobile-First)
-// =============================================================================
-// Règle CRITIQUE : TOUJOURS utiliser min-width (mobile-first)
-// JAMAIS utiliser max-width (desktop-first interdit)
-// =============================================================================
+/// ============================================================================
+/// BREAKPOINTS - Wrapper pur pour responsive design (Mobile-First)
+/// ============================================================================
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de $breakpoint-tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+///
+/// SOURCE DE VÉRITÉ : $breakpoint-tokens dans _tokens.scss
+///
+/// ⚠️ RÈGLE CRITIQUE : TOUJOURS utiliser min-width (mobile-first)
+///    JAMAIS utiliser max-width (desktop-first interdit)
+///
+/// Usage:
+///   @include respond-to('md') { ... }  // Tablette+ (768px+)
+///   $tablet: breakpoint('md');         // 768px (rare, préférer mixin)
+///
+/// Migration v2.1:
+///   - ✅ Supprimé $breakpoints (duplication)
+///   - ✅ Fonction breakpoint() lit uniquement depuis $breakpoint-tokens
+///   - ✅ Mixin respond-to() lit uniquement depuis $breakpoint-tokens
+///   - ✅ Variables legacy conservées pour rétrocompatibilité
+/// ============================================================================
 
-/// Map centralisée des breakpoints du projet
-/// Valeurs basées sur usages réels et standards modernes
-/// @type Map
-$breakpoints: (
-  'sm': 576px,
-  // Mobile landscape / Petites tablettes (Bootstrap standard)
-  'md': 768px,
-  // Tablettes portrait (iPad, Android tablets)
-  'lg': 1024px,
-  // Desktop / Tablettes landscape (iPad Pro)
-  'xl': 1200px,
-  // Large desktop (écrans 1080p+)
-  'xxl': 1536px, // Extra large desktop (2K displays, future-proof)
-);
+/// ============================================================================
+/// FUNCTIONS
+/// ============================================================================
 
-/// Récupère une valeur de breakpoint depuis la map
-/// @param {String} $name Nom du breakpoint (sm, md, lg, xl, xxl)
-/// @return {Number} Valeur du breakpoint en px
+/// Récupère une valeur de breakpoint depuis $breakpoint-tokens
+/// @param {String} $name - Nom du breakpoint (mobile, sm, md, lg, xl, xxl)
+/// @return {Number} Valeur du breakpoint en pixels
 /// @example
-///   $tablet-width: breakpoint(md); // 768px
+///   $tablet-width: breakpoint('md'); // 768px
+///   $desktop: breakpoint('lg');      // 1024px
 @function breakpoint($name) {
-  @if map.has-key($breakpoints, $name) {
-    @return map.get($breakpoints, $name);
-  } @else {
-    @error "Breakpoint '#{$name}' non trouvé dans $breakpoints. Valeurs disponibles : #{map.keys($breakpoints)}";
+  @if not map.has-key($breakpoint-tokens, $name) {
+    @error "Breakpoint '#{$name}' not found in $breakpoint-tokens. Available keys: #{map.keys($breakpoint-tokens)}";
   }
+  @return map.get($breakpoint-tokens, $name);
 }
 
+/// ============================================================================
+/// MIXINS
+/// ============================================================================
+
 /// Mixin mobile-first pour media queries responsive
-/// Génère automatiquement @media (min-width: ...) depuis la map
-/// @param {String} $breakpoint Nom du breakpoint (sm | md | lg | xl | xxl)
+/// Génère automatiquement @media (min-width: ...) depuis $breakpoint-tokens
+/// @param {String} $breakpoint-name - Nom du breakpoint (sm | md | lg | xl | xxl)
 /// @example
 ///   .component {
 ///     // Styles mobile par défaut (320px-575px)
 ///     font-size: 14px;
 ///
-///     @include respond-to(md) {
+///     @include respond-to('md') {
 ///       // Styles tablette+ (768px+)
 ///       font-size: 16px;
 ///     }
 ///
-///     @include respond-to(xl) {
+///     @include respond-to('xl') {
 ///       // Styles large desktop+ (1200px+)
 ///       font-size: 18px;
 ///     }
 ///   }
-@mixin respond-to($breakpoint) {
-  @if map.has-key($breakpoints, $breakpoint) {
-    @media (min-width: map.get($breakpoints, $breakpoint)) {
-      @content;
-    }
+@mixin respond-to($breakpoint-name) {
+  @if not map.has-key($breakpoint-tokens, $breakpoint-name) {
+    @warn "Breakpoint '#{$breakpoint-name}' not found in $breakpoint-tokens. Available keys: #{map.keys($breakpoint-tokens)}. Media query skipped.";
   } @else {
-    @warn "Breakpoint '#{$breakpoint}' non défini dans $breakpoints. Valeurs disponibles : #{map.keys($breakpoints)}";
+    $breakpoint-value: map.get($breakpoint-tokens, $breakpoint-name);
+
+    // Si breakpoint est 'mobile' (0px), ne pas générer de media query
+    @if $breakpoint-value == 0 {
+      @content;
+    } @else {
+      @media (min-width: $breakpoint-value) {
+        @content;
+      }
+    }
   }
 }
 
-// =============================================================================
-// VARIABLES LEGACY (Rétrocompatibilité)
-// =============================================================================
-// Ces variables sont conservées pour compatibilité avec le code existant
-// IMPORTANT : Préférer l'usage de la map $breakpoints et du mixin respond-to()
-// pour nouveau code
+/// ============================================================================
+/// VARIABLES LEGACY (Rétrocompatibilité)
+/// ============================================================================
+/// Ces variables sont conservées pour compatibilité avec le code existant
+/// IMPORTANT : Préférer l'usage du mixin respond-to() pour nouveau code
 
-$breakpoint-sm: map.get($breakpoints, 'sm'); // 576px
-$breakpoint-md: map.get($breakpoints, 'md'); // 768px
-$breakpoint-lg: map.get($breakpoints, 'lg'); // 1024px (FIX: était 992px)
-$breakpoint-xl: map.get($breakpoints, 'xl'); // 1200px
+$breakpoint-sm: breakpoint('sm');   // 576px
+$breakpoint-md: breakpoint('md');   // 768px
+$breakpoint-lg: breakpoint('lg');   // 1024px
+$breakpoint-xl: breakpoint('xl');   // 1200px
+$breakpoint-xxl: breakpoint('xxl'); // 1536px
 
-// =============================================================================
-// MIGRATION NOTES
-// =============================================================================
-// AVANT (ancien système) :
-//   $breakpoint-lg: 992px; (incohérent avec usages réels)
-//
-// APRÈS (nouveau système) :
-//   $breakpoint-lg: 1024px; (aligné avec 6 usages hardcodés)
-//
-// CHANGEMENTS BREAKING :
-//   - Aucun ! Les valeurs 576px, 768px, 1200px sont conservées
-//   - Seul lg: 992px → 1024px (mais 992px jamais utilisé dans le projet)
-//
-// TODO MIGRATION :
-//   1. Remplacer @media (min-width: 1024px) par @include respond-to(lg)
-//   2. Supprimer max-width anti-patterns (AdminPermissions)
-//   3. Uniformiser breakpoints isolés (480px, 520px, 640px)
-// =============================================================================
+/// ============================================================================
+/// MIGRATION NOTES
+/// ============================================================================
+/// AVANT (ancien système - _breakpoints.scss avec map locale) :
+///   $breakpoints: ('sm': 576px, 'md': 768px, ...) // Duplication de tokens
+///
+/// APRÈS (nouveau système - wrapper pur) :
+///   Fonction breakpoint() → lit depuis $breakpoint-tokens
+///   Mixin respond-to()     → lit depuis $breakpoint-tokens
+///
+/// CHANGEMENTS :
+///   - ✅ Aucun breaking change (valeurs identiques)
+///   - ✅ Ajout 'mobile': 0 (nouveau token disponible)
+///   - ✅ Variables legacy conservées ($breakpoint-sm, $breakpoint-md, etc.)
+///
+/// TODO MIGRATION COMPOSANTS :
+///   1. Remplacer @media (min-width: 1024px) par @include respond-to('lg')
+///   2. Supprimer max-width anti-patterns (AdminPermissions)
+///   3. Uniformiser breakpoints isolés (480px, 520px, 640px)
+/// ============================================================================
