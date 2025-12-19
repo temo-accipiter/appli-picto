@@ -1424,6 +1424,73 @@ $shadow-tokens: (
 ) !default;
 
 // =============================================================================
+// ACCESSIBILITY TOKENS (WCAG 2.2 AA + TSA)
+// =============================================================================
+
+/// 🔴 CANONICAL SOURCE pour ALL accessibility values (touch targets, focus, motion, contrast)
+/// Tokens d'accessibilité centralisés pour garantir conformité WCAG 2.2 AA.
+/// Utilisé par mixins (touch-target, focus-ring, etc.) et composants.
+///
+/// Spécificités TSA (Troubles du Spectre Autistique) :
+///   - Zones tactiles préférées plus grandes (56px vs 44px minimum WCAG)
+///   - Focus rings clairs et prévisibles
+///   - Contraste élevé recommandé (7.0 pour enhanced)
+///   - Animations réduites au strict minimum
+///
+/// Ratios de contraste :
+///   - 'contrast-min': 4.5 = WCAG AA texte normal
+///   - 'contrast-enhanced': 7.0 = WCAG AAA texte normal (recommandé TSA)
+///
+/// Touch targets (WCAG 2.5.5 Target Size) :
+///   - 'min-touch-target': 44px = Minimum WCAG 2.2 Level AA
+///   - 'preferred-touch-target': 56px = Recommandé pour TSA (enfants)
+///
+/// Focus indicators (WCAG 2.4.7 Focus Visible) :
+///   - 'focus-ring-width': 2px = Épaisseur visible claire
+///   - 'focus-ring-offset': 2px = Espacement pour distinction
+///
+/// Animations (prefers-reduced-motion) :
+///   - 'reduced-motion-duration': 0.01ms = Quasi-instantané (safe pour TSA)
+$a11y-tokens: (
+  // === Contrast ratios (WCAG) ===
+  'contrast-min': 4.5,
+  // WCAG AA normal text
+  'contrast-enhanced': 7,
+  // WCAG AAA normal text (TSA recommended)
+  'contrast-large-text': 3,
+  // WCAG AA large text (18px+)
+  // === Touch target sizes (WCAG 2.5.5) ===
+  'min-touch-target': 44px,
+  // WCAG 2.2 Level AA minimum
+  'preferred-touch-target': 56px,
+  // Recommended for children/TSA (Material Design baseline)
+  'optimal-touch-target': 48px,
+  // Compromise between AA and UX
+  // === Focus indicators (WCAG 2.4.7) ===
+  'focus-ring-width': 2px,
+  // Visible outline thickness
+  'focus-ring-offset': 2px,
+  // Offset for clear separation
+  'focus-ring-width-enhanced': 3px,
+  // Enhanced for low vision
+  // === Motion (prefers-reduced-motion) ===
+  'reduced-motion-duration': 0.01ms,
+  // Near-instant for reduced-motion users
+  'safe-animation-duration': 200ms,
+  // Max duration for TSA-friendly animations
+  'safe-transition-duration': 150ms,
+  // Max transition for interactive elements
+  // === Spacing for readability ===
+  'line-spacing-min': 1.5,
+  // WCAG 1.4.12 line-height minimum
+  'paragraph-spacing-min': 1.5em,
+  // WCAG 1.4.12 paragraph spacing
+  'letter-spacing-min': 0.12em,
+  // WCAG 1.4.12 letter spacing
+  'word-spacing-min': 0.16em // WCAG 1.4.12 word spacing
+) !default;
+
+// =============================================================================
 // CSS CUSTOM PROPERTIES - Pour accès runtime
 // =============================================================================
 

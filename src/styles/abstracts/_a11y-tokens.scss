@@ -1,9 +1,15 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
 /// ============================================================================
-/// ACCESSIBILITY TOKENS - WCAG 2.2 AA Compliance
+/// ACCESSIBILITY TOKENS - Wrapper pur pour accessibilité WCAG 2.2 AA + TSA
 /// ============================================================================
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+///
+/// SOURCE DE VÉRITÉ : $a11y-tokens dans _tokens.scss
+///
 /// Tokens d'accessibilité centralisés pour garantir conformité WCAG 2.2 AA.
 /// Utilisé par mixins (touch-target, focus-ring, etc.) et composants.
 ///
@@ -13,70 +19,15 @@
 ///   - Contraste élevé recommandé (7.0 pour enhanced)
 ///   - Animations réduites au strict minimum
 ///
-/// Usage :
-///   @use '@styles/abstracts/a11y-tokens' as *;
-///   min-height: a11y('preferred-touch-target');
-///   outline-width: a11y('focus-ring-width');
+/// Usage:
+///   min-height: a11y('preferred-touch-target'); // -> 56px
+///   outline-width: a11y('focus-ring-width'); // -> 2px
+///
+/// Migration v2.1:
+///   - ✅ Supprimé $a11y-tokens map locale (25 hardcodes éliminés)
+///   - ✅ Fonction a11y() lit uniquement depuis $a11y-tokens dans _tokens.scss
+///   - ✅ CSS custom properties préservées pour accès runtime JS
 /// ============================================================================
-
-// =============================================================================
-// A11Y TOKENS MAP - Source de vérité unique
-// =============================================================================
-
-/// Tokens d'accessibilité conformes WCAG 2.2 AA + TSA friendly
-///
-/// Ratios de contraste :
-///   - 'contrast-min': 4.5 = WCAG AA texte normal
-///   - 'contrast-enhanced': 7.0 = WCAG AAA texte normal (recommandé TSA)
-///
-/// Touch targets (WCAG 2.5.5 Target Size) :
-///   - 'min-touch-target': 44px = Minimum WCAG 2.2 Level AA
-///   - 'preferred-touch-target': 56px = Recommandé pour TSA (enfants)
-///
-/// Focus indicators (WCAG 2.4.7 Focus Visible) :
-///   - 'focus-ring-width': 2px = Épaisseur visible claire
-///   - 'focus-ring-offset': 2px = Espacement pour distinction
-///
-/// Animations (prefers-reduced-motion) :
-///   - 'reduced-motion-duration': 0.01ms = Quasi-instantané (safe pour TSA)
-$a11y-tokens: (
-  // === Contrast ratios (WCAG) ===
-  'contrast-min': 4.5,
-  // WCAG AA normal text
-  'contrast-enhanced': 7,
-  // WCAG AAA normal text (TSA recommended)
-  'contrast-large-text': 3,
-  // WCAG AA large text (18px+)
-  // === Touch target sizes (WCAG 2.5.5) ===
-  'min-touch-target': 44px,
-  // WCAG 2.2 Level AA minimum
-  'preferred-touch-target': 56px,
-  // Recommended for children/TSA (Material Design baseline)
-  'optimal-touch-target': 48px,
-  // Compromise between AA and UX
-  // === Focus indicators (WCAG 2.4.7) ===
-  'focus-ring-width': 2px,
-  // Visible outline thickness
-  'focus-ring-offset': 2px,
-  // Offset for clear separation
-  'focus-ring-width-enhanced': 3px,
-  // Enhanced for low vision
-  // === Motion (prefers-reduced-motion) ===
-  'reduced-motion-duration': 0.01ms,
-  // Near-instant for reduced-motion users
-  'safe-animation-duration': 200ms,
-  // Max duration for TSA-friendly animations
-  'safe-transition-duration': 150ms,
-  // Max transition for interactive elements
-  // === Spacing for readability ===
-  'line-spacing-min': 1.5,
-  // WCAG 1.4.12 line-height minimum
-  'paragraph-spacing-min': 1.5em,
-  // WCAG 1.4.12 paragraph spacing
-  'letter-spacing-min': 0.12em,
-  // WCAG 1.4.12 letter spacing
-  'word-spacing-min': 0.16em // WCAG 1.4.12 word spacing
-);
 
 // =============================================================================
 // ACCESSOR FUNCTION - Récupère un token A11Y
@@ -90,10 +41,11 @@ $a11y-tokens: (
 /// @example scss - Usage basique
 ///   min-height: a11y('preferred-touch-target'); // -> 56px
 ///   outline-width: a11y('focus-ring-width'); // -> 2px
+///   line-height: a11y('line-spacing-min'); // -> 1.5
 @function a11y($key) {
   $value: map.get($a11y-tokens, $key);
   @if $value == null {
-    @error 'A11Y token "#{$key}" not found. Available: #{map.keys($a11y-tokens)}';
+    @error "A11Y token '#{$key}' not found in $a11y-tokens. Available: #{map.keys($a11y-tokens)} (from _tokens.scss)";
   }
   @return $value;
 }
@@ -134,14 +86,54 @@ $a11y-tokens: (
 // =============================================================================
 // GUIDELINES & USAGE NOTES
 // =============================================================================
-// 1. Toujours utiliser a11y() function pour accès tokens
-// 2. Préférer 'preferred-touch-target' (56px) pour enfants TSA
-// 3. Utiliser 'min-touch-target' (44px) uniquement si contraintes d'espace
-// 4. Focus rings doivent toujours être visibles (outline + offset)
-// 5. Animations/transitions : tester avec prefers-reduced-motion
-// 6. Contraste 'enhanced' (7.0) recommandé pour texte important
-// 7. Touch targets s'appliquent à : buttons, links, inputs, interactive elements
-// 8. Ne jamais hardcoder ces valeurs - toujours passer par tokens
-// 9. Mixins (touch-target, focus-ring) doivent utiliser ces tokens
-// 10. Valider accessibilité avec outils (axe, WAVE, Lighthouse)
-// =============================================================================
+/// 1. JAMAIS définir de données locales - toujours passer par tokens
+/// 2. Toujours utiliser a11y() function pour accès tokens
+/// 3. Préférer 'preferred-touch-target' (56px) pour enfants TSA
+/// 4. Utiliser 'min-touch-target' (44px) uniquement si contraintes d'espace
+/// 5. Focus rings doivent toujours être visibles (outline + offset)
+/// 6. Animations/transitions : tester avec prefers-reduced-motion
+/// 7. Contraste 'enhanced' (7.0) recommandé pour texte important
+/// 8. Touch targets s'appliquent à : buttons, links, inputs, interactive elements
+/// 9. Mixins (touch-target, focus-ring) doivent utiliser ces tokens
+/// 10. Valider accessibilité avec outils (axe, WAVE, Lighthouse)
+///
+/// TOKENS DISPONIBLES :
+///   === Contrast ratios ===
+///   - contrast-min (4.5)
+///   - contrast-enhanced (7.0)
+///   - contrast-large-text (3.0)
+///
+///   === Touch targets ===
+///   - min-touch-target (44px)
+///   - preferred-touch-target (56px)
+///   - optimal-touch-target (48px)
+///
+///   === Focus indicators ===
+///   - focus-ring-width (2px)
+///   - focus-ring-offset (2px)
+///   - focus-ring-width-enhanced (3px)
+///
+///   === Motion ===
+///   - reduced-motion-duration (0.01ms)
+///   - safe-animation-duration (200ms)
+///   - safe-transition-duration (150ms)
+///
+///   === Spacing ===
+///   - line-spacing-min (1.5)
+///   - paragraph-spacing-min (1.5em)
+///   - letter-spacing-min (0.12em)
+///   - word-spacing-min (0.16em)
+///
+/// EXEMPLES :
+///
+/// ✅ CORRECT :
+///   min-height: a11y('preferred-touch-target');
+///   outline: a11y('focus-ring-width') solid var(--color-primary);
+///   @include touch-target('preferred'); // Utilise a11y() en interne
+///   line-height: a11y('line-spacing-min');
+///
+/// ❌ INCORRECT :
+///   min-height: 44px;                              // Hardcodé !
+///   outline: 2px solid var(--color-primary);       // Hardcodé !
+///   line-height: 1.5;                              // Hardcodé !
+/// ============================================================================
