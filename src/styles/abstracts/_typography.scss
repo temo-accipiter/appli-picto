@@ -1,22 +1,33 @@
 @charset 'UTF-8';
 @use 'sass:map';
-@use './tokens' as *; // Import tokens for canonical font-size-tokens access
+@use 'tokens' as *;
 
 /// ============================================================================
-/// TYPOGRAPHY SYSTEM - Centralisé
+/// TYPOGRAPHY SYSTEM - Wrapper pur pour typographie
 /// ============================================================================
-/// Source de vérité pour tous les styles typographiques.
-/// Font-sizes, weights, line-heights, font-families, etc.
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
 ///
-/// Utilisation:
-///   font-size: font-size(lg);
-///   font-weight: font-weight(bold);
-///   line-height: line-height(relaxed);
+/// SOURCES DE VÉRITÉ :
+///   - $font-size-tokens dans _tokens.scss
+///   - $font-weight-tokens dans _tokens.scss
+///   - $line-height-tokens dans _tokens.scss
+///
+/// Usage:
+///   font-size: font-size('lg');           // 1.125rem (18px)
+///   font-weight: font-weight('bold');     // 700
+///   line-height: line-height('relaxed');  // 1.625
+///
+/// Migration v2.1:
+///   - ✅ Supprimé toutes variables individuelles ($font-size-xxs, etc.)
+///   - ✅ Supprimé toutes maps locales ($font-size-scale, etc.)
+///   - ✅ Fonctions lisent uniquement depuis tokens
+///   - ✅ Font stacks conservés (system fonts)
 /// ============================================================================
 
-// =============================================================================
-// FONT FAMILIES - Polices d'écriture
-// =============================================================================
+/// ============================================================================
+/// FONT STACKS - Polices d'écriture système
+/// ============================================================================
 
 /// Font stack pour le texte corps (lisibilité maximale)
 $text-font-stack:
@@ -43,366 +54,180 @@ $lexend-font-stack:
 /// Monospace font stack (code, technical)
 $mono-font-stack: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
 
-// =============================================================================
-// FONT SIZES - Variables individuelles
-// =============================================================================
+/// ============================================================================
+/// FUNCTIONS - Accesseurs pour typographie
+/// ============================================================================
 
-/// Font sizes de base - scale 16px (mobile-first)
-$font-size-xxs: 0.65rem; // 10.4px - très petit texte
-$font-size-xs: 0.7rem; // 11.2px - petit texte (labels)
-$font-size-sm: 0.875rem; // 14px - small (helper text)
-$font-size-base: 1rem; // 16px - standard (body text)
-$font-size-lg: 1.25rem; // 20px - large (emphasis)
-$font-size-xl: 1.5rem; // 24px - XL (section titles)
-$font-size-2xl: 1.8rem; // 28.8px - 2XL (page titles)
-$font-size-3xl: 2.5rem; // 40px - 3XL (hero)
-
-// Extended sizes découvertes dans composants
-$font-size-0-9rem: 0.9rem; // 14.4px
-$font-size-0-95rem: 0.95rem; // 15.2px
-$font-size-1-1rem: 1.1rem; // 17.6px
-$font-size-1-2rem: 1.2rem; // 19.2px
-$font-size-1-3rem: 1.3rem; // 20.8px
-$font-size-1-4rem: 1.4rem; // 22.4px
-
-// =============================================================================
-// FONT SIZES MAP - [⚠️ DEPRECATED - READ FROM _tokens.scss INSTEAD]
-// =============================================================================
-
-/// 🔴 DEPRECATION WARNING (Phase 2.1 - Commit 2.1a)
-///
-/// Cette map $font-size-scale est DÉPRÉCIÉ depuis la canonicalisation de _tokens.scss.
-///
-/// ❌ ANCIEN ÉTAT (NON-AUTORITATIF):
-///   - Contient scale fragmentée : 0.65rem, 0.7rem, 0.9rem, 0.95rem, 1.1rem, 1.2rem, etc.
-///   - NON-STANDARDISÉE - pas Tailwind-like
-///   - Source de confusion avec _tokens.$font-size-tokens
-///
-/// ✅ NOUVEL ÉTAT (AUTHORITATIVE):
-///   - Lire depuis @use './tokens' et $font-size-tokens (ligne 374 dans _tokens.scss)
-///   - Option B (Tailwind-like) : xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl
-///   - font-size() function DOIT proxer vers tokens
-///
-/// 📝 MIGRATION TIMELINE:
-///   Phase 2.1a (NOW): Canonicalisation dans _tokens.scss + warnings ici
-///   Phase 2.1b: Propager font-size() function vers tokens (proxer)
-///   Phase 2.1c: Corriger usages hardcodés dans components
-///   Phase 2.2+: Supprimer cette map DEPRECATED (après vérification)
-///
-/// Pour maintenant: Cette map est FIGÉE - ne pas la modifier.
-/// Tout nouveau code DOIT lire depuis _tokens.$font-size-tokens.
-$font-size-scale: (
-  'xxs': $font-size-xxs,
-  // 10.4px
-  'xs': $font-size-xs,
-  // 11.2px
-  'sm': $font-size-sm,
-  // 14px
-  'base': $font-size-base,
-  // 16px
-  'lg': $font-size-lg,
-  // 20px
-  'xl': $font-size-xl,
-  // 24px
-  '2xl': $font-size-2xl,
-  // 28.8px
-  '3xl': $font-size-3xl,
-
-  // 40px
-  // === Tailles additionnelles trouvées ===
-  '0-7rem': 0.7rem,
-  // 11.2px
-  '0-8rem': 0.8rem,
-  // 12.8px
-  '0-9rem': $font-size-0-9rem,
-  // 14.4px
-  '0-95rem': $font-size-0-95rem,
-  // 15.2px
-  '1-1rem': $font-size-1-1rem,
-  // 17.6px
-  '1-2rem': $font-size-1-2rem,
-  // 19.2px
-  '1-3rem': $font-size-1-3rem,
-  // 20.8px
-  '1-4rem': $font-size-1-4rem,
-
-  // 22.4px
-  // === Aliases pour patterns courants ===
-  'body': $font-size-base,
-  // Texte standard
-  'label': $font-size-sm,
-  // Labels de formulaire
-  'caption': $font-size-xs,
-  // Petit texte
-  'small': $font-size-sm,
-  // Texte petit
-  'large': $font-size-lg,
-  // Texte grand
-  'hero': $font-size-3xl, // Très grand
-);
-
-// =============================================================================
-// FONT WEIGHTS - Poids de police
-// =============================================================================
-
-/// Font weights disponibles (respecter la fonte chargée)
-$font-weight-light: 300;
-$font-weight-normal: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-$font-weight-black: 900;
-
-/// Map des font weights
-$font-weight-scale: (
-  'light': $font-weight-light,
-  'normal': $font-weight-normal,
-  'medium': $font-weight-medium,
-  'semibold': $font-weight-semibold,
-  'bold': $font-weight-bold,
-  'black': $font-weight-black,
-
-  // === Aliases ===
-  'regular': $font-weight-normal,
-  'thin': $font-weight-light,
-  'heavy': $font-weight-black,
-);
-
-// =============================================================================
-// LINE HEIGHTS - Hauteurs de ligne
-// =============================================================================
-
-/// Line heights for different text types
-$line-height-tight: 1.2; // Headings, titles
-$line-height-normal: 1.4; // Labels, UI
-$line-height-base: 1.5; // Body text (default, WCAG compliant)
-$line-height-relaxed: 1.75; // Accessible reading
-$line-height-loose: 2; // Very spacious
-
-/// Map des line heights
-$line-height-scale: (
-  'tight': $line-height-tight,
-  'normal': $line-height-normal,
-  'base': $line-height-base,
-  'relaxed': $line-height-relaxed,
-  'loose': $line-height-loose,
-
-  // === Aliases ===
-  'solid': 1,
-  // Single line
-  'heading': $line-height-tight,
-  'body': $line-height-base,
-);
-
-// =============================================================================
-// LETTER SPACING - Espacement des lettres
-// =============================================================================
-
-/// Letter spacing values
-$letter-spacing-tight: -0.02em;
-$letter-spacing-normal: 0;
-$letter-spacing-wide: 0.025em;
-$letter-spacing-wider: 0.05em;
-
-/// Map des letter spacings
-$letter-spacing-scale: (
-  'tight': $letter-spacing-tight,
-  'normal': $letter-spacing-normal,
-  'wide': $letter-spacing-wide,
-  'wider': $letter-spacing-wider,
-);
-
-// =============================================================================
-// TEXT TRANSFORM - Transformations de texte
-// =============================================================================
-
-/// Text transform utilities
-$text-transform-scale: (
-  'uppercase': uppercase,
-  'lowercase': lowercase,
-  'capitalize': capitalize,
-  'normal': none,
-);
-
-// =============================================================================
-// TYPOGRAPHY TOKENS - Combinaisons prédéfinies
-// =============================================================================
-
-/// Tokens combinant size + weight + line-height pour patterns courants
-$typography-tokens: (
-  // === Headings ===
-  'h1': (
-      size: $font-size-3xl,
-      weight: $font-weight-bold,
-      line-height: $line-height-tight,
-    ),
-  'h2': (
-    size: $font-size-2xl,
-    weight: $font-weight-bold,
-    line-height: $line-height-tight,
-  ),
-  'h3': (
-    size: $font-size-xl,
-    weight: $font-weight-semibold,
-    line-height: $line-height-tight,
-  ),
-  'h4': (
-    size: $font-size-lg,
-    weight: $font-weight-semibold,
-    line-height: $line-height-normal,
-  ),
-  'h5': (
-    size: $font-size-base,
-    weight: $font-weight-semibold,
-    line-height: $line-height-normal,
-  ),
-  'h6': (
-    size: $font-size-sm,
-    weight: $font-weight-semibold,
-    line-height: $line-height-normal,
-  ),
-
-  // === Body text ===
-  'body': (
-      size: $font-size-base,
-      weight: $font-weight-normal,
-      line-height: $line-height-base,
-    ),
-
-  // === Utility text ===
-  'small': (
-      size: $font-size-sm,
-      weight: $font-weight-normal,
-      line-height: $line-height-normal,
-    ),
-  'caption': (
-    size: $font-size-xs,
-    weight: $font-weight-normal,
-    line-height: $line-height-normal,
-  ),
-  'label': (
-    size: $font-size-sm,
-    weight: $font-weight-medium,
-    line-height: $line-height-normal,
-  ),
-  'button': (
-    size: $font-size-base,
-    weight: $font-weight-medium,
-    line-height: $line-height-normal,
-  )
-);
-
-// =============================================================================
-// FUNCTIONS - Accesseurs pour typographie
-// =============================================================================
-
-/// Récupère une taille de police (CANONICAL - lire depuis _tokens.scss)
-/// @param {String} $key - Clé dans $font-size-tokens
-/// @return {String} Font-size CSS
-///
-/// ✅ Phase 2.1b UPDATE: Cette fonction proxe maintenant vers _tokens.$font-size-tokens
-///    (source de vérité canonical) au lieu de lire la map locale deprecated.
-///
-/// 📝 Exemples:
-///   font-size('xs') → 0.75rem (12px)
-///   font-size('base') → 1rem (16px)
-///   font-size('2xl') → 1.5rem (24px)
-///
-/// ⚠️ NOTE: La map locale $font-size-scale est NOW READ-ONLY (deprecated).
-///
+/// Récupère une taille de police depuis $font-size-tokens
+/// @param {String} $key - Clé dans $font-size-tokens (xs, sm, base, lg, xl, 2xl, 3xl, etc.)
+/// @return {Length} Font size value (rem)
 /// @example
-///   font-size: font-size('lg');
+///   font-size: font-size('lg');    // 1.125rem (18px)
+///   font-size: font-size('2xl');   // 1.5rem (24px)
 @function font-size($key) {
-  // CANONICAL SOURCE: _tokens.$font-size-tokens
-  $value: map.get($font-size-tokens, $key);
-  @if $value == null {
-    @error 'Font size key "#{$key}" not found in $font-size-tokens. Available: #{map.keys($font-size-tokens)}. See _tokens.scss for canonical values.';
+  @if not map.has-key($font-size-tokens, $key) {
+    @error "Font-size key '#{$key}' not found in $font-size-tokens. Available keys: #{map.keys($font-size-tokens)}";
   }
-  @return $value;
+  @return map.get($font-size-tokens, $key);
 }
 
-/// Récupère un poids de police
-/// @param {String} $key - Clé dans $font-weight-scale
-/// @return {Number} Font-weight value
+/// Récupère un poids de police depuis $font-weight-tokens
+/// @param {String} $key - Clé dans $font-weight-tokens (light, normal, medium, semibold, bold, etc.)
+/// @return {Number} Font weight value (100-900)
 /// @example
-///   font-weight: font-weight(bold);
+///   font-weight: font-weight('bold');      // 700
+///   font-weight: font-weight('semibold');  // 600
 @function font-weight($key) {
-  $value: map.get($font-weight-scale, $key);
-  @if $value == null {
-    @error 'Font weight key "#{$key}" not found. Available: #{map.keys($font-weight-scale)}';
+  @if not map.has-key($font-weight-tokens, $key) {
+    @error "Font-weight key '#{$key}' not found in $font-weight-tokens. Available keys: #{map.keys($font-weight-tokens)}";
   }
-  @return $value;
+  @return map.get($font-weight-tokens, $key);
 }
 
-/// Récupère une hauteur de ligne
-/// @param {String} $key - Clé dans $line-height-scale
-/// @return {Number} Line-height value
+/// Récupère une hauteur de ligne depuis $line-height-tokens
+/// @param {String} $key - Clé dans $line-height-tokens (tight, snug, normal, relaxed, loose)
+/// @return {Number} Line height value (unitless ratio)
 /// @example
-///   line-height: line-height(relaxed);
+///   line-height: line-height('relaxed');  // 1.625
+///   line-height: line-height('normal');   // 1.5
 @function line-height($key) {
-  $value: map.get($line-height-scale, $key);
-  @if $value == null {
-    @error 'Line height key "#{$key}" not found. Available: #{map.keys($line-height-scale)}';
+  @if not map.has-key($line-height-tokens, $key) {
+    @error "Line-height key '#{$key}' not found in $line-height-tokens. Available keys: #{map.keys($line-height-tokens)}";
   }
-  @return $value;
+  @return map.get($line-height-tokens, $key);
 }
 
-/// Récupère un typography token
-/// @param {String} $key - Clé dans $typography-tokens
-/// @return {Map} Map contenant size, weight, line-height
+/// ============================================================================
+/// MIXINS - Helpers typographiques courants
+/// ============================================================================
+
+/// Applique un style typographique complet (h1-h6 ou patterns courants)
+/// @param {String} $variant - Variant de typographie ('h1', 'h2', 'body', 'label', etc.)
 /// @example
-///   $h1-style: typography-token(h1);
-///   font-size: map.get($h1-style, size);
-@function typography-token($key) {
-  $value: map.get($typography-tokens, $key);
-  @if $value == null {
-    @error 'Typography token "#{$key}" not found. Available: #{map.keys($typography-tokens)}';
+///   @include typography('h1');    // 3xl + bold + tight
+///   @include typography('body');  // base + normal + normal
+@mixin typography($variant) {
+  @if $variant == 'h1' {
+    font-size: font-size('3xl');
+    font-weight: font-weight('bold');
+    line-height: line-height('tight');
+  } @else if $variant == 'h2' {
+    font-size: font-size('2xl');
+    font-weight: font-weight('bold');
+    line-height: line-height('tight');
+  } @else if $variant == 'h3' {
+    font-size: font-size('xl');
+    font-weight: font-weight('semibold');
+    line-height: line-height('tight');
+  } @else if $variant == 'h4' {
+    font-size: font-size('lg');
+    font-weight: font-weight('semibold');
+    line-height: line-height('snug');
+  } @else if $variant == 'h5' {
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    line-height: line-height('snug');
+  } @else if $variant == 'h6' {
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    line-height: line-height('snug');
+  } @else if $variant == 'body' {
+    font-size: font-size('base');
+    font-weight: font-weight('normal');
+    line-height: line-height('normal');
+  } @else if $variant == 'small' {
+    font-size: font-size('sm');
+    font-weight: font-weight('normal');
+    line-height: line-height('snug');
+  } @else if $variant == 'caption' {
+    font-size: font-size('xs');
+    font-weight: font-weight('normal');
+    line-height: line-height('snug');
+  } @else if $variant == 'label' {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    line-height: line-height('snug');
+  } @else if $variant == 'button' {
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
+    line-height: line-height('none');
+  } @else {
+    @warn "Typography variant '#{$variant}' not found. Available: h1-h6, body, small, caption, label, button";
   }
-  @return $value;
 }
 
-// =============================================================================
-// CSS CUSTOM PROPERTIES - Pour accès runtime
-// =============================================================================
+/// Applique le font stack TSA-friendly (Lexend)
+/// @example
+///   @include font-tsa;
+@mixin font-tsa {
+  font-family: $lexend-font-stack;
+}
+
+/// Applique le font stack corps de texte
+/// @example
+///   @include font-text;
+@mixin font-text {
+  font-family: $text-font-stack;
+}
+
+/// Applique le font stack headings
+/// @example
+///   @include font-heading;
+@mixin font-heading {
+  font-family: $heading-font-stack;
+}
+
+/// ============================================================================
+/// CSS CUSTOM PROPERTIES - Pour accès runtime JavaScript
+/// ============================================================================
 
 :root {
-  // === Font families ===
-  --font-family-text: #{$text-font-stack};
-  --font-family-heading: #{$heading-font-stack};
-  --font-family-lexend: #{$lexend-font-stack};
-  --font-family-mono: #{$mono-font-stack};
+  // Font sizes scale
+  --font-size-xs: #{font-size('xs')};
+  --font-size-sm: #{font-size('sm')};
+  --font-size-base: #{font-size('base')};
+  --font-size-lg: #{font-size('lg')};
+  --font-size-xl: #{font-size('xl')};
+  --font-size-2xl: #{font-size('2xl')};
+  --font-size-3xl: #{font-size('3xl')};
 
-  // === Font sizes ===
-  --font-size-xs: #{$font-size-xs};
-  --font-size-sm: #{$font-size-sm};
-  --font-size-base: #{$font-size-base};
-  --font-size-lg: #{$font-size-lg};
-  --font-size-xl: #{$font-size-xl};
-  --font-size-2xl: #{$font-size-2xl};
-  --font-size-3xl: #{$font-size-3xl};
+  // Font weights common
+  --font-weight-normal: #{font-weight('normal')};
+  --font-weight-medium: #{font-weight('medium')};
+  --font-weight-semibold: #{font-weight('semibold')};
+  --font-weight-bold: #{font-weight('bold')};
 
-  // === Font weights ===
-  --font-weight-normal: #{$font-weight-normal};
-  --font-weight-medium: #{$font-weight-medium};
-  --font-weight-semibold: #{$font-weight-semibold};
-  --font-weight-bold: #{$font-weight-bold};
+  // Line heights common
+  --line-height-tight: #{line-height('tight')};
+  --line-height-normal: #{line-height('normal')};
+  --line-height-relaxed: #{line-height('relaxed')};
 
-  // === Line heights ===
-  --line-height-tight: #{$line-height-tight};
-  --line-height-base: #{$line-height-base};
-  --line-height-relaxed: #{$line-height-relaxed};
+  // Font stacks
+  --font-text: #{$text-font-stack};
+  --font-heading: #{$heading-font-stack};
+  --font-tsa: #{$lexend-font-stack};
 }
 
-// ============================================================================
-// GUIDELINES
-// ============================================================================
-// 1. JAMAIS hardcoder font-size - utiliser font-size($key)
-// 2. JAMAIS hardcoder font-weight - utiliser font-weight($key)
-// 3. Utiliser typography-tokens pour patterns répétés (h1, h2, body, etc.)
-// 4. Mobile-first: font-size base responsive avec respond-to() si besoin
-// 5. Accessibilité: min font-size 16px (14px acceptable si espacé)
-// 6. TSA design: Préférer Lexend pour labels/buttons (meilleure distinction)
-// 7. Line-height >= 1.4 pour accessibilité lecture
-// 8. Respecter contraste couleur (4.5:1 pour texte normal per WCAG)
-// 9. Pour nouvelles sizes, ajouter à $font-size-scale map
-// 10. Documenter tailles custom avec commentaires
+/// ============================================================================
+/// GUIDELINES & BEST PRACTICES
+/// ============================================================================
+/// 1. JAMAIS hardcoder font-size/weight/line-height
+/// 2. Utiliser fonctions font-size(), font-weight(), line-height()
+/// 3. Pour combinaisons courantes (h1-h6), utiliser @include typography('h1')
+/// 4. Font TSA-friendly : @include font-tsa pour accessibilité dyslexie
+/// 5. Pour nouveaux tokens, ajouter à $font-*-tokens dans _tokens.scss
+/// 6. Respecter WCAG : line-height minimum 1.5 pour body text
+/// 7. Mobile-first : sizes adaptées tactile (minimum 16px pour inputs)
+///
+/// EXEMPLES :
+///
+/// ✅ CORRECT :
+///   h1 { @include typography('h1'); }
+///   p { font-size: font-size('base'); line-height: line-height('normal'); }
+///   .label { font-size: font-size('sm'); font-weight: font-weight('medium'); }
+///
+/// ❌ INCORRECT :
+///   h1 { font-size: 2.5rem; }               // Hardcodé !
+///   p { font-weight: 500; }                 // Hardcodé !
+///   .label { line-height: 1.4; }            // Hardcodé !
+/// ============================================================================

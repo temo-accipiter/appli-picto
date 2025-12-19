@@ -928,6 +928,32 @@ $line-height-tokens: (
 );
 
 // =============================================================================
+// FONT-WEIGHT TOKENS - Poids de police
+// =============================================================================
+
+/// Font weights disponibles (respecter la fonte chargée)
+/// Utiliser noms sémantiques plutôt que valeurs numériques brutes
+///
+/// Usage:
+///   - Via fonction: font-weight: font-weight('bold');
+///   - Direct: font-weight: map.get($font-weight-tokens, 'semibold'); (déconseillé)
+$font-weight-tokens: (
+  'thin': 100,
+  'extralight': 200,
+  'light': 300,
+  'normal': 400,
+  // Défaut
+  'medium': 500,
+  'semibold': 600,
+  'bold': 700,
+  'extrabold': 800,
+  'black': 900,
+  // Aliases sémantiques
+  'regular': 400,
+  'heavy': 900,
+) !default;
+
+// =============================================================================
 // TRANSITION TOKENS - Durées et timing functions
 // =============================================================================
 
