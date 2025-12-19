@@ -1,14 +1,22 @@
 // src/styles/base/_reduced-motion.scss
-/* Global reduced motion policy - apply early in main.scss (just after reset) */
+@use '../abstracts' as *;
+
+/// ============================================================================
+/// REDUCED MOTION - WCAG 2.2 AA Compliance
+/// ============================================================================
+/// Global reduced motion policy - apply early in main.scss (just after reset)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
 
 /* Respect user OS preference */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: a11y('reduced-motion-duration') !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: a11y('reduced-motion-duration') !important;
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
@@ -19,9 +27,9 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.1ms !important;
+    animation-duration: a11y('safe-animation-duration') !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: a11y('safe-transition-duration') !important;
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }

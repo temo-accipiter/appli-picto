@@ -1,45 +1,48 @@
 @charset 'UTF-8';
+@use '../abstracts' as *;
 
 /// ============================================================================
-/// LIGHT THEME
+/// LIGHT THEME - TOKENS-FIRST
 /// ============================================================================
-/// Variables CSS pour le théme clair (défaut).
+/// Variables CSS pour le thème clair (défaut).
 /// Peut être surchargé par prefers-color-scheme: light ou [data-theme="light"]
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
 /// ============================================================================
 
 :root {
   // === COLORS - LIGHT THEME ===
-  --color-primary: #0077c2; // Bleu principal
-  --color-secondary: #ef5350; // Rouge accent
-  --color-accent: #ffb400; // Jaune accent
+  --color-primary: #{blue(600)}; // Bleu principal
+  --color-secondary: #{red(500)}; // Rouge accent
+  --color-accent: #{orange(500)}; // Orange accent
 
   // === TEXT COLORS ===
-  --color-text: #333333; // Texte sombre sur fond clair
-  --color-text-rgb: 51, 51, 51;
-  --color-text-invert: #ffffff; // Texte clair sur fond sombre
-  --color-text-muted: #6c757d; // Texte atténué
+  --color-text: #{gray(900)}; // Texte sombre sur fond clair
+  --color-text-rgb: 51, 51, 51; // RGB pour rgba() runtime
+  --color-text-invert: #{white()}; // Texte clair sur fond sombre
+  --color-text-muted: #{gray(600)}; // Texte atténué
 
   // === BACKGROUND COLORS ===
-  --color-bg: #ffffff; // Fond principal blanc
-  --color-surface: #f7f7f7; // Surface secondaire (cards, containers)
-  --color-border: #d0d7e0; // Bordures
-  --color-bg-soft: #f9f9f9; // Fond trés doux
-  --color-bg-hover: #f0f0f0; // Hover background
+  --color-bg: #{white()}; // Fond principal blanc
+  --color-surface: #{gray(100)}; // Surface secondaire (cards, containers)
+  --color-border: #{gray(300)}; // Bordures
+  --color-bg-soft: #{gray(50)}; // Fond très doux
+  --color-bg-hover: #{gray(200)}; // Hover background
 
   // === SEMANTIC COLORS ===
-  --color-success: #4caf50; // Succés vert
-  --color-warning: #ff9800; // Alerte orange
-  --color-error: #f44336; // Erreur rouge
-  --color-info: #2196f3; // Info bleu
+  --color-success: #{green(500)}; // Succès vert
+  --color-warning: #{orange(500)}; // Alerte orange
+  --color-error: #{red(500)}; // Erreur rouge
+  --color-info: #{blue(500)}; // Info bleu
 
   // === SCROLLBAR ===
-  --c-scroll-thumb: #c0c0c0; // Thumb scrollbar gris
-  --c-scroll-track: #f5f5f5; // Track scrollbar
+  --c-scroll-thumb: #{gray(400)}; // Thumb scrollbar gris
+  --c-scroll-track: #{gray(100)}; // Track scrollbar
 
   // === FOCUS RING ===
-  --focus-ring-color: #0077c2; // Focus ring bleu
-  --focus-ring-width: 2px;
-  --focus-ring-offset: 2px;
+  --focus-ring-color: #{blue(600)}; // Focus ring bleu
+  --focus-ring-width: #{a11y('focus-ring-width')};
+  --focus-ring-offset: #{a11y('focus-ring-offset')};
 }
 
 // Light theme explicit (for clarity)
@@ -51,26 +54,26 @@
 
 // Data attribute override (for theme switcher)
 [data-theme='light'] {
-  // Light theme colors
-  --color-primary: #0077c2;
-  --color-secondary: #ef5350;
-  --color-accent: #ffb400;
-  --color-text: #333333;
+  // Light theme colors (tokens-first)
+  --color-primary: #{blue(600)};
+  --color-secondary: #{red(500)};
+  --color-accent: #{orange(500)};
+  --color-text: #{gray(900)};
   --color-text-rgb: 51, 51, 51;
-  --color-text-invert: #ffffff;
-  --color-text-muted: #6c757d;
-  --color-bg: #ffffff;
-  --color-surface: #f7f7f7;
-  --color-border: #d0d7e0;
-  --color-bg-soft: #f9f9f9;
-  --color-bg-hover: #f0f0f0;
-  --color-success: #4caf50;
-  --color-warning: #ff9800;
-  --color-error: #f44336;
-  --color-info: #2196f3;
-  --c-scroll-thumb: #c0c0c0;
-  --c-scroll-track: #f5f5f5;
-  --focus-ring-color: #0077c2;
+  --color-text-invert: #{white()};
+  --color-text-muted: #{gray(600)};
+  --color-bg: #{white()};
+  --color-surface: #{gray(100)};
+  --color-border: #{gray(300)};
+  --color-bg-soft: #{gray(50)};
+  --color-bg-hover: #{gray(200)};
+  --color-success: #{green(500)};
+  --color-warning: #{orange(500)};
+  --color-error: #{red(500)};
+  --color-info: #{blue(500)};
+  --c-scroll-thumb: #{gray(400)};
+  --c-scroll-track: #{gray(100)};
+  --focus-ring-color: #{blue(600)};
 }
 
 // ============================================================================

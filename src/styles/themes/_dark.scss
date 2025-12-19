@@ -1,80 +1,83 @@
 @charset 'UTF-8';
+@use '../abstracts' as *;
 
 /// ============================================================================
-/// DARK THEME
+/// DARK THEME - TOKENS-FIRST
 /// ============================================================================
-/// Variables CSS pour le théme sombre.
+/// Variables CSS pour le thème sombre.
 /// Activé via prefers-color-scheme: dark ou [data-theme="dark"]
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
 /// ============================================================================
 
 // Dark theme via OS preference
 @media (prefers-color-scheme: dark) {
   :root {
     // === COLORS - DARK THEME ===
-    --color-primary: #4dabf7; // Bleu clair en dark mode
-    --color-secondary: #ff8a80; // Rouge clair
-    --color-accent: #ffd54f; // Jaune clair
+    --color-primary: #{blue(400)}; // Bleu clair en dark mode
+    --color-secondary: #{red(400)}; // Rouge clair
+    --color-accent: #{yellow(400)}; // Jaune clair
 
     // === TEXT COLORS ===
-    --color-text: #e2e8f0; // Texte clair sur fond sombre
-    --color-text-rgb: 226, 232, 240;
-    --color-text-invert: #0f172a; // Texte sombre sur fond clair (rare en dark)
-    --color-text-muted: #94a3b8; // Texte atténué
+    --color-text: #{slate(200)}; // Texte clair sur fond sombre
+    --color-text-rgb: 226, 232, 240; // RGB pour rgba() runtime
+    --color-text-invert: #{slate(900)}; // Texte sombre sur fond clair (rare en dark)
+    --color-text-muted: #{slate(400)}; // Texte atténué
 
     // === BACKGROUND COLORS ===
-    --color-bg: #0f172a; // Fond principal trés sombre (quasi noir)
-    --color-surface: #1e293b; // Surface secondaire (cards)
-    --color-border: #334155; // Bordures sombres
-    --color-bg-soft: #1a222f; // Fond trés doux
-    --color-bg-hover: #1e293b; // Hover background
+    --color-bg: #{slate(900)}; // Fond principal très sombre (quasi noir)
+    --color-surface: #{slate(800)}; // Surface secondaire (cards)
+    --color-border: #{slate(600)}; // Bordures sombres
+    --color-bg-soft: #{slate(800)}; // Fond très doux
+    --color-bg-hover: #{slate(700)}; // Hover background
 
     // === SEMANTIC COLORS ===
-    --color-success: #4ade80; // Succés vert clair
-    --color-warning: #fbbf24; // Alerte orange clair
-    --color-error: #f87171; // Erreur rouge clair
-    --color-info: #60a5fa; // Info bleu clair
+    --color-success: #{green(400)}; // Succès vert clair
+    --color-warning: #{orange(400)}; // Alerte orange clair
+    --color-error: #{red(400)}; // Erreur rouge clair
+    --color-info: #{blue(400)}; // Info bleu clair
 
     // === SCROLLBAR ===
-    --c-scroll-thumb: #475569; // Thumb scrollbar gris sombre
-    --c-scroll-track: #1e293b; // Track scrollbar sombre
+    --c-scroll-thumb: #{slate(600)}; // Thumb scrollbar gris sombre
+    --c-scroll-track: #{slate(800)}; // Track scrollbar sombre
 
     // === FOCUS RING ===
-    --focus-ring-color: #4dabf7; // Focus ring bleu clair
+    --focus-ring-color: #{blue(400)}; // Focus ring bleu clair
   }
 }
 
 // Dark theme explicit (data attribute)
 [data-theme='dark'] {
   // === COLORS - DARK THEME ===
-  --color-primary: #4dabf7;
-  --color-secondary: #ff8a80;
-  --color-accent: #ffd54f;
+  --color-primary: #{blue(400)};
+  --color-secondary: #{red(400)};
+  --color-accent: #{yellow(400)};
 
   // === TEXT COLORS ===
-  --color-text: #e2e8f0;
+  --color-text: #{slate(200)};
   --color-text-rgb: 226, 232, 240;
-  --color-text-invert: #0f172a;
-  --color-text-muted: #94a3b8;
+  --color-text-invert: #{slate(900)};
+  --color-text-muted: #{slate(400)};
 
   // === BACKGROUND COLORS ===
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-bg-soft: #1a222f;
-  --color-bg-hover: #1e293b;
+  --color-bg: #{slate(900)};
+  --color-surface: #{slate(800)};
+  --color-border: #{slate(600)};
+  --color-bg-soft: #{slate(800)};
+  --color-bg-hover: #{slate(700)};
 
   // === SEMANTIC COLORS ===
-  --color-success: #4ade80;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
-  --color-info: #60a5fa;
+  --color-success: #{green(400)};
+  --color-warning: #{orange(400)};
+  --color-error: #{red(400)};
+  --color-info: #{blue(400)};
 
   // === SCROLLBAR ===
-  --c-scroll-thumb: #475569;
-  --c-scroll-track: #1e293b;
+  --c-scroll-thumb: #{slate(600)};
+  --c-scroll-track: #{slate(800)};
 
   // === FOCUS RING ===
-  --focus-ring-color: #4dabf7;
+  --focus-ring-color: #{blue(400)};
 }
 
 // ============================================================================
@@ -101,7 +104,7 @@
     border-color: var(--color-border);
 
     &:focus {
-      background-color: #2d3748;
+      background-color: #{slate(700)};
     }
   }
 

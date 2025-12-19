@@ -1,7 +1,11 @@
-@forward './theme-vars';
-
-// Forward UNIQUEMENT les thèmes (ils génèrent tous du CSS volontairement)
-// Aucun risque de duplication car ils ne seront utilisés QU'EN UN SEUL ENDROIT : main.scss
+/// ============================================================================
+/// THEMES INDEX - TOKENS-FIRST
+/// ============================================================================
+/// Forward UNIQUEMENT les thèmes (ils génèrent tous du CSS volontairement)
+/// Aucun risque de duplication car ils ne seront utilisés QU'EN UN SEUL ENDROIT : main.scss
+///
+/// ✅ CONFORME TOKENS-FIRST : Tous thèmes utilisent fonctions tokens
+/// ============================================================================
 
 @forward './light';
 @forward './dark';

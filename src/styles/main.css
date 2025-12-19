@@ -627,7 +627,10 @@ table {
   display: none !important;
 }
 
-/* Global reduced motion policy - apply early in main.scss (just after reset) */
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
 /* Respect user OS preference */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -644,9 +647,9 @@ table {
 [data-calm-mode=true] *,
 [data-calm-mode=true] *::before,
 [data-calm-mode=true] *::after {
-  animation-duration: 0.1ms !important;
+  animation-duration: 200ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-duration: 150ms !important;
   transition-delay: 0s !important;
   scroll-behavior: auto !important;
 }
@@ -1010,50 +1013,54 @@ ul li {
   🎨 5) THEMES — overrides runtime (CSS vars)
   - importés après base pour que les overrides s'appliquent correctement
    ============================================ */
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
 :root {
-  --color-primary: #0077c2;
-  --color-secondary: #ef5350;
-  --color-accent: #ffb400;
-  --color-text: #333333;
+  --color-primary: #2563eb;
+  --color-secondary: #ef4444;
+  --color-accent: #f97316;
+  --color-text: #3b3b3b;
   --color-text-rgb: 51, 51, 51;
-  --color-text-invert: #ffffff;
-  --color-text-muted: #6c757d;
-  --color-bg: #ffffff;
+  --color-text-invert: white();
+  --color-text-muted: #7e7e7e;
+  --color-bg: white();
   --color-surface: #f7f7f7;
-  --color-border: #d0d7e0;
-  --color-bg-soft: #f9f9f9;
-  --color-bg-hover: #f0f0f0;
-  --color-success: #4caf50;
-  --color-warning: #ff9800;
-  --color-error: #f44336;
-  --color-info: #2196f3;
-  --c-scroll-thumb: #c0c0c0;
-  --c-scroll-track: #f5f5f5;
-  --focus-ring-color: #0077c2;
+  --color-border: #cfcfcf;
+  --color-bg-soft: #fafafa;
+  --color-bg-hover: #e1e1e1;
+  --color-success: #22c55e;
+  --color-warning: #f97316;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  --c-scroll-thumb: #b1b1b1;
+  --c-scroll-track: #f7f7f7;
+  --focus-ring-color: #2563eb;
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
 }
 
 [data-theme=light] {
-  --color-primary: #0077c2;
-  --color-secondary: #ef5350;
-  --color-accent: #ffb400;
-  --color-text: #333333;
+  --color-primary: #2563eb;
+  --color-secondary: #ef4444;
+  --color-accent: #f97316;
+  --color-text: #3b3b3b;
   --color-text-rgb: 51, 51, 51;
-  --color-text-invert: #ffffff;
-  --color-text-muted: #6c757d;
-  --color-bg: #ffffff;
+  --color-text-invert: white();
+  --color-text-muted: #7e7e7e;
+  --color-bg: white();
   --color-surface: #f7f7f7;
-  --color-border: #d0d7e0;
-  --color-bg-soft: #f9f9f9;
-  --color-bg-hover: #f0f0f0;
-  --color-success: #4caf50;
-  --color-warning: #ff9800;
-  --color-error: #f44336;
-  --color-info: #2196f3;
-  --c-scroll-thumb: #c0c0c0;
-  --c-scroll-track: #f5f5f5;
-  --focus-ring-color: #0077c2;
+  --color-border: #cfcfcf;
+  --color-bg-soft: #fafafa;
+  --color-bg-hover: #e1e1e1;
+  --color-success: #22c55e;
+  --color-warning: #f97316;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  --c-scroll-thumb: #b1b1b1;
+  --c-scroll-track: #f7f7f7;
+  --focus-ring-color: #2563eb;
 }
 
 [data-theme=light] {
@@ -1062,49 +1069,53 @@ ul li {
   color: var(--color-text);
 }
 
+/* ============================================
+  💡 2) ABSTRACTS — OUTILS SCSS (tokens maps, functions, mixins, breakpoints)
+  - safe to forward; ne génèrent pas de CSS runtime
+   ============================================ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: #4dabf7;
-    --color-secondary: #ff8a80;
-    --color-accent: #ffd54f;
+    --color-primary: #60a5fa;
+    --color-secondary: #f87171;
+    --color-accent: #facc15;
     --color-text: #e2e8f0;
     --color-text-rgb: 226, 232, 240;
     --color-text-invert: #0f172a;
     --color-text-muted: #94a3b8;
     --color-bg: #0f172a;
     --color-surface: #1e293b;
-    --color-border: #334155;
-    --color-bg-soft: #1a222f;
-    --color-bg-hover: #1e293b;
+    --color-border: #475569;
+    --color-bg-soft: #1e293b;
+    --color-bg-hover: #334155;
     --color-success: #4ade80;
-    --color-warning: #fbbf24;
+    --color-warning: #fb923c;
     --color-error: #f87171;
     --color-info: #60a5fa;
     --c-scroll-thumb: #475569;
     --c-scroll-track: #1e293b;
-    --focus-ring-color: #4dabf7;
+    --focus-ring-color: #60a5fa;
   }
 }
 [data-theme=dark] {
-  --color-primary: #4dabf7;
-  --color-secondary: #ff8a80;
-  --color-accent: #ffd54f;
+  --color-primary: #60a5fa;
+  --color-secondary: #f87171;
+  --color-accent: #facc15;
   --color-text: #e2e8f0;
   --color-text-rgb: 226, 232, 240;
   --color-text-invert: #0f172a;
   --color-text-muted: #94a3b8;
   --color-bg: #0f172a;
   --color-surface: #1e293b;
-  --color-border: #334155;
-  --color-bg-soft: #1a222f;
-  --color-bg-hover: #1e293b;
+  --color-border: #475569;
+  --color-bg-soft: #1e293b;
+  --color-bg-hover: #334155;
   --color-success: #4ade80;
-  --color-warning: #fbbf24;
+  --color-warning: #fb923c;
   --color-error: #f87171;
   --color-info: #60a5fa;
   --c-scroll-thumb: #475569;
   --c-scroll-track: #1e293b;
-  --focus-ring-color: #4dabf7;
+  --focus-ring-color: #60a5fa;
 }
 
 [data-theme=dark] {
@@ -1124,7 +1135,7 @@ ul li {
 [data-theme=dark] input:focus,
 [data-theme=dark] select:focus,
 [data-theme=dark] textarea:focus {
-  background-color: #2d3748;
+  background-color: #334155;
 }
 [data-theme=dark] .card,
 [data-theme=dark] [role=region] {
