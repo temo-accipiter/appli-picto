@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { ClientWrapper } from './client-wrapper'
-import '@/styles/main.scss'
+import '@/styles/main.css'
 
 export const metadata: Metadata = {
   title: 'Appli-Picto',
