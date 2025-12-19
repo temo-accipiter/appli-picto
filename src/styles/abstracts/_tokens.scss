@@ -1016,6 +1016,70 @@ $border-width-tokens: (
 ) !default;
 
 // =============================================================================
+// BORDER RADIUS TOKENS - Border-radius standardisés
+// =============================================================================
+
+/// Border-radius pour tous les composants UI
+/// Assure cohérence et prédictibilité visuelle sur l'ensemble du design system
+///
+/// Structure:
+///   - Scale primaire: xs, sm, md, lg, xl, 2xl, full (progression standard)
+///   - Aliases sémantiques: card, button, input, avatar, badge, modal, etc.
+///   - Valeurs explicites: rounded-2px, rounded-4px, etc. (usage spécifique)
+///
+/// Usage:
+///   - Via fonction: border-radius: radius('md');
+///   - Direct: border-radius: map.get($radius-tokens, 'card'); (déconseillé)
+$radius-tokens: (
+  // === Scale primaire ===
+  'none': 0,
+  'xs': 2px,
+  // Subtly rounded corners
+  'sm': 4px,
+  // Slightly rounded
+  'md': 8px,
+  // Standard rounded corners
+  'lg': 16px,
+  // Large rounded corners
+  'xl': 20px,
+  // Extra large
+  '2xl': 24px,
+  // 2XL (rare)
+  'full': 50%,
+  // Completely rounded (circles, pills)
+  // === Aliases sémantiques (composants UI) ===
+  'default': 8px,
+  // Défaut du système (= md)
+  'card': 16px,
+  // Cards, containers (= lg)
+  'button': 8px,
+  // Boutons standards (= md)
+  'input': 8px,
+  // Inputs, selects (= md)
+  'avatar': 50%,
+  // Avatars circulaires (= full)
+  'badge': 50%,
+  // Badges, pills (= full)
+  'modal': 16px,
+  // Modals, drawers (= lg)
+  'drawer': 16px,
+  // Drawers (= lg)
+  'tooltip': 4px,
+  // Tooltips (= sm)
+  // === Valeurs explicites (usage spécifique) ===
+  'rounded-2px': 2px,
+  'rounded-4px': 4px,
+  'rounded-6px': 6px,
+  'rounded-8px': 8px,
+  'rounded-10px': 10px,
+  'rounded-12px': 12px,
+  'rounded-14px': 14px,
+  'rounded-16px': 16px,
+  'rounded-20px': 20px,
+  'rounded-24px': 24px
+) !default;
+
+// =============================================================================
 // FUNCTIONS - Accesseurs pour tokens
 // =============================================================================
 

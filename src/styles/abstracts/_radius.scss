@@ -1,161 +1,134 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
 /// ============================================================================
-/// BORDER RADIUS SYSTEM - Centralisé
+/// BORDER RADIUS - Wrapper pur pour border-radius
 /// ============================================================================
-/// Source de vérité pour tous les border-radius du design system.
-/// Assure cohérence et prédictibilité visuelle.
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de $radius-tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
 ///
-/// Utilisation:
-///   border-radius: radius(md);
-///   border-radius: radius-value(lg);
+/// SOURCE DE VÉRITÉ : $radius-tokens dans _tokens.scss
+///
+/// Usage:
+///   border-radius: radius('md');              // 8px
+///   border-radius: radius('card');            // 16px (alias sémantique)
+///   @include rounded('lg');                   // Mixin helper
+///   @include button-radius;                   // Mixin spécifique boutons
+///
+/// Migration v2.1:
+///   - ✅ Supprimé $radius-xs, $radius-sm, etc. (variables individuelles)
+///   - ✅ Supprimé $radius-scale (duplication)
+///   - ✅ Fonction radius() lit uniquement depuis $radius-tokens
+///   - ✅ Mixins conservés pour DX (rounded, button-radius, etc.)
 /// ============================================================================
 
-// =============================================================================
-// RADIUS - Variables individuelles
-// =============================================================================
+/// ============================================================================
+/// FUNCTIONS
+/// ============================================================================
 
-/// Border radius values - progression de 2px (standard)
-$radius-xs: 2px; // Subtly rounded corners
-$radius-sm: 4px; // Slightly rounded
-$radius-md: 8px; // Standard rounded corners
-$radius-lg: 16px; // Large rounded corners
-$radius-xl: 20px; // Extra large
-$radius-2xl: 24px; // 2XL (rare)
-$radius-full: 50%; // Completely rounded (circles, pills)
-
-// =============================================================================
-// RADIUS MAP - Tous les border-radius disponibles
-// =============================================================================
-
-/// Map centralisée contenant tous les border-radius du système
-$radius-scale: (
-  // === Scale primaire ===
-  'xs': $radius-xs,
-  // 2px
-  'sm': $radius-sm,
-  // 4px
-  'md': $radius-md,
-  // 8px
-  'lg': $radius-lg,
-  // 16px
-  'xl': $radius-xl,
-  // 20px
-  '2xl': $radius-2xl,
-  // 24px
-  'full': $radius-full,
-
-  // 50%
-  // === Aliases fréquents ===
-  'none': 0,
-  'default': $radius-md,
-  'card': $radius-lg,
-  'button': $radius-md,
-  'input': $radius-md,
-  'avatar': $radius-full,
-  'badge': $radius-full,
-  'modal': $radius-lg,
-  'drawer': $radius-lg,
-  'tooltip': $radius-sm,
-
-  // === Component specific ===
-  'rounded-2px': 2px,
-  // Subtlest curve
-  'rounded-4px': 4px,
-  'rounded-6px': 6px,
-  'rounded-8px': 8px,
-  'rounded-10px': 10px,
-  'rounded-12px': 12px,
-  'rounded-14px': 14px,
-  'rounded-16px': 16px,
-  'rounded-20px': 20px,
-  'rounded-24px': 24px
-);
-
-// =============================================================================
-// FUNCTIONS - Accesseurs pour border-radius
-// =============================================================================
-
-/// Récupère une valeur de border-radius depuis la scale
-/// @param {String} $key - Clé dans $radius-scale
-/// @return {String} Border-radius value
+/// Récupère une valeur de border-radius depuis $radius-tokens
+/// @param {String} $key - Clé de radius (xs, sm, md, lg, xl, 2xl, full, card, button, etc.)
+/// @return {Number|Percentage} Border-radius value (px ou %)
 /// @example
-///   border-radius: radius(md);
-///   border-radius: radius(button);
+///   border-radius: radius('md');       // 8px
+///   border-radius: radius('card');     // 16px
+///   border-radius: radius('full');     // 50%
 @function radius($key) {
-  $value: map.get($radius-scale, $key);
-  @if $value == null {
-    @error 'Radius key "#{$key}" not found. Available: #{map.keys($radius-scale)}';
+  @if not map.has-key($radius-tokens, $key) {
+    @error "Radius key '#{$key}' not found in $radius-tokens. Available keys: #{map.keys($radius-tokens)}";
   }
-  @return $value;
+  @return map.get($radius-tokens, $key);
 }
 
 /// Alias pour radius() - utiliser quand nom explicite nécessaire
-/// @param {String} $key - Clé dans $radius-scale
-/// @return {String} Border-radius value
+/// @param {String} $key - Clé dans $radius-tokens
+/// @return {Number|Percentage} Border-radius value
 @function radius-value($key) {
   @return radius($key);
 }
 
-// =============================================================================
-// MIXINS - Helper pour border-radius courants
-// =============================================================================
+/// ============================================================================
+/// MIXINS - Helpers pour border-radius courants
+/// ============================================================================
 
 /// Applique un radius standard (card/container)
 /// @param {String} $size - Taille du radius (défaut: md)
-@mixin rounded($size: md) {
+/// @example
+///   @include rounded('lg');  // border-radius: 16px;
+///   @include rounded();      // border-radius: 8px; (défaut md)
+@mixin rounded($size: 'md') {
   border-radius: radius($size);
 }
 
 /// Crée un bouton avec border-radius (button specific)
+/// @example
+///   @include button-radius;  // border-radius: 8px;
 @mixin button-radius {
-  border-radius: radius(button);
+  border-radius: radius('button');
 }
 
 /// Crée un input/select avec border-radius (input specific)
+/// @example
+///   @include input-radius;  // border-radius: 8px;
 @mixin input-radius {
-  border-radius: radius(input);
+  border-radius: radius('input');
 }
 
 /// Crée un avatar circulaire
+/// @example
+///   @include avatar-radius;  // border-radius: 50%;
 @mixin avatar-radius {
-  border-radius: radius(avatar);
+  border-radius: radius('avatar');
 }
 
 /// Crée un badge/pill shape
+/// @example
+///   @include badge-radius;  // border-radius: 50%;
 @mixin badge-radius {
-  border-radius: radius(badge);
+  border-radius: radius('badge');
 }
 
 /// Crée un modal/drawer avec radius
+/// @example
+///   @include modal-radius;  // border-radius: 16px;
 @mixin modal-radius {
-  border-radius: radius(modal);
+  border-radius: radius('modal');
 }
 
-// =============================================================================
-// CSS CUSTOM PROPERTIES - Pour accès runtime
-// =============================================================================
+/// ============================================================================
+/// CSS CUSTOM PROPERTIES - Pour accès runtime (JavaScript)
+/// ============================================================================
 
 :root {
-  --radius-xs: #{$radius-xs};
-  --radius-sm: #{$radius-sm};
-  --radius-md: #{$radius-md};
-  --radius-lg: #{$radius-lg};
-  --radius-xl: #{$radius-xl};
-  --radius-full: #{$radius-full};
+  // Scale primaire
+  --radius-none: #{radius('none')};
+  --radius-xs: #{radius('xs')};
+  --radius-sm: #{radius('sm')};
+  --radius-md: #{radius('md')};
+  --radius-lg: #{radius('lg')};
+  --radius-xl: #{radius('xl')};
+  --radius-2xl: #{radius('2xl')};
+  --radius-full: #{radius('full')};
+
+  // Aliases sémantiques (pour JavaScript/CSS direct si besoin)
+  --radius-default: #{radius('default')};
+  --radius-card: #{radius('card')};
+  --radius-button: #{radius('button')};
+  --radius-input: #{radius('input')};
+  --radius-modal: #{radius('modal')};
 }
 
-// ============================================================================
-// GUIDELINES
-// ============================================================================
-// 1. JAMAIS hardcoder border-radius - utiliser radius($key)
-// 2. Utiliser aliases (card, button, input, avatar) pour clarté
-// 3. radius-full (50%) uniquement pour cercles/pills
-// 4. Cohérence: respecter progression 2px-4px-8px-16px
-// 5. Mobile-first: radius consistent across breakpoints (exception: rare responsive changes)
-// 6. Accessibilité: radius ne doit pas géner interaction (min 44x44 touch targets)
-// 7. Pour nouvelles valeurs, ajouter à $radius-scale map
-// 8. Documenter radius custom avec commentaires
-// 9. WCAG: Assurer contraste sufficient autour des corners arrondis
-// 10. Performance: éviter border-radius excessive sur animations (reflow cost)
+/// ============================================================================
+/// GUIDELINES
+/// ============================================================================
+/// 1. JAMAIS hardcoder border-radius - utiliser radius($key)
+/// 2. Utiliser aliases sémantiques (card, button, input, avatar) pour clarté
+/// 3. radius('full') (50%) uniquement pour cercles/pills
+/// 4. Cohérence: respecter progression 2px-4px-8px-16px-20px-24px
+/// 5. Mobile-first: radius consistent across breakpoints (exception: rare)
+/// 6. Accessibilité: radius ne doit pas gêner interaction (min 44x44 touch targets)
+/// 7. Pour nouvelles valeurs, ajouter à $radius-tokens dans _tokens.scss
+/// 8. WCAG: Assurer contraste suffisant autour des corners arrondis
+/// 9. Performance: éviter border-radius excessive sur animations (reflow cost)
+/// ============================================================================
