@@ -1080,6 +1080,36 @@ $radius-tokens: (
 ) !default;
 
 // =============================================================================
+// CONTAINER QUERY TOKENS - Breakpoints pour container queries
+// =============================================================================
+
+/// Container query breakpoints (similaires aux breakpoints viewport mais pour containers)
+/// Utilisés avec @container queries (CSS Container Queries moderne)
+///
+/// Container queries permettent responsive design basé sur taille du conteneur parent
+/// plutôt que du viewport - idéal pour composants réutilisables modulaires
+///
+/// Compatibilité: Chrome 105+, Safari 16+, Firefox 110+
+///
+/// Usage:
+///   - Via mixin: @include respond-container('md') { ... }
+///   - Direct: @container (min-width: map.get($container-query-tokens, 'md'))
+$container-query-tokens: (
+  'xs': 320px,
+  // Very small containers
+  'sm': 400px,
+  // Small containers
+  'md': 600px,
+  // Medium containers (cards, sidebars)
+  'lg': 800px,
+  // Large containers
+  'xl': 1000px,
+  // Extra large containers
+  '2xl': 1200px
+  // Very large containers (grids, dashboards)
+) !default;
+
+// =============================================================================
 // FUNCTIONS - Accesseurs pour tokens
 // =============================================================================
 
