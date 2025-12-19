@@ -1,207 +1,137 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
 /// ============================================================================
-/// MOTION SYSTEM - Centralisé
+/// MOTION SYSTEM - Wrapper pur pour animations et transitions
 /// ============================================================================
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+///
+/// SOURCES DE VÉRITÉ :
+///   - $motion-tokens dans _tokens.scss (timing, easing, presets)
+///
 /// Source de vérité pour toutes les animations, transitions et durations.
 /// Garantit accessibilité (prefers-reduced-motion) et cohérence design.
 ///
+/// Optimisé TSA (Troubles Spectre Autistique) :
+///   - Max 0.3s pour feedback immédiat (doux, prévisible)
+///   - Max 0.5s pour reveals (jamais brusque)
+///   - Toutes animations respectent prefers-reduced-motion
+///
 /// Utilisation:
-///   transition: color timing(xs) easing(smooth);
-///   animation: fade-in timing(sm) easing(smooth) forwards;
+///   transition: color timing('xs') easing('smooth');
+///   animation: fade-in timing('fade') easing('smooth-out') forwards;
+///
+/// Migration v2.1:
+///   - ✅ Supprimé toutes variables individuelles ($transition-xs, etc.)
+///   - ✅ Supprimé toutes maps locales ($timing-scale, $easing-scale, $motion-tokens)
+///   - ✅ Fonctions lisent uniquement depuis $motion-tokens
 /// ============================================================================
 
-// =============================================================================
-// DURéES / TIMINGS - Variables individuelles pour compatibilité
-// =============================================================================
+/// ============================================================================
+/// FUNCTIONS - Accesseurs pour motion
+/// ============================================================================
 
-/// Timings de transition - appliquées é motion fluide
-/// Cohérents avec design system TSA (douceur, prévisibilité)
-$transition-xs: 0.15s; // Hyper-rapide (feedback immédiat)
-$transition-fast: 0.2s; // Rapide (state change)
-$transition-base: 0.3s; // Standard (motion par défaut, WCAG compliant)
-$transition-slow: 0.5s; // Lent (flourish, important reveals)
-$transition-slower: 0.8s; // Très lent (complex animations)
-$transition-slowest: 1.2s; // Max durable pour animations
-
-// =============================================================================
-// TIMINGS MAP - Tous les timings disponibles
-// =============================================================================
-
-/// Map centralisée contenant toutes les durations d'animation
-/// Utilisé pour sélectionner le timing approprié par contexte
-$timing-scale: (
-  // === Transitions rapides (feedback, state changes) ===
-  'xs': 0.15s,
-  // 150ms - Immédiate (focus, hover)
-  'sm': 0.2s,
-  // 200ms - Rapide (color transitions)
-  'base': 0.3s,
-  // 300ms - Standard (default motion)
-  'lg': 0.5s,
-  // 500ms - Lent (reveals, transforms)
-  'xl': 0.8s,
-  // 800ms - Très lent (complex sequences)
-  '2xl': 1.2s,
-
-  // 1200ms - Max standard
-  // === Animations plus longues (sequences) ===
-  'pop': 0.4s,
-  // Pop animation scale 1->1.15->1
-  'rebond': 0.4s,
-  // Rebond effect (scale variation)
-  'slide': 0.3s,
-  // Slide in/out
-  'fade': 0.3s,
-  // Fade in/out
-  'spin': 1.5s,
-  // Continuous spin animation
-  'pulse': 2s,
-  // Breathing pulse effect
-  'shimmer': 2s,
-  // Skeleton shimmer effect
-  'bounce': 0.6s,
-  // Bounce effect
-  'shake': 0.3s,
-
-  // Shake/vibration effect
-  // === Progress bar specific ===
-  'train-move': 2s,
-  // Train animation across progress
-  'station-pop': 0.4s,
-  // Station marker pop
-  'dash-rail': 2s,
-
-  // SVG dash animation
-  // === Continuous loop durations ===
-  'infinite': 'infinite' // For loop animations
-);
-
-// =============================================================================
-// EASING FUNCTIONS - Courbes d'accélération
-// =============================================================================
-
-/// Map des easing functions (timing-function CSS)
-/// Cohérentes avec WCAG AA et design TSA (douceur, prévisibilité)
-$easing-scale: (
-  // === Easings standards ===
-  'linear': linear,
-  // Constant speed
-  'smooth': ease,
-  // ease = slow start, fast middle, slow end
-  'ease-in': ease-in,
-  // Slow start
-  'ease-out': ease-out,
-  // Slow end (preferred for exits)
-  'ease-in-out': ease-in-out,
-
-  // Both sides slow
-  // === Cubic-bezier pour plus de contréle ===
-  'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
-  // Overshoot for pop
-  'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
-  // Bounce effect
-  'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94),
-  // Smooth natural exit
-  'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19) // Smooth natural enter
-);
-
-// =============================================================================
-// MOTION TOKENS (timing + easing combinations)
-// =============================================================================
-
-/// Paires timing+easing prédéfinies pour patterns courants
-/// Utiliser pour cohérence design maximale
-$motion-tokens: (
-  // === Feedback rapide (interactions utilisateur) ===
-  'quick-feedback': (
-      duration: $transition-xs,
-      easing: ease,
-    ),
-
-  // === état change (hover, focus, active) ===
-  'state-change': (
-      duration: $transition-fast,
-      easing: ease,
-    ),
-
-  // === Motion standard (par défaut) ===
-  'standard': (
-      duration: $transition-base,
-      easing: ease,
-    ),
-
-  // === Reveal/appear (subtle, smooth) ===
-  'reveal': (
-      duration: $transition-slow,
-      easing: ease-out,
-    ),
-
-  // === Pop/bounce (playful, engaging) ===
-  'pop': (
-      duration: 0.4s,
-      easing: cubic-bezier(0.34, 1.56, 0.64, 1),
-    ),
-
-  // === Long animation (elaborate sequences) ===
-  'elaborate': (
-      duration: $transition-slower,
-      easing: ease-in-out,
-    )
-);
-
-// =============================================================================
-// FUNCTIONS - Accesseurs pour timings et easings
-// =============================================================================
-
-/// Récupère une durée depuis la timing scale
-/// @param {String} $key - Clé dans $timing-scale
-/// @return {String|Number} Durée d'animation (ex: 0.3s, infinite)
+/// Récupère une durée depuis timing scale
+/// @param {String} $key - Clé dans timing scale ('xs', 'sm', 'base', 'lg', 'xl', '2xl', 'pop', 'fade', 'spin', etc.)
+/// @return {String|Number} Durée d'animation (ex: 0.3s, 2s, 'infinite')
 /// @example
-///   transition: all timing(base) ease;
-///   animation: fade-in timing(sm) ease forwards;
+///   transition: all timing('base') ease;     // 0.3s
+///   animation: fade-in timing('fade') ease;  // 0.3s
+///   animation: spin timing('spin') linear infinite; // 1.5s
 @function timing($key) {
-  $value: map.get($timing-scale, $key);
-  @if $value == null {
-    @error 'Timing key "#{$key}" not found. Available: #{map.keys($timing-scale)}';
+  $timing-map: map.get($motion-tokens, 'timing');
+
+  @if $timing-map == null {
+    @error "Timing map not found in $motion-tokens (looking for key 'timing' in _tokens.scss)";
   }
+
+  $value: map.get($timing-map, $key);
+
+  @if $value == null {
+    @error "Timing key '#{$key}' not found. Available: #{map.keys($timing-map)} (from $motion-tokens in _tokens.scss)";
+  }
+
   @return $value;
 }
 
-/// Récupère une easing function depuis la easing scale
-/// @param {String} $key - Clé dans $easing-scale
-/// @return {String} Easing function CSS
+/// Récupère une easing function depuis easing scale
+/// @param {String} $key - Clé dans easing scale ('linear', 'smooth', 'ease-in', 'ease-out', 'smooth-pop', etc.)
+/// @return {String} Easing function CSS (ease, linear, cubic-bezier(...))
 /// @example
-///   transition: all 0.3s #{easing(smooth)};
+///   transition: all 0.3s easing('smooth');        // ease
+///   animation: pop 0.4s easing('smooth-pop');     // cubic-bezier(0.34, 1.56, 0.64, 1)
 @function easing($key) {
-  $value: map.get($easing-scale, $key);
-  @if $value == null {
-    @error 'Easing key "#{$key}" not found. Available: #{map.keys($easing-scale)}';
+  $easing-map: map.get($motion-tokens, 'easing');
+
+  @if $easing-map == null {
+    @error "Easing map not found in $motion-tokens (looking for key 'easing' in _tokens.scss)";
   }
+
+  $value: map.get($easing-map, $key);
+
+  @if $value == null {
+    @error "Easing key '#{$key}' not found. Available: #{map.keys($easing-map)} (from $motion-tokens in _tokens.scss)";
+  }
+
   @return $value;
 }
 
-/// Récupère un motion token complet (duration + easing)
-/// @param {String} $key - Clé dans $motion-tokens
-/// @return {Map} Map contenant duration et easing
+/// Récupère un motion preset complet (duration + easing prédéfinis)
+/// @param {String} $key - Preset ('quick-feedback', 'state-change', 'standard', 'reveal', 'pop', 'elaborate')
+/// @return {Map} Map contenant 'duration' et 'easing'
 /// @example
-///   $motion: motion-token(pop);
-///   animation: pop-animation #{map.get($motion, duration)} #{map.get($motion, easing)};
-@function motion-token($key) {
-  $value: map.get($motion-tokens, $key);
-  @if $value == null {
-    @error 'Motion token "#{$key}" not found. Available: #{map.keys($motion-tokens)}';
+///   $motion: motion-preset('pop');
+///   animation: pop-animation map.get($motion, 'duration') map.get($motion, 'easing');
+@function motion-preset($key) {
+  $preset-map: map.get($motion-tokens, 'preset');
+
+  @if $preset-map == null {
+    @error "Preset map not found in $motion-tokens (looking for key 'preset' in _tokens.scss)";
   }
+
+  $value: map.get($preset-map, $key);
+
+  @if $value == null {
+    @error "Motion preset '#{$key}' not found. Available: #{map.keys($preset-map)} (from $motion-tokens in _tokens.scss)";
+  }
+
   @return $value;
 }
 
-// =============================================================================
-// ACCESSIBILITY - Respects prefers-reduced-motion
-// =============================================================================
+/// ============================================================================
+/// MIXINS - Helpers pour transitions courantes
+/// ============================================================================
 
-/// Réduit les durations si l'utilisateur préfére une motion réduite
-/// é appliquer au :root ou parent container
+/// Applique une transition standard avec timing/easing personnalisables
+/// @param {String|List} $property - Propriété CSS à animer (default: all)
+/// @param {String} $timing-key - Clé timing (default: 'base')
+/// @param {String} $easing-key - Clé easing (default: 'smooth')
+/// @example
+///   @include transition(color, 'xs', 'smooth');
+///   @include transition((color, background-color), 'sm');
+@mixin transition($property: all, $timing-key: 'base', $easing-key: 'smooth') {
+  transition: $property timing($timing-key) easing($easing-key);
+}
+
+/// Applique un preset motion complet
+/// @param {String} $preset - Preset name ('quick-feedback', 'state-change', etc.)
+/// @param {String|List} $property - Propriété CSS (default: all)
+/// @example
+///   @include motion-preset-transition('state-change', color);
+@mixin motion-preset-transition($preset, $property: all) {
+  $motion: motion-preset($preset);
+  transition: $property map.get($motion, 'duration') map.get($motion, 'easing');
+}
+
+/// ============================================================================
+/// ACCESSIBILITY - Respecte prefers-reduced-motion
+/// ============================================================================
+
+/// Réduit les durées si l'utilisateur préfère une motion réduite (WCAG 2.2 AA)
+/// À appliquer au :root ou parent container
+/// CRITIQUE pour accessibilité TSA : animations réduites à quasi-instantané
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -210,35 +140,66 @@ $motion-tokens: (
   }
 }
 
-// =============================================================================
-// CSS CUSTOM PROPERTIES - Pour accès runtime
-// =============================================================================
+/// ============================================================================
+/// CSS CUSTOM PROPERTIES - Pour accès runtime JavaScript
+/// ============================================================================
 
 :root {
-  // === Timings ===
-  --timing-xs: #{$transition-xs};
-  --timing-sm: #{$transition-fast};
-  --timing-base: #{$transition-base};
-  --timing-lg: #{$transition-slow};
-  --timing-xl: #{$transition-slower};
-  --timing-2xl: #{$transition-slowest};
+  // === Timings standards ===
+  --timing-xs: #{timing('xs')};
+  --timing-sm: #{timing('sm')};
+  --timing-base: #{timing('base')};
+  --timing-lg: #{timing('lg')};
+  --timing-xl: #{timing('xl')};
+  --timing-2xl: #{timing('2xl')};
 
-  // === Easings ===
-  --easing-linear: linear;
-  --easing-smooth: ease;
-  --easing-smooth-in: ease-in;
-  --easing-smooth-out: ease-out;
-  --easing-smooth-in-out: ease-in-out;
+  // === Easings standards ===
+  --easing-linear: #{easing('linear')};
+  --easing-smooth: #{easing('smooth')};
+  --easing-smooth-in: #{easing('ease-in')};
+  --easing-smooth-out: #{easing('ease-out')};
+  --easing-smooth-in-out: #{easing('ease-in-out')};
 }
 
-// ============================================================================
-// GUIDELINES
-// ============================================================================
-// 1. JAMAIS hardcoder durées (0.3s, 200ms, etc.) - utiliser timing($key)
-// 2. JAMAIS hardcoder easing - utiliser easing($key)
-// 3. Accessibilité: TOUJOURS respecter prefers-reduced-motion
-// 4. TSA design: Motion < 0.4s pour feedback, < 0.8s pour reveals
-// 5. Cohérence: Utiliser motion-tokens pour patterns répétés
-// 6. Prévisibilité: Animations douces, jamais jarring/chaotic
-// 7. Pour animations nouvelles, ajouter à maps (pas hardcode)
-// 8. Considérer contexte utilisateur (enfants TSA = préférence calme)
+/// ============================================================================
+/// GUIDELINES & BEST PRACTICES
+/// ============================================================================
+/// 1. JAMAIS hardcoder durées (0.3s, 200ms, etc.) - utiliser timing($key)
+/// 2. JAMAIS hardcoder easing (ease, cubic-bezier...) - utiliser easing($key)
+/// 3. Accessibilité: TOUJOURS respecter prefers-reduced-motion (déjà géré)
+/// 4. TSA design: Motion < 0.3s pour feedback, < 0.5s pour reveals
+/// 5. Cohérence: Utiliser motion-preset() pour patterns répétés
+/// 6. Prévisibilité: Animations douces, jamais jarring/chaotic
+/// 7. Pour animations nouvelles, ajouter à $motion-tokens dans _tokens.scss
+/// 8. Considérer contexte utilisateur (enfants TSA = préférence calme)
+///
+/// TIMING DISPONIBLES :
+///   xs (150ms), sm (200ms), base (300ms), lg (500ms), xl (800ms), 2xl (1200ms)
+///   pop, rebond, slide, fade, spin, pulse, shimmer, bounce, shake
+///   train-move, station-pop, dash-rail, infinite
+///
+/// EASING DISPONIBLES :
+///   linear, smooth, ease-in, ease-out, ease-in-out
+///   smooth-pop, bounce-easy, smooth-out, smooth-in
+///
+/// PRESETS DISPONIBLES :
+///   quick-feedback (150ms ease) - Interactions immédiates
+///   state-change (200ms ease) - Hover, focus, active
+///   standard (300ms ease) - Motion par défaut
+///   reveal (500ms ease-out) - Apparitions subtiles
+///   pop (400ms smooth-pop) - Effets playful
+///   elaborate (800ms ease-in-out) - Séquences complexes
+///
+/// EXEMPLES :
+///
+/// ✅ CORRECT :
+///   transition: color timing('xs') easing('smooth');
+///   animation: fade-in timing('fade') easing('smooth-out');
+///   @include transition(background-color, 'sm', 'ease-out');
+///   @include motion-preset-transition('state-change', color);
+///
+/// ❌ INCORRECT :
+///   transition: color 0.3s ease;                       // Hardcodé !
+///   animation: fade-in 300ms cubic-bezier(0.25, 1...); // Hardcodé !
+///   transition: all 0.2s;                              // Hardcodé !
+/// ============================================================================

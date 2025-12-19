@@ -954,36 +954,142 @@ $font-weight-tokens: (
 ) !default;
 
 // =============================================================================
-// TRANSITION TOKENS - Durées et timing functions
+// MOTION TOKENS - Durées, easings et animations complètes
 // =============================================================================
 
-/// Transition duration + timing function pairs
-$transition-tokens: (
-  // === Duration only (ms) ===
-  'fast': 150ms,
-  // Quick interactions
-  'base': 200ms,
-  // Standard transitions
-  'slow': 300ms,
-  // More deliberate
-  'slower': 500ms,
-
-  // Very deliberate
-  // === Easing functions ===
-  'ease-in': ease-in,
-  'ease-out': ease-out,
-  'ease-in-out': ease-in-out,
-  'ease-linear': linear,
-
-  // === Combined: duration + easing for direct use ===
-  'fast-ease': 150ms ease,
-  'base-ease': 200ms ease,
-  'slow-ease': 300ms ease,
-  'fast-in-out': 150ms ease-in-out,
-  'base-in-out': 200ms ease-in-out,
-  'slow-in-out': 300ms ease-in-out,
-  'base-cubic': 200ms cubic-bezier(0.25, 1, 0.5, 1)
-);
+/// 🔴 CANONICAL SOURCE pour ALL motion/transitions (timing + easing)
+///
+/// Structure complète :
+///   1. Timing scale : durées standardisées (xs → 2xl + spécifiques animations)
+///   2. Easing scale : courbes d'accélération (linear, smooth, cubic-bezier customs)
+///   3. Motion presets : paires timing+easing prédéfinies (quick-feedback, state-change, etc.)
+///
+/// Optimisé TSA :
+///   - Max 0.3s pour feedback immédiat (base)
+///   - Max 0.5s pour reveals (slow)
+///   - Toujours doux et prévisible (pas de jarring motion)
+///   - Respecter prefers-reduced-motion (géré dans _motion.scss)
+///
+/// Usage :
+///   transition: timing('xs') easing('smooth');
+///   animation: fade-in timing('fade') easing('smooth-out');
+///
+/// ⚠️ RÈGLES :
+///   - Toutes durées/easings DOIVENT être définies ici
+///   - _motion.scss ne contient QUE les fonctions wrapper
+///   - Jamais hardcoder 0.3s, ease, cubic-bezier() ailleurs
+$motion-tokens: (
+  // === TIMING SCALE - Durées standardisées ===
+  'timing': (
+    // === Transitions rapides (feedback, state changes) ===
+    'xs': 0.15s,
+    // 150ms - Immédiat (focus, hover)
+    'sm': 0.2s,
+    // 200ms - Rapide (color transitions)
+    'base': 0.3s,
+    // 300ms - Standard (default motion, TSA max)
+    'lg': 0.5s,
+    // 500ms - Lent (reveals, transforms)
+    'xl': 0.8s,
+    // 800ms - Très lent (complex sequences)
+    '2xl': 1.2s,
+    // 1200ms - Max standard
+    // === Animations spécifiques (named animations) ===
+    'pop': 0.4s,
+    // Pop animation scale 1→1.15→1
+    'rebond': 0.4s,
+    // Rebond effect (scale variation)
+    'slide': 0.3s,
+    // Slide in/out
+    'fade': 0.3s,
+    // Fade in/out
+    'spin': 1.5s,
+    // Continuous spin animation
+    'pulse': 2s,
+    // Breathing pulse effect
+    'shimmer': 2s,
+    // Skeleton shimmer effect
+    'bounce': 0.6s,
+    // Bounce effect
+    'shake': 0.3s,
+    // Shake/vibration effect
+    // === Progress bar animations ===
+    'train-move': 2s,
+    // Train animation across progress
+    'station-pop': 0.4s,
+    // Station marker pop
+    'dash-rail': 2s,
+    // SVG dash animation
+    // === Loop durations ===
+    'infinite': 'infinite',
+    // For continuous loop animations
+    // === Legacy aliases ===
+    'fast': 0.15s,
+    // Alias pour 'xs'
+    'slow': 0.3s,
+    // Alias pour 'base'
+    'slower': 0.5s,
+    // Alias pour 'lg'
+    'slowest': 1.2s,
+    // Alias pour '2xl'
+  ),
+  // === EASING SCALE - Courbes d'accélération ===
+  'easing': (
+    // === Easings standards CSS ===
+    'linear': linear,
+    // Constant speed
+    'smooth': ease,
+    // ease = slow start, fast middle, slow end (défaut)
+    'ease-in': ease-in,
+    // Slow start
+    'ease-out': ease-out,
+    // Slow end (preferred for exits)
+    'ease-in-out': ease-in-out,
+    // Both sides slow
+    // === Cubic-bezier custom (TSA-friendly) ===
+    'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
+    // Overshoot for playful pop
+    'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    // Bounce effect
+    'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    // Smooth natural exit
+    'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19),
+    // Smooth natural enter
+  ),
+  // === MOTION PRESETS - Paires timing+easing prédéfinies ===
+  'preset': (
+    // === Feedback rapide (interactions utilisateur) ===
+    'quick-feedback': (
+      'duration': 0.15s,
+      'easing': ease,
+    ),
+    // === État change (hover, focus, active) ===
+    'state-change': (
+      'duration': 0.2s,
+      'easing': ease,
+    ),
+    // === Motion standard (par défaut) ===
+    'standard': (
+      'duration': 0.3s,
+      'easing': ease,
+    ),
+    // === Reveal/appear (subtle, smooth) ===
+    'reveal': (
+      'duration': 0.5s,
+      'easing': ease-out,
+    ),
+    // === Pop/bounce (playful, engaging) ===
+    'pop': (
+      'duration': 0.4s,
+      'easing': cubic-bezier(0.34, 1.56, 0.64, 1),
+    ),
+    // === Long animation (elaborate sequences) ===
+    'elaborate': (
+      'duration': 0.8s,
+      'easing': ease-in-out,
+    ),
+  ),
+) !default;
 
 // =============================================================================
 // BORDER WIDTH TOKENS - Largeurs de bordure standardisées
@@ -1187,17 +1293,7 @@ $container-query-tokens: (
   @return $value;
 }
 
-/// Récupère une durée/timing de transition
-/// @param {String} $key - Clé dans $transition-tokens
-/// @return {String|Number} Transition value (ms or easing function)
-@function transition($key) {
-  $value: map.get($transition-tokens, $key);
-  @if $value == null {
-    @error 'Transition key "#{$key}" not found. Available: #{map.keys($transition-tokens)}';
-  }
-  @return $value;
-}
-
+// Note: timing() and easing() functions are defined in _motion.scss (not here)
 // Note: role-color() function is defined in _colors.scss (not here)
 // This file only contains DATA tokens (maps), not functions
 
