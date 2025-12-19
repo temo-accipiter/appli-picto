@@ -505,18 +505,22 @@ template {
   --shadow-2xl: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
+/* ============================================
+  💡 3) ABSTRACTS — SYSTÈMES RUNTIME (génèrent des CSS vars)
+  - IMPORTS EXPLICITES, UNE SEULE FOIS, DANS CET ORDRE
+   ============================================ */
 :root {
   --form-control-height: 2.75rem;
   --form-control-height-sm: 2.25rem;
-  --form-control-height-lg: 3.25rem;
+  --form-control-height-lg: 3.5rem;
   --form-control-padding-x: 1rem;
-  --form-control-border: #d0d7e0;
+  --form-control-border: #e1e1e1;
   --form-control-border-focus: #0077c2;
   --form-control-border-error: #f44336;
   --form-control-bg: #ffffff;
-  --form-control-bg-focus: #f5f7fa;
-  --form-control-bg-disabled: #f5f5f5;
-  --form-control-radius: 0.5rem;
+  --form-control-bg-focus: #f8fafc;
+  --form-control-bg-disabled: #f8fafc;
+  --form-control-radius: 8px;
 }
 
 /* ============================================
