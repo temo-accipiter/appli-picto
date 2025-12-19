@@ -1,7 +1,11 @@
 @use 'breakpoints' as *;
 @use 'variables' as *;
 @use 'a11y-tokens' as *;
+@use 'borders' as *;
+@use 'size' as *;
+@use 'colors' as *;
 @use 'sass:map';
+@use 'sass:meta';
 
 /// Applique une version foncée d'une couleur au hover
 /// @param {Color} $color Couleur de base
@@ -88,16 +92,18 @@
 /// Focus ring unifié pour tous les éléments interactifs (WCAG 2.2 AA)
 /// Utilise $color-accent par défaut pour une cohérence visuelle
 /// @param {Color} $color Couleur du ring (défaut: $color-accent)
-/// @param {Number} $width Épaisseur du ring (défaut: 2px)
-/// @param {Number} $offset Offset du ring (défaut: 2px)
-@mixin focus-ring($color: $color-accent, $width: 2px, $offset: 2px) {
+/// @param {String|Number} $width Épaisseur du ring (défaut: 'focus' = 2px)
+/// @param {String|Number} $offset Offset du ring (défaut: 'focus' = 2px)
+@mixin focus-ring($color: $color-accent, $width: 'focus', $offset: 'focus') {
   &:focus {
     outline: none; // Reset pour éviter double outline
   }
 
   &:focus-visible {
-    outline: $width solid $color;
-    outline-offset: $offset;
+    $resolved-width: if(meta.type-of($width) == 'string', border-width($width), $width);
+    $resolved-offset: if(meta.type-of($offset) == 'string', border-width($offset), $offset);
+    outline: $resolved-width solid $color;
+    outline-offset: $resolved-offset;
   }
 }
 
@@ -236,12 +242,12 @@
 /// @example
 ///   @include dnd-slot($color-primary, rgba($color-primary, 0.08))
 @mixin dnd-slot(
-  $border-color: var(--color-primary, #4a90d9),
+  $border-color: var(--color-primary),
   $bg-color: rgba(74, 144, 217, 0.08),
-  $min-height: 140px
+  $min-height: size('card-min-height')
 ) {
   min-height: $min-height;
-  border: 2px dashed transparent;
+  border: border-width('focus') dashed transparent;
   border-radius: $radius-md;
   background-color: transparent;
   padding: $spacing-sm;
@@ -263,8 +269,8 @@
 
   // Focus visible pour keyboard navigation
   &:focus-visible {
-    outline: 2px solid $border-color;
-    outline-offset: -2px;
+    outline: border-width('focus') solid $border-color;
+    outline-offset: -2px; // Valeur négative contextuelle (inset focus)
   }
 }
 
@@ -381,7 +387,7 @@
   .card-footer {
     padding: $spacing-md $spacing-lg;
     background: var(--color-bg-soft);
-    border-top: 1px solid var(--color-border);
+    border-top: border-width('thin') solid var(--color-border);
   }
 }
 
@@ -397,7 +403,7 @@
 
   thead {
     background: var(--color-bg-soft);
-    border-bottom: 2px solid var(--color-border);
+    border-bottom: border-width('focus') solid var(--color-border);
 
     th {
       padding: $spacing-md;
@@ -412,7 +418,7 @@
 
   tbody {
     tr {
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: border-width('thin') solid var(--color-border);
       @include safe-transition(background-color, $transition-fast, ease);
 
       &:hover {
@@ -456,7 +462,7 @@
   display: inline-flex;
   align-items: center;
   gap: $spacing-xs;
-  border: 1px solid transparent;
+  border: border-width('thin') solid transparent;
   @include safe-transition(all, $transition-fast, ease);
 
   @if $variant == 'solid' {
@@ -493,7 +499,7 @@
   }
 
   &:focus-visible {
-    outline: 2px solid $color;
-    outline-offset: 2px;
+    outline: border-width('focus') solid $color;
+    outline-offset: border-width('focus');
   }
 }
