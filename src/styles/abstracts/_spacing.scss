@@ -1,246 +1,113 @@
 @charset 'UTF-8';
 @use 'sass:map';
+@use 'tokens' as *;
 
 /// ============================================================================
-/// SPACING SYSTEM - Centralisé
+/// SPACING SYSTEM - Wrapper pur pour espacements
 /// ============================================================================
-/// Source de vérité pour tous les espacements du design system.
-/// Utiliser comme source, ne jamais hardcoder px/rem/em en composants.
+/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de $spacing-tokens
+/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
 ///
-/// Utilisation:
-///   margin: spacing(md);         // Variables existantes
-///   padding: spacing(nav-mobile);// Espacements spécialisés
-///   gap: spacing-value(lg);      // Valeur directe si needed
+/// SOURCE DE VÉRITÉ : $spacing-tokens dans _tokens.scss
+///
+/// ⚠️ RÈGLE CRITIQUE : spacing() est UNIQUEMENT pour margin, padding, gap
+///    Pour width/height/min-max, utiliser size() depuis _size.scss
+///
+/// Usage:
+///   margin: spacing('md');        // 1rem (16px)
+///   padding: spacing('24');       // 1.5rem (24px)
+///   gap: spacing('lg');           // 1.5rem (24px)
+///
+/// Migration v2.1:
+///   - ✅ Supprimé $spacing-xxs, $spacing-xs, etc. (variables individuelles)
+///   - ✅ Supprimé $spacing-scale (duplication massive)
+///   - ✅ Fonction spacing() lit uniquement depuis $spacing-tokens
+///   - ✅ CSS custom properties générées depuis $spacing-tokens
 /// ============================================================================
 
-// =============================================================================
-// SCALE PRIMAIRE - Variables individuelles pour compatibilité
-// =============================================================================
+/// ============================================================================
+/// FUNCTIONS
+/// ============================================================================
 
-/// Espacements de base - scale 4px (mobile-first)
-/// Basés sur 16px = 1rem
-$spacing-xxs: 0.25rem; // 4px - Très petit spacing (séparateurs)
-$spacing-xs: 0.5rem; // 8px - Petit spacing (padding entre éléments)
-$spacing-sm: 0.75rem; // 12px - Small padding
-$spacing-md: 1rem; // 16px - Default, section padding
-$spacing-lg: 1.5rem; // 24px - Large spacing, cards
-$spacing-xl: 2rem; // 32px - Extra large
-
-// Variables supplémentaires fréquemment utilisées
-$spacing-2xl: 2.5rem; // 40px
-$spacing-3xl: 3rem; // 48px
-$spacing-4xl: 4rem; // 64px
-
-// =============================================================================
-// SCALE MAP - Tous les espacements du système
-// =============================================================================
-
-/// Map centralisée contenant TOUS les espacements du projet
-/// Organisée par catégorie pour clarté
-$spacing-scale: (
-  // === Scale primaire ===
-  'xxs': $spacing-xxs,
-  // 4px
-  'xs': $spacing-xs,
-  // 8px
-  'sm': $spacing-sm,
-  // 12px
-  'md': $spacing-md,
-  // 16px
-  'lg': $spacing-lg,
-  // 24px
-  'xl': $spacing-xl,
-  // 32px
-  '2xl': $spacing-2xl,
-  // 40px
-  '3xl': $spacing-3xl,
-  // 48px
-  '4xl': $spacing-4xl,
-
-  // 64px
-  // === Espacements spécialisés (composants) ===
-  'nav-mobile': 56px,
-  // Mobile bottom nav height
-  'modal-padding': 32px,
-  // Standard modal padding
-  'touch-target': 44px,
-  // WCAG AA min interactive size
-  'card-gap': 24px,
-  // Spacing between cards
-  'grid-gap': 16px,
-
-  // Grid item spacing
-  // === Modal widths (responsive containers) ===
-  'modal-xs': 320px,
-  // Small modal (mobile)
-  'modal-sm': 400px,
-  // Small desktop modal
-  'modal-md': 540px,
-  // Medium modal
-  'modal-lg': 600px,
-  // Large modal
-  'modal-xl': 700px,
-  // Extra large
-  'modal-2xl': 800px,
-
-  // XXL modal
-  // === Breakpoint-specific widths ===
-  'container-max': 1200px,
-
-  // Main content max-width
-  // === Grid/Layout specific ===
-  'grid-min-item-sm': 180px,
-  // RecompensesEdition grid min
-  'grid-min-item-md': 260px,
-  // RecompensesEdition grid larger items
-  'grid-min-height': 140px,
-
-  // Grid item min-height
-  // === Component-specific ===
-  'avatar-size-sm': 36px,
-  // Small avatar
-  'avatar-size-md': 44px,
-  // Medium avatar
-  'avatar-size-lg': 56px,
-  // Large avatar
-  'avatar-size-xl': 72px,
-
-  // XL avatar
-  // === Menu/Nav widths ===
-  'menu-width-mobile': 92vw,
-  // Mobile user menu width
-  'menu-width-desktop': 320px,
-
-  // Desktop menu width
-  // === Utility spacings (used in components) ===
-  '1px': 1px,
-  // Borders, separators
-  '2px': 2px,
-  // Outlines, fine gaps
-  '4px': 4px,
-  '6px': 6px,
-  // Fine gaps
-  '8px': 8px,
-  '10px': 10px,
-  // Common padding
-  '12px': 12px,
-  '14px': 14px,
-  // Menu items, icons
-  '15px': 15px,
-  // Personalization modal
-  '16px': 16px,
-  '18px': 18px,
-  // Icon sizes
-  '20px': 20px,
-  // Common padding
-  '22px': 22px,
-  // Legal markdown
-  '24px': 24px,
-  '28px': 28px,
-  '30px': 30px,
-  // Personalization modal
-  '32px': 32px,
-  '40px': 40px,
-  '48px': 48px,
-  '56px': 56px,
-  '60px': 60px,
-  // Image sizes
-  '64px': 64px,
-  '72px': 72px,
-  '80px': 80px,
-  // User list min-height
-  '100px': 100px,
-  // Image sizes
-  '120px': 120px,
-  // Button min-width
-  '140px': 140px,
-  // Grid min-height
-  '150px': 150px,
-  // Image sizes
-  '160px': 160px,
-  // Timer
-  '180px': 180px,
-  // Grid item
-  '200px': 200px,
-  // Grid item, admin
-  '260px': 260px,
-  // Grid item
-  '280px': 280px,
-  // Timer
-  '300px': 300px,
-  // Timer
-  '600px': 600px,
-  // Timer height/width
-  '860px': 860px // Legal markdown max-width
-);
-
-// =============================================================================
-// FUNCTIONS - Helper pour accéder aux spacings
-// =============================================================================
-
-/// Récupère une valeur de spacing depuis la map
-/// @param {String} $key - Clé dans $spacing-scale
-/// @return {String} Valeur du spacing
+/// Récupère une valeur d'espacement depuis $spacing-tokens
+/// @param {String} $key - Clé dans $spacing-tokens (xs, sm, md, lg, xl, '24', '44', etc.)
+/// @return {Length} Valeur de l'espacement (rem)
 /// @example
-///   padding: spacing(md);           // 1rem
-///   margin: spacing(nav-mobile);    // 56px
+///   padding: spacing('md');           // 1rem (16px)
+///   margin: spacing('24');            // 1.5rem (24px)
+///   gap: spacing('lg');               // 1.5rem (24px)
+///   padding: spacing('44');           // 2.75rem (44px - touch target)
 @function spacing($key) {
-  $value: map.get($spacing-scale, $key);
-  @if $value == null {
-    @error 'Spacing key "#{$key}" not found in $spacing-scale map. Available keys: #{map.keys($spacing-scale)}';
+  @if not map.has-key($spacing-tokens, $key) {
+    @error "Spacing key '#{$key}' not found in $spacing-tokens. Available keys: #{map.keys($spacing-tokens)}. Note: For width/height, use size() instead.";
   }
-  @return $value;
+  @return map.get($spacing-tokens, $key);
 }
 
-/// Alias pour récupérer une valeur spacing
-/// Utiliser quand le nom de fonction doit être explicite
-/// @param {String} $key - Clé dans $spacing-scale
-/// @return {String} Valeur du spacing
+/// Alias pour récupérer une valeur spacing (nom explicite)
+/// @param {String} $key - Clé dans $spacing-tokens
+/// @return {Length} Valeur de l'espacement (rem)
 @function spacing-value($key) {
   @return spacing($key);
 }
 
-// =============================================================================
-// CSS CUSTOM PROPERTIES - Pour accès runtime en JavaScript
-// =============================================================================
+/// ============================================================================
+/// CSS CUSTOM PROPERTIES - Pour accès runtime en JavaScript
+/// ============================================================================
 
 :root {
   // Scale primaire (utilisée partout)
-  --spacing-xxs: #{$spacing-xxs};
-  --spacing-xs: #{$spacing-xs};
-  --spacing-sm: #{$spacing-sm};
-  --spacing-md: #{$spacing-md};
-  --spacing-lg: #{$spacing-lg};
-  --spacing-xl: #{$spacing-xl};
-  --spacing-2xl: #{$spacing-2xl};
-  --spacing-3xl: #{$spacing-3xl};
-  --spacing-4xl: #{$spacing-4xl};
+  --spacing-none: #{spacing('none')};
+  --spacing-xs: #{spacing('xs')};
+  --spacing-sm: #{spacing('sm')};
+  --spacing-md: #{spacing('md')};
+  --spacing-lg: #{spacing('lg')};
+  --spacing-xl: #{spacing('xl')};
+  --spacing-2xl: #{spacing('2xl')};
+  --spacing-3xl: #{spacing('3xl')};
 
-  // Espacements spécialisés
-  --spacing-nav-mobile: 56px;
-  --spacing-modal-padding: 32px;
-  --spacing-touch-target: 44px;
-  --spacing-card-gap: 24px;
-  --spacing-grid-gap: 16px;
-
-  // Modal widths
-  --spacing-modal-xs: 320px;
-  --spacing-modal-sm: 400px;
-  --spacing-modal-md: 540px;
-  --spacing-modal-lg: 600px;
-  --spacing-modal-xl: 700px;
-  --spacing-modal-2xl: 800px;
-
-  // Container max-width
-  --spacing-container-max: 1200px;
+  // Valeurs communes (pour JavaScript/CSS direct si besoin)
+  --spacing-4: #{spacing('4')};
+  --spacing-8: #{spacing('8')};
+  --spacing-12: #{spacing('12')};
+  --spacing-16: #{spacing('16')};
+  --spacing-20: #{spacing('20')};
+  --spacing-24: #{spacing('24')};
+  --spacing-32: #{spacing('32')};
+  --spacing-40: #{spacing('40')};
+  --spacing-44: #{spacing('44')};
+  --spacing-48: #{spacing('48')};
+  --spacing-56: #{spacing('56')};
+  --spacing-64: #{spacing('64')};
 }
 
-// ============================================================================
-// GUIDELINES
-// ============================================================================
-// 1. JAMAIS hardcoder px/rem/em pour spacing - utiliser spacing($key)
-// 2. Mobile-first: définir valeurs de base, puis utiliser respond-to() breakpoints
-// 3. Pour nouveaux espacements, ajouter à $spacing-scale map
-// 4. Garder cohérence entre spacings (4px base, multiples de 4)
-// 5. Considérer touch targets (min 44x44px per WCAG AA)
-// 6. Documenter espacements spécialisés avec commentaires
+/// ============================================================================
+/// GUIDELINES & BEST PRACTICES
+/// ============================================================================
+/// 1. JAMAIS hardcoder px/rem/em pour spacing - utiliser spacing($key)
+/// 2. spacing() est UNIQUEMENT pour margin, padding, gap (respiration)
+/// 3. Pour width/height/min-max, utiliser size() depuis _size.scss
+/// 4. Mobile-first: définir valeurs de base, puis respond-to() breakpoints
+/// 5. Garder cohérence entre spacings (4px base, multiples de 4)
+/// 6. Touch targets: minimum 44px (WCAG AA) → spacing('44')
+/// 7. Pour nouveaux espacements, ajouter à $spacing-tokens dans _tokens.scss
+///
+/// EXEMPLES :
+///
+/// ✅ CORRECT (respiration) :
+///   padding: spacing('md');              // 1rem
+///   margin-bottom: spacing('24');        // 1.5rem
+///   gap: spacing('lg');                  // 1.5rem
+///
+/// ❌ INCORRECT (dimensions - utiliser size()) :
+///   width: spacing('300');               // NON ! Utiliser size('300')
+///   min-height: spacing('44');           // NON ! Utiliser size('touch-target-min')
+///   max-width: spacing('600');           // NON ! Utiliser size('modal-width-md')
+///
+/// MIGRATION DEPUIS ANCIEN CODE :
+///   - 'nav-mobile' (56px) → spacing('56')
+///   - 'modal-padding' (32px) → spacing('32')
+///   - 'touch-target' (44px) → spacing('44') ou size('touch-target-min')
+///   - 'card-gap' (24px) → spacing('24')
+///   - 'grid-gap' (16px) → spacing('16')
+/// ============================================================================

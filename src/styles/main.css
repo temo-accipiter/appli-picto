@@ -438,27 +438,26 @@ template {
 }
 
 :root {
-  --spacing-xxs: 0.25rem;
-  --spacing-xs: 0.5rem;
-  --spacing-sm: 0.75rem;
+  --spacing-none: 0;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  --spacing-2xl: 2.5rem;
-  --spacing-3xl: 3rem;
-  --spacing-4xl: 4rem;
-  --spacing-nav-mobile: 56px;
-  --spacing-modal-padding: 32px;
-  --spacing-touch-target: 44px;
-  --spacing-card-gap: 24px;
-  --spacing-grid-gap: 16px;
-  --spacing-modal-xs: 320px;
-  --spacing-modal-sm: 400px;
-  --spacing-modal-md: 540px;
-  --spacing-modal-lg: 600px;
-  --spacing-modal-xl: 700px;
-  --spacing-modal-2xl: 800px;
-  --spacing-container-max: 1200px;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4: 0.25rem;
+  --spacing-8: 0.5rem;
+  --spacing-12: 0.75rem;
+  --spacing-16: 1rem;
+  --spacing-20: 1.25rem;
+  --spacing-24: 1.5rem;
+  --spacing-32: 2rem;
+  --spacing-40: 2.5rem;
+  --spacing-44: 2.75rem;
+  --spacing-48: 3rem;
+  --spacing-56: 3.5rem;
+  --spacing-64: 4rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
