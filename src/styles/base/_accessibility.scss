@@ -1,11 +1,15 @@
 @charset 'UTF-8';
+@use '../abstracts' as *;
+@use 'sass:color';
 
 /// ============================================================================
 /// ACCESSIBILITY - WCAG 2.2 AA Compliance
 /// ============================================================================
-/// Styles et helpers pour accessibilité conforme é WCAG AA.
+/// Styles et helpers pour accessibilité conforme à WCAG AA.
 /// Respecte préférences utilisateur (prefers-reduced-motion, prefers-color-scheme).
 /// Optimisé pour enfants TSA (clear, predictable, calm design).
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
 /// ============================================================================
 
 // =============================================================================
@@ -16,8 +20,8 @@
 :focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--color-bg),
-    0 0 0 4px var(--focus-ring-color);
+    0 0 0 border-width('focus') var(--color-bg),
+    0 0 0 spacing('4') var(--focus-ring-color);
 }
 
 /// Focus visible sur les inputs
@@ -26,7 +30,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: none;
   border-color: var(--focus-ring-color);
-  box-shadow: 0 0 0 3px rgba(0, 119, 194, 0.1);
+  box-shadow: 0 0 0 spacing('3') color.change(blue(500), $alpha: 0.1);
 }
 
 /// Focus visible sur buttons
@@ -35,15 +39,15 @@ a:focus-visible,
 [role='button']:focus-visible {
   outline: none;
   box-shadow:
-    0 0 0 2px var(--color-bg),
-    0 0 0 4px var(--focus-ring-color);
+    0 0 0 border-width('focus') var(--color-bg),
+    0 0 0 spacing('4') var(--focus-ring-color);
 }
 
 /// Focus visible sur checkboxes et radios
 input[type='checkbox']:focus-visible,
 input[type='radio']:focus-visible {
-  outline: 2px solid var(--focus-ring-color);
-  outline-offset: 2px;
+  outline: border-width('focus') solid var(--focus-ring-color);
+  outline-offset: border-width('focus');
 }
 
 // =============================================================================
@@ -54,8 +58,8 @@ input[type='radio']:focus-visible {
 .sr-only,
 .visually-hidden {
   position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
+  width: 1px !important; // Standard WCAG technique
+  height: 1px !important; // Standard WCAG technique
   padding: 0 !important;
   margin: -1px !important;
   overflow: hidden !important;
@@ -84,11 +88,11 @@ input[type='radio']:focus-visible {
 /// Skip to main content link (first focusable element)
 .skip-to-main {
   position: absolute;
-  top: -40px;
+  top: calc(-1 * size('touch-target-optimal'));
   left: 0;
   background: var(--color-primary);
   color: var(--color-text-invert);
-  padding: 8px 16px;
+  padding: spacing('sm') spacing('md');
   text-decoration: none;
   z-index: z-index('tooltip');
 
@@ -103,20 +107,20 @@ input[type='radio']:focus-visible {
 
 /// Min line-height for readability (WCAG 1.5)
 body {
-  line-height: 1.5;
+  line-height: line-height('normal');
 }
 
 p,
 li,
 label {
-  line-height: 1.5;
+  line-height: line-height('normal');
 }
 
 /// Text spacing - generous for dyslexia (TSA)
 /// Letter spacing, word spacing, line height, paragraph spacing
 body {
-  letter-spacing: 0.02em;
-  word-spacing: 0.16em;
+  letter-spacing: 0.02em; // Slight letterspacing for readability
+  word-spacing: a11y('word-spacing-min');
 }
 
 h1,
@@ -143,8 +147,8 @@ body {
 /// Links - underline for clarity (not color alone)
 a {
   text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  text-decoration-thickness: border-width('thin');
+  text-underline-offset: spacing('4');
 
   &:visited {
     color: var(--color-primary);
@@ -169,8 +173,8 @@ input[type='checkbox'],
 input[type='radio'],
 [role='button'],
 [role='menuitem'] {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: a11y('min-touch-target');
+  min-height: a11y('min-touch-target');
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -198,9 +202,9 @@ input[type='radio'] {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
+    animation-duration: a11y('reduced-motion-duration') !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: a11y('reduced-motion-duration') !important;
     scroll-behavior: auto !important;
   }
 }
@@ -209,9 +213,9 @@ input[type='radio'] {
 [data-calm-mode='true'],
 .calm-mode {
   * {
-    animation-duration: 0.01ms !important;
+    animation-duration: a11y('reduced-motion-duration') !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: a11y('reduced-motion-duration') !important;
   }
 }
 
@@ -221,13 +225,13 @@ input[type='radio'] {
 
 @media (forced-colors: active) {
   * {
-    outline-width: 1px;
+    outline-width: border-width('thin');
   }
 
   button,
   a,
   input {
-    outline: 1px solid currentColor;
+    outline: border-width('thin') solid currentColor;
   }
 
   ::selection {
@@ -244,8 +248,8 @@ input[type='radio'] {
 /// This is enforcement for missing alt text (debugging)
 img:not([alt]),
 [role='img']:not([aria-label]):not([aria-labelledby]) {
-  outline: 2px dashed #f44336;
-  outline-offset: 2px;
+  outline: border-width('focus') dashed semantic('error', 'base');
+  outline-offset: border-width('focus');
   // Visible in dev - remove in prod if needed
 }
 
@@ -256,8 +260,8 @@ img:not([alt]),
 /// Labels must always be visible (never placeholder-only)
 label {
   display: block;
-  margin-bottom: 4px;
-  font-weight: 500;
+  margin-bottom: spacing('4');
+  font-weight: font-weight('medium');
   color: var(--color-text);
 }
 
@@ -273,8 +277,8 @@ label[aria-required='true']::after {
 [role='alert'],
 .error-message {
   color: var(--color-error);
-  font-size: 0.875rem;
-  margin-top: 4px;
+  font-size: font-size('sm');
+  margin-top: spacing('4');
   display: block;
 }
 
@@ -282,7 +286,7 @@ label[aria-required='true']::after {
 input:disabled,
 select:disabled,
 textarea:disabled {
-  opacity: 0.6;
+  opacity: opacity('lg');
   cursor: not-allowed;
 }
 
@@ -292,16 +296,16 @@ textarea:disabled {
 
 /// Table headers semantic
 th {
-  font-weight: 600;
+  font-weight: font-weight('semibold');
   text-align: left;
-  padding: 8px 12px;
+  padding: spacing('sm') spacing('12');
   background-color: var(--color-surface);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: border-width('focus') solid var(--color-border);
 }
 
 td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--color-border);
+  padding: spacing('sm') spacing('12');
+  border-bottom: border-width('thin') solid var(--color-border);
 }
 
 // =============================================================================
@@ -316,10 +320,10 @@ h3,
 h4,
 h5,
 h6 {
-  margin-top: 1em;
+  margin-top: 1em; // Relative spacing OK for typography flow
   margin-bottom: 0.5em;
-  font-weight: 600;
-  line-height: 1.2;
+  font-weight: font-weight('semibold');
+  line-height: line-height('tight');
 }
 
 h1 {
@@ -331,16 +335,16 @@ h2 {
 }
 
 h3 {
-  font-size: 1.25rem;
+  font-size: font-size('xl');
 }
 
 h4 {
-  font-size: 1rem;
+  font-size: font-size('base');
 }
 
 h5,
 h6 {
-  font-size: 0.875rem;
+  font-size: font-size('sm');
 }
 
 // =============================================================================
@@ -350,7 +354,7 @@ h6 {
 /// Ordered and unordered lists
 ol,
 ul {
-  margin-left: 1.5em;
+  margin-left: 1.5em; // Relative spacing OK for lists
   margin-bottom: 1em;
 
   li {
@@ -407,45 +411,45 @@ ul {
 // WCAG 2.2 REQUIREMENTS CHECKLIST
 // ============================================================================
 // 1. PERCEIVED
-//     Distinguishable:
+//     Distinguishable:
 //      - Color not sole means of conveying info (use labels + icons)
 //      - Contrast >= 4.5:1 (normal), 3:1 (large text)
 //      - Resize text up to 200% without loss of content
 //      - Images of text avoided
 //
 // 2. OPERABLE
-//     Keyboard accessible:
+//     Keyboard accessible:
 //      - All functionality available via keyboard
 //      - No keyboard trap (except intentional like modals)
 //      - Focus visible and in logical order
 //      - Skip links for repetitive content
-//     Enough time:
+//     Enough time:
 //      - No auto-play animations (or user can pause)
 //      - Respect prefers-reduced-motion
 //      - No time-limited interactions (or extend time)
-//     Seizure prevention:
+//     Seizure prevention:
 //      - No flashing > 3/sec
 //      - No animated GIFs with strobes
-//     Touch targets:
+//     Touch targets:
 //      - >= 44x44px (WCAG AAA)
 //      - >= 24x24px minimum (WCAG AA)
 //
 // 3. UNDERSTANDABLE
-//     Readable:
+//     Readable:
 //      - Page lang declared (html lang="fr")
 //      - Avoid jargon, use clear language
 //      - Lists structured semantically
-//     Predictable:
+//     Predictable:
 //      - Consistent navigation
 //      - Consistent component behavior
 //      - No unexpected context changes
-//     Input assistance:
+//     Input assistance:
 //      - Clear labels (not just placeholder)
 //      - Error detection & suggestions
 //      - Confirmation for important actions
 //
 // 4. ROBUST
-//     Compatible:
+//     Compatible:
 //      - Valid HTML markup
 //      - Proper ARIA roles/attributes
 //      - No conflicting ids
