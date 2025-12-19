@@ -60,27 +60,13 @@ else
 fi
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 3️⃣ COMPILER SCSS
+# 3️⃣ COMPILATION SCSS (Next.js native)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-echo "🔨 Compilation SCSS..."
-
-if pnpm build:css 2>/dev/null; then
-  echo "✅ Build CSS réussi"
-  echo ""
-else
-  echo ""
-  echo "❌ ERREUR : Compilation SCSS échouée"
-  echo ""
-  echo "💡 Vérifiez :"
-  echo "   • Syntaxe SCSS correcte"
-  echo "   • Fonctions wrappers existantes (color, spacing, etc.)"
-  echo "   • Import : @use '@styles/abstracts' as *;"
-  echo ""
-  echo "🔧 Testez avec : pnpm build:css"
-  echo ""
-  ERRORS=$((ERRORS + 1))
-fi
+echo "🔨 Vérification SCSS..."
+echo "ℹ️  Next.js compile automatiquement .scss → .css (pas de build:css manuel)"
+echo "✅ SCSS sera validé au prochain démarrage Next.js"
+echo ""
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # RÉSULTAT FINAL
