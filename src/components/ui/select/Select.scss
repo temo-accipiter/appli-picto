@@ -1,45 +1,88 @@
+// src/components/ui/select/Select.scss
 @use '@styles/abstracts' as *;
 
+/// ============================================================================
+/// SELECT COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant select (liste déroulante) atomique réutilisable
+/// - States: default, error, focus
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
+/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SELECT FIELD WRAPPER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 .select-field {
+  // Layout
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: spacing('sm'); // 8px entre label et select
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // LABEL
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__label {
-    font-weight: $font-weight-semibold;
+    font-weight: font-weight('semibold');
     font-size: font-size('lg');
-    color: var(--color-text);
-    white-space: nowrap;
+    color: text();
+    white-space: nowrap; // Évite retour à la ligne
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SELECT INPUT
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &__select {
+    // Spacing
     padding: spacing('8') spacing('12');
+
+    // Typographie
     font-size: font-size('base');
-    border: 2px solid var(--color-border);
-    border-radius: $radius-md;
-    background-color: var(--color-bg);
-    color: var(--color-text);
+    color: text();
+
+    // Apparence
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md'); // 8px
+    background-color: surface('bg');
+    box-shadow: shadow('elevation-xs'); // Ombre subtile
+
+    // Dimensions
     width: 100%;
-    min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
+    min-height: size('touch-target-min'); // 44px WCAG AA
+
+    // UX
     cursor: pointer;
-    transition:
-      border-color $transition-fast,
-      box-shadow $transition-fast;
+    @include safe-transition(
+      border-color box-shadow,
+      timing('fast'),
+      easing('smooth')
+    );
 
-    box-shadow: 0 spacing('2') spacing('6')
-      rgba(var(--color-text-rgb), opacity('sm'));
-
-    // Focus ring unifié
+    // Focus WCAG 2.2 AA
     @include focus-ring;
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STATE: ERROR
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
     &--error {
       border-color: semantic('error');
+      @include validation-glow('error'); // Glow rouge subtil
     }
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ERROR MESSAGE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &__error {
     color: semantic('error');
-    font-size: $font-size-sm;
-    margin-left: $spacing-md;
+    font-size: font-size('sm');
+    margin-inline-start: spacing('md'); // RTL-ready (margin-left en LTR)
   }
 }

@@ -1354,7 +1354,12 @@
             }
 
             &.free {
-              background: #{shadow(success-strong)};
+              background: rgba(
+                34,
+                197,
+                94,
+                0.15
+              ); // Badge background vert (success-strong legacy)
               color: #{green(500)};
             }
           }
@@ -1879,13 +1884,13 @@
 @media (prefers-color-scheme: dark) {
   .admin-permissions-page {
     .page-header {
-      box-shadow: 0 8px 32px #{shadow(black-strong)};
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); // Ombre forte (black-strong legacy)
     }
 
     .role-permissions-card,
     .create-role-form,
     .role-card {
-      box-shadow: 0 4px 20px #{shadow(black-medium)};
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); // Ombre moyenne (black-medium legacy)
     }
   }
 }

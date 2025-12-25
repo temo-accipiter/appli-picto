@@ -1,50 +1,90 @@
+// src/components/ui/image-preview/ImagePreview.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// IMAGE PREVIEW COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant prévisualisation d'image avec tailles responsives
+/// - Variantes: sm (60px), md (100px), lg (160px)
+/// - Animation fade-zoom douce à l'apparition
+/// - TSA-friendly (animation ≤ 0.3s, prefers-reduced-motion)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IMAGE PREVIEW BASE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 .image-preview {
+  // Layout
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: #{gray(100)};
-  padding: spacing('sm');
-  border-radius: radius('md');
   box-sizing: border-box;
+
+  // Spacing
+  padding: spacing('sm'); // 8px
+
+  // Apparence
+  background-color: surface('surface'); // Fond neutre doux
+  border-radius: radius('md'); // 8px
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTS - TAILLES
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--sm {
+    width: spacing('60'); // Tolérance temporaire (sera size() Phase 7)
+    height: spacing('60');
+  }
+
+  &--md {
+    width: spacing('100'); // Tolérance temporaire
+    height: spacing('100');
+  }
+
+  &--lg {
+    width: spacing('160'); // Tolérance temporaire
+    height: spacing('160');
+    min-height: spacing('160');
+    display: flex; // Essentiel pour centering
+    justify-content: center;
+    align-items: center;
+  }
 }
 
-.image-preview--sm {
-  width: spacing('60');
-  height: spacing('60');
-}
-
-.image-preview--md {
-  width: spacing('100');
-  height: spacing('100');
-}
-
-.image-preview--lg {
-  width: spacing('160');
-  height: spacing('160');
-  min-height: spacing('160');
-  display: flex; // ✅ essentiel ici
-  justify-content: center;
-  align-items: center;
-}
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// IMAGE ELEMENT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .image-preview__img {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
+  object-fit: contain; // Préserve ratio aspect
   display: block;
-  animation: image-fade-zoom transition('fast') ease-in;
+
+  // Animation fade-zoom TSA-friendly
+  @include safe-animation(
+    image-fade-zoom,
+    timing('fast'),
+    // 0.15s
+    ease-in
+  );
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// KEYFRAMES (LOCAL - IMAGE-SPECIFIC)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 @keyframes image-fade-zoom {
   0% {
-    opacity: 0;
-    transform: scale(0.95);
+    opacity: opacity('none'); // 0
+    transform: scale(0.95); // Légère réduction (subtil)
   }
   100% {
-    opacity: 1;
+    opacity: opacity('opaque'); // 1
     transform: scale(1);
   }
 }

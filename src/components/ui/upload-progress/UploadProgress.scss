@@ -1,46 +1,86 @@
+// src/components/ui/upload-progress/UploadProgress.scss
 @use '@styles/abstracts' as *;
 
-// src/components/ui/upload-progress/UploadProgress.scss
-// Styles TSA-friendly : couleurs pastel, animations douces
+/// ============================================================================
+/// UPLOAD PROGRESS COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant barre de progression upload avec feedback visuel
+/// - Barre de progression animée douce
+/// - Pourcentage et message texte
+/// - TSA-friendly (couleurs pastel, animations ≤ 0.3s)
+/// - WCAG 2.2 AA compliant (contraste, clarté visuelle)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
 
 .upload-progress {
+  // Spacing
   padding: spacing('md');
+
+  // Apparence
+  background-color: tsa-pastel('info-soft'); // Bleu pastel doux
+  border: border-width('base') solid semantic('info', 'border');
+  border-radius: radius('md'); // 8px
+
+  // Layout
   text-align: center;
-  background: var(--pastel-blue-lightest, #{blue(50)});
-  border-radius: radius('md');
-  border: spacing('2') solid var(--pastel-blue-light, #{blue(100)});
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // PROGRESS BAR CONTAINER
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__bar {
     width: 100%;
-    height: spacing('8');
-    background-color: var(--pastel-blue-light, #{blue(100)});
-    border-radius: radius('sm');
+    height: size(
+      'input-height-sm'
+    ); // 36px (ou custom 8px via spacing tolérance)
+    background-color: semantic('info', 'border'); // Fond barre (bleu clair)
+    border-radius: radius('sm'); // 4px
     overflow: hidden;
-    margin-bottom: spacing('12');
+    margin-block-end: spacing('12'); // Espace avant message
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // PROGRESS FILL (ANIMATED)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__fill {
     height: 100%;
+    // Gradient bleu → vert (TSA-friendly progression visuelle)
     background: linear-gradient(
       90deg,
-      var(--pastel-blue, #{blue(200)}),
-      var(--pastel-green, #{green(100)})
+      semantic('info', 'base'),
+      semantic('success', 'base')
     );
-    // Animation DOUCE (TSA-friendly : max 0.3s ease)
-    transition: width transition('fast') ease;
-    border-radius: radius('sm');
+    border-radius: radius('sm'); // 4px
+
+    // Animation DOUCE TSA-friendly
+    @include safe-transition(
+      width,
+      timing('fast'),
+      // 0.15s max
+      easing('smooth')
+    );
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // MESSAGE TEXT
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__message {
     font-size: font-size('sm');
-    color: var(--text-dark, #{text(default)});
+    color: text(); // Texte principal
+    font-weight: font-weight('medium'); // 500
     margin: 0 0 spacing('4') 0;
-    font-weight: 500;
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // PERCENTAGE TEXT
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__percent {
     font-size: font-size('xs');
-    color: var(--text-muted, #{text(muted)});
-    font-weight: 400;
+    color: text('muted'); // Texte secondaire atténué
+    font-weight: font-weight('normal'); // 400
   }
 }

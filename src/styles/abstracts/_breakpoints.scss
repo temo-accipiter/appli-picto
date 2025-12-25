@@ -86,10 +86,10 @@
 /// Ces variables sont conservées pour compatibilité avec le code existant
 /// IMPORTANT : Préférer l'usage du mixin respond-to() pour nouveau code
 
-$breakpoint-sm: breakpoint('sm');   // 576px
-$breakpoint-md: breakpoint('md');   // 768px
-$breakpoint-lg: breakpoint('lg');   // 1024px
-$breakpoint-xl: breakpoint('xl');   // 1200px
+$breakpoint-sm: breakpoint('sm'); // 576px
+$breakpoint-md: breakpoint('md'); // 768px
+$breakpoint-lg: breakpoint('lg'); // 1024px
+$breakpoint-xl: breakpoint('xl'); // 1200px
 $breakpoint-xxl: breakpoint('xxl'); // 1536px
 
 /// ============================================================================

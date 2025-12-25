@@ -1,128 +1,158 @@
+// src/components/ui/input/Input.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// INPUT COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant input atomique réutilisable
+/// - States: default, error, success, focus
+/// - Variantes: text, password, file
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
+/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INPUT FIELD WRAPPER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .input-field {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xxs;
+  gap: spacing('xs'); // 4px (au lieu de xxs inexistant)
   position: relative;
 }
 
-.input-field__input {
-  padding: spacing('8');
-  font-size: font-size('base');
-  border: 2px solid var(--color-border);
-  border-radius: $radius-md;
-  box-sizing: border-box;
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  max-width: spacing('200'); // ~11.5rem intentional pour inputs courts
-  min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
-  transition:
-    border $transition-fast ease,
-    outline $transition-fast ease;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INPUT BASE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+.input-field__input {
+  // Spacing
+  padding: spacing('8');
+
+  // Typographie
+  font-size: font-size('base');
+
+  // Apparence
+  border: border-width('base') solid surface('border');
+  border-radius: radius('md'); // 8px
+  box-sizing: border-box;
+  background-color: surface('bg');
+  color: text();
+
+  // Dimensions
+  max-width: spacing(
+    '200'
+  ); // ~11.5rem - Tolérance : max-width contextuel inputs courts
+  @include touch-target('min'); // 44px WCAG AA
+
+  // Transitions TSA-compliant
+  @include safe-transition(border outline, timing('fast'), easing('smooth'));
+
+  // Focus WCAG 2.2 AA
   @include focus-ring;
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STATES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 .input-field__input--error {
-  border: 2px solid semantic('error');
-  outline: 2px solid semantic('error');
-  animation: error-glow $transition-fast ease-in-out;
+  border: border-width('base') solid semantic('error');
+  outline: border-width('base') solid semantic('error');
+  @include validation-glow('error');
 }
 
 .input-field__input--success {
-  outline: 2px solid semantic('success');
-  animation: success-glow $transition-fast ease-in-out;
+  outline: border-width('base') solid semantic('success');
+  @include validation-glow('success');
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ERROR MESSAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 .input-field__error {
-  min-height: spacing('16');
-  font-size: $font-size-sm;
+  min-height: spacing(
+    '16'
+  ); // 16px - Tolérance : min-height message erreur (pas structurel strict)
+  font-size: font-size('sm');
   color: semantic('error');
-  line-height: 1.2;
+  line-height: line-height('tight'); // 1.2
   margin: 0;
+
+  // Visibilité
   overflow: visible;
   white-space: normal;
   text-overflow: unset;
-  transition: opacity $transition-fast ease;
+
+  @include safe-transition(opacity, timing('fast'), easing('smooth'));
 
   &:empty {
-    opacity: 0;
+    opacity: opacity('none'); // 0
   }
 }
 
-@keyframes error-glow {
-  0% {
-    box-shadow: none;
-  }
-  50% {
-    box-shadow: 0 0 6px 2px color.adjust(semantic('error'), $alpha: -0.5);
-  }
-  100% {
-    box-shadow: none;
-  }
-}
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// FILE INPUT VARIANT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-@keyframes success-glow {
-  0% {
-    box-shadow: none;
-  }
-  50% {
-    box-shadow: 0 0 6px 2px color.adjust(semantic('success'), $alpha: -0.5);
-  }
-  100% {
-    box-shadow: none;
-  }
-}
-
-/* Optionnel : adapter le file input */
 input[type='file'].input-field__input {
   padding: spacing('6');
-  border-radius: radius('rounded-6px');
+  border-radius: radius('sm'); // 4px
   cursor: pointer;
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PASSWORD TOGGLE BUTTON
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .input-field__container {
   position: relative;
 }
 
 .input-field__toggle {
+  // Position
   position: absolute;
   right: spacing('12');
   top: 50%;
   transform: translateY(-50%);
-  min-width: spacing('44');
-  min-height: spacing('44');
+
+  // Accessibilité WCAG AA
+  @include touch-target('min'); // 44px
+
+  // Layout
   display: flex;
   align-items: center;
   justify-content: center;
+
+  // Apparence
   background: none;
   border: none;
+  border-radius: radius('sm'); // 4px
   font-size: font-size('base');
+
+  // UX
   cursor: pointer;
-  opacity: 0.6;
+  opacity: opacity('lg'); // 0.6
   padding: 0;
-  border-radius: $radius-sm;
-  transition:
-    opacity $transition-fast ease,
-    background-color $transition-fast ease;
+
+  @include safe-transition(
+    opacity background-color,
+    timing('fast'),
+    easing('smooth')
+  );
 
   &:hover {
-    opacity: 1;
-    background-color: var(
-      --color-hover-bg,
-      #{color.change(gray(900), $alpha: 0.05)}
-    );
+    opacity: opacity('opaque'); // 1
+    background-color: surface('hover'); // Token sémantique hover
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-focus, #{blue(700)});
-    outline-offset: 2px;
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
+    outline: border-width('focus') solid color('base'); // Couleur focus principale
+    outline-offset: border-width('focus');
+    opacity: opacity('opaque'); // 1
   }
 }

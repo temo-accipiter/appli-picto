@@ -8,7 +8,7 @@
   padding: $spacing-lg;
   border-radius: $radius-lg;
   background-color: #{blue(50)}; // Bleu pastel comme LiensGrid social-section
-  box-shadow: 0 0 24px #{shadow(black-strong)};
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.2); // Ombre diffuse (black-strong legacy)
   transition:
     box-shadow 0.3s ease,
     background-color 0.3s ease;

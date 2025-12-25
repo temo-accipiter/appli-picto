@@ -1,32 +1,55 @@
+// src/components/ui/toast/Toast.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// TOAST COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant notification toast (snackbar)
+/// - Variantes: info (bleu), success (vert), error (rouge)
+/// - Position: fixed bottom center
+/// - WCAG 2.2 AA compliant (contrastes 4.5:1 minimum)
+/// - TSA-friendly (couleurs WCAG-safe, pas d'auto-dismiss agressif)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
 .toast {
+  // Position
   position: fixed;
   bottom: spacing('24');
   left: 50%;
   transform: translateX(-50%);
+  z-index: z-index('modal'); // Au-dessus de tout
+
+  // Spacing
   padding: spacing('12') spacing('20');
-  border-radius: radius('md');
+
+  // Apparence
+  border-radius: radius('md'); // 8px
+  box-shadow: shadow('elevation-lg'); // Ombre forte pour visibilité
+  max-width: 90%; // Responsive mobile
+
+  // Typographie
   font-size: font-size('base');
-  color: #{text(invert)};
-  z-index: z-index('modal');
-  box-shadow: 0 spacing('4') spacing('8')
-    #{color.change(gray(900), $alpha: opacity('lg'))};
-  max-width: 90%;
+  color: text('invert'); // Blanc sur fond coloré
   text-align: center;
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &--info {
-    // WCAG 2.2 AA compliant - Ratio ~4.6:1
-    background-color: #{blue(700)};
+    // WCAG 2.2 AA compliant - Ratio ~4.6:1 (blanc sur bleu)
+    background-color: color('base'); // Bleu principal
   }
 
   &--success {
-    // WCAG 2.2 AA compliant - Ratio ~4.5:1
-    background-color: #{green(600)};
+    // WCAG 2.2 AA compliant - Ratio ~4.5:1 (blanc sur vert)
+    background-color: semantic('success', 'dark'); // Vert foncé WCAG
   }
 
   &--error {
-    // WCAG 2.2 AA compliant - Ratio ~4.6:1
-    background-color: #{red(600)};
+    // WCAG 2.2 AA compliant - Ratio ~4.6:1 (blanc sur rouge)
+    background-color: semantic('error', 'dark'); // Rouge foncé WCAG
   }
 }

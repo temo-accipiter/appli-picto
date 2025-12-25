@@ -38,7 +38,7 @@
     &:focus {
       outline: none;
       border-color: #{blue(500)};
-      box-shadow: 0 0 0 3px #{shadow(primary-light)};
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); // Focus ring bleu (primary-light legacy)
     }
 
     &:hover:not(:focus) {

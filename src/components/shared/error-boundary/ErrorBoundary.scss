@@ -19,7 +19,7 @@
     background: white;
     padding: 3rem 2rem;
     border-radius: radius('lg');
-    box-shadow: 0 4px 20px #{shadow(black-light)};
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); // Ombre douce (black-light legacy)
 
     // Animation douce d'apparition (TSA-friendly)
     animation: fadeInScale 0.3s ease;
@@ -85,7 +85,7 @@
       &:hover:not(:disabled) {
         background: #{blue(600)};
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px #{shadow(primary-medium)};
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); // Ombre bleu (primary-medium legacy)
       }
 
       &:active {

@@ -380,3 +380,41 @@
 
   @return radial-gradient(#{$shape} at #{$position}, $start, $end);
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🌟 FONCTION SHADOW - Ombres depuis $shadow-tokens
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/// Récupère une ombre depuis $shadow-tokens
+/// @param {String} $key - Clé shadow ('elevation-sm', 'elevation-md', etc.)
+/// @param {String} $variant - Variante optionnelle pour shadows imbriquées (ex: card.hover)
+/// @return {String} Box-shadow CSS value
+/// @example scss
+///   box-shadow: shadow('elevation-sm');  // 0 2px 6px rgba(0,0,0,0.15)
+///   box-shadow: shadow('card', 'hover'); // Shadow card hover
+@function shadow($key, $variant: null) {
+  // Si variant fourni, chercher shadow imbriquée (ex: card.hover)
+  @if $variant {
+    @if not map.has-key($shadow-tokens, $key) {
+      @error "Shadow '#{$key}' not found. Available: #{map.keys($shadow-tokens)} (from _tokens.scss)";
+    }
+
+    $shadow-map: map.get($shadow-tokens, $key);
+
+    @if type-of($shadow-map) != 'map' {
+      @error "Shadow '#{$key}' is not a map. Cannot access variant '#{$variant}'";
+    }
+
+    @if not map.has-key($shadow-map, $variant) {
+      @error "Shadow variant '#{$variant}' not found in '#{$key}'. Available: #{map.keys($shadow-map)}";
+    }
+
+    @return map.get($shadow-map, $variant);
+  }
+
+  // Accès direct (ex: elevation-sm)
+  @if not map.has-key($shadow-tokens, $key) {
+    @error "Shadow '#{$key}' not found. Available: #{map.keys($shadow-tokens)} (from _tokens.scss)";
+  }
+
+  @return map.get($shadow-tokens, $key);
+}

@@ -1,60 +1,88 @@
 // src/components/ui/checkbox/Checkbox.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// CHECKBOX COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant checkbox atomique réutilisable
+/// - Variantes: sm (16px), md (20px), lg (28px)
+/// - States: default, checked, focus, error
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
+/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion, bounce doux)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+/// CHECKBOX FIELD WRAPPER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .checkbox-field {
   display: inline-flex;
   align-items: center;
-  min-height: spacing('44'); // WCAG 2.2 AA - zone interactive minimum
+  @include touch-target('min'); // 44px WCAG AA
   position: relative;
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CHECKBOX INPUT
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &__input {
+    // Reset apparence native
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: spacing('2') solid color('base');
+
+    // Apparence
+    border: border-width('base') solid color('base');
     background-color: surface('bg');
-    border-radius: $radius-sm;
-    align-self: center;
+    border-radius: radius('sm'); // 4px
     cursor: pointer;
     position: relative;
-    transition:
-      background-color $transition-fast,
-      border-color $transition-fast,
-      box-shadow $transition-fast;
     z-index: 1;
+    align-self: center;
 
     // Mobile-first: base = mobile (petit)
-    width: spacing('20');
-    height: spacing('20');
+    width: size('icon-sm'); // ✅ 20px (dimensions, pas respiration)
+    height: size('icon-sm');
+
+    // Transitions TSA-compliant
+    @include safe-transition(
+      background-color border-color box-shadow,
+      timing('fast'),
+      easing('smooth')
+    );
 
     // Desktop (576px+) = taille normale
     @include respond-to(sm) {
-      width: spacing('24');
-      height: spacing('24');
+      width: size('icon-md'); // ✅ 24px
+      height: size('icon-md');
     }
 
+    // State: Checked
     &:checked {
       background-color: color('base');
       border-color: color('base');
-      animation: checkbox-bounce $transition-fast
-        cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      @include safe-animation(
+        checkbox-bounce,
+        timing('fast'),
+        easing('smooth-pop') // ✅ Token TSA-friendly bounce
+      );
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      &:checked {
-        animation: none;
-      }
-    }
-
-    // Focus ring unifié avec le reste du design system
-    @include focus-ring(color('base'));
+    // Focus ring WCAG 2.2 AA
+    @include focus-ring;
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CHECKMARK ICON
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__checkmark {
     position: absolute;
     top: 50%;
-    left: $spacing-xs;
+    left: spacing('xs');
     transform: translateY(-50%);
     color: text('invert');
     display: flex;
@@ -64,50 +92,62 @@
     z-index: 2;
 
     svg {
-      width: spacing('16');
-      height: spacing('16');
+      width: size('icon-xs'); // 16px
+      height: size('icon-xs');
       stroke: currentColor;
     }
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // LABEL
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &__label {
-    margin-left: $spacing-sm;
-    font-size: $font-size-base;
+    margin-inline-start: spacing('sm'); // Propriété logique (RTL-ready)
+    font-size: font-size('base');
     color: text();
     cursor: pointer;
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ERROR MESSAGE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &__error {
-    margin-top: $spacing-xs;
-    margin-left: calc(spacing('24') + $spacing-sm);
-    font-size: $font-size-sm;
+    margin-block-start: spacing('xs'); // Propriété logique
+    margin-inline-start: calc(spacing('24') + spacing('sm')); // RTL-safe
+    font-size: font-size('sm');
     color: semantic('error');
   }
 
-  // Variante sm (compacte)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTS - Tailles
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // Variante sm (compacte - 16px)
   &--sm &__input {
-    width: spacing('16');
-    height: spacing('16');
+    width: size('icon-xs'); // ✅ 16px
+    height: size('icon-xs');
 
     &:checked::after {
       font-size: font-size('xs');
     }
   }
 
-  // Variante md (défaut explicite)
+  // Variante md (défaut - 20px)
   &--md &__input {
-    width: spacing('20');
-    height: spacing('20');
+    width: size('icon-sm'); // ✅ 20px
+    height: size('icon-sm');
 
     &:checked::after {
       font-size: font-size('xs');
     }
   }
 
-  // Variante lg (grande taille pour meilleure accessibilité)
+  // Variante lg (accessibilité renforcée - 28px)
   &--lg &__input {
-    width: spacing('28');
-    height: spacing('28');
+    width: size('icon-lg'); // ✅ 28px
+    height: size('icon-lg');
 
     &:checked::after {
       font-size: font-size('lg');
@@ -115,12 +155,16 @@
   }
 }
 
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// KEYFRAMES - Checkbox Bounce (Local - Checkbox-specific)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 @keyframes checkbox-bounce {
   0% {
     transform: scale(1);
   }
   50% {
-    transform: scale(1.2);
+    transform: scale(1.2); // Bounce léger (TSA-friendly)
   }
   100% {
     transform: scale(1);

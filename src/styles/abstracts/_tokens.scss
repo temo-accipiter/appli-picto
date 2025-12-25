@@ -394,7 +394,9 @@ $primary-color-tokens: (
 );
 
 $secondary-color-tokens: (
-  base: #ef5350, // Rouge secondaire
+  base: #ef5350,
+  // Rouge secondaire
+  dark: #d32f2f, // Rouge foncé (hover) - Ajouté Phase 6
 );
 
 $accent-color-tokens: (
@@ -981,114 +983,114 @@ $font-weight-tokens: (
 $motion-tokens: (
   // === TIMING SCALE - Durées standardisées ===
   'timing': (
-    // === Transitions rapides (feedback, state changes) ===
-    'xs': 0.15s,
-    // 150ms - Immédiat (focus, hover)
-    'sm': 0.2s,
-    // 200ms - Rapide (color transitions)
-    'base': 0.3s,
-    // 300ms - Standard (default motion, TSA max)
-    'lg': 0.5s,
-    // 500ms - Lent (reveals, transforms)
-    'xl': 0.8s,
-    // 800ms - Très lent (complex sequences)
-    '2xl': 1.2s,
-    // 1200ms - Max standard
-    // === Animations spécifiques (named animations) ===
-    'pop': 0.4s,
-    // Pop animation scale 1→1.15→1
-    'rebond': 0.4s,
-    // Rebond effect (scale variation)
-    'slide': 0.3s,
-    // Slide in/out
-    'fade': 0.3s,
-    // Fade in/out
-    'spin': 1.5s,
-    // Continuous spin animation
-    'pulse': 2s,
-    // Breathing pulse effect
-    'shimmer': 2s,
-    // Skeleton shimmer effect
-    'bounce': 0.6s,
-    // Bounce effect
-    'shake': 0.3s,
-    // Shake/vibration effect
-    // === Progress bar animations ===
-    'train-move': 2s,
-    // Train animation across progress
-    'station-pop': 0.4s,
-    // Station marker pop
-    'dash-rail': 2s,
-    // SVG dash animation
-    // === Loop durations ===
-    'infinite': 'infinite',
-    // For continuous loop animations
-    // === Legacy aliases ===
-    'fast': 0.15s,
-    // Alias pour 'xs'
-    'slow': 0.3s,
-    // Alias pour 'base'
-    'slower': 0.5s,
-    // Alias pour 'lg'
-    'slowest': 1.2s,
-    // Alias pour '2xl'
-  ),
+      // === Transitions rapides (feedback, state changes) ===
+      'xs': 0.15s,
+      // 150ms - Immédiat (focus, hover)
+      'sm': 0.2s,
+      // 200ms - Rapide (color transitions)
+      'base': 0.3s,
+      // 300ms - Standard (default motion, TSA max)
+      'lg': 0.5s,
+      // 500ms - Lent (reveals, transforms)
+      'xl': 0.8s,
+      // 800ms - Très lent (complex sequences)
+      '2xl': 1.2s,
+      // 1200ms - Max standard
+      // === Animations spécifiques (named animations) ===
+      'pop': 0.4s,
+      // Pop animation scale 1→1.15→1
+      'rebond': 0.4s,
+      // Rebond effect (scale variation)
+      'slide': 0.3s,
+      // Slide in/out
+      'fade': 0.3s,
+      // Fade in/out
+      'spin': 1.5s,
+      // Continuous spin animation
+      'pulse': 2s,
+      // Breathing pulse effect
+      'shimmer': 2s,
+      // Skeleton shimmer effect
+      'bounce': 0.6s,
+      // Bounce effect
+      'shake': 0.3s,
+      // Shake/vibration effect
+      // === Progress bar animations ===
+      'train-move': 2s,
+      // Train animation across progress
+      'station-pop': 0.4s,
+      // Station marker pop
+      'dash-rail': 2s,
+      // SVG dash animation
+      // === Loop durations ===
+      'infinite': 'infinite',
+      // For continuous loop animations
+      // === Legacy aliases ===
+      'fast': 0.15s,
+      // Alias pour 'xs'
+      'slow': 0.3s,
+      // Alias pour 'base'
+      'slower': 0.5s,
+      // Alias pour 'lg'
+      'slowest': 1.2s,
+      // Alias pour '2xl'
+    ),
   // === EASING SCALE - Courbes d'accélération ===
   'easing': (
-    // === Easings standards CSS ===
-    'linear': linear,
-    // Constant speed
-    'smooth': ease,
-    // ease = slow start, fast middle, slow end (défaut)
-    'ease-in': ease-in,
-    // Slow start
-    'ease-out': ease-out,
-    // Slow end (preferred for exits)
-    'ease-in-out': ease-in-out,
-    // Both sides slow
-    // === Cubic-bezier custom (TSA-friendly) ===
-    'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
-    // Overshoot for playful pop
-    'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
-    // Bounce effect
-    'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    // Smooth natural exit
-    'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19),
-    // Smooth natural enter
-  ),
+      // === Easings standards CSS ===
+      'linear': linear,
+      // Constant speed
+      'smooth': ease,
+      // ease = slow start, fast middle, slow end (défaut)
+      'ease-in': ease-in,
+      // Slow start
+      'ease-out': ease-out,
+      // Slow end (preferred for exits)
+      'ease-in-out': ease-in-out,
+      // Both sides slow
+      // === Cubic-bezier custom (TSA-friendly) ===
+      'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
+      // Overshoot for playful pop
+      'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
+      // Bounce effect
+      'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94),
+      // Smooth natural exit
+      'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19),
+      // Smooth natural enter
+    ),
   // === MOTION PRESETS - Paires timing+easing prédéfinies ===
   'preset': (
-    // === Feedback rapide (interactions utilisateur) ===
-    'quick-feedback': (
-      'duration': 0.15s,
-      'easing': ease,
-    ),
-    // === État change (hover, focus, active) ===
-    'state-change': (
-      'duration': 0.2s,
-      'easing': ease,
-    ),
-    // === Motion standard (par défaut) ===
-    'standard': (
-      'duration': 0.3s,
-      'easing': ease,
-    ),
-    // === Reveal/appear (subtle, smooth) ===
-    'reveal': (
-      'duration': 0.5s,
-      'easing': ease-out,
-    ),
-    // === Pop/bounce (playful, engaging) ===
-    'pop': (
-      'duration': 0.4s,
-      'easing': cubic-bezier(0.34, 1.56, 0.64, 1),
-    ),
-    // === Long animation (elaborate sequences) ===
-    'elaborate': (
-      'duration': 0.8s,
-      'easing': ease-in-out,
-    ),
-  ),
+      // === Feedback rapide (interactions utilisateur) ===
+      'quick-feedback': (
+          'duration': 0.15s,
+          'easing': ease,
+        ),
+      // === État change (hover, focus, active) ===
+      'state-change': (
+          'duration': 0.2s,
+          'easing': ease,
+        ),
+      // === Motion standard (par défaut) ===
+      'standard': (
+          'duration': 0.3s,
+          'easing': ease,
+        ),
+      // === Reveal/appear (subtle, smooth) ===
+      'reveal': (
+          'duration': 0.5s,
+          'easing': ease-out,
+        ),
+      // === Pop/bounce (playful, engaging) ===
+      'pop': (
+          'duration': 0.4s,
+          'easing': cubic-bezier(0.34, 1.56, 0.64, 1),
+        ),
+      // === Long animation (elaborate sequences) ===
+      'elaborate': (
+          'duration': 0.8s,
+          'easing': ease-in-out,
+        )
+    )
 ) !default;
 
 // =============================================================================
@@ -1237,8 +1239,105 @@ $container-query-tokens: (
   // Large containers
   'xl': 1000px,
   // Extra large containers
-  '2xl': 1200px
-  // Very large containers (grids, dashboards)
+  '2xl': 1200px, // Very large containers (grids, dashboards)
+) !default;
+
+// =============================================================================
+// SIZE TOKENS - Dimensions structurelles (width, height, min/max)
+// =============================================================================
+
+/// Dimensions structurelles pour composants UI
+/// ⚠️ SÉPARATION CLAIRE : size() pour dimensions, spacing() pour respiration
+///
+/// ✅ UTILISER size() POUR :
+///   - width, height, min-width, max-width, min-height, max-height
+///   - top, left, right, bottom (positionnement absolu)
+///   - Dimensions de composants (modals, sidebars, cards)
+///   - Touch targets (accessibilité WCAG/TSA)
+///
+/// ❌ NE PAS UTILISER size() POUR :
+///   - margin, padding → spacing()
+///   - gap, row-gap, column-gap → spacing()
+///
+/// Usage:
+///   - Via fonction: min-height: size('touch-target-min');
+///   - Direct: width: map.get($size-tokens, 'modal-width-md'); (déconseillé)
+$size-tokens: (
+  // === Touch targets (WCAG AA / TSA) ===
+  'touch-target-min': 44px,
+  // Minimum WCAG AA (44×44px)
+  'touch-target-preferred': 48px,
+
+  // Confortable TSA (48×48px)
+  // === Icons ===
+  'icon-xs': 16px,
+  // Petit icône (checkbox variant sm)
+  'icon-sm': 20px,
+  // Icône compact (checkbox base mobile)
+  'icon-md': 24px,
+  // Icône standard (checkbox base desktop)
+  'icon-lg': 28px,
+  // Grand icône (checkbox variant lg)
+  'icon-xl': 32px,
+  // Très grand icône
+  'icon-2xl': 40px,
+
+  // Extra large
+  // === Inputs & Forms ===
+  'input-height-sm': 36px,
+  // Input compact
+  'input-height-base': 44px,
+  // Input standard (WCAG AA)
+  'input-height-lg': 52px,
+  // Input large (TSA confortable)
+  'input-max-width': 320px,
+  // Inputs courts (emails, phone)
+  'input-full-width': 100%,
+
+  // Inputs longs (textarea, description)
+  // === Modals ===
+  'modal-width-sm': 360px,
+  // Modal compact (confirmations)
+  'modal-width-md': 540px,
+  // Modal standard
+  'modal-width-lg': 720px,
+  // Modal large (forms complexes)
+  'modal-width-xl': 960px,
+  // Modal extra large
+  'modal-min-height': 200px,
+
+  // Hauteur minimale
+  // === Sidebars & Navigation ===
+  'sidebar-width': 280px,
+  // Sidebar ouverte
+  'sidebar-collapsed': 64px,
+  // Sidebar réduite (icons only)
+  'navbar-height': 64px,
+  // Barre de navigation
+  'navbar-height-mobile': 56px,
+
+  // Navbar mobile
+  // === Cards & Containers ===
+  'card-min-height': 120px,
+  // Card minimale
+  'card-max-width': 400px,
+
+  // Card standard
+  // === Legacy numeric (migration Phase 5 → Phase 6) ===
+  // TODO Phase 6: Migrer tous usages vers tokens sémantiques ci-dessus
+  '16': 1rem,
+  // 16px - Temporaire
+  '20': 1.25rem,
+  // 20px - Temporaire
+  '24': 1.5rem,
+  // 24px - Temporaire
+  '28': 1.75rem,
+  // 28px - Temporaire
+  '44': 2.75rem,
+  // 44px - Temporaire (→ 'touch-target-min')
+  '200': 12.5rem,
+  // 200px - Temporaire
+  '540': 33.75rem // 540px - Temporaire (→ 'modal-width-md')
 ) !default;
 
 // =============================================================================
@@ -1347,80 +1446,80 @@ $shadow-tokens: (
   'elevation-modal': 0 10px 40px rgba(0, 0, 0, 0.3),
   // === CARD SHADOWS - Interactive card states ===
   'card': (
-    'default': 0 2px 6px rgba(0, 0, 0, 0.15),
-    'hover': 0 8px 24px rgba(0, 0, 0, 0.2),
-    'focus': 0 8px 24px rgba(0, 0, 0, 0.2),
-    'active': 0 8px 24px rgba(0, 0, 0, 0.2),
-    'disabled': none,
-    'flat': none,
-    'elevated': 0 8px 24px rgba(0, 0, 0, 0.2),
-  ),
+      'default': 0 2px 6px rgba(0, 0, 0, 0.15),
+      'hover': 0 8px 24px rgba(0, 0, 0, 0.2),
+      'focus': 0 8px 24px rgba(0, 0, 0, 0.2),
+      'active': 0 8px 24px rgba(0, 0, 0, 0.2),
+      'disabled': none,
+      'flat': none,
+      'elevated': 0 8px 24px rgba(0, 0, 0, 0.2),
+    ),
   // === ROLE SHADOWS - User role badges (colored emphasis) ===
   'role': (
-    'admin': (
-      'default': 0 0 24px rgba(0, 0, 0, 0.35),
-      'hover': 0 0 32px rgba(0, 0, 0, 0.45),
+      'admin': (
+        'default': 0 0 24px rgba(0, 0, 0, 0.35),
+        'hover': 0 0 32px rgba(0, 0, 0, 0.45),
+      ),
+      'abonne': (
+        'default': 0 2px 8px rgba(34, 197, 94, 0.3),
+        // Green glow
+        'hover': 0 4px 16px rgba(34, 197, 94, 0.4),
+      ),
+      'free': (
+        'default': 0 2px 8px rgba(100, 116, 139, 0.3),
+        // Slate glow
+        'hover': 0 4px 16px rgba(100, 116, 139, 0.4),
+      ),
+      'visitor': (
+        'default': 0 2px 8px rgba(234, 88, 12, 0.3),
+        // Orange glow
+        'hover': 0 4px 16px rgba(234, 88, 12, 0.4),
+      ),
     ),
-    'abonne': (
-      'default': 0 2px 8px rgba(34, 197, 94, 0.3),
-      // Green glow
-      'hover': 0 4px 16px rgba(34, 197, 94, 0.4),
-    ),
-    'free': (
-      'default': 0 2px 8px rgba(100, 116, 139, 0.3),
-      // Slate glow
-      'hover': 0 4px 16px rgba(100, 116, 139, 0.4),
-    ),
-    'visitor': (
-      'default': 0 2px 8px rgba(234, 88, 12, 0.3),
-      // Orange glow
-      'hover': 0 4px 16px rgba(234, 88, 12, 0.4),
-    ),
-  ),
   // === BUTTON SHADOWS - Button interaction states ===
   'button': (
-    'default': 0 2px 6px rgba(0, 0, 0, 0.15),
-    'hover': 0 4px 12px rgba(0, 0, 0, 0.15),
-    'active': 0 1px 3px rgba(0, 0, 0, 0.12),
-    // Pressed down
-    'focus': 0 4px 12px rgba(0, 0, 0, 0.15),
-    'disabled': none,
-  ),
+      'default': 0 2px 6px rgba(0, 0, 0, 0.15),
+      'hover': 0 4px 12px rgba(0, 0, 0, 0.15),
+      'active': 0 1px 3px rgba(0, 0, 0, 0.12),
+      // Pressed down
+      'focus': 0 4px 12px rgba(0, 0, 0, 0.15),
+      'disabled': none,
+    ),
   // === BADGE SHADOWS - Small elements (pills, tags) ===
   'badge': (
-    'default': 0 1px 3px rgba(0, 0, 0, 0.12),
-    'hover': 0 2px 6px rgba(0, 0, 0, 0.15),
-  ),
+      'default': 0 1px 3px rgba(0, 0, 0, 0.12),
+      'hover': 0 2px 6px rgba(0, 0, 0, 0.15),
+    ),
   // === INPUT SHADOWS - Form controls + focus rings ===
   'input': (
-    'default': 0 1px 3px rgba(0, 0, 0, 0.12),
-    'hover': 0 2px 6px rgba(0, 0, 0, 0.15),
-    'focus': 0 0 0 3px rgba(0, 119, 194, 0.1),
-    // Primary blue focus ring
-    'error': 0 0 0 3px rgba(244, 67, 54, 0.1),
-    // Error red focus ring
-    'disabled': none,
-  ),
+      'default': 0 1px 3px rgba(0, 0, 0, 0.12),
+      'hover': 0 2px 6px rgba(0, 0, 0, 0.15),
+      'focus': 0 0 0 3px rgba(0, 119, 194, 0.1),
+      // Primary blue focus ring
+      'error': 0 0 0 3px rgba(244, 67, 54, 0.1),
+      // Error red focus ring
+      'disabled': none,
+    ),
   // === ADMIN UI SHADOWS - Admin-specific interface ===
   'admin-ui': (
-    'default': 0 4px 12px rgba(0, 0, 0, 0.15),
-    'hover': 0 8px 24px rgba(0, 0, 0, 0.2),
-    'panel': 0 2px 8px rgba(0, 0, 0, 0.08),
-    'dropdown': 0 10px 40px rgba(0, 0, 0, 0.3),
-    'modal': 0 25px 50px rgba(0, 0, 0, 0.3),
-  ),
+      'default': 0 4px 12px rgba(0, 0, 0, 0.15),
+      'hover': 0 8px 24px rgba(0, 0, 0, 0.2),
+      'panel': 0 2px 8px rgba(0, 0, 0, 0.08),
+      'dropdown': 0 10px 40px rgba(0, 0, 0, 0.3),
+      'modal': 0 25px 50px rgba(0, 0, 0, 0.3),
+    ),
   // === MODAL SHADOWS - Overlays and dialogs ===
   'modal': (
-    'default': 0 10px 40px rgba(0, 0, 0, 0.3),
-    'inner': inset 0 0 24px rgba(0, 0, 0, 0.1),
-  ),
+      'default': 0 10px 40px rgba(0, 0, 0, 0.3),
+      'inner': inset 0 0 24px rgba(0, 0, 0, 0.1),
+    ),
   // === TEXT SHADOWS - Readability on images/backgrounds ===
   'text': (
-    'none': none,
-    'sm': 0 1px 3px rgba(0, 0, 0, 0.3),
-    'md': 0 2px 4px rgba(0, 0, 0, 0.4),
-    'lg': 0 4px 8px rgba(0, 0, 0, 0.5),
-  ),
+      'none': none,
+      'sm': 0 1px 3px rgba(0, 0, 0, 0.3),
+      'md': 0 2px 4px rgba(0, 0, 0, 0.4),
+      'lg': 0 4px 8px rgba(0, 0, 0, 0.5),
+    )
 ) !default;
 
 // =============================================================================

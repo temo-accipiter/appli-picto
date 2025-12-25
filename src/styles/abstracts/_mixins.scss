@@ -100,8 +100,16 @@
   }
 
   &:focus-visible {
-    $resolved-width: if(meta.type-of($width) == 'string', border-width($width), $width);
-    $resolved-offset: if(meta.type-of($offset) == 'string', border-width($offset), $offset);
+    $resolved-width: if(
+      meta.type-of($width) == 'string',
+      border-width($width),
+      $width
+    );
+    $resolved-offset: if(
+      meta.type-of($offset) == 'string',
+      border-width($offset),
+      $offset
+    );
     outline: $resolved-width solid $color;
     outline-offset: $resolved-offset;
   }
@@ -501,5 +509,48 @@
   &:focus-visible {
     outline: border-width('focus') solid $color;
     outline-offset: border-width('focus');
+  }
+}
+
+/// ============================================================================
+/// VALIDATION GLOW - Input/Form Feedback Animation
+/// ============================================================================
+/// Mixin générique pour animations de validation (error/success)
+/// Génère keyframe unique + applique animation TSA-compliant
+/// @param {String} $type - Type de validation ('error' | 'success')
+/// @param {Length} $blur - Rayon de blur (défaut: spacing('6'))
+/// @param {Length} $spread - Spread de l'ombre (défaut: spacing('2'))
+/// @example
+///   .input--error { @include validation-glow('error'); }
+///   .input--success { @include validation-glow('success'); }
+/// ============================================================================
+@mixin validation-glow(
+  $type: 'error',
+  $blur: spacing('6'),
+  $spread: spacing('2')
+) {
+  $color: if($type == 'error', semantic('error'), semantic('success'));
+
+  // Génération keyframe unique par type
+  @keyframes glow-#{$type} {
+    0% {
+      box-shadow: none;
+    }
+    50% {
+      box-shadow: 0 0 $blur $spread rgba($color, 0.5);
+    }
+    100% {
+      box-shadow: none;
+    }
+  }
+
+  // Application animation TSA-compliant
+  animation: glow-#{$type} timing('fast') easing('ease-in-out');
+
+  // Respect prefers-reduced-motion (WCAG 2.2 AA)
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    // Fallback: ombre statique réduite
+    box-shadow: 0 0 calc($blur * 0.5) calc($spread * 0.5) rgba($color, 0.3);
   }
 }

@@ -50,8 +50,7 @@
     // 2.25rem (36px) - Minimum mobile
     'md': size('touch-target-min'),
     // 2.75rem (44px) - WCAG AA
-    'lg': size('touch-target-preferred'),
-    // 3.5rem (56px) - TSA-preferred (optimal large touch target)
+    'lg': size('touch-target-preferred'), // 3.5rem (56px) - TSA-preferred (optimal large touch target)
   );
 
   @if not map.has-key($heights, $size) {
@@ -72,8 +71,7 @@
     // 0.5rem
     'md': spacing('16'),
     // 1rem
-    'lg': spacing('20'),
-    // 1.25rem
+    'lg': spacing('20'), // 1.25rem
   );
 
   @if not map.has-key($paddings, $size) {
@@ -94,8 +92,7 @@
     // 0.875rem (14px)
     'md': font-size('base'),
     // 1rem (16px)
-    'lg': font-size('lg'),
-    // 1.125rem (18px)
+    'lg': font-size('lg'), // 1.125rem (18px)
   );
 
   @if not map.has-key($sizes, $size) {
@@ -123,8 +120,7 @@
     // 50% (pilule)
     'sm': radius('sm'),
     // 4px
-    'lg': radius('lg'),
-    // 16px
+    'lg': radius('lg'), // 16px
   );
 
   @if not map.has-key($radii, $context) {
@@ -150,8 +146,7 @@
     // #0077c2 (bleu primaire focus)
     'error': semantic('error', 'base'),
     // #ef4444 (rouge error)
-    'disabled': surface('border'),
-    // #e1e1e1 (bordure neutre)
+    'disabled': surface('border'), // #e1e1e1 (bordure neutre)
   );
 
   @if not map.has-key($colors, $state) {
@@ -177,8 +172,7 @@
     // #f8fafc (gris doux)
     'disabled': surface('soft'),
     // #f8fafc (gris doux)
-    'error-bg': semantic('error', 'bg'),
-    // rgba(239, 68, 68, 0.08)
+    'error-bg': semantic('error', 'bg'), // rgba(239, 68, 68, 0.08)
   );
 
   @if not map.has-key($colors, $state) {
@@ -251,8 +245,7 @@
     background-color: form-bg('error-bg');
 
     &:focus-visible {
-      box-shadow: 0 0 0 form-focus-ring-width()
-        rgba(239, 68, 68, 0.3); // Error focus ring
+      box-shadow: 0 0 0 form-focus-ring-width() rgba(239, 68, 68, 0.3); // Error focus ring
     }
   }
 }

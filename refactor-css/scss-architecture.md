@@ -407,7 +407,7 @@ $size-tokens: (
   'icon-sm': 20px,
   'icon-md': 24px,
   'icon-lg': 32px,
-  'icon-xl': 48px,
+  'icon-xl': 48px
 ) !default;
 ```
 

@@ -257,7 +257,7 @@ opacity($key)          // Valeurs alpha
 
 ```scss
 @include respond-to($breakpoint); // sm, md, lg, xl, xxl
-                                  // Génère @media (min-width: ...)
+// Génère @media (min-width: ...)
 ```
 
 **Accessibilité :**

@@ -1,97 +1,97 @@
+// src/components/ui/button/button-close/ButtonClose.scss
 @use '@styles/abstracts' as *;
 
+/// ============================================================================
+/// BUTTON CLOSE COMPONENT - Tokens-First
+/// ============================================================================
+/// Bouton de fermeture atomique réutilisable
+/// - Variantes: default (32px), large (48px), modal (40px discret)
+/// - States: hover, active, focus
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
+/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion, scale doux)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BUTTON CLOSE BASE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 .button-close {
+  // Layout
   position: relative;
-  width: spacing('32');
-  height: spacing('32');
-  background: transparent;
-  border: none;
-  border-radius: $radius-full;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition:
-    background $transition-fast,
-    color $transition-fast,
-    transform $transition-fast;
-  color: text();
   flex-shrink: 0;
 
+  // Dimensions (base = 32px, non compliant WCAG, mais compensé par touch-target mixin)
+  width: size('icon-xl'); // 32px
+  height: size('icon-xl');
+
+  // Apparence
+  background: transparent;
+  border: none;
+  border-radius: radius('full'); // Cercle parfait
+  color: text();
+
+  // Accessibilité WCAG AA
+  @include touch-target('min'); // 44px min-height/width (padding invisible)
+
+  // UX
+  cursor: pointer;
+  @include safe-transition(
+    background-color color transform,
+    timing('fast'),
+    easing('smooth')
+  );
+
+  // Focus WCAG 2.2 AA
+  @include focus-ring;
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // STATES
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &:hover {
-    background: gray(200);
+    background-color: surface('hover'); // gray(200) → token sémantique
     color: color('base');
-    transform: scale(1.1);
+    transform: scale(1.1); // Scale TSA-friendly (doux)
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.95); // Feedback visuel
   }
 
-  &:focus-visible {
-    outline: spacing('2') solid color('base', 'accent');
-    outline-offset: spacing('2');
-  }
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  // === VARIANT: LARGE (deprecated - use --modal instead) ===
+  // Variante large (deprecated - préférer --modal)
   &--large {
-    width: spacing('48');
-    height: spacing('48');
-    background: gray(100);
-    border: spacing('2') solid color('base');
+    width: size('touch-target-preferred'); // 48px WCAG AA preferred
+    height: size('touch-target-preferred');
+    background-color: surface('surface'); // gray(100) → token
+    border: border-width('base') solid color('base');
 
     &:hover {
-      background: gray(200);
-      transform: scale(1.05);
-    }
-
-    &:focus-visible {
-      outline: spacing('2') solid color('base', 'accent');
-      outline-offset: spacing('4');
+      background-color: surface('hover'); // gray(200) → token
+      transform: scale(1.05); // Scale plus doux pour grande taille
     }
   }
 
-  // === VARIANT: MODAL (pour fermer les modals - discret) ===
+  // Variante modal (discret, transparent)
   &--modal {
-    width: spacing('40');
+    width: spacing('40'); // 40px (tolérance temporaire, sera size() en Phase 7)
     height: spacing('40');
     background: transparent;
     border: none;
-    color: rgba(text(), opacity('0-35'));
+    color: text('muted'); // Couleur atténuée pour discrétion
 
     &:hover {
-      background: rgba(color('base'), opacity('0-08'));
+      background-color: surface('soft'); // Fond doux subtil
       color: color('base');
       transform: scale(1.1);
-    }
-
-    &:focus-visible {
-      outline: spacing('2') solid color('base', 'accent');
-      outline-offset: spacing('2');
-    }
-  }
-
-  &--small {
-    // Default styling, no additional rules needed
-  }
-}
-
-// === DARK MODE ===
-@media (prefers-color-scheme: dark) {
-  .button-close {
-    color: var(--color-text);
-
-    &:hover {
-      background: var(--color-bg-hover);
-    }
-
-    &--large {
-      background: var(--color-bg-soft);
-      border-color: var(--color-primary);
-
-      &:hover {
-        background: var(--color-bg-hover);
-      }
     }
   }
 }

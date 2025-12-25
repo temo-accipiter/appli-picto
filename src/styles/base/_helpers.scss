@@ -4,7 +4,10 @@
 /* Container - mobile-first, uses CSS var with fallback */
 .container {
   width: 100%;
-  max-width: var(--container-max, 1200px); // Fallback custom, pas un token design
+  max-width: var(
+    --container-max,
+    1200px
+  ); // Fallback custom, pas un token design
   margin-inline: auto;
   padding-inline: spacing('4');
 }

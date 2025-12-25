@@ -18,6 +18,10 @@
   purple, slate, role-color, text, surface, admin-ui, warning, badge-gradient,
   ui-gradient, badge-shadow, tsa-pastel, shadow, brand;
 
+// --- Fonction radius (sans CSS généré) ---
+// Forward uniquement la fonction radius() de _radius.scss
+@forward './radius' show radius;
+
 // --- Systèmes qui génèrent du CSS (NE PAS FORWARD) ---
 // Les maps et CSS vars de colors sont importés directement dans main.scss
 // @forward './typography';

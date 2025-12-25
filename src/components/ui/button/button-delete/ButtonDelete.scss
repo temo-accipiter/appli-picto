@@ -1,35 +1,63 @@
+// src/components/ui/button/button-delete/ButtonDelete.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// BUTTON DELETE COMPONENT - Tokens-First
+/// ============================================================================
+/// Bouton de suppression atomique avec icône poubelle
+/// - Hover: fond rouge pastel TSA-friendly
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
+/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion, scale doux)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
 
 .button-delete {
-  background: transparent;
-  border: none;
-  padding: spacing('6');
-  border-radius: radius('rounded-6px');
-  cursor: pointer;
-  color: var(--color-text);
-  transition:
-    background-color transition('fast') ease,
-    transform transition('fast') ease;
-
+  // Layout
   display: flex;
   align-items: center;
   justify-content: center;
 
+  // Spacing
+  padding: spacing('6'); // Respiration interne
+
+  // Apparence
+  background: transparent;
+  border: none;
+  border-radius: radius('sm'); // 4px
+  color: text();
+
+  // Accessibilité WCAG AA
+  @include touch-target('min'); // 44px min-height/width
+
+  // UX
+  cursor: pointer;
+  @include safe-transition(
+    background-color transform,
+    timing('fast'),
+    easing('smooth')
+  );
+
+  // Focus WCAG 2.2 AA
+  @include focus-ring;
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // STATES
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &:hover,
   &:focus {
-    background-color: #{color.change(red(400), $alpha: opacity('md'))}; // rouge pastel doux
-    transform: scale(1.1);
-    outline: none;
+    background-color: semantic('error', 'bg'); // Rouge pastel doux TSA-friendly
+    transform: scale(1.1); // Scale doux
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--color-focus);
-  }
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ICON
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__icon {
-    width: spacing('22');
-    height: spacing('22');
-    pointer-events: none;
+    width: size('icon-sm'); // 20px (22px legacy → 20px standard)
+    height: size('icon-sm');
+    pointer-events: none; // Évite interférences événements
   }
 }

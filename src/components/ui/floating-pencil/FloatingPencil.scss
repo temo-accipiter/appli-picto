@@ -1,32 +1,69 @@
+// src/components/ui/floating-pencil/FloatingPencil.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// FLOATING PENCIL COMPONENT - Tokens-First
+/// ============================================================================
+/// Bouton flottant (FAB - Floating Action Button) avec icône crayon
+/// - Position: fixed top-left
+/// - Hover: scale 1.1
+/// - WCAG 2.2 AA compliant (focus visible, touch target)
+/// - TSA-friendly (animation douce ≤ 0.3s, prefers-reduced-motion)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
 
 .floating-pencil {
+  // Position
   position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: $z-tooltip;
-  background-color: var(--accent-color, #{blue(50)});
-  padding: spacing('sm');
-  border-radius: radius('full');
-  box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.1)};
+  top: spacing('lg'); // 16px (~1rem)
+  left: spacing('lg');
+  z-index: z-index('tooltip'); // Au-dessus du contenu, sous modals
+
+  // Layout
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  // Spacing
+  padding: spacing('sm'); // 8px
+
+  // Apparence
+  background-color: surface('surface'); // Fond doux neutre
+  border-radius: radius('full'); // Cercle parfait
+  box-shadow: shadow('elevation-md'); // Ombre médium pour visibilité
+
+  // Accessibilité WCAG AA
+  @include touch-target('min'); // 44px min-height/width
+
+  // UX
   cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    transform 150ms ease;
+  @include safe-transition(
+    background-color transform,
+    timing('fast'),
+    easing('smooth')
+  );
+
+  // Focus WCAG 2.2 AA
+  @include focus-ring;
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // LINK (NESTED)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   a {
-    color: inherit;
+    color: inherit; // Hérite couleur parent
     text-decoration: none;
     display: inline-flex;
   }
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // STATES
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   &:hover,
   &:focus-within {
-    background-color: var(--accent-color-hover, #{blue(100)});
-    transform: scale(1.1);
+    background-color: surface('hover'); // Hover subtil
+    transform: scale(1.1); // Scale doux TSA-friendly
   }
 }

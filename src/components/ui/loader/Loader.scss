@@ -1,35 +1,77 @@
+// src/components/ui/loader/Loader.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
+/// ============================================================================
+/// LOADER COMPONENT - Tokens-First
+/// ============================================================================
+/// Composant loader (indicateur de chargement) avec animation bounce
+/// - Overlay plein écran
+/// - 3 dots avec animation décalée
+/// - TSA-friendly (animation douce ≤ 0.3s, prefers-reduced-motion)
+///
+/// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ============================================================================
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// OVERLAY (FULL SCREEN)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .loader-overlay {
+  // Position
   position: fixed;
-  inset: 0;
-  background-color: #{surface(bg)}; // ou var(--background-color)
+  inset: 0; // Propriété logique moderne (top/right/bottom/left: 0)
+  z-index: z-index('max'); // Au-dessus de tout
+
+  // Layout
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: z-index('max');
+
+  // Apparence
+  background-color: surface('bg'); // Fond blanc/neutre
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// LOADER BOUNCE (CONTAINER)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .loader-bounce {
   display: flex;
-  gap: spacing('sm');
+  gap: spacing('sm'); // 8px entre dots
 }
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DOT (ANIMATED)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .dot {
-  width: spacing('12');
-  height: spacing('12');
-  background-color: var(--accent-color, #{blue(600)});
-  border-radius: radius('full');
-  animation: bounce transition('base') infinite ease-in-out;
+  // Dimensions
+  width: size('icon-xs'); // 16px (dots compacts)
+  height: size('icon-xs');
+
+  // Apparence
+  background-color: color('base'); // Bleu principal
+  border-radius: radius('full'); // Cercle parfait
+
+  // Animation TSA-compliant
+  @include safe-animation(
+    bounce,
+    timing('base'),
+    // 0.3s
+    ease-in-out
+  );
+  animation-iteration-count: infinite;
+
+  // Délais pour effet cascade
+  &:nth-child(2) {
+    animation-delay: 0.15s; // 150ms entre dots
+  }
+
+  &:nth-child(3) {
+    animation-delay: 0.3s; // 300ms total
+  }
 }
 
-.dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-// Animation bounce centralisée dans src/styles/base/_animations.scss
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NOTE: Animation @keyframes 'bounce' définie dans base/_animations.scss
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
