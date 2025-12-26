@@ -9,7 +9,10 @@
 
   /* Layout variants */
   &--auto {
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(size('dnd-card-min-width'), 1fr)
+    );
   }
 
   &--2 {
@@ -26,15 +29,15 @@
 
   /* Gap variants */
   &--gap-small {
-    gap: $spacing-xs;
+    gap: spacing('xs');
   }
 
   &--gap-medium {
-    gap: $spacing-sm;
+    gap: spacing('sm');
   }
 
   &--gap-large {
-    gap: $spacing-md;
+    gap: spacing('md');
   }
 
   /* Layout presets */

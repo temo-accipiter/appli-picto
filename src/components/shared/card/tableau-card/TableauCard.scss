@@ -1,29 +1,32 @@
 @use '@styles/abstracts' as *;
 
 .tableau-card {
-  @include card-style;
+  // Base card styling
+  background: tsa-pastel('bg-soft');
+  border-radius: radius('md');
+  box-shadow: shadow('elevation-sm');
+  border: border-width('base') solid transparent;
 
   cursor: grab;
   user-select: none;
   position: relative;
 
-  // Override du overflow: hidden du mixin card-style
-  // pour permettre à l'image de dépasser lors du hover
+  // Override du overflow pour permettre à l'image de dépasser lors du hover
   overflow: visible;
 
   // Animation d'apparition lors du swap
-  animation: card-swap-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: card-swap-in timing('base') easing('bounce');
 
   // Transitions optimisées pour éviter les sauts
-  transition:
-    transform 300ms cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 200ms ease,
-    box-shadow 200ms ease,
-    background-color 200ms ease;
+  @include safe-transition(
+    transform opacity box-shadow background-color,
+    timing('base'),
+    easing('ease-out')
+  );
 
   // Drag actif
   &.dragging {
-    opacity: 0.5;
+    opacity: opacity('half');
     cursor: grabbing;
     transform: scale(0.98);
     z-index: z-index('modal');
@@ -31,7 +34,7 @@
 
   // Carte cochée (tâche accomplie)
   &.done {
-    opacity: 0.5;
+    opacity: opacity('half');
     filter: grayscale(100%);
 
     span {
@@ -42,12 +45,12 @@
   // Image avec transition pour le hover
   img,
   .tableau-card__image {
-    transition: transform 300ms ease;
+    @include safe-transition(transform, timing('base'), easing('ease-out'));
   }
 
   // Hover (si non touch)
   @include on-event {
-    background-color: var(--color-hover);
+    background-color: surface('hover');
     transform: scale(1.02);
 
     // Animation de rotation sur l'image au hover
@@ -59,24 +62,24 @@
 
   // 📱 Responsive mobile-first
   /* Base = mobile (320px+) */
-  padding: $spacing-xs;
+  padding: spacing('xs');
 
   /* Tablet (576px+) */
   @include respond-to(sm) {
-    padding: $spacing-sm;
+    padding: spacing('sm');
   }
 
   /* Desktop (768px+) */
   @include respond-to(md) {
-    padding: $spacing-md;
+    padding: spacing('md');
   }
 }
 
 // Label du tableau
 .tableau-card__label {
-  font-weight: 600;
+  font-weight: font-weight('semibold');
   font-size: font-size('sm');
-  line-height: 1.4;
+  line-height: line-height('snug');
   word-break: break-word;
 }
 
@@ -88,11 +91,11 @@
 // Animation de swap fluide
 @keyframes card-swap-in {
   0% {
-    opacity: 0.6;
+    opacity: opacity('md');
     transform: scale(0.9);
   }
   100% {
-    opacity: 1;
+    opacity: opacity('opaque');
     transform: scale(1);
   }
 }

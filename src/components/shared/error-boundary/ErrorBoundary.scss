@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 // src/components/shared/error-boundary/ErrorBoundary.scss
 // Styles TSA-friendly : couleurs pastel, animations douces, layout apaisant
@@ -11,48 +10,48 @@
   justify-content: center;
   min-height: 100vh;
   padding: spacing('xl');
-  background: linear-gradient(135deg, #{slate(50)} 0%, #{slate(200)} 100%);
+  background: surface('bg');
 
   &__content {
-    max-width: 500px;
+    max-width: size('modal-width-md');
     text-align: center;
-    background: white;
-    padding: 3rem 2rem;
+    background: surface('bg');
+    padding: spacing('3xl') spacing('xl');
     border-radius: radius('lg');
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); // Ombre douce (black-light legacy)
+    box-shadow: shadow('elevation-lg');
 
     // Animation douce d'apparition (TSA-friendly)
-    animation: fadeInScale 0.3s ease;
+    animation: fadeInScale timing('base') easing('ease-out');
   }
 
   &__icon {
     font-size: font-size('5xl');
-    margin-bottom: 1rem;
+    margin-bottom: spacing('md');
 
     // Animation douce de balancement
-    animation: gentleSwing 2s ease-in-out infinite;
+    animation: gentleSwing timing('slower') easing('ease-in-out') infinite;
   }
 
   &__title {
     font-size: font-size('2xl');
-    font-weight: 600;
-    color: #{slate(700)};
-    margin-bottom: 1rem;
-    line-height: 1.4;
+    font-weight: font-weight('semibold');
+    color: text();
+    margin-bottom: spacing('md');
+    line-height: line-height('snug');
   }
 
   &__message {
-    font-size: 1rem;
-    color: #{slate(600)};
-    margin-bottom: 2rem;
-    line-height: 1.6;
+    font-size: font-size('base');
+    color: text('muted');
+    margin-bottom: spacing('xl');
+    line-height: line-height('relaxed');
   }
 
   &__actions {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
+    gap: spacing('sm');
+    margin-bottom: spacing('xl');
 
     @include respond-to(sm) {
       flex-direction: row;
@@ -61,31 +60,36 @@
   }
 
   &__button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
+    padding: spacing('sm') spacing('lg');
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
     border-radius: radius('md');
     border: none;
     cursor: pointer;
-    transition: all 0.15s ease;
+
+    @include safe-transition(
+      background-color transform box-shadow,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     // Taille minimum accessible (WCAG AA)
-    min-height: spacing('44');
-    min-width: spacing('120');
+    min-height: size('touch-target-min');
+    min-width: size('card-min-height');
 
     &:focus {
-      outline: 3px solid #{blue(500)};
-      outline-offset: 2px;
+      outline: border-width('focus') solid color('base');
+      outline-offset: size('2');
     }
 
     &--primary {
-      background: #{blue(500)};
-      color: white;
+      background: color('base');
+      color: text('invert');
 
       &:hover:not(:disabled) {
-        background: #{blue(600)};
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25); // Ombre bleu (primary-medium legacy)
+        background: color('dark');
+        transform: translateY(-#{size('2')});
+        box-shadow: shadow('elevation-md');
       }
 
       &:active {
@@ -94,12 +98,12 @@
     }
 
     &--secondary {
-      background: #{slate(200)};
-      color: #{slate(700)};
+      background: surface('soft');
+      color: text();
 
       &:hover:not(:disabled) {
-        background: #{slate(300)};
-        transform: translateY(-2px);
+        background: surface('hover');
+        transform: translateY(-#{spacing('2')});
       }
 
       &:active {
@@ -109,33 +113,33 @@
   }
 
   &__details {
-    margin-top: 2rem;
+    margin-top: spacing('xl');
     text-align: left;
-    background: #{slate(50)};
+    background: surface('soft');
     padding: spacing('md');
     border-radius: radius('md');
-    border: 1px solid #{slate(200)};
+    border: border-width('thin') solid surface('border');
   }
 
   &__details-summary {
     cursor: pointer;
-    font-weight: 600;
-    color: #{slate(600)};
+    font-weight: font-weight('semibold');
+    color: text('muted');
     padding: spacing('sm');
     user-select: none;
 
     &:hover {
-      color: #{slate(700)};
+      color: text();
     }
   }
 
   &__details-content {
-    margin-top: 1rem;
+    margin-top: spacing('md');
     padding: spacing('md');
-    background: white;
+    background: surface('bg');
     border-radius: radius('sm');
-    font-size: 0.875rem;
-    color: #{red(500)};
+    font-size: font-size('sm');
+    color: semantic('error');
     overflow-x: auto;
     white-space: pre-wrap;
     word-break: break-word;

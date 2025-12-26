@@ -5,37 +5,41 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $spacing-xs;
+  gap: spacing('xs');
   justify-content: center;
 
   button {
     background: none;
-    border: spacing('1') solid transparent;
-    border-radius: $radius-sm;
-    font-size: $font-size-lg;
-    padding: $spacing-xs $spacing-sm;
-    color: var(--color-text);
+    border: border-width('thin') solid transparent;
+    border-radius: radius('sm');
+    font-size: font-size('lg');
+    padding: spacing('xs') spacing('sm');
+    color: text();
     cursor: pointer;
 
     /* [Mobile-first] Base = mobile */
     flex: 1 1 100%;
     text-align: center;
 
-    @include transition-smooth;
+    @include safe-transition(
+      border-color background-color,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     @include on-event {
-      border-color: var(--color-text);
+      border-color: text();
     }
 
     &.active {
-      border-color: var(--color-text);
-      font-weight: $font-weight-semibold;
-      background-color: var(--color-hover);
+      border-color: text();
+      font-weight: font-weight('semibold');
+      background-color: surface('hover');
     }
 
     &:focus-visible {
-      outline: spacing('2') dashed var(--color-accent);
-      outline-offset: spacing('2');
+      outline: border-width('base') dashed color('base');
+      outline-offset: size('2');
     }
 
     /* Desktop (576px+) */

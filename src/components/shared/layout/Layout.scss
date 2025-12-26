@@ -2,26 +2,28 @@
 
 .layout {
   display: flex;
-  background-color: var(--color-bg);
-  color: var(--color-text);
+  background-color: surface('bg');
+  color: text();
   min-height: 100vh;
-  margin-top: 2rem;
-  transition:
-    background-color $transition-base ease,
-    color $transition-base ease;
+  margin-top: spacing('lg');
+  @include safe-transition(
+    background-color color,
+    timing('base'),
+    easing('ease-out')
+  );
 
   // Skip link pour accessibilité clavier (WCAG 2.4.1)
   .skip-link {
     position: absolute;
-    top: calc(-1 * #{spacing('40')});
+    top: calc(-1 * #{size('touch-target-min')});
     left: 0;
-    background: var(--color-primary);
-    color: white;
+    background: color('base');
+    color: text('invert');
     padding: spacing('sm') spacing('md');
     text-decoration: none;
     z-index: z-index('max');
-    font-weight: $font-weight-bold;
-    border-radius: 0 0 $radius-sm 0;
+    font-weight: font-weight('bold');
+    border-radius: 0 0 radius('sm') 0;
 
     &:focus {
       top: 0;
@@ -35,13 +37,13 @@
     display: flex;
     flex-direction: column;
     padding: spacing('sm');
-    background-color: var(--color-bg);
-    color: var(--color-text);
+    background-color: surface('bg');
+    color: text();
 
     main {
       flex: 1;
       /* [Mobile-first] Base = mobile (320px+) */
-      padding: $spacing-md;
+      padding: spacing('md');
     }
 
     /* Desktop (576px+) */
@@ -49,7 +51,7 @@
       margin-left: 0; // supprimer l'espace réservé à la sidebar sur mobile
 
       main {
-        padding: $spacing-xl;
+        padding: spacing('xl');
       }
     }
   }

@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .settings-menu {
   display: inline-block;
@@ -8,38 +7,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: spacing('40');
-    height: spacing('40');
+    width: size('touch-target-min');
+    height: size('touch-target-min');
     padding: 0;
-    background: var(--color-bg-soft, #{gray(100)});
-    border: 1px solid var(--color-border, #{gray(300)});
-    border-radius: $radius-md;
+    background: surface('soft');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('md');
     cursor: pointer;
-    color: var(--color-text);
-    transition:
-      background-color 0.2s ease,
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+    color: text();
+    @include safe-transition(
+      background-color transform box-shadow,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     &:hover {
-      background: var(--color-bg-hover, #{gray(200)});
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px color.change(gray(900), $alpha: 0.1);
+      background: surface('hover');
+      transform: translateY(calc(-1 * #{border-width('thin')}));
+      box-shadow: shadow('elevation-sm');
     }
 
     &:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
-
-    // Dark mode
-    [data-theme='dark'] & {
-      background: var(--color-bg-soft, #{slate(800)});
-      border-color: var(--color-border, #{gray(700)});
-
-      &:hover {
-        background: var(--color-bg-hover, #{slate(700)});
-      }
+      outline: a11y('focus-ring-width') solid color('base');
+      outline-offset: a11y('focus-ring-offset');
     }
   }
 
@@ -49,30 +39,28 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: spacing('20');
-    height: spacing('20');
-    gap: 4px;
+    width: spacing('lg');
+    height: spacing('lg');
+    gap: spacing('xs');
   }
 
   &__burger-line {
     display: block;
-    width: 18px;
-    height: 2px;
-    background-color: var(--color-text);
-    border-radius: 1px;
-    transition:
-      transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55),
-      opacity 0.2s ease;
-
-    [data-theme='dark'] & {
-      background-color: var(--color-text);
-    }
+    width: size('4');
+    height: border-width('base');
+    background-color: text();
+    border-radius: radius('xs');
+    @include safe-transition(
+      transform opacity,
+      timing('base'),
+      easing('ease-out')
+    );
   }
 
   // Animation burger → X
   &__trigger--active &__burger-line {
     &:nth-child(1) {
-      transform: translateY(6px) rotate(45deg);
+      transform: translateY(spacing('xs')) rotate(45deg);
     }
 
     &:nth-child(2) {
@@ -81,7 +69,7 @@
     }
 
     &:nth-child(3) {
-      transform: translateY(-6px) rotate(-45deg);
+      transform: translateY(calc(-1 * #{spacing('xs')})) rotate(-45deg);
     }
   }
 
@@ -91,78 +79,60 @@
 
     // Mobile par défaut (320px-767px) : positioned bottom-right
     position: fixed !important;
-    bottom: $spacing-md !important;
-    right: $spacing-md !important;
+    bottom: spacing('md') !important;
+    right: spacing('md') !important;
     left: auto !important;
     top: auto !important;
     width: min(300px, 90vw) !important;
-    border-radius: $radius-lg;
+    border-radius: radius('lg');
     overflow-y: auto;
     max-height: 70vh;
-    animation: slideInUp 0.18s ease-out !important;
+    animation: slideInUp timing('fast') easing('ease-out') !important;
 
     // Desktop (768px+) : positioned top-right
     @include respond-to(md) {
       position: fixed !important;
-      top: spacing('70') !important;
-      right: $spacing-md !important;
+      top: spacing('2xl') !important;
+      right: spacing('md') !important;
       left: auto !important;
       bottom: auto !important;
       max-height: calc(100vh - 100px);
-      animation: slideInDown 0.18s ease-out !important;
-    }
-
-    // Dark mode
-    [data-theme='dark'] & {
-      background: linear-gradient(145deg, #{slate(900)}, #{slate(800)});
-      box-shadow: 0 8px 32px color.change(gray(900), $alpha: 0.4);
+      animation: slideInDown timing('fast') easing('ease-out') !important;
     }
   }
 
   &__header {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-md;
-    border-bottom: 1px solid var(--color-border, #{gray(200)});
-    font-weight: $font-weight-semibold;
-    color: var(--color-text);
-
-    // Dark mode
-    [data-theme='dark'] & {
-      border-color: color.change(text(invert), $alpha: 0.1);
-    }
+    gap: spacing('sm');
+    padding: spacing('md');
+    border-bottom: border-width('thin') solid surface('border');
+    font-weight: font-weight('semibold');
+    color: text();
   }
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: $spacing-xs;
-    padding: $spacing-md;
+    gap: spacing('xs');
+    padding: spacing('md');
 
     // Style wrapper pour les checkboxes dans le menu
     // Utilise le composant Checkbox unifié, ajoute uniquement le style de conteneur
     .checkbox-field {
-      padding: $spacing-sm $spacing-md;
-      background: var(--color-bg-soft, #{slate(50)});
-      border-radius: $radius-md;
+      padding: spacing('sm') spacing('md');
+      background: surface('soft');
+      border-radius: radius('md');
       cursor: pointer;
-      transition:
-        background-color $transition-fast ease,
-        transform $transition-fast ease;
+      @include safe-transition(
+        background-color transform,
+        timing('fast'),
+        easing('ease-out')
+      );
 
       &:hover {
-        background: var(--color-bg-hover, #{gray(200)});
-        transform: translateX(4px);
-      }
-
-      // Dark mode
-      [data-theme='dark'] & {
-        background: color.change(text(invert), $alpha: 0.05);
-
-        &:hover {
-          background: color.change(text(invert), $alpha: 0.1);
-        }
+        background: surface('hover');
+        transform: translateX(spacing('xs'));
       }
     }
   }
@@ -171,7 +141,7 @@
 // Animation pour desktop (depuis le haut)
 @keyframes slideInDown {
   from {
-    transform: translateY(-6px);
+    transform: translateY(calc(-1 * #{spacing('xs')}));
     opacity: 0;
   }
   to {
@@ -183,7 +153,7 @@
 // Animation pour mobile (depuis le bas)
 @keyframes slideInUp {
   from {
-    transform: translateY(6px);
+    transform: translateY(spacing('xs'));
     opacity: 0;
   }
   to {

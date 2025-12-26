@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 // ============================================
 // AVATAR PROFIL - REDESIGN MODERNE 2025
@@ -17,40 +16,40 @@
 .avatar-profil,
 .avatar-fallback {
   // Mobile par défaut (320px-767px)
-  width: spacing('120');
-  height: spacing('120');
+  width: size('avatar-md');
+  height: size('avatar-md');
   font-size: font-size('5xl');
 
   // Styles communs
-  border-radius: $radius-full;
-  border: 3px solid color('base');
-  background-color: #{purple(50)};
+  border-radius: radius('full');
+  border: border-width('thick') solid color('base');
+  background-color: surface('soft');
   object-fit: cover;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: $font-weight-bold;
-  color: #{slate(700)};
-  box-shadow: $shadow-md;
+  font-weight: font-weight('bold');
+  color: text();
+  box-shadow: shadow('elevation-md');
   @include safe-transition(
     transform box-shadow border-color,
-    $transition-fast,
-    ease
+    timing('fast'),
+    easing('ease-out')
   );
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    width: spacing('160');
-    height: spacing('160');
+    width: size('avatar-lg');
+    height: size('avatar-lg');
     font-size: font-size('5xl');
-    border-width: 4px;
+    border-width: border-width('thick');
   }
 
   // Effet hover léger
   &:hover {
     transform: scale(1.02);
-    box-shadow: $shadow-lg;
-    border-color: color.adjust(color('base'), $lightness: 10%);
+    box-shadow: shadow('elevation-lg');
+    border-color: color('light');
   }
 }
 
@@ -61,31 +60,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: $radius-full;
+  border-radius: radius('full');
   padding: 0;
-  font-size: $font-size-base;
+  font-size: font-size('base');
   line-height: 1;
-  z-index: 2;
+  z-index: z-index('dropdown');
   cursor: pointer;
-  border: 2px solid #{text(invert)};
-  @include safe-transition(transform box-shadow, $transition-fast, ease);
-  @include focus-ring(color('base'), 2px, 2px);
+  border: border-width('base') solid text('invert');
+  @include safe-transition(
+    transform box-shadow,
+    timing('fast'),
+    easing('ease-out')
+  );
+  @include focus-ring(color('base'), border-width('focus'), size('2'));
 
   // Mobile par défaut (320px-767px)
-  width: spacing('36');
-  height: spacing('36');
+  width: size('touch-target-optimal');
+  height: size('touch-target-optimal');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    width: spacing('44');
-    height: spacing('44');
-    font-size: $font-size-lg;
+    width: size('touch-target-min');
+    height: size('touch-target-min');
+    font-size: font-size('lg');
   }
 
   &:hover,
   &:focus {
     transform: scale(1.15);
-    box-shadow: $shadow-lg;
+    box-shadow: shadow('elevation-lg');
   }
 
   &:active {
@@ -95,65 +98,61 @@
 
 .avatar-upload-btn {
   // Mobile par défaut
-  bottom: -8px;
-  right: -8px;
-  background: linear-gradient(
-    135deg,
-    color('base'),
-    color.adjust(color('base'), $lightness: 10%)
-  );
-  color: #{text(invert)};
+  bottom: calc(#{spacing('xs')} * -1);
+  right: calc(#{spacing('xs')} * -1);
+  background: linear-gradient(135deg, color('base'), color('light'));
+  color: text('invert');
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(color('base'), 0.5);
+    box-shadow: shadow('elevation-lg');
   }
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    bottom: -10px;
-    right: -10px;
+    bottom: calc(#{spacing('sm')} * -1);
+    right: calc(#{spacing('sm')} * -1);
   }
 }
 
 .avatar-delete-btn {
   // Mobile par défaut
-  top: -8px;
-  right: -8px;
+  top: calc(#{spacing('xs')} * -1);
+  right: calc(#{spacing('xs')} * -1);
   background: linear-gradient(
     135deg,
     semantic('error'),
-    color.adjust(semantic('error'), $lightness: 10%)
+    semantic('error', 'dark')
   );
-  color: #{text(invert)};
+  color: text('invert');
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(semantic('error'), 0.5);
+    box-shadow: shadow('elevation-lg');
   }
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    top: -10px;
-    right: -10px;
+    top: calc(#{spacing('sm')} * -1);
+    right: calc(#{spacing('sm')} * -1);
   }
 }
 
 // === MESSAGE ERREUR ===
 .message-erreur {
   white-space: pre-line;
-  margin-top: $spacing-md;
-  padding: $spacing-sm $spacing-md;
-  background: rgba(semantic('error'), 0.1);
-  border: 1px solid rgba(semantic('error'), 0.3);
-  border-radius: $radius-sm;
+  margin-top: spacing('md');
+  padding: spacing('sm') spacing('md');
+  background: semantic('error', 'bg');
+  border: border-width('thin') solid semantic('error');
+  border-radius: radius('sm');
   color: semantic('error');
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
   text-align: center;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    padding: $spacing-md $spacing-lg;
-    font-size: $font-size-base;
+    padding: spacing('md') spacing('lg');
+    font-size: font-size('base');
   }
 }
 
@@ -170,18 +169,5 @@
     &:hover {
       transform: none !important;
     }
-  }
-}
-
-// === DARK MODE ===
-@media (prefers-color-scheme: dark) {
-  .avatar-fallback {
-    background-color: #{color.change(purple(50), $alpha: 0.1)};
-    color: #{text(invert)};
-  }
-
-  .message-erreur {
-    background: rgba(semantic('error'), 0.2);
-    border-color: rgba(semantic('error'), 0.4);
   }
 }

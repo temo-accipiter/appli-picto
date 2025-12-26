@@ -1,41 +1,40 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 :root {
-  --pastel-color: #{tsa-pastel(blue-light)};
+  --pastel-color: #{semantic('info', 'bg')};
 }
 
 .page-edition {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin-top: 3rem;
-  gap: $spacing-lg;
+  margin-top: spacing('48');
+  gap: spacing('lg');
 
   .ajouter-tache-btn {
     display: block;
-    margin: 0 auto $spacing-xl;
-    font-weight: $font-weight-bold;
+    margin: 0 auto spacing('xl');
+    font-weight: font-weight('bold');
     background-color: semantic('success');
-    color: surface('bg');
+    color: text('invert');
     border: none;
-    border-radius: $radius-sm;
+    border-radius: radius('sm');
     cursor: pointer;
 
     @include transition-smooth;
 
     /* [Mobile-first] Base = mobile (plus petit) */
-    font-size: spacing('14');
-    padding: $spacing-xs $spacing-md;
+    font-size: font-size('sm');
+    padding: spacing('xs') spacing('md');
 
     /* Desktop (576px+) = plus grand */
     @include respond-to(sm) {
-      font-size: $font-size-base;
-      padding: $spacing-sm $spacing-lg;
+      font-size: font-size('base');
+      padding: spacing('sm') spacing('lg');
     }
 
     @include on-event {
-      background-color: color.adjust(semantic('success'), $lightness: -10%);
+      background-color: semantic('success', 'dark');
     }
   }
 }
@@ -46,10 +45,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-xs $spacing-sm;
-    border-bottom: 1px solid gray(300);
-    margin-bottom: $spacing-xs;
-    gap: $spacing-md;
+    padding: spacing('xs') spacing('sm');
+    border-bottom: border-width('thin') solid surface('border');
+    margin-bottom: spacing('xs');
+    gap: spacing('md');
   }
 
   &__delete-btn {
@@ -57,10 +56,8 @@
     border: none;
     cursor: pointer;
     font-size: font-size('xl');
-    transition:
-      transform 0.2s ease,
-      color 0.2s ease;
-    margin-left: $spacing-sm;
+    @include safe-transition((transform, color), timing('fast'), easing('smooth'));
+    margin-left: spacing('sm');
 
     &:hover {
       transform: scale(1.4);
@@ -69,63 +66,63 @@
 
     &:focus {
       outline: none;
-      box-shadow: 0 0 0 2px rgba(color('base'), 0.5);
+      box-shadow: shadow('focus');
     }
   }
 }
 .recompenses-edition__message {
-  padding: $spacing-md;
-  font-size: $font-size-base;
+  padding: spacing('md');
+  font-size: font-size('base');
   text-align: center;
   color: color('base');
   font-style: italic;
 }
 
 .recompenses-edition {
-  animation: fadeIn 200ms ease;
+  animation: fadeIn timing('fast') easing('smooth');
 }
 
 .edition-sections {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: spacing('lg');
 
   // Separator stylisé comme LiensGrid
   .separator {
-    height: 2px;
-    margin: $spacing-xl auto;
-    max-width: 600px;
+    height: border-width('medium');
+    margin: spacing('xl') auto;
+    max-width: size('600');
     width: 100%;
     background: linear-gradient(
       to right,
       transparent,
-      #{gray(300)},
+      surface('border'),
       transparent
     );
-    border-radius: 1px;
+    border-radius: radius('xs');
   }
 }
 
 // Indicateurs de quotas d'images
 .quota-indicators {
-  margin-bottom: 12px;
-  padding: 8px;
-  background: var(--bg-secondary, #{slate(50)});
-  border-radius: 6px;
-  border: 1px solid var(--border-color, #{surface(border)});
+  margin-bottom: spacing('12');
+  padding: spacing('8');
+  background: surface('soft');
+  border-radius: radius('md');
+  border: border-width('thin') solid surface('border');
 }
 //----- Button styles -----//
 .button-label {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: spacing('8');
 
   .button-icon {
-    margin-right: 0.2rem;
+    margin-right: spacing('3');
   }
 
   .chevron {
-    transition: transform 0.15s ease;
+    @include safe-transition(transform, timing('fast'), easing('smooth'));
     margin-left: auto;
   }
 
@@ -134,7 +131,7 @@
   }
 
   &:focus-visible {
-    outline: spacing('2') solid color('base', 'accent');
-    outline-offset: spacing('2');
+    outline: border-width('medium') solid color('base');
+    outline-offset: border-width('medium');
   }
 }

@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .dropdown-wrapper {
   position: relative;
@@ -26,15 +25,15 @@
 
 .dropdown {
   position: fixed;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: $radius-md;
-  box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
+  background: surface('bg');
+  border: border-width('thin') solid surface('border');
+  border-radius: radius('md');
+  box-shadow: shadow('elevation-md');
   z-index: z-index('modal');
   pointer-events: auto;
-  max-width: 320px;
-  min-width: 200px;
-  animation: slideDown 0.2s ease-out;
+  max-width: size('card-max-width');
+  min-width: size('thumbnail-md');
+  animation: slideDown timing('fast') easing('ease-out');
 
   // Position: left (défaut)
   &--left {
@@ -56,20 +55,11 @@
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+    transform: translateY(-0.5rem);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-// Dark mode
-@media (prefers-color-scheme: dark) {
-  .dropdown {
-    background: var(--color-surface);
-    border-color: var(--color-border);
-    box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.4)};
   }
 }
 

@@ -9,31 +9,31 @@
     .personalization-icon {
       font-size: font-size('5xl');
       margin-bottom: spacing('lg');
-      animation: bounce 2s infinite;
+      animation: bounce timing('slower') infinite;
     }
 
     h3 {
-      color: var(--primary);
-      margin-bottom: 30px;
+      color: color('base');
+      margin-bottom: spacing('lg');
       font-size: font-size('2xl');
-      font-weight: 600;
+      font-weight: font-weight('semibold');
     }
 
     .features-list {
       text-align: left;
       margin: spacing('xl') 0;
-      background: var(--muted);
+      background: surface('soft');
       padding: spacing('lg');
-      border-radius: radius('rounded-12px');
+      border-radius: radius('lg');
 
       .feature-item {
         display: flex;
         align-items: center;
-        margin-bottom: 15px;
-        padding: 10px;
-        background: #{surface(bg)};
+        margin-bottom: spacing('md');
+        padding: spacing('sm');
+        background: surface('bg');
         border-radius: radius('md');
-        box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
+        box-shadow: shadow('elevation-sm');
 
         &:last-child {
           margin-bottom: 0;
@@ -41,60 +41,68 @@
 
         .feature-icon {
           font-size: font-size('2xl');
-          margin-right: 15px;
-          min-width: 30px;
+          margin-right: spacing('md');
+          min-width: size('icon-lg');
         }
 
         span:last-child {
-          color: var(--text);
-          font-weight: 500;
+          color: text();
+          font-weight: font-weight('medium');
         }
       }
     }
 
     .personalization-actions {
       display: flex;
-      gap: 15px;
+      gap: spacing('md');
       justify-content: center;
       margin: spacing('xl') 0;
 
       .primary-button {
-        background: var(--primary);
-        color: #{text(invert)};
+        background: color('base');
+        color: text('invert');
         border: none;
-        padding: 12px 24px;
+        padding: spacing('sm') spacing('lg');
         border-radius: radius('md');
-        font-weight: 600;
+        font-weight: font-weight('semibold');
         cursor: pointer;
-        transition: all 0.15s ease;
+        @include safe-transition(
+          background transform,
+          timing('fast'),
+          easing('ease-out')
+        );
 
         &:hover {
-          background: var(--primary-dark);
-          transform: translateY(-2px);
+          background: color('dark');
+          transform: translateY(-#{size('2')});
         }
       }
 
       .secondary-button {
         background: transparent;
-        color: var(--primary);
-        border: 2px solid var(--primary);
-        padding: 10px 24px;
+        color: color('base');
+        border: border-width('base') solid color('base');
+        padding: spacing('sm') spacing('lg');
         border-radius: radius('md');
-        font-weight: 600;
+        font-weight: font-weight('semibold');
         cursor: pointer;
-        transition: all 0.15s ease;
+        @include safe-transition(
+          background color,
+          timing('fast'),
+          easing('ease-out')
+        );
 
         &:hover {
-          background: var(--primary);
-          color: #{text(invert)};
+          background: color('base');
+          color: text('invert');
         }
       }
     }
 
     .personalization-note {
-      color: var(--text-muted);
+      color: text('muted');
       font-style: italic;
-      margin-top: 20px;
+      margin-top: spacing('lg');
     }
   }
 }
@@ -108,17 +116,17 @@
     transform: translateY(0);
   }
   40% {
-    transform: translateY(-10px);
+    transform: translateY(-#{spacing('10')});
   }
   60% {
-    transform: translateY(-5px);
+    transform: translateY(-#{spacing('6')});
   }
 }
 
 // [Mobile-first] Base = mobile
 .personalization-modal {
   .personalization-content {
-    padding: 15px;
+    padding: spacing('md');
 
     .personalization-icon {
       font-size: font-size('5xl');
@@ -135,7 +143,7 @@
       .primary-button,
       .secondary-button {
         width: 100%;
-        max-width: 200px;
+        max-width: size('card-min-height');
       }
     }
   }

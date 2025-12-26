@@ -1,26 +1,14 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
-
-:root {
-  --c-accent: #{blue(400)};
-  --c-accent-light: #{blue(300)};
-}
 
 .separator {
-  margin: 2.5rem 0;
-  height: 2px;
+  margin: spacing('xl') 0;
+  height: size('2');
   width: 100%;
-  //background: linear-gradient(
-  // 90deg,
-  //var(--c-accent) 0%,
-  //var(--c-accent-light) 50%,
-  //var(--c-accent) 100%
-  //);
-  background-color: var(--pastel-color);
+  background-color: color('base');
   background-size: 200% auto;
-  animation: shimmer 2s linear infinite;
+  animation: shimmer timing('slower') linear infinite;
   border-radius: radius('xs');
-  opacity: 0.8;
+  opacity: opacity('half');
 }
 
 /* Animation douce type lumière qui glisse */

@@ -1,6 +1,5 @@
 // src/components/shared/search-input/SearchInput.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 // Styles TSA-friendly pour input de recherche avec debounce
 
 .search-input {
@@ -8,68 +7,78 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 400px;
+  max-width: size('card-max-width');
 
   &__icon {
     position: absolute;
-    left: 12px;
-    color: #{slate(500)};
+    left: spacing('sm');
+    color: text('muted');
     pointer-events: none;
   }
 
   &__field {
     width: 100%;
-    padding: 0.75rem 2.5rem 0.75rem 2.75rem;
-    font-size: 1rem;
-    color: #{slate(700)};
-    background: white;
-    border: 2px solid #{slate(200)};
+    padding: spacing('sm') spacing('xl') spacing('sm') spacing('lg');
+    font-size: font-size('base');
+    color: text();
+    background: surface('bg');
+    border: border-width('base') solid surface('border');
     border-radius: radius('md');
-    transition: all 0.15s ease;
+
+    @include safe-transition(
+      border-color box-shadow,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     // Taille minimum accessible (WCAG AA)
-    min-height: spacing('44');
+    min-height: size('touch-target-min');
 
     &::placeholder {
       // WCAG 2.2 AA compliant - Ratio ~4.5:1
-      color: #{slate(500)};
+      color: text('muted');
     }
 
     &:focus {
       outline: none;
-      border-color: #{blue(500)};
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); // Focus ring bleu (primary-light legacy)
+      border-color: color('base');
+      box-shadow: shadow('elevation-sm');
     }
 
     &:hover:not(:focus) {
-      border-color: #{slate(300)};
+      border-color: gray(300);
     }
   }
 
   &__clear {
     position: absolute;
-    right: 12px;
-    width: 24px;
-    height: 24px;
+    right: spacing('sm');
+    width: size('icon-md');
+    height: size('icon-md');
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #{slate(200)};
+    background: surface('border');
     border: none;
     border-radius: radius('full');
-    color: #{slate(600)};
+    color: text('muted');
     cursor: pointer;
-    font-size: 14px;
-    transition: all 0.15s ease;
+    font-size: font-size('sm');
+
+    @include safe-transition(
+      background-color transform,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     &:hover {
-      background: #{slate(300)};
+      background: gray(300);
       transform: scale(1.1);
     }
 
     &:focus {
-      outline: 2px solid #{blue(500)};
-      outline-offset: 2px;
+      outline: border-width('base') solid color('base');
+      outline-offset: size('2');
     }
 
     &:active {

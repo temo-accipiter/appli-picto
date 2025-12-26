@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 // ============================================
 // DND CARD - Draggable Card Wrapper
@@ -18,7 +17,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1; // Au-dessus du contenu
+    z-index: z-index('base'); // Au-dessus du contenu
     cursor: grab;
 
     // Laisser passer les clics sur les éléments interactifs
@@ -33,7 +32,7 @@
   // Le contenu doit être au-dessus du drag handle pour les interactions
   > *:not(.dnd-card__drag-handle) {
     position: relative;
-    z-index: 2;
+    z-index: z-index('dropdown');
     pointer-events: auto; // Les enfants capturent les events normalement
   }
 
@@ -49,12 +48,12 @@
 
   // État swapping
   &--swapping {
-    opacity: 0.8;
+    opacity: opacity('lg');
   }
 
   // Focus visible pour keyboard navigation
   &:focus-visible {
-    outline: 2px solid var(--color-primary, #{blue(500)});
-    outline-offset: 2px;
+    outline: border-width('focus') solid color('base');
+    outline-offset: size('2');
   }
 }

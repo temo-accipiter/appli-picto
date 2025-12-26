@@ -1,30 +1,29 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: $z-modal;
+  z-index: z-index('modal');
   display: flex;
-  background-color: var(--color-bg);
-  box-shadow: $box-shadow;
+  background-color: surface('bg');
+  box-shadow: shadow('elevation-sm');
 
   /* [Mobile-first] Base = mobile (320px+) */
   flex-direction: column;
   align-items: flex-start;
-  gap: $spacing-xs;
+  gap: spacing('xs');
   height: auto;
-  padding: $spacing-sm $spacing-md;
+  padding: spacing('sm') spacing('md');
 
   /* Desktop = enhancement */
   @include respond-to(sm) {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    height: spacing('64');
-    padding: 0 $spacing-lg;
+    height: size('64');
+    padding: 0 spacing('lg');
     gap: 0;
   }
 }
@@ -36,14 +35,14 @@
   width: 100%;
   flex-wrap: wrap;
   justify-content: center;
-  gap: $spacing-md;
+  gap: spacing('md');
 
   /* Desktop = enhancement */
   @include respond-to(sm) {
     width: auto;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    gap: $spacing-lg;
+    gap: spacing('lg');
   }
 }
 
@@ -54,73 +53,77 @@
   /* [Mobile-first] Base = mobile */
   width: 100%;
   justify-content: center;
-  gap: $spacing-sm;
+  gap: spacing('sm');
 
   /* Desktop = enhancement */
   @include respond-to(sm) {
     width: auto;
     justify-content: flex-end;
-    gap: $spacing-md;
+    gap: spacing('md');
   }
 
   // Actions spécifiques aux visiteurs
   &.visitor-actions {
-    gap: $spacing-lg;
+    gap: spacing('lg');
 
     .visitor-controls {
       display: flex;
       align-items: center;
-      gap: $spacing-sm;
+      gap: spacing('sm');
     }
 
     .visitor-buttons {
       display: flex;
       align-items: center;
-      gap: $spacing-sm;
+      gap: spacing('sm');
 
       .nav-button {
         display: flex;
         align-items: center;
-        gap: $spacing-xs;
-        padding: $spacing-sm $spacing-md;
-        border-radius: $radius-md;
-        font-size: $font-size-sm;
-        font-weight: $font-weight-medium;
+        gap: spacing('xs');
+        padding: spacing('sm') spacing('md');
+        border-radius: radius('md');
+        font-size: font-size('sm');
+        font-weight: font-weight('medium');
         text-decoration: none;
-        transition: all $transition-base ease;
-        border: 1px solid transparent;
+        @include safe-transition(
+          background-color transform border-color box-shadow,
+          timing('fast'),
+          easing('ease-out')
+        );
+        border: border-width('thin') solid transparent;
 
         &.signup-button {
-          background: var(--color-primary);
-          color: #{text(invert)};
-          border-color: var(--color-primary);
+          background: color('base');
+          color: text('invert');
+          border-color: color('base');
 
           &:hover {
-            background: var(--color-primary-dark);
-            transform: translateY(-1px);
+            background: color('dark');
+            transform: translateY(calc(-1 * #{border-width('thin')}));
           }
         }
 
         &.login-button {
           background: transparent;
-          color: var(--color-text);
-          border-color: var(--color-border);
+          color: text();
+          border-color: surface('border');
 
           &:hover {
-            background: var(--color-bg-hover);
-            border-color: var(--color-primary);
+            background: surface('hover');
+            border-color: color('base');
           }
         }
 
         &.personalize-button {
-          background: var(--color-primary);
-          color: #{text(invert)};
-          border-color: var(--color-primary);
+          background: color('base');
+          color: text('invert');
+          border-color: color('base');
 
           &:hover {
-            background: var(--color-primary-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px #{color.change(gray(900), $alpha: 0.15)};
+            background: color('dark');
+            transform: translateY(calc(-1 * #{border-width('thin')}));
+            box-shadow: shadow('elevation-md');
           }
         }
 
@@ -142,12 +145,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: $spacing-xs;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  gap: spacing('xs');
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
   text-decoration: none;
-  color: var(--color-text);
-  padding: $spacing-xs 0;
+  color: text();
+  padding: spacing('xs') 0;
 
   @include transition-smooth;
 
@@ -157,13 +160,13 @@
     left: 0;
     bottom: 0;
     width: 0;
-    height: spacing('2');
-    background-color: var(--color-primary);
-    transition: width $transition-base ease;
+    height: border-width('base');
+    background-color: color('base');
+    @include safe-transition(width, timing('fast'), easing('ease-out'));
   }
 
   &:hover {
-    color: var(--color-primary);
+    color: color('base');
 
     &::after {
       width: 100%;
@@ -172,13 +175,13 @@
 
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid var(--color-primary);
-    outline-offset: spacing('4');
+    outline: a11y('focus-ring-width') solid color('base');
+    outline-offset: spacing('xs');
     border-radius: radius('sm');
   }
 
   &.active {
-    color: var(--color-primary);
+    color: color('base');
 
     &::after {
       width: 100%;
@@ -196,23 +199,27 @@
 }
 
 .nav-button {
-  background: #{blue(500)};
-  color: #{text(invert)};
+  background: color('base');
+  color: text('invert');
   border: none;
   border-radius: radius('md');
-  padding: spacing('6') spacing('12');
+  padding: spacing('xs') spacing('sm');
   font-size: font-size('sm');
-  margin-left: spacing('16');
+  margin-left: spacing('md');
   cursor: pointer;
-  transition: background transition('fast') ease;
+  @include safe-transition(
+    background-color,
+    timing('fast'),
+    easing('ease-out')
+  );
 
   &:hover {
-    background: #{blue(700)};
+    background: color('dark');
   }
 
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid #{text(invert)};
+    outline: a11y('focus-ring-width') solid text('invert');
     outline-offset: a11y('focus-ring-offset');
   }
 }
@@ -220,14 +227,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: spacing('16');
+  margin-left: spacing('md');
 
   .navbar-avatar {
-    width: spacing('36');
-    height: spacing('36');
+    width: size('avatar-md');
+    height: size('avatar-md');
     border-radius: radius('full');
     overflow: hidden;
-    border: spacing('2') solid #{gray(300)};
+    border: border-width('base') solid surface('border');
 
     img {
       width: 100%;
@@ -237,16 +244,16 @@
   }
 
   .navbar-avatar-fallback {
-    width: spacing('36');
-    height: spacing('36');
+    width: size('avatar-md');
+    height: size('avatar-md');
     border-radius: radius('full');
     // WCAG 2.2 AA compliant - Ratio ~4.5:1
-    background: #{gray(600)};
+    background: surface('soft');
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
-    color: #{text(invert)};
+    font-weight: font-weight('bold');
+    color: text();
     font-size: font-size('base');
   }
 

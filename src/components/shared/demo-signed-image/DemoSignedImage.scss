@@ -3,12 +3,16 @@
 .demo-signed-image {
   object-fit: cover;
   border-radius: radius('md');
-  border: 2px solid var(--border);
-  transition: all 0.15s ease;
+  border: border-width('base') solid surface('border');
+  @include safe-transition(
+    transform border-color,
+    timing('fast'),
+    easing('ease-out')
+  );
 
   &:hover {
     transform: scale(1.05);
-    border-color: var(--primary);
+    border-color: color('base');
   }
 }
 
@@ -16,17 +20,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--muted);
+  background: surface('soft');
   border-radius: radius('md');
-  border: 2px solid var(--border);
+  border: border-width('base') solid surface('border');
 
   .loading-spinner {
-    width: spacing('20');
-    height: spacing('20');
-    border: 2px solid var(--border);
-    border-top: 2px solid var(--primary);
+    width: size('icon-sm');
+    height: size('icon-sm');
+    border: border-width('base') solid surface('border');
+    border-top: border-width('base') solid color('base');
     border-radius: radius('full');
-    animation: spin 1s linear infinite;
+    animation: spin timing('slow') linear infinite;
   }
 }
 
@@ -35,25 +39,29 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--destructive-light);
-  border: 2px solid var(--destructive);
+  background: semantic('error', 'bg');
+  border: border-width('base') solid semantic('error');
   border-radius: radius('md');
   cursor: pointer;
-  transition: all 0.15s ease;
+  @include safe-transition(
+    background-color color,
+    timing('fast'),
+    easing('ease-out')
+  );
 
   &:hover {
-    background: var(--destructive);
-    color: white;
+    background: semantic('error');
+    color: text('invert');
   }
 
   .error-icon {
-    font-size: 1.2em;
-    margin-bottom: 2px;
+    font-size: font-size('lg');
+    margin-bottom: spacing('xs');
   }
 
   .error-text {
-    font-size: 0.7em;
-    font-weight: 500;
+    font-size: font-size('xs');
+    font-weight: font-weight('medium');
   }
 }
 

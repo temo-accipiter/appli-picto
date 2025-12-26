@@ -11,12 +11,16 @@
     height: 100%;
     object-fit: cover;
     border-radius: radius('md');
-    border: 2px solid var(--border);
-    transition: all 0.15s ease;
+    border: border-width('base') solid surface('border');
+    @include safe-transition(
+      transform border-color,
+      timing('fast'),
+      easing('ease-out')
+    );
 
     &:hover {
       transform: scale(1.05);
-      border-color: var(--primary);
+      border-color: color('base');
     }
   }
 
@@ -24,46 +28,35 @@
     width: 100%;
     height: 100%;
     border-radius: radius('md');
-    border: 2px solid var(--border);
-    background: linear-gradient(
-      135deg,
-      #{gray(300)} 30%,
-      #{gray(100)} 50%,
-      #{gray(300)} 70%
-    );
+    border: border-width('base') solid surface('border');
+    background: surface('soft');
     background-size: 200% 200%;
-    animation: skeleton-loading 1.2s ease-in-out infinite;
-    filter: blur(2px);
+    animation: skeleton-loading timing('slower') easing('ease-in-out') infinite;
+    filter: blur(size('2'));
   }
 
   &__error {
     width: 100%;
     height: 100%;
     border-radius: radius('md');
-    background: linear-gradient(
-      135deg,
-      #{red(50)} 30%,
-      #{red(100)} 50%,
-      #{red(50)} 70%
-    );
-    border: 2px dashed #{red(400)};
+    background: semantic('error', 'bg');
+    border: border-width('base') dashed semantic('error');
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    transition: all 0.15s ease;
-    color: #{red(600)};
-    font-size: 1.2em;
+    @include safe-transition(
+      background-color border-color transform,
+      timing('fast'),
+      easing('ease-out')
+    );
+    color: semantic('error');
+    font-size: font-size('lg');
 
     &:hover {
-      background: linear-gradient(
-        135deg,
-        #{red(100)} 30%,
-        #{red(200)} 50%,
-        #{red(100)} 70%
-      );
-      border-color: #{red(500)};
+      background: semantic('error', 'light');
+      border-color: semantic('error', 'dark');
       transform: scale(1.05);
     }
 
@@ -72,9 +65,9 @@
     }
 
     small {
-      font-size: 0.7em;
-      margin-top: 0.2em;
-      opacity: 0.8;
+      font-size: font-size('xs');
+      margin-top: spacing('xs');
+      opacity: opacity('lg');
     }
   }
 }
@@ -92,7 +85,7 @@
 .signed-image__img,
 .signed-image__placeholder,
 .signed-image__error {
-  border-radius: radius('rounded-6px');
+  border-radius: radius('sm');
 }
 
 /* Desktop (576px+) */
@@ -106,18 +99,18 @@
 
 // ✅ Classes utilitaires pour la taille
 .img-size-xs {
-  width: spacing('40');
-  height: spacing('40');
+  width: size('touch-target-min');
+  height: size('touch-target-min');
 }
 .img-size-sm {
-  width: spacing('60');
-  height: spacing('60');
+  width: size('avatar-sm');
+  height: size('avatar-sm');
 }
 .img-size-md {
-  width: spacing('100');
-  height: spacing('100');
+  width: size('avatar-md');
+  height: size('avatar-md');
 }
 .img-size-lg {
-  width: 150px;
-  height: 150px;
+  width: size('avatar-lg');
+  height: size('avatar-lg');
 }

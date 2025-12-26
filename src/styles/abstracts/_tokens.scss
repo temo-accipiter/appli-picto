@@ -188,6 +188,8 @@ $opacity-tokens: (
   'xl': 0.3,
   '2xl': 0.4,
   'half': 0.5,
+  '0-6': 0.6,
+  '0-9': 0.9,
   'opaque': 1,
 
   // === Specific values ===
@@ -200,6 +202,7 @@ $opacity-tokens: (
   '0-35': 0.35,
   '0-4': 0.4,
   '0-45': 0.45,
+  '0-95': 0.95,
 );
 
 // =============================================================================
@@ -434,7 +437,9 @@ $surface-color-tokens: (
   // Bordures
   soft: #f8fafc,
   // Background doux
-  hover: #f9fafb, // Hover state
+  hover: #f9fafb,
+  // Hover state
+  overlay: rgba(59, 59, 59, 0.5), // Overlay semi-transparent (modales, dropdowns)
 );
 
 // =============================================================================
@@ -645,6 +650,8 @@ $spacing-tokens: (
   // 24px
   '25': 1.5625rem,
   // 25px
+  '26': 1.625rem,
+  // 26px - Toggle slider offset
   '28': 1.75rem,
   // 28px
   '30': 1.875rem,
@@ -685,6 +692,8 @@ $spacing-tokens: (
   // 150px
   '160': 10rem,
   // 160px
+  '180': 11.25rem,
+  // 180px
   '200': 12.5rem,
   // 200px
   '250': 15.625rem,
@@ -755,8 +764,10 @@ $size-tokens: (
   'card-min-height': 8.75rem,
   // 140px
   'card-image-height': 12.5rem,
-
   // 200px
+  'card-max-width': 25rem,
+
+  // 400px
   // Avatar
   'avatar-xs': 1.5rem,
   // 24px
@@ -852,7 +863,88 @@ $size-tokens: (
   // 300px
   'image-hero': 31.25rem,
   // 500px
-  'video-player-min-height': 18.75rem // 300px
+  'video-player-min-height': 18.75rem,
+  // 300px
+  // Legacy/Utility numeric values (Phase 5 → 6 migration)
+  '2': 0.125rem,
+  // 2px - petits offsets (transforms, borders)
+  '4': 0.25rem,
+  // 4px - petits éléments UI (handle bars, blur effects)
+  '8': 0.5rem,
+  // 8px - scrollbars, séparateurs
+  '10': 0.625rem,
+  // 10px - Petits offsets, petits éléments
+  '12': 0.75rem,
+  // 12px - Offsets moyens
+  '14': 0.875rem,
+  // 14px - Small UI elements, icons
+  '16': 1rem,
+  // 16px - Checkbox mobile, petits éléments UI
+  '18': 1.125rem,
+  // 18px - SVG icons, small UI elements
+  '20': 1.25rem,
+  // 20px - Checkbox desktop, icônes
+  '24': 1.5rem,
+  // 24px - Burger icon, petits conteneurs
+  '28': 1.75rem,
+  // 28px - Éléments moyens
+  '32': 2rem,
+  // 32px - offsets structurels (padding modal)
+  '40': 2.5rem,
+  // 40px - Medium containers, icon sizes
+  '48': 3rem,
+  // 48px - Icon sizes, input heights
+  '50': 3.125rem,
+  // 50px - Icons, status indicators
+  '60': 3.75rem,
+  // 60px - Icônes larges, éléments visuels
+  '64': 4rem,
+  // 64px - offsets structurels (padding modal large)
+  '80': 5rem,
+  // 80px - Logo sizes, large icons
+  '96': 6rem,
+  // 96px - Textarea min-height
+  '100': 6.25rem,
+  // 100px - Grilles, cards
+  '120': 7.5rem,
+  // 120px - Grid columns, table cells
+  '140': 8.75rem,
+  // 140px - Grid columns, table cells
+  '150': 9.375rem,
+  // 150px - Min-width filtres
+  '160': 10rem,
+  // 160px - TimeTimer compact
+  '180': 11.25rem,
+  // 180px - Grilles récompenses
+  '200': 12.5rem,
+  // 200px - Grilles, cards (déjà en card-image-height)
+  '250': 15.625rem,
+  // 250px - Medium containers, tables
+  '260': 16.25rem,
+  // 260px - Grilles édition
+  '280': 17.5rem,
+  // 280px - TimeTimer, sidebar (déjà en nav-width-sidebar)
+  '300': 18.75rem,
+  // 300px - TimeTimer compact
+  '320': 20rem,
+  // 320px - UserMenu dialog
+  '400': 25rem,
+  // 400px - Login/signup forms
+  '480': 30rem,
+  // 480px - Reset password forms
+  '500': 31.25rem,
+  // 500px - Modals
+  '520': 32.5rem,
+  // 520px - Collapsible panels
+  '600': 37.5rem,
+  // 600px - TimeTimer full
+  '800': 50rem,
+  // 800px - CookiePreferences, containers
+  '900': 56.25rem,
+  // 900px - Profil page desktop
+  '980': 61.25rem,
+  // 980px - RGPD portal max-width
+  '1200': 75rem // 1200px - Logs page, large containers
 ) !default;
 
 // =============================================================================
@@ -1325,6 +1417,12 @@ $size-tokens: (
   // Card standard
   // === Legacy numeric (migration Phase 5 → Phase 6) ===
   // TODO Phase 6: Migrer tous usages vers tokens sémantiques ci-dessus
+  '2': 0.125rem,
+  // 2px - Temporaire (petits éléments UI)
+  '4': 0.25rem,
+  // 4px - Temporaire (handle bars, séparateurs)
+  '8': 0.5rem,
+  // 8px - Temporaire (scrollbars, petits espacements structurels)
   '16': 1rem,
   // 16px - Temporaire
   '20': 1.25rem,
@@ -1333,11 +1431,35 @@ $size-tokens: (
   // 24px - Temporaire
   '28': 1.75rem,
   // 28px - Temporaire
+  '32': 2rem,
+  // 32px - Temporaire (offsets structurels)
   '44': 2.75rem,
   // 44px - Temporaire (→ 'touch-target-min')
+  '64': 4rem,
+  // 64px - Temporaire (offsets structurels)
+  '100': 6.25rem,
+  // 100px - Temporaire (grilles, cards)
+  '150': 9.375rem,
+  // 150px - Temporaire (min-width filtres)
+  '160': 10rem,
+  // 160px - Temporaire (TimeTimer compact)
+  '180': 11.25rem,
+  // 180px - Temporaire (grilles récompenses)
   '200': 12.5rem,
   // 200px - Temporaire
-  '540': 33.75rem // 540px - Temporaire (→ 'modal-width-md')
+  '260': 16.25rem,
+  // 260px - Temporaire (grilles édition)
+  '280': 17.5rem,
+  // 280px - Temporaire (TimeTimer, sidebar)
+  '300': 18.75rem,
+  // 300px - Temporaire (TimeTimer compact)
+  '500': 31.25rem,
+  // 500px - Temporaire (modals)
+  '540': 33.75rem,
+  // 540px - Temporaire (→ 'modal-width-md')
+  '600': 37.5rem,
+  // 600px - Temporaire (TimeTimer full)
+  '800': 50rem // 800px - Temporaire (CookiePreferences, containers)
 ) !default;
 
 // =============================================================================
@@ -1444,6 +1566,13 @@ $shadow-tokens: (
   'elevation-raised': 0 4px 12px rgba(0, 0, 0, 0.15),
   'elevation-floating': 0 8px 24px rgba(0, 0, 0, 0.2),
   'elevation-modal': 0 10px 40px rgba(0, 0, 0, 0.3),
+  // === Shortcuts - Simple access to common shadows ===
+  'focus': 0 0 0 3px rgba(0, 119, 194, 0.1),
+  // Focus ring (primary blue)
+  'banner': 0 10px 40px rgba(0, 0, 0, 0.3),
+  // Cookie banner / notification floating
+  'glow-start': 0 5px 15px rgba(0, 119, 194, 0.4),
+  // Glow effect for reward/start animations
   // === CARD SHADOWS - Interactive card states ===
   'card': (
       'default': 0 2px 6px rgba(0, 0, 0, 0.15),

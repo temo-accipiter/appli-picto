@@ -5,45 +5,49 @@
   align-items: center;
   justify-content: center;
   border: none;
-  border-radius: $radius-full;
+  border-radius: radius('full');
   background-color: transparent;
-  color: var(--color-text);
+  color: text();
   cursor: pointer;
 
   /* [Mobile-first] Base = mobile (320px+) */
-  width: spacing('36');
-  height: spacing('36');
+  width: size('touch-target-min');
+  height: size('touch-target-min');
 
-  @include transition-smooth;
+  @include safe-transition(
+    background-color transform,
+    timing('fast'),
+    easing('ease-out')
+  );
 
   &:hover {
-    background-color: var(--color-hover);
+    background-color: surface('hover');
     transform: scale(1.1);
   }
 
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: border-width('focus') solid color('base');
+    outline-offset: size('2');
   }
 
   svg {
     display: block;
 
     /* [Mobile-first] Base = mobile */
-    width: spacing('20');
-    height: spacing('20');
+    width: size('icon-sm');
+    height: size('icon-sm');
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      width: spacing('24');
-      height: spacing('24');
+      width: size('icon-md');
+      height: size('icon-md');
     }
   }
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    width: spacing('40');
-    height: spacing('40');
+    width: size('touch-target-optimal');
+    height: size('touch-target-optimal');
   }
 }

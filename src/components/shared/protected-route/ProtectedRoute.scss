@@ -1,5 +1,5 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
 .protected-route,
 .protected-route-loading {
   display: flex;
@@ -8,8 +8,8 @@
   align-items: center;
   min-height: 60vh;
   font-size: font-size('xl');
-  color: #{gray(600)};
-  animation: fadeIn 0.15s ease-in-out;
+  color: text('muted');
+  animation: fadeIn timing('fast') easing('ease-in-out');
   text-align: center;
   padding: spacing('xl');
   opacity: 0;
@@ -18,23 +18,23 @@
 
 // Délai avant l'apparition du loader (évite le flash si le chargement est très rapide)
 .protected-route-loading {
-  animation-delay: 0.1s;
+  animation-delay: timing('fast');
 }
 
 .protected-route .spinner {
-  margin-top: 1rem;
-  width: spacing('32');
-  height: spacing('32');
-  border: 3px solid #{gray(300)};
-  border-top: 3px solid #{blue(500)};
+  margin-top: spacing('md');
+  width: size('32');
+  height: size('32');
+  border: border-width('thick') solid surface('border');
+  border-top: border-width('thick') solid color('base');
   border-radius: radius('full');
-  animation: spin 1s linear infinite;
+  animation: spin timing('slow') linear infinite;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(spacing('xs'));
   }
   to {
     opacity: 1;

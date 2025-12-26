@@ -1,15 +1,14 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .item-form {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
+  gap: spacing('md');
 
   // Bouton submit aligné à droite
   button.btn {
     align-self: flex-end;
-    margin-top: $spacing-md;
+    margin-top: spacing('md');
   }
 }
 
@@ -30,21 +29,25 @@
 
 .file-input-label {
   display: inline-block;
-  padding: $spacing-sm $spacing-md;
-  background-color: var(--color-surface-secondary);
-  color: var(--color-text-primary);
-  border: 2px solid var(--color-border);
-  border-radius: $radius-sm;
+  padding: spacing('sm') spacing('md');
+  background-color: surface('soft');
+  color: text();
+  border: border-width('base') solid surface('border');
+  border-radius: radius('sm');
   cursor: pointer;
   font-family: inherit;
-  font-size: 1rem;
-  transition: all 0.15s ease;
+  font-size: font-size('base');
+  @include safe-transition(
+    background-color border-color,
+    timing('fast'),
+    easing('ease-out')
+  );
   text-align: center;
   width: 100%;
 
   &:hover {
-    background-color: var(--color-surface-hover);
-    border-color: var(--color-primary);
+    background-color: surface('hover');
+    border-color: color('base');
   }
 }
 
@@ -58,53 +61,53 @@
   cursor: pointer;
 
   &--error ~ .file-input-label {
-    border-color: var(--color-error);
+    border-color: semantic('error');
   }
 }
 
 .file-input-wrapper:has(.file-input--error) .file-input-label {
-  border-color: var(--color-error);
+  border-color: semantic('error');
 }
 
 // === 🆕 PROGRESS & SUCCESS STATES ===
 
 .item-form__progress-section {
-  padding: $spacing-md;
-  background: #{color.change(color(base), $alpha: 0.05)};
-  border-radius: $radius-md;
-  border: 1px solid color('base');
+  padding: spacing('md');
+  background: semantic('info', 'bg');
+  border-radius: radius('md');
+  border: border-width('thin') solid color('base');
 }
 
 .item-form__success {
-  padding: $spacing-md;
-  background: #{color.change(green(500), $alpha: 0.1)};
-  border-radius: $radius-sm;
+  padding: spacing('md');
+  background: semantic('success', 'bg');
+  border-radius: radius('sm');
   color: semantic('success');
-  font-weight: $font-weight-semibold;
+  font-weight: font-weight('semibold');
   text-align: center;
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown timing('base') easing('ease-out');
 }
 
 .item-form__error-section {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
+  gap: spacing('sm');
 
   .message-erreur {
-    padding: $spacing-sm;
-    background: #{color.change(red(500), $alpha: 0.1)};
-    border-radius: $radius-sm;
+    padding: spacing('sm');
+    background: semantic('error', 'bg');
+    border-radius: radius('sm');
   }
 
   .btn {
     align-self: flex-start;
-    margin-top: $spacing-xs;
+    margin-top: spacing('xs');
   }
 }
 
 @keyframes slideDown {
   from {
-    transform: translateY(-10px);
+    transform: translateY(-0.625rem);
     opacity: 0;
   }
   to {

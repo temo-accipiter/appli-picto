@@ -1,80 +1,81 @@
 // src/components/shared/ImageQuotaIndicator.scss
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .image-quota-indicator {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: spacing('xs');
   padding: spacing('sm');
-  border-radius: radius('rounded-6px');
-  background: var(--bg-secondary, #{gray(100)});
-  border: 1px solid var(--border-color, #{slate(200)});
-  font-size: 12px;
-  color: var(--text-secondary, #{gray(600)});
+  border-radius: radius('md');
+  background: surface('soft');
+  border: border-width('thin') solid surface('border');
+  font-size: font-size('xs');
+  color: text('muted');
 
   &.small {
-    padding: 4px;
-    font-size: 10px;
+    padding: spacing('xs');
+    font-size: font-size('xs');
   }
 
   &.large {
     padding: spacing('sm');
-    font-size: 14px;
+    font-size: font-size('sm');
   }
 
   &.loading {
-    opacity: 0.6;
+    opacity: opacity('md');
     pointer-events: none;
   }
 
   &.near-limit {
-    border-color: var(--warning-color, #{yellow(400)});
-    background: var(--warning-bg, #{yellow(100)});
+    border-color: semantic('warning');
+    background: semantic('warning', 'bg');
   }
 
   &.at-limit {
-    border-color: var(--error-color, #{red(600)});
-    background: var(--error-bg, #{red(100)});
+    border-color: semantic('error');
+    background: semantic('error', 'bg');
   }
 
   .quota-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: 500;
+    font-weight: font-weight('medium');
 
     .quota-label {
-      color: var(--text-primary, #{slate(900)});
+      color: text();
     }
 
     .quota-count {
-      font-weight: 600;
-      color: var(--text-primary, #{slate(900)});
+      font-weight: font-weight('semibold');
+      color: text();
     }
   }
 
   .quota-bar {
     position: relative;
-    height: 6px;
-    background: var(--bg-tertiary, #{slate(200)});
+    height: size('icon-xs');
+    background: surface('border');
     border-radius: radius('xs');
     overflow: hidden;
 
     .quota-fill {
       height: 100%;
-      background: var(--success-color, #{green(600)});
-      transition:
-        width 0.3s ease,
-        background-color 0.3s ease;
+      background: semantic('success');
+      @include safe-transition(
+        width background-color,
+        timing('base'),
+        easing('ease-out')
+      );
       border-radius: radius('xs');
 
       &.near-limit {
-        background: var(--warning-color, #{yellow(400)});
+        background: semantic('warning');
       }
 
       &.at-limit {
-        background: var(--error-color, #{red(600)});
+        background: semantic('error');
       }
     }
 
@@ -83,10 +84,10 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 10px;
-      font-weight: 600;
-      color: var(--text-primary, #{slate(900)});
-      text-shadow: 0 0 2px #{color.change(surface(bg), $alpha: 0.8)};
+      font-size: font-size('xs');
+      font-weight: font-weight('semibold');
+      color: text();
+      text-shadow: shadow('elevation-xs');
     }
   }
 
@@ -94,56 +95,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 10px;
+    font-size: font-size('xs');
 
     .quota-size {
-      color: var(--text-secondary, #{gray(600)});
+      color: text('muted');
     }
 
     .quota-warning {
-      color: var(--error-color, #{red(600)});
-      font-weight: 600;
-    }
-  }
-}
-
-// Mode sombre
-@media (prefers-color-scheme: dark) {
-  .image-quota-indicator {
-    background: var(--bg-secondary-dark, #{slate(700)});
-    border-color: var(--border-color-dark, #{slate(600)});
-    color: var(--text-secondary-dark, #{slate(400)});
-
-    .quota-header {
-      .quota-label,
-      .quota-count {
-        color: var(--text-primary-dark, #{slate(200)});
-      }
-    }
-
-    .quota-bar {
-      background: var(--bg-tertiary-dark, #{slate(600)});
-
-      .quota-percentage {
-        color: var(--text-primary-dark, #{slate(200)});
-        text-shadow: 0 0 2px #{color.change(gray(900), $alpha: 0.8)};
-      }
-    }
-
-    .quota-details {
-      .quota-size {
-        color: var(--text-secondary-dark, #{slate(400)});
-      }
-    }
-
-    &.near-limit {
-      border-color: var(--warning-color-dark, #{orange(400)});
-      background: var(--warning-bg-dark, #{orange(900)});
-    }
-
-    &.at-limit {
-      border-color: var(--error-color-dark, #{red(400)});
-      background: var(--error-bg-dark, #{red(900)});
+      color: semantic('error');
+      font-weight: font-weight('semibold');
     }
   }
 }
