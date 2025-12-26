@@ -1,0 +1,320 @@
+@charset 'UTF-8';
+@use 'sass:map';
+
+/// ============================================================================
+/// 🚀 PRIMITIVES - PHASE 6 (Nouveau Système Harmonisé)
+/// ============================================================================
+/// Ce fichier définit les PRIMITIVES du nouveau design system.
+///
+/// RÈGLES CRITIQUES :
+///   1. Grille 4px STRICTE (pas de 14px, 18px, 22px)
+///   2. Couleurs dérivées de palettes (pas de hex hardcodés)
+///   3. Radius adoucis TSA-friendly (6px/12px/20px au lieu de 4px/8px/16px)
+///   4. Palettes Slate/Neutral comme base (apaisantes)
+///
+/// MIGRATION :
+///   - Ces tokens sont utilisés via $semantics (pas directement)
+///   - Les wrappers (spacing, color, etc.) font fallback sur legacy si absent
+///   - Migration progressive composant par composant
+///
+/// NOTE : Ce fichier coexiste avec _tokens.scss (legacy) pendant la migration
+/// ============================================================================
+
+// =============================================================================
+// 1. COLOR PRIMITIVES - Palettes de base (Slate, Brand, États)
+// =============================================================================
+
+/// Palette NEUTRAL (Slate) - Base apaisante pour UI
+/// Remplace les gris précédents par des teintes plus douces et cohérentes
+$palettes-primitives: (
+  // === NEUTRAL (Slate - Base apaisante) ===
+  'neutral': (
+    0: #ffffff,        // Blanc pur
+    50: #f8fafc,       // Background très clair
+    100: #f1f5f9,      // Background clair
+    200: #e2e8f0,      // Borders légères
+    300: #cbd5e1,      // Borders standard
+    400: #94a3b8,      // Text tertiaire
+    500: #64748b,      // Text secondaire (FREE base)
+    600: #475569,      // Text primaire foncé
+    700: #334155,      // Text fort
+    800: #1e293b,      // Text très fort
+    900: #0f172a,      // Text maximum
+  ),
+
+  // === BRAND (Bleu-Violet Admin) ===
+  'brand': (
+    50: #eef2ff,       // Background très clair
+    100: #e0e7ff,      // Background clair
+    200: #c7d2fe,      // Tint légère
+    300: #a5b4fc,      // Tint moyenne
+    400: #818cf8,      // Tint forte
+    500: #667eea,      // Base ADMIN (identité principale)
+    600: #5a67d8,      // Hover Admin
+    700: #4c5ac4,      // Active Admin
+    800: #3730a3,      // Foncé
+    900: #312e81,      // Très foncé
+  ),
+
+  // === SUCCESS (Vert émeraude) ===
+  'success': (
+    50: #ecfdf5,       // Background très clair
+    100: #d1fae5,      // Background clair
+    200: #a7f3d0,      // Tint légère
+    300: #6ee7b7,      // Tint moyenne
+    400: #34d399,      // Tint forte
+    500: #10b981,      // Base SUCCESS
+    600: #059669,      // Hover
+    700: #047857,      // Active
+    800: #065f46,      // Foncé
+    900: #064e3b,      // Très foncé
+  ),
+
+  // === WARNING (Orange) ===
+  'warning': (
+    50: #fff7ed,       // Background très clair
+    100: #ffedd5,      // Background clair
+    200: #fed7aa,      // Tint légère
+    300: #fdba74,      // Tint moyenne
+    400: #fb923c,      // Tint forte
+    500: #f97316,      // Base WARNING
+    600: #ea580c,      // Hover (VISITOR base)
+    700: #c2410c,      // Active
+    800: #9a3412,      // Foncé
+    900: #7c2d12,      // Très foncé
+  ),
+
+  // === ERROR (Rouge adouci) ===
+  'error': (
+    50: #fef2f2,       // Background très clair
+    100: #fee2e2,      // Background clair
+    200: #fecaca,      // Tint légère
+    300: #fca5a5,      // Tint moyenne
+    400: #f87171,      // Tint forte
+    500: #ef4444,      // Base ERROR (TSA-friendly, moins agressif que #dc2626)
+    600: #dc2626,      // Hover
+    700: #b91c1c,      // Active
+    800: #991b1b,      // Foncé
+    900: #7f1d1d,      // Très foncé
+  ),
+
+  // === INFO (Bleu ciel) ===
+  'info': (
+    50: #f0f9ff,       // Background très clair
+    100: #e0f2fe,      // Background clair
+    200: #bae6fd,      // Tint légère
+    300: #7dd3fc,      // Tint moyenne
+    400: #38bdf8,      // Tint forte
+    500: #0ea5e9,      // Base INFO
+    600: #0284c7,      // Hover
+    700: #0369a1,      // Active
+    800: #075985,      // Foncé
+    900: #0c4a6e,      // Très foncé
+  ),
+);
+
+/// Fonction helper pour accéder aux palettes primitives
+/// @param {String} $palette - Nom palette (neutral, brand, success, etc.)
+/// @param {Number} $shade - Nuance (50-900)
+/// @return {Color} Couleur primitive
+@function palette($palette, $shade) {
+  $palette-map: map.get($palettes-primitives, $palette);
+  @if not $palette-map {
+    @error "Palette '#{$palette}' not found. Available: #{map.keys($palettes-primitives)}";
+  }
+  $color: map.get($palette-map, $shade);
+  @if not $color {
+    @error "Shade '#{$shade}' not found in palette '#{$palette}'. Available: #{map.keys($palette-map)}";
+  }
+  @return $color;
+}
+
+// =============================================================================
+// 2. SPACING PRIMITIVES - Grille 4px STRICTE
+// =============================================================================
+
+/// Grille 4px stricte (pas de 14px, 18px, 22px, etc.)
+/// Basée sur l'audit : tokens les plus utilisés
+$spacing-primitives: (
+  // === Base Scale 4px (Core tokens observés dans audit) ===
+  'none': 0,
+  '2xs': 0.125rem,   // 2px  - Micro-offsets
+  'xs': 0.25rem,     // 4px  - Très petit (utilisé 84x)
+  'sm': 0.5rem,      // 8px  - Petit (utilisé 152x) ← TRÈS FRÉQUENT
+  'md': 1rem,        // 16px - Standard (utilisé 174x) ← LE PLUS FRÉQUENT
+  'lg': 1.5rem,      // 24px - Large (utilisé 61x)
+  'xl': 2rem,        // 32px - Extra large (utilisé 18x)
+  '2xl': 3rem,       // 48px - Très large
+  '3xl': 4rem,       // 64px - Maximum
+
+  // === Grille stricte 4px (pour usage spécifique) ===
+  '1': 0.0625rem,    // 1px  - Hairline borders
+  '2': 0.125rem,     // 2px  - Micro-spacing
+  '4': 0.25rem,      // 4px  = xs
+  '6': 0.375rem,     // 6px  - Nouveau (pas 5px)
+  '8': 0.5rem,       // 8px  = sm (utilisé 15x dans audit)
+  '12': 0.75rem,     // 12px - Moyen-petit (utilisé 11x)
+  '16': 1rem,        // 16px = md (utilisé 12x)
+  '20': 1.25rem,     // 20px - Moyen (utilisé 15x) ← FRÉQUENT
+  '24': 1.5rem,      // 24px = lg (utilisé 18x) ← TRÈS FRÉQUENT
+  '28': 1.75rem,     // 28px - Moyen-grand
+  '32': 2rem,        // 32px = xl (utilisé 9x)
+  '36': 2.25rem,     // 36px - Grand
+  '40': 2.5rem,      // 40px - Très grand
+  '44': 2.75rem,     // 44px - Touch target WCAG AA
+  '48': 3rem,        // 48px = 2xl (utilisé 7x)
+  '56': 3.5rem,      // 56px - Touch target TSA preferred
+  '60': 3.75rem,     // 60px - Large
+  '64': 4rem,        // 64px = 3xl
+  '80': 5rem,        // 80px - Très large
+  '96': 6rem,        // 96px - Extra large
+  '100': 6.25rem,    // 100px - Container min (utilisé 4x)
+  '120': 7.5rem,     // 120px - Large container
+  '160': 10rem,      // 160px - Très large (utilisé 3x)
+  '200': 12.5rem,    // 200px - Max container
+  '260': 16.25rem,   // 260px - Grid columns
+  '280': 17.5rem,    // 280px - Sidebar width
+  '300': 18.75rem,   // 300px - Modal width small
+) !default;
+
+// =============================================================================
+// 3. SIZE PRIMITIVES - Dimensions structurelles
+// =============================================================================
+
+/// Dimensions structurelles (width, height, min/max)
+/// Basées sur audit + accessibilité TSA
+$size-primitives: (
+  // === Touch Targets (Accessibilité WCAG/TSA) ===
+  'touch-min': 2.75rem,        // 44px - WCAG AA minimum (utilisé 21x)
+  'touch-optimal': 3rem,       // 48px - Compromis idéal (utilisé 6x)
+  'touch-preferred': 3.5rem,   // 56px - TSA préféré (utilisé 3x)
+
+  // === Icons (observés dans audit) ===
+  'icon-xs': 0.75rem,          // 12px - Très petit
+  'icon-sm': 1rem,             // 16px - Petit (utilisé 23x) ← TRÈS FRÉQUENT
+  'icon-md': 1.5rem,           // 24px - Standard (utilisé 6x)
+  'icon-lg': 2rem,             // 32px - Grand (utilisé 5x)
+  'icon-xl': 3rem,             // 48px - Très grand (utilisé 4x)
+
+  // === UI Components ===
+  'button-height': 2.75rem,    // 44px - Touch target min
+  'input-height': 2.75rem,     // 44px - Touch target min
+  'avatar-sm': 2rem,           // 32px - Petit avatar (utilisé 2x)
+  'avatar-md': 2.5rem,         // 40px - Avatar standard (utilisé 10x)
+  'avatar-lg': 3rem,           // 48px - Grand avatar (utilisé 4x)
+
+  // === Containers (observés dans audit) ===
+  'card-min-height': 8.75rem,  // 140px - Card minimale (utilisé 9x)
+  'card-max-width': 25rem,     // 400px - Card standard (utilisé 2x)
+  'modal-width-sm': 20rem,     // 320px - Modal compact (utilisé 2x)
+  'modal-width-md': 33.75rem,  // 540px - Modal standard (utilisé 6x) ← FRÉQUENT
+  'modal-width-lg': 45rem,     // 720px - Modal large (utilisé 5x)
+  'sidebar-width': 17.5rem,    // 280px - Sidebar
+  'container-lg': 64rem,       // 1024px - Container desktop (utilisé 2x)
+
+  // === Legacy numeric (migration progressive) ===
+  '2': 0.125rem,               // 2px (utilisé 13x)
+  '4': 0.25rem,                // 4px (utilisé 5x)
+  '8': 0.5rem,                 // 8px (utilisé 2x)
+  '24': 1.5rem,                // 24px (utilisé 2x)
+  '32': 2rem,                  // 32px (utilisé 6x)
+  '60': 3.75rem,               // 60px (utilisé 2x)
+  '64': 4rem,                  // 64px (utilisé 4x)
+  '100': 6.25rem,              // 100px (utilisé 3x)
+  '200': 12.5rem,              // 200px (utilisé 2x)
+  '260': 16.25rem,             // 260px (utilisé 2x)
+  '300': 18.75rem,             // 300px (utilisé 2x)
+  '600': 37.5rem,              // 600px (utilisé 3x)
+  '800': 50rem,                // 800px (utilisé 3x)
+) !default;
+
+// =============================================================================
+// 4. RADIUS PRIMITIVES - Border-radius adoucis (TSA-friendly)
+// =============================================================================
+
+/// Border-radius adoucis pour interfaces TSA (6px/12px au lieu de 4px/8px)
+/// Audit montre md (58x), sm (33x), lg (19x) comme plus fréquents
+$radius-primitives: (
+  'none': 0,
+  'xs': 0.25rem,      // 4px  - Très subtil
+  'sm': 0.375rem,     // 6px  - Petit (TSA-friendly, utilisé 33x via rounded-6px)
+  'md': 0.75rem,      // 12px - Standard (TSA-friendly, utilisé 58x + 10x rounded-12px)
+  'lg': 1.25rem,      // 20px - Large (adouci vs 16px actuel, utilisé 19x)
+  'xl': 1.5rem,       // 24px - Extra large
+  '2xl': 2rem,        // 32px - Maximum
+  'full': 50%,        // Circle/Pill (utilisé 19x)
+
+  // === Aliases explicites (observés dans audit) ===
+  'rounded-6px': 0.375rem,   // 6px (utilisé 12x) → sm
+  'rounded-10px': 0.625rem,  // 10px (utilisé 1x) → Nouveau
+  'rounded-12px': 0.75rem,   // 12px (utilisé 10x) → md
+) !default;
+
+// =============================================================================
+// 5. TYPOGRAPHY PRIMITIVES - Font sizes harmonisés
+// =============================================================================
+
+/// Font sizes scale (Tailwind-like, observé comme standard dans audit)
+/// sm (61x), base (37x), xs (28x), lg (24x) sont les plus fréquents
+$font-size-primitives: (
+  'xs': 0.75rem,      // 12px - Très petit (utilisé 28x)
+  'sm': 0.875rem,     // 14px - Petit (utilisé 61x) ← LE PLUS FRÉQUENT
+  'base': 1rem,       // 16px - Standard (utilisé 37x) ← TRÈS FRÉQUENT
+  'lg': 1.125rem,     // 18px - Large (utilisé 24x) ← FRÉQUENT
+  'xl': 1.25rem,      // 20px - Extra large (utilisé 10x)
+  '2xl': 1.5rem,      // 24px - 2XL (utilisé 23x) ← FRÉQUENT
+  '3xl': 1.875rem,    // 30px - 3XL
+  '4xl': 2.25rem,     // 36px - 4XL (utilisé 4x)
+  '5xl': 3rem,        // 48px - 5XL (utilisé 7x)
+) !default;
+
+// =============================================================================
+// 6. MOTION PRIMITIVES - Animations TSA-compliant
+// =============================================================================
+
+/// Durées et easing TSA-friendly (max 0.3s pour feedback immédiat)
+$motion-primitives: (
+  // Timing
+  'timing': (
+    'instant': 0.1s,      // Feedback immédiat
+    'fast': 0.15s,        // Rapide (hover, focus)
+    'base': 0.2s,         // Standard (state changes)
+    'slow': 0.3s,         // Lent (max TSA-safe)
+    'reveal': 0.4s,       // Reveals (exceptions)
+  ),
+
+  // Easing
+  'easing': (
+    'linear': linear,
+    'smooth': ease,                                    // Défaut
+    'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94), // Exit naturel
+    'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19), // Enter naturel
+  ),
+) !default;
+
+// =============================================================================
+// 7. SHADOW PRIMITIVES - Élévations subtiles
+// =============================================================================
+
+/// Ombres par élévation (subtiles, TSA-friendly)
+$shadow-primitives: (
+  'none': none,
+  'xs': 0 1px 2px rgba(15, 23, 42, 0.05),       // Slate-900 alpha 0.05
+  'sm': 0 2px 4px rgba(15, 23, 42, 0.08),       // Subtle
+  'md': 0 4px 8px rgba(15, 23, 42, 0.1),        // Standard
+  'lg': 0 8px 16px rgba(15, 23, 42, 0.12),      // Elevated
+  'xl': 0 12px 24px rgba(15, 23, 42, 0.15),     // Floating
+  '2xl': 0 20px 40px rgba(15, 23, 42, 0.2),     // Modal/Dropdown
+) !default;
+
+// =============================================================================
+// GUIDELINES
+// =============================================================================
+// 1. Ce fichier définit les PRIMITIVES (valeurs brutes harmonisées)
+// 2. Les SEMANTICS (_semantics.scss) mappent ces primitives vers noms métier
+// 3. Les WRAPPERS (_spacing.scss, _colors.scss, etc.) font fallback legacy
+// 4. Migration composant par composant (pas de breaking change)
+// 5. Grille 4px STRICTE (pas de 14px, 18px, 22px)
+// 6. Couleurs dérivées de palettes (pas de hex hardcodés)
+// 7. Radius adoucis TSA (6px/12px au lieu de 4px/8px)
+// 8. Toutes valeurs basées sur audit usage réel (fréquence observée)

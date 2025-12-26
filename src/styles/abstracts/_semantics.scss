@@ -1,0 +1,385 @@
+@charset 'UTF-8';
+@use 'sass:map';
+@use 'primitives' as p;
+
+/// ============================================================================
+/// 🎯 SEMANTICS - PHASE 6 (Couche Métier au-dessus des Primitives)
+/// ============================================================================
+/// Ce fichier mappe les PRIMITIVES vers des noms SÉMANTIQUES métier.
+///
+/// RÈGLES CRITIQUES :
+///   1. Tous les tokens ici référencent $primitives (PAS de valeurs hardcodées)
+///   2. Noms auto-documentés (role métier > valeur technique)
+///   3. Organisation par CONTEXTE (Layout, Components, Typography, etc.)
+///   4. Utilisé via wrappers avec fallback sur legacy
+///
+/// ARCHITECTURE :
+///   Primitives (valeurs brutes) → Semantics (intentions) → Wrappers (API)
+///
+/// EXEMPLE :
+///   p.palette('neutral', 500) → $color-semantic-text-secondary → text('secondary')
+///
+/// NOTE : Ce fichier coexiste avec _tokens.scss (legacy) pendant la migration
+/// ============================================================================
+
+// =============================================================================
+// 1. COLOR SEMANTICS - Couleurs par intention métier
+// =============================================================================
+
+// === TEXT COLORS - Couleurs de texte par importance ===
+$color-semantic-text: (
+  'primary': p.palette('neutral', 800),      // #1e293b - Texte principal fort
+  'secondary': p.palette('neutral', 600),    // #475569 - Texte secondaire
+  'tertiary': p.palette('neutral', 400),     // #94a3b8 - Texte tertiaire (hints)
+  'invert': p.palette('neutral', 0),         // #ffffff - Texte inversé (sur foncé)
+  'muted': p.palette('neutral', 500),        // #64748b - Texte désactivé
+  'dark': p.palette('neutral', 900),         // #0f172a - Texte très fort (headings)
+) !default;
+
+// === SURFACE COLORS - Couleurs de surfaces/backgrounds ===
+$color-semantic-surface: (
+  'page': p.palette('neutral', 50),          // #f8fafc - Background page principal
+  'bg': p.palette('neutral', 0),             // #ffffff - Background blanc pur
+  'card': p.palette('neutral', 0),           // #ffffff - Background cards
+  'overlay': p.palette('neutral', 100),      // #f1f5f9 - Background overlay léger
+  'border': p.palette('neutral', 200),       // #e2e8f0 - Bordures standard
+  'divider': p.palette('neutral', 100),      // #f1f5f9 - Séparateurs
+  'hover': p.palette('neutral', 50),         // #f8fafc - Background hover
+  'soft': p.palette('neutral', 50),          // #f8fafc - Background doux
+) !default;
+
+// === FEEDBACK COLORS - États système (success, warning, error, info) ===
+$color-semantic-feedback: (
+  // Success (vert émeraude)
+  'success-base': p.palette('success', 500),    // #10b981
+  'success-light': p.palette('success', 100),   // #d1fae5 - Background
+  'success-dark': p.palette('success', 700),    // #047857 - Texte
+  'success-border': p.palette('success', 300),  // #6ee7b7
+
+  // Warning (orange)
+  'warning-base': p.palette('warning', 500),    // #f97316
+  'warning-light': p.palette('warning', 100),   // #ffedd5 - Background
+  'warning-dark': p.palette('warning', 700),    // #c2410c - Texte
+  'warning-border': p.palette('warning', 300),  // #fdba74
+
+  // Error (rouge adouci)
+  'error-base': p.palette('error', 500),        // #ef4444 (TSA-friendly)
+  'error-light': p.palette('error', 100),       // #fee2e2 - Background
+  'error-dark': p.palette('error', 700),        // #b91c1c - Texte
+  'error-border': p.palette('error', 300),      // #fca5a5
+
+  // Info (bleu ciel)
+  'info-base': p.palette('info', 500),          // #0ea5e9
+  'info-light': p.palette('info', 100),         // #e0f2fe - Background
+  'info-dark': p.palette('info', 700),          // #0369a1 - Texte
+  'info-border': p.palette('info', 300),        // #7dd3fc
+) !default;
+
+// === ROLE COLORS - Couleurs par rôle utilisateur (admin, abonné, free, visitor) ===
+$color-semantic-roles: (
+  // Admin (violet brand)
+  'admin-base': p.palette('brand', 500),        // #667eea - Violet admin (identité)
+  'admin-light': p.palette('brand', 100),       // #e0e7ff - Background
+  'admin-dark': p.palette('brand', 700),        // #4c5ac4 - Texte/Active
+  'admin-gradient-start': p.palette('brand', 500),
+  'admin-gradient-end': p.palette('brand', 700),
+
+  // Abonné (vert success)
+  'abonne-base': p.palette('success', 500),     // #10b981
+  'abonne-light': p.palette('success', 100),    // #d1fae5
+  'abonne-dark': p.palette('success', 700),     // #047857
+  'abonne-gradient-start': p.palette('success', 500),
+  'abonne-gradient-end': p.palette('success', 700),
+
+  // Free (gris neutral)
+  'free-base': p.palette('neutral', 500),       // #64748b
+  'free-light': p.palette('neutral', 100),      // #f1f5f9
+  'free-dark': p.palette('neutral', 700),       // #334155
+  'free-gradient-start': p.palette('neutral', 500),
+  'free-gradient-end': p.palette('neutral', 700),
+
+  // Visitor (orange warning)
+  'visitor-base': p.palette('warning', 600),    // #ea580c
+  'visitor-light': p.palette('warning', 100),   // #ffedd5
+  'visitor-dark': p.palette('warning', 700),    // #c2410c
+  'visitor-gradient-start': p.palette('warning', 600),
+  'visitor-gradient-end': p.palette('warning', 700),
+) !default;
+
+// === PRIMARY/SECONDARY COLORS - Couleurs de marque ===
+// NOTE: New Brand Identity (Violet #667eea) - Phase 6 Design Refresh
+// Remplace ancien bleu #0077c2 par violet moderne pour identité admin/principal
+$color-semantic-brand: (
+  'primary': p.palette('brand', 500),           // #667eea - Violet principal (NEW Brand Identity)
+  'primary-hover': p.palette('brand', 600),     // #5a67d8
+  'primary-active': p.palette('brand', 700),    // #4c5ac4
+  'primary-light': p.palette('brand', 100),     // #e0e7ff
+
+  'secondary': p.palette('error', 500),         // #ef4444 - Rouge secondaire
+  'secondary-hover': p.palette('error', 600),   // #dc2626
+) !default;
+
+// =============================================================================
+// 2. SPACING SEMANTICS - Espacements par contexte métier
+// =============================================================================
+
+$spacing-semantic: (
+  // === LAYOUT (Structure page) ===
+  'page-padding': map.get(p.$spacing-primitives, 'xl'),      // 32px Padding page
+  'section-gap': map.get(p.$spacing-primitives, '2xl'),      // 48px Gap sections
+  'grid-gap': map.get(p.$spacing-primitives, 'md'),          // 16px Gap grilles
+  'container-padding': map.get(p.$spacing-primitives, 'lg'), // 24px Padding containers
+
+  // === COMPONENTS (UI patterns) ===
+  'card-padding': map.get(p.$spacing-primitives, 'lg'),      // 24px Padding cards
+  'card-gap': map.get(p.$spacing-primitives, 'md'),          // 16px Gap entre cards
+  'input-padding': map.get(p.$spacing-primitives, 'sm'),     // 8px Padding inputs
+  'button-padding-x': map.get(p.$spacing-primitives, 'lg'),  // 24px Horizontal boutons
+  'button-padding-y': map.get(p.$spacing-primitives, 'sm'),  // 8px Vertical boutons
+  'modal-padding': map.get(p.$spacing-primitives, 'xl'),     // 32px Padding modals
+
+  // === TYPOGRAPHY (Respiration texte) ===
+  'text-gap-tight': map.get(p.$spacing-primitives, 'xs'),    // 4px Gap serré
+  'text-gap-normal': map.get(p.$spacing-primitives, 'sm'),   // 8px Gap standard
+  'text-gap-loose': map.get(p.$spacing-primitives, 'md'),    // 16px Gap aéré
+  'heading-gap': map.get(p.$spacing-primitives, 'lg'),       // 24px Gap headings
+
+  // === NAVIGATION ===
+  'nav-padding': map.get(p.$spacing-primitives, 'md'),       // 16px Padding nav
+  'nav-gap': map.get(p.$spacing-primitives, 'sm'),           // 8px Gap items nav
+) !default;
+
+// =============================================================================
+// 3. SIZE SEMANTICS - Dimensions par contexte métier
+// =============================================================================
+
+$size-semantic: (
+  // === TOUCH TARGETS (Accessibilité) ===
+  'touch-min': map.get(p.$size-primitives, 'touch-min'),           // 44px WCAG AA
+  'touch-optimal': map.get(p.$size-primitives, 'touch-optimal'),   // 48px Compromis
+  'touch-preferred': map.get(p.$size-primitives, 'touch-preferred'), // 56px TSA
+
+  // === UI COMPONENTS ===
+  'button-height': map.get(p.$size-primitives, 'button-height'),   // 44px
+  'input-height': map.get(p.$size-primitives, 'input-height'),     // 44px
+  'avatar-sm': map.get(p.$size-primitives, 'avatar-sm'),           // 32px
+  'avatar-md': map.get(p.$size-primitives, 'avatar-md'),           // 40px
+  'avatar-lg': map.get(p.$size-primitives, 'avatar-lg'),           // 48px
+
+  // === ICONS ===
+  'icon-xs': map.get(p.$size-primitives, 'icon-xs'),               // 12px
+  'icon-sm': map.get(p.$size-primitives, 'icon-sm'),               // 16px (très fréquent)
+  'icon-md': map.get(p.$size-primitives, 'icon-md'),               // 24px
+  'icon-lg': map.get(p.$size-primitives, 'icon-lg'),               // 32px
+  'icon-xl': map.get(p.$size-primitives, 'icon-xl'),               // 48px
+
+  // === CONTAINERS ===
+  'card-min-height': map.get(p.$size-primitives, 'card-min-height'),     // 140px
+  'card-max-width': map.get(p.$size-primitives, 'card-max-width'),       // 400px
+  'modal-width-sm': map.get(p.$size-primitives, 'modal-width-sm'),       // 320px
+  'modal-width-md': map.get(p.$size-primitives, 'modal-width-md'),       // 540px (très fréquent)
+  'modal-width-lg': map.get(p.$size-primitives, 'modal-width-lg'),       // 720px
+  'sidebar-width': map.get(p.$size-primitives, 'sidebar-width'),         // 280px
+  'container-lg': map.get(p.$size-primitives, 'container-lg'),           // 1024px
+) !default;
+
+// =============================================================================
+// 4. RADIUS SEMANTICS - Border-radius par contexte
+// =============================================================================
+
+$radius-semantic: (
+  'none': map.get(p.$radius-primitives, 'none'),     // 0
+  'subtle': map.get(p.$radius-primitives, 'xs'),     // 4px - Très subtil
+  'small': map.get(p.$radius-primitives, 'sm'),      // 6px - Petit (TSA-friendly)
+  'medium': map.get(p.$radius-primitives, 'md'),     // 12px - Standard (TSA-friendly)
+  'large': map.get(p.$radius-primitives, 'lg'),      // 20px - Large
+  'xlarge': map.get(p.$radius-primitives, 'xl'),     // 24px - Extra large
+  'full': map.get(p.$radius-primitives, 'full'),     // 50% - Circle/Pill
+
+  // === Aliases composants (UX TSA : Intentions documentées) ===
+  'card': map.get(p.$radius-primitives, 'md'),       // 12px - Stabilité visuelle (conteneurs)
+  'button': map.get(p.$radius-primitives, 'sm'),     // 6px - Précision motrice (boutons)
+  'input': map.get(p.$radius-primitives, 'sm'),      // 6px - Précision motrice (champs)
+  'modal': map.get(p.$radius-primitives, 'lg'),      // 20px - Contenance et douceur (dialogues)
+  'badge': map.get(p.$radius-primitives, 'full'),    // 50% - Badges pill
+  'avatar': map.get(p.$radius-primitives, 'full'),   // 50% - Avatars ronds
+) !default;
+
+// =============================================================================
+// 5. TYPOGRAPHY SEMANTICS - Font sizes par contexte
+// =============================================================================
+
+$typography-semantic: (
+  // === Text Sizes ===
+  'caption': map.get(p.$font-size-primitives, 'xs'),    // 12px - Très petit
+  'body-small': map.get(p.$font-size-primitives, 'sm'), // 14px - Petit (très fréquent)
+  'body': map.get(p.$font-size-primitives, 'base'),     // 16px - Standard
+  'body-large': map.get(p.$font-size-primitives, 'lg'), // 18px - Large
+
+  // === Headings ===
+  'heading-sm': map.get(p.$font-size-primitives, 'xl'),   // 20px - H5/H6
+  'heading-md': map.get(p.$font-size-primitives, '2xl'),  // 24px - H4 (fréquent)
+  'heading-lg': map.get(p.$font-size-primitives, '3xl'),  // 30px - H3
+  'heading-xl': map.get(p.$font-size-primitives, '4xl'),  // 36px - H2
+  'heading-2xl': map.get(p.$font-size-primitives, '5xl'), // 48px - H1
+
+  // === Aliases ===
+  'label': map.get(p.$font-size-primitives, 'sm'),        // 14px Labels
+  'button': map.get(p.$font-size-primitives, 'base'),     // 16px Boutons
+  'input': map.get(p.$font-size-primitives, 'base'),      // 16px Inputs
+) !default;
+
+// =============================================================================
+// 6. SHADOW SEMANTICS - Ombres par élévation
+// =============================================================================
+
+$shadow-semantic: (
+  'none': map.get(p.$shadow-primitives, 'none'),
+  'subtle': map.get(p.$shadow-primitives, 'xs'),       // Très subtil
+  'small': map.get(p.$shadow-primitives, 'sm'),        // Petit
+  'medium': map.get(p.$shadow-primitives, 'md'),       // Standard
+  'large': map.get(p.$shadow-primitives, 'lg'),        // Élevé
+  'xlarge': map.get(p.$shadow-primitives, 'xl'),       // Très élevé
+  '2xlarge': map.get(p.$shadow-primitives, '2xl'),     // Modal/Dropdown
+
+  // === Aliases composants ===
+  'card': map.get(p.$shadow-primitives, 'sm'),         // Cards
+  'card-hover': map.get(p.$shadow-primitives, 'lg'),   // Cards hover
+  'button': map.get(p.$shadow-primitives, 'sm'),       // Boutons
+  'modal': map.get(p.$shadow-primitives, '2xl'),       // Modals
+  'dropdown': map.get(p.$shadow-primitives, 'xl'),     // Dropdowns
+) !default;
+
+// =============================================================================
+// 7. MOTION SEMANTICS - Animations par contexte
+// =============================================================================
+
+$motion-semantic: (
+  // === Timing ===
+  'instant': map.get(map.get(p.$motion-primitives, 'timing'), 'instant'),  // 0.1s
+  'fast': map.get(map.get(p.$motion-primitives, 'timing'), 'fast'),        // 0.15s
+  'base': map.get(map.get(p.$motion-primitives, 'timing'), 'base'),        // 0.2s
+  'slow': map.get(map.get(p.$motion-primitives, 'timing'), 'slow'),        // 0.3s
+  'reveal': map.get(map.get(p.$motion-primitives, 'timing'), 'reveal'),    // 0.4s
+
+  // === Easing ===
+  'linear': map.get(map.get(p.$motion-primitives, 'easing'), 'linear'),
+  'smooth': map.get(map.get(p.$motion-primitives, 'easing'), 'smooth'),
+  'smooth-out': map.get(map.get(p.$motion-primitives, 'easing'), 'smooth-out'),
+  'smooth-in': map.get(map.get(p.$motion-primitives, 'easing'), 'smooth-in'),
+) !default;
+
+// =============================================================================
+// ACCESSOR FUNCTIONS - API publique pour accès aux semantics
+// =============================================================================
+
+/// Récupère une couleur sémantique texte
+/// @param {String} $key - Clé dans $color-semantic-text
+/// @return {Color} Couleur
+@function semantic-text($key) {
+  @if not map.has-key($color-semantic-text, $key) {
+    @error "Semantic text color '#{$key}' not found. Available: #{map.keys($color-semantic-text)}";
+  }
+  @return map.get($color-semantic-text, $key);
+}
+
+/// Récupère une couleur sémantique surface
+/// @param {String} $key - Clé dans $color-semantic-surface
+/// @return {Color} Couleur
+@function semantic-surface($key) {
+  @if not map.has-key($color-semantic-surface, $key) {
+    @error "Semantic surface color '#{$key}' not found. Available: #{map.keys($color-semantic-surface)}";
+  }
+  @return map.get($color-semantic-surface, $key);
+}
+
+/// Récupère une couleur sémantique feedback
+/// @param {String} $key - Clé dans $color-semantic-feedback
+/// @return {Color} Couleur
+@function semantic-feedback($key) {
+  @if not map.has-key($color-semantic-feedback, $key) {
+    @error "Semantic feedback color '#{$key}' not found. Available: #{map.keys($color-semantic-feedback)}";
+  }
+  @return map.get($color-semantic-feedback, $key);
+}
+
+/// Récupère une couleur sémantique rôle
+/// @param {String} $key - Clé dans $color-semantic-roles
+/// @return {Color} Couleur
+@function semantic-role($key) {
+  @if not map.has-key($color-semantic-roles, $key) {
+    @error "Semantic role color '#{$key}' not found. Available: #{map.keys($color-semantic-roles)}";
+  }
+  @return map.get($color-semantic-roles, $key);
+}
+
+/// Récupère un spacing sémantique
+/// @param {String} $key - Clé dans $spacing-semantic
+/// @return {Length} Spacing (rem)
+@function semantic-spacing($key) {
+  @if not map.has-key($spacing-semantic, $key) {
+    @error "Semantic spacing '#{$key}' not found. Available: #{map.keys($spacing-semantic)}";
+  }
+  @return map.get($spacing-semantic, $key);
+}
+
+/// Récupère une dimension sémantique
+/// @param {String} $key - Clé dans $size-semantic
+/// @return {Length} Size (rem/px)
+@function semantic-size($key) {
+  @if not map.has-key($size-semantic, $key) {
+    @error "Semantic size '#{$key}' not found. Available: #{map.keys($size-semantic)}";
+  }
+  @return map.get($size-semantic, $key);
+}
+
+/// Récupère un radius sémantique
+/// @param {String} $key - Clé dans $radius-semantic
+/// @return {Length} Radius (rem/px/%)
+@function semantic-radius($key) {
+  @if not map.has-key($radius-semantic, $key) {
+    @error "Semantic radius '#{$key}' not found. Available: #{map.keys($radius-semantic)}";
+  }
+  @return map.get($radius-semantic, $key);
+}
+
+/// Récupère une taille typo sémantique
+/// @param {String} $key - Clé dans $typography-semantic
+/// @return {Length} Font size (rem)
+@function semantic-typography($key) {
+  @if not map.has-key($typography-semantic, $key) {
+    @error "Semantic typography '#{$key}' not found. Available: #{map.keys($typography-semantic)}";
+  }
+  @return map.get($typography-semantic, $key);
+}
+
+/// Récupère une ombre sémantique
+/// @param {String} $key - Clé dans $shadow-semantic
+/// @return {Shadow} Box-shadow
+@function semantic-shadow($key) {
+  @if not map.has-key($shadow-semantic, $key) {
+    @error "Semantic shadow '#{$key}' not found. Available: #{map.keys($shadow-semantic)}";
+  }
+  @return map.get($shadow-semantic, $key);
+}
+
+/// Récupère un timing/easing sémantique
+/// @param {String} $key - Clé dans $motion-semantic
+/// @return {Duration|Easing} Motion value
+@function semantic-motion($key) {
+  @if not map.has-key($motion-semantic, $key) {
+    @error "Semantic motion '#{$key}' not found. Available: #{map.keys($motion-semantic)}";
+  }
+  @return map.get($motion-semantic, $key);
+}
+
+// =============================================================================
+// GUIDELINES
+// =============================================================================
+// 1. Tous les tokens ici DOIVENT référencer $primitives (via p.palette(), p.$spacing-primitives, etc.)
+// 2. AUCUNE valeur hardcodée (hex, px, rem) directement dans ce fichier
+// 3. Organisation par CONTEXTE métier (Layout, Components, Typography, etc.)
+// 4. Noms auto-documentés : 'touch-min', 'card-padding', 'heading-lg'
+// 5. Migration progressive : wrappers font fallback sur legacy si absent
+// 6. Pour ajouter semantic : mapper primitive existante, PAS créer nouvelle valeur
+// 7. Utilisé via wrappers (_spacing.scss, _colors.scss avec fallback)

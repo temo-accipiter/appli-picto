@@ -1,14 +1,15 @@
 // src/components/features/admin/ImageAnalytics.scss
 // Styles dashboard analytics images (TSA-friendly : pastel, calm)
+// ⭐ PHASE 6: Migré vers tokens sémantiques (spacing, radius)
 @use '@styles/abstracts' as *;
 
 .image-analytics {
-  padding: spacing('xl');
+  padding: spacing('page-padding'); // Phase 6: 32px (semantic, avant: 'xl')
   max-width: size('container-lg');
   margin: 0 auto;
 
   &__title {
-    margin-bottom: spacing('24');
+    margin-bottom: spacing('heading-gap'); // Phase 6: 24px (semantic, avant: '24')
     color: text('dark');
     font-size: font-size('2xl');
     font-weight: font-weight('semibold');
@@ -16,23 +17,23 @@
 
   &__error {
     color: semantic('error', 'base');
-    padding: spacing('md');
+    padding: spacing('card-padding'); // Phase 6: 24px (semantic, avant: 'md' 16px) ⚠️ +8px
     background: semantic('error', 'bg');
-    border-radius: radius('md');
+    border-radius: radius('medium'); // Phase 6: 12px (semantic, avant: 'md' 8px) ⚠️ +4px TSA-friendly
     border-left: border-width('thick') solid semantic('error', 'base');
   }
 
   &__empty {
     color: text('muted');
     text-align: center;
-    padding: spacing('xl');
+    padding: spacing('page-padding'); // Phase 6: 32px (semantic, avant: 'xl')
   }
 
   &__grid {
     /* [Mobile-first] Base = mobile */
     display: grid;
     grid-template-columns: 1fr;
-    gap: spacing('md');
+    gap: spacing('grid-gap'); // Phase 6: 16px (semantic, avant: 'md')
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
@@ -43,9 +44,9 @@
 
 .stat-card {
   background: surface('bg');
-  border-radius: radius('md');
-  padding: spacing('lg');
-  box-shadow: shadow('elevation-sm');
+  border-radius: radius('card'); // Phase 6: 12px (semantic, avant: 'md' 8px) ⚠️ +4px TSA-friendly
+  padding: spacing('card-padding'); // Phase 6: 24px (semantic, avant: 'lg')
+  box-shadow: shadow('elevation-sm'); // ⚠️ TODO Phase 6.1: Migrer vers shadow('card')
   @include safe-transition(
     (transform, box-shadow),
     timing('fast'),
@@ -54,7 +55,7 @@
 
   &:hover {
     transform: translateY(-0.125rem);
-    box-shadow: shadow('elevation-md');
+    box-shadow: shadow('elevation-md'); // ⚠️ TODO Phase 6.1: Migrer vers shadow('card-hover')
   }
 
   h3 {

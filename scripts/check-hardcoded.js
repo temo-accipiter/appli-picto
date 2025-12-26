@@ -37,7 +37,8 @@ const CONFIG = {
 
   // Fichiers à exclure (patterns)
   excludePatterns: [
-    'src/styles/abstracts/_tokens.scss', // Source de vérité
+    'src/styles/abstracts/_tokens.scss', // Source de vérité (Phase 5 legacy)
+    'src/styles/abstracts/_primitives.scss', // Source de vérité (Phase 6 primitives)
     'src/styles/themes/', // Thèmes peuvent hardcoder
     'src/styles/vendors/', // Dépendances tierces
     '.test.', // Fichiers de tests

@@ -1,8 +1,19 @@
 // abstracts/_index.scss
 // Forward uniquement les OUTILS (aucun CSS généré)
 
-// --- Outils SCSS (safe) ---
-@forward './tokens'; // maps SCSS + opacity/z-index functions
+// =============================================================================
+// 🚩 FEATURE FLAGS - Configuration Phase 6+
+// =============================================================================
+/// Active le fallback sur legacy tokens (Phase 5) dans les wrappers.
+/// Passer à `false` en Phase 7 pour repérer les composants non migrés.
+$ENABLE_LEGACY_SUPPORT: true !default;
+
+// --- Phase 6 : Nouveau Système Tokens (Priorité) ---
+@forward './primitives'; // ⭐ PHASE 6 - Primitives (palettes, grille 4px, radius 6/12px)
+@forward './semantics'; // ⭐ PHASE 6 - Semantics (noms métier → primitives)
+
+// --- Legacy Tokens (Fallback Phase 5) ---
+@forward './tokens'; // maps SCSS + opacity/z-index functions (legacy)
 @forward './a11y-tokens' show a11y; // a11y() function (CSS vars importées dans main.scss)
 @forward './borders'; // border-width() function + mixins
 @forward './functions'; // helpers
