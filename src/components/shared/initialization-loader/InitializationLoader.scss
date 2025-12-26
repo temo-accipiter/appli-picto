@@ -1,5 +1,15 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// INITIALIZATION LOADER COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/text avec fallback intelligent
+//    - surface('bg') → Semantics Phase 6 (#ffffff) ✅
+//    - spacing('md') → Primitives Phase 6 (16px) ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 // Loader d'initialisation global - couvre toute la page pendant le chargement initial
 .initialization-loader {
   position: fixed;
@@ -7,19 +17,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: surface('bg');
-  z-index: z-index('max');
+  background: surface('bg');          // Phase 6: #ffffff (semantic)
+  z-index: z-index('max');             // Legacy support
 }
 
 .initialization-loader__content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: spacing('md');
+  gap: spacing('md');                  // Phase 6: 16px (primitive)
 }
 
 .initialization-loader__text {
-  font-size: font-size('base');
-  color: text('muted');
+  font-size: font-size('base');        // Legacy support
+  color: text('muted');                // Phase 6: #64748b (semantic)
   margin: 0;
 }

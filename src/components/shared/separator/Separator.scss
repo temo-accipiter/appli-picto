@@ -1,14 +1,23 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// SEPARATOR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius avec fallback intelligent
+//    - spacing('xl') → Primitives Phase 6 (32px)
+//    - radius('xs') → Primitives Phase 6 (4px)
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 .separator {
-  margin: spacing('xl') 0;
-  height: size('2');
+  margin: spacing('xl') 0;           // Phase 6: 32px (primitive)
+  height: size('2');                  // Legacy support
   width: 100%;
-  background-color: color('base');
+  background-color: color('base');    // Legacy support
   background-size: 200% auto;
-  animation: shimmer timing('slower') linear infinite;
-  border-radius: radius('xs');
-  opacity: opacity('half');
+  animation: shimmer timing('slower') linear infinite; // Legacy support
+  border-radius: radius('xs');        // Phase 6: 4px (primitive)
+  opacity: opacity('half');           // Legacy support
 }
 
 /* Animation douce type lumière qui glisse */

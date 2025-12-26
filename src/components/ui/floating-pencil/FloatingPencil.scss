@@ -11,6 +11,12 @@
 /// - TSA-friendly (animation douce ≤ 0.3s, prefers-reduced-motion)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius avec fallback
+///    - spacing('lg'/'sm') → Primitives Phase 6 (24px/8px) ✅
+///    - surface('surface'/'hover') → Semantics Phase 6 ✅
+///    - radius('full') → Primitives Phase 6 (50%) ✅
+///    - shadow('elevation-md') → Legacy support actif
+///    - timing/easing → Legacy support actif
 /// ============================================================================
 
 .floating-pencil {

@@ -10,6 +10,11 @@
 /// - TSA-friendly (animation douce ≤ 0.3s, prefers-reduced-motion)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius avec fallback
+///    - surface('bg') → Semantics Phase 6 (#ffffff) ✅
+///    - spacing('sm') → Primitives Phase 6 (8px) ✅
+///    - radius('full') → Primitives Phase 6 (50%) ✅
+///    - size/color/timing → Legacy support actif
 /// ============================================================================
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

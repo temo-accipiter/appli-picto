@@ -11,6 +11,12 @@
 /// - TSA-friendly (couleurs WCAG-safe, pas d'auto-dismiss agressif)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/text/semantic avec fallback
+///    - spacing('24'/'12'/'20') → Primitives Phase 6 (24px/12px/20px) ✅
+///    - radius('md') → Primitives Phase 6 (12px) ✅
+///    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+///    - semantic('success'/'error', 'dark') → Semantics Phase 6 ✅
+///    - shadow('elevation-lg') → Legacy support actif
 /// ============================================================================
 
 .toast {
