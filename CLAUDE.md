@@ -164,42 +164,40 @@ src/
 
 **Feature Gates** : `<FeatureGate role="abonne">...</FeatureGate>` + RLS server-side
 
-## 🎨 Refactoring Design System (Phase 5)
+## 🎨 Design System Tokens-First (Phase 6 - FINALISÉ ✅)
 
-**CRITIQUE** : Migration SCSS vers système de tokens centralisés
+**CRITIQUE** : Migration SCSS complète vers système de tokens centralisés
 
 ### État Actuel
 
-- ✅ **Phase 1-4** : Tokens consolidés, composants migrés
-- 🔄 **Phase 5** : Finalisation et nettoyage (EN COURS)
+- ✅ **Phase 1-5** : Tokens consolidés, composants migrés
+- ✅ **Phase 6** : **FINALISÉ** - Tous fichiers SCSS refactorisés (Déc 2024)
 
-### Outils de Refactoring
+### Résultat Phase 6 (Déc 2024)
 
-**Agent dédié** :
+**FINALISÉ** : Refactoring complet de 70 fichiers SCSS
 
-```bash
-/use scss-refactor  # Activer l'expert design system
-```
+- ✅ **AdminPermissions.scss** : 2803 lignes refactorisées (plus gros fichier)
+- ✅ **Composants features/** : 18 fichiers (admin, consent, legal, recompenses, taches, time-timer)
+- ✅ **Pages/** : 15 fichiers (abonnement, edition, profil, login, admin, etc.)
+- ✅ **Layout/** : 7 fichiers (navbar, footer, settings-menu, user-menu, etc.)
+- ✅ **Shared/** : 30 fichiers (modals, cards, forms, dnd, etc.)
+- ✅ **Tokens ajoutés** : size('14', '18', '40', '250'), spacing('26')
+- ✅ **Build validé** : Compilation 95s, 242 tests passés
 
-**Commande refactoring** :
+**Impact total** :
+- 70 fichiers refactorisés
+- +3050 insertions, -3925 suppressions
+- Code -875 lignes (plus concis et maintenable)
+- **ZÉRO valeur hardcodée** dans composants
 
-```bash
-/refactor-scss <chemin-fichier.scss>  # Refactorer un composant
-```
+### Documentation Design System
 
-**Hook validation automatique** :
+Pour comprendre l'architecture tokens-first, consulter :
 
-- Hook pre-commit CSS vérifie conformité tokens avant chaque commit
-- Installé dans `.git/hooks/pre-commit`
-- Bloque commits avec valeurs hardcodées
-
-### Documentation Complète
-
-Pour refactoring CSS, consulter :
-
-- **`refactor-philosophy.md`** - Règles absolues & principes
-- **`refactor-contract.md`** - Plan d'exécution étape par étape
-- **`scss-architecture.md`** - Architecture technique & tokens
+- **`refactor-css/refactor-philosophy.md`** - Règles absolues & principes
+- **`refactor-css/refactor-contract.md`** - Plan d'exécution phase par phase
+- **`refactor-css/scss-architecture.md`** - Architecture technique complète
 
 ### Règles CRITIQUES SCSS
 
