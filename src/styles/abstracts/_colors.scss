@@ -1,32 +1,45 @@
 @use 'sass:map';
-@use './tokens' as *;
+@use './tokens' as *;             // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
+@use 'semantics' as sem;          // Phase 6 semantics (priorité)
+@use 'primitives' as prim;        // Phase 6 primitives (si sémantique absent)
+
+// Feature flag (défini dans _index.scss)
+$ENABLE_LEGACY_SUPPORT: true !default;
 
 // =============================================================================
-// SYSTÈME DE COULEURS - WRAPPER PUR (100% FONCTIONS)
+// SYSTÈME DE COULEURS - Wrapper Intelligent avec Fallback Phase 6
 // =============================================================================
-/// ✅ PHASE 2 COMPLÉTÉE (2025-12-14)
+/// ✅ PHASE 6 : Logique de fallback multi-couches pour fonctions principales
 ///
-/// Ce fichier est maintenant un **WRAPPER PUR** :
+/// ARCHITECTURE :
+///   1. text(), surface(), semantic() : Fallback Phase 6 (Semantics → Legacy)
+///   2. Palettes (gray, blue, etc.) : Legacy uniquement pour l'instant
+///   3. Autres fonctions : Legacy
+///
+/// Ce fichier est un **WRAPPER PUR** :
 ///   - ❌ AUCUNE définition de couleur locale (0 maps)
 ///   - ✅ UNIQUEMENT des fonctions d'accès
-///   - ✅ SOURCE DE VÉRITÉ = _tokens.scss (canonical)
+///   - ✅ SOURCES DE VÉRITÉ :
+///       - Phase 6 : $color-semantic-* dans _semantics.scss
+///       - Legacy : $*-tokens dans _tokens.scss
 ///
 /// RÈGLES STRICTES:
-///   1. ❌ JAMAIS définir maps de couleurs ici (use _tokens.scss)
-///   2. ✅ Fonctions lisent EXCLUSIVEMENT depuis _tokens.scss
+///   1. ❌ JAMAIS définir maps de couleurs ici
+///   2. ✅ Fonctions lisent depuis semantics (priorité) puis legacy
 ///   3. ✅ Validation stricte avec @error si clé invalide
 ///   4. ✅ Composants utilisent ces fonctions (pas access direct aux maps)
 ///
-/// MIGRATION COMPLÉTÉE:
-///   Phase 1 ✅ : Maps migrées vers _tokens.scss
-///   Phase 2 ✅ : Wrapper pur (ce fichier)
-///   Phase 3 (SUIVANT) : Migrer composants pour utiliser fonctions tokens
+/// MIGRATION :
+///   Phase 2 ✅ : Wrapper pur
+///   Phase 6 ✅ : Fallback intelligent text/surface/semantic
+///   Phase 6.2 (FUTUR) : Migrer palettes vers primitives
 ///
-/// Usage correct:
+/// Usage:
 ///   @use '@styles/abstracts' as *;
-///   .my-class { background: color('base'); }          // ✅ Lit $primary-color-tokens
-///   .my-class { color: blue(500); }                   // ✅ Lit $blue-palette-tokens
-///   .my-class { border-color: semantic('success'); }  // ✅ Lit $semantic-tokens
+///   .my-class { color: text('primary'); }             // Phase 6 semantic
+///   .my-class { background: surface('bg'); }          // Phase 6 semantic
+///   .my-class { border-color: semantic('success'); }  // Phase 6 feedback
+///   .my-class { color: blue(500); }                   // Legacy palette
 // =============================================================================
 
 // =============================================================================
@@ -54,29 +67,48 @@
   @error "Color '#{$key}' not found in #{$type} colors (source: _tokens.scss)";
 }
 
-/// Récupère une couleur sémantique (depuis _tokens.scss)
+/// Récupère une couleur sémantique avec fallback intelligent Phase 6
 /// @param {String} $name - Nom de la couleur (success, warning, error, info, info-primary)
 /// @param {String} $variant - Variante (base, light, dark, bg, border) - défaut 'base'
 /// @return {Color} La couleur demandée
+/// @example
+///   // Phase 6 (nouveau - semantics feedback)
+///   color: semantic('success', 'base');   // #10b981 (Phase 6)
+///   background: semantic('error', 'light'); // #fee2e2 (Phase 6)
+///
+///   // Phase 5 (legacy - fallback automatique)
+///   color: semantic('info', 'dark');      // Legacy nested map
 @function semantic($name, $variant: 'base') {
-  // ⚠️ Compatibilité : anciennes clés plates (legacy)
-  // 'info-primary' était une clé directe dans l'ancien système
+  // ⚠️ Compatibilité : anciennes clés plates (legacy hardcodées)
   @if $name == 'info-primary' {
     @return #66c3f7; // Valeur legacy pour compatibilité backward
   }
 
-  // ✅ Lit depuis $semantic-tokens (canonical)
-  @if map.has-key($semantic-tokens, $name) {
+  // 1. Priorité : Semantics (Phase 6 - clés plates avec tirets)
+  $semantic-key: '#{$name}-#{$variant}';
+  @if map.has-key(sem.$color-semantic-feedback, $semantic-key) {
+    @return map.get(sem.$color-semantic-feedback, $semantic-key);
+  }
+
+  // 2. Fallback : Legacy tokens (Phase 5 - nested maps)
+  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($semantic-tokens, $name) {
     $semantic-map: map.get($semantic-tokens, $name);
 
     @if map.has-key($semantic-map, $variant) {
       @return map.get($semantic-map, $variant);
     }
 
-    @error "Semantic variant '#{$variant}' not found for '#{$name}'. Available: base, light, dark, bg, border (source: _tokens.scss)";
+    @error "Semantic variant '#{$variant}' not found for '#{$name}'. Available: base, light, dark, bg, border";
   }
 
-  @error "Semantic color '#{$name}' not found. Available: success, warning, error, info, info-primary (legacy) (source: _tokens.scss)";
+  // 3. Erreur si introuvable partout
+  @else {
+    @if $ENABLE_LEGACY_SUPPORT {
+      @error "Semantic color '#{$name}' not found in semantics nor legacy tokens. Try: success, warning, error, info";
+    } @else {
+      @error "Semantic color '#{$name}' not found in semantics (legacy support disabled). Available: success, warning, error, info. Migrate to Phase 6 tokens or enable $ENABLE_LEGACY_SUPPORT.";
+    }
+  }
 }
 
 /// Récupère une nuance de gray (depuis _tokens.scss)
@@ -224,28 +256,67 @@
   @error "Role '#{$role}' not found in $role-color-tokens (canonical source in _tokens.scss)";
 }
 
-/// Récupère une couleur de texte (depuis _tokens.scss)
-/// @param {String} $type - Type de texte (default, invert, light, dark, muted)
+/// Récupère une couleur de texte avec fallback intelligent Phase 6
+/// @param {String} $type - Type de texte (semantic, ou legacy)
 /// @return {Color} La couleur demandée
+/// @example
+///   // Phase 6 (nouveau - semantics)
+///   color: text('primary');     // Semantic text primary (#1e293b)
+///   color: text('secondary');   // Semantic text secondary (#475569)
+///
+///   // Phase 5 (legacy - fallback automatique)
+///   color: text('default');     // Legacy text default
 @function text($type: 'default') {
-  // ✅ Lit depuis $text-color-tokens (canonical)
-  @if map.has-key($text-color-tokens, $type) {
+  // 1. Priorité : Semantics (Phase 6 - couleurs texte sémantiques)
+  @if map.has-key(sem.$color-semantic-text, $type) {
+    @return map.get(sem.$color-semantic-text, $type);
+  }
+
+  // 2. Fallback : Legacy tokens (Phase 5)
+  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($text-color-tokens, $type) {
     @return map.get($text-color-tokens, $type);
   }
 
-  @error "Text color '#{$type}' not found (source: _tokens.scss)";
+  // 3. Erreur si introuvable partout
+  @else {
+    @if $ENABLE_LEGACY_SUPPORT {
+      @error "Text color '#{$type}' not found in semantics nor legacy tokens. Available semantic keys: #{map.keys(sem.$color-semantic-text)}";
+    } @else {
+      @error "Text color '#{$type}' not found in semantics (legacy support disabled). Available semantic keys: #{map.keys(sem.$color-semantic-text)}. Migrate to Phase 6 tokens or enable $ENABLE_LEGACY_SUPPORT.";
+    }
+  }
 }
 
-/// Récupère une couleur de surface (depuis _tokens.scss)
-/// @param {String} $type - Type de surface (bg, surface, border, soft, hover)
+/// Récupère une couleur de surface avec fallback intelligent Phase 6
+/// @param {String} $type - Type de surface (semantic, ou legacy)
 /// @return {Color} La couleur demandée
+/// @example
+///   // Phase 6 (nouveau - semantics)
+///   background: surface('page');    // Semantic surface page (#f8fafc)
+///   background: surface('card');    // Semantic surface card (#ffffff)
+///   border-color: surface('border'); // Semantic border (#e2e8f0)
+///
+///   // Phase 5 (legacy - fallback automatique)
+///   background: surface('bg');      // Legacy surface bg
 @function surface($type) {
-  // ✅ Lit depuis $surface-color-tokens (canonical)
-  @if map.has-key($surface-color-tokens, $type) {
+  // 1. Priorité : Semantics (Phase 6 - couleurs surface sémantiques)
+  @if map.has-key(sem.$color-semantic-surface, $type) {
+    @return map.get(sem.$color-semantic-surface, $type);
+  }
+
+  // 2. Fallback : Legacy tokens (Phase 5)
+  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($surface-color-tokens, $type) {
     @return map.get($surface-color-tokens, $type);
   }
 
-  @error "Surface color '#{$type}' not found (source: _tokens.scss)";
+  // 3. Erreur si introuvable partout
+  @else {
+    @if $ENABLE_LEGACY_SUPPORT {
+      @error "Surface color '#{$type}' not found in semantics nor legacy tokens. Available semantic keys: #{map.keys(sem.$color-semantic-surface)}";
+    } @else {
+      @error "Surface color '#{$type}' not found in semantics (legacy support disabled). Available semantic keys: #{map.keys(sem.$color-semantic-surface)}. Migrate to Phase 6 tokens or enable $ENABLE_LEGACY_SUPPORT.";
+    }
+  }
 }
 
 /// Récupère une couleur admin UI (depuis _tokens.scss)

@@ -1,59 +1,90 @@
 @charset 'UTF-8';
 @use 'sass:map';
-@use 'tokens' as *;
+@use 'tokens' as *;             // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
+@use 'semantics' as sem;        // Phase 6 semantics (priorité)
+@use 'primitives' as prim;      // Phase 6 primitives (si sémantique absent)
+
+// Feature flag (défini dans _index.scss)
+$ENABLE_LEGACY_SUPPORT: true !default;
 
 /// ============================================================================
-/// SHADOWS SYSTEM - Wrapper pur pour box-shadow et text-shadow
+/// SHADOWS SYSTEM - Wrapper Intelligent avec Fallback Phase 6
 /// ============================================================================
-/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de tokens
-/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+/// ✅ PHASE 6 : Logique de fallback multi-couches pour elevation scale
+///
+/// ARCHITECTURE :
+///   1. shadow() : Fallback Phase 6 (Semantics → Primitives → Legacy)
+///   2. Fonctions spécifiques (card-shadow, role-shadow, etc.) : Legacy uniquement pour l'instant
 ///
 /// SOURCES DE VÉRITÉ :
-///   - $shadow-tokens dans _tokens.scss (ALL shadows)
+///   - Phase 6 : $shadow-semantic, $shadow-primitives (elevation scale)
+///   - Legacy : $shadow-tokens (ALL shadows + shadows spécifiques)
 ///
 /// Structure hiérarchique des shadows :
-///   1. Elevation scale (none → 2xl) : profondeur standardisée
-///   2. Card shadows : states interactifs (default, hover, active, disabled)
-///   3. Role shadows : badges rôles (admin, abonné, free, visitor)
-///   4. Button shadows : states boutons
-///   5. Badge shadows : petits éléments
-///   6. Input shadows : formulaires + focus rings
-///   7. Admin UI shadows : interface admin spécifique
-///   8. Modal shadows : overlays et modals
-///   9. Text shadows : lisibilité sur images
+///   1. Elevation scale (none → 2xl) : profondeur standardisée (Phase 6 ✅)
+///   2. Card shadows : states interactifs (legacy)
+///   3. Role shadows : badges rôles (legacy)
+///   4. Button shadows : states boutons (legacy)
+///   5. Badge shadows : petits éléments (legacy)
+///   6. Input shadows : formulaires + focus rings (legacy)
+///   7. Admin UI shadows : interface admin spécifique (legacy)
+///   8. Modal shadows : overlays et modals (legacy)
+///   9. Text shadows : lisibilité sur images (legacy)
 ///
 /// Usage:
-///   box-shadow: shadow('lg');                    // Elevation simple
-///   box-shadow: card-shadow('hover');            // Card state
-///   box-shadow: role-shadow('admin', 'default'); // Role badge
-///   text-shadow: text-shadow('md');              // Text readability
+///   box-shadow: shadow('medium');                // Phase 6 elevation (semantic)
+///   box-shadow: card-shadow('hover');            // Legacy card state
+///   box-shadow: role-shadow('admin', 'default'); // Legacy role badge
 ///
-/// Migration v2.1:
-///   - ✅ Supprimé toutes variables individuelles ($shadow-xs, etc.)
-///   - ✅ Supprimé toutes maps locales ($elevation-shadows, $card-shadows, etc.)
-///   - ✅ Fonctions lisent uniquement depuis $shadow-tokens
-///   - ✅ Mixins adaptés pour utiliser fonctions
+/// Migration v3.0 (Phase 6):
+///   - ✅ shadow() : Fallback intelligent Phase 6
+///   - ⏳ Autres fonctions : Legacy (migration Phase 6.2+)
 /// ============================================================================
 
 /// ============================================================================
 /// FUNCTIONS - Accesseurs pour shadows
 /// ============================================================================
 
-/// Récupère une shadow depuis l'elevation scale
-/// @param {String} $key - Clé elevation ('none', 'xs', 'sm', 'md', 'lg', 'xl', '2xl', 'default', 'subtle', 'raised', 'floating', 'modal')
+/// Récupère une shadow d'elevation avec fallback intelligent Phase 6
+/// @param {String} $key - Clé elevation (semantic, primitive, ou legacy)
 /// @return {String} Box-shadow value
 /// @example
-///   box-shadow: shadow('lg');      // 0 8px 24px rgba(0, 0, 0, 0.2)
-///   box-shadow: shadow('modal');   // 0 10px 40px rgba(0, 0, 0, 0.3)
+///   // Phase 6 (nouveau - semantics)
+///   box-shadow: shadow('card');      // Semantic shadow card
+///   box-shadow: shadow('medium');    // Semantic elevation medium
+///
+///   // Phase 6 (nouveau - primitives)
+///   box-shadow: shadow('md');        // Primitive shadow md
+///
+///   // Phase 5 (legacy - fallback automatique avec prefix 'elevation-')
+///   box-shadow: shadow('modal');     // Legacy → 'elevation-modal'
 @function shadow($key) {
-  $elevation-key: 'elevation-#{$key}';
-  $value: map.get($shadow-tokens, $elevation-key);
-
-  @if $value == null {
-    @error "Shadow key '#{$key}' not found. Available: none, xs, sm, md, lg, xl, 2xl, default, subtle, raised, floating, modal (from $shadow-tokens in _tokens.scss)";
+  // 1. Priorité : Semantics (Phase 6 - noms métier auto-documentés)
+  @if map.has-key(sem.$shadow-semantic, $key) {
+    @return map.get(sem.$shadow-semantic, $key);
   }
 
-  @return $value;
+  // 2. Fallback : Primitives (Phase 6 - shadows harmonisées)
+  @else if map.has-key(prim.$shadow-primitives, $key) {
+    @return map.get(prim.$shadow-primitives, $key);
+  }
+
+  // 3. Fallback : Legacy tokens (Phase 5 - avec prefix 'elevation-')
+  @else if $ENABLE_LEGACY_SUPPORT {
+    $elevation-key: 'elevation-#{$key}';
+    $value: map.get($shadow-tokens, $elevation-key);
+
+    @if $value != null {
+      @return $value;
+    }
+  }
+
+  // 4. Erreur si introuvable partout
+  @if $ENABLE_LEGACY_SUPPORT {
+    @error "Shadow '#{$key}' not found in semantics, primitives, nor legacy tokens. Available semantic keys: #{map.keys(sem.$shadow-semantic)}";
+  } @else {
+    @error "Shadow '#{$key}' not found in semantics or primitives (legacy support disabled). Available semantic keys: #{map.keys(sem.$shadow-semantic)}. Migrate to Phase 6 tokens or enable $ENABLE_LEGACY_SUPPORT.";
+  }
 }
 
 /// Récupère une card shadow (default ou hover state)

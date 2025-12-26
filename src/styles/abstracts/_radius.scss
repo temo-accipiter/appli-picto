@@ -1,44 +1,77 @@
 @charset 'UTF-8';
 @use 'sass:map';
-@use 'tokens' as *;
+@use 'tokens' as *;             // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
+@use 'semantics' as sem;        // Phase 6 semantics (priorité)
+@use 'primitives' as prim;      // Phase 6 primitives (si sémantique absent)
+
+// Feature flag (défini dans _index.scss)
+$ENABLE_LEGACY_SUPPORT: true !default;
 
 /// ============================================================================
-/// BORDER RADIUS - Wrapper pur pour border-radius
+/// BORDER RADIUS - Wrapper Intelligent avec Fallback Phase 6
 /// ============================================================================
-/// ✅ CONFORME TOKENS-FIRST : Toutes les valeurs proviennent de $radius-tokens
-/// Ce fichier NE DÉFINIT AUCUNE donnée, il expose uniquement des fonctions wrapper.
+/// ✅ PHASE 6 : Logique de fallback multi-couches
 ///
-/// SOURCE DE VÉRITÉ : $radius-tokens dans _tokens.scss
+/// ARCHITECTURE :
+///   1. Cherche dans $radius-semantic (Phase 6 - noms métier)
+///   2. Si absent → Cherche dans $radius-primitives (Phase 6 - valeurs brutes)
+///   3. Si absent → Cherche dans $radius-tokens (Legacy - Phase 5)
+///   4. Si absent → Erreur
 ///
-/// Usage:
-///   border-radius: radius('md');              // 8px
-///   border-radius: radius('card');            // 16px (alias sémantique)
-///   @include rounded('lg');                   // Mixin helper
-///   @include button-radius;                   // Mixin spécifique boutons
+/// MIGRATION PROGRESSIVE :
+///   - Composants NON migrés : Utilisent legacy automatiquement
+///   - Composants migrés : Utilisent semantics (nouveau design)
+///   - Build JAMAIS cassé (fallback garantit compatibilité)
 ///
-/// Migration v2.1:
-///   - ✅ Supprimé $radius-xs, $radius-sm, etc. (variables individuelles)
-///   - ✅ Supprimé $radius-scale (duplication)
-///   - ✅ Fonction radius() lit uniquement depuis $radius-tokens
-///   - ✅ Mixins conservés pour DX (rounded, button-radius, etc.)
+/// EXEMPLES :
+///   // Ancien code (Phase 5 - fonctionne toujours)
+///   border-radius: radius('md');        // → $radius-tokens legacy → 8px
+///
+///   // Nouveau code (Phase 6 - design harmonisé)
+///   border-radius: radius('card');      // → $radius-semantic → 12px (TSA-friendly)
 /// ============================================================================
 
 /// ============================================================================
 /// FUNCTIONS
 /// ============================================================================
 
-/// Récupère une valeur de border-radius depuis $radius-tokens
-/// @param {String} $key - Clé de radius (xs, sm, md, lg, xl, 2xl, full, card, button, etc.)
-/// @return {Number|Percentage} Border-radius value (px ou %)
+/// Récupère une valeur de border-radius avec fallback intelligent Phase 6
+/// @param {String} $key - Clé radius (semantic, primitive, ou legacy)
+/// @return {Length|Percentage} Border-radius value (rem/px/%)
 /// @example
-///   border-radius: radius('md');       // 8px
-///   border-radius: radius('card');     // 16px
-///   border-radius: radius('full');     // 50%
+///   // Phase 6 (nouveau - semantics)
+///   border-radius: radius('card');       // 12px (semantic TSA-friendly)
+///   border-radius: radius('button');     // 6px (semantic TSA-friendly)
+///
+///   // Phase 6 (nouveau - primitives)
+///   border-radius: radius('md');         // 12px (primitive)
+///
+///   // Phase 5 (legacy - fallback automatique)
+///   border-radius: radius('rounded-8px'); // 8px (legacy, encore supporté)
 @function radius($key) {
-  @if not map.has-key($radius-tokens, $key) {
-    @error "Radius key '#{$key}' not found in $radius-tokens. Available keys: #{map.keys($radius-tokens)}";
+  // 1. Priorité : Semantics (Phase 6 - noms métier auto-documentés)
+  @if map.has-key(sem.$radius-semantic, $key) {
+    @return map.get(sem.$radius-semantic, $key);
   }
-  @return map.get($radius-tokens, $key);
+
+  // 2. Fallback : Primitives (Phase 6 - grille 6/12/20px)
+  @else if map.has-key(prim.$radius-primitives, $key) {
+    @return map.get(prim.$radius-primitives, $key);
+  }
+
+  // 3. Fallback : Legacy tokens (Phase 5 - conditionnel via feature flag)
+  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($radius-tokens, $key) {
+    @return map.get($radius-tokens, $key);
+  }
+
+  // 4. Erreur si introuvable partout
+  @else {
+    @if $ENABLE_LEGACY_SUPPORT {
+      @error "Radius '#{$key}' not found in semantics, primitives, nor legacy tokens. Available semantic keys: #{map.keys(sem.$radius-semantic)}";
+    } @else {
+      @error "Radius '#{$key}' not found in semantics or primitives (legacy support disabled). Available semantic keys: #{map.keys(sem.$radius-semantic)}. Migrate to Phase 6 tokens or enable $ENABLE_LEGACY_SUPPORT.";
+    }
+  }
 }
 
 /// Alias pour radius() - utiliser quand nom explicite nécessaire

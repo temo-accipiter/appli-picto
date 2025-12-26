@@ -30,8 +30,8 @@ $ENABLE_LEGACY_SUPPORT: true !default;
   ui-gradient, badge-shadow, tsa-pastel, shadow, brand;
 
 // --- Fonction radius (sans CSS généré) ---
-// Forward uniquement la fonction radius() de _radius.scss
-@forward './radius' show radius;
+// Forward uniquement les fonctions radius() de _radius.scss (Phase 6 wrapper)
+@forward './radius' show radius, radius-value;
 
 // --- Systèmes qui génèrent du CSS (NE PAS FORWARD) ---
 // Les maps et CSS vars de colors sont importés directement dans main.scss
