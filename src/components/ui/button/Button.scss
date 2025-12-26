@@ -32,7 +32,7 @@
   box-shadow: shadow('elevation-sm'); // ✅ 0 2px 6px rgba(0, 0, 0, 0.15)
 
   // Typographie
-  font-family: $lexend-font-stack;
+  font-family: var(--font-tsa);
   font-weight: font-weight('semibold');
   font-size: font-size('base');
   line-height: line-height('tight'); // 1.2

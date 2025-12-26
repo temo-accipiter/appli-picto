@@ -1,5 +1,4 @@
 @use 'sass:math';
-@use 'variables' as *;
 
 /// Convertit une valeur px en rem, basée sur $font-size-base (1rem = 16px ou autre)
 /// Exemple : spacing('24') -> 1.5rem si base = 16px

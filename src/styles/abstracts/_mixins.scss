@@ -1,9 +1,13 @@
 @use 'breakpoints' as *;
-@use 'variables' as *;
 @use 'a11y-tokens' as *;
 @use 'borders' as *;
 @use 'size' as *;
-@use 'colors' as *;
+@use 'colors';
+@use 'spacing';
+@use 'typography';
+@use 'shadows';
+@use 'radius';
+@use 'motion';
 @use 'sass:map';
 @use 'sass:meta';
 
@@ -81,20 +85,24 @@
 
 /// Applique un focus state accessible (TSA-friendly)
 /// @param {Color} $color Couleur du focus (défaut: primary)
-@mixin focus-accessible($color: $color-primary) {
+@mixin focus-accessible($color: colors.color('base')) {
   &:focus-visible {
-    outline: spacing('2') solid $color;
-    outline-offset: spacing('2');
+    outline: spacing.spacing('2') solid $color;
+    outline-offset: spacing.spacing('2');
     @content;
   }
 }
 
 /// Focus ring unifié pour tous les éléments interactifs (WCAG 2.2 AA)
-/// Utilise $color-accent par défaut pour une cohérence visuelle
-/// @param {Color} $color Couleur du ring (défaut: $color-accent)
+/// Utilise color-accent par défaut pour une cohérence visuelle
+/// @param {Color} $color Couleur du ring (défaut: color-accent)
 /// @param {String|Number} $width Épaisseur du ring (défaut: 'focus' = 2px)
 /// @param {String|Number} $offset Offset du ring (défaut: 'focus' = 2px)
-@mixin focus-ring($color: $color-accent, $width: 'focus', $offset: 'focus') {
+@mixin focus-ring(
+  $color: colors.color('base', 'accent'),
+  $width: 'focus',
+  $offset: 'focus'
+) {
   &:focus {
     outline: none; // Reset pour éviter double outline
   }
@@ -157,7 +165,7 @@
 ///   .input { @include non-invasive-focus(); }
 ///
 /// @example scss - Focus ring avec couleur custom
-///   .btn-primary { @include non-invasive-focus($color-primary); }
+///   .btn-primary { @include non-invasive-focus(colors.color('base')); }
 @mixin non-invasive-focus($color: var(--focus-ring-color)) {
   &:focus-visible {
     outline: none;
@@ -181,16 +189,16 @@
 
 /// Applique une transition douce générique
 @mixin transition-smooth {
-  transition: all $transition-base ease-in-out;
+  transition: all motion.timing('base') ease-in-out;
 }
 
 /// Style de base pour une carte ou un conteneur avec fond
 @mixin card-style {
   background-color: var(--color-surface);
   color: var(--color-text);
-  border-radius: $radius-md;
-  box-shadow: $box-shadow;
-  padding: $spacing-md;
+  border-radius: radius.radius('md');
+  box-shadow: shadows.shadow('sm');
+  padding: spacing.spacing('md');
 }
 
 /// Cache visuellement un élément (accessibilité)
@@ -209,7 +217,7 @@
 /// Important pour les utilisateurs TSA sensibles aux mouvements
 @mixin safe-transition(
   $property: all,
-  $duration: $transition-fast,
+  $duration: motion.timing('fast'),
   $easing: ease
 ) {
   transition: $property $duration $easing;
@@ -222,7 +230,7 @@
 /// Animation sécurisée respectant prefers-reduced-motion
 @mixin safe-animation(
   $name,
-  $duration: $transition-base,
+  $duration: motion.timing('base'),
   $timing: ease-in-out
 ) {
   animation: $name $duration $timing;
@@ -248,7 +256,7 @@
 /// @param {Color} $bg-color Couleur background au hover
 /// @param {Length} $min-height Hauteur min de la zone
 /// @example
-///   @include dnd-slot($color-primary, rgba($color-primary, 0.08))
+///   @include dnd-slot(colors.color('base'), rgba(colors.color('base'), 0.08))
 @mixin dnd-slot(
   $border-color: var(--color-primary),
   $bg-color: rgba(74, 144, 217, 0.08),
@@ -256,10 +264,10 @@
 ) {
   min-height: $min-height;
   border: border-width('focus') dashed transparent;
-  border-radius: $radius-md;
+  border-radius: radius.radius('md');
   background-color: transparent;
-  padding: $spacing-sm;
-  @include safe-transition(border-color opacity, $transition-fast, ease);
+  padding: spacing.spacing('sm');
+  @include safe-transition(border-color opacity, motion.timing('fast'), ease);
 
   // État : drag hover (over)
   &.dnd-slot--over,
@@ -323,46 +331,41 @@
 // ============================================
 
 /// Badge rôle utilisateur (admin, abonné, visitor, etc.)
-/// Génère automatiquement gradient, couleurs, ombres depuis $role-colors map
+/// Génère automatiquement gradient, couleurs, ombres depuis role-color()
 /// @param {String} $role Nom du rôle (admin | abonne | visitor | free | staff)
 /// @example
 ///   &[data-role='admin'] { @include role-badge(admin); }
 @mixin role-badge($role) {
-  $colors: map.get($role-colors, $role);
+  $base-color: colors.role-color($role, 'base');
+  $gradient-start: colors.role-color($role, 'gradient-start');
+  $gradient-end: colors.role-color($role, 'gradient-end');
 
-  @if $colors {
-    $base-color: nth($colors, 1);
-    $gradient-end: nth($colors, 2);
+  background: linear-gradient(135deg, $gradient-end, $gradient-start);
+  color: white;
+  border-color: $base-color;
+  box-shadow: 0 3px 10px rgba($gradient-end, 0.4);
+  font-weight: typography.font-weight('semibold');
+  padding: spacing.spacing('xs') spacing.spacing('md');
+  border-radius: radius.radius('md');
+  display: inline-flex;
+  align-items: center;
+  gap: spacing.spacing('xs');
 
-    background: linear-gradient(135deg, $gradient-end, $base-color);
-    color: white;
-    border-color: $base-color;
-    box-shadow: 0 3px 10px rgba($gradient-end, 0.4);
-    font-weight: $font-weight-semibold;
-    padding: $spacing-xs $spacing-md;
-    border-radius: $radius-md;
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-xs;
+  @include safe-transition(transform box-shadow, motion.timing('fast'), ease);
 
-    @include safe-transition(transform box-shadow, $transition-fast, ease);
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba($gradient-end, 0.5);
-    }
-  } @else {
-    @warn "Rôle '#{$role}' non trouvé dans $role-colors map";
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba($gradient-end, 0.5);
   }
 }
 
 /// Card admin avec header coloré et contenu
 /// Pattern réutilisable pour QuotaManagement, AccountManagement, etc.
 /// @param {Color} $header-color Couleur de fond du header (défaut: primary)
-@mixin admin-card($header-color: $color-primary) {
+@mixin admin-card($header-color: colors.color('base')) {
   background: var(--color-surface);
-  border-radius: $radius-lg;
-  box-shadow: $shadow-md;
+  border-radius: radius.radius('lg');
+  box-shadow: shadows.shadow('md');
   overflow: hidden;
 
   .card-header {
@@ -372,28 +375,28 @@
       color.adjust($header-color, $lightness: -10%)
     );
     color: white;
-    padding: $spacing-lg;
+    padding: spacing.spacing('lg');
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $spacing-md;
+    gap: spacing.spacing('md');
 
     h2,
     h3 {
       margin: 0;
-      font-weight: $font-weight-bold;
+      font-weight: typography.font-weight('bold');
       display: flex;
       align-items: center;
-      gap: $spacing-sm;
+      gap: spacing.spacing('sm');
     }
   }
 
   .card-body {
-    padding: $spacing-lg;
+    padding: spacing.spacing('lg');
   }
 
   .card-footer {
-    padding: $spacing-md $spacing-lg;
+    padding: spacing.spacing('md') spacing.spacing('lg');
     background: var(--color-bg-soft);
     border-top: border-width('thin') solid var(--color-border);
   }
@@ -405,20 +408,20 @@
   width: 100%;
   border-collapse: collapse;
   background: var(--color-surface);
-  border-radius: $radius-md;
+  border-radius: radius.radius('md');
   overflow: hidden;
-  box-shadow: $shadow-sm;
+  box-shadow: shadows.shadow('sm');
 
   thead {
     background: var(--color-bg-soft);
     border-bottom: border-width('focus') solid var(--color-border);
 
     th {
-      padding: $spacing-md;
+      padding: spacing.spacing('md');
       text-align: left;
-      font-weight: $font-weight-semibold;
+      font-weight: typography.font-weight('semibold');
       color: var(--color-text);
-      font-size: $font-size-sm;
+      font-size: typography.font-size('sm');
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -427,7 +430,7 @@
   tbody {
     tr {
       border-bottom: border-width('thin') solid var(--color-border);
-      @include safe-transition(background-color, $transition-fast, ease);
+      @include safe-transition(background-color, motion.timing('fast'), ease);
 
       &:hover {
         background: var(--color-bg-hover);
@@ -439,7 +442,7 @@
     }
 
     td {
-      padding: $spacing-md;
+      padding: spacing.spacing('md');
       vertical-align: middle;
     }
   }
@@ -461,17 +464,17 @@
 /// Button action admin (éditer, supprimer, etc.)
 /// @param {Color} $color Couleur du bouton (défaut: primary)
 /// @param {String} $variant solid | outline | ghost
-@mixin admin-action-button($color: $color-primary, $variant: 'solid') {
-  padding: $spacing-xs $spacing-md;
-  border-radius: $radius-sm;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+@mixin admin-action-button($color: colors.color('base'), $variant: 'solid') {
+  padding: spacing.spacing('xs') spacing.spacing('md');
+  border-radius: radius.radius('sm');
+  font-size: typography.font-size('sm');
+  font-weight: typography.font-weight('medium');
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: $spacing-xs;
+  gap: spacing.spacing('xs');
   border: border-width('thin') solid transparent;
-  @include safe-transition(all, $transition-fast, ease);
+  @include safe-transition(all, motion.timing('fast'), ease);
 
   @if $variant == 'solid' {
     background: $color;
@@ -481,7 +484,7 @@
     &:hover:not(:disabled) {
       background: color.adjust($color, $lightness: -10%);
       transform: translateY(-1px);
-      box-shadow: $shadow-sm;
+      box-shadow: shadows.shadow('sm');
     }
   } @else if $variant == 'outline' {
     background: transparent;
@@ -526,10 +529,14 @@
 /// ============================================================================
 @mixin validation-glow(
   $type: 'error',
-  $blur: spacing('6'),
-  $spread: spacing('2')
+  $blur: spacing.spacing('6'),
+  $spread: spacing.spacing('2')
 ) {
-  $color: if($type == 'error', semantic('error'), semantic('success'));
+  $color: if(
+    $type == 'error',
+    colors.semantic('error'),
+    colors.semantic('success')
+  );
 
   // Génération keyframe unique par type
   @keyframes glow-#{$type} {
@@ -545,7 +552,7 @@
   }
 
   // Application animation TSA-compliant
-  animation: glow-#{$type} timing('fast') easing('ease-in-out');
+  animation: glow-#{$type} motion.timing('fast') motion.easing('ease-in-out');
 
   // Respect prefers-reduced-motion (WCAG 2.2 AA)
   @media (prefers-reduced-motion: reduce) {

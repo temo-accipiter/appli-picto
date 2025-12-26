@@ -79,6 +79,18 @@
   @error "Semantic color '#{$name}' not found. Available: success, warning, error, info, info-primary (legacy) (source: _tokens.scss)";
 }
 
+/// Récupère une nuance de gray (depuis _tokens.scss)
+/// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
+/// @return {Color} La couleur demandée
+@function gray($shade) {
+  // ✅ Lit depuis $gray-palette-tokens (canonical)
+  @if map.has-key($gray-palette-tokens, $shade) {
+    @return map.get($gray-palette-tokens, $shade);
+  }
+
+  @error "Gray shade '#{$shade}' not found (source: _tokens.scss)";
+}
+
 /// Récupère une nuance de bleu (depuis _tokens.scss)
 /// @param {Number} $shade - Nuance (50, 100, 200, ..., 900)
 /// @return {Color} La couleur demandée
@@ -161,6 +173,18 @@
   }
 
   @error "Slate shade '#{$shade}' not found (source: _tokens.scss)";
+}
+
+/// Récupère la couleur blanche (pure white)
+/// @return {Color} #ffffff
+@function white() {
+  @return #ffffff;
+}
+
+/// Récupère la couleur noire (pure black)
+/// @return {Color} #000000
+@function black() {
+  @return #000000;
 }
 
 /// Récupère une couleur de rôle (CANONICAL - lire depuis _tokens.scss)
