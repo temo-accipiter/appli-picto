@@ -19,7 +19,7 @@
     color: semantic('error', 'base');
     padding: spacing('card-padding'); // Phase 6: 24px (semantic, avant: 'md' 16px) ⚠️ +8px
     background: semantic('error', 'bg');
-    border-radius: radius('medium'); // Phase 6: 12px (semantic, avant: 'md' 8px) ⚠️ +4px TSA-friendly
+    border-radius: radius('card'); // Phase 6: 12px (semantic, avant: 'md' 8px) ⚠️ +4px TSA-friendly
     border-left: border-width('thick') solid semantic('error', 'base');
   }
 
