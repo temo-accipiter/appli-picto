@@ -186,6 +186,7 @@ src/
 - ✅ **Build validé** : Compilation 95s, 242 tests passés
 
 **Impact total** :
+
 - 70 fichiers refactorisés
 - +3050 insertions, -3925 suppressions
 - Code -875 lignes (plus concis et maintenable)

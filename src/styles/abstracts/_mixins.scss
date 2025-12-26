@@ -98,7 +98,11 @@
 /// @param {Color} $color Couleur du ring (défaut: color-accent)
 /// @param {String|Number} $width Épaisseur du ring (défaut: 'focus' = 2px)
 /// @param {String|Number} $offset Offset du ring (défaut: 'focus' = 2px)
-@mixin focus-ring($color: colors.color('base', 'accent'), $width: 'focus', $offset: 'focus') {
+@mixin focus-ring(
+  $color: colors.color('base', 'accent'),
+  $width: 'focus',
+  $offset: 'focus'
+) {
   &:focus {
     outline: none; // Reset pour éviter double outline
   }
@@ -528,7 +532,11 @@
   $blur: spacing.spacing('6'),
   $spread: spacing.spacing('2')
 ) {
-  $color: if($type == 'error', colors.semantic('error'), colors.semantic('success'));
+  $color: if(
+    $type == 'error',
+    colors.semantic('error'),
+    colors.semantic('success')
+  );
 
   // Génération keyframe unique par type
   @keyframes glow-#{$type} {
