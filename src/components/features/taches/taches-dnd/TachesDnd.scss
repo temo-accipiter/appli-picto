@@ -1,49 +1,51 @@
+// src/components/features/taches/taches-dnd/TachesDnd.scss
+// Styles drag & drop tâches (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .grid-taches {
   display: grid;
   width: 100%;
   position: relative;
-  overflow: visible; // Permet aux images de dépasser lors du hover
+  overflow: visible; /* Permet aux images de dépasser lors du hover */
 
   /* [Mobile-first] Base = mobile (320px+) */
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: $spacing-sm;
-  padding: $spacing-sm;
+  grid-template-columns: repeat(auto-fill, minmax(size('100'), 1fr));
+  gap: spacing('sm');
+  padding: spacing('sm');
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: $spacing-md;
-    padding: $spacing-md;
+    grid-template-columns: repeat(auto-fill, minmax(size('200'), 1fr));
+    gap: spacing('md');
+    padding: spacing('md');
   }
 
-  // Isolation pour éviter les effets de bord sur les z-index
+  /* Isolation pour éviter les effets de bord sur les z-index */
   isolation: isolate;
 }
 
 .slot {
-  min-height: spacing('160');
-  border: spacing('2') dashed transparent;
-  border-radius: $radius-md;
-  overflow: visible; // Permet à l'image de dépasser lors du hover
+  min-height: size('160');
+  border: border-width('medium') dashed transparent;
+  border-radius: radius('md');
+  overflow: visible; /* Permet à l'image de dépasser lors du hover */
+  @include safe-transition(
+    (border-color, background-color),
+    timing('base'),
+    easing('smooth')
+  );
 
-  // Transition fluide pour le border et background
-  transition:
-    border-color transition('base') ease,
-    background-color transition('base') ease;
-
-  // Slot survolé pendant un drag
+  /* Slot survolé pendant un drag */
   &.over {
-    border-color: color('base');
-    background-color: rgba(color('base'), opacity('sm'));
+    border-color: semantic('info-primary');
+    background: semantic('info', 'bg');
   }
 
-  // Slot source (d'où vient la carte draggée)
+  /* Slot source (d'où vient la carte draggée) */
   &.dragging-from {
-    border-color: color('base');
-    background-color: rgba(color('base'), opacity('xs'));
+    border-color: semantic('info-primary');
+    background: semantic('info', 'bg');
+    opacity: opacity('half');
   }
 }
 
@@ -52,43 +54,42 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--pastel-color, #{tsa-pastel(blue-light)});
-  border-radius: $radius-md;
+  background: semantic('info', 'bg');
+  border-radius: radius('md');
   text-align: center;
-  box-shadow: $box-shadow;
-  gap: $spacing-xs;
+  box-shadow: shadow('elevation-sm');
+  gap: spacing('xs');
   transform: scale(1);
 
   /* [Mobile-first] Base = mobile (320px+) */
   height: auto;
   min-height: initial;
-  padding: $spacing-xs;
+  padding: spacing('xs');
+  @include safe-transition(
+    (transform, box-shadow),
+    timing('slow'),
+    easing('spring')
+  );
 
-  // ✅ Transition fluide personnalisée
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.35s ease;
-
-  // ✅ Hover uniquement
+  /* Hover uniquement */
   &:hover {
     transform: scale(1.05);
-    box-shadow: $box-shadow-hover;
-    z-index: 2;
+    box-shadow: shadow('elevation-md');
+    z-index: z-index('dropdown');
   }
 
-  // ✅ Focus visible accessible (WCAG 2.4.7)
+  /* Focus visible accessible (WCAG 2.4.7) */
   &:focus-visible {
-    outline: 3px solid color('base', 'accent');
-    outline-offset: 3px;
-    box-shadow: 0 0 0 6px rgba(color('base', 'accent'), 0.2);
+    outline: border-width('thick') solid semantic('info-primary');
+    outline-offset: border-width('thick');
   }
 
   span {
-    font-weight: $font-weight-bold;
+    font-weight: font-weight('bold');
     flex-grow: 0;
 
     /* [Mobile-first] Base = mobile */
-    font-size: $font-size-sm;
+    font-size: font-size('sm');
   }
 
   img {
@@ -103,23 +104,21 @@
   }
 
   input[type='checkbox'] {
-    -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
-    border: spacing('2') solid color('base');
-    background-color: #{surface(bg)};
-    border-radius: $radius-sm;
+    border: border-width('medium') solid semantic('info-primary');
+    background: surface('bg');
+    border-radius: radius('sm');
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
-    transition: background $transition-fast;
+    @include safe-transition(background, timing('fast'), easing('smooth'));
 
     /* [Mobile-first] Base = mobile */
-    width: spacing('16');
-    height: spacing('16');
+    width: size('16');
+    height: size('16');
 
     &:checked {
-      background-color: color('base');
+      background: semantic('info-primary');
     }
 
     &:checked::after {
@@ -128,32 +127,32 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -60%);
-      color: #{text(invert)};
+      color: text('invert');
 
       /* [Mobile-first] Base = mobile */
-      font-size: spacing('12');
+      font-size: font-size('xs');
     }
   }
 
   &.done {
-    opacity: 0.6;
+    opacity: opacity('0-6');
     filter: grayscale(80%);
     text-decoration: line-through;
   }
 
   &.dragging {
-    box-shadow: 0 0 0 spacing('3') color('base');
-    opacity: 0.8;
+    box-shadow: shadow('elevation-lg');
+    opacity: opacity('lg');
   }
 
   /* Desktop (576px+) */
   @include respond-to(sm) {
     height: spacing('300');
     min-height: spacing('260');
-    padding: $spacing-sm;
+    padding: spacing('sm');
 
     span {
-      font-size: $font-size-lg;
+      font-size: font-size('lg');
     }
 
     img {
@@ -162,31 +161,29 @@
     }
 
     input[type='checkbox'] {
-      width: spacing('20');
-      height: spacing('20');
+      width: size('20');
+      height: size('20');
 
       &:checked::after {
-        font-size: spacing('14');
+        font-size: font-size('sm');
       }
     }
   }
 }
 
 .drag-overlay-wrapper {
-  // Style pour l'élément en cours de drag
+  /* Style pour l'élément en cours de drag */
   cursor: grabbing;
 
-  // Ombre plus prononcée pour l'effet de levée
-  filter: drop-shadow(0 8px 16px #{color.change(gray(900), $alpha: 0.2)});
+  /* Ombre plus prononcée pour l'effet de levée */
+  filter: drop-shadow(shadow('elevation-md'));
 
-  // Légère rotation pour l'effet de soulèvement
+  /* Légère rotation pour l'effet de soulèvement */
   transform: rotate(3deg) scale(1.05);
-
-  // Animation fluide
-  transition: transform 200ms cubic-bezier(0.25, 1, 0.5, 1);
+  @include safe-transition(transform, timing('fast'), easing('spring'));
 }
 
 .reset-all-zone {
   text-align: center;
-  margin-top: $spacing-md;
+  margin-top: spacing('md');
 }

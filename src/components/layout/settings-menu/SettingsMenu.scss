@@ -39,8 +39,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: spacing('lg');
-    height: spacing('lg');
+    width: size('24');
+    height: size('24');
     gap: spacing('xs');
   }
 
@@ -83,7 +83,7 @@
     right: spacing('md') !important;
     left: auto !important;
     top: auto !important;
-    width: min(300px, 90vw) !important;
+    width: min(size('300'), 90vw) !important;
     border-radius: radius('lg');
     overflow-y: auto;
     max-height: 70vh;
@@ -96,7 +96,7 @@
       right: spacing('md') !important;
       left: auto !important;
       bottom: auto !important;
-      max-height: calc(100vh - 100px);
+      max-height: calc(100vh - #{size('100')});
       animation: slideInDown timing('fast') easing('ease-out') !important;
     }
   }

@@ -1,20 +1,21 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
 .btn-subscribe {
-  background-color: #{brand(stripe)};
-  color: #{text(invert)};
-  font-weight: bold;
+  background-color: brand('stripe');
+  color: text('invert');
+  font-weight: font-weight('bold');
   padding: spacing('12') spacing('20');
   border-radius: radius('rounded-12px');
   border: none;
   cursor: pointer;
-  transition: background-color transition('fast') ease;
+  @include safe-transition(background-color, timing('fast'), easing('smooth'));
+
   &:hover {
-    background-color: #{brand(stripe-hover)};
+    background-color: brand('stripe-hover');
   }
 
   &:focus-visible {
-    outline: spacing('2') solid #{text(invert)};
-    outline-offset: spacing('2');
+    outline: border-width('medium') solid text('invert');
+    outline-offset: border-width('medium');
   }
 }

@@ -1,19 +1,18 @@
 // src/components/admin/QuotaManagement.scss
-@use 'sass:color';
 @use '@styles/abstracts' as *;
 
 .quota-management {
   padding: spacing('lg');
-  background: var(--background);
+  background: surface('bg');
   border-radius: radius('rounded-12px');
-  border: spacing('1') solid var(--border);
+  border: border-width('thin') solid surface('border');
 
   &.loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: spacing('200');
+    min-height: size('card-min-height');
     gap: spacing('md');
 
     .loading-spinner {
@@ -25,7 +24,7 @@
   &.no-permission {
     text-align: center;
     padding: spacing('48') spacing('24');
-    color: var(--muted-foreground);
+    color: text('muted');
   }
 
   .quota-header {
@@ -34,13 +33,13 @@
 
     h2 {
       margin: 0 0 spacing('8') 0;
-      color: var(--foreground);
+      color: text('default');
       font-size: font-size('2xl');
     }
 
     p {
       margin: 0;
-      color: var(--muted-foreground);
+      color: text('muted');
       font-size: font-size('sm');
     }
   }
@@ -52,23 +51,23 @@
   }
 
   .role-section {
-    background: var(--muted);
+    background: surface('soft');
     border-radius: radius('md');
     padding: spacing('lg');
-    border: spacing('1') solid var(--border);
+    border: border-width('thin') solid surface('border');
 
     .role-title {
-      margin: 0 0 16px 0;
-      color: var(--foreground);
-      font-size: 1.125rem;
+      margin: 0 0 spacing('md') 0;
+      color: text('default');
+      font-size: font-size('lg');
       display: flex;
       align-items: center;
       gap: spacing('sm');
 
       .role-name {
         font-size: font-size('sm');
-        color: var(--muted-foreground);
-        font-weight: 400;
+        color: text('muted');
+        font-weight: font-weight('normal');
       }
     }
 
@@ -83,9 +82,9 @@
       align-items: center;
       justify-content: space-between;
       padding: spacing('sm') spacing('md');
-      background: var(--background);
+      background: surface('bg');
       border-radius: radius('rounded-6px');
-      border: spacing('1') solid var(--border);
+      border: border-width('thin') solid surface('border');
 
       .quota-info {
         display: flex;
@@ -94,37 +93,37 @@
         font-size: font-size('sm');
 
         .quota-type {
-          font-weight: 600;
-          color: var(--foreground);
+          font-weight: font-weight('semibold');
+          color: text('default');
           text-transform: capitalize;
         }
 
         .quota-limit {
-          font-weight: 700;
-          color: var(--primary);
-          font-size: 1rem;
+          font-weight: font-weight('bold');
+          color: semantic('info-primary');
+          font-size: font-size('base');
         }
 
         .quota-period {
-          color: var(--muted-foreground);
-          font-size: 0.75rem;
+          color: text('muted');
+          font-size: font-size('xs');
           text-transform: capitalize;
         }
       }
 
       .edit-button {
         padding: spacing('xs') spacing('sm');
-        background: var(--primary);
-        color: var(--primary-foreground);
+        background: semantic('info-primary');
+        color: text('invert');
         border: none;
         border-radius: radius('sm');
-        font-size: 0.75rem;
-        font-weight: 500;
+        font-size: font-size('xs');
+        font-weight: font-weight('medium');
         cursor: pointer;
-        transition: all 0.15s ease;
+        @include safe-transition(all, timing('xs'), easing('smooth'));
 
         &:hover {
-          background: var(--primary-dark);
+          background: semantic('info', 'dark');
           transform: translateY(-1px);
         }
 
@@ -138,11 +137,11 @@
       margin: 0;
       padding: spacing('md');
       text-align: center;
-      color: var(--muted-foreground);
+      color: text('muted');
       font-style: italic;
-      background: var(--background);
+      background: surface('bg');
       border-radius: radius('rounded-6px');
-      border: 1px dashed var(--border);
+      border: border-width('thin') dashed surface('border');
     }
   }
 
@@ -153,25 +152,25 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: #{color.change(gray(900), $alpha: 0.5)};
+    background: surface('overlay');
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: z-index('modal');
 
     .modal-content {
-      background: var(--background);
+      background: surface('bg');
       border-radius: radius('rounded-12px');
       padding: spacing('lg');
       width: 90%;
       max-width: spacing('500');
-      border: spacing('1') solid var(--border);
-      box-shadow: 0 20px 25px -5px #{color.change(gray(900), $alpha: 0.1)};
+      border: border-width('thin') solid surface('border');
+      box-shadow: shadow('elevation-modal');
 
       h3 {
         margin: 0 0 spacing('20') 0;
-        color: var(--foreground);
-        font-size: 1.25rem;
+        color: text('default');
+        font-size: font-size('xl');
       }
 
       .form-group {
@@ -179,9 +178,9 @@
 
         label {
           display: block;
-          margin-bottom: 6px;
-          font-weight: 500;
-          color: var(--foreground);
+          margin-bottom: spacing('xs');
+          font-weight: font-weight('medium');
+          color: text('default');
           font-size: font-size('sm');
         }
 
@@ -189,16 +188,15 @@
         select {
           width: 100%;
           padding: spacing('sm') spacing('sm');
-          border: spacing('1') solid var(--border);
+          border: border-width('thin') solid surface('border');
           border-radius: radius('rounded-6px');
-          background: var(--background);
-          color: var(--foreground);
+          background: surface('bg');
+          color: text('default');
           font-size: font-size('sm');
 
           &:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px #{color.change(blue(500), $alpha: 0.1)};
+            border-color: semantic('info-primary');
           }
         }
       }
@@ -211,31 +209,31 @@
 
         .save-button {
           padding: spacing('sm') spacing('md');
-          background: var(--primary);
-          color: var(--primary-foreground);
+          background: semantic('info-primary');
+          color: text('invert');
           border: none;
           border-radius: radius('rounded-6px');
-          font-weight: 500;
+          font-weight: font-weight('medium');
           cursor: pointer;
-          transition: all 0.15s ease;
+          @include safe-transition(all, timing('xs'), easing('smooth'));
 
           &:hover {
-            background: var(--primary-dark);
+            background: semantic('info', 'dark');
           }
         }
 
         .cancel-button {
           padding: spacing('sm') spacing('md');
-          background: var(--muted);
-          color: var(--muted-foreground);
-          border: spacing('1') solid var(--border);
+          background: surface('soft');
+          color: text('muted');
+          border: border-width('thin') solid surface('border');
           border-radius: radius('rounded-6px');
-          font-weight: 500;
+          font-weight: font-weight('medium');
           cursor: pointer;
-          transition: all 0.15s ease;
+          @include safe-transition(all, timing('xs'), easing('smooth'));
 
           &:hover {
-            background: var(--muted-dark);
+            background: surface('hover');
           }
         }
       }
@@ -261,7 +259,7 @@
     margin-bottom: spacing('lg');
 
     h2 {
-      font-size: 1.25rem;
+      font-size: font-size('xl');
     }
   }
 
@@ -350,25 +348,4 @@
   }
 }
 
-// Dark mode
-@media (prefers-color-scheme: dark) {
-  .quota-management {
-    .role-section {
-      background: #{color.change(white, $alpha: 0.05)};
-      border-color: #{color.change(white, $alpha: 0.1)};
-
-      .quota-item {
-        background: #{color.change(white, $alpha: 0.05)};
-        border-color: #{color.change(white, $alpha: 0.1)};
-      }
-    }
-
-    .quota-modal {
-      .modal-content {
-        background: var(--background);
-        border-color: #{color.change(white, $alpha: 0.1)};
-        box-shadow: 0 20px 25px -5px #{color.change(gray(900), $alpha: 0.3)};
-      }
-    }
-  }
-}
+// Dark mode - Géré automatiquement par les tokens sémantiques

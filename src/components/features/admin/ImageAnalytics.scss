@@ -1,30 +1,29 @@
 // src/components/features/admin/ImageAnalytics.scss
-@use 'sass:color';
 // Styles dashboard analytics images (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
 .image-analytics {
   padding: spacing('xl');
-  max-width: 1200px;
+  max-width: size('container-lg');
   margin: 0 auto;
 
   &__title {
     margin-bottom: spacing('24');
-    color: var(--text-dark, #{slate(700)});
+    color: text('dark');
     font-size: font-size('2xl');
-    font-weight: 600;
+    font-weight: font-weight('semibold');
   }
 
   &__error {
-    color: var(--pastel-red, #{red(400)});
+    color: semantic('error', 'base');
     padding: spacing('md');
-    background: var(--pastel-red-lightest, #{red(50)});
+    background: semantic('error', 'bg');
     border-radius: radius('md');
-    border-left: spacing('4') solid var(--pastel-red, #{red(400)});
+    border-left: border-width('thick') solid semantic('error', 'base');
   }
 
   &__empty {
-    color: var(--text-muted, #{gray(600)});
+    color: text('muted');
     text-align: center;
     padding: spacing('xl');
   }
@@ -37,83 +36,73 @@
 
     /* Desktop (576px+) */
     @include respond-to(sm) {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(size('200'), 1fr));
     }
   }
 }
 
 .stat-card {
-  background: var(--white, #{surface(bg)});
+  background: surface('bg');
   border-radius: radius('md');
   padding: spacing('lg');
-  box-shadow: 0 2px 4px #{color.change(gray(900), $alpha: 0.1)};
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow: shadow('elevation-sm');
+  @include safe-transition(
+    (transform, box-shadow),
+    timing('fast'),
+    easing('smooth')
+  );
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px #{color.change(gray(900), $alpha: 0.15)};
+    transform: translateY(-0.125rem);
+    box-shadow: shadow('elevation-md');
   }
 
   h3 {
-    font-size: 0.875rem;
-    color: var(--text-muted, #{gray(600)});
-    margin: 0 0 0.5rem 0;
-    font-weight: 500;
+    font-size: font-size('sm');
+    color: text('muted');
+    margin: 0 0 spacing('xs') 0;
+    font-weight: font-weight('medium');
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   &__value {
     font-size: font-size('2xl');
-    font-weight: 700;
-    color: var(--text-dark, #{slate(700)});
+    font-weight: font-weight('bold');
+    color: text('dark');
     margin: 0;
     line-height: 1.2;
   }
 
   &--success {
-    border-left: spacing('4') solid var(--pastel-green, #{green(400)});
-    background: linear-gradient(
-      135deg,
-      var(--white, #{surface(bg)}) 0%,
-      var(--pastel-green-lightest, #{green(50)}) 100%
-    );
+    border-left: border-width('thick') solid semantic('success', 'base');
+    background: semantic('success', 'bg');
 
     .stat-card__value {
-      color: var(--pastel-green-dark, #{green(700)});
+      color: semantic('success', 'dark');
     }
   }
 
   &--error {
-    border-left: spacing('4') solid var(--pastel-red, #{red(400)});
-    background: linear-gradient(
-      135deg,
-      var(--white, #{surface(bg)}) 0%,
-      var(--pastel-red-lightest, #{red(50)}) 100%
-    );
+    border-left: border-width('thick') solid semantic('error', 'base');
+    background: semantic('error', 'bg');
 
     .stat-card__value {
-      color: var(--pastel-red-dark, #{red(700)});
+      color: semantic('error', 'dark');
     }
   }
 
   &--highlight {
-    background: linear-gradient(
-      135deg,
-      var(--pastel-blue-light, #{blue(200)}) 0%,
-      var(--pastel-green-light, #{green(200)}) 100%
-    );
-    border: 2px solid var(--pastel-blue, #{blue(400)});
+    background: surface('soft');
+    border: border-width('medium') solid semantic('info', 'base');
 
     h3 {
-      color: var(--text-dark, #{slate(700)});
-      font-weight: 600;
+      color: text('dark');
+      font-weight: font-weight('semibold');
     }
 
     .stat-card__value {
-      color: var(--text-dark, #{slate(700)});
+      color: text('dark');
       font-size: font-size('4xl');
     }
   }

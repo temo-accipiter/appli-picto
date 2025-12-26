@@ -1,84 +1,87 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 .rgpd-portal {
-  max-width: 980px;
+  max-width: size('980');
   margin: 0 auto;
-  padding: 24px 20px;
+  padding: spacing('24') spacing('20');
 
   &__header {
-    margin-bottom: 10px;
+    margin-bottom: spacing('10');
 
     h1 {
-      font-size: 28px;
-      margin: 0 0 6px;
+      font-size: font-size('3xl');
+      margin: 0 0 spacing('6');
     }
   }
 
   &__subtitle {
-    color: gray(600);
+    color: text('light');
     margin: 0;
-    line-height: 1.5;
+    line-height: line-height('relaxed');
   }
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 14px;
-    margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(size('260'), 1fr));
+    gap: spacing('14');
+    margin-top: spacing('16');
   }
 }
 
 .rgpd-card {
-  background: surface(bg);
-  border: 1px solid color.change(gray(900), $alpha: 0.06);
-  border-radius: 14px;
-  box-shadow: 0 1px 4px color.change(gray(900), $alpha: 0.04);
-  padding: 16px;
+  background: surface('bg');
+  border: border-width('thin') solid surface('border');
+  border-radius: radius('rounded-12px');
+  box-shadow: shadow('elevation-sm');
+  padding: spacing('16');
 
   h2 {
-    font-size: 18px;
-    margin: 0 0 8px;
+    font-size: font-size('lg');
+    margin: 0 0 spacing('8');
   }
 
   p {
-    margin: 0 0 12px;
-    color: gray(700);
+    margin: 0 0 spacing('12');
+    color: text('light');
   }
 
   .btn {
     appearance: none;
     border: none;
-    background: blue(50);
-    color: blue(700);
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-weight: 600;
+    background: semantic('info', 'bg');
+    color: semantic('info', 'dark');
+    padding: spacing('8') spacing('12');
+    border-radius: radius('rounded-10px');
+    font-weight: font-weight('semibold');
     cursor: pointer;
+    @include safe-transition(background, timing('fast'), easing('smooth'));
 
     &:hover {
-      filter: brightness(0.95);
+      background: semantic('info', 'light');
     }
 
     // WCAG 2.4.7 - Focus visible avec bon contraste
     &:focus-visible {
-      outline: 2px solid blue(600);
-      outline-offset: 2px;
+      outline: border-width('medium') solid semantic('info');
+      outline-offset: border-width('medium');
     }
 
     &[disabled] {
-      opacity: 0.6;
+      opacity: opacity('0-6');
       cursor: progress;
     }
   }
 
   .btn-danger {
-    background: red(50);
-    color: red(700);
+    background: semantic('error', 'bg');
+    color: semantic('error', 'dark');
 
-    &:hover,
+    &:hover {
+      background: semantic('error', 'light');
+    }
+
     &:focus-visible {
-      filter: brightness(0.98);
+      outline-color: semantic('error');
     }
   }
 }

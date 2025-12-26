@@ -9,11 +9,7 @@
     text-align: center;
     margin-bottom: spacing('40');
     padding: spacing('40') spacing('20');
-    background: linear-gradient(
-      135deg,
-      color('base'),
-      color('dark')
-    );
+    background: linear-gradient(135deg, color('base'), color('dark'));
     border-radius: radius('lg');
     color: text('invert');
     box-shadow: shadow('elevation-lg');
@@ -392,11 +388,7 @@
         left: 0;
         right: 0;
         height: size('4');
-        background: linear-gradient(
-          90deg,
-          color('base'),
-          var(--accent-color)
-        );
+        background: linear-gradient(90deg, color('base'), var(--accent-color));
         opacity: 0;
         transition: opacity 0.15s ease;
       }
@@ -434,7 +426,11 @@
 
         &::before {
           opacity: 1;
-          background: linear-gradient(90deg, semantic('info'), semantic('info', 'dark'));
+          background: linear-gradient(
+            90deg,
+            semantic('info'),
+            semantic('info', 'dark')
+          );
         }
 
         .user-header h4 {
@@ -599,7 +595,7 @@
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: surface('soft');  // WAS: surface('overlay');
+              background: surface('soft'); // WAS: surface('overlay');
               color: white;
             }
 
@@ -929,7 +925,7 @@
             animation: pulse 2s infinite;
 
             .role-icon {
-              background: surface('soft');  // WAS: surface('overlay');
+              background: surface('soft'); // WAS: surface('overlay');
               color: white;
             }
 
@@ -1871,7 +1867,11 @@
 
 // Note admin
 .admin-note {
-  background: linear-gradient(135deg, color('base') 0%, semantic('info', 'dark') 100%);
+  background: linear-gradient(
+    135deg,
+    color('base') 0%,
+    semantic('info', 'dark') 100%
+  );
   color: white;
   padding: spacing('md');
   border-radius: radius('sm');
@@ -1891,7 +1891,7 @@
     font-size: font-size('sm');
 
     code {
-      background: surface('soft');  // WAS: surface('overlay');
+      background: surface('soft'); // WAS: surface('overlay');
       padding: spacing('3') spacing('6');
       border-radius: radius('xs');
       font-family: 'Monaco', 'Menlo', monospace;

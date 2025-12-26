@@ -1,93 +1,87 @@
+// src/components/features/recompenses/recompenses-edition/RecompensesEdition.scss
+// Styles édition récompenses (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
-@use 'sass:color';
+
 .checklist-recompenses {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
-  padding: $spacing-lg;
-  border-radius: $radius-lg;
-  background-color: #{blue(50)}; // Bleu pastel comme checklist-edition
-  box-shadow: 0 0 24px #{color.change(gray(900), $alpha: 0.35)};
-  transition:
-    box-shadow 0.3s ease,
-    background-color 0.3s ease;
-
-  // Dark mode
-  [data-theme='dark'] & {
-    background: linear-gradient(145deg, #{slate(900)}, #{slate(800)});
-    box-shadow: 0 0 24px #{color.change(text(invert), $alpha: 0.15)};
-  }
+  gap: spacing('md');
+  padding: spacing('lg');
+  border-radius: radius('lg');
+  background: semantic('info', 'bg');
+  box-shadow: shadow('elevation-lg');
+  @include safe-transition(
+    (box-shadow, background-color),
+    timing('base'),
+    easing('smooth')
+  );
 
   h2 {
     font-size: font-size('2xl');
     margin: 0;
     text-align: center;
-    color: var(--c-text);
+    color: text('default');
   }
 
   .liste-recompenses {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(size('180'), 1fr));
+    gap: spacing('16');
     align-items: start;
   }
 }
 
-// Styles partagés avec TachesEdition (réutilisés)
+/* Styles partagés avec TachesEdition (réutilisés) */
 .checklist-recompenses {
-  // Actions (boutons) - stylisé comme une card
+  /* Actions (boutons) - stylisé comme une card */
   .edition-section__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: $spacing-sm;
-    margin-bottom: $spacing-md;
+    gap: spacing('sm');
+    margin-bottom: spacing('md');
     align-items: center;
-    padding: $spacing-md;
-    background-color: #{color.change(surface(bg), $alpha: 0.7)};
-    border-radius: $radius-md;
-    box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.08)};
-    border: 1px solid #{color.change(purple(500), $alpha: 0.15)};
-
-    // Dark mode
-    [data-theme='dark'] & {
-      background-color: #{color.change(slate(900), $alpha: 0.6)};
-      border-color: #{color.change(text(invert), $alpha: 0.1)};
-      box-shadow: 0 2px 8px #{color.change(gray(900), $alpha: 0.3)};
-    }
+    padding: spacing('md');
+    background: surface('soft');
+    border-radius: radius('md');
+    box-shadow: shadow('elevation-xs');
+    border: border-width('thin') solid semantic('info', 'border');
   }
 
   .edition-section__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: $spacing-md;
+    grid-template-columns: repeat(auto-fill, minmax(size('260'), 1fr));
+    gap: spacing('md');
   }
 
   .edition-section__empty {
     grid-column: 1 / -1;
     font-size: font-size('lg');
-    color: var(--c-text-secondary, #{gray(600)});
-    padding: $spacing-lg;
-    border: 2px dashed var(--c-border, #{gray(300)});
-    border-radius: $radius-lg;
+    color: text('light');
+    padding: spacing('lg');
+    border: border-width('medium') dashed surface('border');
+    border-radius: radius('lg');
     text-align: center;
   }
 
   .edition-slot {
-    min-height: 140px;
-    border: 2px dashed transparent;
-    border-radius: $radius-md;
-    transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease;
+    min-height: size('card-min-height');
+    border: border-width('medium') dashed transparent;
+    border-radius: radius('md');
+    @include safe-transition(
+      (border-color, background-color),
+      timing('fast'),
+      easing('smooth')
+    );
 
     &.over {
-      border-color: var(--color-primary, #{purple(500)});
-      background-color: #{color.change(purple(500), $alpha: 0.1)};
+      border-color: semantic('info-primary');
+      background: semantic('info', 'bg');
     }
 
     &.dragging-from {
-      border-color: var(--color-primary, #{purple(500)});
-      background-color: #{color.change(purple(500), $alpha: 0.05)};
+      border-color: semantic('info-primary');
+      background: semantic('info', 'bg');
+      opacity: opacity('half');
     }
   }
 }

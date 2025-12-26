@@ -1,12 +1,11 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 /**
  * Page Admin : Metrics - Styles
  */
 
 .metrics-page {
   min-height: 100vh;
-  background: var(--bg-main, #fafafa);
+  background: surface('bg');
 
   &__forbidden {
     display: flex;
@@ -15,17 +14,17 @@
     justify-content: center;
     min-height: 60vh;
     text-align: center;
-    padding: 2rem;
+    padding: spacing('xl');
 
     h1 {
       font-size: font-size('4xl');
-      margin-bottom: 1rem;
-      color: var(--text-primary, #{slate(700)});
+      margin-bottom: spacing('md');
+      color: text('default');
     }
 
     p {
-      font-size: 1.125rem;
-      color: var(--text-secondary, #{gray(600)});
+      font-size: font-size('lg');
+      color: text('light');
     }
   }
 }

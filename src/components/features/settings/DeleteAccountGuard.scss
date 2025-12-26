@@ -1,23 +1,21 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 /* BEM-lite, doux & accessible */
 .delete-guard {
   display: grid;
   gap: spacing('sm');
   padding: spacing('md');
-  background: var(--card-bg, #{surface(bg)});
-  border: spacing('1') solid color.change(gray(900), $alpha: opacity('0-08'));
+  background: surface('bg');
+  border: border-width('thin') solid surface('border');
   border-radius: radius('lg');
-  box-shadow: 0 spacing('1') spacing('2')
-    color.change(gray(900), $alpha: opacity('xs'));
-  animation: deleteGuardFadeIn transition('base') ease-out;
+  box-shadow: shadow('elevation-xs');
+  animation: deleteGuardFadeIn timing('base') ease-out;
 }
 
 @media (prefers-color-scheme: dark) {
   .delete-guard {
-    background: var(--card-bg-dark, #{slate(900)});
-    border-color: color.change(text(invert), $alpha: opacity('0-08'));
+    background: surface('surface');
+    border-color: surface('border');
     box-shadow: none;
   }
 }
@@ -37,23 +35,23 @@
   margin: 0 0 spacing('4');
   font-size: font-size('sm');
   line-height: 1.4;
-  color: var(--text-muted, #{gray(600)});
+  color: text('muted');
 }
 
 .delete-guard__error {
   margin: spacing('4') 0 0;
   padding: spacing('sm') spacing('sm');
   border-radius: radius('rounded-10px');
-  background: var(--danger-50, #{red(50)});
-  border: spacing('1') solid var(--danger-200, #{red(200)});
-  color: var(--danger-700, #{red(700)});
+  background: semantic('error', 'bg');
+  border: border-width('thin') solid semantic('error', 'border');
+  color: semantic('error', 'dark');
   font-size: font-size('sm');
 }
 
 .delete-guard__note {
   margin: spacing('2') 0 0;
   font-size: font-size('sm');
-  color: var(--text-muted, #{gray(600)});
+  color: text('muted');
 }
 
 /* Turnstile a une classe .cf-turnstile */
@@ -63,9 +61,9 @@
 
 /* Focus visible bien lisible (AA) */
 .delete-guard :focus-visible {
-  outline: spacing('3') solid var(--focus, #{blue(300)});
-  outline-offset: spacing('2');
-  transition: outline-color transition('fast') ease;
+  outline: border-width('base') solid semantic('info-primary');
+  outline-offset: border-width('medium');
+  @include safe-transition(outline-color, timing('fast'), easing('smooth'));
 }
 
 /* Espace harmonieux avec tes composants Input/Button */

@@ -398,7 +398,7 @@
 // === SAFE-AREA SUPPORT (Phase 3.3) ===
 // Support for iPhone notches and safe areas (iPhone X+)
 // Mobile par défaut (320px-767px): safe areas actifs
-@supports (padding: max(0px)) {
+@supports (padding: max(0rem)) {
   .modal {
     margin-left: max(0, calc(env(safe-area-inset-left) - #{spacing('md')}));
     margin-right: max(0, calc(env(safe-area-inset-right) - #{spacing('md')}));

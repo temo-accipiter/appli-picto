@@ -56,7 +56,11 @@
     border: none;
     cursor: pointer;
     font-size: font-size('xl');
-    @include safe-transition((transform, color), timing('fast'), easing('smooth'));
+    @include safe-transition(
+      (transform, color),
+      timing('fast'),
+      easing('smooth')
+    );
     margin-left: spacing('sm');
 
     &:hover {

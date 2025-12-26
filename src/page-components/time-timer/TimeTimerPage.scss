@@ -1,41 +1,27 @@
 @use '@/styles/abstracts' as *;
-@use 'sass:map';
 
 .time-timer-page {
-  // Hardcode de hauteur (dimension structurelle, non liée au spacing)
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-
-  // Remplacement des variables $spacing-xl par spacing('xl')
   padding: spacing('xl');
-
-  // Remplacement du gradient hardcodé par des tokens de couleur
-  // #f5f7fa est très proche de surface(soft) ou slate(50)
-  // #c3cfe2 est une couleur intermédiaire (slate ou gris plus froid)
-  // Utilisation de tokens existants ou de valeurs sémantiques proches:
   background: linear-gradient(
     to bottom,
     surface('soft') 0%,
-    // ~#f5f7fa
-    slate(300) 100% // Utilisation de slate(300) ou un token de 'theme-gradient-end'
+    surface('border') 100%
   );
 
   &__header {
     text-align: center;
-    // Remplacement de $spacing-xl par spacing('xl')
     margin-bottom: spacing('xl');
-    // Remplacement de $transition-base par timing('base')
-    animation: fade-in timing('base') easing('smooth'); // Ajout easing('smooth') pour garantir l'effet par défaut
+    animation: fade-in timing('base') easing('smooth');
   }
 
   &__title {
     /* [Mobile-first] Base = mobile */
-    // Utilisation de font-size() et font-weight()
     font-size: font-size('3xl');
     font-weight: font-weight('bold');
-    color: text();
-    // Remplacement de $spacing-sm par spacing('sm')
+    color: text('default');
     margin: 0 0 spacing('sm') 0;
 
     /* Desktop (576px+) */
@@ -45,10 +31,8 @@
   }
 
   &__subtitle {
-    // Remplacement de $font-size-lg par font-size('lg')
     font-size: font-size('lg');
-    // Remplacement de gray(600) par l'appel direct à gray(600) ou slate(600) (préférer l'API slate/gray si dispo)
-    color: gray(600); // Utilise la fonction gray() définie dans _variables.scss
+    color: text('light');
     margin: 0;
   }
 
@@ -57,8 +41,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    // Remplacement de $transition-slow par timing('lg')
-    animation: slide-up timing('lg') easing('smooth'); // Ajout easing('smooth') pour garantir l'effet par défaut
+    animation: slide-up timing('lg') easing('smooth');
   }
 }
 

@@ -1,5 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
 
 /* src/components/CookieBanner.scss */
 /* Bannière accessible, palette pastel, contraste AA, responsive */
@@ -10,10 +9,10 @@
   right: 0;
   bottom: 0;
   z-index: z-index('max');
-  background: #{color.change(surface(bg), $alpha: 0.96)};
+  background: surface('bg');
   backdrop-filter: blur(6px);
-  box-shadow: 0 -10px 30px #{color.change(gray(900), $alpha: 0.08)};
-  border-top: spacing('1') solid #{slate(200)};
+  box-shadow: shadow('elevation-lg');
+  border-top: border-width('thin') solid surface('border');
   padding: spacing('20') spacing('16');
 
   /* Motion sûre */
@@ -25,7 +24,7 @@
   }
 
   &__content {
-    max-width: 1200px;
+    max-width: size('container-lg');
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -43,17 +42,17 @@
     margin: 0;
     font-size: font-size('sm');
     line-height: 1.6;
-    color: #{slate(800)};
+    color: text('default');
 
     .cookie-banner__title {
       margin: 0 0 spacing('12') 0;
       font-size: font-size('lg');
-      font-weight: 700;
-      color: #{slate(900)};
+      font-weight: font-weight('bold');
+      color: text('default');
     }
 
     p {
-      margin: 0 0 8px 0;
+      margin: 0 0 spacing('8') 0;
 
       &:last-child {
         margin-bottom: 0;
@@ -61,21 +60,21 @@
     }
 
     strong {
-      font-weight: 700;
+      font-weight: font-weight('bold');
     }
 
     .cookie-banner__link {
-      color: #{blue(600)};
+      color: semantic('info-primary');
       text-decoration: underline;
       text-underline-offset: 2px;
 
       &:hover {
-        color: #{blue(700)};
+        color: semantic('info', 'dark');
       }
 
       &:focus-visible {
-        outline: 2px solid #{blue(300)};
-        outline-offset: 2px;
+        outline: border-width('medium') solid semantic('info-primary');
+        outline-offset: border-width('medium');
         border-radius: radius('sm');
       }
     }
@@ -104,58 +103,59 @@
   .btn-outline {
     appearance: none;
     font: inherit;
-    font-weight: 600;
+    font-weight: font-weight('semibold');
     font-size: font-size('sm');
     border-radius: radius('md');
-    padding: 10px 16px;
+    padding: spacing('sm') spacing('md');
     cursor: pointer;
-    border: 1px solid #{gray(300)};
+    border: border-width('thin') solid surface('border');
     white-space: nowrap;
-    transition:
-      transform 0.05s ease,
-      background-color 0.2s ease,
-      border-color 0.2s ease;
+    @include safe-transition(
+      (transform, background-color, border-color),
+      timing('xs'),
+      easing('smooth')
+    );
 
     &:active {
       transform: translateY(1px);
     }
+
     &:focus-visible {
-      outline: 3px solid #{blue(300)}; /* focus bleu pâle */
-      outline-offset: 2px;
+      outline: border-width('base') solid semantic('info-primary');
+      outline-offset: border-width('medium');
     }
   }
 
   .btn {
-    background: #{blue(600)}; /* bleu AA */
-    color: #{text(invert)};
-    border-color: #{blue(600)};
+    background: semantic('info-primary');
+    color: text('invert');
+    border-color: semantic('info-primary');
 
     &:hover {
-      background: #{blue(700)};
-      border-color: #{blue(700)};
+      background: semantic('info', 'dark');
+      border-color: semantic('info', 'dark');
     }
   }
 
   .btn-secondary {
-    background: #{yellow(100)}; /* pastel jaune */
-    color: #{yellow(800)}; /* texte foncé */
-    border-color: #{yellow(400)};
+    background: semantic('warning', 'bg');
+    color: semantic('warning', 'dark');
+    border-color: semantic('warning', 'border');
 
-    /* contraste AA vérifié sur texte (#{yellow(800)}) */
     &:hover {
-      background: #{yellow(200)};
-      border-color: #{orange(500)};
+      background: semantic('warning', 'light');
+      border-color: semantic('warning');
     }
   }
 
   .btn-outline {
     background: transparent;
-    color: #{gray(700)};
-    border-color: #{gray(400)};
+    color: text('light');
+    border-color: surface('border');
 
     &:hover {
-      background: #{gray(50)};
-      border-color: #{gray(500)};
+      background: surface('soft');
+      border-color: surface('border');
     }
   }
 }

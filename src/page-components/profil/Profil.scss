@@ -1,6 +1,4 @@
 @use '@styles/abstracts' as *;
-@use 'sass:color';
-@use 'sass:map';
 
 // ============================================
 // PAGE PROFIL - REDESIGN MODERNE 2025
@@ -13,20 +11,20 @@
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
-  padding: $spacing-md;
-  background: var(--color-bg-soft);
+  padding: spacing('md');
+  background: surface('soft');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    max-width: 800px;
+    max-width: size('800');
     margin: 0 auto;
-    padding: $spacing-xl $spacing-lg;
+    padding: spacing('xl') spacing('lg');
   }
 
   // Grand Desktop (1200px+)
   @include respond-to(xl) {
-    max-width: 900px;
-    padding: $spacing-xl;
+    max-width: size('900');
+    padding: spacing('xl');
   }
 }
 
@@ -35,17 +33,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $spacing-lg;
+  margin-bottom: spacing('lg');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    margin-bottom: $spacing-xl;
+    margin-bottom: spacing('xl');
   }
 }
 
 .profil-page__title {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
+  font-size: font-size('xl');
+  font-weight: font-weight('bold');
   color: color('base');
   margin: 0;
 
@@ -58,37 +56,41 @@
 // === CARDS PARTAGÉES ===
 .profil-card {
   @include card-style;
-  margin-bottom: $spacing-lg;
-  @include safe-transition(box-shadow transform, $transition-fast, ease);
+  margin-bottom: spacing('lg');
+  @include safe-transition(
+    (box-shadow, transform),
+    timing('fast'),
+    easing('smooth')
+  );
 
   &:hover {
-    box-shadow: $shadow-lg;
+    box-shadow: shadow('elevation-lg');
   }
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    padding: $spacing-xl;
-    margin-bottom: $spacing-xl;
+    padding: spacing('xl');
+    margin-bottom: spacing('xl');
   }
 }
 
 .profil-card__title {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: var(--color-text);
-  margin: 0 0 $spacing-lg 0;
+  font-size: font-size('xl');
+  font-weight: font-weight('bold');
+  color: text('default');
+  margin: 0 0 spacing('lg') 0;
   display: flex;
   align-items: center;
-  gap: $spacing-sm;
+  gap: spacing('sm');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: 1.75rem;
+    font-size: font-size('2xl');
   }
 }
 
 .profil-card__icon {
-  font-size: 1.75rem;
+  font-size: font-size('2xl');
   line-height: 1;
 
   // Tablette & Desktop (768px+)
@@ -100,11 +102,11 @@
 .profil-card__content {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
+  gap: spacing('md');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    gap: $spacing-lg;
+    gap: spacing('lg');
   }
 }
 
@@ -117,25 +119,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $spacing-md;
-  margin-bottom: $spacing-lg;
+  gap: spacing('md');
+  margin-bottom: spacing('lg');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    gap: $spacing-lg;
-    margin-bottom: $spacing-xl;
+    gap: spacing('lg');
+    margin-bottom: spacing('xl');
   }
 }
 
 .profil-card__display-name {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: var(--color-text);
+  font-size: font-size('xl');
+  font-weight: font-weight('bold');
+  color: text('default');
   margin: 0;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: 1.75rem;
+    font-size: font-size('2xl');
   }
 }
 
@@ -143,75 +145,87 @@
 .subscription-badge {
   display: inline-flex;
   align-items: center;
-  gap: $spacing-xs;
-  padding: $spacing-xs $spacing-md;
-  border-radius: $radius-full;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  @include safe-transition(transform box-shadow, $transition-fast, ease);
+  gap: spacing('xs');
+  padding: spacing('xs') spacing('md');
+  border-radius: radius('full');
+  font-size: font-size('sm');
+  font-weight: font-weight('semibold');
+  @include safe-transition(
+    (transform, box-shadow),
+    timing('fast'),
+    easing('smooth')
+  );
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    padding: $spacing-sm $spacing-lg;
-    font-size: $font-size-base;
+    padding: spacing('sm') spacing('lg');
+    font-size: font-size('base');
   }
 
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(calc(-1 * #{spacing('2')}));
   }
 
   &--active {
-    // Gradient vert abonné
-    background: linear-gradient(135deg, #{green(400)}, #{green(500)});
-    color: white;
-    box-shadow: 0 4px 12px #{badge-shadow(abonne)};
+    // Badge abonné (success)
+    background: linear-gradient(
+      135deg,
+      semantic('success'),
+      semantic('success', 'dark')
+    );
+    color: text('invert');
+    box-shadow: shadow('elevation-md');
 
     &:hover {
-      box-shadow: 0 6px 16px #{badge-shadow(abonne-hover)};
+      box-shadow: shadow('elevation-lg');
     }
   }
 
   &--inactive {
-    // Gradient gris free
-    background: linear-gradient(135deg, #{slate(400)}, #{slate(600)});
-    color: white;
-    box-shadow: 0 4px 12px #{badge-shadow(free)};
+    // Badge free (neutre)
+    background: linear-gradient(135deg, surface('border'), text('muted'));
+    color: text('invert');
+    box-shadow: shadow('elevation-sm');
 
     &:hover {
-      box-shadow: 0 6px 16px #{badge-shadow(free-hover)};
+      box-shadow: shadow('elevation-md');
     }
   }
 
   &--loading {
-    // Gradient orange visitor
-    background: linear-gradient(135deg, #{orange(500)}, #{orange(600)});
-    color: white;
-    box-shadow: 0 4px 12px #{badge-shadow(visitor)};
+    // Badge visitor (warning)
+    background: linear-gradient(
+      135deg,
+      semantic('warning'),
+      semantic('warning', 'dark')
+    );
+    color: text('invert');
+    box-shadow: shadow('elevation-sm');
 
     &:hover {
-      box-shadow: 0 6px 16px #{badge-shadow(visitor-hover)};
+      box-shadow: shadow('elevation-md');
     }
   }
 }
 
 .subscription-badge__icon {
-  font-size: $font-size-lg;
+  font-size: font-size('lg');
   line-height: 1;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: $font-size-xl;
+    font-size: font-size('xl');
   }
 }
 
 .subscription-badge__text {
-  font-size: $font-size-sm;
+  font-size: font-size('sm');
   line-height: 1;
   white-space: nowrap;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: $font-size-base;
+    font-size: font-size('base');
   }
 }
 
@@ -219,64 +233,64 @@
 .profil-card__form {
   display: flex;
   flex-direction: column;
-  gap: $spacing-lg;
+  gap: spacing('lg');
   text-align: left;
 }
 
 .profil-card__email-display {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
-  padding: $spacing-md;
-  background: var(--color-bg-soft);
-  border-radius: $radius-md;
-  border: 1px solid var(--color-border);
+  gap: spacing('xs');
+  padding: spacing('md');
+  background: surface('soft');
+  border-radius: radius('md');
+  border: border-width('thin') solid surface('border');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md $spacing-lg;
+    padding: spacing('md') spacing('lg');
   }
 }
 
 .profil-card__email-label {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: var(--color-text-muted);
+  font-size: font-size('sm');
+  font-weight: font-weight('semibold');
+  color: text('muted');
   text-transform: uppercase;
   letter-spacing: 0.05em;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: $font-size-base;
+    font-size: font-size('base');
   }
 }
 
 .profil-card__email-value {
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  color: var(--color-text);
+  font-size: font-size('base');
+  font-weight: font-weight('medium');
+  color: text('default');
   word-break: break-all;
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: $font-size-lg;
+    font-size: font-size('lg');
     word-break: normal;
   }
 }
 
 .profil-card__save-btn {
   width: 100%;
-  min-height: 48px;
-  font-size: $font-size-base;
-  font-weight: $font-weight-bold;
-  margin-top: $spacing-md;
+  min-height: size('48');
+  font-size: font-size('base');
+  font-weight: font-weight('bold');
+  margin-top: spacing('md');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    max-width: 300px;
+    max-width: size('300');
     margin-left: auto;
     margin-right: auto;
   }
@@ -284,108 +298,116 @@
 
 // === CARD 2: SÉCURITÉ ===
 .profil-card--security {
-  border-left: 4px solid semantic('info');
+  border-left: border-width('thick') solid semantic('info');
 }
 
 .profil-card__action-btn {
   width: 100%;
-  min-height: 48px;
+  min-height: size('48');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    max-width: 400px;
+    max-width: size('400');
   }
 }
 
 // === CARD 3: ABONNEMENT ===
 .profil-card--subscription {
-  border-left: 4px solid semantic('success');
+  border-left: border-width('thick') solid semantic('success');
 }
 
 .subscription-details {
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
-  padding: $spacing-md;
-  background: var(--color-bg-soft);
-  border-radius: $radius-md;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background: surface('soft');
+  border-radius: radius('md');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    padding: $spacing-lg;
+    padding: spacing('lg');
   }
 }
 
 .subscription-details__status,
 .subscription-details__expiry {
   margin: 0;
-  font-size: $font-size-base;
-  color: var(--color-text);
+  font-size: font-size('base');
+  color: text('default');
 
   strong {
-    font-weight: $font-weight-bold;
+    font-weight: font-weight('bold');
     color: semantic('success');
   }
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    font-size: $font-size-lg;
+    font-size: font-size('lg');
   }
 }
 
 // === CARD 4: ZONE DANGEREUSE ===
 .profil-card--danger {
-  border-left: 4px solid semantic('error');
+  border-left: border-width('thick') solid semantic('error');
   background: linear-gradient(
     to bottom,
-    var(--color-surface),
-    rgba(semantic('error'), 0.02)
+    surface('bg'),
+    semantic('error', 'bg')
   );
 }
 
 .profil-card__warning-text {
-  margin: 0 0 $spacing-md 0;
-  padding: $spacing-md;
-  background: rgba(semantic('error'), 0.05);
-  border-radius: $radius-md;
-  border: 1px solid rgba(semantic('error'), 0.2);
-  color: var(--color-text);
-  font-size: $font-size-sm;
-  line-height: $line-height-base;
+  margin: 0 0 spacing('md') 0;
+  padding: spacing('md');
+  background: semantic('error', 'bg');
+  border-radius: radius('md');
+  border: border-width('thin') solid semantic('error', 'border');
+  color: text('default');
+  font-size: font-size('sm');
+  line-height: line-height('relaxed');
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    padding: $spacing-lg;
-    font-size: $font-size-base;
-    margin-bottom: $spacing-lg;
+    padding: spacing('lg');
+    font-size: font-size('base');
+    margin-bottom: spacing('lg');
   }
 }
 
 .profil-card__delete-btn {
   width: 100%;
-  min-height: 48px;
+  min-height: size('48');
   background-color: semantic('error');
-  color: white;
-  font-weight: $font-weight-bold;
-  border: 2px solid semantic('error');
-  @include safe-transition(all, $transition-fast, ease);
+  color: text('invert');
+  font-weight: font-weight('bold');
+  border: border-width('medium') solid semantic('error');
+  @include safe-transition(
+    (background, border-color, transform, box-shadow),
+    timing('fast'),
+    easing('smooth')
+  );
 
   &:hover:not(:disabled) {
-    background-color: color.adjust(semantic('error'), $lightness: -10%);
-    border-color: color.adjust(semantic('error'), $lightness: -10%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(semantic('error'), 0.4);
+    background-color: semantic('error', 'dark');
+    border-color: semantic('error', 'dark');
+    transform: translateY(calc(-1 * #{spacing('2')}));
+    box-shadow: shadow('elevation-lg');
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
   }
 
-  @include focus-ring(semantic('error'), 2px, 2px);
+  @include focus-ring(
+    semantic('error'),
+    border-width('medium'),
+    border-width('medium')
+  );
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
-    max-width: 300px;
+    max-width: size('300');
   }
 }
 
@@ -394,7 +416,7 @@
 .profil-card__title,
 .profil-card__display-name {
   @media (prefers-contrast: high) {
-    color: #000;
+    color: text('dark');
   }
 }
 
@@ -413,21 +435,21 @@
 // === DARK MODE ===
 @media (prefers-color-scheme: dark) {
   .profil-page {
-    background: var(--color-bg);
+    background: surface('bg');
   }
 
   .profil-card__email-display,
   .subscription-details,
   .profil-card__warning-text {
-    background: #{color.change(white, $alpha: 0.05)};
-    border-color: #{color.change(white, $alpha: 0.1)};
+    background: surface('overlay');
+    border-color: surface('border');
   }
 
   .profil-card--danger {
     background: linear-gradient(
       to bottom,
-      var(--color-surface),
-      rgba(semantic('error'), 0.05)
+      surface('bg'),
+      semantic('error', 'bg')
     );
   }
 }
@@ -435,93 +457,97 @@
 // === LEGACY SUPPORT (À SUPPRIMER SI INUTILISÉ) ===
 // Anciens styles pour compatibilité temporaire
 .profil {
-  padding: $spacing-md;
+  padding: spacing('md');
 
   @include respond-to(sm) {
-    padding: $spacing-lg;
+    padding: spacing('lg');
   }
 
   &__container {
-    max-width: 600px;
+    max-width: size('600');
     margin: 0 auto;
-    background-color: white;
-    border-radius: $radius-lg;
-    box-shadow: $shadow-md;
-    padding: $spacing-lg;
+    background-color: surface('bg');
+    border-radius: radius('lg');
+    box-shadow: shadow('elevation-md');
+    padding: spacing('lg');
 
     @include respond-to(md) {
-      padding: $spacing-xl;
+      padding: spacing('xl');
     }
   }
 
   &__heading {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    margin-bottom: $spacing-lg;
+    font-size: font-size('xl');
+    font-weight: font-weight('bold');
+    margin-bottom: spacing('lg');
   }
 
   &__field {
-    margin-bottom: $spacing-md;
+    margin-bottom: spacing('md');
 
     label {
       display: block;
-      font-weight: $font-weight-semibold;
-      margin-bottom: $spacing-xs;
+      font-weight: font-weight('semibold');
+      margin-bottom: spacing('xs');
     }
 
     input {
       width: 100%;
-      padding: $spacing-sm;
-      border: 1px solid var(--color-border);
-      border-radius: $radius-sm;
+      padding: spacing('sm');
+      border: border-width('thin') solid surface('border');
+      border-radius: radius('sm');
     }
   }
 
   &__buttons {
     display: flex;
     justify-content: space-between;
-    margin-top: $spacing-xl;
+    margin-top: spacing('xl');
 
     button {
-      padding: $spacing-sm $spacing-lg;
-      font-weight: $font-weight-bold;
+      padding: spacing('sm') spacing('lg');
+      font-weight: font-weight('bold');
       border: none;
-      border-radius: $radius-sm;
+      border-radius: radius('sm');
       cursor: pointer;
-      @include safe-transition(background-color, $transition-fast, ease);
+      @include safe-transition(
+        background-color,
+        timing('fast'),
+        easing('smooth')
+      );
 
       &--primary {
         background-color: color('base');
-        color: white;
+        color: text('invert');
 
         &:hover {
-          background-color: color.adjust(color('base'), $lightness: -10%);
+          background-color: color('dark');
         }
       }
 
       &--secondary {
-        background-color: var(--color-bg-soft);
-        color: var(--color-text);
+        background-color: surface('soft');
+        color: text('default');
       }
     }
   }
 
   &__avatar {
-    margin: $spacing-lg 0;
+    margin: spacing('lg') 0;
     display: flex;
     align-items: center;
-    gap: $spacing-md;
+    gap: spacing('md');
 
     img {
-      width: 80px;
-      height: 80px;
+      width: size('80');
+      height: size('80');
       object-fit: cover;
-      border-radius: $radius-full;
-      border: 2px solid color('base');
+      border-radius: radius('full');
+      border: border-width('medium') solid color('base');
     }
 
     input[type='file'] {
-      font-size: $font-size-sm;
+      font-size: font-size('sm');
     }
   }
 }
@@ -529,34 +555,34 @@
 .profil-buttons {
   display: flex;
   flex-direction: column;
-  gap: $spacing-md;
-  margin-top: $spacing-xl;
+  gap: spacing('md');
+  margin-top: spacing('xl');
 
   .btn {
     width: 100%;
-    max-width: 300px;
+    max-width: size('300');
   }
 }
 
 // Section abonnement (legacy)
 .abonnement-section {
-  margin: $spacing-lg 0;
-  background: var(--color-bg-soft);
-  border-radius: $radius-md;
-  border: 1px solid var(--color-border);
-  padding: $spacing-md;
+  margin: spacing('lg') 0;
+  background: surface('soft');
+  border-radius: radius('md');
+  border: border-width('thin') solid surface('border');
+  padding: spacing('md');
 
   .abonnement-statut {
-    margin-bottom: $spacing-md;
+    margin-bottom: spacing('md');
 
     &.actif {
       color: semantic('success');
-      font-weight: $font-weight-medium;
+      font-weight: font-weight('medium');
     }
 
     &.inactif {
       color: semantic('error');
-      font-weight: $font-weight-medium;
+      font-weight: font-weight('medium');
     }
   }
 
@@ -565,11 +591,11 @@
     max-width: 100%;
 
     @include respond-to(sm) {
-      max-width: 300px;
+      max-width: size('300');
     }
   }
 
   @include respond-to(sm) {
-    padding: $spacing-lg;
+    padding: spacing('lg');
   }
 }

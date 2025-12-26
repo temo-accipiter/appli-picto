@@ -1,37 +1,35 @@
 @use '@styles/abstracts' as *;
 
-@use 'sass:color';
-
 @keyframes pulse-light {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 #{color.change(yellow(400), $alpha: 0.4)};
+    box-shadow: shadow('elevation-sm');
   }
   70% {
     transform: scale(1.03);
-    box-shadow: 0 0 8px 8px #{color.change(yellow(400), $alpha: 0)};
+    box-shadow: shadow('elevation-md');
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 #{color.change(yellow(400), $alpha: 0)};
+    box-shadow: shadow('elevation-sm');
   }
 }
 
 .selected-reward-floating {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: spacing('32');
+  right: spacing('32');
   z-index: z-index('modal');
   pointer-events: none;
-  opacity: 0.95;
+  opacity: opacity('0-95');
 
   &:focus-visible {
-    outline: spacing('2') solid color('base', 'accent');
-    outline-offset: spacing('2');
+    outline: border-width('medium') solid semantic('info-primary');
+    outline-offset: border-width('medium');
   }
 
   .card-edition.no-actions {
-    animation: pulse-light 2s infinite;
+    animation: pulse-light timing('slowest') infinite;
     border-radius: radius('md');
     overflow: hidden;
   }

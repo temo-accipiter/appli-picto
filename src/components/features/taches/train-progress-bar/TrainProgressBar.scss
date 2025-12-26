@@ -1,10 +1,10 @@
+// src/components/features/taches/train-progress-bar/TrainProgressBar.scss
+// Styles barre de progression train (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
-@use '@styles/base' as *;
-@use 'sass:color';
 
 .train-progress-bar {
   text-align: center;
-  min-width: spacing('600');
+  min-width: size('600');
 
   .toolbar {
     position: relative;
@@ -12,21 +12,21 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: $spacing-sm;
-    margin: $spacing-md;
-    padding: 0 $spacing-lg;
-    z-index: 10;
+    gap: spacing('sm');
+    margin: spacing('md');
+    padding: 0 spacing('lg');
+    z-index: z-index('dropdown');
 
     .progression {
-      font-size: $font-size-lg;
-      font-weight: $font-weight-bold;
-      color: var(--color-primary, #{color(base)});
+      font-size: font-size('lg');
+      font-weight: font-weight('bold');
+      color: semantic('info-primary');
       text-align: center;
-      background-color: #{yellow(50)};
-      padding: $spacing-xs $spacing-md;
-      border-radius: $radius-md;
+      background: semantic('warning', 'bg');
+      padding: spacing('xs') spacing('md');
+      border-radius: radius('md');
       display: inline-block;
-      box-shadow: $box-shadow;
+      box-shadow: shadow('elevation-sm');
       margin: 0;
     }
   }
@@ -38,7 +38,7 @@
     margin: 0 auto;
     height: spacing('140');
     padding-inline: 0;
-    overflow: visible; // Allow labels to overflow vertically
+    overflow: visible; /* Allow labels to overflow vertically */
 
     .metrosvg {
       width: 100%;
@@ -46,11 +46,11 @@
     }
 
     .rail-line {
-      stroke: var(--couleur-ligne);
-      stroke-width: 8;
+      stroke: semantic('info-primary');
+      stroke-width: spacing('8');
       fill: none;
-      stroke-dasharray: 14 14;
-      animation: dash-rail 2s linear infinite;
+      stroke-dasharray: spacing('14') spacing('14');
+      animation: dash-rail timing('slowest') linear infinite;
     }
 
     .station {
@@ -58,7 +58,7 @@
       top: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      z-index: 2;
+      z-index: z-index('base');
 
       .dot-logo {
         width: spacing('62');
@@ -70,7 +70,7 @@
         justify-content: center;
 
         &.arrivee {
-          animation: pop-rebond 0.4s ease;
+          animation: pop-rebond timing('base') ease;
         }
 
         img {
@@ -83,30 +83,32 @@
       .dot {
         width: spacing('20');
         height: spacing('20');
-        border: spacing('4') solid var(--couleur-ligne);
-        background-color: #{surface(bg)};
+        border: border-width('base') solid semantic('info-primary');
+        background: surface('bg');
         border-radius: radius('full');
-        transition:
-          background-color 0.3s ease,
-          border-color 0.3s ease;
+        @include safe-transition(
+          (background-color, border-color),
+          timing('base'),
+          easing('smooth')
+        );
       }
 
       &.active .dot {
-        animation: station-pop 0.4s ease;
-        background-color: var(--couleur-ligne);
+        animation: station-pop timing('base') ease;
+        background: semantic('info-primary');
       }
 
       &.passed .dot {
-        background-color: var(--couleur-ligne);
+        background: semantic('info-primary');
       }
 
       .label {
         position: absolute;
         top: 100%;
         left: 50%;
-        transform: translateX(-50%) translateY(0.5rem);
-        font-weight: 600;
-        color: var(--color-text);
+        transform: translateX(-50%) translateY(spacing('8'));
+        font-weight: font-weight('semibold');
+        color: text('default');
         text-align: center;
         white-space: normal;
         line-height: 1.3;
@@ -114,12 +116,12 @@
         display: block;
 
         /* [Mobile-first] Base = mobile (plus petit pour éviter chevauchement) */
-        font-size: spacing('10');
-        max-width: spacing('60');
+        font-size: font-size('xs');
+        max-width: size('60');
 
         /* Desktop (576px+) = taille normale */
         @include respond-to(sm) {
-          font-size: $font-size-sm;
+          font-size: font-size('sm');
           max-width: spacing('100');
         }
       }
@@ -127,17 +129,19 @@
 
     .train {
       position: absolute;
-      top: -spacing('10');
-      z-index: 3;
-      transition:
-        left 0.6s ease-in-out,
-        transform 0.6s ease-in-out;
+      top: calc(#{size('10')} * -1);
+      z-index: z-index('dropdown');
+      @include safe-transition(
+        (left, transform),
+        timing('slow'),
+        easing('in-out')
+      );
 
       .train-icon {
         height: auto;
 
         /* [Mobile-first] Base = mobile */
-        width: spacing('60');
+        width: size('60');
 
         /* Desktop (576px+) */
         @include respond-to(sm) {
@@ -160,13 +164,13 @@
 }
 
 .train--animated {
-  animation: trainStart 0.4s ease-out;
+  animation: trainStart timing('base') ease-out;
 }
 
 .dot-logo.fixed-logo {
   position: absolute;
-  right: -spacing('28');
-  z-index: 3;
+  right: calc(#{size('28')} * -1);
+  z-index: z-index('dropdown');
 
   img {
     width: 100%;
@@ -175,7 +179,7 @@
   }
 
   /* [Mobile-first] Base = mobile */
-  top: -spacing('12');
+  top: calc(#{size('12')} * -1);
   width: spacing('28');
   height: spacing('28');
 

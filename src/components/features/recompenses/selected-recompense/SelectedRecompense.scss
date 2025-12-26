@@ -2,47 +2,48 @@
 
 .selected-recompense {
   display: flex;
-  gap: $spacing-sm;
+  gap: spacing('sm');
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  border-radius: $radius-lg;
-  box-shadow: $box-shadow;
+  border-radius: radius('lg');
+  box-shadow: shadow('elevation-sm');
   margin: 0 auto;
   cursor: pointer;
 
   /* [Mobile-first] Base = mobile (320px+) */
-  width: spacing('100');
-  padding: $spacing-sm;
+  width: size('100');
+  padding: spacing('sm');
 
-  @include transition-smooth;
+  @include safe-transition(all, timing('base'), easing('smooth'));
 
   &.locked {
-    opacity: 0.5;
+    opacity: opacity('half');
     pointer-events: none;
   }
 
   &.unlocked {
-    animation: reward-pop 0.8s ease-out;
+    animation: reward-pop timing('slow') ease-out;
 
-    @include on-event {
-      transform: translateY(rem(-4));
-      box-shadow: 0 spacing('4') spacing('12') #{shadow(black-medium)};
+    &:hover,
+    &:focus {
+      transform: translateY(spacing('-4'));
+      box-shadow: shadow('elevation-md');
     }
 
     &:focus-visible {
-      outline: spacing('2') solid color('base', 'accent');
-      outline-offset: spacing('2');
+      outline: border-width('medium') solid semantic('info-primary');
+      outline-offset: border-width('medium');
     }
   }
 
   .label {
-    font-weight: $font-weight-bold;
+    font-weight: font-weight('bold');
     text-align: center;
-    color: var(--color-text);
+    color: text('default');
 
     /* [Mobile-first] Base = mobile */
-    font-size: $font-size-sm;
+    font-size: font-size('sm');
   }
 
   .icon {
@@ -59,10 +60,10 @@
   /* Desktop (576px+) */
   @include respond-to(sm) {
     width: spacing('300');
-    padding: $spacing-md;
+    padding: spacing('md');
 
     .label {
-      font-size: $font-size-lg;
+      font-size: font-size('lg');
     }
 
     .icon {

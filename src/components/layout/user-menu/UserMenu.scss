@@ -32,7 +32,7 @@
   position: fixed;
   inset: 0;
   background: surface('overlay');
-  backdrop-filter: blur(spacing('xs'));
+  backdrop-filter: blur(size('4'));
   z-index: z-index('tooltip');
   display: grid;
 
@@ -46,7 +46,7 @@
 }
 
 .user-menu-dialog {
-  width: min(92vw, 320px);
+  width: min(92vw, size('320'));
   background: surface('bg');
   color: text();
   border-radius: radius('lg');
