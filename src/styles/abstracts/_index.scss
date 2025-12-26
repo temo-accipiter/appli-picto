@@ -13,8 +13,8 @@
 
 // --- Fonctions couleurs (sans CSS généré) ---
 // Forward uniquement les fonctions de _colors.scss (pas les maps ni CSS vars)
-@forward './colors' show color, semantic, blue, red, green, orange, yellow,
-  purple, slate, role-color, text, surface, admin-ui, warning, badge-gradient,
+@forward './colors' show color, semantic, gray, blue, red, green, orange, yellow,
+  purple, slate, white, black, role-color, text, surface, admin-ui, warning, badge-gradient,
   ui-gradient, badge-shadow, tsa-pastel, shadow, brand;
 
 // --- Fonction radius (sans CSS généré) ---
