@@ -1,5 +1,24 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// TABLEAU PAGE (MAGIC METRO)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('xl'/'md'/'lg'/'48'/'24'/'xs'/'sm'/'20'/'2') → Primitives Phase 6 ✅
+//    - surface('overlay'/'soft'/'border') → Semantics Phase 6 ✅
+//    - radius('md'/'lg') → Primitives Phase 6 (12px/20px) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - text('light') → Semantics Phase 6 ✅
+//    - semantic('success', 'light') → Semantics Phase 6 ✅
+//    - timing('base') → Primitives Phase 6 (0.2s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - font-size('lg'/'xl') → Legacy support actif
+//    - size('300'/'260'/'400'/'100'/'150') → Legacy support actif
+//    - opacity('half'/'opaque') → Legacy support actif
+// ============================================================================
+
 // src/page-components/tableau/Tableau.scss
 
 // Indicateur de chargement fallback

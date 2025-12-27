@@ -1,5 +1,19 @@
 @use '@/styles/abstracts' as *;
 
+// ============================================================================
+// TIME TIMER PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/text/timing/respond-to avec fallback
+//    - spacing('xl'/'sm') → Primitives Phase 6 ✅
+//    - surface('soft'/'border') → Semantics Phase 6 ✅
+//    - text('default'/'light') → Semantics Phase 6 ✅
+//    - timing('base'/'lg') → Primitives Phase 6 (0.2s/0.5s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - font-size('3xl'/'4xl'/'lg') → Legacy support actif
+//    - font-weight('bold') → Legacy support actif
+// ============================================================================
+
 .time-timer-page {
   min-height: 100vh;
   display: flex;

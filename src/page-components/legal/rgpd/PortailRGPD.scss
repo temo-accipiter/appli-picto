@@ -1,5 +1,26 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// PORTAIL RGPD PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing avec fallback
+//    - spacing('24'/'20'/'10'/'6'/'14'/'16'/'8'/'12') → Primitives Phase 6 ✅
+//    - surface('bg'/'border') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'rounded-10px') → Primitives Phase 6 (12px/10px) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - text('light') → Semantics Phase 6 ✅
+//    - semantic('info'/'error', all variants) → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - size('980'/'260') → Legacy support actif
+//    - font-size('3xl'/'lg') → Legacy support actif
+//    - line-height('relaxed') → Legacy support actif
+//    - border-width('thin'/'medium') → Legacy support actif
+//    - font-weight('semibold') → Legacy support actif
+//    - opacity('0-6') → Legacy support actif
+// ============================================================================
+
 .rgpd-portal {
   max-width: size('980');
   margin: 0 auto;

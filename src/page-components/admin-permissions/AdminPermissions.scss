@@ -1,5 +1,34 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// ADMIN PERMISSIONS PAGE (2797 LIGNES - PLUS GROS FICHIER DU PROJET)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('20'/'40'/'16'/'30'/'8'/'12'/'24'/'md'/'lg'/'sm'/'xl'/'xs'/'4'/'2'/'6'/'32'/'10'/'14') → Primitives Phase 6 ✅
+//    - surface('bg'/'soft'/'border'/'hover') → Semantics Phase 6 ✅
+//    - radius('lg'/'md'/'rounded-12px'/'rounded-8px'/'rounded-6px'/'sm'/'full'/'xs') → Primitives Phase 6 ✅
+//    - text('invert'/'default'/'light'/'muted') → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-lg'/'focus') → Primitives Phase 6 ✅
+//    - semantic('success'/'warning'/'error'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast'/'base'/'xs') → Primitives Phase 6 (0.15s/0.2s/0.1s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('container-xl'/'600') → Legacy support actif
+//    - font-size('4xl'/'lg'/'xl'/'sm'/'base'/'xs'/'2xl') → Legacy support actif
+//    - font-weight('bold'/'semibold'/'medium') → Legacy support actif
+//    - border-width('medium'/'thin'/'base') → Legacy support actif
+//    - line-height('relaxed') → Legacy support actif
+//    - opacity('0-9'/'0-8'/'0-7'/'half') → Legacy support actif
+//    - z-index('modal'/'dropdown'/'tooltip') → Legacy support actif
+//    - color('base'/'dark'/'lighter') → Legacy support actif
+// ============================================================================
+// Styles pour la page d'administration des permissions utilisateur.
+// Gère les 4 principales entités : Users, Roles, Permissions, Feature Flags.
+// Architecture: Header + Tabs + Content (Tables/Grids/Forms/Modals).
+// WCAG 2.2 AA compliant, TSA-optimized (pastel, soft animations).
+// ============================================================================
+
 .admin-permissions-page {
   max-width: size('container-xl');
   margin: 0 auto;

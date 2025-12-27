@@ -1,5 +1,26 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// LOGIN & SIGNUP PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('64'/'xl'/'md'/'sm'/'xs'/'20'/'2') → Primitives Phase 6 ✅
+//    - surface('bg'/'border'/'hover'/'soft') → Semantics Phase 6 ✅
+//    - radius('rounded-24px'/'rounded-12px'/'rounded-10px'/'md'/'full') → Primitives Phase 6 ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - text('default'/'invert') → Semantics Phase 6 ✅
+//    - semantic('error'/'success'/'warning'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('400'/'520') → Legacy support actif
+//    - font-size('3xl'/'base'/'sm') → Legacy support actif
+//    - font-weight('bold'/'medium'/'semibold') → Legacy support actif
+//    - border-width('thin'/'medium') → Legacy support actif
+//    - color('base'/'dark') → Legacy support actif
+// ============================================================================
+
 .login-page,
 .signup-page {
   max-width: size('400');

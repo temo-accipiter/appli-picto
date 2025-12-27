@@ -1,4 +1,15 @@
 @use '@styles/abstracts' as *;
+
+// ============================================================================
+// METRICS PAGE (ADMIN)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/spacing/text avec fallback
+//    - surface('bg') → Semantics Phase 6 ✅
+//    - spacing('xl'/'md') → Primitives Phase 6 ✅
+//    - text('default'/'light') → Semantics Phase 6 ✅
+//    - font-size('4xl'/'lg') → Legacy support actif
+// ============================================================================
+
 /**
  * Page Admin : Metrics - Styles
  */

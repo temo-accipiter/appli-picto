@@ -1,6 +1,28 @@
 // src/pages/abonnement/Abonnement.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// ABONNEMENT PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('xl'/'md'/'lg'/'sm'/'xs'/'4'/'2') → Primitives Phase 6 ✅
+//    - surface('soft'/'bg'/'border'/'hover') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'full'/'md') → Primitives Phase 6 ✅
+//    - text('default'/'light'/'muted'/'invert') → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - semantic('success'/'warning'/'error'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('800'/'60') → Legacy support actif
+//    - font-size('4xl'/'2xl'/'xl'/'base'/'sm'/'lg'/'xs') → Legacy support actif
+//    - font-weight('medium'/'bold'/'semibold') → Legacy support actif
+//    - border-width('thin'/'medium') → Legacy support actif
+//    - z-index('fixed') → Legacy support actif
+//    - color('base'/'dark') → Legacy support actif
+// ============================================================================
+
 .abonnement-page {
   max-width: size('800');
   margin: 0 auto;

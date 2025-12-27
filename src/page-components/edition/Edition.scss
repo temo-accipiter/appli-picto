@@ -1,5 +1,28 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// EDITION PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/semantic/text/radius/shadow/timing/respond-to avec fallback
+//    - spacing('48'/'lg'/'xl'/'xs'/'md'/'sm'/'12'/'8'/'3') → Primitives Phase 6 ✅
+//    - semantic('success'/'info'/'error', all variants) → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 ✅
+//    - radius('sm'/'xs'/'md') → Primitives Phase 6 (6px/3px/12px) ✅
+//    - shadow('focus') → Primitives Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - transition-smooth → Mixin Phase 6 ✅
+//    - on-event → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - surface('border'/'soft') → Semantics Phase 6 ✅
+//    - font-size('sm'/'base'/'xl') → Legacy support actif
+//    - font-weight('bold') → Legacy support actif
+//    - border-width('thin'/'medium') → Legacy support actif
+//    - size('600') → Legacy support actif
+//    - color('base') → Legacy support actif
+// ============================================================================
+
 :root {
   --pastel-color: #{semantic('info', 'bg')};
 }

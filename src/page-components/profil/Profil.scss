@@ -1,5 +1,28 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// PROFIL PAGE
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('md'/'xl'/'lg'/'sm'/'xs'/'4'/'2'/'48'/'6'/'20'/'16'/'32'/'10'/'3') → Primitives Phase 6 ✅
+//    - surface('soft'/'bg'/'border'/'hover') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'rounded-16px'/'full'/'md'/'sm'/'lg') → Primitives Phase 6 ✅
+//    - text('default'/'light'/'muted'/'invert') → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-lg'/'focus') → Primitives Phase 6 ✅
+//    - semantic('success'/'warning'/'error'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - card-style → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('800'/'900'/'150'/'100'/'14'/'50'/'12') → Legacy support actif
+//    - font-size('xl'/'3xl'/'2xl'/'lg'/'sm'/'base'/'xs') → Legacy support actif
+//    - font-weight('bold'/'semibold'/'medium') → Legacy support actif
+//    - border-width('thin'/'medium'/'base') → Legacy support actif
+//    - color('base'/'dark'/'lighter') → Legacy support actif
+//    - opacity('0-6'/'half') → Legacy support actif
+// ============================================================================
+
 // ============================================
 // PAGE PROFIL - REDESIGN MODERNE 2025
 // Architecture: Card-based layout, Mobile-first

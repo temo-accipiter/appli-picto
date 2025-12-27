@@ -1,5 +1,20 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// NOT FOUND PAGE (404)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/text/timing/respond-to/on-event avec fallback
+//    - spacing('lg'/'xl'/'md') → Primitives Phase 6 ✅
+//    - text('default') → Semantics Phase 6 ✅
+//    - timing('base') → Primitives Phase 6 (0.2s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - on-event → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - color('base') → Legacy support actif
+//    - font-size('lg'/'sm'/'xl'/'base') → Legacy support actif
+// ============================================================================
+
 .not-found {
   display: flex;
   flex-direction: column;

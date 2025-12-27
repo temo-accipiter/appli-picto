@@ -1,6 +1,29 @@
 // src/pages/admin/logs/Logs.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// LOGS PAGE (ADMIN)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/text/shadow/semantic/timing/respond-to avec fallback
+//    - spacing('xl'/'md'/'lg'/'sm'/'xs'/'2'/'4') → Primitives Phase 6 ✅
+//    - surface('soft'/'bg'/'border'/'hover') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'md'/'sm'/'full') → Primitives Phase 6 ✅
+//    - text('default'/'light'/'muted'/'invert') → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md'/'focus') → Primitives Phase 6 ✅
+//    - semantic('success'/'warning'/'error'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('1200'/'100'/'180'/'120') → Legacy support actif
+//    - font-size('xl'/'sm'/'lg'/'base'/'xs'/'2xl') → Legacy support actif
+//    - font-weight('semibold'/'medium'/'bold') → Legacy support actif
+//    - border-width('thin'/'base'/'medium') → Legacy support actif
+//    - z-index('fixed') → Legacy support actif
+//    - color('base'/'dark') → Legacy support actif
+//    - opacity('0-8') → Legacy support actif
+// ============================================================================
+
 .logs-page {
   max-width: size('1200');
   margin: 0 auto;
