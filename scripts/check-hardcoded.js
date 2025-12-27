@@ -8,11 +8,17 @@
  *   - rgb/rgba colors (rgb(255, 0, 0), rgba(...))
  *   - Valeurs px pour spacing (padding, margin, gap)
  *
- * Exclut :
- *   - src/styles/abstracts/_tokens.scss (source de vérité)
- *   - src/styles/themes/*.scss (thèmes peuvent hardcoder)
+ * Exclut (hardcodes légitimes) :
+ *   - src/styles/abstracts/* (définition tokens Phase 5 & 6)
+ *   - src/styles/base/* (reset CSS, helpers, accessibility)
+ *   - src/styles/themes/* (thèmes peuvent hardcoder)
  *   - Commentaires CSS
  *   - Valeurs dans strings/URLs
+ *
+ * Bloque strictement :
+ *   - Composants (src/components/**)
+ *   - Pages (src/page-components/**)
+ *   - Autres fichiers styles non-whitelistés
  *
  * Usage :
  *   node scripts/check-hardcoded.js
@@ -37,8 +43,15 @@ const CONFIG = {
 
   // Fichiers à exclure (patterns)
   excludePatterns: [
-    'src/styles/abstracts/_tokens.scss', // Source de vérité (Phase 5 legacy)
-    'src/styles/abstracts/_primitives.scss', // Source de vérité (Phase 6 primitives)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // DESIGN SYSTEM - Définition des tokens (hardcodes légitimes)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    'src/styles/abstracts/', // Tous les fichiers abstracts/ définissent des tokens
+    'src/styles/base/', // Reset CSS, helpers, accessibility (hardcodes légitimes)
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // AUTRES EXCLUSIONS
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     'src/styles/themes/', // Thèmes peuvent hardcoder
     'src/styles/vendors/', // Dépendances tierces
     '.test.', // Fichiers de tests
