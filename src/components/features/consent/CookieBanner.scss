@@ -3,6 +3,27 @@
 /* src/components/CookieBanner.scss */
 /* Bannière accessible, palette pastel, contraste AA, responsive */
 
+// ============================================================================
+// COOKIE BANNER COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/shadow/spacing/radius/text/semantic avec fallback
+//    - surface('bg'/'border'/'soft') → Semantics Phase 6 ✅
+//    - shadow('elevation-lg') → Primitives Phase 6 ✅
+//    - spacing('20'/'16'/'md'/'lg'/'12'/'8'/'sm') → Primitives Phase 6 ✅
+//    - radius('md'/'sm') → Primitives Phase 6 (12px/6px) ✅
+//    - text('default'/'invert'/'light') → Semantics Phase 6 ✅
+//    - semantic('info'/'warning', all variants) → Semantics Phase 6 ✅
+//    - timing('xs') → Primitives Phase 6 (0.1s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - z-index('max') → Legacy support actif
+//    - size('container-lg') → Legacy support actif
+//    - font-size('sm'/'lg') → Legacy support actif
+//    - font-weight('bold'/'semibold') → Legacy support actif
+//    - border-width('thin'/'base'/'medium') → Legacy support actif
+// ============================================================================
+
 .cookie-banner {
   position: fixed;
   left: 0;

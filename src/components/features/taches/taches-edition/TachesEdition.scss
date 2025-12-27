@@ -2,6 +2,25 @@
 // Styles édition tâches (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// TACHES EDITION COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/semantic/shadow/surface avec fallback
+//    - spacing('md'/'lg'/'sm'/'xs'/'100'/'32'/'16'/'8') → Primitives Phase 6 ✅
+//    - radius('lg'/'md') → Primitives Phase 6 (20px/12px) ✅
+//    - semantic('info', all variants) → Semantics Phase 6 ✅
+//    - shadow('elevation-lg'/'elevation-xs'/'elevation-sm') → Primitives Phase 6 ✅
+//    - surface('soft'/'border'/'bg') → Semantics Phase 6 ✅
+//    - text('light') → Semantics Phase 6 ✅
+//    - timing('base'/'fast') → Primitives Phase 6 (0.2s/0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - size('260'/'card-min-height') → Legacy support actif
+//    - font-size('lg'/'4xl') → Legacy support actif
+//    - border-width('thin'/'medium') → Legacy support actif
+//    - opacity('half') → Legacy support actif
+// ============================================================================
+
 .checklist-edition {
   display: flex;
   flex-direction: column;

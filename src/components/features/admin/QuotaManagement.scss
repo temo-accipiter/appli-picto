@@ -1,6 +1,24 @@
 // src/components/admin/QuotaManagement.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// QUOTA MANAGEMENT COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/text/semantic/timing avec fallback
+//    - spacing('lg'/'md'/'sm'/'xs'/'48'/'24'/'32'/'8'/'150') → Primitives Phase 6 ✅
+//    - surface('bg'/'border'/'soft') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'md'/'sm'/'rounded-6px') → Semantics/Primitives Phase 6 ✅
+//    - text('default'/'muted'/'invert') → Semantics Phase 6 ✅
+//    - semantic('info', all variants) → Semantics Phase 6 ✅
+//    - timing('xs') → Primitives Phase 6 (0.1s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - size('card-min-height') → Legacy support actif
+//    - font-size('2xl'/'sm'/'lg'/'base'/'xs') → Legacy support actif
+//    - font-weight('semibold'/'normal'/'bold'/'medium') → Legacy support actif
+//    - border-width('thin'/'base') → Legacy support actif
+// ============================================================================
+
 .quota-management {
   padding: spacing('lg');
   background: surface('bg');

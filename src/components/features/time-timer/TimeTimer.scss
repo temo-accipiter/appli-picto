@@ -2,6 +2,31 @@
 // Styles Time Timer (TSA-friendly : pastel, calm, prévisible)
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// TIME TIMER COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/semantic/radius/shadow/timing/surface avec fallback
+//    - spacing('xl'/'lg'/'md'/'xs'/'sm'/'80') → Primitives Phase 6 ✅
+//    - semantic('info'/'success'/'warning'/'error', all variants) → Semantics Phase 6 ✅
+//    - radius('lg'/'md'/'sm') → Primitives Phase 6 (20px/12px/6px) ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-xs') → Primitives Phase 6 ✅
+//    - timing('base'/'fast') → Primitives Phase 6 (0.2s/0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - surface('bg'/'soft'/'border') → Semantics Phase 6 ✅
+//    - text('default'/'invert'/'light') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - when-inside() → Mixin Phase 6 ✅
+//    - non-invasive-focus() → Mixin Phase 6 ✅
+//    - visually-hidden → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('600'/'300'/'280'/'160') → Legacy support actif
+//    - font-size('5xl'/'xl'/'sm'/'lg'/'base') → Legacy support actif
+//    - font-weight('bold'/'medium'/'semibold') → Legacy support actif
+//    - line-height('none') → Legacy support actif
+//    - border-width('base') → Legacy support actif
+//    - opacity('0-95'/'half') → Legacy support actif
+// ============================================================================
+
 /* Component Styles */
 .time-timer {
   /* Layout & Spacing */

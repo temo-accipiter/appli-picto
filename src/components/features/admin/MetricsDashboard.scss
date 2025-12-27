@@ -2,6 +2,26 @@
 // Styles dashboard métriques (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// METRICS DASHBOARD COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/size/text/semantic/radius/shadow/timing avec fallback
+//    - spacing('md'/'lg'/'xl'/'32'/'8'/'16'/'24'/'48'/'12') → Primitives Phase 6 ✅
+//    - size('container-xl') → Legacy support actif
+//    - text('dark'/'light'/'invert') → Semantics Phase 6 ✅
+//    - semantic('info'/'error'/'success'/'warning', all variants) → Semantics Phase 6 ✅
+//    - radius('md'/'rounded-12px') → Primitives/Semantics Phase 6 (12px) ✅
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - surface('bg'/'border'/'soft') → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - font-size('2xl'/'sm'/'xl'/'base'/'lg') → Legacy support actif
+//    - font-weight('bold'/'semibold'/'medium') → Legacy support actif
+//    - border-width('medium'/'thin') → Legacy support actif
+// ============================================================================
+
 /**
  * MetricsDashboard - Styles Mobile-First
  * Design system tokens-first, sémantique stricte

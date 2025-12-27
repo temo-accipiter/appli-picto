@@ -2,6 +2,26 @@
 @use 'sass:color';
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// ACCOUNT MANAGEMENT COMPONENT (495 LIGNES - PLUS GROS FICHIER FEATURES)
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/text/semantic/shadow/timing avec fallback
+//    - spacing('lg'/'md'/'sm'/'xs'/'48'/'24'/'32'/'8'/'150'/'16'/'12') → Primitives Phase 6 ✅
+//    - surface('bg'/'border'/'soft'/'hover') → Semantics Phase 6 ✅
+//    - radius('rounded-12px'/'rounded-6px'/'md'/'sm'/'full') → Semantics/Primitives Phase 6 ✅
+//    - text('default'/'muted'/'invert'/'light') → Semantics Phase 6 ✅
+//    - semantic('info'/'success'/'error'/'warning', all variants) → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-lg') → Primitives Phase 6 ✅
+//    - timing('xs'/'fast') → Primitives Phase 6 (0.1s/0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - size('card-min-height') → Legacy support actif
+//    - font-size('2xl'/'sm'/'xl'/'base'/'xs'/'lg') → Legacy support actif
+//    - font-weight('semibold'/'normal'/'bold'/'medium') → Legacy support actif
+//    - border-width('thin'/'base'/'medium') → Legacy support actif
+//    - z-index('modal'/'dropdown') → Legacy support actif
+// ============================================================================
+
 .account-management {
   padding: spacing('lg');
   background: surface('bg');

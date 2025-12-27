@@ -2,6 +2,27 @@
 // Styles barre de progression train (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// TRAIN PROGRESS BAR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers size/spacing/semantic/radius/shadow/timing avec fallback
+//    - size('600'/'10'/'60') → Legacy support actif
+//    - spacing('sm'/'md'/'lg'/'xs'/'140'/'8'/'14'/'62'/'20'/'100'/'80'/'28'/'39'/'56') → Primitives Phase 6 ✅
+//    - semantic('info'/'warning', all variants) → Semantics Phase 6 ✅
+//    - radius('md'/'full') → Primitives Phase 6 (12px/50%) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - surface('bg') → Semantics Phase 6 ✅
+//    - text('default') → Semantics Phase 6 ✅
+//    - timing('slowest'/'base'/'slow') → Primitives Phase 6 (2s/0.2s/0.5s) ✅
+//    - easing('smooth'/'in-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('base') → Legacy support actif
+//    - font-size('lg'/'xs'/'sm') → Legacy support actif
+//    - font-weight('bold'/'semibold') → Legacy support actif
+//    - z-index('dropdown'/'base') → Legacy support actif
+// ============================================================================
+
 .train-progress-bar {
   text-align: center;
   min-width: size('600');

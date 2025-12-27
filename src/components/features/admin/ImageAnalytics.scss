@@ -1,7 +1,26 @@
 // src/components/features/admin/ImageAnalytics.scss
 // Styles dashboard analytics images (TSA-friendly : pastel, calm)
-// ⭐ PHASE 6: Migré vers tokens sémantiques (spacing, radius)
 @use '@styles/abstracts' as *;
+
+// ============================================================================
+// IMAGE ANALYTICS COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/text/semantic/radius/shadow avec fallback
+//    - spacing('page-padding'/'heading-gap'/'card-padding'/'grid-gap'/'xs') → Semantics Phase 6 ✅
+//    - text('dark'/'muted') → Semantics Phase 6 ✅
+//    - semantic('error'/'success'/'info', all variants) → Semantics Phase 6 ✅
+//    - radius('card') → Semantics Phase 6 (12px) ✅
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - surface('bg'/'soft'/'border') → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('container-lg'/'200') → Legacy support actif
+//    - font-size('2xl'/'sm'/'4xl') → Legacy support actif
+//    - font-weight('semibold'/'medium'/'bold') → Legacy support actif
+//    - border-width('thick'/'medium') → Legacy support actif
+// ============================================================================
 
 .image-analytics {
   padding: spacing('page-padding'); // Phase 6: 32px (semantic, avant: 'xl')

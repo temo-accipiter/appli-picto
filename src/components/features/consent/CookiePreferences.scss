@@ -1,5 +1,25 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// COOKIE PREFERENCES COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/spacing/radius/shadow/text/semantic/timing avec fallback
+//    - surface('overlay'/'bg'/'border'/'soft'/'hover') → Semantics Phase 6 ✅
+//    - spacing('lg'/'24'/'16'/'sm'/'md'/'xs'/'20'/'12') → Primitives Phase 6 ✅
+//    - radius('lg'/'md'/'rounded-12px'/'xl') → Primitives/Semantics Phase 6 ✅
+//    - shadow('elevation-modal'/'elevation-sm') → Primitives Phase 6 ✅
+//    - text('default'/'muted'/'invert'/'light') → Semantics Phase 6 ✅
+//    - semantic('info'/'success'/'warning', all variants) → Semantics Phase 6 ✅
+//    - timing('xs') → Primitives Phase 6 (0.1s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - z-index('max') → Legacy support actif
+//    - size('800') → Legacy support actif
+//    - font-size('2xl'/'lg'/'sm'/'xs'/'base') → Legacy support actif
+//    - font-weight('bold'/'semibold'/'medium') → Legacy support actif
+//    - border-width('thin'/'base') → Legacy support actif
+// ============================================================================
+
 .cookie-prefs {
   position: fixed;
   inset: 0;

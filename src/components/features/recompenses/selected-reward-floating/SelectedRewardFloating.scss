@@ -1,5 +1,19 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// SELECTED REWARD FLOATING COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers shadow/spacing/radius/timing/semantic avec fallback
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - spacing('32') → Primitives Phase 6 (32px) ✅
+//    - radius('md') → Primitives Phase 6 (12px) ✅
+//    - timing('slowest') → Primitives Phase 6 (2s) ✅
+//    - semantic('info-primary') → Semantics Phase 6 ✅
+//    - z-index('modal') → Legacy support actif
+//    - opacity('0-95') → Legacy support actif
+//    - border-width('medium') → Legacy support actif
+// ============================================================================
+
 @keyframes pulse-light {
   0% {
     transform: scale(1);

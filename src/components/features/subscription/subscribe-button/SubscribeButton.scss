@@ -1,5 +1,20 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// SUBSCRIBE BUTTON COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers brand/text/spacing/radius/timing avec fallback
+//    - brand('stripe'/'stripe-hover') → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - spacing('12'/'20') → Primitives Phase 6 (12px/20px) ✅
+//    - radius('rounded-12px') → Primitives Phase 6 (12px) ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('smooth') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - font-weight('bold') → Legacy support actif
+//    - border-width('medium') → Legacy support actif
+// ============================================================================
+
 .btn-subscribe {
   background-color: brand('stripe');
   color: text('invert');

@@ -2,6 +2,28 @@
 // Styles drag & drop tâches (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// TACHES DND COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers size/spacing/radius/semantic/shadow/timing avec fallback
+//    - size('100'/'200'/'160'/'16'/'20') → Legacy support actif
+//    - spacing('sm'/'md'/'xs'/'32'/'300'/'260') → Primitives Phase 6 ✅
+//    - radius('md'/'sm'/'full') → Primitives Phase 6 (12px/6px/50%) ✅
+//    - semantic('info', all variants) → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-lg') → Primitives Phase 6 ✅
+//    - surface('bg') → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - timing('base'/'slow'/'fast') → Primitives Phase 6 (0.2s/0.5s/0.15s) ✅
+//    - easing('smooth'/'spring') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('medium'/'thick') → Legacy support actif
+//    - font-size('sm'/'lg'/'xs') → Legacy support actif
+//    - font-weight('bold') → Legacy support actif
+//    - opacity('half'/'0-6'/'lg') → Legacy support actif
+//    - z-index('dropdown') → Legacy support actif
+// ============================================================================
+
 .grid-taches {
   display: grid;
   width: 100%;
