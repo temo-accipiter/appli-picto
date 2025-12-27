@@ -1,6 +1,26 @@
 // src/components/shared/AccountStatusBadge.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// ACCOUNT STATUS BADGE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/surface/text/semantic/shadow avec fallback
+//    - spacing('sm'/'xs'/'md') → Primitives Phase 6 (8px/4px/16px) ✅
+//    - radius('xl'/'sm') → Primitives Phase 6 (24px/6px) ✅
+//    - surface('bg'/'border'/'soft') → Semantics Phase 6 ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - semantic('success'/'error'/'warning'/'info', all variants) → Semantics Phase 6 ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - timing('fast'/'slower') → Primitives Phase 6 (0.15s/1.5s) ✅
+//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('base') → Legacy support actif
+//    - font-size('xs'/'sm'/'base') → Legacy support actif
+//    - font-weight('medium'/'semibold'/'normal') → Legacy support actif
+//    - opacity('half'/'lg') → Legacy support actif
+// ============================================================================
+
 .account-status-badge {
   display: inline-flex;
   align-items: center;

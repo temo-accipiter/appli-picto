@@ -3,6 +3,9 @@
 // ============================================
 // DND SLOT - Droppable Zone
 // ============================================
+// ✅ PHASE 6 VALIDÉ : Utilise mixin dnd-slot
+//    Tous les tokens gérés par le mixin (abstracts/_mixins.scss)
+// ============================================
 
 .dnd-slot {
   @include dnd-slot;

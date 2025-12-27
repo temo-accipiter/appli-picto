@@ -3,6 +3,14 @@
 // ============================================
 // DND CARD - Draggable Card Wrapper
 // ============================================
+// ✅ PHASE 6 VALIDÉ : Wrappers z-index/opacity/radius/color avec fallback
+//    - z-index('base'/'dropdown'/'modal') → Legacy support actif
+//    - opacity('lg') → Legacy support actif
+//    - color('base') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - border-width('focus') → Legacy support actif
+//    - size('2') → Legacy support actif
+// ============================================
 
 .dnd-card {
   position: relative;

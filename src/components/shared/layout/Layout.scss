@@ -1,5 +1,24 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// LAYOUT COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/text/spacing/timing/radius avec fallback
+//    - surface('bg'/'hover') → Semantics Phase 6 (#ffffff/#f1f5f9) ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - spacing('lg'/'sm'/'md'/'xl') → Primitives Phase 6 (24px/8px/16px/32px) ✅
+//    - timing('base') → Primitives Phase 6 (0.2s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - radius('sm') → Primitives Phase 6 (6px) ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('touch-target-min') → Legacy support actif
+//    - z-index('max') → Legacy support actif
+//    - font-weight('bold') → Legacy support actif
+//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
+// ============================================================================
+
 .layout {
   display: flex;
   background-color: surface('bg');

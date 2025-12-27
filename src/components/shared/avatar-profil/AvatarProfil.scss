@@ -4,6 +4,25 @@
 // AVATAR PROFIL - REDESIGN MODERNE 2025
 // Taille responsive: 120px mobile → 160px desktop
 // ============================================
+// ✅ PHASE 6 VALIDÉ : Wrappers size/radius/border/color/surface/shadow avec fallback
+//    - size('avatar-md'/'avatar-lg'/'touch-target-optimal'/'touch-target-min') → Legacy support actif
+//    - radius('full'/'sm') → Primitives Phase 6 (50%/6px) ✅
+//    - color('base'/'light') → Semantics Phase 6 ✅
+//    - surface('soft') → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6 (4px/8px/16px/24px) ✅
+//    - shadow('elevation-md'/'elevation-lg') → Primitives Phase 6 ✅
+//    - semantic('error', all variants) → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - focus-ring() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('thick'/'base'/'thin'/'focus') → Legacy support actif
+//    - font-size('5xl'/'base'/'lg'/'sm') → Legacy support actif
+//    - font-weight('bold'/'medium') → Legacy support actif
+//    - z-index('dropdown') → Legacy support actif
+// ============================================
 
 .avatar-container {
   position: relative;

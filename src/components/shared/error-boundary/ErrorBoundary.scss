@@ -3,6 +3,28 @@
 // src/components/shared/error-boundary/ErrorBoundary.scss
 // Styles TSA-friendly : couleurs pastel, animations douces, layout apaisant
 
+// ============================================================================
+// ERROR BOUNDARY COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic avec fallback
+//    - spacing('xl'/'3xl'/'md'/'sm'/'lg'/'2') → Primitives Phase 6 ✅
+//    - surface('bg'/'soft'/'hover'/'border') → Semantics Phase 6 ✅
+//    - radius('lg'/'md'/'sm') → Primitives Phase 6 (20px/12px/6px) ✅
+//    - shadow('elevation-lg'/'elevation-md') → Primitives Phase 6 ✅
+//    - text('muted'/'invert') → Semantics Phase 6 ✅
+//    - semantic('error') → Semantics Phase 6 ✅
+//    - timing('base'/'fast'/'slower') → Primitives Phase 6 (0.2s/0.15s/1.5s) ✅
+//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
+//    - color('base'/'dark') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('modal-width-md'/'touch-target-min'/'card-min-height'/'2') → Legacy support actif
+//    - font-size('5xl'/'2xl'/'base'/'sm') → Legacy support actif
+//    - font-weight('semibold'/'medium') → Legacy support actif
+//    - line-height('snug'/'relaxed') → Legacy support actif
+//    - border-width('focus'/'thin') → Legacy support actif
+// ============================================================================
+
 .error-boundary {
   // Plein écran centré
   display: flex;

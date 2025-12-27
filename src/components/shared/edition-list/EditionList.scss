@@ -1,5 +1,17 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// EDITION LIST COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/text/surface/radius avec fallback
+//    - spacing('md'/'sm') → Primitives Phase 6 (16px/8px) ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - surface('border') → Semantics Phase 6 (#e2e8f0) ✅
+//    - radius('lg') → Primitives Phase 6 (20px) ✅
+//    - size('dnd-card-min-width') → Legacy support actif
+//    - font-size('2xl'/'lg') → Legacy support actif
+// ============================================================================
+
 .edition-list {
   &__title {
     font-size: font-size('2xl');

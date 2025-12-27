@@ -1,5 +1,24 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// SIGNED IMAGE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers radius/surface/timing/semantic/spacing avec fallback
+//    - radius('md'/'sm') → Primitives Phase 6 (12px/6px) ✅
+//    - surface('border'/'soft') → Semantics Phase 6 ✅
+//    - timing('fast'/'slower') → Primitives Phase 6 (0.15s/1.5s) ✅
+//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
+//    - semantic('error', all variants) → Semantics Phase 6 ✅
+//    - spacing('xs') → Primitives Phase 6 (4px) ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - border-width('base') → Legacy support actif
+//    - font-size('lg'/'xs') → Legacy support actif
+//    - opacity('lg') → Legacy support actif
+//    - size('2'/'touch-target-min'/'avatar-sm'/'avatar-md'/'avatar-lg') → Legacy support actif
+// ============================================================================
+
 .signed-image {
   display: flex;
   justify-content: center;

@@ -3,6 +3,24 @@
 // ============================================
 // BASE CARD - TSA-FRIENDLY STYLES
 // ============================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/shadow/tsa-pastel/semantic avec fallback
+//    - spacing('md'/'sm'/'xs') → Primitives Phase 6 (16px/8px/4px) ✅
+//    - radius('md') → Primitives Phase 6 (12px) ✅
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - tsa-pastel('bg-soft'/'green-soft') → Semantics TSA Phase 6 ✅
+//    - semantic('success'/'info'/'error') → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - text() → Semantics Phase 6 (#1e293b) ✅
+//    - border-width('base') → Legacy support actif
+//    - font-size('sm'/'base') → Legacy support actif
+//    - font-weight('semibold') → Legacy support actif
+//    - line-height('snug') → Legacy support actif
+//    - opacity('lg'/'half') → Legacy support actif
+//    - size('touch-target-min'/'touch-target-optimal') → Legacy support actif
+// ============================================
 
 .base-card {
   display: grid;

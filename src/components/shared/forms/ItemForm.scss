@@ -1,5 +1,23 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// ITEM FORM COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/semantic/timing avec fallback
+//    - spacing('md'/'sm'/'xs') → Primitives Phase 6 (16px/8px/4px) ✅
+//    - surface('soft'/'hover'/'border'/'bg') → Semantics Phase 6 ✅
+//    - radius('sm'/'md') → Primitives Phase 6 (6px/12px) ✅
+//    - semantic('error'/'info'/'success', all variants) → Semantics Phase 6 ✅
+//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - text() → Semantics Phase 6 (#1e293b) ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - border-width('base'/'thin') → Legacy support actif
+//    - font-size('base') → Legacy support actif
+//    - font-weight('semibold') → Legacy support actif
+// ============================================================================
+
 .item-form {
   display: flex;
   flex-direction: column;

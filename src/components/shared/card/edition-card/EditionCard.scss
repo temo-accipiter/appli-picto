@@ -1,5 +1,12 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// EDITION CARD COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrapper autour de BaseCard sans styles propres
+//    Tous les styles gérés par BaseCard.scss
+// ============================================================================
+
 .card-edition {
   // 📝 EditionCard est un thin wrapper autour de BaseCard
   // avec editable={true} forcé. BaseCard gère le layout, les animations, et les états.

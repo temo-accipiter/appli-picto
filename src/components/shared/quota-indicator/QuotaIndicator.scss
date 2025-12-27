@@ -1,6 +1,28 @@
 // src/components/shared/QuotaIndicator.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// QUOTA INDICATOR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/timing/semantic/color avec fallback
+//    - spacing('sm'/'xs'/'md') → Primitives Phase 6 (8px/4px/16px) ✅
+//    - surface('bg'/'border'/'soft') → Semantics Phase 6 ✅
+//    - radius('md'/'sm') → Primitives Phase 6 (12px/6px) ✅
+//    - shadow('elevation-sm'/'elevation-md'/'elevation-xs') → Primitives Phase 6 ✅
+//    - timing('fast'/'slower'/'base') → Primitives Phase 6 (0.15s/1.5s/0.2s) ✅
+//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
+//    - semantic('success'/'error'/'warning'/'info', all variants) → Semantics Phase 6 ✅
+//    - color('base'/'light') → Semantics Phase 6 ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('thin') → Legacy support actif
+//    - font-size('xs'/'sm'/'base') → Legacy support actif
+//    - font-weight('medium'/'semibold'/'normal') → Legacy support actif
+//    - size('icon-xs'/'8'/'icon-sm'/'sidebar-collapsed'/'thumbnail-md') → Legacy support actif
+//    - opacity('md'/'half') → Legacy support actif
+// ============================================================================
+
 .quota-indicator {
   display: flex;
   flex-direction: column;

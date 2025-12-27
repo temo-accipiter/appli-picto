@@ -1,6 +1,26 @@
 // src/components/shared/ImageQuotaIndicator.scss
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// IMAGE QUOTA INDICATOR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/surface/text/semantic avec fallback
+//    - spacing('xs'/'sm') → Primitives Phase 6 (4px/8px) ✅
+//    - radius('md'/'xs') → Primitives Phase 6 (12px/2px) ✅
+//    - surface('soft'/'border') → Semantics Phase 6 ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - semantic('warning'/'error'/'success') → Semantics Phase 6 ✅
+//    - timing('base') → Primitives Phase 6 (0.2s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - shadow('elevation-xs') → Primitives Phase 6 ✅
+//    - border-width('thin') → Legacy support actif
+//    - font-size('xs'/'sm') → Legacy support actif
+//    - font-weight('medium'/'semibold') → Legacy support actif
+//    - opacity('md') → Legacy support actif
+//    - size('icon-xs') → Legacy support actif
+// ============================================================================
+
 .image-quota-indicator {
   display: flex;
   flex-direction: column;

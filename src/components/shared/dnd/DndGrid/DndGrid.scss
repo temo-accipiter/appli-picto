@@ -3,6 +3,12 @@
 // ============================================
 // DND GRID - Drag & Drop Grid Container
 // ============================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing via mixin avec fallback
+//    - @include dnd-grid → Mixin Phase 6 (gère tous les tokens) ✅
+//    - spacing('xs'/'sm'/'md') → Primitives Phase 6 (4px/8px/16px) ✅
+//    - visually-hidden → Mixin accessibility Phase 6 ✅
+//    - size('dnd-card-min-width') → Legacy support actif
+// ============================================
 
 .dnd-grid {
   @include dnd-grid;

@@ -1,6 +1,26 @@
 @use '@styles/abstracts' as *;
 @use 'sass:color';
 
+// ============================================================================
+// PERSONALIZATION MODAL COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/color/surface/radius/shadow/timing avec fallback
+//    - spacing('lg'/'xl'/'md'/'sm'/'10'/'6') → Primitives Phase 6 ✅
+//    - color('base'/'dark') → Semantics Phase 6 ✅
+//    - surface('soft'/'bg') → Semantics Phase 6 ✅
+//    - radius('lg'/'md'/'sm') → Primitives Phase 6 (20px/12px/6px) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - text('invert'/'muted') → Semantics Phase 6 ✅
+//    - timing('fast'/'slower') → Primitives Phase 6 (0.15s/1.5s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('base') → Legacy support actif
+//    - font-size('5xl'/'2xl'/'xl') → Legacy support actif
+//    - font-weight('semibold'/'medium') → Legacy support actif
+//    - size('icon-lg'/'2'/'card-min-height') → Legacy support actif
+// ============================================================================
+
 .personalization-modal {
   .personalization-content {
     text-align: center;

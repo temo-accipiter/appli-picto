@@ -1,5 +1,21 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// THEME TOGGLE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers radius/text/surface/timing avec fallback
+//    - radius('full') → Primitives Phase 6 (50%) ✅
+//    - text() → Semantics Phase 6 (#1e293b) ✅
+//    - surface('hover') → Semantics Phase 6 (#f1f5f9) ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('touch-target-min'/'touch-target-optimal'/'icon-sm'/'icon-md'/'2') → Legacy support actif
+//    - border-width('focus') → Legacy support actif
+// ============================================================================
+
 .theme-toggle {
   display: flex;
   align-items: center;

@@ -1,5 +1,25 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// LANGUAGE SELECTOR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/text/surface/timing avec fallback
+//    - spacing('xs'/'sm') → Primitives Phase 6 (4px/8px) ✅
+//    - radius('sm') → Primitives Phase 6 (6px) ✅
+//    - text() → Semantics Phase 6 (#1e293b) ✅
+//    - surface('hover') → Semantics Phase 6 (#f1f5f9) ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - on-event → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - border-width('thin'/'base') → Legacy support actif
+//    - font-size('lg') → Legacy support actif
+//    - font-weight('semibold') → Legacy support actif
+//    - size('2') → Legacy support actif
+// ============================================================================
+
 .lang-selector {
   /* [Mobile-first] Base = mobile (320px+) */
   display: flex;

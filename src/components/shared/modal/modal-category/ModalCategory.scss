@@ -1,5 +1,16 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// MODAL CATEGORY LIST COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/surface avec fallback
+//    - spacing('md'/'sm'/'xs') → Primitives Phase 6 (16px/8px/4px) ✅
+//    - radius('sm') → Primitives Phase 6 (6px) ✅
+//    - surface('border') → Semantics Phase 6 (#e2e8f0) ✅
+//    - size('touch-target-preferred'/'icon-xs') → Legacy support actif
+//    - Note: gray(400) ligne 20 (scrollbar) - toléré pour customisation scrollbar
+// ============================================================================
+
 .category-list {
   max-height: calc(
     5 * #{size('touch-target-preferred')}

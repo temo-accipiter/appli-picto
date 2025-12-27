@@ -1,5 +1,13 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// MODAL RECOMPENSE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing avec fallback
+//    - spacing('md'/'sm') → Primitives Phase 6 (16px/8px) ✅
+//    - font-size('2xl'/'base') → Legacy support actif
+// ============================================================================
+
 .modal-recompense {
   text-align: center;
   padding: spacing('md');

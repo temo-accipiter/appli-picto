@@ -1,5 +1,29 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// MODAL COMPONENT - TSA-FRIENDLY RESPONSIVE MODAL
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/spacing/radius/shadow/timing/color avec fallback
+//    - surface('overlay'/'surface'/'bg'/'soft'/'hover'/'border') → Semantics Phase 6 ✅
+//    - spacing('sm'/'md'/'lg'/'xs') → Primitives Phase 6 (8px/16px/24px/4px) ✅
+//    - radius('md'/'lg'/'sm'/'xs') → Primitives Phase 6 (12px/20px/6px/2px) ✅
+//    - shadow('elevation-modal'/'elevation-md') → Primitives Phase 6 ✅
+//    - timing('fast'/'base'/'slower') → Primitives Phase 6 (0.15s/0.2s/1.5s) ✅
+//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - z-index('modal-backdrop') → Legacy support actif
+//    - size('4'/'32'/'64'/'8'/'2'/'modal-width-sm'/'modal-width-md'/'modal-width-lg'/'card-min-height'/'touch-target-min'/'touch-target-optimal') → Legacy support actif
+//    - border-width('base'/'thin') → Legacy support actif
+//    - font-size('lg'/'xl'/'base') → Legacy support actif
+//    - font-weight('bold'/'semibold') → Legacy support actif
+//    - line-height('normal') → Legacy support actif
+//    - gray() → Fonction Phase 6 (scrollbar uniquement) ✅
+//    - Note: gray(100/200/300/400/500) lignes 110/166/170/205/261/353 - toléré pour customisation scrollbar/borders
+// ============================================================================
+
 // === OVERLAY ===
 .modal-overlay {
   position: fixed;

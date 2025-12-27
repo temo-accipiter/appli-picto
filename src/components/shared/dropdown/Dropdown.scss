@@ -1,5 +1,19 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// DROPDOWN COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/radius/shadow/timing avec fallback
+//    - surface('bg'/'border') → Semantics Phase 6 (#ffffff/#e2e8f0) ✅
+//    - radius('md') → Primitives Phase 6 (12px) ✅
+//    - shadow('elevation-md') → Primitives Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - z-index('modal') → Legacy support actif
+//    - border-width('thin') → Legacy support actif
+//    - size('card-max-width'/'thumbnail-md') → Legacy support actif
+// ============================================================================
+
 .dropdown-wrapper {
   position: relative;
   display: inline-block;

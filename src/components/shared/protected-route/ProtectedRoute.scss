@@ -1,5 +1,21 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// PROTECTED ROUTE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/text/surface/timing/radius avec fallback
+//    - spacing('xl'/'md'/'xs') → Primitives Phase 6 (32px/16px/4px) ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - timing('fast'/'slow') → Primitives Phase 6 (0.15s/1s) ✅
+//    - easing('ease-in-out') → Primitives Phase 6 ✅
+//    - radius('full') → Primitives Phase 6 (50%) ✅
+//    - surface('border') → Semantics Phase 6 (#e2e8f0) ✅
+//    - color('base') → Semantics Phase 6 ✅
+//    - size('32') → Legacy support actif
+//    - border-width('thick') → Legacy support actif
+//    - font-size('xl') → Legacy support actif
+// ============================================================================
+
 .protected-route,
 .protected-route-loading {
   display: flex;
