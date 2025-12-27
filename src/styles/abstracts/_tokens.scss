@@ -2,29 +2,36 @@
 @use 'sass:map';
 
 /// ============================================================================
-/// 🚀 TOKENS SYSTEM - SOURCE DE VÉRITÉ UNIQUE & CANONIQUE
+/// 🚀 TOKENS SYSTEM - SOURCE DE VÉRITÉ UNIQUE & CANONIQUE (PHASE 7 - CLARIFICATION)
 /// ============================================================================
 /// ⚠️ CRITICAL: Ce fichier est la SOURCE DE VÉRITÉ UNIQUE du design system.
 /// TOUS les autres fichiers (colors, typography, spacing, etc.) DOIVENT dériver
 /// des tokens définis ici. AUCUNE duplication, AUCUNE définition locale.
 ///
-/// 📋 Structure:
-///   - Role-based colors ($role-color-tokens) - CANONICAL pour tous les rôles
-///   - Gradients (UI, badge)
-///   - Opacités (alpha values)
-///   - Z-index scale
-///   - Autres tokens globaux
+/// 📋 ARCHITECTURE HYBRID Phase 6 + Legacy (Décembre 2024):
+///
+/// ✅ PHASE 6 MIGRÉ (Wrappers intelligents avec fallback):
+///   - Spacing → spacing() lit Semantics → Primitives → Legacy $spacing-tokens
+///   - Radius → radius() lit Semantics → Primitives → Legacy $radius-tokens
+///   - Shadows → shadow() lit Semantics → Primitives → Legacy $shadow-tokens
+///   - Couleurs sémantiques → semantic/text/surface() lit Semantics → Legacy
+///
+/// ⚠️ LEGACY ACTIF (Pas de wrapper Phase 6, accès direct):
+///   - Palettes couleurs ($blue-palette-tokens, etc.) → blue(500), red(600), etc.
+///   - Role colors ($role-color-tokens) → role-color('admin'), gradient()
+///   - Typography ($font-size-tokens, etc.) → font-size('xl'), font-weight('bold')
+///   - Sizes ($size-tokens) → size('400'), size('modal-width-md')
+///   - Motion ($motion-tokens) → timing('fast'), easing('smooth')
+///   - Border-width ($border-width-tokens) → border-width('medium')
+///   - Z-index ($z-index-tokens) → z-index('modal')
+///   - Opacity ($opacity-tokens) → opacity('half')
+///   - A11y ($a11y-tokens) → a11y('min-touch-target')
 ///
 /// 🔴 RÈGLE STRICTE:
-///   1. Toutes les couleurs de rôles DOIVENT venir de $role-color-tokens (ici)
-///   2. _colors.scss NE DOIT PAS redéfinir $role-colors (deprecated - see note below)
-///   3. _variables.scss NE DOIT PAS faire de shadow copies (use functions only)
-///   4. Components DOIVENT utiliser var(--color-admin) ou role-color() function
-///
-/// 📚 Exemple usage:
-///   - Sass: $admin-color: map-get(map-get($role-color-tokens, 'admin'), 'base');
-///   - CSS:  background: var(--color-admin);
-///   - Function: @function role-color($role) { ... lire depuis ici ... }
+///   1. $spacing-tokens, $radius-tokens, $shadow-tokens → GARDER (fallback wrappers)
+///   2. Palettes couleurs → GARDER (blue(), red(), etc. fonctions actives)
+///   3. Legacy tokens → GARDER jusqu'à migration Phase 6+
+///   4. Components DOIVENT utiliser fonctions (pas accès direct aux maps)
 /// ============================================================================
 
 // =============================================================================
