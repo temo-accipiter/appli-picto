@@ -1,5 +1,27 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// USER MENU COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+//    - spacing('xs'/'sm'/'md'/'xl'/'1') → Primitives Phase 6 ✅
+//    - surface('soft'/'overlay'/'bg'/'border'/'hover') → Semantics Phase 6 ✅
+//    - radius('full'/'lg'/'md') → Primitives Phase 6 (50%/20px/12px) ✅
+//    - shadow('elevation-sm'/'elevation-lg') → Primitives Phase 6 ✅
+//    - text('muted') → Semantics Phase 6 ✅
+//    - semantic('error'/'warning'/'info', all variants) → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('avatar-md'/'touch-target-min'/'320'/'4'/'64'/'icon-sm') → Legacy support actif
+//    - font-weight('bold') → Legacy support actif
+//    - font-size('sm'/'base'/'lg') → Legacy support actif
+//    - z-index('tooltip') → Legacy support actif
+//    - border-width('thin') → Legacy support actif
+//    - color('base') → Legacy support actif
+//    - a11y('focus-ring-width') → Legacy support actif
+// ============================================================================
+
 .user-menu-trigger {
   border: none;
   background: transparent;

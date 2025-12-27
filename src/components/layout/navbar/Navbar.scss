@@ -1,5 +1,28 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// NAVBAR COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/timing/respond-to avec fallback
+//    - spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6 ✅
+//    - surface('bg'/'border'/'hover') → Semantics Phase 6 ✅
+//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - radius('md'/'sm'/'full') → Primitives Phase 6 (12px/6px/50%) ✅
+//    - text('invert') → Semantics Phase 6 ✅
+//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - transition-smooth → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - z-index('modal') → Legacy support actif
+//    - size('64'/'avatar-md') → Legacy support actif
+//    - font-size('sm'/'2xl'/'base') → Legacy support actif
+//    - font-weight('medium'/'bold') → Legacy support actif
+//    - border-width('thin'/'base') → Legacy support actif
+//    - color('base'/'dark') → Legacy support actif
+//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
+// ============================================================================
+
 .navbar {
   position: fixed;
   top: 0;

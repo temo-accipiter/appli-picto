@@ -1,5 +1,25 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// SETTINGS MENU COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/timing/respond-to avec fallback
+//    - spacing('md'/'sm'/'xs'/'2xl') → Primitives Phase 6 ✅
+//    - surface('soft'/'hover'/'border') → Semantics Phase 6 ✅
+//    - radius('md'/'lg'/'xs') → Primitives Phase 6 (12px/20px/3px) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - text() → Semantics Phase 6 ✅
+//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - size('touch-target-min'/'24'/'300'/'4'/'100') → Legacy support actif
+//    - border-width('thin'/'base') → Legacy support actif
+//    - color('base') → Legacy support actif
+//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
+//    - font-weight('semibold') → Legacy support actif
+// ============================================================================
+
 .settings-menu {
   display: inline-block;
 

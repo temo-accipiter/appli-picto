@@ -1,5 +1,24 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// BOTTOM NAV COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/timing/respond-to avec fallback
+//    - spacing('md'/'sm') → Primitives Phase 6 ✅
+//    - surface('bg'/'hover'/'border') → Semantics Phase 6 ✅
+//    - radius('sm') → Primitives Phase 6 (6px) ✅
+//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
+//    - easing('ease-out') → Primitives Phase 6 ✅
+//    - safe-transition() → Mixin Phase 6 ✅
+//    - respond-to() → Mixin responsive Phase 6 ✅
+//    - z-index('modal') → Legacy support actif
+//    - size('2'/'touch-target-min') → Legacy support actif
+//    - border-width('thin'/'base') → Legacy support actif
+//    - color('base'/'dark') → Legacy support actif
+//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
+// ============================================================================
+
 /**
  * BottomNav - Responsive navbar with context-aware positioning
  *
