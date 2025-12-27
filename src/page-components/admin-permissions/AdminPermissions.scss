@@ -1755,7 +1755,7 @@
   }
 }
 
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .admin-permissions-page {
     padding: spacing('16');
 
@@ -1825,7 +1825,7 @@
 }
 
 /* Responsive design */
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .permissions-table-container {
     margin: spacing('16') 0;
   }
@@ -2055,7 +2055,7 @@
 }
 
 /* Responsive pour les contrôles de permissions */
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .permission-actions {
     grid-template-columns: 1fr;
   }
@@ -2568,7 +2568,7 @@
 }
 
 /* Responsive pour l'historique */
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .history-tab {
     .history-controls .filters-grid {
       grid-template-columns: 1fr;
@@ -2593,7 +2593,7 @@
 }
 
 /* Responsive pour le formulaire de fonctionnalités */
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .permissions-header {
     flex-direction: column;
     gap: spacing('md');
@@ -2764,7 +2764,7 @@
 }
 
 /* Responsive pour l'onglet Logs */
-@media (max-width: breakpoint(md) - 1px) {
+@media (max-width: breakpoint-max('md')) {
   .logs-tab {
     .logs-filters {
       .filter-buttons {

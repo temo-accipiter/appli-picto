@@ -41,6 +41,20 @@
   @return map.get($breakpoint-tokens, $name);
 }
 
+/// Récupère une valeur de breakpoint max (breakpoint - 1px) pour media queries max-width
+/// @param {String} $name - Nom du breakpoint (sm, md, lg, xl, xxl)
+/// @return {Number} Valeur du breakpoint - 1px
+/// @example
+///   // Media query "jusqu'à juste avant tablette"
+///   @media (max-width: breakpoint-max('md')) { ... } // max-width: 767px
+@function breakpoint-max($name) {
+  @if not map.has-key($breakpoint-tokens, $name) {
+    @error "Breakpoint '#{$name}' not found in $breakpoint-tokens. Available keys: #{map.keys($breakpoint-tokens)}";
+  }
+  $value: map.get($breakpoint-tokens, $name);
+  @return $value - 1px;
+}
+
 /// ============================================================================
 /// MIXINS
 /// ============================================================================
