@@ -1,5 +1,18 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// DEMO SIGNED IMAGE COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers radius/surface/semantic/text/spacing avec fallback
+//    - radius('md'/'rounded-6px'/'full') → Primitives Phase 6 (12px/6px/50%) ✅
+//    - surface('border'/'soft') → Semantics Phase 6 (#e2e8f0/#f1f5f9) ✅
+//    - semantic('error', variants) → Semantics Phase 6 ✅
+//    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+//    - spacing('xs') → Primitives Phase 6 (4px) ✅
+//    - Mobile-first responsive avec respond-to() ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 .demo-signed-image {
   object-fit: cover;
   border-radius: radius('md');

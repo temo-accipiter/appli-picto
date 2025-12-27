@@ -1,6 +1,18 @@
 // src/components/features/recompenses/recompenses-edition/RecompensesEdition.scss
-// Styles édition récompenses (TSA-friendly : pastel, calm)
 @use '@styles/abstracts' as *;
+
+// ============================================================================
+// RECOMPENSES EDITION COMPONENT
+// ============================================================================
+// Styles édition récompenses (TSA-friendly : pastel, calm)
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/semantic/surface/text avec fallback
+//    - spacing('md'/'lg'/'sm'/'16') → Primitives Phase 6 (16px/24px/8px/16px) ✅
+//    - radius('lg'/'md') → Primitives Phase 6 (20px/12px) ✅
+//    - semantic('info'/'info-primary', variants) → Semantics Phase 6 ✅
+//    - surface('soft'/'border') → Semantics Phase 6 (#f1f5f9/#e2e8f0) ✅
+//    - text('default'/'light') → Semantics Phase 6 (#1e293b/light variant) ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
 
 .checklist-recompenses {
   display: flex;

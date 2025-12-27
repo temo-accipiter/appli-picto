@@ -1,6 +1,19 @@
 // src/components/shared/search-input/SearchInput.scss
 @use '@styles/abstracts' as *;
+
+// ============================================================================
+// SEARCH INPUT COMPONENT
+// ============================================================================
 // Styles TSA-friendly pour input de recherche avec debounce
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/text/surface/radius avec fallback
+//    - spacing('sm'/'xl'/'lg') → Primitives Phase 6 (8px/32px/24px) ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - surface('bg'/'border') → Semantics Phase 6 (#ffffff/#e2e8f0) ✅
+//    - radius('md'/'full') → Primitives Phase 6 (12px/50%) ✅
+//    - TSA-friendly : prefers-reduced-motion support ✅
+//    - Note: utilise gray() direct lignes 49 et 75 (sera refactoré Phase 7)
+//    - Autres tokens : Legacy support actif
+// ============================================================================
 
 .search-input {
   position: relative;

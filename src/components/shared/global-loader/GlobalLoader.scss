@@ -1,5 +1,17 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// GLOBAL LOADER OVERLAY COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers surface/spacing/radius/text avec fallback
+//    - surface('overlay') → Semantics Phase 6 (rgba overlay) ✅
+//    - spacing('lg'/'sm') → Primitives Phase 6 (24px/8px) ✅
+//    - radius('full') → Primitives Phase 6 (50%) ✅
+//    - text() → Semantics Phase 6 (#1e293b) ✅
+//    - TSA-friendly : prefers-reduced-motion support ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 .global-loader-overlay {
   position: fixed;
   inset: 0;

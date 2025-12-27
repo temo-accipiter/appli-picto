@@ -11,6 +11,13 @@
 /// - WCAG 2.2 AA compliant (contraste, clarté visuelle)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/semantic/text avec fallback
+///    - spacing('md'/'12'/'4') → Primitives Phase 6 (16px/12px/16px) ✅
+///    - radius('md'/'sm') → Primitives Phase 6 (12px/6px) ✅
+///    - semantic('info'/'success', variants) → Semantics Phase 6 ✅
+///    - text('muted') → Semantics Phase 6 (#64748b) ✅
+///    - tsa-pastel('info-soft') → Legacy TSA support actif
+///    - Autres tokens : Legacy support actif
 /// ============================================================================
 
 .upload-progress {

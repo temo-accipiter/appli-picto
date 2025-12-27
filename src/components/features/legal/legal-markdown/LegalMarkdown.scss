@@ -1,5 +1,18 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// LEGAL CONTENT MARKDOWN COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/semantic/radius/surface/text avec fallback
+//    - spacing('24'/'20'/'sm'/'md'/'4'/'12'/'22'/'2'/'6') → Primitives Phase 6 ✅
+//      (24px/20px/8px/16px/16px/12px/22px/8px/6px)
+//    - semantic('info-primary') → Semantics Phase 6 ✅
+//    - radius('sm') → Primitives Phase 6 (6px) ✅
+//    - surface('soft'/'border') → Semantics Phase 6 (#f1f5f9/#e2e8f0) ✅
+//    - text('default'/'muted') → Semantics Phase 6 (#1e293b/#64748b) ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 .legal-content {
   max-width: size('container-md');
   margin: 0 auto;

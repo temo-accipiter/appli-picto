@@ -1,5 +1,17 @@
 @use '@styles/abstracts' as *;
 
+// ============================================================================
+// DELETE ACCOUNT GUARD COMPONENT
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/text/radius/semantic avec fallback
+//    - spacing('sm'/'md'/'2'/'4') → Primitives Phase 6 (8px/16px/8px/16px) ✅
+//    - surface('bg'/'border'/'surface') → Semantics Phase 6 (#ffffff/#e2e8f0/#f8fafc) ✅
+//    - text('muted') → Semantics Phase 6 (#64748b) ✅
+//    - radius('lg'/'rounded-10px') → Primitives Phase 6 (20px/10px) ✅
+//    - semantic('error'/'info-primary', variants) → Semantics Phase 6 ✅
+//    - Autres tokens : Legacy support actif
+// ============================================================================
+
 /* BEM-lite, doux & accessible */
 .delete-guard {
   display: grid;
