@@ -11,6 +11,14 @@
 /// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion, bounce doux)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers radius/spacing/surface/text/semantic avec fallback
+///    - radius('sm') → Primitives Phase 6 (6px) ✅
+///    - spacing('xs'/'sm'/'24') → Primitives Phase 6 (4px/8px/24px) ✅
+///    - surface('bg') → Semantics Phase 6 (#ffffff) ✅
+///    - text('invert') → Semantics Phase 6 (#ffffff) ✅
+///    - semantic('error') → Semantics Phase 6 ✅
+///    - size('icon-xs'/'icon-sm'/'icon-md'/'icon-lg') → Legacy support actif
+///    - Mobile-first responsive avec respond-to() ✅
 /// ============================================================================
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -11,6 +11,14 @@
 /// - TSA-friendly (animations douces ≤ 0.3s, prefers-reduced-motion)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/surface/text/semantic avec fallback
+///    - spacing('xs'/'8'/'sm'/'md') → Primitives Phase 6 (4px/8px/8px/16px) ✅
+///    - radius('md'/'sm'/'lg') → Primitives Phase 6 (12px/6px/20px) ✅
+///    - surface('bg'/'border'/'hover') → Semantics Phase 6 ✅
+///    - text('muted') → Semantics Phase 6 (#64748b) ✅
+///    - semantic('error'/'success') → Semantics Phase 6 ✅
+///    - size('touch-target-min'/'icon-xl'/'icon-sm') → Legacy support actif
+///    - shadow('elevation-xs'/'elevation-md') → Legacy support actif
 /// ============================================================================
 
 .select-with-image {

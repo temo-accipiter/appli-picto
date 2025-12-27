@@ -10,6 +10,12 @@
 /// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion, scale doux)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/text/semantic avec fallback
+///    - spacing('6') → Primitives Phase 6 (6px) ✅
+///    - radius('sm') → Primitives Phase 6 (6px) ✅
+///    - text() → Semantics Phase 6 (#1e293b) ✅
+///    - semantic('error', 'bg') → Semantics Phase 6 ✅
+///    - size('icon-sm') → Legacy support actif
 /// ============================================================================
 
 .button-delete {
