@@ -35,29 +35,19 @@ export default function FloatingTimeTimer({
     return 400 // Desktop
   }, [])
 
-  // Calculer la hauteur totale du composant (cercle + boutons + gaps)
-  const getTotalHeight = useCallback(() => {
-    if (typeof window === 'undefined') return 300
-
-    const circleSize = getTimerSize() // Taille du cercle
-    const buttonsAndGap = 60 // Hauteur boutons + gap (permet au timer de toucher le bord)
-    return circleSize + buttonsAndGap
-  }, [getTimerSize])
-
   // Position par défaut (coin inférieur droit sur mobile, desktop adaptatif)
   const getDefaultPosition = useCallback(() => {
     if (typeof window === 'undefined') return { x: 20, y: 20 }
 
-    const timerWidth = getTimerSize()
-    const timerHeight = getTotalHeight()
+    const timerSize = getTimerSize()
     const margin = 20
 
     // Coin inférieur droit avec marges
     return {
-      x: window.innerWidth - timerWidth - margin,
-      y: window.innerHeight - timerHeight - margin,
+      x: window.innerWidth - timerSize - margin,
+      y: window.innerHeight - timerSize - margin,
     }
-  }, [getTimerSize, getTotalHeight])
+  }, [getTimerSize])
 
   // Charger la position depuis localStorage
   const loadPosition = useCallback(() => {
@@ -129,11 +119,11 @@ export default function FloatingTimeTimer({
       const newX = e.clientX - dragOffset.x
       const newY = e.clientY - dragOffset.y
 
-      // Contraintes : garder le timer entièrement dans l'écran (y compris boutons)
-      const timerWidth = getTimerSize()
-      const timerHeight = getTotalHeight()
-      const maxX = window.innerWidth - timerWidth
-      const maxY = window.innerHeight - timerHeight
+      // Contraintes : garder le timer entièrement dans l'écran
+      // Le timer est carré, donc même taille pour largeur et hauteur
+      const timerSize = getTimerSize()
+      const maxX = window.innerWidth - timerSize
+      const maxY = window.innerHeight - timerSize
 
       const constrainedPos = {
         x: Math.max(0, Math.min(newX, maxX)),
@@ -155,14 +145,7 @@ export default function FloatingTimeTimer({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [
-    isDragging,
-    dragOffset,
-    savePosition,
-    position,
-    getTimerSize,
-    getTotalHeight,
-  ])
+  }, [isDragging, dragOffset, savePosition, position, getTimerSize])
 
   // Gérer le déplacement (touch)
   useEffect(() => {
@@ -176,11 +159,11 @@ export default function FloatingTimeTimer({
       const newX = touch.clientX - dragOffset.x
       const newY = touch.clientY - dragOffset.y
 
-      // Contraintes : garder le timer entièrement dans l'écran (y compris boutons)
-      const timerWidth = getTimerSize()
-      const timerHeight = getTotalHeight()
-      const maxX = window.innerWidth - timerWidth
-      const maxY = window.innerHeight - timerHeight
+      // Contraintes : garder le timer entièrement dans l'écran
+      // Le timer est carré, donc même taille pour largeur et hauteur
+      const timerSize = getTimerSize()
+      const maxX = window.innerWidth - timerSize
+      const maxY = window.innerHeight - timerSize
 
       const constrainedPos = {
         x: Math.max(0, Math.min(newX, maxX)),
@@ -202,14 +185,7 @@ export default function FloatingTimeTimer({
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [
-    isDragging,
-    dragOffset,
-    savePosition,
-    position,
-    getTimerSize,
-    getTotalHeight,
-  ])
+  }, [isDragging, dragOffset, savePosition, position, getTimerSize])
 
   // Gérer la fermeture - décoche le time timer dans les paramètres
   const handleClose = () => {
@@ -314,6 +290,7 @@ export default function FloatingTimeTimer({
         <TimeTimer
           compact={!isFullscreen}
           hideLabel={isFullscreen}
+          hideSettings={isFullscreen}
           {...(onComplete && { onComplete })}
         />
       </div>

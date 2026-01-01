@@ -63,6 +63,7 @@ interface TimeTimerProps {
   initialDuration?: number
   onComplete?: () => void
   hideLabel?: boolean // Masquer le label "/ X min" (utile en fullscreen)
+  hideSettings?: boolean // Masquer le bouton réglages (utile en fullscreen)
 }
 
 /**
@@ -72,12 +73,14 @@ interface TimeTimerProps {
  * @param compact - Mode compact pour affichage à côté d'autres composants
  * @param initialDuration - Durée initiale en minutes (optionnel)
  * @param onComplete - Callback appelé quand le timer se termine
+ * @param hideSettings - Masquer le bouton réglages (mode fullscreen)
  */
 export default function TimeTimer({
   compact = false,
   initialDuration = 10,
   onComplete,
   hideLabel = false,
+  hideSettings = false,
 }: TimeTimerProps) {
   const { t } = useI18n()
 
@@ -508,15 +511,17 @@ export default function TimeTimer({
           {!compact && <span>{t('timeTimer.reset')}</span>}
         </button>
 
-        <button
-          className="time-timer__btn time-timer__btn--secondary skip-min-touch-target"
-          onClick={() => setShowSettings(!showSettings)}
-          aria-label={t('timeTimer.settings')}
-          aria-expanded={showSettings}
-        >
-          <span className="time-timer__icon">⚙</span>
-          {!compact && <span>{t('timeTimer.settings')}</span>}
-        </button>
+        {!hideSettings && (
+          <button
+            className="time-timer__btn time-timer__btn--secondary skip-min-touch-target"
+            onClick={() => setShowSettings(!showSettings)}
+            aria-label={t('timeTimer.settings')}
+            aria-expanded={showSettings}
+          >
+            <span className="time-timer__icon">⚙</span>
+            {!compact && <span>{t('timeTimer.settings')}</span>}
+          </button>
+        )}
       </div>
 
       {/* Modal de réglages */}

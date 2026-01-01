@@ -150,26 +150,26 @@
 
     // Couleurs macOS (via primitives pour cohérence design system)
     &--close {
-      background: primitive('red-500'); // Rouge macOS
+      background: primitive('error', 500); // Rouge macOS
 
       &:hover {
-        background: primitive('red-600'); // Rouge hover plus foncé
+        background: primitive('error', 600); // Rouge hover plus foncé
       }
     }
 
     &--minimize {
-      background: primitive('yellow-500'); // Jaune macOS
+      background: primitive('warning', 400); // Jaune-orange macOS
 
       &:hover {
-        background: primitive('orange-500'); // Jaune hover vers orange
+        background: primitive('warning', 500); // Orange hover
       }
     }
 
     &--fullscreen {
-      background: primitive('green-500'); // Vert macOS
+      background: primitive('success', 500); // Vert macOS
 
       &:hover {
-        background: primitive('green-600'); // Vert hover plus foncé
+        background: primitive('success', 600); // Vert hover plus foncé
       }
     }
   }
