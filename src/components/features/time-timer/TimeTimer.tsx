@@ -379,7 +379,9 @@ export default function TimeTimer({
   // Ainsi le blanc apparaît progressivement de 0° (haut) vers la droite
   const elapsedAngle = 360 - angle
   const redDiskPath =
-    angle > 0 ? describeArc(centerX, centerY, diskRadius, elapsedAngle, 360) : ''
+    angle > 0
+      ? describeArc(centerX, centerY, diskRadius, elapsedAngle, 360)
+      : ''
 
   // Numéros autour du cadran (0, 5, 10, 15...60)
   const timeMarkers = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]

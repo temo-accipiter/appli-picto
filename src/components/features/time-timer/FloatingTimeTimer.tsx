@@ -23,33 +23,29 @@ export default function FloatingTimeTimer({
   const { setShowTimeTimer } = useDisplay()
 
   // Vérifier le rôle de l'utilisateur - ne pas afficher pour les visiteurs
-  const { role, ready, isVisitor } = useSimpleRole()
-
-  // Ne pas afficher le timer pour les visiteurs
-  if (!ready) return null // Attendre le chargement du rôle
-  if (isVisitor) return null // Masquer pour les visiteurs
+  const { ready, isVisitor } = useSimpleRole()
 
   // Calculer la taille du timer selon la largeur de l'écran (responsive)
-  const getTimerSize = () => {
+  const getTimerSize = useCallback(() => {
     if (typeof window === 'undefined') return 240
 
     const width = window.innerWidth
     if (width < 768) return 240 // Mobile
     if (width < 1024) return 300 // Tablette
     return 400 // Desktop
-  }
+  }, [])
 
   // Calculer la hauteur totale du composant (cercle + boutons + gaps)
-  const getTotalHeight = () => {
+  const getTotalHeight = useCallback(() => {
     if (typeof window === 'undefined') return 300
 
     const circleSize = getTimerSize() // Taille du cercle
     const buttonsAndGap = 60 // Hauteur boutons + gap (permet au timer de toucher le bord)
     return circleSize + buttonsAndGap
-  }
+  }, [getTimerSize])
 
   // Position par défaut (coin inférieur droit sur mobile, desktop adaptatif)
-  const getDefaultPosition = () => {
+  const getDefaultPosition = useCallback(() => {
     if (typeof window === 'undefined') return { x: 20, y: 20 }
 
     const timerWidth = getTimerSize()
@@ -61,10 +57,10 @@ export default function FloatingTimeTimer({
       x: window.innerWidth - timerWidth - margin,
       y: window.innerHeight - timerHeight - margin,
     }
-  }
+  }, [getTimerSize, getTotalHeight])
 
   // Charger la position depuis localStorage
-  const loadPosition = () => {
+  const loadPosition = useCallback(() => {
     if (typeof window === 'undefined') return getDefaultPosition()
     const saved = localStorage.getItem('timeTimer_position')
     if (saved) {
@@ -75,7 +71,7 @@ export default function FloatingTimeTimer({
       }
     }
     return getDefaultPosition()
-  }
+  }, [getDefaultPosition])
 
   const [position, setPosition] = useState(loadPosition())
   const [isDragging, setIsDragging] = useState(false)
@@ -159,7 +155,14 @@ export default function FloatingTimeTimer({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, dragOffset, savePosition, position])
+  }, [
+    isDragging,
+    dragOffset,
+    savePosition,
+    position,
+    getTimerSize,
+    getTotalHeight,
+  ])
 
   // Gérer le déplacement (touch)
   useEffect(() => {
@@ -199,7 +202,14 @@ export default function FloatingTimeTimer({
       document.removeEventListener('touchmove', handleTouchMove)
       document.removeEventListener('touchend', handleTouchEnd)
     }
-  }, [isDragging, dragOffset, savePosition, position])
+  }, [
+    isDragging,
+    dragOffset,
+    savePosition,
+    position,
+    getTimerSize,
+    getTotalHeight,
+  ])
 
   // Gérer la fermeture - décoche le time timer dans les paramètres
   const handleClose = () => {
@@ -240,6 +250,10 @@ export default function FloatingTimeTimer({
   ]
     .filter(Boolean)
     .join(' ')
+
+  // Ne pas afficher le timer pour les visiteurs (après tous les hooks)
+  if (!ready) return null // Attendre le chargement du rôle
+  if (isVisitor) return null // Masquer pour les visiteurs
 
   return (
     <div
