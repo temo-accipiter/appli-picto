@@ -192,6 +192,15 @@ input[type='radio'] {
   // Add padding to reach minimum if needed
 }
 
+/// Exception opt-out : Désactiver min-width/min-height pour composants spécifiques
+/// ⚠️ UTILISER AVEC PRÉCAUTION : Réservé aux cas exceptionnels où design
+/// compact est nécessaire (ex: boutons icônes Time Timer, badges compacts).
+/// TOUJOURS vérifier que l'accessibilité tactile reste acceptable (min 40px recommandé).
+.skip-min-touch-target {
+  min-width: unset !important;
+  min-height: unset !important;
+}
+
 // =============================================================================
 // REDUCED MOTION - Accessibility first
 // =============================================================================

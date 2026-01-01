@@ -7,9 +7,8 @@ import { usePathname } from 'next/navigation'
 export default function PublicLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
 
-  // Afficher la navbar seulement sur time-timer (pas sur /tableau = zen mode)
-  const showNavbarRoutes = ['/time-timer']
-  const showNavbar = showNavbarRoutes.some(route => pathname.startsWith(route))
+  // Navbar masquée sur toutes les routes publiques (zen mode TSA-optimized)
+  const showNavbar = false
 
   // Masquer le footer sur /tableau (zen mode TSA-optimized)
   const showFooter = pathname !== '/tableau'

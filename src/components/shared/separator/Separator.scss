@@ -10,14 +10,14 @@
 // ============================================================================
 
 .separator {
-  margin: spacing('xl') 0;           // Phase 6: 32px (primitive)
-  height: size('2');                  // Legacy support
+  margin: spacing('xl') 0; // Phase 6: 32px (primitive)
+  height: size('2'); // Legacy support
   width: 100%;
-  background-color: color('base');    // Legacy support
+  background-color: color('base'); // Legacy support
   background-size: 200% auto;
   animation: shimmer timing('slower') linear infinite; // Legacy support
-  border-radius: radius('xs');        // Phase 6: 4px (primitive)
-  opacity: opacity('half');           // Legacy support
+  border-radius: radius('xs'); // Phase 6: 4px (primitive)
+  opacity: opacity('half'); // Legacy support
 }
 
 /* Animation douce type lumière qui glisse */

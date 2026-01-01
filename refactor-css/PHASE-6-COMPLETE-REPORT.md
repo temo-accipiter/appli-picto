@@ -31,6 +31,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 ### Fichiers Créés/Modifiés
 
 **Nouveau système Phase 6** :
+
 - `src/styles/abstracts/_primitives.scss` ⭐ NOUVEAU (palettes Slate/Brand, grille 4px)
 - `src/styles/abstracts/_semantics.scss` ⭐ NOUVEAU (spacing/color/radius/shadow semantics)
 - `src/styles/abstracts/_spacing.scss` - Refactorisé avec wrapper intelligent
@@ -40,6 +41,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 - `src/styles/abstracts/_index.scss` - Feature flag `$ENABLE_LEGACY_SUPPORT: true`
 
 **Tous les composants** (76 fichiers) :
+
 - Headers de documentation Phase 6 ajoutés
 - Migration vers tokens Phase 6 (spacing, colors, radius, shadows, motion)
 - Fallback legacy pour tokens structurels (size, font-size, z-index, etc.)
@@ -53,6 +55,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Date** : Début décembre 2024
 
 **Travaux réalisés** :
+
 - Création fichier `_primitives.scss` avec palettes Slate/Brand/États
 - Grille 4px stricte (4, 8, 12, 16, 20, 24, 32, 40, 48, etc.)
 - Radius adoucis TSA-friendly (6px, 12px, 20px au lieu de 4px, 8px, 16px)
@@ -68,6 +71,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Date** : Décembre 2024
 
 **Travaux réalisés** :
+
 - Refactorisation `spacing()` avec fallback intelligent vers legacy
 - Refactorisation `color()`, `semantic()`, `surface()`, `text()` avec fallback
 - Refactorisation `radius()` avec fallback
@@ -75,6 +79,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 - Feature flag `$ENABLE_LEGACY_SUPPORT: true` dans `_index.scss`
 
 **Logique Fallback** :
+
 ```scss
 @function spacing($key) {
   // 1. Essayer semantics Phase 6
@@ -105,6 +110,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Date** : Décembre 2024
 
 **Composants migrés** (6 simples) :
+
 - FloatingPencil.scss
 - Button.scss
 - ButtonClose.scss
@@ -113,6 +119,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 - Input.scss
 
 **Méthode** :
+
 1. Ajout header de documentation Phase 6 en haut de chaque fichier
 2. Documentation des tokens utilisés (Phase 6 ✅ vs Legacy actif)
 3. Build validation après chaque migration
@@ -127,6 +134,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Date** : Décembre 2024
 
 **Composants migrés** (12 moyens) :
+
 - Toast.scss
 - Loader.scss
 - Select.scss
@@ -151,6 +159,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Composants migrés** : 13/13 fichiers ui/ (100%)
 
 **Méthode batch par batch** :
+
 - Batch 1 : 6 petits (21-66 lignes)
 - Batch 2 : 5 moyens (101-183 lignes)
 - Batch 3 : 2 gros (220-334 lignes)
@@ -168,6 +177,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Composants migrés** : 29/29 fichiers shared/ (100%)
 
 **Méthode batch par batch** :
+
 - Batch 1 : 9 petits (20-73 lignes)
 - Batch 2 : 8 moyens (87-168 lignes)
 - Batch 3 : 7 moyens-gros (184-292 lignes)
@@ -188,6 +198,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Composants migrés** : 16/16 fichiers features/ (100%)
 
 **Méthode batch par batch** :
+
 - Batch 1 : 2 petits (21-50 lignes)
 - Batch 2 : 3 moyens (110-161 lignes)
 - Batch 3 : 3 moyens (189-273 lignes)
@@ -208,6 +219,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Composants migrés** : 5/5 fichiers layout/ (100%)
 
 **Fichiers** :
+
 - Footer.scss (62 lignes) - déjà migré précédemment
 - BottomNav.scss (128 lignes)
 - SettingsMenu.scss (163 lignes)
@@ -227,6 +239,7 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 **Composants migrés** : 13/13 fichiers page-components/ (100%)
 
 **Méthode batch par batch** :
+
 - Batch 1 : 6 petits (22-87 lignes)
 - Batch 2 : 3 moyens (141-237 lignes)
 - Batch 3 : 3 gros (320-601 lignes)
@@ -244,19 +257,20 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 
 ### ✅ Tokens Complètement Migrés vers Phase 6
 
-| Token | Source | Usage |
-|-------|--------|-------|
-| `spacing()` | Primitives Phase 6 | Grille 4px stricte (xs, sm, md, lg, xl, 4, 8, 12, 16, 20, 24, 32, 40, 48, etc.) |
-| `surface()` | Semantics Phase 6 | Couleurs de fond (bg, soft, border, hover, overlay) |
-| `text()` | Semantics Phase 6 | Couleurs de texte (default, light, muted, invert) |
-| `semantic()` | Semantics Phase 6 | États sémantiques (success, warning, error, info) avec variantes (base, light, dark, bg, border) |
-| `radius()` | Primitives Phase 6 | Radius adoucis TSA (rounded-6px, rounded-12px, rounded-20px, sm, md, lg, full) |
-| `shadow()` | Primitives Phase 6 | Élévations (elevation-sm, elevation-md, elevation-lg, focus) |
-| `timing()` | Primitives Phase 6 | Durées animations (xs: 0.1s, fast: 0.15s, base: 0.2s, lg: 0.5s) |
-| `easing()` | Primitives Phase 6 | Courbes animations (smooth, spring, ease-out) |
-| `brand()` | Semantics Phase 6 | Couleurs marque (stripe, stripe-hover) |
+| Token        | Source             | Usage                                                                                            |
+| ------------ | ------------------ | ------------------------------------------------------------------------------------------------ |
+| `spacing()`  | Primitives Phase 6 | Grille 4px stricte (xs, sm, md, lg, xl, 4, 8, 12, 16, 20, 24, 32, 40, 48, etc.)                  |
+| `surface()`  | Semantics Phase 6  | Couleurs de fond (bg, soft, border, hover, overlay)                                              |
+| `text()`     | Semantics Phase 6  | Couleurs de texte (default, light, muted, invert)                                                |
+| `semantic()` | Semantics Phase 6  | États sémantiques (success, warning, error, info) avec variantes (base, light, dark, bg, border) |
+| `radius()`   | Primitives Phase 6 | Radius adoucis TSA (rounded-6px, rounded-12px, rounded-20px, sm, md, lg, full)                   |
+| `shadow()`   | Primitives Phase 6 | Élévations (elevation-sm, elevation-md, elevation-lg, focus)                                     |
+| `timing()`   | Primitives Phase 6 | Durées animations (xs: 0.1s, fast: 0.15s, base: 0.2s, lg: 0.5s)                                  |
+| `easing()`   | Primitives Phase 6 | Courbes animations (smooth, spring, ease-out)                                                    |
+| `brand()`    | Semantics Phase 6  | Couleurs marque (stripe, stripe-hover)                                                           |
 
 **Mixins Phase 6** :
+
 - `safe-transition()` - Transitions avec prefers-reduced-motion
 - `respond-to()` - Media queries mobile-first
 - `on-event` - Hover/focus/active combinés
@@ -269,19 +283,20 @@ Migrer l'ensemble du design system SCSS d'Appli-Picto vers une architecture **Ph
 
 Ces tokens utilisent le **fallback legacy** (`$ENABLE_LEGACY_SUPPORT: true`) et ne font **pas partie** de la migration Phase 6 :
 
-| Token | Raison Conservation |
-|-------|---------------------|
-| `size()` | Dimensions structurelles (touch-target-min, icon-sm, container-lg, avatar-md, modal-width-md, etc.) |
-| `font-size()` | Échelle typographique (xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl) |
-| `font-weight()` | Poids de police (normal, medium, semibold, bold) |
-| `border-width()` | Épaisseurs bordures (thin, base, medium) |
-| `color()` | Couleurs spécifiques (base, dark, lighter) - minoritaire |
-| `z-index()` | Couches d'empilement (modal, dropdown, tooltip, fixed) |
-| `a11y()` | Tokens accessibilité (focus-ring-width, focus-ring-offset) |
-| `opacity()` | Valeurs opacité (half, 0-6, 0-8, 0-9, opaque) |
-| `line-height()` | Hauteurs de ligne (relaxed, tight, normal) |
+| Token            | Raison Conservation                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| `size()`         | Dimensions structurelles (touch-target-min, icon-sm, container-lg, avatar-md, modal-width-md, etc.) |
+| `font-size()`    | Échelle typographique (xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl)                                    |
+| `font-weight()`  | Poids de police (normal, medium, semibold, bold)                                                    |
+| `border-width()` | Épaisseurs bordures (thin, base, medium)                                                            |
+| `color()`        | Couleurs spécifiques (base, dark, lighter) - minoritaire                                            |
+| `z-index()`      | Couches d'empilement (modal, dropdown, tooltip, fixed)                                              |
+| `a11y()`         | Tokens accessibilité (focus-ring-width, focus-ring-offset)                                          |
+| `opacity()`      | Valeurs opacité (half, 0-6, 0-8, 0-9, opaque)                                                       |
+| `line-height()`  | Hauteurs de ligne (relaxed, tight, normal)                                                          |
 
 **Pourquoi conservés ?**
+
 - ✅ Tokens **structurels stables** non liés aux objectifs Phase 6
 - ✅ Migration = plusieurs heures de travail pour **aucune valeur ajoutée**
 - ✅ Coexistence **conçue pour durer** (fallback intelligent)
@@ -420,12 +435,14 @@ fb8110d - Phase 6.1 : Migration wrappers avec fallback intelligent
 **NE PAS désactiver `$ENABLE_LEGACY_SUPPORT`**
 
 **Raisons** :
+
 1. ✅ Tokens legacy (`size`, `font-size`, `z-index`, etc.) sont **légitimes**
 2. ✅ Migration = plusieurs heures pour **aucune valeur ajoutée**
 3. ✅ Coexistence **stable et performante**
 4. ✅ Phase 6 a accompli ses objectifs (couleurs, espacement, motion TSA-friendly)
 
 **Actions Phase 7** :
+
 - ✅ Nettoyer headers de commentaires (retirer "Legacy support actif")
 - ✅ Documenter architecture hybride Phase 6 + Legacy
 - ✅ Optimiser build CSS final
@@ -436,17 +453,17 @@ fb8110d - Phase 6.1 : Migration wrappers avec fallback intelligent
 
 ## 📊 Métriques Finales
 
-| Métrique | Valeur |
-|----------|--------|
-| **Fichiers migrés** | 76/76 (100%) |
-| **Lignes documentées** | +3 139 insertions |
-| **Tokens Phase 6 créés** | ~150 (primitives + semantics) |
-| **Tokens legacy conservés** | ~80 (structurels) |
-| **Commits** | 12 commits progressifs |
-| **Durée totale** | ~3 semaines (décembre 2024) |
-| **Build time moyen** | 47-95s (stable) |
-| **Breaking changes** | 0 (ZERO) |
-| **Bugs introduits** | 0 (ZERO) |
+| Métrique                    | Valeur                        |
+| --------------------------- | ----------------------------- |
+| **Fichiers migrés**         | 76/76 (100%)                  |
+| **Lignes documentées**      | +3 139 insertions             |
+| **Tokens Phase 6 créés**    | ~150 (primitives + semantics) |
+| **Tokens legacy conservés** | ~80 (structurels)             |
+| **Commits**                 | 12 commits progressifs        |
+| **Durée totale**            | ~3 semaines (décembre 2024)   |
+| **Build time moyen**        | 47-95s (stable)               |
+| **Breaking changes**        | 0 (ZERO)                      |
+| **Bugs introduits**         | 0 (ZERO)                      |
 
 ---
 

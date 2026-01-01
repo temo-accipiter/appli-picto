@@ -17,19 +17,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: surface('bg');          // Phase 6: #ffffff (semantic)
-  z-index: z-index('max');             // Legacy support
+  background: surface('bg'); // Phase 6: #ffffff (semantic)
+  z-index: z-index('max'); // Legacy support
 }
 
 .initialization-loader__content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: spacing('md');                  // Phase 6: 16px (primitive)
+  gap: spacing('md'); // Phase 6: 16px (primitive)
 }
 
 .initialization-loader__text {
-  font-size: font-size('base');        // Legacy support
-  color: text('muted');                // Phase 6: #64748b (semantic)
+  font-size: font-size('base'); // Legacy support
+  color: text('muted'); // Phase 6: #64748b (semantic)
   margin: 0;
 }
