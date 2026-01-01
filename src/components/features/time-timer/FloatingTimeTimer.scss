@@ -1,0 +1,262 @@
+// src/components/features/time-timer/FloatingTimeTimer.scss
+// Time Timer flottant et déplaçable (TSA-friendly : calme, prévisible)
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// FLOATING TIME TIMER COMPONENT
+// ============================================================================
+// Time Timer flottant avec drag & drop (mobile + desktop)
+// Position sauvegardée dans localStorage
+// Design ressemblant au Time Timer physique (carré avec bordure noire)
+// ============================================================================
+
+.floating-time-timer {
+  /* Layout & Positioning */
+  position: fixed;
+  z-index: z-index('fixed');
+  display: flex;
+  flex-direction: column;
+
+  /* Transparent wrapper - bordure et fond sont sur .time-timer */
+  background: transparent;
+
+  /* Touch-friendly */
+  touch-action: none; // Désactiver scroll/zoom pendant drag
+  user-select: none; // Empêcher sélection texte pendant drag
+  cursor: grab; // Curseur grab sur toute la surface
+
+  /* Animation douce */
+  @include safe-transition((transform), timing('fast'), easing('smooth'));
+
+  /* States */
+  &--dragging {
+    cursor: grabbing;
+    transform: scale(1.02); // Légère mise en avant pendant drag
+  }
+
+  &--minimized {
+    width: size(
+      '48'
+    ); // Icône plus grande pour meilleure visibilité (TSA-friendly)
+    height: size('48');
+    cursor: pointer;
+
+    // Style visuel pour version minimisée (ressemble au TimeTimer réduit)
+    background: semantic('info', 'bg'); // Même fond bleu clair
+    border: size('2') solid text('dark'); // Bordure noire plus fine
+    border-radius: radius('md'); // Coins arrondis
+    box-shadow: shadow('elevation-md'); // Ombre légère
+    padding: spacing('md'); // Padding augmenté pour centrer l'icône plus grande
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--fullscreen {
+    cursor: default; // Pas de drag en fullscreen
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // Fond opaque apaisant pour isolement total (TSA-friendly)
+    background: surface(
+      'page'
+    ); // Blanc cassé neutre (#f8fafc), contraste WCAG AA
+    z-index: z-index('modal'); // Au-dessus de tout (z-index modal)
+
+    // Bloquer interactions avec éléments derrière (isolement total)
+    pointer-events: auto; // Le timer reste interactif
+
+    // Ajouter un overlay opaque pour renforcer l'isolement visuel
+    &::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: surface('page'); // Fond opaque identique (#f8fafc)
+      z-index: -1; // Derrière le timer mais devant tout le reste
+      pointer-events: none; // Ne pas bloquer les clics sur le timer
+    }
+  }
+
+  /* Boutons de contrôle macOS (haut gauche, DANS la partie bleue du TimeTimer) */
+  &__window-controls {
+    position: absolute;
+    top: spacing('sm'); // Positionné dans le padding du TimeTimer
+    left: spacing('sm'); // Positionné dans le padding du TimeTimer
+    display: flex;
+    gap: spacing('4'); // Espacement très réduit
+    z-index: z-index('modal'); // Au-dessus du contenu
+  }
+
+  // Masquer les boutons en mode miniature (pas assez de place)
+  &--minimized &__window-controls {
+    display: none;
+  }
+
+  // En mode plein écran : masquer boutons rouge et jaune (seulement vert pour sortir)
+  &--fullscreen &__window-btn--close,
+  &--fullscreen &__window-btn--minimize {
+    display: none;
+  }
+
+  // En mode plein écran : agrandir le bouton vert à 2rem (32px)
+  &--fullscreen &__window-btn--fullscreen {
+    width: size('32'); // 32px = 2rem
+    height: size('32');
+
+    // Agrandir aussi l'icône proportionnellement
+    .floating-time-timer__window-btn-icon {
+      font-size: font-size('xl'); // ~20px (au lieu de xs ~10px)
+    }
+  }
+
+  &__window-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size('16'); // 16px - meilleure accessibilité tactile (TSA-friendly)
+    height: size('16');
+    border: none;
+    border-radius: radius('full'); // Cercle parfait
+    cursor: pointer;
+    font-size: font-size('xs');
+    line-height: line-height('none');
+    @include safe-transition(
+      (transform, opacity),
+      timing('fast'),
+      easing('smooth')
+    );
+
+    // Icônes cachées par défaut, visibles au hover du conteneur
+    &-icon {
+      opacity: 0;
+      font-size: font-size(
+        'xs'
+      ); // 10-11px - remplir 60-70% du cercle (10px / 16px = 62.5%)
+      font-weight: bold; // Plus visible
+      @include safe-transition(opacity, timing('fast'), easing('smooth'));
+    }
+
+    &:hover {
+      transform: scale(1.15);
+    }
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    // Couleurs macOS (via primitives pour cohérence design system)
+    &--close {
+      background: primitive('red-500'); // Rouge macOS
+
+      &:hover {
+        background: primitive('red-600'); // Rouge hover plus foncé
+      }
+    }
+
+    &--minimize {
+      background: primitive('yellow-500'); // Jaune macOS
+
+      &:hover {
+        background: primitive('orange-500'); // Jaune hover vers orange
+      }
+    }
+
+    &--fullscreen {
+      background: primitive('green-500'); // Vert macOS
+
+      &:hover {
+        background: primitive('green-600'); // Vert hover plus foncé
+      }
+    }
+  }
+
+  // Afficher les icônes au hover du timer
+  &:hover &__window-btn-icon {
+    opacity: 1;
+    color: text('muted'); // Noir semi-transparent (via tokens)
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+
+    // Cacher visuellement mais garder monté pour que le timer continue
+    &--hidden {
+      @include visually-hidden; // Mixin accessibility Phase 6 ✅
+      pointer-events: none; // Spécifique au timer (désactiver interactions)
+    }
+  }
+
+  &__minimized-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__icon {
+    font-size: font-size(
+      '5xl'
+    ); // Icône très visible en mode minimisé (TSA-friendly)
+    line-height: line-height('none');
+    color: text('default');
+  }
+
+  /* Responsive - Forme carrée garantie (seulement si NON minimisé) */
+
+  &:not(&--minimized):not(&--fullscreen) {
+    @include respond-to('mobile') {
+      // Mobile : taille carrée réduite (compact mode)
+      width: size('200');
+      height: size('200');
+      min-width: size('200');
+      min-height: size('200');
+    }
+
+    @include respond-to('md') {
+      // Tablette : taille carrée réduite (compact mode)
+      width: size('250');
+      height: size('250');
+      min-width: size('250');
+      min-height: size('250');
+    }
+
+    @include respond-to('lg') {
+      // Desktop : taille carrée réduite (normal mode)
+      width: size('300');
+      height: size('300');
+      min-width: size('300');
+      min-height: size('300');
+    }
+  }
+
+  /* Mode fullscreen : centré avec max-width/height pour rester à l&apos;écran */
+  &--fullscreen {
+    // Ajouter padding pour éviter débordement
+    padding: spacing('xl');
+
+    .time-timer {
+      max-width: 90vw; // Maximum 90% largeur écran
+      max-height: 90vh; // Maximum 90% hauteur écran
+      margin: 0 auto; // Centrer horizontalement
+    }
+  }
+}
+
+/* Accessibility (Reduced Motion) */
+@media (prefers-reduced-motion: reduce) {
+  .floating-time-timer {
+    transition: none;
+
+    &__window-btn:hover {
+      transform: none;
+    }
+
+    &--dragging {
+      transform: none;
+    }
+  }
+}

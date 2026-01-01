@@ -9,6 +9,7 @@ export { default as TrainProgressBar } from './features/taches/train-progress-ba
 
 // Time Timer
 export { default as TimeTimer } from './features/time-timer/TimeTimer'
+export { default as FloatingTimeTimer } from './features/time-timer/FloatingTimeTimer'
 
 // Recompenses
 export { default as RecompensesEdition } from './features/recompenses/recompenses-edition/RecompensesEdition'

@@ -14,10 +14,10 @@
 
 .app-footer {
   border-top: border-width('thin') solid surface('border'); // Phase 6: #e2e8f0 (semantic)
-  background: surface('bg');                                 // Phase 6: #ffffff (semantic)
-  color: text('muted');                                      // Phase 6: #64748b (semantic)
-  padding: spacing('md') spacing('lg');                      // Phase 6: 16px 24px (primitives)
-  font-size: font-size('sm');                                // Legacy support
+  background: surface('bg'); // Phase 6: #ffffff (semantic)
+  color: text('muted'); // Phase 6: #64748b (semantic)
+  padding: spacing('md') spacing('lg'); // Phase 6: 16px 24px (primitives)
+  font-size: font-size('sm'); // Legacy support
 
   .app-footer__nav {
     margin-bottom: spacing('sm');

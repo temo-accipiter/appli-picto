@@ -1,7 +1,7 @@
 @use 'sass:map';
-@use './tokens' as *;             // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
-@use 'semantics' as sem;          // Phase 6 semantics (priorité)
-@use 'primitives' as prim;        // Phase 6 primitives (si sémantique absent)
+@use './tokens' as *; // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
+@use 'semantics' as sem; // Phase 6 semantics (priorité)
+@use 'primitives' as prim; // Phase 6 primitives (si sémantique absent)
 
 // Feature flag (défini dans _index.scss)
 $ENABLE_LEGACY_SUPPORT: true !default;
@@ -305,7 +305,8 @@ $ENABLE_LEGACY_SUPPORT: true !default;
   }
 
   // 2. Fallback : Legacy tokens (Phase 5)
-  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($surface-color-tokens, $type) {
+  @else if $ENABLE_LEGACY_SUPPORT and map.has-key($surface-color-tokens, $type)
+  {
     @return map.get($surface-color-tokens, $type);
   }
 

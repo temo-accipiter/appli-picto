@@ -26,11 +26,13 @@
 ### 🎯 Pourquoi Phase 6 ?
 
 **Phase 5 (Finalisée Déc 2024)** a créé un système tokens-first solide :
+
 - ✅ 70 fichiers SCSS refactorisés
 - ✅ Zéro valeur hardcodée
 - ✅ Build stable, tests passés
 
 **Phase 6 (Déc 2025)** modernise ce système avec :
+
 - 🎨 **Redesign visuel maîtrisé** : Palettes Slate, radius adoucis TSA, grille 4px stricte
 - 📝 **Noms sémantiques** : `touch-min`, `card-padding` au lieu de `'44'`, `'lg'`
 - ♻️ **Migration progressive** : Ancien code fonctionne toujours (fallback legacy)
@@ -40,6 +42,7 @@
 **IMPORTANT** : Contrairement aux phases précédentes, Phase 6 **modifie intentionnellement l'apparence visuelle**.
 
 **Changements attendus :**
+
 - Couleurs : Passage à palettes Slate (gris plus doux)
 - Radius : 6px/12px/20px au lieu de 4px/8px/16px (plus doux, TSA-friendly)
 - Spacing : Grille 4px stricte (suppression de 14px, 18px, 22px)
@@ -70,13 +73,13 @@
 
 ### 📊 Métriques de Succès
 
-| Métrique | Avant (Phase 5) | Après (Phase 6) |
-|----------|-----------------|-----------------|
-| **Tokens spacing** | 60+ valeurs fragmentées | ~30 valeurs grille 4px + semantics |
-| **Tokens radius** | 10 valeurs | 7 valeurs harmonisées |
-| **Noms auto-documentés** | 20% (technical) | 80% (semantic) |
-| **Build time** | 65s | 65s (identique) |
-| **Visual regression** | 0% | ~10-15% (intentionnel) |
+| Métrique                 | Avant (Phase 5)         | Après (Phase 6)                    |
+| ------------------------ | ----------------------- | ---------------------------------- |
+| **Tokens spacing**       | 60+ valeurs fragmentées | ~30 valeurs grille 4px + semantics |
+| **Tokens radius**        | 10 valeurs              | 7 valeurs harmonisées              |
+| **Noms auto-documentés** | 20% (technical)         | 80% (semantic)                     |
+| **Build time**           | 65s                     | 65s (identique)                    |
+| **Visual regression**    | 0%                      | ~10-15% (intentionnel)             |
 
 ---
 
@@ -146,12 +149,12 @@ src/styles/abstracts/
 
 #### **1. Couleurs (Palettes Slate)**
 
-| Contexte | Avant (Phase 5) | Après (Phase 6) | Effet |
-|----------|-----------------|-----------------|-------|
-| **Text primaire** | `#333333` (Gris neutre) | `#1e293b` (Slate 800) | Plus profond, moderne |
-| **Text secondaire** | `#666666` | `#475569` (Slate 600) | Légèrement plus foncé |
-| **Backgrounds** | `#f7f7f7` | `#f8fafc` (Slate 50) | Plus lumineux, aéré |
-| **Borders** | `#e1e1e1` | `#e2e8f0` (Slate 200) | Quasi identique |
+| Contexte            | Avant (Phase 5)         | Après (Phase 6)       | Effet                 |
+| ------------------- | ----------------------- | --------------------- | --------------------- |
+| **Text primaire**   | `#333333` (Gris neutre) | `#1e293b` (Slate 800) | Plus profond, moderne |
+| **Text secondaire** | `#666666`               | `#475569` (Slate 600) | Légèrement plus foncé |
+| **Backgrounds**     | `#f7f7f7`               | `#f8fafc` (Slate 50)  | Plus lumineux, aéré   |
+| **Borders**         | `#e1e1e1`               | `#e2e8f0` (Slate 200) | Quasi identique       |
 
 **Impact :** Textes légèrement plus contrastés, backgrounds plus lumineux.
 
@@ -159,13 +162,13 @@ src/styles/abstracts/
 
 #### **2. Border-Radius (Adoucis TSA)**
 
-| Composant | Avant | Après | Différence |
-|-----------|-------|-------|------------|
-| **Boutons** | `8px` (md) | `6px` (sm) | ⚠️ Légèrement moins arrondi |
-| **Cards** | `16px` (lg) | `12px` (md) | ⚠️ Moins arrondi |
-| **Modals** | `16px` (lg) | `20px` (lg) | ⚠️ Plus arrondi |
-| **Inputs** | `8px` (md) | `6px` (sm) | ⚠️ Légèrement moins arrondi |
-| **Badges** | `50%` (full) | `50%` (full) | ✅ Identique |
+| Composant   | Avant        | Après        | Différence                  |
+| ----------- | ------------ | ------------ | --------------------------- |
+| **Boutons** | `8px` (md)   | `6px` (sm)   | ⚠️ Légèrement moins arrondi |
+| **Cards**   | `16px` (lg)  | `12px` (md)  | ⚠️ Moins arrondi            |
+| **Modals**  | `16px` (lg)  | `20px` (lg)  | ⚠️ Plus arrondi             |
+| **Inputs**  | `8px` (md)   | `6px` (sm)   | ⚠️ Légèrement moins arrondi |
+| **Badges**  | `50%` (full) | `50%` (full) | ✅ Identique                |
 
 **Impact :** Apparence globalement **plus douce et TSA-friendly** (moins "technique").
 
@@ -173,13 +176,13 @@ src/styles/abstracts/
 
 #### **3. Spacing (Grille 4px Stricte)**
 
-| Token Legacy | Phase 5 | Phase 6 | Migration |
-|--------------|---------|---------|-----------|
-| `spacing('14')` | 14px | ❌ Supprimé → `spacing('16')` (16px) | Arrondi à la grille 4px |
-| `spacing('18')` | 18px | ❌ Supprimé → `spacing('20')` (20px) | Arrondi à la grille 4px |
-| `spacing('22')` | 22px | ❌ Supprimé → `spacing('24')` (24px) | Arrondi à la grille 4px |
-| `spacing('md')` | 16px | 16px | ✅ Identique |
-| `spacing('lg')` | 24px | 24px | ✅ Identique |
+| Token Legacy    | Phase 5 | Phase 6                              | Migration               |
+| --------------- | ------- | ------------------------------------ | ----------------------- |
+| `spacing('14')` | 14px    | ❌ Supprimé → `spacing('16')` (16px) | Arrondi à la grille 4px |
+| `spacing('18')` | 18px    | ❌ Supprimé → `spacing('20')` (20px) | Arrondi à la grille 4px |
+| `spacing('22')` | 22px    | ❌ Supprimé → `spacing('24')` (24px) | Arrondi à la grille 4px |
+| `spacing('md')` | 16px    | 16px                                 | ✅ Identique            |
+| `spacing('lg')` | 24px    | 24px                                 | ✅ Identique            |
 
 **Impact :** Valeurs "bâtardes" supprimées, espacement légèrement ajusté (+2px en moyenne).
 
@@ -187,11 +190,11 @@ src/styles/abstracts/
 
 #### **4. Ombres (Subtiles Slate)**
 
-| Contexte | Avant (Phase 5) | Après (Phase 6) | Effet |
-|----------|-----------------|-----------------|-------|
-| **Card default** | `0 2px 6px rgba(0,0,0,0.15)` | `0 2px 4px rgba(15,23,42,0.08)` | ⚠️ Plus subtil |
-| **Card hover** | `0 8px 24px rgba(0,0,0,0.2)` | `0 8px 16px rgba(15,23,42,0.12)` | ⚠️ Plus doux |
-| **Modal** | `0 10px 40px rgba(0,0,0,0.3)` | `0 20px 40px rgba(15,23,42,0.2)` | ⚠️ Plus subtil |
+| Contexte         | Avant (Phase 5)               | Après (Phase 6)                  | Effet          |
+| ---------------- | ----------------------------- | -------------------------------- | -------------- |
+| **Card default** | `0 2px 6px rgba(0,0,0,0.15)`  | `0 2px 4px rgba(15,23,42,0.08)`  | ⚠️ Plus subtil |
+| **Card hover**   | `0 8px 24px rgba(0,0,0,0.2)`  | `0 8px 16px rgba(15,23,42,0.12)` | ⚠️ Plus doux   |
+| **Modal**        | `0 10px 40px rgba(0,0,0,0.3)` | `0 20px 40px rgba(15,23,42,0.2)` | ⚠️ Plus subtil |
 
 **Impact :** Ombres **moins agressives**, utilisation de Slate (bleu-gris) au lieu de noir pur.
 
@@ -200,15 +203,18 @@ src/styles/abstracts/
 ### 📸 Captures Attendues (Avant/Après)
 
 **Cards `.stat-card` (ImageAnalytics) :**
+
 - ✅ Padding augmenté : **16px → 24px** (plus aéré)
 - ✅ Radius adouci : **8px → 12px** (moins "tech", plus doux)
 - ✅ Ombre subtile : Slate alpha au lieu de noir alpha
 
 **Boutons :**
+
 - ✅ Radius légèrement réduit : **8px → 6px** (moins arrondi, plus moderne)
 - ✅ Padding inchangé : 8px vertical, 24px horizontal
 
 **Modals :**
+
 - ✅ Radius augmenté : **16px → 20px** (plus doux, TSA-friendly)
 - ✅ Padding inchangé : 32px
 - ✅ Ombre plus subtile
@@ -228,53 +234,93 @@ src/styles/abstracts/
 $palettes-primitives: (
   'neutral': (
     0: #ffffff,
-    50: #f8fafc,      // Slate 50
-    100: #f1f5f9,     // Slate 100
-    200: #e2e8f0,     // Borders
+    50: #f8fafc,
+    // Slate 50
+    100: #f1f5f9,
+    // Slate 100
+    200: #e2e8f0,
+    // Borders
     300: #cbd5e1,
-    400: #94a3b8,     // Text tertiaire
-    500: #64748b,     // Text secondaire (FREE base)
-    600: #475569,     // Text primaire foncé
+    400: #94a3b8,
+    // Text tertiaire
+    500: #64748b,
+    // Text secondaire (FREE base)
+    600: #475569,
+    // Text primaire foncé
     700: #334155,
-    800: #1e293b,     // Text très fort
+    800: #1e293b,
+    // Text très fort
     900: #0f172a,
   ),
-  'brand': (...),     // Bleu-violet Admin
-  'success': (...),   // Vert émeraude
-  'warning': (...),   // Orange
-  'error': (...),     // Rouge adouci TSA
-  'info': (...),      // Bleu ciel
+  'brand': (
+    ...,
+  ),
+  // Bleu-violet Admin
+  'success': (
+      ...,
+    ),
+  // Vert émeraude
+  'warning': (
+      ...,
+    ),
+  // Orange
+  'error': (
+      ...,
+    ),
+  // Rouge adouci TSA
+  'info': (
+      ...,
+    ), // Bleu ciel
 );
 
 // Grille 4px stricte
 $spacing-primitives: (
-  'xs': 0.25rem,      // 4px
-  'sm': 0.5rem,       // 8px
-  'md': 1rem,         // 16px
-  'lg': 1.5rem,       // 24px
-  'xl': 2rem,         // 32px
-  '2xl': 3rem,        // 48px
-  '3xl': 4rem,        // 64px
+  'xs': 0.25rem,
+  // 4px
+  'sm': 0.5rem,
+  // 8px
+  'md': 1rem,
+  // 16px
+  'lg': 1.5rem,
+  // 24px
+  'xl': 2rem,
+  // 32px
+  '2xl': 3rem,
+  // 48px
+  '3xl': 4rem,
 
+  // 64px
   // Valeurs spécifiques grille 4px
-  '4': 0.25rem,       // 4px
-  '6': 0.375rem,      // 6px (NOUVEAU)
-  '8': 0.5rem,        // 8px
-  '12': 0.75rem,      // 12px
-  '16': 1rem,         // 16px
-  '20': 1.25rem,      // 20px
-  '24': 1.5rem,       // 24px
-  // ... (suite grille 4px)
+  '4': 0.25rem,
+  // 4px
+  '6': 0.375rem,
+  // 6px (NOUVEAU)
+  '8': 0.5rem,
+  // 8px
+  '12': 0.75rem,
+  // 12px
+  '16': 1rem,
+  // 16px
+  '20': 1.25rem,
+  // 20px
+  '24': 1.5rem,
+  // 24px
+   // ... (suite grille 4px)
 );
 
 // Radius adoucis TSA
 $radius-primitives: (
-  'xs': 0.25rem,      // 4px
-  'sm': 0.375rem,     // 6px (TSA-friendly, avant: 4px)
-  'md': 0.75rem,      // 12px (TSA-friendly, avant: 8px)
-  'lg': 1.25rem,      // 20px (avant: 16px)
-  'xl': 1.5rem,       // 24px
-  'full': 50%,        // Circle/Pill
+  'xs': 0.25rem,
+  // 4px
+  'sm': 0.375rem,
+  // 6px (TSA-friendly, avant: 4px)
+  'md': 0.75rem,
+  // 12px (TSA-friendly, avant: 8px)
+  'lg': 1.25rem,
+  // 20px (avant: 16px)
+  'xl': 1.5rem,
+  // 24px
+  'full': 50%, // Circle/Pill
 );
 ```
 
@@ -298,72 +344,104 @@ $radius-primitives: (
 ```scss
 // Couleurs texte sémantiques
 $color-semantic-text: (
-  'primary': palette('neutral', 800),    // #1e293b
-  'secondary': palette('neutral', 600),  // #475569
-  'tertiary': palette('neutral', 400),   // #94a3b8
-  'invert': palette('neutral', 0),       // #ffffff
-  'muted': palette('neutral', 500),      // #64748b
-  'dark': palette('neutral', 900),       // #0f172a
+  'primary': palette('neutral', 800),
+  // #1e293b
+  'secondary': palette('neutral', 600),
+  // #475569
+  'tertiary': palette('neutral', 400),
+  // #94a3b8
+  'invert': palette('neutral', 0),
+  // #ffffff
+  'muted': palette('neutral', 500),
+  // #64748b
+  'dark': palette('neutral', 900), // #0f172a
 );
 
 // Couleurs surfaces sémantiques
 $color-semantic-surface: (
-  'page': palette('neutral', 50),        // #f8fafc
-  'bg': palette('neutral', 0),           // #ffffff
-  'card': palette('neutral', 0),         // #ffffff
-  'border': palette('neutral', 200),     // #e2e8f0
-  'hover': palette('neutral', 50),       // #f8fafc
+  'page': palette('neutral', 50),
+  // #f8fafc
+  'bg': palette('neutral', 0),
+  // #ffffff
+  'card': palette('neutral', 0),
+  // #ffffff
+  'border': palette('neutral', 200),
+  // #e2e8f0
+  'hover': palette('neutral', 50), // #f8fafc
 );
 
 // Spacing sémantiques (contextes métier)
 $spacing-semantic: (
-  'touch-min': spacing-primitive('44'),         // 44px WCAG AA
-  'touch-preferred': spacing-primitive('56'),   // 56px TSA
-  'page-padding': spacing-primitive('xl'),      // 32px
-  'section-gap': spacing-primitive('2xl'),      // 48px
-  'grid-gap': spacing-primitive('md'),          // 16px
-  'card-padding': spacing-primitive('lg'),      // 24px
-  'card-gap': spacing-primitive('md'),          // 16px
-  'button-padding-x': spacing-primitive('lg'),  // 24px
-  'button-padding-y': spacing-primitive('sm'),  // 8px
-  'text-gap-tight': spacing-primitive('xs'),    // 4px
-  'text-gap-normal': spacing-primitive('sm'),   // 8px
-  'heading-gap': spacing-primitive('lg'),       // 24px
+  'touch-min': spacing-primitive('44'),
+  // 44px WCAG AA
+  'touch-preferred': spacing-primitive('56'),
+  // 56px TSA
+  'page-padding': spacing-primitive('xl'),
+  // 32px
+  'section-gap': spacing-primitive('2xl'),
+  // 48px
+  'grid-gap': spacing-primitive('md'),
+  // 16px
+  'card-padding': spacing-primitive('lg'),
+  // 24px
+  'card-gap': spacing-primitive('md'),
+  // 16px
+  'button-padding-x': spacing-primitive('lg'),
+  // 24px
+  'button-padding-y': spacing-primitive('sm'),
+  // 8px
+  'text-gap-tight': spacing-primitive('xs'),
+  // 4px
+  'text-gap-normal': spacing-primitive('sm'),
+  // 8px
+  'heading-gap': spacing-primitive('lg'), // 24px
 );
 
 // Size sémantiques
 $size-semantic: (
-  'touch-min': size-primitive('touch-min'),           // 44px
-  'button-height': size-primitive('button-height'),   // 44px
-  'input-height': size-primitive('input-height'),     // 44px
-  'card-min-height': size-primitive('card-min-height'), // 140px
-  'modal-width-md': size-primitive('modal-width-md'), // 540px
-  'sidebar-width': size-primitive('sidebar-width'),   // 280px
+  'touch-min': size-primitive('touch-min'),
+  // 44px
+  'button-height': size-primitive('button-height'),
+  // 44px
+  'input-height': size-primitive('input-height'),
+  // 44px
+  'card-min-height': size-primitive('card-min-height'),
+  // 140px
+  'modal-width-md': size-primitive('modal-width-md'),
+  // 540px
+  'sidebar-width': size-primitive('sidebar-width'), // 280px
 );
 
 // Radius sémantiques
 $radius-semantic: (
-  'small': radius-primitive('sm'),      // 6px
-  'medium': radius-primitive('md'),     // 12px
-  'large': radius-primitive('lg'),      // 20px
-  'card': radius-primitive('md'),       // 12px
-  'button': radius-primitive('sm'),     // 6px
-  'input': radius-primitive('sm'),      // 6px
-  'modal': radius-primitive('lg'),      // 20px
-  'badge': radius-primitive('full'),    // 50%
+  'small': radius-primitive('sm'),
+  // 6px
+  'medium': radius-primitive('md'),
+  // 12px
+  'large': radius-primitive('lg'),
+  // 20px
+  'card': radius-primitive('md'),
+  // 12px
+  'button': radius-primitive('sm'),
+  // 6px
+  'input': radius-primitive('sm'),
+  // 6px
+  'modal': radius-primitive('lg'),
+  // 20px
+  'badge': radius-primitive('full'), // 50%
 );
 ```
 
 #### **Fonctions d'Accès**
 
 ```scss
-@function semantic-spacing($key)    // Spacing sémantique
-@function semantic-size($key)       // Size sémantique
-@function semantic-radius($key)     // Radius sémantique
-@function semantic-text($key)       // Couleur texte sémantique
-@function semantic-surface($key)    // Couleur surface sémantique
-@function semantic-feedback($key)   // Couleur feedback (success, error, etc.)
-@function semantic-role($key)       // Couleur rôle (admin, abonné, etc.)
+@function semantic-spacing($key) // Spacing sémantique
+  @function semantic-size($key) // Size sémantique
+  @function semantic-radius($key) // Radius sémantique
+  @function semantic-text($key) // Couleur texte sémantique
+  @function semantic-surface($key) // Couleur surface sémantique
+  @function semantic-feedback($key) // Couleur feedback (success, error, etc.)
+  @function semantic-role($key); // Couleur rôle (admin, abonné, etc.)
 ```
 
 ---
@@ -401,13 +479,13 @@ Les **wrappers** (`_spacing.scss`, `_colors.scss`, etc.) implémentent une logiq
 
 ### 📊 Exemples de Résolution
 
-| Appel | Résolution | Valeur Retournée | Source |
-|-------|------------|------------------|--------|
-| `spacing('card-padding')` | Semantics ✅ | `24px` | Phase 6 Semantics |
-| `spacing('md')` | Primitives ✅ | `16px` | Phase 6 Primitives |
-| `spacing('14')` | Legacy ✅ | `14px` | Phase 5 Legacy (toléré) |
-| `spacing('25')` | Legacy ✅ | `25px` | Phase 5 Legacy (toléré) |
-| `spacing('xyz')` | ❌ Erreur | N/A | Introuvable partout |
+| Appel                     | Résolution    | Valeur Retournée | Source                  |
+| ------------------------- | ------------- | ---------------- | ----------------------- |
+| `spacing('card-padding')` | Semantics ✅  | `24px`           | Phase 6 Semantics       |
+| `spacing('md')`           | Primitives ✅ | `16px`           | Phase 6 Primitives      |
+| `spacing('14')`           | Legacy ✅     | `14px`           | Phase 5 Legacy (toléré) |
+| `spacing('25')`           | Legacy ✅     | `25px`           | Phase 5 Legacy (toléré) |
+| `spacing('xyz')`          | ❌ Erreur     | N/A              | Introuvable partout     |
 
 **Résultat :** Composants NON migrés fonctionnent toujours, composants migrés utilisent nouveau design.
 
@@ -428,6 +506,7 @@ Les **wrappers** (`_spacing.scss`, `_colors.scss`, etc.) implémentent une logiq
 ### 📝 Composant Pilote : `ImageAnalytics.scss`
 
 **Pourquoi ce composant ?**
+
 - ✅ Relativement simple (110 lignes)
 - ✅ Déjà conforme tokens-first (Phase 5)
 - ✅ Utilise spacing, radius, shadows → Parfait pour tester Phase 6
@@ -438,66 +517,66 @@ Les **wrappers** (`_spacing.scss`, `_colors.scss`, etc.) implémentent une logiq
 ```scss
 // AVANT (Phase 5 Legacy)
 .image-analytics {
-  padding: spacing('xl');               // 32px
-  max-width: size('container-lg');      // 1024px
+  padding: spacing('xl'); // 32px
+  max-width: size('container-lg'); // 1024px
 
   &__title {
-    margin-bottom: spacing('24');       // 24px
-    font-size: font-size('2xl');        // 24px
+    margin-bottom: spacing('24'); // 24px
+    font-size: font-size('2xl'); // 24px
   }
 
   &__error {
-    padding: spacing('md');             // 16px
-    border-radius: radius('md');        // 8px
+    padding: spacing('md'); // 16px
+    border-radius: radius('md'); // 8px
   }
 
   &__grid {
-    gap: spacing('md');                 // 16px
+    gap: spacing('md'); // 16px
   }
 }
 
 .stat-card {
-  padding: spacing('lg');               // 24px
-  border-radius: radius('md');          // 8px
-  box-shadow: shadow('elevation-sm');   // Noir alpha 0.15
+  padding: spacing('lg'); // 24px
+  border-radius: radius('md'); // 8px
+  box-shadow: shadow('elevation-sm'); // Noir alpha 0.15
 }
 ```
 
 ```scss
 // APRÈS (Phase 6 Semantics)
 .image-analytics {
-  padding: spacing('page-padding');        // 32px (identique)
-  max-width: size('container-lg');         // 1024px (identique)
+  padding: spacing('page-padding'); // 32px (identique)
+  max-width: size('container-lg'); // 1024px (identique)
 
   &__title {
     margin-bottom: spacing('heading-gap'); // 24px (identique)
-    font-size: font-size('2xl');           // 24px (identique)
+    font-size: font-size('2xl'); // 24px (identique)
   }
 
   &__error {
-    padding: spacing('card-padding');      // ⚠️ 24px (avant: 16px, +8px)
-    border-radius: radius('medium');       // ⚠️ 12px (avant: 8px, +4px)
+    padding: spacing('card-padding'); // ⚠️ 24px (avant: 16px, +8px)
+    border-radius: radius('medium'); // ⚠️ 12px (avant: 8px, +4px)
   }
 
   &__grid {
-    gap: spacing('grid-gap');              // 16px (identique)
+    gap: spacing('grid-gap'); // 16px (identique)
   }
 }
 
 .stat-card {
-  padding: spacing('card-padding');        // ⚠️ 24px (avant: 24px, identique)
-  border-radius: radius('card');           // ⚠️ 12px (avant: 8px, +4px)
-  box-shadow: shadow('card');              // ⚠️ Slate alpha 0.08 (plus subtil)
+  padding: spacing('card-padding'); // ⚠️ 24px (avant: 24px, identique)
+  border-radius: radius('card'); // ⚠️ 12px (avant: 8px, +4px)
+  box-shadow: shadow('card'); // ⚠️ Slate alpha 0.08 (plus subtil)
 }
 ```
 
 #### **Impact Visuel Attendu**
 
-| Élément | Changement | Effet |
-|---------|------------|-------|
-| `.image-analytics__error` | Padding +8px, Radius +4px | Plus aéré, coins plus doux |
-| `.stat-card` | Radius +4px, Ombre subtile | Moins "tech", plus TSA-friendly |
-| Autres | Identique | Aucun changement |
+| Élément                   | Changement                 | Effet                           |
+| ------------------------- | -------------------------- | ------------------------------- |
+| `.image-analytics__error` | Padding +8px, Radius +4px  | Plus aéré, coins plus doux      |
+| `.stat-card`              | Radius +4px, Ombre subtile | Moins "tech", plus TSA-friendly |
+| Autres                    | Identique                  | Aucun changement                |
 
 **Résultat Global** : Interface **légèrement plus respirable et apaisante**.
 
@@ -506,6 +585,7 @@ Les **wrappers** (`_spacing.scss`, `_colors.scss`, etc.) implémentent une logiq
 ### 🔄 Ordre de Migration Recommandé
 
 **Phase 6.1 : Composants Simples (5-10 fichiers)**
+
 1. `ImageAnalytics.scss` ← Pilote
 2. `StatsCard.scss`
 3. `EmptyState.scss`
@@ -513,11 +593,13 @@ Les **wrappers** (`_spacing.scss`, `_colors.scss`, etc.) implémentent une logiq
 5. `Loading.scss`
 
 **Phase 6.2 : Composants Moyens (15-20 fichiers)**
+
 - Cards (TaskCard, RewardCard, etc.)
 - Buttons (Button, IconButton, etc.)
 - Forms (Input, Select, Checkbox, etc.)
 
 **Phase 6.3 : Composants Complexes (20+ fichiers)**
+
 - Layout (Navbar, Footer, Sidebar)
 - Pages (Login, Signup, Edition, Profil)
 - Admin (Permissions, Logs, Metrics)
@@ -563,6 +645,7 @@ Semaine 4+
 ### 🚀 Étapes de Déploiement
 
 #### **Étape 1 : Infrastructure (✅ FAIT)**
+
 - ✅ Audit tokens existants
 - ✅ Création `_primitives.scss`
 - ✅ Création `_semantics.scss`
@@ -570,17 +653,20 @@ Semaine 4+
 - ✅ Build validé (65s)
 
 #### **Étape 2 : Migration Pilote (EN COURS)**
+
 - 🔄 Migrer `ImageAnalytics.scss`
 - 🔄 Tester visuellement dans navigateur
 - 🔄 Ajuster si nécessaire
 - 🔄 Commit + PR
 
 #### **Étape 3 : Migration Progressive**
+
 - ⏳ Migrer composants par ordre (simples → complexes)
 - ⏳ Tests visuels continus
 - ⏳ Ajustements design au fil de l'eau
 
 #### **Étape 4 : Cleanup & Release**
+
 - ⏳ Documentation complète
 - ⏳ Tests E2E complets
 - ⏳ Release Phase 6 complète
@@ -594,28 +680,29 @@ Semaine 4+
 ```scss
 // ❌ AVANT (Phase 5 Legacy - technique)
 .card {
-  padding: spacing('lg');              // 24px
-  margin-bottom: spacing('xl');        // 32px
-  border-radius: radius('lg');         // 16px
-  box-shadow: shadow('elevation-sm');  // Noir alpha 0.15
-  background: surface('surface');      // #f7f7f7
-  color: text('default');              // #333333
+  padding: spacing('lg'); // 24px
+  margin-bottom: spacing('xl'); // 32px
+  border-radius: radius('lg'); // 16px
+  box-shadow: shadow('elevation-sm'); // Noir alpha 0.15
+  background: surface('surface'); // #f7f7f7
+  color: text('default'); // #333333
 }
 ```
 
 ```scss
 // ✅ APRÈS (Phase 6 Semantics - métier)
 .card {
-  padding: spacing('card-padding');    // 24px (identique)
+  padding: spacing('card-padding'); // 24px (identique)
   margin-bottom: spacing('section-gap'); // ⚠️ 48px (avant: 32px, +16px)
-  border-radius: radius('card');       // ⚠️ 12px (avant: 16px, -4px)
-  box-shadow: shadow('card');          // ⚠️ Slate alpha 0.08 (plus subtil)
+  border-radius: radius('card'); // ⚠️ 12px (avant: 16px, -4px)
+  box-shadow: shadow('card'); // ⚠️ Slate alpha 0.08 (plus subtil)
   background: semantic-surface('card'); // #ffffff (avant: #f7f7f7, plus clair)
-  color: semantic-text('primary');     // #1e293b (avant: #333333, plus foncé)
+  color: semantic-text('primary'); // #1e293b (avant: #333333, plus foncé)
 }
 ```
 
 **Impact Visuel :**
+
 - ✅ Padding identique
 - ⚠️ Margin augmenté : +16px (plus aéré)
 - ⚠️ Radius réduit : -4px (moins arrondi)
@@ -631,11 +718,11 @@ Semaine 4+
 // ❌ AVANT (Phase 5 Legacy)
 .button {
   padding: spacing('sm') spacing('lg'); // 8px 24px
-  min-height: spacing('44');            // 44px WCAG AA
-  border-radius: radius('md');          // 8px
-  font-size: font-size('base');         // 16px
-  background: color('base');            // #0077c2
-  color: text('invert');                // #ffffff
+  min-height: spacing('44'); // 44px WCAG AA
+  border-radius: radius('md'); // 8px
+  font-size: font-size('base'); // 16px
+  background: color('base'); // #0077c2
+  color: text('invert'); // #ffffff
 }
 ```
 
@@ -643,15 +730,18 @@ Semaine 4+
 // ✅ APRÈS (Phase 6 Semantics)
 .button {
   padding: spacing('button-padding-y') spacing('button-padding-x'); // 8px 24px (identique)
-  min-height: spacing('touch-min');     // 44px (identique)
-  border-radius: radius('button');      // ⚠️ 6px (avant: 8px, -2px)
-  font-size: font-size('base');         // 16px (identique)
-  background: semantic-brand('primary'); // ⚠️ #667eea (avant: #0077c2, couleur différente)
-  color: semantic-text('invert');       // #ffffff (identique)
+  min-height: spacing('touch-min'); // 44px (identique)
+  border-radius: radius('button'); // ⚠️ 6px (avant: 8px, -2px)
+  font-size: font-size('base'); // 16px (identique)
+  background: semantic-brand(
+    'primary'
+  ); // ⚠️ #667eea (avant: #0077c2, couleur différente)
+  color: semantic-text('invert'); // #ffffff (identique)
 }
 ```
 
 **Impact Visuel :**
+
 - ✅ Padding identique
 - ✅ Touch target identique
 - ⚠️ Radius légèrement réduit : -2px (moins arrondi, plus moderne)
@@ -665,11 +755,11 @@ Semaine 4+
 // ❌ AVANT (Phase 5 Legacy)
 .modal {
   width: 90vw;
-  max-width: size('modal-width');      // 540px
-  padding: spacing('modal-padding');   // 32px
-  border-radius: radius('modal');      // 16px
+  max-width: size('modal-width'); // 540px
+  padding: spacing('modal-padding'); // 32px
+  border-radius: radius('modal'); // 16px
   box-shadow: shadow('elevation-2xl'); // Noir alpha 0.3
-  background: surface('bg');           // #ffffff
+  background: surface('bg'); // #ffffff
 }
 ```
 
@@ -678,14 +768,15 @@ Semaine 4+
 .modal {
   width: 90vw;
   max-width: semantic-size('modal-width-md'); // 540px (identique)
-  padding: spacing('modal-padding');   // 32px (identique)
-  border-radius: radius('modal');      // ⚠️ 20px (avant: 16px, +4px)
-  box-shadow: shadow('modal');         // ⚠️ Slate alpha 0.2 (plus subtil)
-  background: semantic-surface('bg');  // #ffffff (identique)
+  padding: spacing('modal-padding'); // 32px (identique)
+  border-radius: radius('modal'); // ⚠️ 20px (avant: 16px, +4px)
+  box-shadow: shadow('modal'); // ⚠️ Slate alpha 0.2 (plus subtil)
+  background: semantic-surface('bg'); // #ffffff (identique)
 }
 ```
 
 **Impact Visuel :**
+
 - ✅ Width, padding identiques
 - ⚠️ Radius augmenté : +4px (plus doux, TSA-friendly)
 - ⚠️ Ombre plus subtile (Slate au lieu de noir)
@@ -702,10 +793,10 @@ Semaine 4+
 
 ```scss
 // Ancien code (Phase 5) - Fonctionne toujours
-padding: spacing('14');   // ✅ Fallback sur legacy → 14px
+padding: spacing('14'); // ✅ Fallback sur legacy → 14px
 
 // Nouveau code (Phase 6) - Nouveau design
-padding: spacing('card-padding');  // ✅ Semantics → 24px
+padding: spacing('card-padding'); // ✅ Semantics → 24px
 ```
 
 ---
@@ -713,6 +804,7 @@ padding: spacing('card-padding');  // ✅ Semantics → 24px
 #### **Q2 : Dois-je migrer tous les composants d'un coup ?**
 
 **R :** Non. La migration est **progressive et optionnelle**. Vous pouvez :
+
 - Migrer composant par composant
 - Laisser certains composants en legacy
 - Tester visuellement avant de valider
@@ -728,9 +820,9 @@ padding: spacing('card-padding');  // ✅ Semantics → 24px
 ```scss
 .component {
   // Mix ancien/nouveau - AUTORISÉ
-  padding: spacing('card-padding');  // Nouveau (24px)
-  margin: spacing('14');             // Legacy (14px) - Fonctionne
-  border-radius: radius('medium');   // Nouveau (12px)
+  padding: spacing('card-padding'); // Nouveau (24px)
+  margin: spacing('14'); // Legacy (14px) - Fonctionne
+  border-radius: radius('medium'); // Nouveau (12px)
 }
 ```
 
@@ -743,12 +835,14 @@ padding: spacing('card-padding');  // ✅ Semantics → 24px
 **R :** Oui, facilement.
 
 **Option 1 : Rollback composant** (supprimer tokens sémantiques)
+
 ```scss
 // Rollback : Remettre ancien code
-padding: spacing('lg');  // Au lieu de spacing('card-padding')
+padding: spacing('lg'); // Au lieu de spacing('card-padding')
 ```
 
 **Option 2 : Rollback complet Phase 6** (supprimer imports)
+
 ```scss
 // Dans _index.scss, commenter :
 // @forward './primitives';
@@ -756,9 +850,10 @@ padding: spacing('lg');  // Au lieu de spacing('card-padding')
 ```
 
 **Option 3 : Ajuster valeurs primitives**
+
 ```scss
 // Si 12px radius trop doux, ajuster dans _primitives.scss
-'md': 0.5rem,  // 8px au lieu de 12px
+'md':0.5rem,; // 8px au lieu de 12px
 ```
 
 ---
@@ -768,6 +863,7 @@ padding: spacing('lg');  // Au lieu de spacing('card-padding')
 **R :** Consulter `_semantics.scss` ou utiliser noms auto-documentés.
 
 **Exemples de noms clairs :**
+
 - `spacing('touch-min')` → Touch target minimum (44px)
 - `spacing('card-padding')` → Padding standard cards (24px)
 - `spacing('heading-gap')` → Gap sous headings (24px)
@@ -783,6 +879,7 @@ padding: spacing('lg');  // Au lieu de spacing('card-padding')
 #### **Problème 1 : Build cassé après ajout imports**
 
 **Symptôme :**
+
 ```
 Error: Can't find module '_primitives'
 ```
@@ -800,11 +897,13 @@ ls src/styles/abstracts/_semantics.scss
 #### **Problème 2 : Token sémantique introuvable**
 
 **Symptôme :**
+
 ```
 Error: Semantic spacing 'xyz' not found
 ```
 
 **Solution :**
+
 - Vérifier nom token dans `_semantics.scss`
 - Utiliser fallback legacy si token n'existe pas encore
 - Ajouter nouveau token sémantique si besoin
@@ -817,24 +916,27 @@ Error: Semantic spacing 'xyz' not found
 Composant visuellement très différent après migration.
 
 **Solution :**
+
 1. Comparer valeurs avant/après :
+
    ```scss
    // Avant
-   padding: spacing('lg');  // 24px
+   padding: spacing('lg'); // 24px
 
    // Après
-   padding: spacing('card-padding');  // 24px (vérifier)
+   padding: spacing('card-padding'); // 24px (vérifier)
    ```
 
 2. Si valeur différente, ajuster semantic token :
+
    ```scss
    // Dans _semantics.scss
-   'card-padding': spacing-primitive('lg'),  // Forcer 24px si besoin
+   'card-padding':spacing-primitive('lg'),; // Forcer 24px si besoin
    ```
 
 3. Si besoin, utiliser legacy temporairement :
    ```scss
-   padding: spacing('lg');  // Garder legacy si nécessaire
+   padding: spacing('lg'); // Garder legacy si nécessaire
    ```
 
 ---
@@ -874,6 +976,7 @@ Composant visuellement très différent après migration.
 ## ✅ Checklist Validation Phase 6
 
 ### Infrastructure (✅ FAIT)
+
 - [x] Audit tokens existants réalisé
 - [x] `_primitives.scss` créé (palettes Slate, grille 4px, radius 6/12/20px)
 - [x] `_semantics.scss` créé (noms métier → primitives)
@@ -882,6 +985,7 @@ Composant visuellement très différent après migration.
 - [x] Build validé (compilation réussie 65s)
 
 ### Migration Pilote (🔄 EN COURS)
+
 - [ ] `ImageAnalytics.scss` migré vers tokens sémantiques
 - [ ] Tests visuels navigateur (localhost:3000)
 - [ ] Validation changements design (radius, padding, ombres)
@@ -889,6 +993,7 @@ Composant visuellement très différent après migration.
 - [ ] Commit + PR migration pilote
 
 ### Migration Progressive (⏳ À VENIR)
+
 - [ ] Migrer 5 composants simples (StatsCard, EmptyState, etc.)
 - [ ] Migrer 15 composants moyens (Cards, Buttons, Forms)
 - [ ] Migrer 20+ composants complexes (Layout, Pages, Admin)
@@ -897,6 +1002,7 @@ Composant visuellement très différent après migration.
 - [ ] Documentation finale
 
 ### Release Phase 6 (⏳ À VENIR)
+
 - [ ] Tous composants migrés (ou migration optionnelle documentée)
 - [ ] Tests E2E passés
 - [ ] Visual regression acceptée (~10-15%)
@@ -932,8 +1038,9 @@ Composant visuellement très différent après migration.
 **Auteur** : Équipe Appli-Picto
 
 **Changelog :**
+
 - v1.0 (26 déc 2025) : Création document complet Phase 6
-- Infrastructure créée (_primitives.scss, _semantics.scss)
+- Infrastructure créée (\_primitives.scss, \_semantics.scss)
 - Wrappers intelligents avec fallback
 - Build validé (65s)
 - Prêt pour migration composant pilote

@@ -37,10 +37,11 @@
   gap: spacing('xl');
   padding: spacing('xl');
 
-  /* Appearance */
+  /* Appearance - Fond bleu avec bordure noire (Time Timer physique) */
   background: semantic('info', 'bg');
+  border: size('4') solid text('dark'); // Bordure noire épaisse
   border-radius: radius('lg');
-  box-shadow: shadow('elevation-sm');
+  box-shadow: shadow('elevation-lg'); // Ombre portée pour effet 3D
 
   /* Modifiers (BEM) */
 
@@ -53,7 +54,7 @@
 
   /* Mode compact */
   &--compact {
-    max-width: size('300');
+    //max-width: size('300');
     padding: spacing('lg');
     gap: spacing('md');
   }
@@ -66,10 +67,9 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    max-width: size('280');
-
+    max-width: 100%;
     @include when-inside('.time-timer--compact') {
-      max-width: size('160');
+      max-width: 100%;
     }
   }
 
@@ -80,15 +80,18 @@
   }
 
   &__circle-bg {
-    opacity: opacity('0-95');
+    /* Cercle de fond blanc avec bordure noire */
   }
 
-  &__circle-progress {
-    @include safe-transition(stroke, timing('base'), easing('smooth'));
+  &__red-disk {
+    /* Disque rouge secteur circulaire (temps restant) */
+    @include safe-transition(opacity, timing('base'), easing('smooth'));
+  }
 
-    @include when-inside('.time-timer--compact') {
-      stroke-width: 10; /* SVG stroke-width valeur directe */
-    }
+  &__number {
+    /* Numéros autour du cadran */
+    user-select: none;
+    pointer-events: none;
   }
 
   &__time-display {
@@ -197,23 +200,86 @@
     }
   }
 
-  /* Settings Panel */
+  /* Settings Modal */
 
-  &__settings {
-    width: 100%;
-    padding: spacing('lg');
-    background: surface('bg');
-    border-radius: radius('md');
-    border: border-width('base') solid surface('border');
-    animation: slide-up timing('base') easing('smooth');
+  &__settings-modal {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xl');
   }
 
-  &__settings-title {
-    margin: 0 0 spacing('md') 0;
-    font-size: font-size('lg');
+  &__settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('md');
+  }
+
+  &__settings-subtitle {
+    margin: 0;
+    font-size: font-size('md');
     font-weight: font-weight('semibold');
     color: text('default');
-    text-align: center;
+  }
+
+  &__settings-hint {
+    margin: 0;
+    font-size: font-size('sm');
+    color: text('light');
+    line-height: line-height('relaxed');
+
+    /* Variant info (message d'information) */
+    &--info {
+      color: semantic('info-primary');
+      font-weight: font-weight('medium');
+      padding: spacing('sm') spacing('md');
+      background: semantic('info', 'bg');
+      border-radius: radius('sm');
+      border-left: size('4') solid semantic('info-primary');
+    }
+  }
+
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: spacing('md');
+    cursor: pointer;
+    padding: spacing('md');
+    border-radius: radius('md');
+    @include safe-transition(background, timing('fast'), easing('smooth'));
+
+    &:hover {
+      background: surface('soft');
+    }
+
+    /* État désactivé (disabled) */
+    &--disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+
+      &:hover {
+        background: transparent; // Pas de hover quand disabled
+      }
+
+      .time-timer__checkbox {
+        cursor: not-allowed;
+      }
+
+      .time-timer__checkbox-text {
+        color: text('light'); // Texte grisé
+      }
+    }
+  }
+
+  &__checkbox {
+    width: size('icon-md');
+    height: size('icon-md');
+    cursor: pointer;
+  }
+
+  &__checkbox-text {
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
+    color: text('default');
   }
 
   &__preset-grid {
@@ -261,6 +327,238 @@
       }
     }
   }
+
+  /* Color Picker */
+  &__color-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: spacing('md');
+
+    @include respond-to('mobile') {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  &__color-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('xs');
+    padding: spacing('md');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md');
+    background: surface('bg');
+    cursor: pointer;
+    @include safe-transition(all, timing('fast'), easing('smooth'));
+
+    &:hover {
+      background: surface('soft');
+      border-color: semantic('info', 'border');
+      transform: translateY(-0.125rem);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @include non-invasive-focus(semantic('info-primary'));
+
+    &--selected {
+      border-color: semantic('info-primary');
+      border-width: border-width('thick');
+      background: semantic('info', 'bg');
+    }
+  }
+
+  &__color-swatch {
+    width: size('40');
+    height: size('40');
+    border-radius: radius('full');
+    border: border-width('base') solid surface('border');
+  }
+
+  &__color-label {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('default');
+  }
+
+  /* Size Selector */
+  &__size-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: spacing('md');
+
+    @include respond-to('mobile') {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__size-btn {
+    padding: spacing('md');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md');
+    background: surface('bg');
+    color: text('default');
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
+    cursor: pointer;
+    @include safe-transition(all, timing('fast'), easing('smooth'));
+
+    &:hover {
+      background: surface('soft');
+      border-color: semantic('info', 'border');
+      transform: translateY(-0.125rem);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @include non-invasive-focus(semantic('info-primary'));
+
+    &--selected {
+      background: semantic('info-primary');
+      color: text('invert');
+      border-color: transparent;
+      font-weight: font-weight('bold');
+
+      &:hover {
+        background: semantic('info', 'dark');
+      }
+    }
+  }
+
+  /* Custom Durations */
+  &__custom-durations {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('md');
+  }
+
+  &__custom-input-wrapper {
+    display: flex;
+    gap: spacing('sm');
+  }
+
+  &__custom-input {
+    flex: 1;
+    padding: spacing('md');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md');
+    background: surface('bg');
+    color: text('default');
+    font-size: font-size('base');
+    @include safe-transition(border-color, timing('fast'), easing('smooth'));
+
+    &:hover {
+      border-color: semantic('info', 'border');
+    }
+
+    &:focus {
+      outline: none;
+      border-color: semantic('info-primary');
+      box-shadow: shadow('elevation-sm');
+    }
+  }
+
+  &__add-custom-btn {
+    padding: spacing('md') spacing('lg');
+    border: none;
+    border-radius: radius('md');
+    background: semantic('info-primary');
+    color: text('invert');
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    cursor: pointer;
+    @include safe-transition(all, timing('fast'), easing('smooth'));
+
+    &:hover {
+      background: semantic('info', 'dark');
+      transform: translateY(-0.125rem);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    @include non-invasive-focus(semantic('info-primary'));
+  }
+
+  &__custom-duration-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing('sm');
+  }
+
+  &__custom-duration-item {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    padding: spacing('sm') spacing('md');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('full');
+    background: surface('soft');
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('default');
+  }
+
+  &__remove-custom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size('icon-sm');
+    height: size('icon-sm');
+    padding: 0;
+    border: none;
+    border-radius: radius('full');
+    background: transparent;
+    color: text('light');
+    cursor: pointer;
+    @include safe-transition(all, timing('fast'), easing('smooth'));
+
+    &:hover {
+      background: semantic('error', 'light');
+      color: semantic('error', 'dark');
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    @include non-invasive-focus(semantic('error'));
+  }
+
+  /* Timer Size Variations */
+  &--small {
+    .time-timer__circle-container {
+      max-width: size('200');
+    }
+
+    .time-timer__time-text {
+      font-size: font-size('3xl');
+    }
+
+    .time-timer__duration-label {
+      font-size: font-size('xs');
+    }
+  }
+
+  &--large {
+    .time-timer__circle-container {
+      max-width: size('320');
+    }
+
+    .time-timer__time-text {
+      font-size: font-size('6xl');
+    }
+
+    .time-timer__duration-label {
+      font-size: font-size('base');
+    }
+  }
 }
 
 /* Utility class */
@@ -274,12 +572,18 @@
   --color-warning: #{semantic('warning', 'base')};
   --color-danger: #{semantic('error', 'base')};
   --color-gray-light: #{surface('border')};
+
+  /* Disk colors for Time Timer */
+  --disk-color-red: #{red(500)};
+  --disk-color-blue: #{blue(500)};
+  --disk-color-green: #{green(500)};
+  --disk-color-purple: #{purple(500)};
 }
 
 /* Accessibility (Reduced Motion) */
 @media (prefers-reduced-motion: reduce) {
   .time-timer {
-    &__circle-progress,
+    &__red-disk,
     &__btn,
     &__preset-btn {
       transition: none;

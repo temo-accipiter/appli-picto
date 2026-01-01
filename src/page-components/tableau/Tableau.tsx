@@ -2,9 +2,9 @@
 
 // src/pages/tableau/Tableau.tsx
 import {
+  FloatingTimeTimer,
   SelectedRewardFloating,
   TachesDnd,
-  TimeTimer,
   TrainProgressBar,
 } from '@/components'
 
@@ -336,7 +336,7 @@ export default function TableauGrille({
       )}
 
       <section
-        className={`tableau-magique__content ${showTimeTimer ? 'tableau-magique__content--with-timer' : ''}`}
+        className="tableau-magique__content"
         aria-labelledby="tasks-heading"
       >
         <h2 id="tasks-heading" className="sr-only">
@@ -357,13 +357,10 @@ export default function TableauGrille({
             setShowModalRecompense(false)
           }}
         />
-
-        {showTimeTimer && (
-          <div className="tableau-magique__timer-container">
-            <TimeTimer compact={true} initialDuration={10} />
-          </div>
-        )}
       </section>
+
+      {/* Time Timer flottant (toujours affiché, déplaçable) */}
+      {showTimeTimer && <FloatingTimeTimer />}
 
       {showConfettis && !isDemoMode && (
         <Suspense fallback={null}>
