@@ -210,10 +210,10 @@
   &:not(&--minimized):not(&--fullscreen) {
     @include respond-to('mobile') {
       // Mobile : taille carrée 240px (aligné avec getTimerSize())
-      width: size('240');
-      height: size('240');
-      min-width: size('240');
-      min-height: size('240');
+      width: size('200');
+      height: size('200');
+      min-width: size('200');
+      min-height: size('200');
     }
 
     @include respond-to('md') {
