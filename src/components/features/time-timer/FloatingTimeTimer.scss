@@ -148,28 +148,28 @@
       transform: scale(0.9);
     }
 
-    // Couleurs macOS (via primitives pour cohérence design system)
+    // Couleurs macOS (via palettes primitives pour cohérence design system)
     &--close {
-      background: primitive('error', 500); // Rouge macOS
+      background: palette('error', 500); // Rouge macOS #ef4444
 
       &:hover {
-        background: primitive('error', 600); // Rouge hover plus foncé
+        background: palette('error', 600); // Rouge hover plus foncé
       }
     }
 
     &--minimize {
-      background: primitive('warning', 400); // Jaune-orange macOS
+      background: palette('warning', 400); // Jaune-orange macOS #fb923c
 
       &:hover {
-        background: primitive('warning', 500); // Orange hover
+        background: palette('warning', 500); // Orange hover
       }
     }
 
     &--fullscreen {
-      background: primitive('success', 500); // Vert macOS
+      background: palette('success', 500); // Vert macOS #10b981
 
       &:hover {
-        background: primitive('success', 600); // Vert hover plus foncé
+        background: palette('success', 600); // Vert hover plus foncé
       }
     }
   }
@@ -209,27 +209,27 @@
 
   &:not(&--minimized):not(&--fullscreen) {
     @include respond-to('mobile') {
-      // Mobile : taille carrée réduite (compact mode)
-      width: size('200');
-      height: size('200');
-      min-width: size('200');
-      min-height: size('200');
+      // Mobile : taille carrée 240px (aligné avec getTimerSize())
+      width: size('240');
+      height: size('240');
+      min-width: size('240');
+      min-height: size('240');
     }
 
     @include respond-to('md') {
-      // Tablette : taille carrée réduite (compact mode)
-      width: size('250');
-      height: size('250');
-      min-width: size('250');
-      min-height: size('250');
-    }
-
-    @include respond-to('lg') {
-      // Desktop : taille carrée réduite (normal mode)
+      // Tablette : taille carrée 300px (aligné avec getTimerSize())
       width: size('300');
       height: size('300');
       min-width: size('300');
       min-height: size('300');
+    }
+
+    @include respond-to('lg') {
+      // Desktop : taille carrée 400px (aligné avec getTimerSize())
+      width: size('400');
+      height: size('400');
+      min-width: size('400');
+      min-height: size('400');
     }
   }
 
