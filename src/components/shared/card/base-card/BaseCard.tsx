@@ -81,15 +81,11 @@ const BaseCard = memo(function BaseCard({
         {imageSlot && <div className="base-card__image">{imageSlot}</div>}
 
         {/* Slot actions (checkbox, delete, etc.) */}
-        {actionsSlot && (
-          <div className="base-card__actions">{actionsSlot}</div>
-        )}
+        {actionsSlot && <div className="base-card__actions">{actionsSlot}</div>}
       </div>
 
       {/* Zone contenu (label, catégorie, custom content) */}
-      {contentSlot && (
-        <div className="base-card__content">{contentSlot}</div>
-      )}
+      {contentSlot && <div className="base-card__content">{contentSlot}</div>}
     </motion.div>
   )
 })

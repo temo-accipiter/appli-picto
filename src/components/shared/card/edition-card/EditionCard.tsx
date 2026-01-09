@@ -92,9 +92,7 @@ const CardEdition = memo(function CardEdition({
       ariaLabel={`${t('card.item')} ${label}`}
       testId={labelId}
       // 🖼️ Slot image
-      imageSlot={
-        imageComponent || <ImagePreview url={image || ''} size="sm" />
-      }
+      imageSlot={imageComponent || <ImagePreview url={image || ''} size="sm" />}
       // 📝 Slot contenu (input label + select catégorie)
       contentSlot={
         <>
@@ -121,9 +119,7 @@ const CardEdition = memo(function CardEdition({
             <Select
               id={`select-categorie-${labelId}`}
               value={categorie || ''}
-              onChange={e =>
-                !disabled && onCategorieChange?.(e.target.value)
-              }
+              onChange={e => !disabled && onCategorieChange?.(e.target.value)}
               options={
                 Array.isArray(categorieOptions) && categorieOptions.length > 0
                   ? categorieOptions
@@ -147,9 +143,7 @@ const CardEdition = memo(function CardEdition({
             id={`checkbox-${labelId}`}
             checked={checked}
             onChange={() => !disabled && onToggleCheck()}
-            aria-label={
-              checked ? t('card.visible') : t('card.hidden')
-            }
+            aria-label={checked ? t('card.visible') : t('card.hidden')}
             size="md"
           />
         </>
