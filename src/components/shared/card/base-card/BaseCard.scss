@@ -148,10 +148,18 @@
     white-space: pre-wrap;
   }
 
-  /* Focus visible pour accessibility clavier */
+  /* Focus visible pour accessibility clavier (WCAG 2.2 AA - TSA CRITIQUE) */
   &:focus-within {
     box-shadow: shadow('elevation-md');
-    outline: none;
+    outline: border-width('base') solid semantic('info');
+    outline-offset: spacing('xs');
+  }
+
+  /* Focus visible explicite avec :focus-visible (navigation clavier) */
+  &:focus-visible {
+    outline: border-width('base') solid semantic('info');
+    outline-offset: spacing('xs');
+    box-shadow: shadow('elevation-md');
   }
 }
 
