@@ -65,7 +65,6 @@
     "stats:summary": "cloc src/ --exclude-dir=test,tests",
     "clean": "rm -rf node_modules .next coverage",
     "clean:all": "pnpm clean && rm -rf pnpm-lock.yaml",
-    "postinstall": "pnpm db:types || true",
     "debug:verify": "pnpm type-check && echo '✅ TypeScript passed' && pnpm lint && echo '✅ ESLint passed' && pnpm format:check && echo '✅ Prettier passed' && pnpm test:coverage && echo '✅ Tests passed' && pnpm build:prod && echo '✅ Build passed' && pnpm test:e2e && echo '✅ E2E passed'"
   },
   "dependencies": {
