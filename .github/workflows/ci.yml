@@ -77,6 +77,11 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: 💾 Restore node_modules
         uses: actions/download-artifact@v4
         with:
@@ -102,6 +107,11 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
 
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
       - name: 💾 Restore node_modules
         uses: actions/download-artifact@v4
         with:
@@ -126,6 +136,11 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
 
       - name: 💾 Restore node_modules
         uses: actions/download-artifact@v4
@@ -176,6 +191,11 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
 
       - name: 💾 Restore node_modules
         uses: actions/download-artifact@v4
@@ -238,7 +258,6 @@ jobs:
       - name: 📦 Setup pnpm & Install (Redundant but safe for E2E)
         uses: pnpm/action-setup@v4
         with:
-          version: 9
           run_install: true
 
       - name: 🎭 Install Playwright browsers
