@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { Button, ButtonClose } from '@/components'
+import { useEscapeKey, useFocusTrap, useScrollLock } from '@/hooks'
 import './Modal.scss'
 
 type ButtonVariant = 'primary' | 'secondary' | 'default' | 'danger'
@@ -53,72 +54,21 @@ export default function Modal({
     }
   }, [])
 
-  // Gérer Échap et Entrée
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (!isOpen) return
+  // Hooks réutilisables pour modal behavior
+  useEscapeKey({
+    isActive: isOpen,
+    onEscape: onClose,
+    enableEscape: closeOnEscape,
+    containerRef: modalRef,
+  })
 
-      if (e.key === 'Escape' && closeOnEscape) {
-        e.preventDefault()
-        onClose()
-      } else if (e.key === 'Enter') {
-        const active = document.activeElement
-        if (
-          modalRef.current?.contains(active) &&
-          active instanceof HTMLButtonElement
-        ) {
-          e.preventDefault()
-          active.click()
-        }
-      }
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose, closeOnEscape])
+  useScrollLock({
+    isActive: isOpen,
+    containerRef: modalRef,
+    focusSelector: '.modal__footer button:last-of-type',
+  })
 
-  // Lock scroll & focus par défaut sur le dernier bouton d'action
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-      // on cible le dernier bouton dans .modal__footer
-      const lastBtn = modalRef.current?.querySelector(
-        '.modal__footer button:last-of-type'
-      )
-      if (lastBtn instanceof HTMLElement) {
-        lastBtn.focus()
-      } else {
-        // fallback : focus sur la boîte
-        modalRef.current?.focus()
-      }
-    } else {
-      document.body.style.overflow = ''
-    }
-  }, [isOpen])
-
-  // Focus-trap Tab / Shift+Tab
-  useEffect(() => {
-    if (!isOpen) return
-    const handleTab = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return
-
-      const focusable = modalRef.current?.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      )
-      if (!focusable || focusable.length === 0) return
-
-      const first = focusable[0] as HTMLElement
-      const last = focusable[focusable.length - 1] as HTMLElement
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', handleTab)
-    return () => document.removeEventListener('keydown', handleTab)
-  }, [isOpen])
+  useFocusTrap(modalRef, isOpen)
 
   if (!isOpen || !modalRoot.current) return null
 

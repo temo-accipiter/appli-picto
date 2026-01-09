@@ -2,6 +2,7 @@
 
 import { Modal } from '@/components'
 import { useI18n } from '@/hooks'
+import './ModalQuota.scss'
 
 type ContentType = 'task' | 'reward' | 'category'
 type Period = 'total' | 'monthly'
@@ -72,39 +73,29 @@ export default function ModalQuota({
         },
       ]}
     >
-      <div className="modal__message">
-        <p>
+      <div className="modal__message modal-quota">
+        <p className="modal-quota__usage">
           <strong>
             {currentUsage} / {limit} {label} {periodLabel}
           </strong>
         </p>
 
         {contextMessage && (
-          <p style={{ marginTop: '1rem', color: 'var(--muted-foreground)' }}>
-            {contextMessage}
-          </p>
+          <p className="modal-quota__context">{contextMessage}</p>
         )}
 
-        <p style={{ marginTop: '1rem' }}>{t('quota.quotaExceededMessage')}</p>
-
-        <p style={{ marginTop: '0.5rem', fontWeight: 600 }}>
-          {t('quota.upgradeToUnlock')}
+        <p className="modal-quota__message">
+          {t('quota.quotaExceededMessage')}
         </p>
 
+        <p className="modal-quota__cta">{t('quota.upgradeToUnlock')}</p>
+
         {period === 'monthly' && percentage >= 100 && (
-          <p
-            style={{
-              marginTop: '1rem',
-              padding: '0.75rem',
-              background: 'rgba(59, 130, 246, 0.1)',
-              borderRadius: '8px',
-              fontSize: '0.875rem',
-            }}
-          >
+          <div className="modal-quota__hint">
             💡 <strong>Astuce :</strong> Votre quota mensuel se réinitialisera
             automatiquement le 1er du mois prochain. Ou passez à Premium pour
             supprimer les limites !
-          </p>
+          </div>
         )}
       </div>
     </Modal>

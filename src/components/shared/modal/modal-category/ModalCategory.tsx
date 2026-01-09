@@ -1,12 +1,7 @@
 'use client'
 
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
-import { useI18n } from '@/hooks'
-import {
-  makeNoDoubleSpaces,
-  makeNoEdgeSpaces,
-  makeValidateNotEmpty,
-} from '@/utils'
+import { useCategoryValidation, useI18n } from '@/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -39,36 +34,23 @@ export default function ModalCategory({
   const { t } = useI18n()
   const [visibleCats, setVisibleCats] = useState<CategoryOption[]>([])
 
-  // Créer les fonctions de validation i18n avec useMemo
-  const validateNotEmpty = useMemo(() => makeValidateNotEmpty(t), [t])
-  const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
-  const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
+  // Hook de validation centralisé
+  const { validationRules, hasError } = useCategoryValidation({
+    categories,
+    newCategory,
+    t,
+  })
 
+  // Filtrer les catégories visibles (exclure 'none')
   useEffect(() => {
     const filtered = categories.filter(c => c.value !== 'none')
     setVisibleCats(filtered)
   }, [categories])
 
-  const validationRules = useMemo(
-    () => [
-      validateNotEmpty,
-      noEdgeSpaces,
-      noDoubleSpaces,
-      (val: string) => {
-        const labelClean = val.trim().replace(/\s+/g, ' ').toLowerCase()
-        const exists = categories.some(
-          cat => cat.label.trim().toLowerCase() === labelClean
-        )
-        return exists ? t('edition.categoryExists') : ''
-      },
-    ],
-    [validateNotEmpty, noEdgeSpaces, noDoubleSpaces, categories, t]
-  )
-
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
-    const hasError = validationRules.some(rule => rule(newCategory))
+    // Vérification via hook centralisé
     if (hasError) {
       return
     }

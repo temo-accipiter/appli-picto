@@ -1,0 +1,53 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// MODAL QUOTA COMPONENT - TSA-FRIENDLY QUOTA DISPLAY
+// ============================================================================
+// ✅ PHASE 6 VALIDÉ : Utilise tokens existants spacing/font-size/color/semantic/radius
+// ============================================================================
+
+.modal-quota {
+  text-align: center;
+
+  &__usage {
+    font-size: font-size('xl');
+    font-weight: font-weight('bold');
+    color: text();
+    margin: 0;
+  }
+
+  &__context {
+    margin-top: spacing('md');
+    color: text('muted');
+    font-size: font-size('base');
+    margin-bottom: 0;
+  }
+
+  &__message {
+    margin-top: spacing('md');
+    color: text();
+    margin-bottom: 0;
+  }
+
+  &__cta {
+    margin-top: spacing('sm');
+    font-weight: font-weight('semibold');
+    color: semantic('info');
+    margin-bottom: 0;
+  }
+
+  &__hint {
+    margin-top: spacing('md');
+    padding: spacing('sm') spacing('md');
+    background: semantic('info', 'bg');
+    border-radius: radius('md');
+    font-size: font-size('sm');
+    color: text();
+    text-align: left;
+
+    strong {
+      font-weight: font-weight('bold');
+      color: semantic('info');
+    }
+  }
+}

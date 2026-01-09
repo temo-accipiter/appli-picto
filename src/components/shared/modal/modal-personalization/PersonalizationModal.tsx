@@ -2,6 +2,7 @@
 
 import { Button, Modal } from '@/components'
 import { useI18n } from '@/hooks'
+import { useRouter } from 'next/navigation'
 import './PersonalizationModal.scss'
 
 interface PersonalizationModalProps {
@@ -14,6 +15,7 @@ export default function PersonalizationModal({
   onClose,
 }: PersonalizationModalProps) {
   const { t } = useI18n()
+  const router = useRouter()
 
   return (
     <Modal
@@ -65,18 +67,12 @@ export default function PersonalizationModal({
         <div className="personalization-actions">
           <Button
             label={t('personalizationModal.createAccount')}
-            onClick={() => {
-              // Rediriger vers la page d'inscription
-              window.location.href = '/signup'
-            }}
+            onClick={() => router.push('/signup')}
             className="primary-button"
           />
           <Button
             label={t('personalizationModal.login')}
-            onClick={() => {
-              // Rediriger vers la page de connexion
-              window.location.href = '/login'
-            }}
+            onClick={() => router.push('/login')}
             className="secondary-button"
           />
         </div>
