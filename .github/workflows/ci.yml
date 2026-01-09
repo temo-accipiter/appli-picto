@@ -13,12 +13,13 @@ concurrency:
 
 jobs:
   # =========================================================================
-  # JOB 0 : SETUP BASE (Node, pnpm & Cache)
-  # Ce job installe les dépendances une seule fois pour être partagé.
+  # JOB 1 : Lint & Format Check
   # =========================================================================
-  setup-pnpm:
-    name: ⚙️ Setup pnpm & Install
+  lint:
+    name: 🔍 Lint & Format
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
@@ -27,66 +28,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.19.4'
-          # Pas de cache ici, on utilise l'action pnpm dédiée pour une meilleure performance
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false # On gère l'installation manuellement pour le cache
-
-      - name: 📥 Get pnpm store path
-        # Ajout de l'ID pour que l'output soit accessible
-        id: pnpm-cache-path
-        shell: bash
-        run: |
-          # Définir le chemin en tant que 'output' de cette étape
-          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-
-      - name: 💾 Setup pnpm cache
-        uses: actions/cache@v4
-        with:
-          # Référence à l'output de l'étape précédente
-          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
-          # Utilisation directe du hash du lockfile
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: 📦 Install dependencies
-        # Utilise --frozen-lockfile pour garantir une installation reproductible
-        run: pnpm install --frozen-lockfile
-
-      - name: 💾 Persist node_modules for subsequent jobs
-        # Sauvegarde node_modules pour que les jobs suivants n'aient pas à réinstaller
-        uses: actions/upload-artifact@v4
-        with:
-          name: node_modules
-          path: node_modules
-          retention-days: 1 # Garder juste le temps du run CI
-
-  # =========================================================================
-  # JOB 1 : Lint & Format Check
-  # =========================================================================
-  lint:
-    name: 🔍 Lint & Format
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [setup-pnpm] # Dépend de l'installation des dépendances
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      - name: 💾 Restore node_modules
-        uses: actions/download-artifact@v4
+      - name: 📥 Get pnpm store path
+        id: pnpm-cache-path
+        shell: bash
+        run: |
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
         with:
-          name: node_modules
-          path: node_modules
+          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 🔍 Run ESLint (pnpm)
         run: pnpm lint
@@ -101,22 +64,37 @@ jobs:
     name: 📝 TypeScript Check
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [setup-pnpm]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      - name: 💾 Restore node_modules
-        uses: actions/download-artifact@v4
+      - name: 📥 Get pnpm store path
+        id: pnpm-cache-path
+        shell: bash
+        run: |
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
         with:
-          name: node_modules
-          path: node_modules
+          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 📝 Run TypeScript compiler (pnpm)
         run: pnpm type-check
@@ -131,22 +109,37 @@ jobs:
     name: 🧪 Unit Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [setup-pnpm]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      - name: 💾 Restore node_modules
-        uses: actions/download-artifact@v4
+      - name: 📥 Get pnpm store path
+        id: pnpm-cache-path
+        shell: bash
+        run: |
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
         with:
-          name: node_modules
-          path: node_modules
+          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 🧪 Run unit tests with coverage (pnpm)
         run: pnpm test:coverage
@@ -186,29 +179,42 @@ jobs:
     name: 🏗️ Build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [setup-pnpm]
 
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
 
       - name: 📦 Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           run_install: false
 
-      - name: 💾 Restore node_modules
-        uses: actions/download-artifact@v4
+      - name: 📥 Get pnpm store path
+        id: pnpm-cache-path
+        shell: bash
+        run: |
+          echo "store_path=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+
+      - name: 💾 Setup pnpm cache
+        uses: actions/cache@v4
         with:
-          name: node_modules
-          path: node_modules
+          path: ${{ steps.pnpm-cache-path.outputs.store_path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build project (pnpm)
         run: pnpm build
-        # --- ATTENTION : 'env' doit être au même niveau que 'name' et 'run' ---
         env:
-          # Les commentaires doivent aussi être indentés ici
-          # --- Clés Publiques (Next.js les embed) ---
+          # Clés Publiques (Next.js les embed)
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
@@ -216,30 +222,26 @@ jobs:
           NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${{ secrets.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
           NEXT_PUBLIC_GA4_ID: ${{ secrets.NEXT_PUBLIC_GA4_ID }}
           NEXT_PUBLIC_GA_SALT: ${{ secrets.NEXT_PUBLIC_GA_SALT }}
-          # --- Clés Secrètes (Next.js les utilise côté serveur durant le build) ---
+          # Clés Secrètes (Next.js les utilise côté serveur durant le build)
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
           STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
-          # Ajoutez ici les autres secrets si nécessaires pour les tests (SERVICE_ROLE, etc.)
 
       - name: 📦 Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: .next/ # Assurez-vous que Next.js build va dans .next/ ou dist/
+          path: .next/
           retention-days: 7
 
   # =========================================================================
   # JOB 5 : Tests E2E Playwright
-  # Ce job est coûteux en temps, donc placé à la fin (ou parallélisé si possible)
-  # Ne pas dépendre du node_modules artifact, Playwright doit s'installer proprement
   # =========================================================================
   test-e2e:
     name: 🎭 E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [setup-pnpm]
 
     strategy:
       fail-fast: false
@@ -255,13 +257,12 @@ jobs:
         with:
           node-version: '20.19.4'
 
-      - name: 📦 Setup pnpm & Install (Redundant but safe for E2E)
+      - name: 📦 Setup pnpm & Install
         uses: pnpm/action-setup@v4
         with:
           run_install: true
 
       - name: 🎭 Install Playwright browsers
-        # Utilise pnpm exec pour s'assurer que le binaire Playwright est trouvé
         run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
 
       - name: 🎭 Run E2E tests (pnpm)
@@ -283,14 +284,12 @@ jobs:
   check-all:
     name: ✅ All Checks Passed
     runs-on: ubuntu-latest
-    # Dépend de tous les jobs principaux
     needs: [lint, typecheck, test-unit, build, test-e2e]
-    if: always() # S'exécute même si un job a échoué
+    if: always()
 
     steps:
       - name: ✅ Verify all jobs succeeded
         run: |
-          # Cette logique vérifie l'état de chaque job précédent
           if [[ "${{ needs.lint.result }}" != "success" ]] || \
              [[ "${{ needs.typecheck.result }}" != "success" ]] || \
              [[ "${{ needs.test-unit.result }}" != "success" ]] || \
