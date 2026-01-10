@@ -130,12 +130,17 @@ src/
 │   ├── useAdminPermissions.ts    # Permissions admin
 │   ├── useAuth.ts                # Authentification
 │   ├── useDemoCards.ts           # Cartes de démo visiteurs
-│   ├── useAudioContext.ts        # Contexte audio (sons)
+│   ├── useAudioContext.ts        # Contexte audio (sons, beep, playSound)
 │   ├── useDragAnimation.ts       # Animations drag & drop
 │   ├── useReducedMotion.ts       # Détection mouvement réduit (accessibilité)
 │   ├── useDebounce.ts            # Debounce inputs
 │   ├── useI18n.ts                # Internationalisation
-│   └── useFallbackData.ts        # Données de secours
+│   ├── useFallbackData.ts        # Données de secours
+│   ├── useCheckout.ts            # 🆕 Stripe checkout session (invoke + fallback)
+│   ├── useDbPseudo.ts            # 🆕 Fetch pseudo utilisateur depuis DB
+│   ├── useMetrics.ts             # 🆕 Métriques dashboard admin (9 queries parallèles)
+│   ├── useTimerPreferences.ts    # 🆕 localStorage TimeTimer (5 préférences)
+│   └── useTimerSvgPath.ts        # 🆕 Calculs géométriques SVG TimeTimer
 ├── page-components/      # Composants pages principales
 ├── utils/
 │   └── supabaseClient.ts         # 🚨 Instance unique Supabase
@@ -249,7 +254,12 @@ const { taches, loading, error } = useTaches()
 - **Auth & Permissions** : `useAuth`, `useRBAC`, `useSimpleRole`, `usePermissionsAPI`, `useAdminPermissions`
 - **Quotas & Abonnements** : `useAccountStatus`, `useSubscriptionStatus`
 - **UX** : `useAudioContext`, `useReducedMotion`, `useDebounce`, `useI18n`
-- **Data** : `useDemoCards`, `useFallbackData`
+- **Data** : `useDemoCards`, `useFallbackData`, `useDbPseudo`
+- **Business Logic Extraits** : 🆕
+  - `useCheckout` - Stripe checkout (invoke + fallback fetch)
+  - `useMetrics` - Métriques admin (9 queries parallèles)
+  - `useTimerPreferences` - localStorage TimeTimer (5 préférences centralisées)
+  - `useTimerSvgPath` - Géométrie SVG TimeTimer (polarToCartesian, describeArc)
 
 ### 2. Client Supabase Unique
 
@@ -320,21 +330,40 @@ const { data, error } = await supabase.storage
 
 ### 7. Intégration Stripe
 
-**CRITIQUE** : Toujours utiliser Edge Functions pour opérations Stripe sensibles
+**CRITIQUE** : TOUJOURS utiliser hook `useCheckout` pour redirection Stripe
 
 ```typescript
-// ❌ INTERDIT - Appel Stripe direct depuis client
+// ❌ INTERDIT - Appel Stripe direct ou Edge Function inline
 import Stripe from 'stripe'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-// ✅ CORRECT - Utiliser Edge Function
+// ❌ INTERDIT - Logic inline dans composant
 const response = await fetch('/api/create-checkout-session', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ priceId: 'price_xxx' }),
 })
-const { sessionId } = await response.json()
+
+// ✅ CORRECT - Utiliser hook useCheckout
+import { useCheckout } from '@/hooks'
+
+function SubscribeButton() {
+  const { handleCheckout } = useCheckout()
+
+  return (
+    <button onClick={() => handleCheckout()}>
+      S'abonner
+    </button>
+  )
+}
 ```
+
+**Hook `useCheckout`** :
+
+- Gère invoke Supabase Functions + fallback fetch brut
+- Validation priceId automatique
+- Protection double-clic avec useRef
+- Redirection automatique vers Stripe
 
 **Commandes Stripe** :
 
@@ -345,6 +374,232 @@ const { sessionId } = await response.json()
 - `pnpm stripe:listen` - Écouter webhooks localement
 - `pnpm stripe:trigger:checkout` - Tester checkout.session.completed
 - `pnpm stripe:trigger:subscription` - Tester customer.subscription.created
+
+### 8. Hooks Business Logic Extraits (Déc 2024) 🆕
+
+**CRITIQUE** : 5 nouveaux hooks créés pour extraction logique métier des composants
+
+#### `useCheckout` - Stripe Checkout Session
+
+**Utilisation** : Remplace toute logique inline de checkout Stripe
+
+```typescript
+import { useCheckout } from '@/hooks'
+
+function AbonnementButton() {
+  const { handleCheckout } = useCheckout()
+
+  return (
+    <button onClick={() => handleCheckout()}>
+      S'abonner Premium
+    </button>
+  )
+}
+```
+
+**Fonctionnalités** :
+
+- Invoke Supabase Functions (primaire) + fallback fetch (secours)
+- Validation automatique priceId depuis env
+- Protection double-clic avec useRef
+- Gestion erreurs avec alerts UX
+
+**Fichier** : `src/hooks/useCheckout.ts` (118 lignes)
+
+---
+
+#### `useDbPseudo` - Fetch Pseudo Utilisateur
+
+**Utilisation** : Récupérer pseudo depuis table `profiles`
+
+```typescript
+import { useDbPseudo } from '@/hooks'
+
+function UserGreeting({ userId }: { userId: string }) {
+  const pseudo = useDbPseudo(userId)
+
+  return <span>Bonjour {pseudo || 'utilisateur'} !</span>
+}
+```
+
+**Fonctionnalités** :
+
+- Fetch automatique depuis `profiles.pseudo`
+- Pattern abort-safe avec `withAbortSafe`
+- Cleanup automatique au démontage composant
+- Gestion erreurs silencieuse (dev warnings uniquement)
+
+**Fichier** : `src/hooks/useDbPseudo.ts` (61 lignes)
+
+---
+
+#### `useMetrics` - Métriques Dashboard Admin
+
+**Utilisation** : Récupérer toutes métriques admin en une seule query
+
+```typescript
+import { useMetrics } from '@/hooks'
+
+function AdminDashboard() {
+  const { metrics, loading, error } = useMetrics()
+
+  if (loading) return <Spinner />
+  if (error) return <ErrorMessage />
+
+  return (
+    <div>
+      <StatsCard title="Utilisateurs" value={metrics.users.total} />
+      <StatsCard title="Actifs 7j" value={metrics.users.active_7d} />
+      <StatsCard title="Santé système" value={`${metrics.health.score}%`} />
+    </div>
+  )
+}
+```
+
+**Fonctionnalités** :
+
+- **9 queries Supabase en parallèle** (`Promise.all`)
+- Calculs dérivés : active users (Set dedup), health score, success rate
+- Pattern cleanup avec flag `cancelled`
+- Métriques : users, subscriptions, images, errors, health
+
+**Fichier** : `src/hooks/useMetrics.ts` (177 lignes)
+
+**Métriques disponibles** :
+
+- `users.total`, `users.new_7d`, `users.active_7d`
+- `subscriptions.active`, `subscriptions.new_7d`, `subscriptions.cancelled_7d`
+- `images.uploads_7d`, `images.success_rate`, `images.storage_saved_mb`
+- `errors.webhooks_7d`, `errors.images_7d`
+- `health.score` (0-100, basé sur taux erreurs)
+
+---
+
+#### `useTimerPreferences` - localStorage TimeTimer
+
+**Utilisation** : Centraliser toutes préférences localStorage TimeTimer
+
+```typescript
+import { useTimerPreferences } from '@/hooks'
+
+function TimeTimerSettings() {
+  const {
+    preferences,
+    updateSilentMode,
+    updateDiskColor,
+    updateShowNumbers,
+  } = useTimerPreferences(10) // 10 min par défaut
+
+  return (
+    <div>
+      <Toggle
+        checked={preferences.isSilentMode}
+        onChange={updateSilentMode}
+        label="Mode silencieux"
+      />
+      <ColorPicker
+        value={preferences.diskColor}
+        onChange={updateDiskColor}
+        options={['red', 'blue', 'green', 'purple']}
+      />
+    </div>
+  )
+}
+```
+
+**Fonctionnalités** :
+
+- **5 préférences centralisées** : isSilentMode, lastDuration, diskColor, showNumbers, enableVibration, customDurations
+- Persistence automatique localStorage (5 clés STORAGE_KEYS)
+- SSR-safe (vérification `typeof window`)
+- Fonctions update typées et optimisées (useCallback)
+
+**Fichier** : `src/hooks/useTimerPreferences.ts` (183 lignes)
+
+**Avant refactoring** : 5 `localStorage.getItem/setItem` éparpillés dans TimeTimer (723L)
+**Après refactoring** : Hook centralisé, TimeTimer réduit à 599L (-17%)
+
+---
+
+#### `useTimerSvgPath` - Géométrie SVG TimeTimer
+
+**Utilisation** : Calculer path SVG du disque rouge TimeTimer
+
+```typescript
+import { useTimerSvgPath, getNumberPosition } from '@/hooks'
+
+function TimeTimerDisk({ percentage }: { percentage: number }) {
+  const { redDiskPath, dimensions } = useTimerSvgPath(percentage, false)
+  const { radius, svgSize, centerX, centerY } = dimensions
+
+  return (
+    <svg width={svgSize} height={svgSize}>
+      <circle cx={centerX} cy={centerY} r={radius} fill="white" />
+      <path d={redDiskPath} fill="red" />
+    </svg>
+  )
+}
+```
+
+**Fonctionnalités** :
+
+- Calculs géométriques : `polarToCartesian`, `describeArc`
+- **Optimisé useMemo** : Recalcul UNIQUEMENT si `percentage` ou `compact` change
+- Support mode compact (radius 70px) et normal (radius 130px)
+- Export helper `getNumberPosition` pour placer numéros autour cadran
+
+**Fichier** : `src/hooks/useTimerSvgPath.ts` (135 lignes)
+
+**Avant refactoring** : Fonctions inline dans TimeTimer (50+ lignes géométrie)
+**Après refactoring** : Hook memoïzé réutilisable, logique isolée
+
+---
+
+#### `useAudioContext` - Extension playSound 🔊
+
+**MISE À JOUR** : Fonction `playSound` ajoutée au hook existant
+
+```typescript
+import { useAudioContext } from '@/hooks'
+
+function TimeTimerAlert() {
+  const { playSound, playBeep } = useAudioContext()
+
+  const handleTimerEnd = async () => {
+    await playSound('/sounds/alarm.mp3', 0.7) // Volume 70%
+  }
+
+  return <button onClick={handleTimerEnd}>Tester alarme</button>
+}
+```
+
+**Nouvelles fonctionnalités** :
+
+- `playSound(url, volume)` : Lecture fichiers audio (wav, mp3)
+- Volume configurable (0.0 - 1.0, défaut 0.5)
+- Gestion erreurs silencieuse (console.warn uniquement)
+- Complète `playBeep(frequency)` existant
+
+**Fichier** : `src/hooks/useAudioContext.ts` (mis à jour)
+
+---
+
+### Impact Refactoring Hooks (Déc 2024)
+
+**Composants refactorés** :
+
+- ✅ **TimeTimer** : 723L → 599L (-17%), 9 useState → 1 useReducer
+- ✅ **UserMenu** : Suppression 68L handleCheckout + 30L fetch pseudo
+- ✅ **MetricsDashboard** : 435L → ~230L (-47%), suppression 9 queries inline
+
+**Résultats** :
+
+- +955 insertions, -606 suppressions (net +349 lignes pour 5 hooks réutilisables)
+- **ZÉRO query Supabase directe** dans TimeTimer, UserMenu, MetricsDashboard
+- Code plus maintenable, testable, réutilisable
+- Conformité CLAUDE.md stricte (hooks custom obligatoires)
+
+**CRITIQUE** : Ces 5 hooks doivent être utilisés dans TOUS les futurs composants nécessitant ces fonctionnalités
 
 ## 🚨 Règles Absolues
 
@@ -537,6 +792,10 @@ SUPABASE_DB_NAME=postgres
 - **Récompenses** : `src/hooks/useRecompenses.ts` - CRUD récompenses
 - **Quotas** : `src/hooks/useAccountStatus.ts` - Vérification quotas utilisateur
 - **Abonnement** : `src/hooks/useSubscriptionStatus.ts` - Statut Stripe
+- **Stripe Checkout** : 🆕 `src/hooks/useCheckout.ts` - Checkout session (invoke + fallback)
+- **Admin Metrics** : 🆕 `src/hooks/useMetrics.ts` - Métriques dashboard (9 queries parallèles)
+- **User Pseudo** : 🆕 `src/hooks/useDbPseudo.ts` - Fetch pseudo depuis profiles
+- **TimeTimer** : 🆕 `src/hooks/useTimerPreferences.ts`, `src/hooks/useTimerSvgPath.ts` - localStorage + SVG
 
 ### Edge Functions Supabase
 
