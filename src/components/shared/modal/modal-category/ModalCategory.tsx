@@ -3,7 +3,7 @@
 import { Button, ButtonDelete, InputWithValidation, Modal } from '@/components'
 import { useCategoryValidation, useI18n } from '@/hooks'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import './ModalCategory.scss'
 

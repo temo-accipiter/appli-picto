@@ -14,12 +14,15 @@ import { renderHook } from '@testing-library/react'
 import { vi, describe, it, expect, beforeAll } from 'vitest'
 
 // Mocks des utils de validation
-const { mockMakeValidateNotEmpty, mockMakeNoEdgeSpaces, mockMakeNoDoubleSpaces } =
-  vi.hoisted(() => ({
-    mockMakeValidateNotEmpty: vi.fn(),
-    mockMakeNoEdgeSpaces: vi.fn(),
-    mockMakeNoDoubleSpaces: vi.fn(),
-  }))
+const {
+  mockMakeValidateNotEmpty,
+  mockMakeNoEdgeSpaces,
+  mockMakeNoDoubleSpaces,
+} = vi.hoisted(() => ({
+  mockMakeValidateNotEmpty: vi.fn(),
+  mockMakeNoEdgeSpaces: vi.fn(),
+  mockMakeNoDoubleSpaces: vi.fn(),
+}))
 
 vi.mock('@/utils', () => ({
   makeValidateNotEmpty: mockMakeValidateNotEmpty,
@@ -39,7 +42,7 @@ describe('useCategoryValidation', () => {
     const translations: Record<string, string> = {
       'edition.categoryExists': 'Cette catégorie existe déjà',
       'validation.required': 'Ce champ est requis',
-      'validation.noEdgeSpaces': 'Pas d\'espaces en début ou fin',
+      'validation.noEdgeSpaces': "Pas d'espaces en début ou fin",
       'validation.noDoubleSpaces': 'Pas de doubles espaces',
     }
     return translations[key] || key
@@ -51,7 +54,7 @@ describe('useCategoryValidation', () => {
       !val.trim() ? 'Ce champ est requis' : ''
     )
     mockMakeNoEdgeSpaces.mockReturnValue((val: string) =>
-      val !== val.trim() ? 'Pas d\'espaces en début ou fin' : ''
+      val !== val.trim() ? "Pas d'espaces en début ou fin" : ''
     )
     mockMakeNoDoubleSpaces.mockReturnValue((val: string) =>
       /\s{2,}/.test(val) ? 'Pas de doubles espaces' : ''
@@ -161,7 +164,7 @@ describe('useCategoryValidation', () => {
   })
 
   describe('Validation réussie', () => {
-    it('ne doit pas avoir d\'erreur pour une catégorie valide', () => {
+    it("ne doit pas avoir d'erreur pour une catégorie valide", () => {
       const categories = [
         { value: 1, label: 'Travail' },
         { value: 2, label: 'Maison' },
@@ -178,7 +181,7 @@ describe('useCategoryValidation', () => {
       expect(result.current.hasError).toBe(false)
     })
 
-    it('ne doit pas avoir d\'erreur pour une catégorie avec accents', () => {
+    it("ne doit pas avoir d'erreur pour une catégorie avec accents", () => {
       const categories = [{ value: 1, label: 'Travail' }]
 
       const { result } = renderHook(() =>
