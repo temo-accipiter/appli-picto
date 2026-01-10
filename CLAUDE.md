@@ -357,6 +357,7 @@ const { sessionId } = await response.json()
 - ❌ Utiliser `yarn` ou `npm` (projet pnpm)
 - ❌ Importer `react-router-dom` (migré Next.js App Router)
 - ❌ Créer fichiers .md documentation sans demande explicite
+- ❌ Merge une branche sans que je confirme explicitement
 
 ### TOUJOURS Faire
 
@@ -368,6 +369,7 @@ const { sessionId } = await response.json()
 - ✅ Vérifier quotas AVANT création
 - ✅ Animations douces max 0.3s ease
 - ✅ Imports absolus `@/` (pas relatifs)
+- ✅ Verifier les valeurs defini dans @abstracts s'il en existe deja, avant de créer de nouveaux tokens
 
 ## 🔧 TypeScript
 

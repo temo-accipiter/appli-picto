@@ -3,13 +3,12 @@
 import { LangSelector, SignedImage, ThemeToggle } from '@/components'
 import { usePermissions } from '@/contexts'
 import {
-  isAbortLike,
   useAuth,
   useI18n,
   useSubscriptionStatus,
-  withAbortSafe,
+  useCheckout,
+  useDbPseudo,
 } from '@/hooks'
-import { supabase } from '@/utils/supabaseClient'
 import { getDisplayPseudo } from '@/utils/getDisplayPseudo'
 import {
   Crown,
@@ -27,24 +26,20 @@ import type { MouseEvent } from 'react'
 
 import './UserMenu.scss'
 
-interface CheckoutResponse {
-  url?: string
-}
-
 export default function UserMenu() {
   const { user, signOut, authReady } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
   const { isAdmin } = usePermissions() // ⚠️ On ne bloque plus sur isUnknown
   const { t } = useI18n()
+  const { handleCheckout } = useCheckout()
+  const dbPseudo = useDbPseudo(user?.id)
   const [open, setOpen] = useState(false)
   const [legalOpen, setLegalOpen] = useState(false) // Sous-menu collapsible informations légales
-  const [dbPseudo, setDbPseudo] = useState('')
   const [isMobile, setIsMobile] = useState(false) // Détection mobile pour sous-menu Informations
   const router = useRouter()
   const pathname = usePathname()
   const dialogRef = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
-  const checkingOutRef = useRef(false) // évite double-clic sur checkout
   const menuItemsRef = useRef<HTMLButtonElement[]>([]) // WCAG 2.1.1 - Navigation clavier
 
   // Détection mobile (< 768px) pour afficher/masquer sous-menu Informations
@@ -143,39 +138,6 @@ export default function UserMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
 
-  // Récupère pseudo DB (safe Safari/Firefox)
-  useEffect(() => {
-    let cancelled = false
-    const fetchDbPseudo = async () => {
-      if (!user?.id) return
-      const { data, error, aborted } = await withAbortSafe<{
-        pseudo: string | null
-      }>(
-        supabase
-          .from('profiles')
-          .select('pseudo')
-          .eq('id', user.id)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .single() as any
-      )
-      if (cancelled) return
-      if (aborted || (error && isAbortLike(error))) return
-      if (error) {
-        if (process.env.NODE_ENV === 'development')
-          console.warn(
-            'profiles.pseudo fetch:',
-            String(error?.message ?? error)
-          )
-        return
-      }
-      setDbPseudo(data?.pseudo ?? '')
-    }
-    fetchDbPseudo()
-    return () => {
-      cancelled = true
-    }
-  }, [user?.id])
-
   if (!user) return null
 
   const displayPseudo = getDisplayPseudo(user, dbPseudo)
@@ -185,75 +147,6 @@ export default function UserMenu() {
   const avatarAlt = displayPseudo
     ? `Avatar de ${displayPseudo}`
     : t('nav.profil')
-
-  const handleCheckout = async () => {
-    if (checkingOutRef.current) return
-    checkingOutRef.current = true
-
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_ID
-
-    if (!priceId || !/^price_[a-zA-Z0-9]+$/.test(priceId)) {
-      alert('⚠️ VITE_STRIPE_PRICE_ID est vide ou invalide (attendu: price_...)')
-      checkingOutRef.current = false
-      return
-    }
-
-    try {
-      // 1) Appel direct via Supabase Functions (JWT auto) — safe abort
-      const { data, error, aborted } = await withAbortSafe(
-        supabase.functions.invoke<CheckoutResponse>('create-checkout-session', {
-          body: {
-            price_id: priceId,
-            success_url: `${window.location.origin}/profil`,
-            cancel_url: `${window.location.origin}/profil`,
-          },
-        })
-      )
-
-      if (!(aborted || (error && isAbortLike(error)))) {
-        if (error) {
-          // on tente le fallback en dessous
-        } else if (data?.url) {
-          window.location.href = data.url
-          return
-        }
-      }
-
-      // 2) Fallback via fetch brut (utile si invoke renvoie une erreur générique)
-      const { data: session } = await supabase.auth.getSession()
-      const token = session?.session?.access_token
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            price_id: priceId,
-            success_url: `${window.location.origin}/profil`,
-            cancel_url: `${window.location.origin}/profil`,
-          }),
-        }
-      )
-
-      const payload = await res.json().catch(() => ({}))
-      if (payload?.url) {
-        window.location.href = payload.url
-        return
-      }
-
-      alert('❌ Réponse Stripe inattendue')
-    } catch (e) {
-      // pas d'exception "vivante" dans la console de Safari
-      console.error('Erreur checkout:', String((e as Error)?.message ?? e))
-      alert('❌ Erreur lors de la redirection vers Stripe')
-    } finally {
-      checkingOutRef.current = false
-    }
-  }
 
   const handleBackdropMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) setOpen(false)
@@ -482,7 +375,7 @@ export default function UserMenu() {
                       ? undefined
                       : isActive
                         ? () => router.push('/abonnement')
-                        : handleCheckout
+                        : () => handleCheckout()
                   }
                   disabled={(loading || !authReady) && !forceUnblock}
                 >

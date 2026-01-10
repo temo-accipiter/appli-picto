@@ -11,175 +11,14 @@
  * - Santé du système (uptime, latence, quotas)
  */
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
+import { useState } from 'react'
+import { useMetrics } from '@/hooks'
 import { Loader } from '@/components'
 import './MetricsDashboard.scss'
 
-interface DashboardMetrics {
-  users: {
-    total: number
-    new_7d: number
-    active_7d: number
-  }
-  subscriptions: {
-    active: number
-    new_7d: number
-    cancelled_7d: number
-  }
-  images: {
-    uploads_7d: number
-    success_rate: number
-    storage_saved_mb: number
-  }
-  errors: {
-    webhooks_7d: number
-    images_7d: number
-  }
-  system: {
-    health_score: number
-    avg_response_time: number
-  }
-}
-
 export default function MetricsDashboard() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
-
-  const fetchMetrics = async () => {
-    try {
-      setError(null)
-
-      // Période: 7 derniers jours
-      const weekAgo = new Date(
-        Date.now() - 7 * 24 * 60 * 60 * 1000
-      ).toISOString()
-
-      // Récupérer toutes les métriques en parallèle
-      const [
-        totalUsers,
-        newUsers,
-        activeTasks,
-        activeSubscriptions,
-        newSubscriptions,
-        cancelledSubscriptions,
-        imageStats,
-        webhookErrors,
-        imageErrors,
-      ] = await Promise.all([
-        // Total utilisateurs
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-
-        // Nouveaux utilisateurs (7j)
-        supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', weekAgo),
-
-        // Utilisateurs actifs (ayant créé une tâche dans les 7j)
-        supabase.from('taches').select('user_id').gte('created_at', weekAgo),
-
-        // Abonnements actifs
-        supabase
-          .from('abonnements')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active'),
-
-        // Nouveaux abonnements (7j)
-        supabase
-          .from('subscription_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('event_type', 'subscription.upserted')
-          .gte('timestamp', weekAgo),
-
-        // Abonnements annulés (7j)
-        supabase
-          .from('subscription_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('event_type', 'webhook.customer.subscription.deleted')
-          .gte('timestamp', weekAgo),
-
-        // Stats images (7j)
-        supabase.rpc('get_image_analytics_summary'),
-
-        // Erreurs webhooks (7j)
-        supabase
-          .from('subscription_logs')
-          .select('*', { count: 'exact', head: true })
-          .eq('event_type', 'webhook.error')
-          .gte('timestamp', weekAgo),
-
-        // Erreurs images (7j)
-        supabase
-          .from('image_metrics')
-          .select('*', { count: 'exact', head: true })
-          .eq('result', 'error')
-          .gte('created_at', weekAgo),
-      ])
-
-      // Calculer utilisateurs actifs uniques
-      const activeUsers = new Set(activeTasks.data?.map(t => t.user_id) || [])
-        .size
-
-      // Calculer taux de succès images
-      const imageData = imageStats.data as Record<string, unknown> | null
-      const totalImages = (imageData?.total_uploads as number) || 0
-      const successImages = (imageData?.success_count as number) || 0
-      const successRate =
-        totalImages > 0 ? (successImages / totalImages) * 100 : 100
-
-      // Score de santé système (basé sur taux d'erreurs)
-      const totalOperations = totalImages + (newSubscriptions.count || 0)
-      const totalErrors = (webhookErrors.count || 0) + (imageErrors.count || 0)
-      const healthScore =
-        totalOperations > 0
-          ? Math.max(0, 100 - (totalErrors / totalOperations) * 100)
-          : 100
-
-      setMetrics({
-        users: {
-          total: totalUsers.count || 0,
-          new_7d: newUsers.count || 0,
-          active_7d: activeUsers,
-        },
-        subscriptions: {
-          active: activeSubscriptions.count || 0,
-          new_7d: newSubscriptions.count || 0,
-          cancelled_7d: cancelledSubscriptions.count || 0,
-        },
-        images: {
-          uploads_7d: totalImages,
-          success_rate: Math.round(successRate * 10) / 10,
-          storage_saved_mb: (imageData?.total_storage_saved_mb as number) || 0,
-        },
-        errors: {
-          webhooks_7d: webhookErrors.count || 0,
-          images_7d: imageErrors.count || 0,
-        },
-        system: {
-          health_score: Math.round(healthScore * 10) / 10,
-          avg_response_time: (imageData?.avg_upload_ms as number) || 0,
-        },
-      })
-
-      setLastUpdate(new Date())
-    } catch (e) {
-      console.error('❌ Erreur chargement métriques:', e)
-      setError((e as Error).message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchMetrics()
-
-    // Rafraîchir toutes les 5 minutes
-    const interval = setInterval(fetchMetrics, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
+  const { metrics, loading, error } = useMetrics()
+  const [lastUpdate] = useState<Date>(new Date())
 
   if (loading) {
     return (
@@ -194,9 +33,6 @@ export default function MetricsDashboard() {
       <div className="metrics-dashboard">
         <div className="metrics-dashboard__error">
           <p>❌ Erreur chargement métriques : {error}</p>
-          <button onClick={fetchMetrics} className="btn-retry">
-            🔄 Réessayer
-          </button>
         </div>
       </div>
     )
@@ -224,13 +60,6 @@ export default function MetricsDashboard() {
           <span className="last-update">
             Dernière mise à jour : {lastUpdate.toLocaleTimeString('fr-FR')}
           </span>
-          <button
-            onClick={fetchMetrics}
-            className="btn-refresh"
-            title="Rafraîchir"
-          >
-            🔄
-          </button>
         </div>
       </div>
 
@@ -239,32 +68,21 @@ export default function MetricsDashboard() {
         <h2>🏥 Santé Système</h2>
         <div className="metrics-grid">
           <div
-            className={`metric-card metric-card--${getHealthColor(metrics.system.health_score)}`}
+            className={`metric-card metric-card--${getHealthColor(metrics.health.score)}`}
           >
             <div className="metric-card__icon">💚</div>
             <div className="metric-card__content">
               <div className="metric-card__label">Score de santé</div>
               <div className="metric-card__value">
-                {metrics.system.health_score}%
+                {metrics.health.score}%
               </div>
               <div className="metric-card__subtitle">
-                {metrics.system.health_score >= 90
+                {metrics.health.score >= 90
                   ? 'Excellent'
-                  : metrics.system.health_score >= 70
+                  : metrics.health.score >= 70
                     ? 'Bon'
                     : 'À surveiller'}
               </div>
-            </div>
-          </div>
-
-          <div className="metric-card">
-            <div className="metric-card__icon">⚡</div>
-            <div className="metric-card__content">
-              <div className="metric-card__label">Temps de réponse moyen</div>
-              <div className="metric-card__value">
-                {Math.round(metrics.system.avg_response_time)} ms
-              </div>
-              <div className="metric-card__subtitle">Uploads images</div>
             </div>
           </div>
         </div>

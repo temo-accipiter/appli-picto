@@ -1,8 +1,15 @@
 'use client'
 
 // src/components/features/time-timer/TimeTimer.tsx
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useI18n } from '@/hooks'
+import { useCallback, useEffect, useReducer, useRef } from 'react'
+import {
+  useI18n,
+  useTimerPreferences,
+  useTimerSvgPath,
+  useAudioContext,
+  getNumberPosition,
+} from '@/hooks'
+import type { DiskColor } from '@/hooks/useTimerPreferences'
 import { Modal } from '@/components'
 import Separator from '@/components/shared/separator/Separator'
 import './TimeTimer.scss'
@@ -22,13 +29,11 @@ const PRESET_DURATIONS: PresetDuration[] = [
   { label: '60 min', value: 60 },
 ]
 
-type DiskColor = 'red' | 'blue' | 'green' | 'purple'
-
 interface ColorOption {
   id: DiskColor
   label: string
   cssVar: string
-  color: string // Couleur réelle pour l'affichage
+  color: string
 }
 
 const COLOR_OPTIONS: ColorOption[] = [
@@ -62,8 +67,61 @@ interface TimeTimerProps {
   compact?: boolean
   initialDuration?: number
   onComplete?: () => void
-  hideLabel?: boolean // Masquer le label "/ X min" (utile en fullscreen)
-  hideSettings?: boolean // Masquer le bouton réglages (utile en fullscreen)
+  hideLabel?: boolean
+  hideSettings?: boolean
+}
+
+/**
+ * État du timer (useReducer)
+ */
+interface TimerState {
+  duration: number // Durée totale en minutes
+  timeLeft: number // Temps restant en secondes
+  isRunning: boolean
+  showSettings: boolean
+}
+
+type TimerAction =
+  | { type: 'SET_DURATION'; payload: number }
+  | { type: 'TICK' }
+  | { type: 'TOGGLE_RUNNING' }
+  | { type: 'RESET' }
+  | { type: 'STOP' }
+  | { type: 'TOGGLE_SETTINGS' }
+  | { type: 'CLOSE_SETTINGS' }
+
+function timerReducer(state: TimerState, action: TimerAction): TimerState {
+  switch (action.type) {
+    case 'SET_DURATION':
+      return {
+        ...state,
+        duration: action.payload,
+        timeLeft: action.payload * 60,
+        isRunning: false,
+        showSettings: false,
+      }
+    case 'TICK':
+      if (state.timeLeft <= 1) {
+        return { ...state, timeLeft: 0, isRunning: false }
+      }
+      return { ...state, timeLeft: state.timeLeft - 1 }
+    case 'TOGGLE_RUNNING':
+      return { ...state, isRunning: !state.isRunning }
+    case 'RESET':
+      return {
+        ...state,
+        timeLeft: state.duration * 60,
+        isRunning: false,
+      }
+    case 'STOP':
+      return { ...state, isRunning: false }
+    case 'TOGGLE_SETTINGS':
+      return { ...state, showSettings: !state.showSettings }
+    case 'CLOSE_SETTINGS':
+      return { ...state, showSettings: false }
+    default:
+      return state
+  }
 }
 
 /**
@@ -83,61 +141,34 @@ export default function TimeTimer({
   hideSettings = false,
 }: TimeTimerProps) {
   const { t } = useI18n()
+  const { playSound } = useAudioContext()
 
-  // Charger les préférences depuis localStorage
-  const loadPreferences = () => {
-    if (typeof window === 'undefined')
-      return {
-        silent: false,
-        lastDuration: initialDuration,
-        diskColor: 'red' as DiskColor,
-        showNumbers: true,
-        vibrate: false,
-      }
-    const silent = localStorage.getItem('timeTimer_silentMode') === 'true'
-    const lastDuration = parseInt(
-      localStorage.getItem('timeTimer_lastDuration') || String(initialDuration),
-      10
-    )
-    const diskColor = (localStorage.getItem('timeTimer_diskColor') ||
-      'red') as DiskColor
-    const showNumbers =
-      localStorage.getItem('timeTimer_showNumbers') !== 'false'
-    const vibrate = localStorage.getItem('timeTimer_vibrate') === 'true'
-    return { silent, lastDuration, diskColor, showNumbers, vibrate }
-  }
+  // Hook préférences (localStorage centralisé)
+  const {
+    preferences,
+    updateSilentMode,
+    updateLastDuration,
+    updateDiskColor,
+    updateShowNumbers,
+    updateVibration,
+  } = useTimerPreferences(initialDuration)
 
-  const preferences = loadPreferences()
+  // État du timer avec useReducer
+  const [state, dispatch] = useReducer(timerReducer, {
+    duration: preferences.lastDuration,
+    timeLeft: preferences.lastDuration * 60,
+    isRunning: false,
+    showSettings: false,
+  })
 
-  const [duration, setDuration] = useState(preferences.lastDuration) // Durée totale en minutes
-  const [timeLeft, setTimeLeft] = useState(preferences.lastDuration * 60) // Temps restant en secondes
-  const [isRunning, setIsRunning] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
-  const [isSilentMode, setIsSilentMode] = useState(preferences.silent) // Mode silencieux
-  const [diskColor, setDiskColor] = useState<DiskColor>(preferences.diskColor) // Couleur du disque
-  const [showNumbers, setShowNumbers] = useState(preferences.showNumbers) // Afficher numéros
-  const [enableVibration, setEnableVibration] = useState(preferences.vibrate) // Vibration mobile
-  const [customDurations, setCustomDurations] = useState<number[]>([]) // Durées personnalisées
   const intervalRef = useRef<number | null>(null)
 
-  // Fonction pour jouer un son de cloche doux depuis fichier audio
-  const playCompletionSound = useCallback(() => {
-    try {
-      // Charger et jouer le fichier audio
-      const audio = new Audio('/sounds/timer-complete.wav')
-      audio.volume = 0.5 // Volume modéré (TSA-friendly)
-      audio.play().catch(error => {
-        // Ignorer silencieusement si lecture audio échoue
-        console.warn('Lecture audio échouée:', error)
-      })
-    } catch (error) {
-      // Ignorer silencieusement si Audio API non disponible
-      console.warn('Audio API non disponible:', error)
-    }
-  }, [])
+  // Calculer le pourcentage restant
+  const percentage = (state.timeLeft / (state.duration * 60)) * 100
 
-  // Calculer le pourcentage restant pour l'affichage visuel
-  const percentage = (timeLeft / (duration * 60)) * 100
+  // Hook SVG path (calculs géométriques)
+  const { redDiskPath, dimensions } = useTimerSvgPath(percentage, compact)
+  const { radius, svgSize, centerX, centerY } = dimensions
 
   // Formater le temps restant en MM:SS
   const formatTime = useCallback((seconds: number) => {
@@ -148,138 +179,61 @@ export default function TimeTimer({
 
   // Démarrer/Pause le timer
   const toggleTimer = useCallback(() => {
-    setIsRunning(prev => !prev)
+    dispatch({ type: 'TOGGLE_RUNNING' })
   }, [])
 
   // Réinitialiser le timer
   const resetTimer = useCallback(() => {
-    setIsRunning(false)
-    setTimeLeft(duration * 60)
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-    }
-  }, [duration])
-
-  // Changer la durée
-  const changeDuration = useCallback((newDuration: number) => {
-    setDuration(newDuration)
-    setTimeLeft(newDuration * 60)
-    setIsRunning(false)
-    setShowSettings(false)
-    // Sauvegarder dans localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('timeTimer_lastDuration', String(newDuration))
-    }
+    dispatch({ type: 'RESET' })
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
   }, [])
+
+  // Changer la durée
+  const changeDuration = useCallback(
+    (newDuration: number) => {
+      dispatch({ type: 'SET_DURATION', payload: newDuration })
+      updateLastDuration(newDuration)
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    },
+    [updateLastDuration]
+  )
 
   // Toggle mode silencieux
   const toggleSilentMode = useCallback(() => {
-    setIsSilentMode(prev => {
-      const newValue = !prev
-      // Sauvegarder dans localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('timeTimer_silentMode', String(newValue))
-      }
-      return newValue
-    })
-  }, [])
-
-  // Changer la couleur du disque
-  const changeDiskColor = useCallback((color: DiskColor) => {
-    setDiskColor(color)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('timeTimer_diskColor', color)
-    }
-  }, [])
+    updateSilentMode(!preferences.isSilentMode)
+  }, [preferences.isSilentMode, updateSilentMode])
 
   // Toggle affichage numéros
   const toggleShowNumbers = useCallback(() => {
-    setShowNumbers(prev => {
-      const newValue = !prev
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('timeTimer_showNumbers', String(newValue))
-      }
-      return newValue
-    })
-  }, [])
+    updateShowNumbers(!preferences.showNumbers)
+  }, [preferences.showNumbers, updateShowNumbers])
 
   // Toggle vibration
   const toggleVibration = useCallback(() => {
-    setEnableVibration(prev => {
-      const newValue = !prev
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('timeTimer_vibrate', String(newValue))
-      }
-      return newValue
-    })
-  }, [])
+    updateVibration(!preferences.enableVibration)
+  }, [preferences.enableVibration, updateVibration])
 
-  // Ajouter une durée personnalisée (préfixé _ car non utilisé actuellement)
-  const _addCustomDuration = useCallback(
-    (minutes: number) => {
-      if (minutes > 0 && minutes <= 999 && !customDurations.includes(minutes)) {
-        const updated = [...customDurations, minutes].sort((a, b) => a - b)
-        setCustomDurations(updated)
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(
-            'timeTimer_customDurations',
-            JSON.stringify(updated)
-          )
-        }
-      }
+  // Changer la couleur du disque
+  const changeDiskColor = useCallback(
+    (color: DiskColor) => {
+      updateDiskColor(color)
     },
-    [customDurations]
-  )
-
-  // Supprimer une durée personnalisée (préfixé _ car non utilisé actuellement)
-  const _removeCustomDuration = useCallback(
-    (minutes: number) => {
-      const updated = customDurations.filter(d => d !== minutes)
-      setCustomDurations(updated)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(
-          'timeTimer_customDurations',
-          JSON.stringify(updated)
-        )
-      }
-    },
-    [customDurations]
+    [updateDiskColor]
   )
 
   // Effet pour gérer le décompte
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
+    if (state.isRunning && state.timeLeft > 0) {
       intervalRef.current = window.setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            setIsRunning(false)
-            // Jouer un son doux à la fin (seulement si mode silencieux désactivé)
-            if (!isSilentMode) {
-              playCompletionSound()
-            }
-            // Vibration à la fin (mobile uniquement)
-            if (
-              enableVibration &&
-              typeof navigator !== 'undefined' &&
-              navigator.vibrate
-            ) {
-              navigator.vibrate([200, 100, 200])
-            }
-            // Appeler le callback onComplete si défini
-            if (onComplete) {
-              onComplete()
-            }
-            return 0
-          }
-          return prev - 1
-        })
+        dispatch({ type: 'TICK' })
       }, 1000)
-    } else if (!isRunning && intervalRef.current) {
+    } else if (!state.isRunning && intervalRef.current) {
       clearInterval(intervalRef.current)
       intervalRef.current = null
     }
@@ -289,125 +243,47 @@ export default function TimeTimer({
         clearInterval(intervalRef.current)
       }
     }
-  }, [
-    isRunning,
-    timeLeft,
-    onComplete,
-    enableVibration,
-    playCompletionSound,
-    isSilentMode,
-  ])
+  }, [state.isRunning, state.timeLeft])
 
-  // Charger les durées personnalisées depuis localStorage
+  // Effet pour gérer la fin du timer
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('timeTimer_customDurations')
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved)
-          if (Array.isArray(parsed)) {
-            setCustomDurations(parsed)
-          }
-        } catch {
-          // Ignorer erreurs parsing
-        }
+    if (state.timeLeft === 0 && !state.isRunning) {
+      // Jouer un son doux (seulement si mode silencieux désactivé)
+      if (!preferences.isSilentMode) {
+        playSound('/sounds/timer-complete.wav', 0.5)
+      }
+
+      // Vibration à la fin (mobile uniquement)
+      if (
+        preferences.enableVibration &&
+        typeof navigator !== 'undefined' &&
+        navigator.vibrate
+      ) {
+        navigator.vibrate([200, 100, 200])
+      }
+
+      // Appeler le callback onComplete si défini
+      if (onComplete) {
+        onComplete()
       }
     }
-  }, [])
-
-  // Calculer l'angle pour le SVG (disque rouge secteur circulaire)
-  // Radius agrandi pour remplir plus d'espace
-  const radius = compact ? 70 : 130
-  // Marge pour les chiffres et espace de respiration (éviter clipping)
-  const margin = compact ? 25 : 30
-  // Taille totale du SVG (viewBox)
-  const svgSize = 2 * (radius + margin)
-  // Centre du SVG (au milieu)
-  const centerX = svgSize / 2
-  const centerY = svgSize / 2
-
-  // Convertir le pourcentage en angle (0° = haut, sens horaire)
-  // 100% = 360°, 0% = 0°
-  const angle = (percentage / 100) * 360
-
-  // Fonction pour convertir coordonnées polaires en cartésiennes
-  const polarToCartesian = (
-    centerX: number,
-    centerY: number,
-    radius: number,
-    angleInDegrees: number
-  ) => {
-    const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0
-    return {
-      x: centerX + radius * Math.cos(angleInRadians),
-      y: centerY + radius * Math.sin(angleInRadians),
-    }
-  }
-
-  // Fonction pour créer le path SVG du secteur circulaire
-  const describeArc = (
-    centerX: number,
-    centerY: number,
-    radius: number,
-    startAngle: number,
-    endAngle: number
-  ) => {
-    const start = polarToCartesian(centerX, centerY, radius, endAngle)
-    const end = polarToCartesian(centerX, centerY, radius, startAngle)
-    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1'
-
-    return [
-      'M',
-      centerX,
-      centerY,
-      'L',
-      start.x,
-      start.y,
-      'A',
-      radius,
-      radius,
-      0,
-      largeArcFlag,
-      0, // Sweep-flag à 0 pour sens anti-horaire (blanc apparaît de 0 vers 15)
-      end.x,
-      end.y,
-      'Z',
-    ].join(' ')
-  }
-
-  // Créer le path pour le disque rouge (secteur circulaire)
-  // Réduire le rayon de 2px pour que le disque reste à l'intérieur du cercle blanc (strokeWidth = 3)
-  const diskRadius = radius - 2
-  // Le rouge part de la position du temps écoulé (360 - angle) et va jusqu'à 360° (= 0°)
-  // Ainsi le blanc apparaît progressivement de 0° (haut) vers la droite
-  const elapsedAngle = 360 - angle
-  const redDiskPath =
-    angle > 0
-      ? describeArc(centerX, centerY, diskRadius, elapsedAngle, 360)
-      : ''
-
-  // Numéros autour du cadran (0, 5, 10, 15...60)
-  const timeMarkers = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
-
-  // Calculer la position des numéros autour du cadran
-  const getNumberPosition = (value: number) => {
-    // Convertir la valeur en angle (0 = haut, sens horaire)
-    // 0 min = 0°, 60 min = 360°
-    const angleInDegrees = (value / 60) * 360 - 90 // -90 pour commencer en haut
-    const angleInRadians = (angleInDegrees * Math.PI) / 180
-    const numberRadius = radius + (compact ? 12 : 18) // Distance du centre
-
-    return {
-      x: centerX + numberRadius * Math.cos(angleInRadians),
-      y: centerY + numberRadius * Math.sin(angleInRadians),
-    }
-  }
+  }, [
+    state.timeLeft,
+    state.isRunning,
+    preferences.isSilentMode,
+    preferences.enableVibration,
+    playSound,
+    onComplete,
+  ])
 
   // Obtenir la couleur du disque selon la sélection
   const getDiskColor = () => {
-    const selectedColor = COLOR_OPTIONS.find(c => c.id === diskColor)
+    const selectedColor = COLOR_OPTIONS.find(c => c.id === preferences.diskColor)
     return selectedColor ? selectedColor.cssVar : 'var(--disk-color-red)'
   }
+
+  // Numéros autour du cadran (0, 5, 10, 15...60)
+  const timeMarkers = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
   const containerClass = compact
     ? 'time-timer time-timer--compact'
@@ -434,7 +310,7 @@ export default function TimeTimer({
           />
 
           {/* Disque secteur circulaire (temps restant) */}
-          {angle > 0 && (
+          {percentage > 0 && (
             <path
               className="time-timer__red-disk"
               d={redDiskPath}
@@ -444,10 +320,10 @@ export default function TimeTimer({
           )}
 
           {/* Numéros autour du cadran (conditionnels - uniquement pour 60 min) */}
-          {showNumbers &&
-            duration === 60 &&
+          {preferences.showNumbers &&
+            state.duration === 60 &&
             timeMarkers.map(value => {
-              const pos = getNumberPosition(value)
+              const pos = getNumberPosition(value, radius, centerX, centerY, compact)
               return (
                 <text
                   key={value}
@@ -473,10 +349,10 @@ export default function TimeTimer({
             aria-live="polite"
             aria-atomic="true"
           >
-            {formatTime(timeLeft)}
+            {formatTime(state.timeLeft)}
           </span>
           {!compact && !hideLabel && (
-            <span className="time-timer__duration-label">/ {duration} min</span>
+            <span className="time-timer__duration-label">/ {state.duration} min</span>
           )}
         </div>
       </div>
@@ -486,10 +362,10 @@ export default function TimeTimer({
         <button
           className="time-timer__btn time-timer__btn--primary skip-min-touch-target"
           onClick={toggleTimer}
-          disabled={timeLeft === 0}
-          aria-label={isRunning ? t('timeTimer.pause') : t('timeTimer.start')}
+          disabled={state.timeLeft === 0}
+          aria-label={state.isRunning ? t('timeTimer.pause') : t('timeTimer.start')}
         >
-          {isRunning ? (
+          {state.isRunning ? (
             <>
               <span className="time-timer__icon">⏸</span>
               {!compact && <span>{t('timeTimer.pause')}</span>}
@@ -514,9 +390,9 @@ export default function TimeTimer({
         {!hideSettings && (
           <button
             className="time-timer__btn time-timer__btn--secondary skip-min-touch-target"
-            onClick={() => setShowSettings(!showSettings)}
+            onClick={() => dispatch({ type: 'TOGGLE_SETTINGS' })}
             aria-label={t('timeTimer.settings')}
-            aria-expanded={showSettings}
+            aria-expanded={state.showSettings}
           >
             <span className="time-timer__icon">⚙</span>
             {!compact && <span>{t('timeTimer.settings')}</span>}
@@ -526,8 +402,8 @@ export default function TimeTimer({
 
       {/* Modal de réglages */}
       <Modal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
+        isOpen={state.showSettings}
+        onClose={() => dispatch({ type: 'CLOSE_SETTINGS' })}
         title={t('timeTimer.settings')}
         size="small"
         showCloseButton={true}
@@ -545,12 +421,12 @@ export default function TimeTimer({
                 <button
                   key={preset.value}
                   className={`time-timer__preset-btn ${
-                    duration === preset.value
+                    state.duration === preset.value
                       ? 'time-timer__preset-btn--active'
                       : ''
                   }`}
                   onClick={() => changeDuration(preset.value)}
-                  aria-pressed={duration === preset.value}
+                  aria-pressed={state.duration === preset.value}
                 >
                   {preset.label}
                 </button>
@@ -568,7 +444,7 @@ export default function TimeTimer({
                   if (e.key === 'Enter') {
                     const value = parseInt(e.currentTarget.value, 10)
                     if (value > 0 && value <= 999) {
-                      changeDuration(value) // Applique la durée au timer
+                      changeDuration(value)
                       e.currentTarget.value = ''
                     }
                   }
@@ -585,7 +461,7 @@ export default function TimeTimer({
                   if (input) {
                     const value = parseInt(input.value, 10)
                     if (value > 0 && value <= 999) {
-                      changeDuration(value) // Applique la durée au timer
+                      changeDuration(value)
                       input.value = ''
                     }
                   }
@@ -605,13 +481,13 @@ export default function TimeTimer({
             <label className="time-timer__checkbox-label">
               <input
                 type="checkbox"
-                checked={!isSilentMode}
+                checked={!preferences.isSilentMode}
                 onChange={toggleSilentMode}
                 className="time-timer__checkbox"
               />
               <span className="time-timer__checkbox-text">
                 🔔{' '}
-                {isSilentMode
+                {preferences.isSilentMode
                   ? 'Activer la sonnerie'
                   : 'Désactiver la sonnerie'}
               </span>
@@ -633,12 +509,12 @@ export default function TimeTimer({
                 <button
                   key={colorOption.id}
                   className={`time-timer__color-btn ${
-                    diskColor === colorOption.id
+                    preferences.diskColor === colorOption.id
                       ? 'time-timer__color-btn--selected'
                       : ''
                   }`}
                   onClick={() => changeDiskColor(colorOption.id)}
-                  aria-pressed={diskColor === colorOption.id}
+                  aria-pressed={preferences.diskColor === colorOption.id}
                   aria-label={colorOption.label}
                   data-color={colorOption.id}
                 >
@@ -660,24 +536,24 @@ export default function TimeTimer({
           <div className="time-timer__settings-section">
             <label
               className={`time-timer__checkbox-label ${
-                duration !== 60 ? 'time-timer__checkbox-label--disabled' : ''
+                state.duration !== 60 ? 'time-timer__checkbox-label--disabled' : ''
               }`}
             >
               <input
                 type="checkbox"
-                checked={showNumbers}
+                checked={preferences.showNumbers}
                 onChange={toggleShowNumbers}
-                disabled={duration !== 60}
+                disabled={state.duration !== 60}
                 className="time-timer__checkbox"
               />
               <span className="time-timer__checkbox-text">
                 🔢{' '}
-                {showNumbers
+                {preferences.showNumbers
                   ? 'Masquer les chiffres horaires'
                   : 'Afficher les chiffres horaires'}
               </span>
             </label>
-            {duration !== 60 && (
+            {state.duration !== 60 && (
               <p className="time-timer__settings-hint time-timer__settings-hint--info">
                 💡 Les chiffres horaires ne s&apos;affichent qu&apos;avec une
                 durée de 60 minutes
@@ -693,13 +569,13 @@ export default function TimeTimer({
               <label className="time-timer__checkbox-label">
                 <input
                   type="checkbox"
-                  checked={enableVibration}
+                  checked={preferences.enableVibration}
                   onChange={toggleVibration}
                   className="time-timer__checkbox"
                 />
                 <span className="time-timer__checkbox-text">
                   📳{' '}
-                  {enableVibration
+                  {preferences.enableVibration
                     ? 'Désactiver la vibration'
                     : 'Activer la vibration'}
                 </span>
@@ -714,9 +590,9 @@ export default function TimeTimer({
 
       {/* Message d'accessibilité */}
       <div className="sr-only" role="status" aria-live="polite">
-        {timeLeft === 0 && t('timeTimer.completed')}
-        {timeLeft > 0 && isRunning && t('timeTimer.running')}
-        {timeLeft > 0 && !isRunning && t('timeTimer.paused')}
+        {state.timeLeft === 0 && t('timeTimer.completed')}
+        {state.timeLeft > 0 && state.isRunning && t('timeTimer.running')}
+        {state.timeLeft > 0 && !state.isRunning && t('timeTimer.paused')}
       </div>
     </div>
   )

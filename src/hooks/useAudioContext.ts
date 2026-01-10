@@ -10,6 +10,7 @@ import { useCallback, useRef } from 'react'
 export interface UseAudioContextReturn {
   getAudioContext: () => AudioContext | null
   playBeep: (frequency?: number) => void
+  playSound: (url: string, volume?: number) => Promise<void>
 }
 
 /**
@@ -113,5 +114,29 @@ export function useAudioContext(): UseAudioContextReturn {
     [getAudioContext]
   )
 
-  return { getAudioContext, playBeep }
+  /**
+   * Jouer un fichier audio (ex: wav, mp3)
+   * @param url - URL du fichier audio
+   * @param volume - Volume entre 0 et 1 (par défaut 0.5)
+   */
+  const playSound = useCallback(
+    async (url: string, volume: number = 0.5): Promise<void> => {
+      try {
+        const audio = new Audio(url)
+        audio.volume = Math.max(0, Math.min(1, volume)) // Clamper entre 0 et 1
+        await audio.play()
+      } catch (error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            '⚠️ Erreur lors de la lecture du fichier audio:',
+            (error as Error).message
+          )
+        }
+        // Ignorer silencieusement l'erreur en production
+      }
+    },
+    []
+  )
+
+  return { getAudioContext, playBeep, playSound }
 }
