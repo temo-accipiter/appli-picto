@@ -44,8 +44,7 @@ describe('useFocusTrap', () => {
   describe('Focus trap actif', () => {
     it('doit rediriger focus du dernier vers premier avec Tab', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() => useFocusTrap(ref, true))
 
@@ -69,8 +68,7 @@ describe('useFocusTrap', () => {
 
     it('doit rediriger focus du premier vers dernier avec Shift+Tab', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() => useFocusTrap(ref, true))
 
@@ -95,13 +93,12 @@ describe('useFocusTrap', () => {
 
     it('ne doit pas intercepter Tab sur élément du milieu', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() => useFocusTrap(ref, true))
 
       // Focus sur bouton du milieu
-      const middleButton = container.querySelectorAll('button')[1]
+      const middleButton = container.querySelectorAll('button')[1] as HTMLButtonElement
       middleButton.focus()
 
       // Simuler Tab
@@ -120,8 +117,7 @@ describe('useFocusTrap', () => {
 
     it('doit ignorer les touches autres que Tab', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() => useFocusTrap(ref, true))
 
@@ -152,8 +148,7 @@ describe('useFocusTrap', () => {
   describe('Focus trap inactif', () => {
     it('ne doit pas intercepter Tab quand inactif', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() => useFocusTrap(ref, false))
 
@@ -180,8 +175,7 @@ describe('useFocusTrap', () => {
       document.body.appendChild(emptyContainer)
 
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = emptyContainer
+      Object.defineProperty(ref, 'current', { value: emptyContainer, writable: true })
 
       // Ne doit pas crasher
       expect(() => {
@@ -209,8 +203,7 @@ describe('useFocusTrap', () => {
       document.body.appendChild(singleContainer)
 
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = singleContainer
+      Object.defineProperty(ref, 'current', { value: singleContainer, writable: true })
 
       renderHook(() => useFocusTrap(ref, true))
 
@@ -236,8 +229,7 @@ describe('useFocusTrap', () => {
   describe('Cleanup', () => {
     it('doit retirer event listener au unmount', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const removeEventListenerSpy = vi.spyOn(document, 'removeEventListener')
 

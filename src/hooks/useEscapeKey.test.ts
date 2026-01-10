@@ -121,8 +121,7 @@ describe('useEscapeKey', () => {
   describe('Gestion Enter sur boutons', () => {
     it('doit déclencher click sur bouton actif avec Enter', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const clickSpy = vi.fn()
       button.addEventListener('click', clickSpy)
@@ -154,8 +153,7 @@ describe('useEscapeKey', () => {
 
     it('ne doit pas déclencher click si bouton hors conteneur', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const outsideButton = document.createElement('button')
       outsideButton.textContent = 'Extérieur'
@@ -197,8 +195,7 @@ describe('useEscapeKey', () => {
       container.appendChild(input)
 
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() =>
         useEscapeKey({

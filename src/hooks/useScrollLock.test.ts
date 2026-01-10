@@ -51,8 +51,7 @@ describe('useScrollLock', () => {
   describe('Scroll lock', () => {
     it('doit verrouiller scroll quand actif', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() =>
         useScrollLock({
@@ -66,8 +65,7 @@ describe('useScrollLock', () => {
 
     it('ne doit pas verrouiller scroll quand inactif', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() =>
         useScrollLock({
@@ -81,8 +79,7 @@ describe('useScrollLock', () => {
 
     it('doit verrouiller scroll au mount', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       renderHook(() =>
         useScrollLock({
@@ -97,8 +94,7 @@ describe('useScrollLock', () => {
 
     it('doit restaurer scroll quand désactivé', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const { rerender } = renderHook(
         ({ active }) =>
@@ -123,8 +119,7 @@ describe('useScrollLock', () => {
   describe('Auto-focus', () => {
     it('doit focus sur dernier bouton footer par défaut', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       // Mock focus
       const focusSpy = vi.spyOn(lastButton, 'focus')
@@ -147,8 +142,7 @@ describe('useScrollLock', () => {
       footer.appendChild(customButton)
 
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const focusSpy = vi.spyOn(customButton, 'focus')
 
@@ -171,8 +165,7 @@ describe('useScrollLock', () => {
       document.body.appendChild(emptyContainer)
 
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = emptyContainer
+      Object.defineProperty(ref, 'current', { value: emptyContainer, writable: true })
 
       const focusSpy = vi.spyOn(emptyContainer, 'focus')
 
@@ -237,8 +230,7 @@ describe('useScrollLock', () => {
   describe('Options par défaut', () => {
     it('doit utiliser focusSelector par défaut (.modal__footer button:last-of-type)', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const focusSpy = vi.spyOn(lastButton, 'focus')
 
@@ -258,8 +250,7 @@ describe('useScrollLock', () => {
   describe('Transitions actif/inactif', () => {
     it('doit gérer plusieurs transitions actif → inactif → actif', () => {
       const ref = createRef<HTMLDivElement>()
-      // @ts-expect-error - Assigner manuellement pour tests
-      ref.current = container
+      Object.defineProperty(ref, 'current', { value: container, writable: true })
 
       const { rerender } = renderHook(
         ({ active }) =>
