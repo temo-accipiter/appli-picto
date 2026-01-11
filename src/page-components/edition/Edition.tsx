@@ -396,8 +396,6 @@ export default function Edition() {
           />
         </div>
 
-        <Separator />
-
         <Button
           label={
             <span className="button-label">

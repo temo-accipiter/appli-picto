@@ -157,7 +157,7 @@ export default function ChecklistTachesEdition({
       <Button
         label={
           <span className="button-label">
-            {t('tasks.title')}
+            ⚙️ Options d'édition
             <ChevronDown
               className={`chevron ${showActions ? 'open' : ''}`}
               size={16}
