@@ -53,12 +53,13 @@ describe('Edition - Test intégration', () => {
   it('✅ affiche la page avec les sections Tâches et Récompenses', async () => {
     renderWithProviders(<Edition />)
 
-    // Attendre le chargement
+    // Attendre le chargement - La section tâches est maintenant toujours visible
+    // avec le bouton "Options d'édition" pour les actions/filtres
     await waitFor(() => {
-      expect(screen.getByText('Tâches')).toBeInTheDocument()
+      expect(screen.getByText(/Options d'édition/i)).toBeInTheDocument()
     })
 
-    // Vérifier les boutons de toggle
+    // Vérifier le bouton de toggle Récompenses
     expect(screen.getByText('Récompenses')).toBeInTheDocument()
     // Note: Confettis checkbox nécessite que parametres soient chargés via MSW
   })
