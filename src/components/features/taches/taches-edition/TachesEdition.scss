@@ -34,6 +34,22 @@
     timing('base'),
     easing('smooth')
   );
+
+  /* Button label avec chevron toggle */
+  .button-label {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing('8');
+
+    .chevron {
+      @include safe-transition(transform, timing('fast'), easing('smooth'));
+      margin-left: auto;
+    }
+
+    .chevron.open {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 /* Actions (boutons, filtres) - stylisé comme une card */
@@ -55,6 +71,29 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(size('260'), 1fr));
   gap: spacing('md');
+  max-height: size('600');
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: spacing('xs');
+
+  /* Custom scrollbar pour TSA-friendly */
+  &::-webkit-scrollbar {
+    width: size('8');
+  }
+
+  &::-webkit-scrollbar-track {
+    background: surface('soft');
+    border-radius: radius('sm');
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: semantic('info-primary');
+    border-radius: radius('sm');
+
+    &:hover {
+      background: semantic('info', 'dark');
+    }
+  }
 }
 
 /* Message vide */
