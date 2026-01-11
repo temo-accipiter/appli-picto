@@ -73,9 +73,7 @@ export default function MetricsDashboard() {
             <div className="metric-card__icon">💚</div>
             <div className="metric-card__content">
               <div className="metric-card__label">Score de santé</div>
-              <div className="metric-card__value">
-                {metrics.health.score}%
-              </div>
+              <div className="metric-card__value">{metrics.health.score}%</div>
               <div className="metric-card__subtitle">
                 {metrics.health.score >= 90
                   ? 'Excellent'

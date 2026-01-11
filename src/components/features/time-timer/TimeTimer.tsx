@@ -278,7 +278,9 @@ export default function TimeTimer({
 
   // Obtenir la couleur du disque selon la sélection
   const getDiskColor = () => {
-    const selectedColor = COLOR_OPTIONS.find(c => c.id === preferences.diskColor)
+    const selectedColor = COLOR_OPTIONS.find(
+      c => c.id === preferences.diskColor
+    )
     return selectedColor ? selectedColor.cssVar : 'var(--disk-color-red)'
   }
 
@@ -323,7 +325,13 @@ export default function TimeTimer({
           {preferences.showNumbers &&
             state.duration === 60 &&
             timeMarkers.map(value => {
-              const pos = getNumberPosition(value, radius, centerX, centerY, compact)
+              const pos = getNumberPosition(
+                value,
+                radius,
+                centerX,
+                centerY,
+                compact
+              )
               return (
                 <text
                   key={value}
@@ -352,7 +360,9 @@ export default function TimeTimer({
             {formatTime(state.timeLeft)}
           </span>
           {!compact && !hideLabel && (
-            <span className="time-timer__duration-label">/ {state.duration} min</span>
+            <span className="time-timer__duration-label">
+              / {state.duration} min
+            </span>
           )}
         </div>
       </div>
@@ -363,7 +373,9 @@ export default function TimeTimer({
           className="time-timer__btn time-timer__btn--primary skip-min-touch-target"
           onClick={toggleTimer}
           disabled={state.timeLeft === 0}
-          aria-label={state.isRunning ? t('timeTimer.pause') : t('timeTimer.start')}
+          aria-label={
+            state.isRunning ? t('timeTimer.pause') : t('timeTimer.start')
+          }
         >
           {state.isRunning ? (
             <>
@@ -536,7 +548,9 @@ export default function TimeTimer({
           <div className="time-timer__settings-section">
             <label
               className={`time-timer__checkbox-label ${
-                state.duration !== 60 ? 'time-timer__checkbox-label--disabled' : ''
+                state.duration !== 60
+                  ? 'time-timer__checkbox-label--disabled'
+                  : ''
               }`}
             >
               <input

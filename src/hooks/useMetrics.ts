@@ -77,9 +77,7 @@ export function useMetrics(): UseMetricsReturn {
           imageErrors,
         ] = await Promise.all([
           // Total utilisateurs
-          supabase
-            .from('profiles')
-            .select('*', { count: 'exact', head: true }),
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
 
           // Nouveaux utilisateurs (7j)
           supabase
@@ -135,9 +133,8 @@ export function useMetrics(): UseMetricsReturn {
         if (cancelled) return
 
         // Calculer utilisateurs actifs uniques
-        const activeUsers = new Set(
-          activeTasks.data?.map(t => t.user_id) || []
-        ).size
+        const activeUsers = new Set(activeTasks.data?.map(t => t.user_id) || [])
+          .size
 
         // Calculer taux de succès images
         const imageData = imageStats.data as Record<string, unknown> | null

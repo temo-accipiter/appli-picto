@@ -173,7 +173,10 @@ export function useTimerPreferences(
   const updateCustomDurations = useCallback((durations: number[]) => {
     setPreferences(prev => ({ ...prev, customDurations: durations }))
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEYS.customDurations, JSON.stringify(durations))
+      localStorage.setItem(
+        STORAGE_KEYS.customDurations,
+        JSON.stringify(durations)
+      )
     }
   }, [])
 

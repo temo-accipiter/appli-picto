@@ -20,7 +20,7 @@ import {
 import type { Tache, Recompense } from '@/types/global'
 import { modernUploadImage } from '@/utils/storage/modernUploadImage'
 import { supabase } from '@/utils/supabaseClient'
-import { ChevronDown, Gift, ListChecks } from 'lucide-react'
+import { ChevronDown, Gift } from 'lucide-react'
 import React, { lazy, Suspense, useEffect, useState } from 'react'
 import './Edition.scss'
 
