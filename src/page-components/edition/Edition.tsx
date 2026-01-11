@@ -136,16 +136,9 @@ export default function Edition() {
   const [reload, setReload] = useState(0)
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterDone, setFilterDone] = useState(false)
-  const [showTaches, setShowTaches] = useState(
-    () => sessionStorage.getItem('showTaches') === 'true'
-  )
   const [showRecompenses, setShowRecompenses] = useState(
     () => sessionStorage.getItem('showRecompenses') === 'true'
   )
-
-  useEffect(() => {
-    sessionStorage.setItem('showTaches', String(showTaches))
-  }, [showTaches])
 
   useEffect(() => {
     sessionStorage.setItem('showRecompenses', String(showRecompenses))
@@ -371,58 +364,37 @@ export default function Edition() {
       <h1 className="sr-only">{t('edition.title')}</h1>
 
       <div className="edition-sections">
-        <Button
-          label={
-            <span className="button-label">
-              <ListChecks
-                className="button-icon"
-                size={18}
-                aria-hidden="true"
-              />
-              {t('tasks.title')}
-              <ChevronDown
-                className={`chevron ${showTaches ? 'open' : ''}`}
-                size={16}
-                aria-hidden="true"
-              />
-            </span>
-          }
-          onClick={() => setShowTaches(prev => !prev)}
-          aria-expanded={showTaches}
-        />
-        {showTaches && (
-          <div className="taches-edition">
-            {!isAdmin && (
-              <div className="quota-indicators">
-                <ImageQuotaIndicator assetType="task_image" size="small" />
-              </div>
-            )}
-            <TachesEdition
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              items={visibleTaches as any}
-              categories={categories}
-              onToggleAujourdhui={handleToggleAujourdhui}
-              resetEdition={resetEdition}
-              onSubmitTask={handleSubmitTask}
-              onAddCategory={handleAddCategoryWithQuota}
-              onDeleteCategory={handleDeleteCategory}
-              filterCategory={filterCategory}
-              onChangeFilterCategory={setFilterCategory}
-              filterDone={filterDone}
-              onChangeFilterDone={setFilterDone}
-              onShowQuotaModal={handleShowQuotaModal}
-              onUpdateLabel={(id, label) => {
-                updateTaskLabel(String(id), label)
-                show(t('edition.taskRenamed'), 'success')
-              }}
-              onUpdateCategorie={handleUpdateCategorie}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onDelete={t => setTacheASupprimer(t as any)}
-            />
-          </div>
-        )}
-
         <Separator />
+
+        <div className="taches-edition">
+          {!isAdmin && (
+            <div className="quota-indicators">
+              <ImageQuotaIndicator assetType="task_image" size="small" />
+            </div>
+          )}
+          <TachesEdition
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            items={visibleTaches as any}
+            categories={categories}
+            onToggleAujourdhui={handleToggleAujourdhui}
+            resetEdition={resetEdition}
+            onSubmitTask={handleSubmitTask}
+            onAddCategory={handleAddCategoryWithQuota}
+            onDeleteCategory={handleDeleteCategory}
+            filterCategory={filterCategory}
+            onChangeFilterCategory={setFilterCategory}
+            filterDone={filterDone}
+            onChangeFilterDone={setFilterDone}
+            onShowQuotaModal={handleShowQuotaModal}
+            onUpdateLabel={(id, label) => {
+              updateTaskLabel(String(id), label)
+              show(t('edition.taskRenamed'), 'success')
+            }}
+            onUpdateCategorie={handleUpdateCategorie}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onDelete={t => setTacheASupprimer(t as any)}
+          />
+        </div>
 
         <Button
           label={

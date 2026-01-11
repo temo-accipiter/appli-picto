@@ -14,6 +14,7 @@ import {
 import { useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
+import { ChevronDown } from 'lucide-react'
 import './TachesEdition.scss'
 
 interface TacheItem {
@@ -81,6 +82,7 @@ export default function ChecklistTachesEdition({
   const [catASupprimer, setCatASupprimer] = useState<string | number | null>(
     null
   )
+  const [showActions, setShowActions] = useState(false)
 
   const { t } = useI18n()
 
@@ -152,44 +154,61 @@ export default function ChecklistTachesEdition({
 
   return (
     <div className="checklist-edition">
-      <div className="edition-section__actions">
-        <Button
-          label={`➕ ${t('tasks.addTask')}`}
-          onClick={async () => {
-            if (onShowQuotaModal) {
-              const canOpen = await onShowQuotaModal('task')
-              if (canOpen) {
+      <Button
+        label={
+          <span className="button-label">
+            ⚙️ Options d'édition
+            <ChevronDown
+              className={`chevron ${showActions ? 'open' : ''}`}
+              size={16}
+              aria-hidden="true"
+            />
+          </span>
+        }
+        onClick={() => setShowActions(prev => !prev)}
+        aria-expanded={showActions}
+      />
+
+      {showActions && (
+        <div className="edition-section__actions">
+          <Button
+            label={`➕ ${t('tasks.addTask')}`}
+            onClick={async () => {
+              if (onShowQuotaModal) {
+                const canOpen = await onShowQuotaModal('task')
+                if (canOpen) {
+                  setModalTacheOpen(true)
+                }
+              } else {
                 setModalTacheOpen(true)
               }
-            } else {
-              setModalTacheOpen(true)
-            }
-          }}
-        />
-        <Button
-          label={`⚙️ ${t('tasks.manageCategories')}`}
-          onClick={() => setManageCatOpen(true)}
-        />
-        <Button
-          label={t('tasks.reset')}
-          onClick={() => setShowConfirmReset(true)}
-        />
-        <Select
-          id="filter-category"
-          label={t('tasks.filterByCategory')}
-          options={[{ value: 'all', label: t('tasks.all') }, ...categories]}
-          value={filterCategory}
-          onChange={e => onChangeFilterCategory(e.target.value)}
-        />
-        <Checkbox
-          id="filter-done"
-          className="filtre-checkbox"
-          label={t('tasks.checkedOnly')}
-          checked={filterDone}
-          onChange={e => onChangeFilterDone(e.target.checked)}
-          size="md"
-        />
-      </div>
+            }}
+          />
+          <Button
+            label={`⚙️ ${t('tasks.manageCategories')}`}
+            onClick={() => setManageCatOpen(true)}
+          />
+          <Button
+            label={t('tasks.reset')}
+            onClick={() => setShowConfirmReset(true)}
+          />
+          <Select
+            id="filter-category"
+            label={t('tasks.filterByCategory')}
+            options={[{ value: 'all', label: t('tasks.all') }, ...categories]}
+            value={filterCategory}
+            onChange={e => onChangeFilterCategory(e.target.value)}
+          />
+          <Checkbox
+            id="filter-done"
+            className="filtre-checkbox"
+            label={t('tasks.checkedOnly')}
+            checked={filterDone}
+            onChange={e => onChangeFilterDone(e.target.checked)}
+            size="md"
+          />
+        </div>
+      )}
 
       {items.length === 0 ? (
         <div
