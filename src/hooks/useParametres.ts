@@ -141,7 +141,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
         // Si pas de paramètres, créer avec les valeurs par défaut
         const defaults: Partial<Parametre> = {
           confettis: true,
-          toasts_enabled: true,
+          // TODO: Rajouter toasts_enabled: true quand colonne ajoutée à DB
           ...updates,
         }
         return await insertDefaults(defaults)

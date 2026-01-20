@@ -4,7 +4,6 @@
 // Dashboard analytics uploads images (7 derniers jours, admins uniquement)
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
 import { Loader } from '@/components'
 import './ImageAnalytics.scss'
 
@@ -26,6 +25,22 @@ export default function ImageAnalytics() {
   useEffect(() => {
     async function fetchStats() {
       try {
+        // TODO: Réactiver quand fonction RPC get_image_analytics_summary sera créée
+        // Temporairement désactivé - retourne des stats vides
+        console.warn(
+          '⚠️ ImageAnalytics: fonction RPC get_image_analytics_summary non implémentée'
+        )
+        setStats({
+          total_uploads: 0,
+          success_count: 0,
+          failed_count: 0,
+          avg_compression_ratio: 0,
+          avg_conversion_ms: 0,
+          avg_upload_ms: 0,
+          total_storage_saved_mb: 0,
+        })
+
+        /* Code original à réactiver :
         const { data, error } = await supabase.rpc(
           'get_image_analytics_summary'
         )
@@ -35,6 +50,7 @@ export default function ImageAnalytics() {
         }
 
         setStats(data as ImageStats | null)
+        */
       } catch (e) {
         console.error('❌ Erreur stats images:', e)
         setError((e as Error).message)

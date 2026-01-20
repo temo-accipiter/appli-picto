@@ -477,12 +477,16 @@ export async function modernUploadImage(
 }
 
 async function logMetrics(
-  userId: string,
-  assetType: AssetType,
-  metrics: UploadMetrics,
-  fileHash?: string
+  _userId: string,
+  _assetType: AssetType,
+  _metrics: UploadMetrics,
+  _fileHash?: string
 ): Promise<void> {
   try {
+    // TODO: Réactiver quand table image_metrics sera créée
+    console.warn('⚠️ logMetrics: table image_metrics non implémentée')
+
+    /* Code original à réactiver :
     await supabase.from('image_metrics').insert({
       user_id: userId,
       asset_type: assetType,
@@ -497,6 +501,7 @@ async function logMetrics(
       conversion_method: metrics.conversionMethod,
       sha256_hash: fileHash || 'unknown',
     })
+    */
   } catch (error) {
     console.error('⚠️ Erreur log metrics:', error)
   }

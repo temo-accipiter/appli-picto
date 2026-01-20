@@ -76,6 +76,8 @@ export default function Profil() {
           user.email?.split('@')[0] ||
           'Utilisateur'
 
+        // Note: plan_id sera assigné automatiquement par le trigger assign_default_plan
+        // @ts-expect-error - plan_id sera ajouté par le trigger SQL
         const { error: insertError } = await supabase.from('profiles').insert({
           id: user.id,
           pseudo: pseudoSignup,
@@ -143,21 +145,99 @@ export default function Profil() {
       if (metaError)
         console.warn('⚠️ Mise à jour metadata échouée :', metaError)
 
-      if (!user?.id) return
+      if (!user?.id) {
+        console.error('❌ [PROFIL UPDATE] user.id est undefined !')
+        return
+      }
+
+      // DIAGNOSTIC AVANT UPDATE
+      console.log('🔍 [PROFIL UPDATE] AVANT UPDATE:', {
+        userId: user.id,
+        payload,
+        userEmail: user.email,
+      })
+
+      // Vérifier si le profil existe
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('profiles')
+        .select('id, pseudo, plan_id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      console.log('🔍 [PROFIL UPDATE] PROFIL EXISTANT ?', {
+        exists: !!existingProfile,
+        profile: existingProfile,
+        checkError,
+      })
+
+      if (!existingProfile) {
+        console.error(
+          '❌ [PROFIL UPDATE] Profil inexistant pour user.id:',
+          user.id
+        )
+        showToast('Erreur: votre profil est introuvable', 'error')
+        return
+      }
 
       // 2. Mise à jour table profiles
-      const { error } = await supabase
+      const { error, data, status, statusText, count } = await supabase
         .from('profiles')
         .update(payload)
         .eq('id', user.id)
+        .select()
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 handleSave - Résultat update profiles', { error })
-      }
+      // LOGGING ULTRA-DÉTAILLÉ (TOUJOURS ACTIF pour debug)
+      console.log('🔍 [PROFIL UPDATE] RÉSULTAT COMPLET:', {
+        status,
+        statusText,
+        count,
+        hasError: !!error,
+        errorIsObject: typeof error === 'object',
+        errorIsNull: error === null,
+        errorKeys: error ? Object.keys(error) : 'error is null',
+        errorEntries: error ? Object.entries(error) : 'error is null',
+        hasData: !!data,
+        dataIsArray: Array.isArray(data),
+        dataLength: data?.length,
+        data,
+        error,
+        rawError: JSON.stringify(error),
+      })
 
-      if (error) {
+      // Pattern robuste: vérifier PLUSIEURS conditions
+      const hasRealError =
+        status >= 400 || // HTTP error
+        (error && error !== null && Object.keys(error).length > 0) || // Error object avec clés
+        !data ||
+        data.length === 0 // Aucune ligne mise à jour
+
+      console.log('🔍 [PROFIL UPDATE] ANALYSE ERREUR:', {
+        hasRealError,
+        statusCheck: status >= 400,
+        errorCheck: error && error !== null && Object.keys(error).length > 0,
+        dataCheck: !data || data.length === 0,
+      })
+
+      if (hasRealError) {
+        const errorMsg =
+          error?.message ||
+          error?.details ||
+          (data?.length === 0 ? 'Aucune ligne mise à jour' : '') ||
+          `Update échoué (HTTP ${status})`
+
+        console.error('❌ [PROFIL UPDATE] ERREUR DÉTECTÉE:', {
+          status,
+          statusText,
+          message: error?.message,
+          details: error?.details,
+          hint: error?.hint,
+          code: error?.code,
+          dataLength: data?.length,
+          errorMsg,
+          fullError: error,
+          fullData: data,
+        })
         showToast(t('profil.profileUpdateError'), 'error')
-        console.error('❌ Erreur sauvegarde profil:', error)
       } else {
         // 3. IMPORTANT: Mettre à jour l'état local avec les valeurs nettoyées
         // Cela suffit pour mettre à jour l'UI car getDisplayPseudo() utilise dbPseudo en priorité
@@ -236,21 +316,42 @@ export default function Profil() {
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
     })
-    await supabase
+
+    // 🔴 FIX: Gestion d'erreur manquante pour update profiles
+    const {
+      error: profileError,
+      status: profileStatus,
+      data: profileData,
+    } = await supabase
       .from('profiles')
       .update({ avatar_url: data.path })
       .eq('id', user.id)
+      .select()
 
     if (process.env.NODE_ENV === 'development') {
       console.log('🔍 handleAvatarUpload - Mise à jour metadata/profil', {
         metaError,
         avatarPath: data.path,
+        profileStatus,
+        profileError,
+        profileData,
       })
     }
 
-    if (metaError) {
+    // Vérifier BOTH metadata error ET profile error
+    const hasProfileError =
+      profileStatus >= 400 ||
+      (profileError && Object.keys(profileError).length > 0)
+
+    if (metaError || hasProfileError) {
+      const errorMsg = metaError?.message || profileError?.message || 'Erreur'
       showToast(t('profil.profileUpdateError'), 'error')
-      console.error('❌ Erreur mise à jour profil:', metaError)
+      console.error('❌ Erreur mise à jour avatar:', {
+        metaError,
+        profileError,
+        profileStatus,
+        errorMsg,
+      })
       setTempAvatarPath(null) // Réinitialiser en cas d'erreur
     } else {
       showToast(t('profil.avatarUpdated'), 'success')

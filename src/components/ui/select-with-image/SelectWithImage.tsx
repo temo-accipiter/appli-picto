@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import * as Select from '@radix-ui/react-select'
 import { useI18n } from '@/hooks'
 import './SelectWithImage.scss'
@@ -47,9 +47,12 @@ export const SelectWithImage = React.forwardRef<
     const { t } = useI18n()
     const defaultPlaceholder = placeholder || `— ${t('actions.select')} —`
 
-    // Trouve l'option sélectionnée
-    const selectedOption = options.find(
-      opt => String(opt.value) === String(value)
+    // ✅ FIX CRITIQUE : Mémoïser selectedOption pour stabiliser sa référence
+    // CAUSE : .find() retourne TOUJOURS un nouvel objet → nouvelle référence
+    // → Radix UI Select détecte "changement" → re-render → BOUCLE INFINIE
+    const selectedOption = useMemo(
+      () => options.find(opt => String(opt.value) === String(value)),
+      [options, value]
     )
 
     return (
@@ -66,6 +69,9 @@ export const SelectWithImage = React.forwardRef<
         <Select.Root
           value={String(value)}
           onValueChange={val => {
+            // ✅ Garde anti-boucle : ne rien faire si pas de changement réel
+            if (val === String(value)) return
+
             // Convertir en nombre si la valeur originale était un nombre
             const option = options.find(opt => String(opt.value) === val)
             if (option) {
@@ -83,23 +89,20 @@ export const SelectWithImage = React.forwardRef<
             aria-invalid={!!error}
             aria-describedby={error ? `${id}-error` : undefined}
           >
-            <Select.Value asChild>
-              {selectedOption ? (
-                <div className="select-with-image__selected">
-                  {selectedOption.image && (
-                    <img
-                      src={selectedOption.image}
-                      alt={selectedOption.imageAlt || selectedOption.label}
-                      className="select-with-image__selected-image"
-                    />
-                  )}
-                  <span className="select-with-image__selected-label">
-                    {selectedOption.label}
-                  </span>
-                </div>
-              ) : (
-                <span className="select-with-image__placeholder">
-                  {defaultPlaceholder}
+            <Select.Value
+              placeholder={defaultPlaceholder}
+              className="select-with-image__selected"
+            >
+              {selectedOption && selectedOption.image && (
+                <img
+                  src={selectedOption.image}
+                  alt={selectedOption.imageAlt || selectedOption.label}
+                  className="select-with-image__selected-image"
+                />
+              )}
+              {selectedOption && (
+                <span className="select-with-image__selected-label">
+                  {selectedOption.label}
                 </span>
               )}
             </Select.Value>

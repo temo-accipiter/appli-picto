@@ -1,0 +1,264 @@
+@charset 'UTF-8';
+@use '@/styles/abstracts' as *;
+
+/// ============================================================================
+/// TIMELINE - Container horizontal sticky pour Planning Visuel & Séquençage
+/// ============================================================================
+///
+/// RÈGLES CRITIQUES :
+///   - Mobile-first (320px → 768px → 1024px)
+///   - Tokens uniquement (ZÉRO hardcode)
+///   - Scroll horizontal fluide (touch-friendly)
+///   - Accessibilité TSA (pas de surprise, prévisibilité)
+///
+/// TOKENS UTILISÉS :
+///   - spacing('lg', 'md', 'sm') → gaps, padding
+///   - surface('page', 'card', 'border') → backgrounds, borders
+///   - text('primary', 'secondary') → couleurs texte
+///   - radius('md') → border-radius
+///   - timing('xs'), easing('smooth') → transitions
+///   - size('touch-target-min') → bouton ➕ (44px min)
+/// ============================================================================
+
+.timeline {
+  // Layout de base
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+  width: 100%;
+
+  // Sticky par défaut (peut être désactivé via prop)
+  &--sticky {
+    position: sticky;
+    top: 0;
+    z-index: z-index('sticky');
+    background: surface('page');
+    padding-block: spacing('sm');
+
+    // Ombre subtile pour indiquer le sticky
+    box-shadow: shadow('elevation-sm');
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // HEADER - Titre + Bouton ➕
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('md');
+    padding-inline: spacing('md');
+
+    @include respond-to('tablet') {
+      padding-inline: spacing('lg');
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: font-size('xl');
+    font-weight: font-weight('bold');
+    color: text('primary');
+    line-height: line-height('tight');
+
+    @include respond-to('tablet') {
+      font-size: font-size('2xl');
+    }
+  }
+
+  &__add-button {
+    // Layout
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+    padding: spacing('sm') spacing('md');
+
+    // Touch target minimum WCAG AA
+    min-height: size('touch-target-min');
+    min-width: size('touch-target-min');
+
+    // Style
+    background: surface('card');
+    border: border-width('medium') solid surface('border');
+    border-radius: radius('md');
+    color: text('primary');
+
+    // Typographie
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+
+    // Cursor
+    cursor: pointer;
+
+    // Transition douce TSA-friendly
+    @include safe-transition(
+      (background-color, border-color, transform),
+      timing('xs'),
+      easing('smooth')
+    );
+
+    // États interactifs
+    &:hover {
+      background: surface('hover');
+      border-color: text('secondary');
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+      background: surface('soft');
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    // Responsive : masquer texte sur mobile
+    @include respond-to('mobile-only') {
+      padding: spacing('sm');
+    }
+  }
+
+  &__add-icon {
+    font-size: font-size('lg');
+    line-height: 1;
+  }
+
+  &__add-text {
+    @include respond-to('mobile-only') {
+      @include sr-only; // Masquer visuellement, garder pour lecteurs d'écran
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CONTAINER - Zone scrollable horizontale
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__container {
+    // Overflow horizontal avec scroll fluide
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    // Scroll fluide (TSA-friendly, pas de snap brusque)
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; // iOS momentum scrolling
+
+    // Padding horizontal pour respirer
+    padding-inline: spacing('md');
+    padding-block: spacing('sm');
+
+    @include respond-to('tablet') {
+      padding-inline: spacing('lg');
+      padding-block: spacing('md');
+    }
+
+    // Masquer scrollbar sur mobile (optionnel, design propre)
+    @include respond-to('mobile-only') {
+      scrollbar-width: none; // Firefox
+      -ms-overflow-style: none; // IE/Edge
+
+      &::-webkit-scrollbar {
+        display: none; // Chrome/Safari/Opera
+      }
+    }
+
+    // Scrollbar visible desktop (accessibilité)
+    @include respond-to('tablet') {
+      scrollbar-width: thin;
+      scrollbar-color: surface('border') transparent;
+
+      &::-webkit-scrollbar {
+        height: spacing('8');
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: surface('border');
+        border-radius: radius('md');
+
+        &:hover {
+          background: text('secondary');
+        }
+      }
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // TRACK - Container flex horizontal des slots/cartes
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__track {
+    // Layout horizontal
+    display: flex;
+    gap: spacing('lg');
+    align-items: flex-start;
+
+    // Largeur auto pour scroll
+    width: fit-content;
+    min-width: 100%;
+
+    // Hauteur minimale pour éviter collapse
+    min-height: size('200');
+
+    @include respond-to('tablet') {
+      gap: spacing('xl');
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTES MODE (planning vs sequence)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--planning {
+    // Couleur spécifique planning (optionnel)
+    // Peut être étendu avec des styles spécifiques planning
+  }
+
+  &--sequence {
+    // Indication visuelle "mode séquençage" (optionnel)
+    .timeline__title::before {
+      content: '📋 ';
+      opacity: opacity('md');
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTES CONTEXTE (edition vs tableau)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--edition {
+    // Styles spécifiques mode Édition (adulte)
+    background: surface('page');
+  }
+
+  &--tableau {
+    // Styles spécifiques mode Tableau (enfant)
+    // Background potentiellement différent pour enfant
+    background: surface('card');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ACCESSIBILITÉ - Motion réduit
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline {
+    &__container {
+      scroll-behavior: auto; // Désactiver smooth scroll si motion réduite
+    }
+
+    &__add-button {
+      transition: none !important;
+      transform: none !important;
+
+      &:hover {
+        transform: none !important;
+      }
+    }
+  }
+}

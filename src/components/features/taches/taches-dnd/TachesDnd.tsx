@@ -36,7 +36,6 @@ interface TacheItem {
   label: string
   fait: boolean | number
   imagepath?: string | null
-  isDemo?: boolean
 }
 
 interface DoneMap {

@@ -52,7 +52,7 @@ export function ToastProvider({
   children,
   defaultDuration = 2000,
 }: ToastProviderProps) {
-  const { parametres } = useParametres()
+  const { parametres: _parametres } = useParametres()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
@@ -82,13 +82,14 @@ export function ToastProvider({
       type: ToastType = 'info',
       options: { duration?: number } = {}
     ) => {
-      // Vérifier si les toasts sont activés (par défaut: true si parametres est null/undefined)
-      const toastsEnabled = parametres?.toasts_enabled ?? true
+      // TODO: Réactiver quand colonne toasts_enabled sera ajoutée à table parametres
+      // const toastsEnabled = _parametres?.toasts_enabled ?? true
+      // if (!toastsEnabled && type !== 'error') {
+      //   return
+      // }
 
-      // Ne rien faire si les toasts sont désactivés, sauf pour les erreurs critiques
-      if (!toastsEnabled && type !== 'error') {
-        return
-      }
+      // Comportement par défaut: toasts toujours activés
+      const _toastsEnabled = true
 
       clearTimer()
       setToast({ visible: true, message, type })
@@ -98,7 +99,7 @@ export function ToastProvider({
         timerRef.current = null
       }, duration)
     },
-    [defaultDuration, clearTimer, parametres?.toasts_enabled]
+    [defaultDuration, clearTimer] // TODO: Rajouter parametres?.toasts_enabled quand colonne ajoutée
   )
 
   return (

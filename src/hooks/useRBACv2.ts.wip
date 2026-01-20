@@ -1,0 +1,406 @@
+// src/hooks/useRBACv2.ts
+/**
+ * Hook RBAC V2 - Nouveau système de plans
+ *
+ * Utilise account_plans au lieu de role_quotas
+ * Support 4 rôles : free, abonne, staff, admin
+ *
+ * MIGRATION PROGRESSIVE :
+ * - Créer ce hook à côté de useRBAC.ts
+ * - Tester dans composants isolés
+ * - Migrer progressivement
+ * - Supprimer useRBAC.ts quand migration complète
+ */
+
+import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/utils/supabaseClient'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { RealtimeChannel } from '@supabase/supabase-js'
+import type {
+  RoleName,
+  UserPlanInfo,
+  UserQuotasWithUsage,
+  QuotaInfo,
+  PlanPermissions,
+} from '@/types/plans'
+
+type ContentType = 'task' | 'reward' | 'category' | 'custom_card'
+
+interface UseRBACv2Return extends PlanPermissions {
+  ready: boolean
+  loading: boolean
+  role: RoleName | null
+  planInfo: UserPlanInfo | null
+  quotasWithUsage: UserQuotasWithUsage | null
+
+  // Helpers
+  canCreate: (contentType: ContentType) => boolean
+  getQuotaInfo: (contentType: ContentType) => QuotaInfo | null
+  isRoleAtLeast: (minRole: RoleName) => boolean
+
+  // Actions
+  refreshQuotas: () => Promise<void>
+  reload: () => Promise<void>
+}
+
+/**
+ * Hiérarchie des rôles (pour comparaisons)
+ */
+const ROLE_HIERARCHY: Record<RoleName, number> = {
+  free: 0,
+  abonne: 1,
+  staff: 2,
+  admin: 3,
+}
+
+export default function useRBACv2(): UseRBACv2Return {
+  const { user, authReady } = useAuth()
+
+  const [loading, setLoading] = useState(true)
+  const [planInfo, setPlanInfo] = useState<UserPlanInfo | null>(null)
+  const [quotasWithUsage, setQuotasWithUsage] =
+    useState<UserQuotasWithUsage | null>(null)
+
+  const channelRef = useRef<RealtimeChannel | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  /**
+   * Fetch plan info + quotas depuis Supabase
+   */
+  const fetchPlanData = useCallback(async () => {
+    // Annuler requête précédente si en cours
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    abortControllerRef.current = new AbortController()
+
+    if (!authReady) {
+      setLoading(true)
+      return
+    }
+
+    // Free (guest sans compte) : pas de user
+    if (!user?.id) {
+      setPlanInfo({
+        plan_name: 'free',
+        display_name: 'Gratuit (Visiteur)',
+        max_tasks: 0,
+        max_rewards: 0,
+        max_categories: 0,
+        max_custom_cards: 0,
+        can_access_settings: false,
+        can_access_profil: false,
+        can_access_admin: false,
+        can_manage_users: false,
+        can_view_metrics: false,
+        can_manage_plans: false,
+      })
+      setQuotasWithUsage(null) // Pas de quotas pour free
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+
+    try {
+      // Fetch plan info
+      const { data: planData, error: planError } = await supabase.rpc(
+        'get_user_plan_info',
+        { p_user_id: user.id }
+      )
+
+      if (planError) {
+        console.error('[useRBACv2] Erreur get_user_plan_info:', planError)
+        setPlanInfo(null)
+        setQuotasWithUsage(null)
+        setLoading(false)
+        return
+      }
+
+      const plan = planData?.[0]
+      if (!plan) {
+        console.warn('[useRBACv2] Aucun plan trouvé pour user:', user.id)
+        setPlanInfo(null)
+        setQuotasWithUsage(null)
+        setLoading(false)
+        return
+      }
+
+      setPlanInfo(plan)
+
+      // Variable pour logger les quotas chargés
+      let loadedQuotas: UserQuotasWithUsage | null = null
+
+      // Fetch quotas + usage (seulement pour non-admin)
+      if (plan.plan_name !== 'admin') {
+        const { data: quotasData, error: quotasError } = await supabase.rpc(
+          'get_user_quotas_with_usage',
+          { p_user_id: user.id }
+        )
+
+        if (quotasError) {
+          console.error(
+            '[useRBACv2] Erreur get_user_quotas_with_usage:',
+            quotasError
+          )
+          setQuotasWithUsage(null)
+        } else {
+          loadedQuotas = quotasData?.[0] || null
+          setQuotasWithUsage(loadedQuotas)
+        }
+      } else {
+        // Admin : quotas illimités
+        loadedQuotas = {
+          plan_name: 'admin',
+          max_tasks: 999999,
+          max_rewards: 999999,
+          max_categories: 999999,
+          tasks_used: 0,
+          rewards_used: 0,
+          categories_used: 0,
+          can_create_task: true,
+          can_create_reward: true,
+          can_create_category: true,
+        }
+        setQuotasWithUsage(loadedQuotas)
+      }
+
+      setLoading(false)
+
+      console.log('[useRBACv2] Plan data loaded:', {
+        role: plan.plan_name,
+        quotas: loadedQuotas,
+      })
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error('[useRBACv2] Erreur fetch plan data:', err)
+      }
+      setPlanInfo(null)
+      setQuotasWithUsage(null)
+      setLoading(false)
+    }
+  }, [authReady, user?.id])
+
+  /**
+   * Fetch initial au mount
+   */
+  useEffect(() => {
+    fetchPlanData()
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+    }
+  }, [fetchPlanData])
+
+  /**
+   * Realtime subscription : refresh quotas quand contenu change
+   */
+  useEffect(() => {
+    if (!authReady || !user?.id || !planInfo) {
+      return
+    }
+
+    // Pas de realtime pour admin (quotas illimités)
+    if (planInfo.plan_name === 'admin') {
+      return
+    }
+
+    // Cleanup channel précédent
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current)
+      channelRef.current = null
+    }
+
+    const handleChange = () => {
+      // Debounce : attendre 500ms avant refresh
+      setTimeout(() => fetchPlanData(), 500)
+    }
+
+    const channel = supabase
+      .channel('rbac-v2:quotas:changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'taches' },
+        handleChange
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'recompenses' },
+        handleChange
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'categories' },
+        handleChange
+      )
+      .subscribe()
+
+    channelRef.current = channel
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current)
+        channelRef.current = null
+      }
+    }
+  }, [authReady, user?.id, planInfo, fetchPlanData])
+
+  /**
+   * Helper : Vérifier si user peut créer du contenu
+   */
+  const canCreate = useCallback(
+    (contentType: ContentType): boolean => {
+      if (!planInfo) return false
+
+      // Admin : toujours OK
+      if (planInfo.plan_name === 'admin') return true
+
+      // Free : jamais OK (pas de création custom)
+      if (planInfo.plan_name === 'free') return false
+
+      if (!quotasWithUsage) return false
+
+      // Vérifier selon le type de contenu
+      switch (contentType) {
+        case 'task':
+          return quotasWithUsage.can_create_task
+        case 'reward':
+          return quotasWithUsage.can_create_reward
+        case 'category':
+          return quotasWithUsage.can_create_category
+        case 'custom_card':
+          // Pour l'instant, même logique que tasks
+          // TODO: ajouter max_custom_cards dans RPC
+          return quotasWithUsage.can_create_task
+        default:
+          return false
+      }
+    },
+    [planInfo, quotasWithUsage]
+  )
+
+  /**
+   * Helper : Récupérer info quota pour affichage
+   */
+  const getQuotaInfo = useCallback(
+    (contentType: ContentType): QuotaInfo | null => {
+      if (!quotasWithUsage || !planInfo) return null
+
+      // Admin : pas de quotas
+      if (planInfo.plan_name === 'admin') return null
+
+      let limit: number
+      let current: number
+
+      switch (contentType) {
+        case 'task':
+          limit = quotasWithUsage.max_tasks
+          current = quotasWithUsage.tasks_used
+          break
+        case 'reward':
+          limit = quotasWithUsage.max_rewards
+          current = quotasWithUsage.rewards_used
+          break
+        case 'category':
+          limit = quotasWithUsage.max_categories
+          current = quotasWithUsage.categories_used
+          break
+        case 'custom_card':
+          // Pour l'instant, même que tasks
+          limit = quotasWithUsage.max_tasks
+          current = quotasWithUsage.tasks_used
+          break
+        default:
+          return null
+      }
+
+      const percentage = limit > 0 ? Math.round((current / limit) * 100) : 0
+      const remaining = Math.max(0, limit - current)
+
+      return {
+        type: contentType,
+        limit,
+        current,
+        remaining,
+        percentage,
+        canCreate: current < limit,
+      }
+    },
+    [planInfo, quotasWithUsage]
+  )
+
+  /**
+   * Helper : Vérifier si rôle >= minRole
+   * Exemple : isRoleAtLeast('staff') retourne true pour staff et admin
+   */
+  const isRoleAtLeast = useCallback(
+    (minRole: RoleName): boolean => {
+      if (!planInfo) return false
+
+      const currentLevel = ROLE_HIERARCHY[planInfo.plan_name]
+      const minLevel = ROLE_HIERARCHY[minRole]
+
+      return currentLevel >= minLevel
+    },
+    [planInfo]
+  )
+
+  /**
+   * Permissions dérivées du plan
+   */
+  const permissions = useMemo<PlanPermissions>(() => {
+    if (!planInfo) {
+      return {
+        canAccessSettings: false,
+        canAccessProfil: false,
+        canAccessAdmin: false,
+        canManageUsers: false,
+        canViewMetrics: false,
+        canManagePlans: false,
+        canCreateTask: false,
+        canCreateReward: false,
+        canCreateCategory: false,
+        canCreateCustomCard: false,
+      }
+    }
+
+    return {
+      canAccessSettings: planInfo.can_access_settings,
+      canAccessProfil: planInfo.can_access_profil,
+      canAccessAdmin: planInfo.can_access_admin,
+      canManageUsers: planInfo.can_manage_users,
+      canViewMetrics: planInfo.can_view_metrics,
+      canManagePlans: planInfo.can_manage_plans,
+      canCreateTask: canCreate('task'),
+      canCreateReward: canCreate('reward'),
+      canCreateCategory: canCreate('category'),
+      canCreateCustomCard: canCreate('custom_card'),
+    }
+  }, [planInfo, canCreate])
+
+  /**
+   * API publique
+   */
+  return {
+    ready: authReady && !loading,
+    loading,
+    role: planInfo?.plan_name || null,
+    planInfo,
+    quotasWithUsage,
+
+    // Permissions
+    ...permissions,
+
+    // Helpers
+    canCreate,
+    getQuotaInfo,
+    isRoleAtLeast,
+
+    // Actions
+    refreshQuotas: fetchPlanData,
+    reload: fetchPlanData,
+  }
+}

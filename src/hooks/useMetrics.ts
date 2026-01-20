@@ -111,8 +111,9 @@ export function useMetrics(): UseMetricsReturn {
             .eq('event_type', 'webhook.customer.subscription.deleted')
             .gte('timestamp', weekAgoISO),
 
-          // Stats images (7j)
-          supabase.rpc('get_image_analytics_summary'),
+          // TODO: Réactiver quand fonction RPC get_image_analytics_summary sera créée
+          // Stats images (7j) - temporairement désactivé
+          Promise.resolve({ data: null, error: null }),
 
           // Erreurs webhooks (7j)
           supabase
@@ -121,12 +122,9 @@ export function useMetrics(): UseMetricsReturn {
             .eq('event_type', 'webhook.error')
             .gte('timestamp', weekAgoISO),
 
-          // Erreurs images (7j)
-          supabase
-            .from('image_metrics')
-            .select('*', { count: 'exact', head: true })
-            .eq('result', 'error')
-            .gte('created_at', weekAgoISO),
+          // TODO: Réactiver quand table image_metrics sera créée
+          // Erreurs images (7j) - temporairement désactivé
+          Promise.resolve({ data: null, error: null, count: 0 }),
         ])
 
         // Si le composant a été démonté, ne rien faire

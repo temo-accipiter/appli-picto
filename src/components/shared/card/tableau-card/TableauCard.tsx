@@ -10,7 +10,7 @@
  *   Joue un bip sonore lors de la coche si la tâche n'était pas faite.
  */
 
-import { Checkbox, DemoSignedImage, SignedImage } from '@/components'
+import { Checkbox, SignedImage } from '@/components'
 import { useDraggable } from '@dnd-kit/core'
 import { useCallback, memo } from 'react'
 import { useDragAnimation, useAudioContext } from '@/hooks'
@@ -20,7 +20,6 @@ interface Tache {
   id: string | number
   label: string
   imagepath?: string | null
-  isDemo?: boolean
 }
 
 interface TableauCardProps {
@@ -30,6 +29,10 @@ interface TableauCardProps {
   isDraggingGlobal?: boolean
   isBeingSwapped?: boolean
   playSound?: boolean
+  /** Nombre de jetons à afficher (empilés verticalement sur le bord) */
+  tokens?: number
+  /** État visuel de la carte : focus (centrale), upcoming (à venir), done (terminée) */
+  state?: 'focus' | 'upcoming' | 'done'
 }
 
 function TableauCard({
@@ -39,6 +42,8 @@ function TableauCard({
   isDraggingGlobal = false,
   isBeingSwapped = false,
   playSound = true,
+  tokens = 0,
+  state = 'focus',
 }: TableauCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -80,32 +85,58 @@ function TableauCard({
     willChange: isDragging ? 'transform' : undefined,
   }
 
+  // Classes CSS conditionnelles incluant l'état
+  const cardClassNames = [
+    'tableau-card',
+    `tableau-card--${state}`,
+    done && 'done',
+    isDragging && 'dragging',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div
       ref={setNodeRef}
-      className={`tableau-card ${done ? 'done' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={cardClassNames}
       style={style}
       data-testid={`tableau-card-${tache.id}`}
-      aria-label={`${tache.label}${done ? ' - fait' : ''}`}
+      aria-label={`${tache.label}${done ? ' - fait' : ''}${state === 'focus' ? ' - en cours' : ''}`}
       {...attributes}
       {...listeners}
     >
       <span className="tableau-card__label">{tache.label}</span>
-      {tache.imagepath &&
-        (tache.isDemo ? (
-          <DemoSignedImage
-            filePath={tache.imagepath}
-            alt={tache.label}
-            className="tableau-card__image img-size-lg"
-          />
-        ) : (
+
+      {/* Container image + jetons */}
+      <div className="tableau-card__content">
+        {tache.imagepath && (
           <SignedImage
             filePath={tache.imagepath}
             bucket="images"
             alt={tache.label}
             size={100}
+            className="tableau-card__image"
           />
-        ))}
+        )}
+
+        {/* Jetons empilés verticalement (si > 0) */}
+        {tokens > 0 && (
+          <div
+            className="tableau-card__tokens"
+            aria-label={`${tokens} jeton${tokens > 1 ? 's' : ''}`}
+          >
+            {Array.from({ length: tokens }).map((_, index) => (
+              <span
+                key={index}
+                className="tableau-card__token"
+                aria-hidden="true"
+              >
+                🪙
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Wrapper pour isoler la checkbox des drag listeners */}
       <div

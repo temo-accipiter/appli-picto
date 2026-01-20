@@ -10,7 +10,6 @@ import {
 
 import { useDisplay, usePermissions } from '@/contexts'
 import {
-  useDemoCards,
   useFallbackData,
   useI18n,
   useParametres,
@@ -110,7 +109,9 @@ export default function TableauGrille({
   }, [pathname])
 
   // Données selon le mode (démo ou personnel)
-  const { demoTasks: demoTaches, demoRewards: demoRecompenses } = useDemoCards()
+  // Note: Mode démo désactivé - plus de cartes démo
+  const demoTaches: unknown[] = []
+  const demoRecompenses: unknown[] = []
   const { fallbackData, loading: fallbackLoading } = useFallbackData()
   const {
     taches: personalTachesRaw,

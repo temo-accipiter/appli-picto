@@ -11,7 +11,7 @@ import './SettingsMenu.scss'
 
 export default function SettingsMenu() {
   const { t } = useI18n()
-  const { show } = useToast()
+  const { show: _show } = useToast()
   const [open, setOpen] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
 
@@ -83,6 +83,7 @@ export default function SettingsMenu() {
           onChange={e => setShowTimeTimer(e.target.checked)}
         />
 
+        {/* TODO: Réactiver quand colonne toasts_enabled sera ajoutée à table parametres
         {parametres && (
           <Checkbox
             id="settings-toasts"
@@ -98,6 +99,7 @@ export default function SettingsMenu() {
             }}
           />
         )}
+        */}
       </div>
     </>
   )

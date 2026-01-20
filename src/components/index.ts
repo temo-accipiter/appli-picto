@@ -7,6 +7,14 @@ export { default as TachesDnd } from './features/taches/taches-dnd/TachesDnd'
 export { default as TachesEdition } from './features/taches/taches-edition/TachesEdition'
 export { default as TrainProgressBar } from './features/taches/train-progress-bar/TrainProgressBar'
 
+// Timeline (Planning Visuel & Séquençage)
+export { Timeline, EditionSlot } from './features/timeline'
+export type {
+  TimelineProps,
+  EditionSlotProps,
+  EditionSlotCard,
+} from './features/timeline'
+
 // Time Timer
 export { default as TimeTimer } from './features/time-timer/TimeTimer'
 export { default as FloatingTimeTimer } from './features/time-timer/FloatingTimeTimer'
@@ -57,7 +65,6 @@ export { default as TableauCard } from './shared/card/tableau-card/TableauCard'
 // DnD Components
 export { DndCard, DndSlot, DndGrid, useDndGrid } from './shared/dnd'
 export type { DndCardProps, DndSlotProps, DndGridProps } from './shared/dnd'
-export { default as DemoSignedImage } from './shared/demo-signed-image/DemoSignedImage'
 export { default as EditionList } from './shared/edition-list/EditionList'
 export { default as ErrorBoundary } from './shared/error-boundary/ErrorBoundary'
 export { default as ItemForm } from './shared/forms/ItemForm'

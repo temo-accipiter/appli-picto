@@ -165,7 +165,16 @@ export const getUsersWithRoles = async (
   const roleFilter = opts.roleFilter || 'all'
   const statusFilter = opts.statusFilter || 'all'
 
-  // Utiliser la fonction RPC pour éviter les problèmes de FK entre profiles et user_roles
+  // TODO: Réactiver quand fonction RPC get_users_with_roles sera créée
+  // Temporairement désactivé - retourne un tableau vide
+  console.warn(
+    '⚠️ getUsersWithRoles: fonction RPC get_users_with_roles non implémentée'
+  )
+
+  const data: any[] = []
+  const error = null
+
+  /* Code original à réactiver :
   const { data, error } = await supabase.rpc('get_users_with_roles', {
     page_num: page,
     page_limit: limit,
@@ -184,6 +193,10 @@ export const getUsersWithRoles = async (
   // Extraire le total_count de la première ligne (toutes les lignes ont le même total)
   const total = data && data.length > 0 ? (data[0] as any)?.total_count || 0 : 0
   const totalPages = Math.max(1, Math.ceil(total / limit))
+  */
+
+  const total = 0
+  const totalPages = 1
 
   return { data, error: null, pagination: { page, limit, total, totalPages } }
 }

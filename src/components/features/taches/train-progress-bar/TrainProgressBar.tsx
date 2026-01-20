@@ -5,7 +5,7 @@ import { SelectWithImage } from '@/components/ui/select-with-image'
 import type { SelectWithImageOption } from '@/components/ui/select-with-image'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import { useI18n, useStations } from '@/hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import './TrainProgressBar.scss'
 
 interface TrainProgressBarProps {
@@ -47,6 +47,32 @@ export default function TrainProgressBar({
       setCurrentStations(ligneStations)
     }
   }, [loading, ligneStations])
+
+  // ✅ FIX : Mémoriser options pour éviter re-création à chaque render
+  // CAUSE : Tableau recréé → nouvelle référence → SelectWithImage re-render → boucle infinie
+  const ligneOptions = useMemo<SelectWithImageOption[]>(
+    () => [
+      {
+        value: '1',
+        label: t('tableau.line1'),
+        image: '/images/ligne/ligne1.png',
+        imageAlt: 'Ligne 1',
+      },
+      {
+        value: '6',
+        label: t('tableau.line6'),
+        image: '/images/ligne/ligne6.png',
+        imageAlt: 'Ligne 6',
+      },
+      {
+        value: '12',
+        label: t('tableau.line12'),
+        image: '/images/ligne/ligne12.png',
+        imageAlt: 'Ligne 12',
+      },
+    ],
+    [t] // ← Re-créer seulement si t (i18n) change
+  )
 
   if (error) return <p>{t('errors.generic')}</p>
 
@@ -127,6 +153,9 @@ export default function TrainProgressBar({
           onChange={value => {
             const nouvelleLigne = String(value)
 
+            // ✅ Garde anti-boucle : si identique, ne rien faire
+            if (nouvelleLigne === ligne) return
+
             // En mode démo, empêcher le changement de ligne et ouvrir la modal
             if (isDemo && nouvelleLigne !== '1') {
               if (onLineChange) {
@@ -139,28 +168,7 @@ export default function TrainProgressBar({
             setLigne(nouvelleLigne)
             localStorage.setItem('ligne', nouvelleLigne)
           }}
-          options={
-            [
-              {
-                value: '1',
-                label: t('tableau.line1'),
-                image: '/images/ligne/ligne1.png',
-                imageAlt: 'Ligne 1',
-              },
-              {
-                value: '6',
-                label: t('tableau.line6'),
-                image: '/images/ligne/ligne6.png',
-                imageAlt: 'Ligne 6',
-              },
-              {
-                value: '12',
-                label: t('tableau.line12'),
-                image: '/images/ligne/ligne12.png',
-                imageAlt: 'Ligne 12',
-              },
-            ] as SelectWithImageOption[]
-          }
+          options={ligneOptions}
         />
 
         <p className="progression">

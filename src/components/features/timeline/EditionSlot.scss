@@ -1,0 +1,319 @@
+@charset 'UTF-8';
+@use '@/styles/abstracts' as *;
+
+/// ============================================================================
+/// EDITION SLOT - Slot éditable dans Timeline (mode Édition)
+/// ============================================================================
+///
+/// RÈGLES CRITIQUES :
+///   - Mobile-first (320px → 768px → 1024px)
+///   - Tokens uniquement (ZÉRO hardcode)
+///   - Violet clair pour slot Récompense (purple(100))
+///   - Touch targets 44px min (WCAG AA)
+///   - Accessibilité TSA (prévisibilité, pas de surprise)
+///
+/// TOKENS UTILISÉS :
+///   - spacing('md', 'sm', 'xs') → padding, gap
+///   - purple(100, 50) → background slot Récompense
+///   - surface('card', 'border', 'hover') → backgrounds, borders
+///   - text('primary', 'secondary') → couleurs texte
+///   - radius('md', 'sm') → border-radius
+///   - timing('xs'), easing('smooth') → transitions
+///   - size('touch-target-min', '150', '120') → dimensions
+/// ============================================================================
+
+.edition-slot {
+  // Layout de base
+  display: flex;
+  flex-direction: column;
+  gap: spacing('sm');
+
+  // Dimensions
+  min-width: size('150'); // Mobile
+  width: size('200'); // Tablette/Desktop
+
+  // Padding
+  padding: spacing('md');
+
+  // Style
+  background: surface('card');
+  border: border-width('medium') solid surface('border');
+  border-radius: radius('md');
+
+  // Transition douce TSA-friendly
+  @include safe-transition(
+    (background-color, border-color, box-shadow),
+    timing('xs'),
+    easing('smooth')
+  );
+
+  @include respond-to('tablet') {
+    min-width: size('200');
+    width: size('250');
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // HEADER - Titre + Bouton supprimer
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('sm');
+  }
+
+  &__title {
+    margin: 0;
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    color: text('secondary');
+    line-height: line-height('tight');
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__delete {
+    // ButtonDelete gère déjà touch target 44px
+    flex-shrink: 0;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DROP ZONE - Zone droppable DnD
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__drop-zone {
+    // DndSlot gère déjà les styles de base
+    min-height: size('150');
+    flex: 1;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CARTE ASSIGNÉE
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__card {
+    // Layout
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('sm');
+    width: 100%;
+    padding: spacing('sm');
+
+    // Style
+    background: surface('card');
+    border: none;
+    border-radius: radius('sm');
+    cursor: pointer;
+
+    // Transition
+    @include safe-transition(
+      (background-color, transform),
+      timing('xs'),
+      easing('smooth')
+    );
+
+    // États interactifs
+    &:hover:not(:disabled) {
+      background: surface('hover');
+      transform: translateY(-2px);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: opacity('md');
+    }
+  }
+
+  &__image {
+    width: 100%;
+    max-width: size('120');
+    height: auto;
+    border-radius: radius('sm');
+    object-fit: cover;
+  }
+
+  &__card-name {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('primary');
+    text-align: center;
+    line-height: line-height('normal');
+    word-break: break-word;
+  }
+
+  &__completed-badge {
+    display: inline-block;
+    padding: spacing('xs') spacing('sm');
+    font-size: font-size('xs');
+    font-weight: font-weight('semibold');
+    color: semantic('success', 'base');
+    background: semantic('success', 'light');
+    border-radius: radius('sm');
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // PLACEHOLDER - Slot vide
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: spacing('sm');
+    width: 100%;
+    height: 100%;
+    min-height: size('150');
+    padding: spacing('md');
+
+    // Style
+    border: border-width('medium') dashed surface('border');
+    border-radius: radius('sm');
+    background: surface('page');
+    color: text('secondary');
+
+    // Transition
+    @include safe-transition(
+      (border-color, background-color),
+      timing('xs'),
+      easing('smooth')
+    );
+  }
+
+  &__placeholder-icon {
+    font-size: font-size('3xl');
+    opacity: opacity('md');
+  }
+
+  &__placeholder-text {
+    font-size: font-size('xs');
+    font-weight: font-weight('medium');
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SÉLECTEUR JETONS
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__tokens {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+    padding-top: spacing('xs');
+    border-top: border-width('thin') solid surface('border');
+  }
+
+  &__tokens-label {
+    font-size: font-size('xs');
+    font-weight: font-weight('medium');
+    color: text('secondary');
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__tokens-select {
+    flex: 1;
+    padding: spacing('xs') spacing('sm');
+    font-size: font-size('sm');
+    color: text('primary');
+    background: surface('card');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    cursor: pointer;
+
+    // Touch target minimum
+    min-height: size('touch-target-min');
+
+    // Transition
+    @include safe-transition(border-color, timing('xs'), easing('smooth'));
+
+    &:hover {
+      border-color: text('secondary');
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTE : Slot Récompense (violet clair)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--reward {
+    // Background violet clair TSA-friendly
+    background: purple(50);
+    border-color: purple(200);
+
+    .edition-slot__title {
+      color: purple(700);
+    }
+
+    .edition-slot__placeholder {
+      background: purple(100);
+      border-color: purple(300);
+      color: purple(700);
+    }
+
+    &:hover {
+      background: purple(100);
+      border-color: purple(300);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTE : Slot complété (grisé, non modifiable)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--completed {
+    opacity: opacity('md');
+    pointer-events: none;
+
+    .edition-slot__card {
+      cursor: not-allowed;
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // VARIANTE : Slot vide
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &--empty {
+    // Styles spécifiques slot vide (si nécessaire)
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ACCESSIBILITÉ - Motion réduit
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@media (prefers-reduced-motion: reduce) {
+  .edition-slot {
+    transition: none !important;
+
+    &__card,
+    &__placeholder,
+    &__tokens-select {
+      transition: none !important;
+      transform: none !important;
+
+      &:hover {
+        transform: none !important;
+      }
+    }
+  }
+}

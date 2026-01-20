@@ -1,14 +1,13 @@
 'use client'
 
 // src/components/selectedRewardFloating/SelectedRewardFloating.tsx
-import { DemoSignedImage, EditionCard, SignedImage } from '@/components'
+import { EditionCard, SignedImage } from '@/components'
 import './SelectedRewardFloating.scss'
 
 interface Reward {
   id: string
   imagepath: string | null
   label: string
-  isDemo?: boolean
 }
 
 interface SelectedRewardFloatingProps {
@@ -24,20 +23,12 @@ export default function SelectedRewardFloating({
     <div className="selected-reward-floating" aria-hidden="true">
       <EditionCard
         imageComponent={
-          reward.isDemo ? (
-            <DemoSignedImage
-              filePath={reward.imagepath}
-              alt={reward.label}
-              className="img-size-xs"
-            />
-          ) : (
-            <SignedImage
-              filePath={reward.imagepath}
-              bucket="images"
-              alt={reward.label}
-              className="img-size-xs"
-            />
-          )
+          <SignedImage
+            filePath={reward.imagepath}
+            bucket="images"
+            alt={reward.label}
+            className="img-size-xs"
+          />
         }
         label={reward.label}
         labelId={reward.id}

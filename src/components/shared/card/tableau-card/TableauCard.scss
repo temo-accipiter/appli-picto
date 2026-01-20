@@ -85,6 +85,37 @@
   @include respond-to(md) {
     padding: spacing('md');
   }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // ÉTATS VISUELS - Focus / Upcoming / Done
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  // Focus : Carte centrale, agrandie
+  &--focus {
+    transform: scale(1.1);
+    box-shadow: shadow('elevation-lg');
+    z-index: z-index('dropdown');
+
+    @include respond-to(tablet) {
+      transform: scale(1.15);
+    }
+  }
+
+  // Upcoming : Cartes à venir, plus petites, opacité réduite
+  &--upcoming {
+    transform: scale(0.85);
+    opacity: opacity('md');
+
+    @include respond-to(tablet) {
+      transform: scale(0.9);
+    }
+  }
+
+  // Done : Carte terminée (override du .done existant si state='done')
+  &--done {
+    opacity: opacity('md');
+    filter: grayscale(100%);
+  }
 }
 
 // Label du tableau
@@ -93,6 +124,62 @@
   font-size: font-size('sm');
   line-height: line-height('snug');
   word-break: break-word;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CONTENT - Container image + jetons
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.tableau-card__content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// JETONS - Empilés verticalement sur le bord droit
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.tableau-card__tokens {
+  position: absolute;
+  top: spacing('xs');
+  right: spacing('xs');
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+  z-index: z-index('base') + 1; // Au-dessus de l'image
+}
+
+.tableau-card__token {
+  display: block;
+  font-size: font-size('lg');
+  line-height: 1;
+  filter: drop-shadow(shadow('elevation-xs'));
+
+  // Animation entrée douce
+  animation: token-pop timing('xs') easing('smooth-pop') backwards;
+
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: calc(#{$i} * 50ms);
+    }
+  }
+
+  @include respond-to(tablet) {
+    font-size: font-size('xl');
+  }
+}
+
+@keyframes token-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 // Wrapper checkbox - isolé du drag
