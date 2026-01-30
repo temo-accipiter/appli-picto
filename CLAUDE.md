@@ -30,77 +30,30 @@ pnpm preview             # Test build production
 pnpm check               # lint:fix + format (OBLIGATOIRE)
 pnpm test                # Tests unitaires
 
-# Vérifications (CRITIQUE avant commit/deploy)
+# Vérifications
 pnpm verify:quick        # type-check + lint + build (rapide)
-pnpm verify              # type-check + lint + format:check + test + build:prod
-pnpm verify:pre-commit   # type-check + lint + test (hook pre-commit)
-pnpm verify:ci           # verify + test:coverage (CI/CD)
-pnpm verify:all          # verify:ci + test:e2e (vérification exhaustive)
-pnpm debug:verify        # Vérification détaillée avec logs de progression
+pnpm verify:all          # verify:ci + test:e2e (exhaustif avant deploy)
 
 # 🚨 OBLIGATOIRE après modification DB Supabase
 pnpm context:update      # Dump schema + génération types TS
 
-# Base de données (CRITIQUE après modifications DB)
+# Base de données
 pnpm db:dump             # Dump schema local vers supabase/schema.sql
-pnpm db:types            # Générer types TypeScript depuis Supabase local
-pnpm context:update      # db:dump + db:types (OBLIGATOIRE après modif DB)
-pnpm db:link             # Lier projet Supabase distant
-pnpm db:dump:remote      # Dump schema distant (production)
-pnpm db:types:remote     # Générer types depuis Supabase distant
-pnpm context:update:remote # Dump + types depuis distant
-
-# Supabase Local
+pnpm db:types            # Générer types TypeScript depuis Supabase
 pnpm supabase:start      # Démarrer Supabase local (Docker)
-pnpm supabase:stop       # Arrêter Supabase local
-pnpm supabase:status     # Vérifier statut Supabase local
-pnpm supabase:reset      # Reset DB locale (DANGER)
 
 # Tests
 pnpm test:e2e            # Tests E2E Playwright
-pnpm test:e2e:ui         # Tests E2E avec UI interactive
-pnpm test:e2e:headed     # Tests E2E avec navigateur visible
-pnpm test:e2e:debug      # Tests E2E en mode debug
-pnpm test:e2e:report     # Afficher rapport tests E2E
 pnpm test:coverage       # Tests avec couverture
-pnpm test:ui             # Tests Vitest avec UI interactive
-
-# Maintenance
-pnpm audit               # Audit sécurité dépendances
-pnpm audit:fix           # Corriger vulnérabilités
-pnpm stats               # Statistiques code par fichier/langage
-pnpm stats:summary       # Statistiques code résumées
-pnpm clean               # Supprimer node_modules, .next, coverage
-pnpm clean:all           # clean + suppression pnpm-lock.yaml
 ```
 
 ### Commandes Slash Custom (Claude Code)
 
-#### Vérifications & Tests
-
 - `/verify-quick` - Vérification rapide : type-check + lint + build + test
-- `/verify-full` - Vérification exhaustive avant deploy (inclut E2E + coverage)
-- `/test-component <nom>` - Tests unitaires composant spécifique
-
-#### Git & Gestion de Code
-
+- `/verify-full` - Vérification exhaustive avant deploy
 - `/commit` - Commit conventionnel + push automatique
-- `/explore <question>` - Exploration approfondie du codebase
-
-#### Base de Données & Supabase
-
 - `/supabase-migrate <description>` - Créer/appliquer migration + génération types
-
-#### Développement & Debug
-
-- `/debug <description-du-bug>` - Analyse ultra-approfondie pour bugs sérieux avec troubleshooting systématique
-- `/deep-code-analysis <question> <zone-cible>` - Analyser code en profondeur pour répondre questions complexes
-
-#### Documentation & Métadonnées
-
-- `/claude-memory <action> <chemin>` - Créer et mettre à jour fichiers CLAUDE.md avec meilleures pratiques
-- `/prompt-command <action> <name>` - Créer et optimiser commandes slash custom
-- `/prompt-agent <action> <name>` - Créer et optimiser agents spécialisés
+- `/debug <description-du-bug>` - Analyse ultra-approfondie bugs
 
 ## 📁 Architecture Clé
 
@@ -110,53 +63,100 @@ src/
 │   ├── (public)/          # Routes publiques (tableau, login, signup)
 │   └── (protected)/       # Routes auth requise (edition, profil, admin)
 ├── components/            # UI modulaires (.tsx + .scss)
-│   ├── shared/           # Réutilisables (Modal, Button, Layout)
-│   ├── taches/           # Composants tâches
-│   └── recompenses/      # Composants récompenses
+│   ├── features/         # Domaines métier (taches, time-timer, admin, consent)
+│   ├── layout/           # Structure app (navbar, footer, user-menu)
+│   ├── shared/           # Réutilisables métier (Modal, FeatureGate, SignedImage)
+│   └── ui/               # Primitives UI pures (Button, Input, Loader)
 ├── contexts/             # État global (Auth, Permissions, Toast, Loading)
 ├── hooks/                # 🚨 CRITIQUE - Hooks custom Supabase
-│   ├── useTaches.ts              # CRUD tâches lecture
-│   ├── useTachesEdition.ts       # CRUD tâches écriture
-│   ├── useTachesDnd.ts           # Drag & drop tâches
-│   ├── useRecompenses.ts         # CRUD récompenses
-│   ├── useCategories.ts          # CRUD catégories
-│   ├── useStations.ts            # Gestion stations (lieux/espaces)
-│   ├── useParametres.ts          # Paramètres utilisateur
-│   ├── useRBAC.ts                # Permissions rôles
-│   ├── useAccountStatus.ts       # Quotas utilisateur
-│   ├── useSubscriptionStatus.ts  # Statut abonnement Stripe
-│   ├── useSimpleRole.ts          # Rôle utilisateur simplifié
-│   ├── usePermissionsAPI.ts      # API permissions
-│   ├── useAdminPermissions.ts    # Permissions admin
-│   ├── useAuth.ts                # Authentification
-│   ├── useDemoCards.ts           # Cartes de démo visiteurs
-│   ├── useAudioContext.ts        # Contexte audio (sons, beep, playSound)
-│   ├── useDragAnimation.ts       # Animations drag & drop
-│   ├── useReducedMotion.ts       # Détection mouvement réduit (accessibilité)
-│   ├── useDebounce.ts            # Debounce inputs
-│   ├── useI18n.ts                # Internationalisation
-│   ├── useFallbackData.ts        # Données de secours
-│   ├── useCheckout.ts            # 🆕 Stripe checkout session (invoke + fallback)
-│   ├── useDbPseudo.ts            # 🆕 Fetch pseudo utilisateur depuis DB
-│   ├── useMetrics.ts             # 🆕 Métriques dashboard admin (9 queries parallèles)
-│   ├── useTimerPreferences.ts    # 🆕 localStorage TimeTimer (5 préférences)
-│   └── useTimerSvgPath.ts        # 🆕 Calculs géométriques SVG TimeTimer
-├── page-components/      # Composants pages principales
+│   ├── useTaches*.ts     # CRUD tâches (lecture, édition, DnD)
+│   ├── useRecompenses.ts # CRUD récompenses
+│   ├── useAccountStatus.ts # Quotas utilisateur
+│   ├── useAuth.ts        # Authentification
+│   ├── useCheckout.ts    # Stripe checkout session
+│   └── [20+ autres hooks]
 ├── utils/
-│   └── supabaseClient.ts         # 🚨 Instance unique Supabase
+│   └── supabaseClient.ts # 🚨 Instance unique Supabase
 └── types/
-    └── supabase.ts               # Types générés depuis Supabase
+    └── supabase.ts       # Types générés depuis Supabase
 ```
 
 **Supabase Edge Functions** (`supabase/functions/`) :
+- `create-checkout-session/` - Checkout Stripe
+- `stripe-webhook/` - Webhooks Stripe
+- `delete-account/` - Suppression compte RGPD
 
-- `create-checkout-session/` - Checkout Stripe (création session paiement)
-- `stripe-webhook/` - Webhooks Stripe (events abonnements, paiements)
-- `delete-account/` - Suppression compte RGPD (anonymisation/suppression données)
-- `cleanup-unconfirmed/` - Nettoyage comptes non confirmés (cron job)
-- `log-consent/` - Journalisation consentements RGPD
-- `monitoring-alerts/` - Alertes monitoring système
-- `weekly-report/` - Rapports hebdomadaires usage
+## 📂 Structure Composants
+
+**CRITIQUE** : Organisation stricte en 4 catégories
+
+### 1. features/ - Domaines Métier
+Composants liés à fonctionnalités métier complètes (taches, time-timer, admin, consent, subscription, legal).
+
+**Règles** :
+- ✅ Contiennent logique métier spécifique
+- ✅ Peuvent importer depuis `shared/` et `ui/`
+- ❌ NE DOIVENT PAS être importés entre eux
+
+### 2. layout/ - Structure App
+Composants structurels (navbar, footer, user-menu, settings-menu).
+
+**Règles** :
+- ✅ Utilisés dans layouts Next.js
+- ✅ Gèrent navigation et structure globale
+
+### 3. shared/ - Composants Réutilisables
+Composants avec logique métier légère (modal, card, dnd, forms, feature-gate, quota-indicator).
+
+**Règles** :
+- ✅ Réutilisables dans plusieurs features
+- ❌ NE DOIVENT PAS importer depuis `features/` ou `layout/`
+
+### 4. ui/ - Primitives UI Pures
+Composants sans logique métier (button, input, select, loader, toast).
+
+**Règles** :
+- ✅ ZÉRO logique métier
+- ❌ NE DOIVENT PAS importer hooks Supabase ou contextes
+
+**Pattern OBLIGATOIRE** : Chaque composant = dossier avec `.tsx` + `.scss`
+
+```
+composant-exemple/
+├── ComposantExemple.tsx    # Composant React
+├── ComposantExemple.scss   # Styles SCSS (tokens uniquement)
+└── index.ts                # Barrel export (optionnel)
+```
+
+**Barrel Exports** : Utiliser `src/components/index.ts` pour imports groupés
+
+```typescript
+// ✅ CORRECT - Import depuis barrel
+import { Modal, Button, TachesDnd } from '@/components'
+```
+
+## 🏷️ Conventions Nommage
+
+**Fichiers** :
+- Composants : PascalCase (`TacheCard.tsx`)
+- Hooks : camelCase + préfixe `use` (`useTaches.ts`)
+- Styles : Même nom que composant (`TacheCard.scss`)
+- Tests : `[nom-fichier].test.ts`
+
+**Code** :
+- Composants : PascalCase, nom descriptif
+- Props interfaces : Suffixe `Props` (`TacheCardProps`)
+- Hooks : Préfixe `use`, camelCase
+- Variables : camelCase (`userId`)
+- Constantes : SCREAMING_SNAKE_CASE (`MAX_IMAGE_SIZE`)
+
+**SCSS** : BEM-lite
+```scss
+.tache-card {
+  &__title { }      // Element
+  &--completed { }  // Modifier
+}
+```
 
 ## 🎭 Rôles & Quotas
 
@@ -169,67 +169,30 @@ src/
 
 **Feature Gates** : `<FeatureGate role="abonne">...</FeatureGate>` + RLS server-side
 
-## 🎨 Design System Tokens-First (Phase 6 - FINALISÉ ✅)
+## 🎨 Design System Tokens-First
 
-**CRITIQUE** : Migration SCSS complète vers système de tokens centralisés
+**CRITIQUE** : Migration SCSS complète vers tokens centralisés (Phase 6 - FINALISÉ ✅)
 
-### État Actuel
-
-- ✅ **Phase 1-5** : Tokens consolidés, composants migrés
-- ✅ **Phase 6** : **FINALISÉ** - Tous fichiers SCSS refactorisés (Déc 2024)
-
-### Résultat Phase 6 (Déc 2024)
-
-**FINALISÉ** : Refactoring complet de 70 fichiers SCSS
-
-- ✅ **AdminPermissions.scss** : 2803 lignes refactorisées (plus gros fichier)
-- ✅ **Composants features/** : 18 fichiers (admin, consent, legal, recompenses, taches, time-timer)
-- ✅ **Pages/** : 15 fichiers (abonnement, edition, profil, login, admin, etc.)
-- ✅ **Layout/** : 7 fichiers (navbar, footer, settings-menu, user-menu, etc.)
-- ✅ **Shared/** : 30 fichiers (modals, cards, forms, dnd, etc.)
-- ✅ **Tokens ajoutés** : size('14', '18', '40', '250'), spacing('26')
-- ✅ **Build validé** : Compilation 95s, 242 tests passés
-
-**Impact total** :
-
-- 70 fichiers refactorisés
-- +3050 insertions, -3925 suppressions
-- Code -875 lignes (plus concis et maintenable)
-- **ZÉRO valeur hardcodée** dans composants
-
-### Documentation Design System
-
-Pour comprendre l'architecture tokens-first, consulter :
-
-- **`refactor-css/refactor-philosophy.md`** - Règles absolues & principes
-- **`refactor-css/refactor-contract.md`** - Plan d'exécution phase par phase
-- **`refactor-css/scss-architecture.md`** - Architecture technique complète
-
-### Règles CRITIQUES SCSS
+### Règles SCSS
 
 **Fonctions autorisées** :
-
 - **Couleurs** : `color()`, `surface()`, `text()`, `semantic()`, `role-color()`
 - **Spacing** : `spacing()` (margin/padding/gap UNIQUEMENT)
-- **Size** : `size()` (width/height/min-height/etc.) ⭐ NOUVEAU
+- **Size** : `size()` (width/height/min-height)
 - **Typographie** : `font-size()`, `font-weight()`, `line-height()`
 - **Motion** : `timing()`, `easing()`, `@include safe-transition()`
 - **Autres** : `radius()`, `shadow()`, `border-width()`
 - **Responsive** : `@include respond-to()` (mobile-first)
 
 **Interdictions** :
-
 - ❌ AUCUNE valeur hardcodée (`px`, `rem`, `#hex`, `rgb()`)
 - ❌ AUCUN `var(--*)` direct
 - ❌ AUCUN `lighten()`, `darken()`, `color.adjust()`
 
-### Validation
-
+**Validation** :
 ```bash
 pnpm lint:hardcoded        # Détecter hardcodes
-pnpm validate:touch-targets # Valider accessibilité
 pnpm build:css             # Compiler SCSS
-pnpm verify:css            # Vérification complète
 ```
 
 ## ⚡ Patterns CRITIQUES
@@ -239,27 +202,19 @@ pnpm verify:css            # Vérification complète
 **CRITIQUE** : ❌ **JAMAIS** de query Supabase directe dans composants
 
 ```typescript
-// ❌ INTERDIT - Query directe Supabase
+// ❌ INTERDIT
 const { data } = await supabase.from('taches').select()
 
-// ✅ CORRECT - Hook custom
+// ✅ CORRECT
 import { useTaches } from '@/hooks'
 const { taches, loading, error } = useTaches()
 ```
 
 **Hooks disponibles** :
-
-- **CRUD** : `useTaches`, `useTachesEdition`, `useRecompenses`, `useCategories`, `useStations`, `useParametres`
-- **Drag & Drop** : `useTachesDnd`, `useDragAnimation`
-- **Auth & Permissions** : `useAuth`, `useRBAC`, `useSimpleRole`, `usePermissionsAPI`, `useAdminPermissions`
-- **Quotas & Abonnements** : `useAccountStatus`, `useSubscriptionStatus`
-- **UX** : `useAudioContext`, `useReducedMotion`, `useDebounce`, `useI18n`
-- **Data** : `useDemoCards`, `useFallbackData`, `useDbPseudo`
-- **Business Logic Extraits** : 🆕
-  - `useCheckout` - Stripe checkout (invoke + fallback fetch)
-  - `useMetrics` - Métriques admin (9 queries parallèles)
-  - `useTimerPreferences` - localStorage TimeTimer (5 préférences centralisées)
-  - `useTimerSvgPath` - Géométrie SVG TimeTimer (polarToCartesian, describeArc)
+- **CRUD** : `useTaches`, `useTachesEdition`, `useRecompenses`, `useCategories`
+- **Auth & Permissions** : `useAuth`, `useRBAC`, `useSimpleRole`, `useAdminPermissions`
+- **Quotas** : `useAccountStatus`, `useSubscriptionStatus`
+- **Business Logic** : `useCheckout`, `useMetrics`, `useTimerPreferences`
 
 ### 2. Client Supabase Unique
 
@@ -268,32 +223,51 @@ const { taches, loading, error } = useTaches()
 import { supabase } from '@/utils/supabaseClient'
 ```
 
-### 3. Next.js App Router Patterns
+### 3. Next.js App Router
 
+**Structure Routes** :
+```
+app/
+├── (public)/           # Route group public (pas d'auth)
+│   ├── tableau/
+│   ├── login/
+│   └── signup/
+└── (protected)/        # Route group protégé (auth requise)
+    ├── edition/
+    ├── profil/
+    └── admin/
+```
+
+**Navigation** :
 ```typescript
-// src/app/(protected)/edition/page.tsx
-import Edition from '@/page-components/edition/Edition'
+// ✅ CORRECT
+import { useRouter } from 'next/navigation'
+const router = useRouter()
+router.push('/profil')
 
-export const metadata = {
+// ❌ INTERDIT
+import { useNavigate } from 'react-router-dom'
+```
+
+**Metadata SEO** :
+```typescript
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
   title: 'Édition - Appli-Picto',
-}
-
-export default function EditionPage() {
-  return <Edition />
+  description: 'Gestion tâches et récompenses',
 }
 ```
 
 ### 4. Server vs Client Components
 
-**Ajout `'use client'` UNIQUEMENT si** :
-
-- Hooks React (`useState`, `useEffect`, `useContext`)
+**Ajouter `'use client'` UNIQUEMENT si** :
+- Hooks React (`useState`, `useEffect`)
 - Event handlers (`onClick`, `onChange`)
 - Browser APIs (`window`, `localStorage`)
 
 ```typescript
 'use client' // Requis pour interactivité
-
 import { useState } from 'react'
 
 export default function Interactive() {
@@ -312,12 +286,9 @@ const { canCreateTask, quotas } = useAccountStatus()
 if (!canCreateTask) {
   return <QuotaExceeded message="Limite Free : 5 tâches" />
 }
-// OK créer
 ```
 
 ### 6. Upload Images (100KB max)
-
-**CRITIQUE** : Toutes les images DOIVENT être compressées avant upload
 
 ```typescript
 import { compressImageIfNeeded } from '@/utils'
@@ -330,276 +301,69 @@ const { data, error } = await supabase.storage
 
 ### 7. Intégration Stripe
 
-**CRITIQUE** : TOUJOURS utiliser hook `useCheckout` pour redirection Stripe
+**CRITIQUE** : TOUJOURS utiliser hook `useCheckout`
 
 ```typescript
-// ❌ INTERDIT - Appel Stripe direct ou Edge Function inline
-import Stripe from 'stripe'
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-// ❌ INTERDIT - Logic inline dans composant
-const response = await fetch('/api/create-checkout-session', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ priceId: 'price_xxx' }),
-})
-
-// ✅ CORRECT - Utiliser hook useCheckout
+// ✅ CORRECT
 import { useCheckout } from '@/hooks'
 
 function SubscribeButton() {
   const { handleCheckout } = useCheckout()
-
-  return (
-    <button onClick={() => handleCheckout()}>
-      S'abonner
-    </button>
-  )
+  return <button onClick={() => handleCheckout()}>S'abonner</button>
 }
 ```
 
-**Hook `useCheckout`** :
+### 8. Contextes Disponibles
 
-- Gère invoke Supabase Functions + fallback fetch brut
-- Validation priceId automatique
-- Protection double-clic avec useRef
-- Redirection automatique vers Stripe
-
-**Commandes Stripe** :
-
-- `pnpm deploy:checkout` - Déployer fonction checkout
-- `pnpm deploy:webhook` - Déployer webhook (--no-verify-jwt)
-- `pnpm logs:checkout` - Suivre logs checkout en temps réel
-- `pnpm logs:webhook` - Suivre logs webhook en temps réel
-- `pnpm stripe:listen` - Écouter webhooks localement
-- `pnpm stripe:trigger:checkout` - Tester checkout.session.completed
-- `pnpm stripe:trigger:subscription` - Tester customer.subscription.created
-
-### 8. Hooks Business Logic Extraits (Déc 2024) 🆕
-
-**CRITIQUE** : 5 nouveaux hooks créés pour extraction logique métier des composants
-
-#### `useCheckout` - Stripe Checkout Session
-
-**Utilisation** : Remplace toute logique inline de checkout Stripe
-
+**AuthContext** : `useAuth()` - Authentification
 ```typescript
-import { useCheckout } from '@/hooks'
-
-function AbonnementButton() {
-  const { handleCheckout } = useCheckout()
-
-  return (
-    <button onClick={() => handleCheckout()}>
-      S'abonner Premium
-    </button>
-  )
-}
+const { user, authReady, signOut } = useAuth()
 ```
 
-**Fonctionnalités** :
-
-- Invoke Supabase Functions (primaire) + fallback fetch (secours)
-- Validation automatique priceId depuis env
-- Protection double-clic avec useRef
-- Gestion erreurs avec alerts UX
-
-**Fichier** : `src/hooks/useCheckout.ts` (118 lignes)
-
----
-
-#### `useDbPseudo` - Fetch Pseudo Utilisateur
-
-**Utilisation** : Récupérer pseudo depuis table `profiles`
-
+**PermissionsContext** : `usePermissions()` - Contrôle accès
 ```typescript
-import { useDbPseudo } from '@/hooks'
-
-function UserGreeting({ userId }: { userId: string }) {
-  const pseudo = useDbPseudo(userId)
-
-  return <span>Bonjour {pseudo || 'utilisateur'} !</span>
-}
+const { canEdit, role } = usePermissions()
 ```
 
-**Fonctionnalités** :
-
-- Fetch automatique depuis `profiles.pseudo`
-- Pattern abort-safe avec `withAbortSafe`
-- Cleanup automatique au démontage composant
-- Gestion erreurs silencieuse (dev warnings uniquement)
-
-**Fichier** : `src/hooks/useDbPseudo.ts` (61 lignes)
-
----
-
-#### `useMetrics` - Métriques Dashboard Admin
-
-**Utilisation** : Récupérer toutes métriques admin en une seule query
-
+**ToastContext** : `useToast()` - Notifications
 ```typescript
-import { useMetrics } from '@/hooks'
-
-function AdminDashboard() {
-  const { metrics, loading, error } = useMetrics()
-
-  if (loading) return <Spinner />
-  if (error) return <ErrorMessage />
-
-  return (
-    <div>
-      <StatsCard title="Utilisateurs" value={metrics.users.total} />
-      <StatsCard title="Actifs 7j" value={metrics.users.active_7d} />
-      <StatsCard title="Santé système" value={`${metrics.health.score}%`} />
-    </div>
-  )
-}
+const { showToast } = useToast()
+showToast('Succès !', 'success')
 ```
 
-**Fonctionnalités** :
-
-- **9 queries Supabase en parallèle** (`Promise.all`)
-- Calculs dérivés : active users (Set dedup), health score, success rate
-- Pattern cleanup avec flag `cancelled`
-- Métriques : users, subscriptions, images, errors, health
-
-**Fichier** : `src/hooks/useMetrics.ts` (177 lignes)
-
-**Métriques disponibles** :
-
-- `users.total`, `users.new_7d`, `users.active_7d`
-- `subscriptions.active`, `subscriptions.new_7d`, `subscriptions.cancelled_7d`
-- `images.uploads_7d`, `images.success_rate`, `images.storage_saved_mb`
-- `errors.webhooks_7d`, `errors.images_7d`
-- `health.score` (0-100, basé sur taux erreurs)
-
----
-
-#### `useTimerPreferences` - localStorage TimeTimer
-
-**Utilisation** : Centraliser toutes préférences localStorage TimeTimer
-
+**LoadingContext** : `useLoading()` - États chargement
 ```typescript
-import { useTimerPreferences } from '@/hooks'
-
-function TimeTimerSettings() {
-  const {
-    preferences,
-    updateSilentMode,
-    updateDiskColor,
-    updateShowNumbers,
-  } = useTimerPreferences(10) // 10 min par défaut
-
-  return (
-    <div>
-      <Toggle
-        checked={preferences.isSilentMode}
-        onChange={updateSilentMode}
-        label="Mode silencieux"
-      />
-      <ColorPicker
-        value={preferences.diskColor}
-        onChange={updateDiskColor}
-        options={['red', 'blue', 'green', 'purple']}
-      />
-    </div>
-  )
-}
+const { loading, setLoading } = useLoading()
 ```
 
-**Fonctionnalités** :
-
-- **5 préférences centralisées** : isSilentMode, lastDuration, diskColor, showNumbers, enableVibration, customDurations
-- Persistence automatique localStorage (5 clés STORAGE_KEYS)
-- SSR-safe (vérification `typeof window`)
-- Fonctions update typées et optimisées (useCallback)
-
-**Fichier** : `src/hooks/useTimerPreferences.ts` (183 lignes)
-
-**Avant refactoring** : 5 `localStorage.getItem/setItem` éparpillés dans TimeTimer (723L)
-**Après refactoring** : Hook centralisé, TimeTimer réduit à 599L (-17%)
-
----
-
-#### `useTimerSvgPath` - Géométrie SVG TimeTimer
-
-**Utilisation** : Calculer path SVG du disque rouge TimeTimer
+### 9. Imports Absolus (OBLIGATOIRE)
 
 ```typescript
-import { useTimerSvgPath, getNumberPosition } from '@/hooks'
+// ✅ CORRECT - Alias @/
+import { useTaches } from '@/hooks'
+import { Modal, Button } from '@/components'
 
-function TimeTimerDisk({ percentage }: { percentage: number }) {
-  const { redDiskPath, dimensions } = useTimerSvgPath(percentage, false)
-  const { radius, svgSize, centerX, centerY } = dimensions
-
-  return (
-    <svg width={svgSize} height={svgSize}>
-      <circle cx={centerX} cy={centerY} r={radius} fill="white" />
-      <path d={redDiskPath} fill="red" />
-    </svg>
-  )
-}
+// ❌ INTERDIT - Relatifs
+import { useTaches } from '../../hooks/useTaches'
 ```
 
-**Fonctionnalités** :
-
-- Calculs géométriques : `polarToCartesian`, `describeArc`
-- **Optimisé useMemo** : Recalcul UNIQUEMENT si `percentage` ou `compact` change
-- Support mode compact (radius 70px) et normal (radius 130px)
-- Export helper `getNumberPosition` pour placer numéros autour cadran
-
-**Fichier** : `src/hooks/useTimerSvgPath.ts` (135 lignes)
-
-**Avant refactoring** : Fonctions inline dans TimeTimer (50+ lignes géométrie)
-**Après refactoring** : Hook memoïzé réutilisable, logique isolée
-
----
-
-#### `useAudioContext` - Extension playSound 🔊
-
-**MISE À JOUR** : Fonction `playSound` ajoutée au hook existant
+### 10. Error Handling
 
 ```typescript
-import { useAudioContext } from '@/hooks'
-
-function TimeTimerAlert() {
-  const { playSound, playBeep } = useAudioContext()
-
-  const handleTimerEnd = async () => {
-    await playSound('/sounds/alarm.mp3', 0.7) // Volume 70%
+const handleCreate = async () => {
+  setLoading(true)
+  try {
+    const { data, error } = await supabase.from('taches').insert([newTache])
+    if (error) throw error
+    showToast('Créée !', 'success')
+  } catch (error) {
+    console.error('Erreur:', error)
+    showToast('Erreur création', 'error')
+  } finally {
+    setLoading(false) // TOUJOURS reset
   }
-
-  return <button onClick={handleTimerEnd}>Tester alarme</button>
 }
 ```
-
-**Nouvelles fonctionnalités** :
-
-- `playSound(url, volume)` : Lecture fichiers audio (wav, mp3)
-- Volume configurable (0.0 - 1.0, défaut 0.5)
-- Gestion erreurs silencieuse (console.warn uniquement)
-- Complète `playBeep(frequency)` existant
-
-**Fichier** : `src/hooks/useAudioContext.ts` (mis à jour)
-
----
-
-### Impact Refactoring Hooks (Déc 2024)
-
-**Composants refactorés** :
-
-- ✅ **TimeTimer** : 723L → 599L (-17%), 9 useState → 1 useReducer
-- ✅ **UserMenu** : Suppression 68L handleCheckout + 30L fetch pseudo
-- ✅ **MetricsDashboard** : 435L → ~230L (-47%), suppression 9 queries inline
-
-**Résultats** :
-
-- +955 insertions, -606 suppressions (net +349 lignes pour 5 hooks réutilisables)
-- **ZÉRO query Supabase directe** dans TimeTimer, UserMenu, MetricsDashboard
-- Code plus maintenable, testable, réutilisable
-- Conformité CLAUDE.md stricte (hooks custom obligatoires)
-
-**CRITIQUE** : Ces 5 hooks doivent être utilisés dans TOUS les futurs composants nécessitant ces fonctionnalités
 
 ## 🚨 Règles Absolues
 
@@ -610,9 +374,8 @@ function TimeTimerAlert() {
 - ❌ Query Supabase directe dans composants
 - ❌ Images > 100KB
 - ❌ Utiliser `yarn` ou `npm` (projet pnpm)
-- ❌ Importer `react-router-dom` (migré Next.js App Router)
-- ❌ Créer fichiers .md documentation sans demande explicite
-- ❌ Merge une branche sans que je confirme explicitement
+- ❌ Importer `react-router-dom` (migré Next.js)
+- ❌ Merge branche sans confirmation explicite
 
 ### TOUJOURS Faire
 
@@ -623,264 +386,138 @@ function TimeTimerAlert() {
 - ✅ `'use client'` seulement si interactif
 - ✅ Vérifier quotas AVANT création
 - ✅ Animations douces max 0.3s ease
-- ✅ Imports absolus `@/` (pas relatifs)
-- ✅ Verifier les valeurs defini dans @abstracts s'il en existe deja, avant de créer de nouveaux tokens
+- ✅ Imports absolus `@/`
+- ✅ Vérifier tokens SCSS avant créer nouveaux
 
 ## 🔧 TypeScript
 
 **État** : Mode strict **partiellement relaxé** pour migration Next.js
 
-### Situation Actuelle
-
-- **329 erreurs non-bloquantes** documentées (`.github/issues/ts-remaining-errors.md`)
-- ✅ **Build réussit** : `pnpm build` passe sans problème
-- ✅ **Tests passent** : `pnpm test` fonctionne correctement
-- 📅 **Correction progressive** : 3 sprints planifiés (12-16h)
-
-### Règles TypeScript
-
-- ✅ **TOUJOURS** utiliser types générés Supabase (`src/types/supabase.ts`)
-- ✅ **TOUJOURS** typer props composants React
-- ⚠️ **`any` toléré temporairement** : Migration en cours, éviter si possible
-- ✅ **Interfaces préférées** : Pour props et types publics
-- ✅ **Type guards** : Pour narrowing types complexes
-
-### Commandes TypeScript
-
-- `pnpm type-check` - Vérifier erreurs TypeScript (mode watch disponible)
-- `pnpm type-check:watch` - Mode watch pour vérification continue
-- `pnpm db:types` - Régénérer types depuis Supabase (OBLIGATOIRE après modif DB)
-
-### Exemple Types Supabase
+- **329 erreurs non-bloquantes** documentées
+- ✅ **Build réussit** : `pnpm build` passe
+- ✅ **Tests passent** : `pnpm test` fonctionne
+- ✅ **TOUJOURS** typer props composants
+- ✅ **Types Supabase** générés : `src/types/supabase.ts`
 
 ```typescript
 import type { Database } from '@/types/supabase'
 
 type Tache = Database['public']['Tables']['taches']['Row']
 type TacheInsert = Database['public']['Tables']['taches']['Insert']
-type TacheUpdate = Database['public']['Tables']['taches']['Update']
 ```
+
+## 📱 PWA
+
+**Configuration** : `@ducanh2912/next-pwa` dans `next.config.mjs`
+
+**Manifest** : `public/manifest.json`
+- `start_url: "/tableau"`
+- `display: "standalone"`
+- Icônes 192×192 et 512×512 obligatoires
+
+**Service Worker** : Généré auto au build (`public/sw.js`)
 
 ## 📦 Variables Environnement
 
-**CRITIQUE** : Variables sensibles JAMAIS dans fichiers trackés Git
-
-### Fichiers Configuration
-
-- `.env.local` - Variables locales développement (NON tracké Git)
-- `.env.example` - Template variables (tracké Git)
-- `supabase/.env.local` - Variables Edge Functions locales (NON tracké)
-- `supabase/.env` - Variables Edge Functions production (NON tracké)
-
-### Variables Client-Side (NEXT*PUBLIC*\*)
-
+**Client-Side** (`NEXT_PUBLIC_*` exposé navigateur) :
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
-NEXT_PUBLIC_TURNSTILE_SITE_KEY=0x4AAA...
 ```
 
-**⚠️ ATTENTION** : Préfixe `NEXT_PUBLIC_` = exposé côté client (navigateur)
-
-### Variables Server-Side
-
+**Server-Side** (Edge Functions uniquement) :
 ```bash
-# Stripe (Edge Functions uniquement)
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-
-# Supabase (pour scripts et migrations)
-SUPABASE_PROJECT_REF=xxx
-SUPABASE_DB_PASSWORD=xxx
-SUPABASE_DB_HOST=xxx
-SUPABASE_DB_PORT=5432
-SUPABASE_DB_USER=postgres
-SUPABASE_DB_NAME=postgres
 ```
-
-### Validation Variables
-
-- ✅ **TOUJOURS** valider variables au démarrage app
-- ❌ **JAMAIS** commit fichiers `.env` (sauf `.env.example`)
-- ✅ **TOUJOURS** utiliser `process.env.NEXT_PUBLIC_*` pour client
-- ✅ **TOUJOURS** vérifier variables Edge Functions avant deploy
 
 ## ✅ Checklists
 
 ### 🚨 AVANT COMMIT (OBLIGATOIRE)
 
-**CRITIQUE** : NE JAMAIS commit sans ces vérifications
+- [ ] `pnpm check` exécuté et passé
+- [ ] `pnpm test` tous tests passent
+- [ ] Pas query Supabase directe (hooks custom uniquement)
+- [ ] `'use client'` UNIQUEMENT si nécessaire
+- [ ] WCAG 2.2 AA respecté
+- [ ] Animations ≤ 0.3s ease
+- [ ] Images compressées (max 100KB)
+- [ ] Quotas vérifiés (`useAccountStatus()`)
+- [ ] Tokens SCSS (pas hardcodes)
+- [ ] Imports absolus `@/`
 
-- [ ] **`pnpm check`** exécuté et passé (lint:fix + format)
-- [ ] **`pnpm test`** exécuté et tous tests passent
-- [ ] **`pnpm type-check`** passé (0 erreurs bloquantes)
-- [ ] **Pas query Supabase directe** : Tous appels DB via hooks custom
-- [ ] **Hooks custom utilisés** : Import depuis `@/hooks`
-- [ ] **`'use client'`** ajouté UNIQUEMENT si nécessaire (hooks, events, browser APIs)
-- [ ] **WCAG 2.2 AA respecté** : Contraste, focus visible, ARIA correct
-- [ ] **Animations ≤ 0.3s ease** : Douces et apaisantes (TSA-friendly)
-- [ ] **Images compressées** : Max 100KB via `compressImageIfNeeded()`
-- [ ] **Quotas vérifiés** : `useAccountStatus()` avant création
-- [ ] **Tokens SCSS utilisés** : `color()`, `spacing()`, pas de valeurs hardcodées
-- [ ] **Imports absolus** : `@/` uniquement, pas de relatifs `../../`
+### 🚀 AVANT DÉPLOIEMENT
 
-### 🚀 AVANT DÉPLOIEMENT (PRODUCTION)
+- [ ] `pnpm verify:all` passé
+- [ ] `pnpm build` réussit
+- [ ] `pnpm preview` testé
+- [ ] Edge Functions déployées
+- [ ] Webhooks Stripe configurés
+- [ ] RLS policies vérifiées
+- [ ] Accessibility validée
 
-**CRITIQUE** : Vérifications exhaustives obligatoires
+### 🗄️ APRÈS MODIFICATION DB
 
-- [ ] **`pnpm verify:all`** passé (type-check + lint + format + test + coverage + build + E2E)
-- [ ] **`pnpm build`** réussit sans erreurs
-- [ ] **`pnpm preview`** testé localement (serveur production)
-- [ ] **`pnpm test:coverage`** : Couverture maintenue/améliorée
-- [ ] **`pnpm test:e2e`** : Tous tests E2E passent
-- [ ] **Variables env prod** configurées (Vercel/serveur)
-- [ ] **Edge Functions déployées** : `pnpm deploy:checkout` + `pnpm deploy:webhook`
-- [ ] **Webhooks Stripe configurés** : URLs production enregistrées
-- [ ] **RLS policies vérifiées** : Toutes tables sensibles protégées
-- [ ] **Bundle size vérifié** : `pnpm check-bundle` (pas de régression)
-- [ ] **Accessibility validée** : `pnpm validate:touch-targets` (cibles tactiles 44×44px min)
-- [ ] **Logs Edge Functions** : `pnpm logs:checkout` / `pnpm logs:webhook` pour vérifier
-
-### 🗄️ APRÈS MODIFICATION DB SUPABASE (OBLIGATOIRE)
-
-**CRITIQUE** : Synchronisation immédiate types et schema
-
-- [ ] **`pnpm context:update`** exécuté (db:dump + db:types)
-- [ ] **`supabase/schema.sql`** mis à jour et commit
-- [ ] **`src/types/supabase.ts`** régénéré et commit
-- [ ] **Hooks custom mis à jour** : Types et queries adaptés
-- [ ] **RLS policies créées** : Sécurité Row Level Security appliquée
-- [ ] **Migrations testées localement** : `pnpm supabase:start` + test
-- [ ] **Indexes DB optimisés** : Performance queries vérifiée
-- [ ] **Tests unitaires ajustés** : Hooks et composants testés avec nouveaux types
-- [ ] **Documentation mise à jour** : Si nouvelles tables/colonnes importantes
-
-### 🔄 APRÈS MODIFICATION SCSS/DESIGN
-
-**CRITIQUE** : Conformité système tokens
-
-- [ ] **Tokens utilisés** : Fonctions `color()`, `spacing()`, `font-size()`, `border-radius()`
-- [ ] **Pas de valeurs hardcodées** : Aucun `#hex`, `12px`, `8px` direct
-- [ ] **Mixins utilisés** : Pour patterns répétés (focus, hover, etc.)
-- [ ] **Variables centralisées** : Import depuis `@/styles/abstracts/_variables`
-- [ ] **Animations TSA-compliant** : Max 0.3s ease, douces
-- [ ] **Contraste vérifié** : WCAG 2.2 AA minimum (4.5:1 texte, 3:1 UI)
-- [ ] **Responsive testé** : Mobile, tablette, desktop
-- [ ] **Build CSS validé** : `pnpm build` passe sans warnings SCSS
+- [ ] `pnpm context:update` exécuté
+- [ ] `supabase/schema.sql` commit
+- [ ] `src/types/supabase.ts` commit
+- [ ] Hooks custom mis à jour
+- [ ] RLS policies créées
+- [ ] Tests ajustés
 
 ## 🔍 Résolution Problèmes
 
-**Quota exceeded** → Vérifier `useAccountStatus()` avant action
-**Upload échoue** → `compressImageIfNeeded()` avant upload
-**User non auth** → Vérifier `authReady` avant `user`
-**RLS bloque** → Vérifier policies correspondent au rôle
-**Hydration mismatch** → `useEffect` pour code client-only
+- **Quota exceeded** → `useAccountStatus()` avant action
+- **Upload échoue** → `compressImageIfNeeded()` avant upload
+- **User non auth** → Vérifier `authReady` avant `user`
+- **RLS bloque** → Vérifier policies correspondent au rôle
+- **Hydration mismatch** → `useEffect` pour code client-only
 
 ## 📚 Références Clés
 
-### Fichiers Critiques
+**Fichiers Critiques** :
+- `src/contexts/AuthContext.tsx` - Authentification
+- `src/hooks/useRBAC.ts` - Permissions
+- `src/utils/supabaseClient.ts` - Client Supabase unique
+- `src/types/supabase.ts` - Types générés
 
-- **Auth** : `src/contexts/AuthContext.tsx` - Contexte authentification
-- **Permissions** : `src/hooks/useRBAC.ts` - Contrôle accès basé sur rôles
-- **Client Supabase** : `src/utils/supabaseClient.ts` - Instance unique (CRITIQUE)
-- **Types Supabase** : `src/types/supabase.ts` - Types générés automatiquement
+**Hooks Essentiels** :
+- `src/hooks/useTaches*.ts` - CRUD + DnD tâches
+- `src/hooks/useAccountStatus.ts` - Quotas
+- `src/hooks/useCheckout.ts` - Stripe checkout
+- `src/hooks/useMetrics.ts` - Métriques admin
 
-### Hooks Essentiels
+**Edge Functions** :
+- `supabase/functions/create-checkout-session/`
+- `supabase/functions/stripe-webhook/`
+- `supabase/functions/delete-account/`
 
-- **Tâches** : `src/hooks/useTaches*.ts` - CRUD + DnD tâches
-- **Récompenses** : `src/hooks/useRecompenses.ts` - CRUD récompenses
-- **Quotas** : `src/hooks/useAccountStatus.ts` - Vérification quotas utilisateur
-- **Abonnement** : `src/hooks/useSubscriptionStatus.ts` - Statut Stripe
-- **Stripe Checkout** : 🆕 `src/hooks/useCheckout.ts` - Checkout session (invoke + fallback)
-- **Admin Metrics** : 🆕 `src/hooks/useMetrics.ts` - Métriques dashboard (9 queries parallèles)
-- **User Pseudo** : 🆕 `src/hooks/useDbPseudo.ts` - Fetch pseudo depuis profiles
-- **TimeTimer** : 🆕 `src/hooks/useTimerPreferences.ts`, `src/hooks/useTimerSvgPath.ts` - localStorage + SVG
-
-### Edge Functions Supabase
-
-- **Checkout** : `supabase/functions/create-checkout-session/` - Session paiement Stripe
-- **Webhook** : `supabase/functions/stripe-webhook/` - Webhooks Stripe (subscriptions)
-- **Delete Account** : `supabase/functions/delete-account/` - Suppression compte RGPD
-
-### Design System
-
-- **Variables** : `src/styles/abstracts/_variables.scss` - Tokens centralisés
-- **Mixins** : `src/styles/abstracts/_mixins.scss` - Mixins réutilisables
-- **Typographie** : `src/styles/abstracts/_typography.scss` - Styles texte
-
-### Scripts Utiles
-
-- `scripts/check-bundle-size.js` - Vérification taille bundle
-- `scripts/check-hardcoded.js` - Détection valeurs hardcodées
-- `scripts/check-touch-targets.js` - Validation cibles tactiles (accessibilité)
+**Design System** :
+- `src/styles/abstracts/_variables.scss` - Tokens
+- `src/styles/abstracts/_mixins.scss` - Mixins
 
 ## 🎨 Spécificités UX TSA
 
-**CRITIQUE** : Design apaisant et prévisible pour enfants autistes
+**CRITIQUE** : Design apaisant pour enfants autistes
 
-### Principes UX Fondamentaux
+**Principes** :
+- **Animations** : Max 0.3s ease, douces et prévisibles
+- **Pas surcharge visuelle** : Interface épurée, minimaliste
+- **Prévisibilité** : Actions cohérentes, pas de surprises
+- **Couleurs pastel** : Palette apaisante, WCAG 2.2 AA minimum
+- **Navigation** : Simple, claire, logique
 
-- **Animations** : Max 0.3s ease, douces et prévisibles (jamais brusques)
-- **Pas surcharge visuelle** : Interface épurée, minimaliste, focus clair
-- **Prévisibilité** : Actions et résultats cohérents, pas de surprises
-- **Couleurs pastel** : Palette apaisante, contrastes WCAG 2.2 AA minimum
-- **Navigation** : Simple, claire, logique, breadcrumbs visibles
-- **Feedback** : Immédiat et visible pour toutes actions
+**Accessibilité (WCAG 2.2 AA)** :
+- ✅ Contraste minimum : 4.5:1 texte, 3:1 UI
+- ✅ Focus visible toujours
+- ✅ Cibles tactiles : 44×44px minimum
+- ✅ ARIA correct pour lecteurs d'écran
+- ✅ Navigation clavier complète
+- ✅ Respecter `prefers-reduced-motion`
 
-### Règles Accessibilité (WCAG 2.2 AA)
-
-- ✅ **Contraste minimum** : 4.5:1 pour texte, 3:1 pour composants UI
-- ✅ **Focus visible** : Toujours visible et clair (outline ou border)
-- ✅ **Cibles tactiles** : Minimum 44×44px (valider avec `pnpm validate:touch-targets`)
-- ✅ **ARIA correct** : Labels, roles, states pour lecteurs d'écran
-- ✅ **Navigation clavier** : Tab order logique, pas de trappes
-- ✅ **Pas de clignotement** : Aucun élément > 3 Hz (risque épilepsie)
-- ✅ **Mouvement réduit** : Respecter `prefers-reduced-motion` (hook `useReducedMotion`)
-
-### Outils Validation Accessibilité
-
-- `pnpm validate:touch-targets` - Vérifier tailles cibles tactiles
-- `pnpm test:e2e` - Tests E2E incluent validations accessibilité (axe-core)
-- Extension navigateur : axe DevTools pour audits manuels
-
-## 🛠️ Outils Développement & Workflows
-
-### VS Code Extensions Recommandées
-
-- **ESLint** : Lint JavaScript/TypeScript en temps réel
-- **Prettier** : Formatage automatique
-- **SCSS IntelliSense** : Autocomplétion tokens SCSS
-- **GitLens** : Historique Git enrichi
-- **Error Lens** : Erreurs inline dans éditeur
-
-### Git Hooks (Husky)
-
-- **pre-commit** : `pnpm verify:pre-commit` (type-check + lint + test)
-- **commit-msg** : Validation messages commits conventionnels
-- **pre-push** : `pnpm build` (évite push code cassé)
-
-### Scripts Utilitaires
-
-- `scripts/check-bundle-size.js` - Alerte si bundle > limite (performance)
-- `scripts/check-hardcoded.js` - Détecte valeurs hardcodées (tokens SCSS)
-- `scripts/check-touch-targets.js` - Valide cibles tactiles 44×44px (TSA)
-
-### Debugging
-
-- **Next.js Dev Tools** : Activer dans navigateur (React DevTools)
-- **Supabase Logs** : `pnpm logs:checkout`, `pnpm logs:webhook`
-- **Network Tab** : Surveiller requêtes API Supabase/Stripe
-- **Redux DevTools** : N/A (projet utilise React Context, pas Redux)
-
-### Performance Monitoring
-
-- **Lighthouse** : Audit performance/accessibilité intégré Chrome
-- **Web Vitals** : Intégré app (`web-vitals` package)
-- **Bundle Analyzer** : `pnpm build:analyze` (visualiser taille modules)
-
-### Commandes Debug Avancées
-
-- `pnpm debug:verify` - Vérification détaillée avec logs progression
-- `pnpm test:e2e:debug` - Tests E2E mode debug (step-by-step)
-- `pnpm test:ui` - Interface Vitest interactive pour debug tests unitaires
+**Validation** :
+```bash
+pnpm validate:touch-targets # Vérifier cibles tactiles
+pnpm test:e2e               # Tests incluent axe-core
+```

@@ -75,3 +75,5 @@ supabase/.branches
 supabase/.temp
 supabase/.archive/
 blueprint-archive/
+
+.DS_Store
