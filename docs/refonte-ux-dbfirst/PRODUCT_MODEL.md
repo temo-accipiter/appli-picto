@@ -843,14 +843,19 @@ Inexistante ──[Entrée Tableau]──► Active (Prévisualisation, epoch=1)
 | Quitter Tableau                 | Pause (pas changement état)              | ux.md L453-454        |
 | Réinitialisation                | Nouvelle session, epoch++, progression=0 | ux.md L475-479, L2701 |
 
+Une session **Terminée** est **strictement en lecture seule** : aucune validation supplémentaire n’est acceptée ; le seul retour à une progression à zéro passe par **Réinitialisation de session** (nouvelle session).
+
 ### 5.3.4 Epoch de session (CONTRAT CRITIQUE)
 
 > **Définition** _(ux.md L2696-2716)_
 
-| Événement        | Effet               |
-| ---------------- | ------------------- |
-| Création session | `epoch = 1`         |
-| Réinitialisation | `epoch = epoch + 1` |
+| Événement                   | Effet                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| Création session            | `epoch = 1`                                                                  |
+| Réinitialisation de session | `epoch = MAX(epoch historique) + 1` pour ce couple (profil enfant, timeline) |
+
+> **Précision DB-first** : l’epoch est une **version globale** de session pour une timeline donnée (par profil enfant).
+> Il est calculé en se basant sur l’historique (MAX), afin d’éviter tout conflit ou duplication d’epoch en cas de resets multiples.
 
 **Règle sync** : progression avec epoch < epoch_courant = **obsolète** (ignorée/écrasée)
 
@@ -859,6 +864,23 @@ Inexistante ──[Entrée Tableau]──► Active (Prévisualisation, epoch=1)
 - Appareil A valide {1,2,3} offline
 - Appareil B réinitialise (epoch 1→2)
 - A revient online : état A **écrasé**, A se réaligne sur epoch=2, progression=0
+
+---
+
+### 5.3.5 Définition contractuelle de “dernière étape” (snapshot TSA)
+
+**Objectif TSA** : éviter toute “surprise” en cours d’exécution (une session qui devient soudainement plus longue / plus courte après démarrage).
+
+**Règle** : à la **première validation** (passage Prévisualisation → Démarrée), le système fige un **snapshot** :
+
+- `steps_total_snapshot` = **nombre de slots Étape non vides** (card_id non NULL) présents dans la timeline à cet instant.
+- Les slots Étape vides sont ignorés (non affichés / non exécutables en Tableau).
+
+**Complétion** : la session devient **Terminée** quand le nombre de validations distinctes (slot_id) atteint `steps_total_snapshot`.
+
+**Conséquence contractuelle** :
+
+- Toute modification structurelle pouvant changer le nombre d’étapes “comptées” après démarrage effectif (ajout d’étape non vide, suppression d’une étape non validée, etc.) doit passer par une **Réinitialisation de session** si l’on veut que ces changements s’appliquent à l’exécution.
 
 ---
 
@@ -1201,13 +1223,13 @@ Aucun — les 3 systèmes sont complètement spécifiés dans ux.md.
 
 ### 7.2.2 Valider une étape
 
-| Élément           | Valeur                                                                                                         |
-| ----------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Acteur**        | Enfant                                                                                                         |
-| **Contexte**      | Tableau                                                                                                        |
-| **Préconditions** | Session active ; slot Étape au focus non validé                                                                |
-| **Effets**        | Slot marqué validé ; si première validation → session Démarrée ; progression avance ; jetons collectés (si >0) |
-| **Référence**     | ux.md L446-448, L1700-1714                                                                                     |
+| Élément           | Valeur                                                                                                                                    |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **Acteur**        | Enfant                                                                                                                                    |
+| **Contexte**      | Tableau                                                                                                                                   |
+| **Préconditions** | Session non Terminée ; slot **Étape** non validé ; slot **non vide** (card_id non NULL) ; slot appartient à la **timeline de la session** |
+| **Effets**        | Slot marqué validé ; si première validation → session Démarrée ; progression avance ; jetons collectés (si >0)                            |
+| **Référence**     | ux.md L446-448, L1700-1714                                                                                                                |
 
 ### 7.2.3 Terminer session (automatique)
 
@@ -1221,14 +1243,14 @@ Aucun — les 3 systèmes sont complètement spécifiés dans ux.md.
 
 ### 7.2.4 Réinitialiser session
 
-| Élément           | Valeur                                                               |
-| ----------------- | -------------------------------------------------------------------- |
-| **Acteur**        | Adulte                                                               |
-| **Contexte**      | Édition                                                              |
-| **Préconditions** | Session existe (Active ou Terminée)                                  |
-| **Effets**        | Nouvelle session ; **epoch = epoch_précédent + 1** ; progression = 0 |
-| **Sync**          | Toute progression avec epoch inférieur = obsolète                    |
-| **Référence**     | ux.md L475-479, L2701                                                |
+| Élément           | Valeur                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| **Acteur**        | Adulte                                                                                             |
+| **Contexte**      | Édition                                                                                            |
+| **Préconditions** | Session existe (Active ou Terminée)                                                                |
+| **Effets**        | Nouvelle session ; **epoch = MAX(epoch historique)+1** (pour ce profil+timeline) ; progression = 0 |
+| **Sync**          | Toute progression avec epoch inférieur = obsolète                                                  |
+| **Référence**     | ux.md L475-479, L2701                                                                              |
 
 ---
 
@@ -1793,11 +1815,15 @@ Aucun.
 - `state` (Active/Prévisualisation/Démarrée/Terminée)
 - **`epoch`** (entier, incrémenté à chaque réinitialisation)
 - `created_at`, `updated_at`
+- `started_at` (renseigné à la première validation)
+- `completed_at` (renseigné à la complétion)
+- `steps_total_snapshot` (figé au démarrage effectif ; voir 5.3.5)
 
 ### 11.1.2 Progression
 
 - Ensemble des `slot_id` validés (pour fusion ensembliste)
-- ~~Timestamps de validation~~ : **Non spécifié dans ux.md** — à trancher uniquement si nécessaire pour résolution conflits avancée (la fusion ensembliste par set de slot_id peut suffire)
+- `validated_at` peut exister comme métadonnée **technique/audit** (non nécessaire au contrat UX).
+- La règle de fusion reste : **ensemble de slot_id validés** (union ensembliste), sans dépendre de l’ordre ni des timestamps.
 
 ---
 
@@ -1896,12 +1922,13 @@ _\*\* Peut définir jetons sur nouveau slot ajouté_
 
 Ces points ne sont pas spécifiés dans ux.md et nécessitent une décision produit :
 
-| #    | Sujet                           | Décision v14                                                                            | Options (référence)                                          |
-| ---- | ------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| ✅ 1 | **Révocation device_id**        | **Option B** : Page Profil avec liste appareils + révocation manuelle (non destructive) | A) Aucune (contact support) ~~B)~~ Page Profil               |
-| ✅ 2 | **Décocher carte bibliothèque** | **Option A** : Retire toutes occurrences dans timeline (reflow)                         | ~~A)~~ Retire toutes ~~B)~~ Retire dernière ~~C)~~ Désactivé |
-| ⚠️ 3 | **Aucun slot vide disponible**  | **À trancher** (non bloquant DB)                                                        | A) Auto-créer slot B) Checkbox grisée C) Toast               |
-| ⚠️ 4 | **Protection Page Édition**     | **À trancher** (non bloquant DB)                                                        | A) Verrou parental B) Code C) Geste D) Aucun                 |
+| #    | Sujet                                                   | Décision v14                                                                            | Options (référence)                                                 |
+| ---- | ------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| ✅ 1 | **Révocation device_id**                                | **Option B** : Page Profil avec liste appareils + révocation manuelle (non destructive) | A) Aucune (contact support) ~~B)~~ Page Profil                      |
+| ✅ 2 | **Décocher carte bibliothèque**                         | **Option A** : Retire toutes occurrences dans timeline (reflow)                         | ~~A)~~ Retire toutes ~~B)~~ Retire dernière ~~C)~~ Désactivé        |
+| ⚠️ 3 | **Aucun slot vide disponible**                          | **À trancher** (non bloquant DB)                                                        | A) Auto-créer slot B) Checkbox grisée C) Toast                      |
+| ⚠️ 4 | **Protection Page Édition**                             | **À trancher** (non bloquant DB)                                                        | A) Verrou parental B) Code C) Geste D) Aucun                        |
+| ✅ 5 | **Définition “dernière étape”** (snapshot vs dynamique) | **Décision** : Snapshot au démarrage effectif (`steps_total_snapshot`)                  | A) Snapshot (stable TSA) B) Dynamique (complexe, surprise possible) |
 
 ---
 
