@@ -98,6 +98,7 @@ _(Référence : PRODUCT_MODEL.md Ch.0, ux.md L70-164)_
 
 **Lifecycle** :
 - Création : lors de signup (extension auth.users)
+- **Trigger automatique** : à la création d'un compte, un profil enfant "Mon enfant" est créé automatiquement (PRODUCT_MODEL.md Ch.2.6)
 - Archivage : ❌ Suppression définitive uniquement (RGPD)
 - Suppression : CASCADE sur toutes tables enfants
 
@@ -198,15 +199,18 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - 1 profil enfant → 0..n sessions
 
 **Lifecycle** :
-- Création : Page Profil (Contexte Édition)
+- **Création automatique** : Le premier profil enfant est créé automatiquement à la création du compte (nom "Mon enfant") via trigger (PRODUCT_MODEL.md Ch.2.6)
+- **Création manuelle** : Page Profil (Contexte Édition), soumis à quota (1 Free, 3 Abonné, ∞ Admin)
+- **Trigger automatique** : à la création d'un profil enfant (auto ou manuel), une timeline + slots minimaux (1 step + 1 reward, tokens=0) sont créés automatiquement (PRODUCT_MODEL.md Ch.2.6)
 - Verrouillage : `status` = 'locked' (downgrade, toutes sessions terminées)
-- Suppression : CASCADE timelines + sessions
+- **Suppression** : ❌ Pas de suppression standard exposée à l'utilisateur (PRODUCT_MODEL.md Ch.2.6)
+- **Suppression autorisée uniquement** : CASCADE compte (RGPD), suppression explicite RGPD, maintenance technique
 
 **RLS conceptuelle** :
 - SELECT : `account_id = auth.uid()` (owner-only)
 - INSERT : `account_id = auth.uid()` ET quota non atteint
 - UPDATE : `account_id = auth.uid()` (owner-only)
-- DELETE : `account_id = auth.uid()` (owner-only)
+- DELETE : ❌ Interdit en usage standard. DELETE autorisé uniquement pour : suppression complète du compte (cascade), demande RGPD, opérations techniques/maintenance (admin)
 
 ---
 
@@ -395,12 +399,15 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - 1 timeline → 1..n slots (min 1 Étape + 1 Récompense)
 
 **Lifecycle** :
-- Création : Automatique à création profil enfant
+- **Création automatique** : Automatique à création profil enfant via trigger (PRODUCT_MODEL.md Ch.2.6)
+- **Trigger automatique** : à la création d'une timeline, 2 slots minimaux sont insérés automatiquement (PRODUCT_MODEL.md Ch.2.6) :
+  - 1 slot step (position 0, card_id NULL, tokens = 0)
+  - 1 slot reward (position 1, card_id NULL, tokens = NULL)
 - Structure minimale : 1 slot Étape vide + 1 slot Récompense vide (PRODUCT_MODEL.md Ch.5.1.2)
-- Suppression : CASCADE avec profil enfant
+- Suppression : CASCADE avec profil enfant (autorisée uniquement via cascade compte, RGPD, maintenance)
 
 **Invariants structurels** (PRODUCT_MODEL.md Ch.3.7) :
-- Toujours 1 slot Récompense (peut être vide)
+- Une timeline contient au minimum 1 slot Récompense. La suppression du dernier slot Récompense est interdite
 - Minimum 1 slot Étape (dernier non supprimable)
 
 **RLS conceptuelle** :
@@ -754,45 +761,50 @@ active_preview (epoch=N+1)
 
 | # | Invariant | Référence | Mécanisme DB |
 |---|-----------|-----------|--------------|
-| 1 | **Timeline unique par enfant** | PRODUCT_MODEL.md Ch.3.7 | UNIQUE `child_profile_id` sur `timelines` |
-| 2 | **Slot_id stable (UUID indépendant position)** | PRODUCT_MODEL.md Ch.3.8 | PK `id` (UUID) ≠ `position` (modifiable) |
-| 3 | **1 slot Récompense toujours présent** | PRODUCT_MODEL.md Ch.5.1.1 | Trigger/constraint : COUNT(kind='reward') = 1 par timeline |
-| 4 | **Minimum 1 slot Étape** | PRODUCT_MODEL.md Ch.5.1.1 | Trigger/constraint : COUNT(kind='step') >= 1 par timeline |
-| 5 | **card_id nullable (slot vide autorisé)** | PRODUCT_MODEL.md Ch.3.8 | `card_id` NULL autorisé |
-| 6 | **Tokens 0-5 sur step uniquement** | PRODUCT_MODEL.md Ch.3.8 | CHECK `(kind='step' AND tokens BETWEEN 0 AND 5) OR (kind='reward' AND tokens IS NULL)` |
+| 1 | **Profil enfant auto-créé à création compte** | PRODUCT_MODEL.md Ch.2.6 | Trigger AFTER INSERT `accounts` → INSERT `child_profiles` nom "Mon enfant" |
+| 2 | **Timeline auto-créée à création profil** | PRODUCT_MODEL.md Ch.2.6 | Trigger AFTER INSERT `child_profiles` → INSERT `timelines` |
+| 3 | **Slots minimaux auto-créés à création timeline** | PRODUCT_MODEL.md Ch.2.6 | Trigger AFTER INSERT `timelines` → INSERT 2 slots (1 step position 0 tokens=0 + 1 reward position 1) |
+| 4 | **Timeline unique par enfant** | PRODUCT_MODEL.md Ch.3.7 | UNIQUE `child_profile_id` sur `timelines` |
+| 5 | **Slot_id stable (UUID indépendant position)** | PRODUCT_MODEL.md Ch.3.8 | PK `id` (UUID) ≠ `position` (modifiable) |
+| 6 | **Au minimum 1 slot Récompense** | PRODUCT_MODEL.md Ch.5.1.1 | Trigger/constraint : COUNT(kind='reward') >= 1 par timeline (suppression dernier interdit) |
+| 7 | **Minimum 1 slot Étape** | PRODUCT_MODEL.md Ch.5.1.1 | Trigger/constraint : COUNT(kind='step') >= 1 par timeline |
+| 8 | **card_id nullable (slot vide autorisé)** | PRODUCT_MODEL.md Ch.3.8 | `card_id` NULL autorisé |
+| 9 | **Tokens 0-5 sur step uniquement** | PRODUCT_MODEL.md Ch.3.8 | CHECK `(kind='step' AND tokens BETWEEN 0 AND 5) OR (kind='reward' AND tokens IS NULL)` |
+| 10 | **Cascades DELETE autorisées (min_step/min_reward)** | PRODUCT_MODEL.md Ch.2.6 | Triggers min_step/min_reward détectent contexte cascade (timeline supprimée) et autorisent |
 
 ### Invariants sessions & sync
 
 | # | Invariant | Référence | Mécanisme DB |
 |---|-----------|-----------|--------------|
-| 7 | **1 session active max par (profil, timeline)** | PRODUCT_MODEL.md Ch.3.9 | UNIQUE partial index `(child_profile_id, timeline_id) WHERE state IN ('active_preview', 'active_started')` |
-| 8 | **Epoch monotone (création=1, reset=epoch+1)** | PRODUCT_MODEL.md Ch.3.9 | Trigger création `epoch = 1` ; trigger réinitialisation `epoch = MAX(epoch) + 1` |
-| 9 | **Validations = ensemble slot_id (union)** | PRODUCT_MODEL.md Ch.3.10 | UNIQUE `(session_id, slot_id)` sur `session_validations` |
-| 10 | **Fusion monotone (union ensembliste)** | PRODUCT_MODEL.md Ch.8.5.2 | Logique applicative + UNIQUE sur validations (pas de régression) |
+| 11 | **1 session active max par (profil, timeline)** | PRODUCT_MODEL.md Ch.3.9 | UNIQUE partial index `(child_profile_id, timeline_id) WHERE state IN ('active_preview', 'active_started')` |
+| 12 | **Epoch monotone (création=1, reset=epoch+1)** | PRODUCT_MODEL.md Ch.3.9 | Trigger création `epoch = 1` ; trigger réinitialisation `epoch = MAX(epoch) + 1` |
+| 13 | **Validations = ensemble slot_id (union)** | PRODUCT_MODEL.md Ch.3.10 | UNIQUE `(session_id, slot_id)` sur `session_validations` |
+| 14 | **Fusion monotone (union ensembliste)** | PRODUCT_MODEL.md Ch.8.5.2 | Logique applicative + UNIQUE sur validations (pas de régression) |
 
 ### Invariants cartes & catégories
 
 | # | Invariant | Référence | Mécanisme DB |
 |---|-----------|-----------|--------------|
-| 11 | **Pivot catégorie unique (user, card)** | PRODUCT_MODEL.md Ch.3.6 | UNIQUE `(user_id, card_id)` sur `user_card_categories` |
-| 12 | **Fallback "Sans catégorie" applicatif** | PRODUCT_MODEL.md Ch.3.6 | Aucune ligne pivot = "Sans catégorie" côté front |
-| 13 | **Carte banque jamais supprimée si référencée** | PRODUCT_MODEL.md Ch.3.4 | Trigger vérif références avant DELETE + dépublication ≠ suppression |
-| 14 | **Image figée après création (personal)** | PRODUCT_MODEL.md Ch.3.4 | Trigger/constraint : UPDATE interdit sur `image_url` si `type='personal'` |
+| 15 | **Pivot catégorie unique (user, card)** | PRODUCT_MODEL.md Ch.3.6 | UNIQUE `(user_id, card_id)` sur `user_card_categories` |
+| 16 | **Fallback "Sans catégorie" applicatif** | PRODUCT_MODEL.md Ch.3.6 | Aucune ligne pivot = "Sans catégorie" côté front |
+| 17 | **Carte banque jamais supprimée si référencée** | PRODUCT_MODEL.md Ch.3.4 | Trigger vérif références avant DELETE + dépublication ≠ suppression |
+| 18 | **Image figée après création (personal)** | PRODUCT_MODEL.md Ch.3.4 | Trigger/constraint : UPDATE interdit sur `image_url` si `type='personal'` |
 
 ### Invariants séquençage
 
 | # | Invariant | Référence | Mécanisme DB |
 |---|-----------|-----------|--------------|
-| 15 | **0..1 séquence par carte par user** | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(account_id, mother_card_id)` sur `sequences` |
-| 16 | **Min 2 étapes par séquence** | PRODUCT_MODEL.md Ch.3.11 | Trigger/constraint : COUNT(steps) >= 2 par sequence |
-| 17 | **Pas de doublons étapes dans séquence** | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(sequence_id, step_card_id)` sur `sequence_steps` |
+| 19 | **0..1 séquence par carte par user** | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(account_id, mother_card_id)` sur `sequences` |
+| 20 | **Min 2 étapes par séquence** | PRODUCT_MODEL.md Ch.3.11 | Trigger/constraint : COUNT(steps) >= 2 par sequence |
+| 21 | **Pas de doublons étapes dans séquence** | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(sequence_id, step_card_id)` sur `sequence_steps` |
 
 ### Invariants révocation & downgrade
 
 | # | Invariant | Référence | Mécanisme DB |
 |---|-----------|-----------|--------------|
-| 18 | **Révocation device non-destructive** | PRODUCT_MODEL.md Ch.3.2 | `revoked_at` timestamp (NULL si actif), pas de DELETE |
-| 19 | **Profil verrouillé = lecture seule** | PRODUCT_MODEL.md Ch.3.3 | RLS : UPDATE/DELETE interdit si `status='locked'` |
+| 22 | **Profil enfant : pas de suppression standard** | PRODUCT_MODEL.md Ch.2.6 | Pas de RLS DELETE exposée (suppression uniquement via cascade compte, RGPD, maintenance) |
+| 23 | **Révocation device non-destructive** | PRODUCT_MODEL.md Ch.3.2 | `revoked_at` timestamp (NULL si actif), pas de DELETE |
+| 24 | **Profil verrouillé = lecture seule** | PRODUCT_MODEL.md Ch.3.3 | RLS : UPDATE/DELETE interdit si `status='locked'` |
 
 ---
 

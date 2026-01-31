@@ -96,13 +96,13 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 
 | Terme                                 | Définition                                                                                                                                               | Référence      |
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| **Visitor**                           | Utilisateur non authentifié ; profil enfant local implicite unique ; mono-appareil ; données locales uniquement ; limitations structurelles (pas quota). | ux.md L190-198   |
-| **Compte utilisateur (propriétaire)** | Compte authentifié ; unité propriétaire (cartes, catégories, profils enfants) ; peut être Free ou Abonné.                                                | ux.md L202-211   |
-| **Statut utilisateur**                | Statut fonctionnel : Visitor, Free, Abonné, Admin ; définit des capacités, pas des rôles pédagogiques.                                                   | ux.md L221-232   |
-| **Free**                              | Authentifié sans abonnement ; cloud mono-appareil ; accès banque ; pas de cartes personnelles ni catégories.                                             | ux.md L776-801   |
-| **Abonné**                            | Authentifié avec abonnement ; accès complet ; multi-profils et multi-appareils dans les limites du plan.                                                 | ux.md L804-818   |
-| **Admin**                             | Statut mainteneur ; Page Administration dédiée ; pas un rôle pédagogique ; non visible dans UX standard.                                                 | ux.md L822-839   |
-| **Fuseau horaire (timezone)**         | Stocké au niveau compte utilisateur (account.timezone conceptuel) ; valeur IANA, défaut `Europe/Paris` ; utilisé pour calcul quota mensuel.              | ux.md L213-217   |
+| **Visitor**                           | Utilisateur non authentifié ; profil enfant local implicite unique ; mono-appareil ; données locales uniquement ; limitations structurelles (pas quota). | ux.md L190-198 |
+| **Compte utilisateur (propriétaire)** | Compte authentifié ; unité propriétaire (cartes, catégories, profils enfants) ; peut être Free ou Abonné.                                                | ux.md L202-211 |
+| **Statut utilisateur**                | Statut fonctionnel : Visitor, Free, Abonné, Admin ; définit des capacités, pas des rôles pédagogiques.                                                   | ux.md L221-232 |
+| **Free**                              | Authentifié sans abonnement ; cloud mono-appareil ; accès banque ; pas de cartes personnelles ni catégories.                                             | ux.md L776-801 |
+| **Abonné**                            | Authentifié avec abonnement ; accès complet ; multi-profils et multi-appareils dans les limites du plan.                                                 | ux.md L804-818 |
+| **Admin**                             | Statut mainteneur ; Page Administration dédiée ; pas un rôle pédagogique ; non visible dans UX standard.                                                 | ux.md L822-839 |
+| **Fuseau horaire (timezone)**         | Stocké au niveau compte utilisateur (account.timezone conceptuel) ; valeur IANA, défaut `Europe/Paris` ; utilisé pour calcul quota mensuel.              | ux.md L213-217 |
 
 ---
 
@@ -336,6 +336,78 @@ L'enfant ne voit **jamais** :
 - Chaque profil possède : timeline propre, sessions propres, progression propre _(ux.md L2511-2521)_
 - **Aucune donnée partagée entre profils enfants** _(ux.md L2522)_
 - Cartes et catégories sont partagées au niveau **compte** (pas profil) _(ux.md L2526-2530)_
+
+---
+
+## 2.6 Gestion des profils enfants — règles contractuelles
+
+### Création automatique du premier profil enfant
+
+À la création d’un compte utilisateur authentifié (Free ou Abonné) :
+
+- Un profil enfant est créé automatiquement.
+- Ce profil reçoit un nom générique par défaut : « Mon enfant » (modifiable ultérieurement).
+- Une timeline est créée automatiquement pour ce profil enfant.
+- Cette timeline est initialisée avec une structure minimale obligatoire : 1 slot Étape (vide, jetons = 0) et 1 slot Récompense (vide)
+
+👉 Effet produit : l’utilisateur arrive immédiatement dans une application fonctionnelle, jamais vide.
+
+### Création de profils enfants supplémentaires
+
+Le nombre de profils enfants simultanément actifs dépend du statut du compte :
+
+Statut Profils enfants actifs autorisés
+
+- Free 1
+- Abonné 3
+- Admin Illimité
+
+Le quota concerne le nombre de profils enfants existants simultanément, pas le nombre de créations cumulées.
+
+En Contexte Édition :
+
+- Free :
+  Le bouton « Ajouter un profil » est visible.
+  Toute tentative déclenche une incitation à l’abonnement.
+
+- Abonné :
+  Le bouton « Ajouter un profil » permet de créer jusqu’à 2 profils supplémentaires (maximum 3 au total).
+
+Chaque profil enfant créé manuellement déclenche automatiquement :
+
+- la création de sa timeline,
+- l’initialisation de la structure minimale (1 Étape + 1 Récompense, jetons = 0).
+
+### Suppression, archivage et verrouillage des profils enfants
+
+Il n’existe pas de suppression standard de profil enfant dans l’usage normal.
+Un profil enfant ne peut pas être supprimé librement par l’utilisateur afin de :
+
+- préserver l’historique,
+- éviter des suppressions accidentelles,
+- garantir la stabilité émotionnelle côté enfant.
+
+Lorsqu’un utilisateur n’est plus autorisé à utiliser tous ses profils (ex. downgrade Abonné → Free) :
+
+- les profils excédentaires passent à l’état verrouillé,
+- ils deviennent en lecture seule,
+- aucune nouvelle session ou recomposition n’est autorisée,
+- les sessions en cours peuvent être terminées avant verrouillage effectif.
+
+La suppression physique d’un profil enfant est autorisée uniquement dans les cas suivants :
+
+- suppression complète du compte utilisateur (cascade),
+- demande explicite RGPD (droit à l’effacement),
+- opérations techniques exceptionnelles (maintenance, reset, environnement de test).
+
+👉 En dehors de ces cas, les profils enfants sont conservés, jamais supprimés.
+
+### Invariant structurel (critique DB)
+
+- Un profil enfant existant possède toujours exactement une timeline.
+- Une timeline existante respecte en permanence la structure minimale : ≥ 1 slot Étape
+  exactement 1 slot Récompense
+- Ces invariants s’appliquent y compris lors des cascades techniques autorisées (suppression compte, RGPD).
 
 ---
 
@@ -1063,15 +1135,16 @@ Aucun — les 3 systèmes sont complètement spécifiés dans ux.md.
 
 ### 7.1.1 Ajouter un slot Étape
 
-| Élément           | Valeur                                                                                                 |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| **Acteur**        | Adulte (Visitor/Free/Abonné/Admin)                                                                     |
-| **Contexte**      | Édition                                                                                                |
+| Élément           | Valeur                                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------- |
+| **Acteur**        | Adulte (Visitor/Free/Abonné/Admin)                                                                    |
+| **Contexte**      | Édition                                                                                               |
 | **Préconditions** | Timeline existe ; online requis pour utilisateurs authentifiés (Free/Abonné/Admin) ; Visitor autorisé |
-| **Effets**        | Nouveau slot Étape vide ajouté en fin de liste ; jetons = 0                                            |
+| **Effets**        | Nouveau slot Étape vide ajouté en fin de liste ; jetons = 0                                           |
 | **Offline**       | Bloqué pour utilisateurs authentifiés si offline (modification structurelle) ; Visitor toujours OK    |
 
 **Clarification Visitor** _(ux.md L750, L2838-2841)_ :
+
 - Visitor a accès à **"Composition et exécution de timelines"** (ux.md L750)
 - Visitor est **structurellement local-only** (aucune synchronisation cloud, ux.md L2838-2841)
 - Contrainte "offline" (ux.md L2900-2909) s'applique **uniquement aux utilisateurs authentifiés** temporairement déconnectés
@@ -1898,10 +1971,10 @@ Ces points ne sont pas spécifiés dans ux.md et nécessitent une décision prod
 
 ## Corrections v15 (corrections finales cohérence)
 
-| #   | Correction                                                              | Statut      |
-| --- | ----------------------------------------------------------------------- | ----------- |
-| 18  | **Timezone référence complète** : colonne Référence + définition        | ✅ Ch.1.2   |
-| 19  | **Visitor + composition timelines** : acteur autorisé, clarification    | ✅ Ch.7.1.1 |
+| #   | Correction                                                           | Statut      |
+| --- | -------------------------------------------------------------------- | ----------- |
+| 18  | **Timezone référence complète** : colonne Référence + définition     | ✅ Ch.1.2   |
+| 19  | **Visitor + composition timelines** : acteur autorisé, clarification | ✅ Ch.7.1.1 |
 
 ---
 

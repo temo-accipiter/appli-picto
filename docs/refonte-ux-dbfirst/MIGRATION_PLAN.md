@@ -121,6 +121,8 @@
 - Table existe : `SELECT * FROM accounts LIMIT 0;` ne doit pas échouer
 - Contrainte timezone : `INSERT INTO accounts (id, status) VALUES (gen_random_uuid(), 'free');` doit utiliser défaut `Europe/Paris`
 
+**⚠️ Note PRODUCT_MODEL.md Ch.2.6** : Cette migration sera complétée ultérieurement par un trigger auto-création profil enfant (voir Phase 4.x corrective)
+
 ---
 
 #### Migration 2 : `20260130101000_create_devices.sql`
@@ -175,6 +177,8 @@
 **Vérifications** :
 - INSERT profil sans `status` → défaut `active`
 - DELETE account cascade sur profils
+
+**⚠️ Note PRODUCT_MODEL.md Ch.2.6** : Cette migration sera complétée ultérieurement par un trigger auto-création timeline + slots minimaux (voir Phase 4.x corrective)
 
 ---
 
@@ -291,6 +295,8 @@
 **Vérifications** :
 - Double INSERT même `child_profile_id` échoue (UNIQUE)
 
+**⚠️ Note PRODUCT_MODEL.md Ch.2.6** : Cette migration sera complétée ultérieurement par un trigger auto-création slots minimaux (voir Phase 4.x corrective)
+
 ---
 
 #### Migration 8 : `20260130107000_create_slots.sql`
@@ -334,15 +340,69 @@
 
 **Contenu conceptuel** :
 - Fonction + trigger : empêcher suppression dernier slot step (COUNT(kind='step') >= 1)
-- Fonction + trigger : garantir exactement 1 slot reward par timeline (COUNT(kind='reward') = 1)
-- Fonction + trigger : à création timeline, insérer automatiquement 1 slot step vide + 1 slot reward vide (structure minimale)
+- Fonction + trigger : garantir au minimum 1 slot reward par timeline (COUNT(kind='reward') >= 1, suppression dernier interdit)
+- ~~Fonction + trigger : à création timeline, insérer automatiquement 1 slot step vide + 1 slot reward vide (structure minimale)~~ → **DÉPLACÉ vers Phase 4.x corrective** (PRODUCT_MODEL.md Ch.2.6)
 
 **Dépendances** : `timelines`, `slots`
 
 **Vérifications** :
 - DELETE dernier slot step échoue (trigger bloque)
 - INSERT 2e slot reward même timeline échoue (trigger bloque)
-- INSERT timeline → SELECT COUNT(*) FROM slots WHERE timeline_id = ... retourne 2 (1 step + 1 reward)
+- ~~INSERT timeline → SELECT COUNT(*) FROM slots WHERE timeline_id = ... retourne 2 (1 step + 1 reward)~~ → **Vérification déplacée Phase 4.x**
+
+**⚠️ Note PRODUCT_MODEL.md Ch.2.6** : Les triggers min_step/min_reward devront être modifiés en Phase 4.x pour autoriser les cascades DELETE (suppression compte, RGPD, maintenance)
+
+---
+
+### Phase 4.x — Corrective : Auto-création profil enfant + timeline + slots (PRODUCT_MODEL.md Ch.2.6)
+
+**Objectif** : Implémenter le contrat produit "application jamais vide" via triggers automatiques
+
+**Référence** : PRODUCT_MODEL.md § 2.6 "Gestion des profils enfants — règles contractuelles"
+
+#### Migration 9.5 : `20260130113000_auto_create_child_profile_timeline.sql`
+
+**Intention** : Créer automatiquement profil enfant + timeline + slots minimaux à création compte
+
+**Contenu conceptuel** :
+
+1. **Trigger auto-création profil enfant** (AFTER INSERT `accounts`)
+   - Fonction : `accounts_auto_create_first_child_profile()`
+   - Action : INSERT `child_profiles` avec `name='Mon enfant'`, `status='active'`
+   - Résultat : 1 profil enfant créé automatiquement à la création du compte
+
+2. **Trigger auto-création timeline** (AFTER INSERT `child_profiles`)
+   - Fonction : `child_profiles_auto_create_timeline()`
+   - Action : INSERT `timelines` avec `child_profile_id = NEW.id`
+   - Résultat : 1 timeline créée automatiquement pour chaque nouveau profil enfant
+
+3. **Trigger auto-création slots minimaux** (AFTER INSERT `timelines`)
+   - Fonction : `timelines_auto_create_minimal_slots()`
+   - Action : INSERT 2 slots :
+     - 1 slot step (kind='step', position=0, card_id=NULL, tokens=0)
+     - 1 slot reward (kind='reward', position=1, card_id=NULL, tokens=NULL)
+   - Résultat : Structure minimale initialisée automatiquement
+
+4. **Modification triggers min_step/min_reward** (autoriser cascades)
+   - Fonction modifiée : `slots_enforce_min_step()` et `slots_enforce_min_reward()`
+   - Logique : Détecter contexte cascade (timeline supprimée) et autoriser DELETE
+   - Cas autorisés : suppression compte, RGPD, maintenance technique
+   - Cas bloqués : suppression manuelle standard dernier slot step/reward
+
+**Dépendances** : `accounts`, `child_profiles`, `timelines`, `slots`, triggers min_step/min_reward existants (Migration 9)
+
+**Vérifications** :
+- INSERT `accounts` → 1 `child_profiles` créé automatiquement avec nom "Mon enfant"
+- SELECT `timelines` WHERE `child_profile_id` = ... → 1 ligne
+- SELECT `slots` WHERE `timeline_id` = ... → 2 lignes (1 step position 0 + 1 reward position 1)
+- DELETE `accounts` → CASCADE fonctionne (pas d'erreur trigger min_step/min_reward)
+- DELETE `slots` WHERE kind='step' AND dernier → échoue (trigger bloque) sauf si cascade
+- Création manuelle profil enfant → déclenche aussi auto-création timeline + slots
+
+**Effet produit** :
+- ✅ Utilisateur arrive immédiatement dans une application fonctionnelle
+- ✅ Jamais d'état vide (toujours 1 profil + 1 timeline + 2 slots minimaux)
+- ✅ Cohérence entre création automatique (signup) et manuelle (Page Profil)
 
 ---
 
@@ -892,6 +952,7 @@
 | 8 | `20260130106000_create_timelines.sql` | Timeline 1:1 profil | timelines | child_profiles | UNIQUE child_profile_id |
 | 9 | `20260130107000_create_slots.sql` | Slots (step/reward) slot_id stable | slots | timelines, cards, slot_kind | CHECK tokens |
 | 10 | `20260130108000_add_timeline_slot_invariants.sql` | Triggers slots (min 1 step, 1 reward) | Triggers | timelines, slots | Bloque DELETE dernier step |
+| 10.5 | `20260130113000_auto_create_child_profile_timeline.sql` | **Auto-création profil + timeline + slots (PRODUCT_MODEL.md Ch.2.6)** | **Triggers auto-création** | accounts, child_profiles, timelines, slots | **INSERT account → profil + timeline + 2 slots créés** |
 | 11 | `20260130109000_create_sessions.sql` | Sessions epoch + état | sessions | child_profiles, timelines, session_state | Partial index 1 active max |
 | 12 | `20260130110000_create_session_validations.sql` | Validations union ensembliste | session_validations | sessions, slots | UNIQUE (session_id, slot_id) |
 | 13 | `20260130111000_create_sequences.sql` | Séquences carte mère | sequences | accounts, cards | UNIQUE (account_id, mother_card_id) |
@@ -999,6 +1060,22 @@
 - [ ] **Slot reward toujours présent** : DELETE dernier slot reward → échoue (trigger)
 - [ ] **Slot card nullable** : INSERT slot sans `card_id` → réussit (NULL autorisé)
 - [ ] **Slot_id stable** : UPDATE `position` ne change PAS le `slot_id` (UUID PK)
+
+---
+
+### Après Phase 4.x (Auto-création profil + timeline + slots) — PRODUCT_MODEL.md Ch.2.6
+
+**Assertions CRITIQUES à vérifier** :
+- [ ] **Profil enfant auto-créé** : INSERT `accounts` → 1 `child_profiles` créé avec `name='Mon enfant'`
+- [ ] **Timeline auto-créée** : Profil enfant créé → 1 `timelines` créée avec `child_profile_id` correspondant
+- [ ] **Slots minimaux auto-créés** : Timeline créée → 2 `slots` créés :
+  - 1 slot step (kind='step', position=0, card_id=NULL, tokens=0)
+  - 1 slot reward (kind='reward', position=1, card_id=NULL, tokens=NULL)
+- [ ] **Cascade complète** : INSERT `accounts` → 1 profil + 1 timeline + 2 slots (4 lignes au total)
+- [ ] **Création manuelle profil** : INSERT `child_profiles` manuel → 1 timeline + 2 slots créés automatiquement
+- [ ] **CASCADE DELETE autorisé** : DELETE `accounts` → pas d'erreur trigger min_step/min_reward (cascade fonctionne)
+- [ ] **DELETE manuel bloqué** : DELETE dernier slot step hors cascade → échoue (trigger bloque)
+- [ ] **Application jamais vide** : Compte créé → toujours au moins 1 profil + 1 timeline + 2 slots
 
 ---
 
