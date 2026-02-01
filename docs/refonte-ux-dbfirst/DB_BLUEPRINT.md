@@ -91,6 +91,7 @@ _(Référence : PRODUCT_MODEL.md Ch.0, ux.md L70-164)_
 
 - `status` NOT NULL
 - `timezone` NOT NULL, défaut 'Europe/Paris'
+- `timezone` doit être une timezone IANA valide (contrainte DB : `accounts_timezone_valid_chk` via fonction `public.is_valid_timezone(text)`)
 
 **Cardinalités** :
 
@@ -139,30 +140,33 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 
 **Colonnes conceptuelles** :
 
-| Colonne      | Description                              | Référence                     |
-| ------------ | ---------------------------------------- | ----------------------------- |
-| `id`         | PK, UUID auto                            | —                             |
-| `device_id`  | UUID généré côté client, UNIQUE          | PRODUCT_MODEL.md Ch.3.2       |
-| `account_id` | FK → accounts(id), nullable initialement | PRODUCT_MODEL.md Ch.3.2       |
-| `revoked_at` | Timestamp révocation, NULL si actif      | PRODUCT_MODEL.md Ch.3.2 (v14) |
-| `created_at` | Timestamp première connexion             | —                             |
-| `updated_at` | Timestamp dernière activité              | —                             |
+| Colonne      | Description                                                                           | Référence                     |
+| ------------ | ------------------------------------------------------------------------------------- | ----------------------------- |
+| `id`         | PK, UUID auto                                                                         | —                             |
+| `device_id`  | UUID généré côté client (installation), UNIQUE par compte (`account_id`, `device_id`) | PRODUCT_MODEL.md Ch.3.2       |
+| `account_id` | FK → accounts(id), NOT NULL                                                           | PRODUCT_MODEL.md Ch.3.2       |
+| `revoked_at` | Timestamp révocation, NULL si actif                                                   | PRODUCT_MODEL.md Ch.3.2 (v14) |
+| `created_at` | Timestamp première connexion                                                          | —                             |
+| `updated_at` | Timestamp dernière activité                                                           | —                             |
 
 **Clés** :
 
 - PK : `id`
-- FK : `account_id` → `accounts(id)` ON DELETE SET NULL (conservation historique)
-- UNIQUE : `device_id`
+- FK : `account_id` → `accounts(id)` ON DELETE CASCADE (aligné DB / RGPD)
+- UNIQUE : (`account_id`, `device_id`)
 
 **Contraintes** :
 
-- `device_id` NOT NULL, UNIQUE
+- `device_id` NOT NULL
+- `account_id` NOT NULL
+- UNIQUE (`account_id`, `device_id`)
 - `revoked_at` NULL si actif
+- Cohérence temporelle : `revoked_at IS NULL OR revoked_at >= created_at`
 
 **Cardinalités** :
 
 - 1 compte → 0..n appareils (quota selon plan : 1 Free, 3 Abonné, ∞ Admin)
-- 1 appareil → 0..1 compte
+- 1 appareil (device_id) → 0..n comptes (tablette partagée / multi-login possible)
 
 **Lifecycle** :
 

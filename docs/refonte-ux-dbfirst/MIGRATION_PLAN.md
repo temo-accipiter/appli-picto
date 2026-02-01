@@ -101,7 +101,7 @@
 
 **Objectif** : Établir la hiérarchie propriétaire (accounts, devices, child_profiles)
 
-#### Migration 1 : `20260130100000_create_accounts.sql`
+#### Migration 1 : `20260130101000_create_accounts.sql`
 
 **Intention** : Extension de `auth.users` avec données métier utilisateur
 
@@ -120,19 +120,26 @@
 - FK : `id` → `auth.users(id)` ON DELETE CASCADE
 - `status` NOT NULL
 - `timezone` NOT NULL, défaut `Europe/Paris`
+- `timezone` doit être une timezone IANA valide (contrainte CHECK : `accounts_timezone_valid_chk`)
+- `timezone` : CHECK timezone IANA valide (Phase 5.5 : `accounts_timezone_valid_chk`)
 
 **Dépendances** : Extension auth (fournie Supabase), enum `account_status` (Phase 1)
 
 **Vérifications** :
 
 - Table existe : `SELECT * FROM accounts LIMIT 0;` ne doit pas échouer
-- Contrainte timezone : `INSERT INTO accounts (id, status) VALUES (gen_random_uuid(), 'free');` doit utiliser défaut `Europe/Paris`
+- Défaut timezone présent :
+  - `SELECT column_default FROM information_schema.columns WHERE table_schema='public' AND table_name='accounts' AND column_name='timezone';`
+  - doit contenir `Europe/Paris`
+- Contrainte timezone IANA active :
+  - `SELECT conname FROM pg_constraint WHERE conrelid='public.accounts'::regclass AND conname='accounts_timezone_valid_chk';`
+  - doit retourner 1 ligne
 
 **⚠️ Note PRODUCT_MODEL.md Ch.2.6** : Cette migration sera complétée ultérieurement par un trigger auto-création profil enfant (voir Phase 4.x corrective)
 
 ---
 
-#### Migration 2 : `20260130101000_create_devices.sql`
+#### Migration 2 : `20260130102000_create_devices.sql`
 
 **Intention** : Gérer multi-appareils avec révocation non-destructive
 
@@ -141,8 +148,7 @@
 **Colonnes conceptuelles** :
 
 - `id` (PK, UUID auto)
-- `device_id` (UUID UNIQUE NOT NULL, généré client)
-- `account_id` (FK → accounts(id) NOT NULL)
+- device_id (UUID NOT NULL, généré client ; UNIQUE par compte via (account_id, device_id))- `account_id` (FK → accounts(id) NOT NULL)
 - `revoked_at` (TIMESTAMP NULL si actif)
 - `created_at`, `updated_at`
 
@@ -150,7 +156,9 @@
 
 - PK : `id`
 - FK : `account_id` → `accounts(id)` ON DELETE CASCADE (pas de devices orphelins)
-- UNIQUE : `device_id`
+- UNIQUE : (`account_id`, `device_id`) (Phase 5.5)
+- CHECK : `revoked_at IS NULL OR revoked_at >= created_at` (Phase 5.5)
+- CHECK : `revoked_at IS NULL OR revoked_at >= created_at` (Phase 5.5 corrective)
 - `device_id` NOT NULL
 - `account_id` NOT NULL
 
@@ -158,9 +166,13 @@
 
 **Vérifications** :
 
-- INSERT device sans `account_id` échoue (NOT NULL)
+- Contrainte UNIQUE attendue :
+  - `SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.devices'::regclass AND contype IN ('u','p') ORDER BY conname;`
+  - doit contenir `UNIQUE (account_id, device_id)` et ne pas contenir `UNIQUE (device_id)`
+- CHECK cohérence temporelle :
+  - `SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.devices'::regclass AND contype='c' ORDER BY conname;`
+  - doit contenir `revoked_at >= created_at`
 - DELETE account cascade sur devices (CASCADE)
-- UNIQUE `device_id` : double INSERT même `device_id` échoue
 
 ---
 
@@ -532,6 +544,21 @@
 
 ---
 
+#### Migration 13.5 : `20260130118000_phase5_5_hardening_accounts_devices.sql`
+
+**Intention** : Hardening foundations (timezone + devices) sans toucher sessions
+
+- `accounts.timezone` : validation timezone IANA (fonction `public.is_valid_timezone(text)` + CHECK `accounts_timezone_valid_chk`)
+- `devices` : remplacer unicité globale `device_id` par unicité composite `UNIQUE(account_id, device_id)`
+- `devices` : interdire incohérence temporelle (`revoked_at` >= `created_at`)
+
+**Vérifications** :
+
+- `INSERT accounts.timezone = 'Paris/Europe'` rejeté (CHECK)
+- `devices` : contraintes visibles via `pg_constraint` (UNIQUE composite + CHECK revoked_at)
+
+---
+
 ### Phase 6 — Séquences (aide visuelle décomposition)
 
 **Objectif** : Séquences visuelles (carte mère → étapes)
@@ -614,460 +641,29 @@
 
 ---
 
-### Phase 7 — Storage (CRITIQUE — Confidentialité images)
-
-**Objectif** : Buckets + policies owner-only images personnelles
-
-⚠️ **CRITIQUE** : Cette phase doit être faite **AVANT** tout upload image personnelle en production
-
-#### Migration 15 : `20260130114000_create_storage_buckets.sql`
-
-**Intention** : Créer buckets Supabase Storage pour images
-
-**Contenu conceptuel** :
-
-- Bucket `personal-images` (privé, owner-only)
-- Bucket `bank-images` (public, lecture seule pour tous) — **À trancher** selon implémentation (peut être CDN externe)
-
-**Dépendances** : Aucune (Supabase Storage API)
-
-**Vérifications** :
-
-- `SELECT * FROM storage.buckets WHERE name IN ('personal-images', 'bank-images');` retourne 2 lignes
-
----
-
-#### Migration 16 : `20260130115000_create_storage_policies.sql`
-
-**Intention** : Policies Storage owner-only images personnelles (PRIORITÉ ABSOLUE)
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.807-823) :
-
-- **Bucket `personal-images`** :
-  - Policy SELECT : `account_id = auth.uid()` (owner-only)
-  - Policy INSERT : `account_id = auth.uid()` (owner-only)
-  - Policy UPDATE : `account_id = auth.uid()` (owner-only)
-  - Policy DELETE : `account_id = auth.uid()` (owner-only)
-  - **AUCUN bypass Admin** : Admin ne peut JAMAIS accéder aux fichiers images personnelles
-
-- **Bucket `bank-images` (si applicable)** :
-  - Policy SELECT : public (tous)
-  - Policy INSERT/UPDATE/DELETE : Admin uniquement
-
-**Règle contractuelle** (DB_BLUEPRINT.md L261-276) :
-
-> Admin ne voit **JAMAIS** les images personnelles.
-> Enforcement prioritaire : **Storage Policies** (priorité absolue) — RLS table `cards` insuffisant.
-
-**Dépendances** : Buckets créés (Migration 15)
-
-**Vérifications** :
-
-- Non-owner tente SELECT image personnelle → 403 Forbidden
-- Admin tente SELECT image personnelle → 403 Forbidden
-- Owner tente SELECT image autre owner → 403 Forbidden
-
----
-
-### Phase 8 — RLS (table par table)
-
-**Objectif** : Row-Level Security owner-only, banque publique, exceptions admin
-
-⚠️ **Note Visitor** : Visitor est local-only (pas de statut DB), donc RLS traite uniquement Free/Abonné/Admin
-
-#### Migration 17 : `20260130116000_enable_rls_core_tables.sql`
-
-**Intention** : Activer RLS sur toutes tables core
-
-**Contenu conceptuel** :
-
-- `ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE devices ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE child_profiles ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE cards ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE categories ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE user_card_categories ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE timelines ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE slots ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE session_validations ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE sequences ENABLE ROW LEVEL SECURITY;`
-- `ALTER TABLE sequence_steps ENABLE ROW LEVEL SECURITY;`
-
-**Dépendances** : Toutes tables Phase 2-6
-
-**Vérifications** :
-
-- `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND rowsecurity = true;` retourne toutes tables
-
----
-
-#### Migration 18 : `20260130117000_rls_accounts.sql`
-
-**Intention** : Policies RLS table `accounts`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.828) :
-
-- SELECT : `id = auth.uid()` (owner-only)
-- INSERT : ❌ Interdit (créé via trigger auth)
-- UPDATE : `id = auth.uid()` (owner-only)
-- DELETE : `id = auth.uid()` (owner-only)
-
-**⚠️ Non spécifié — à trancher** (DB_BLUEPRINT.md L110-123) :
-
-- **Accès Admin aux comptes** : Option A (strict, aucun accès global) recommandée par défaut
-
-**Dépendances** : RLS activé (Migration 17)
-
-**Vérifications** :
-
-- User A SELECT account user B → 0 ligne
-- User A UPDATE account user A → réussit
-
----
-
-#### Migration 19 : `20260130118000_rls_devices.sql`
-
-**Intention** : Policies RLS table `devices`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.829) :
-
-- SELECT : `account_id = auth.uid()` (owner-only)
-- INSERT : Vérif quota + `account_id = auth.uid()` (bloqué si quota atteint, fonction serveur)
-- UPDATE : `account_id = auth.uid()` (révocation uniquement)
-- DELETE : ❌ Interdit (non-destructive)
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT device user B → 0 ligne
-- User A UPDATE device user A avec `revoked_at = NOW()` → réussit
-- User A DELETE device → échoue (policy bloque)
-
----
-
-#### Migration 20 : `20260130119000_rls_child_profiles.sql`
-
-**Intention** : Policies RLS table `child_profiles`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.830) :
-
-- SELECT : `account_id = auth.uid()` (owner-only)
-- INSERT : Vérif quota + `account_id = auth.uid()` (bloqué si quota atteint)
-- UPDATE : `account_id = auth.uid()` (owner-only)
-- DELETE : `account_id = auth.uid()` (owner-only)
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT profil user B → 0 ligne
-- User A INSERT profil si quota atteint → échoue (trigger quota)
-
----
-
-#### Migration 21 : `20260130120000_rls_cards.sql`
-
-**Intention** : Policies RLS table `cards`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.831) :
-
-- SELECT : `(type='bank' AND published=TRUE)` (tous) OU `account_id = auth.uid()` (owner)
-- INSERT : Vérif quota + `account_id = auth.uid()` (bloqué si quota atteint)
-- UPDATE : `account_id = auth.uid()` (owner-only) OU admin (bank)
-- DELETE : `account_id = auth.uid()` (owner-only) OU admin (vérif références)
-
-**Confidentialité Admin** (DB_BLUEPRINT.md §5.841-853) :
-
-- Admin peut lire cartes `type='bank'` pour gestion banque
-- Admin **ne peut jamais** lire cartes `type='personal'` d'autres users
-- Confidentialité réelle garantie par **Storage Policies** (Phase 7), pas uniquement RLS table
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT carte banque published=TRUE → réussit
-- User A SELECT carte banque published=FALSE → 0 ligne (sauf usages existants)
-- User A SELECT carte personal user B → 0 ligne
-
----
-
-#### Migration 22 : `20260130121000_rls_categories_pivot.sql`
-
-**Intention** : Policies RLS tables `categories` et `user_card_categories`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.832-833) :
-
-**`categories`** :
-
-- SELECT : `account_id = auth.uid()` (owner-only)
-- INSERT : `account_id = auth.uid()` (owner-only)
-- UPDATE : `account_id = auth.uid()` ET `is_system=FALSE` (owner-only, pas système)
-- DELETE : `account_id = auth.uid()` ET `is_system=FALSE` (owner-only, pas système)
-
-**`user_card_categories`** :
-
-- SELECT : `user_id = auth.uid()` (owner-only)
-- INSERT : `user_id = auth.uid()` (owner-only)
-- UPDATE : `user_id = auth.uid()` (owner-only)
-- DELETE : `user_id = auth.uid()` (owner-only)
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT catégorie user B → 0 ligne
-- User A UPDATE catégorie système → échoue (is_system=TRUE bloqué)
-
----
-
-#### Migration 23 : `20260130122000_rls_timelines_slots.sql`
-
-**Intention** : Policies RLS tables `timelines` et `slots`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.834-835) :
-
-**`timelines`** :
-
-- SELECT : Owner via `child_profile_id` → `child_profile_id IN (SELECT id FROM child_profiles WHERE account_id = auth.uid())`
-- INSERT : Trigger auto (pas policy INSERT, création auto avec profil)
-- UPDATE : Owner via `child_profile_id`
-- DELETE : Owner via `child_profile_id`
-
-**`slots`** :
-
-- SELECT : Owner via `timeline_id` → `timeline_id IN (SELECT id FROM timelines WHERE child_profile_id IN (SELECT id FROM child_profiles WHERE account_id = auth.uid()))`
-- INSERT : Owner + vérif verrouillage (fonction serveur)
-- UPDATE : Owner + vérif verrouillage (fonction serveur)
-- DELETE : Owner + vérif verrouillage (fonction serveur) + pas dernier step
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT slot timeline user B → 0 ligne
-- User A UPDATE slot validé pendant session active → échoue (trigger verrouillage)
-
----
-
-#### Migration 24 : `20260130123000_rls_sessions_validations.sql`
-
-**Intention** : Policies RLS tables `sessions` et `session_validations`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.836-837) :
-
-**`sessions`** :
-
-- SELECT : Owner via `child_profile_id` → `child_profile_id IN (SELECT id FROM child_profiles WHERE account_id = auth.uid())`
-- INSERT : Trigger auto (pas policy INSERT, création auto entrée Tableau)
-- UPDATE : Owner + vérif transition état (fonction serveur)
-- DELETE : ❌ Sauf réinit (fonction serveur uniquement)
-
-**`session_validations`** :
-
-- SELECT : Owner via `session_id` → `session_id IN (SELECT id FROM sessions WHERE child_profile_id IN (SELECT id FROM child_profiles WHERE account_id = auth.uid()))`
-- INSERT : Owner + vérif session active (fonction serveur)
-- UPDATE : ❌ Interdit (validations immuables)
-- DELETE : Réinit uniquement (fonction serveur)
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT session user B → 0 ligne
-- User A UPDATE validation → échoue (immuable)
-
----
-
-#### Migration 25 : `20260130124000_rls_sequences.sql`
-
-**Intention** : Policies RLS tables `sequences` et `sequence_steps`
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §5.838-839) :
-
-**`sequences`** :
-
-- SELECT : `account_id = auth.uid()` (owner-only)
-- INSERT : `account_id = auth.uid()` (owner-only)
-- UPDATE : `account_id = auth.uid()` (owner-only)
-- DELETE : `account_id = auth.uid()` (owner-only)
-
-**`sequence_steps`** :
-
-- SELECT : Owner via `sequence_id` → `sequence_id IN (SELECT id FROM sequences WHERE account_id = auth.uid())`
-- INSERT : Owner + vérif min 2 (fonction serveur)
-- UPDATE : Owner + vérif min 2 après (fonction serveur)
-- DELETE : Owner + vérif min 2 après (fonction serveur)
-
-**Dépendances** : RLS activé
-
-**Vérifications** :
-
-- User A SELECT séquence user B → 0 ligne
-- User A DELETE étape si COUNT = 2 → échoue (trigger min 2)
-
----
-
-### Phase 9 — Triggers/Fonctions invariants & quotas
-
-**Objectif** : Défendre invariants DB + enforcement quotas côté serveur
-
-#### Migration 26 : `20260130125000_quota_functions_cards.sql`
-
-**Intention** : Fonctions + triggers quotas cartes personnelles (stock + mensuel)
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §6.874-906) :
-
-**Fonction `check_card_quota_stock(account_id)`** :
-
-- Compte `SELECT COUNT(*) FROM cards WHERE account_id = ? AND type='personal'`
-- Compare avec : Free/Visitor = refuse (N/A), Abonné = 50, Admin = ∞
-- Trigger BEFORE INSERT sur `cards` appelle fonction
-
-**Fonction `check_card_quota_monthly(account_id)`** :
-
-- Lit `timezone` depuis `accounts`
-- Calcule début mois : `DATE_TRUNC('month', NOW() AT TIME ZONE timezone)`
-- Compte `SELECT COUNT(*) FROM cards WHERE account_id = ? AND type='personal' AND created_at >= debut_mois`
-- Compare avec : Free/Visitor = refuse (N/A), Abonné = 100/mois, Admin = ∞
-- Trigger BEFORE INSERT sur `cards` appelle fonction
-
-**Anti-abus timezone** (DB_BLUEPRINT.md L900-905, PRODUCT_MODEL.md §9.3.3) :
-
-- `created_at` stocké en **UTC**
-- `timezone` utilisé pour bornes mois uniquement
-- Changement timezone = effet au prochain mois (mois en cours conserve timezone initiale)
-
-**Dépendances** : `accounts`, `cards`
-
-**Vérifications** :
-
-- User Free INSERT carte personal → échoue (quota N/A)
-- User Abonné INSERT 51e carte personal → échoue (quota stock)
-- User Abonné INSERT 101e carte personal même mois → échoue (quota mensuel)
-
----
-
-#### Migration 27 : `20260130126000_quota_functions_profiles_devices.sql`
-
-**Intention** : Fonctions + triggers quotas profils enfants et appareils
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §6.909-934) :
-
-**Fonction `check_profile_quota(account_id)`** :
-
-- Compte `SELECT COUNT(*) FROM child_profiles WHERE account_id = ?`
-- Compare avec : Visitor (struct.) = 1, Free = 1, Abonné = 3, Admin = ∞
-- Trigger BEFORE INSERT sur `child_profiles` appelle fonction
-
-**Fonction `check_device_quota(account_id)`** :
-
-- Compte `SELECT COUNT(*) FROM devices WHERE account_id = ? AND revoked_at IS NULL`
-- Compare avec : Visitor (struct.) = 1, Free = 1, Abonné = 3, Admin = ∞
-- Trigger BEFORE INSERT sur `devices` appelle fonction
-
-**Dépendances** : `accounts`, `child_profiles`, `devices`
-
-**Vérifications** :
-
-- User Free INSERT 2e profil → échoue (quota 1)
-- User Abonné INSERT 4e appareil actif → échoue (quota 3)
-
----
-
-#### Migration 28 : `20260130127000_downgrade_functions.sql`
-
-**Intention** : Fonctions + triggers downgrade Abonné → Free
-
-**Contenu conceptuel** (DB_BLUEPRINT.md §6.949-966) :
-
-**Fonction `handle_downgrade(account_id)`** :
-
-- Liste profils par ancienneté (`ORDER BY created_at ASC`)
-- Profil le plus ancien = actif (Free, 1 seul)
-- Profils excédentaires : `status = 'active'` tant que sessions actives
-- Trigger : session terminée → vérif si profil excédentaire → `status = 'locked'`
-
-**Fonction `lock_profile_if_exceeds_quota(child_profile_id)`** :
-
-- Appelée par trigger AFTER UPDATE sur `sessions` (transition vers `completed`)
-- Vérifie si profil au-delà quota Free (1) après downgrade
-- Si oui et toutes sessions terminées : `UPDATE child_profiles SET status='locked'`
-
-**Dépendances** : `accounts`, `child_profiles`, `sessions`
-
-**Vérifications** :
-
-- User avec 3 profils downgrade Free → profil #2 et #3 restent actifs tant que sessions en cours
-- Session terminée profil #2 → `status='locked'`
-
----
-
-#### Migration 29 : `20260130128000_session_state_transitions.sql`
-
-⚠️ OBSOLÈTE — déplacée et implémentée en Phase 5 :
-
-- `20260130116000_add_session_state_transitions.sql`
-- `20260130117000_phase5_fix_sessions_validations_snapshot.sql`
-
-Cette migration ne doit pas exister dans la timeline finale.
-
-#### Migration 30 : `20260130129000_seed_system_categories.sql`
-
-**Intention** : Créer catégorie "Sans catégorie" pour chaque compte existant (si applicable)
-
-**Contenu conceptuel** :
-
-- Fonction trigger : à création `accounts`, INSERT `categories` avec `name='Sans catégorie'`, `is_system=TRUE`
-
-**Dépendances** : `accounts`, `categories`
-
-**⚠️ À trancher** : Si "Sans catégorie" est purement applicatif (fallback front si aucune ligne pivot), cette migration peut être **SKIP** (pas de seed DB)
-
-**Vérifications** :
-
-- INSERT account → SELECT categories WHERE account_id = ... AND is_system=TRUE retourne 1 ligne "Sans catégorie"
-
----
-
-## 3. Liste exhaustive des migrations (noms de fichiers)
-
-| #    | Fichier                                                 | Intention                                                             | Tables/Objets                                                             | Dépendances                                | Vérifications                                          |
-| ---- | ------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
-| 1    | `20260130100000_create_enums.sql`                       | Créer enums de base                                                   | account_status, card_type, slot_kind, session_state, child_profile_status | Extensions (fournis)                       | SELECT pg_type                                         |
-| 2    | `20260130100000_create_accounts.sql`                    | Extension auth.users avec métier                                      | accounts                                                                  | auth.users, account_status                 | INSERT avec défaut timezone                            |
-| 3    | `20260130101000_create_devices.sql`                     | Multi-appareils révocation                                            | devices                                                                   | accounts                                   | UNIQUE device_id, CASCADE DELETE                       |
-| 4    | `20260130102000_create_child_profiles.sql`              | Profils enfants + statut                                              | child_profiles                                                            | accounts, child_profile_status             | CASCADE DELETE                                         |
-| 5    | `20260130103000_create_cards.sql`                       | Cartes banque + personnelles                                          | cards                                                                     | accounts, card_type                        | CHECK type/account_id                                  |
-| 6    | `20260130104000_create_categories.sql`                  | Catégories personnelles                                               | categories                                                                | accounts                                   | UNIQUE (account_id, name)                              |
-| 7    | `20260130105000_create_user_card_categories.sql`        | Pivot carte↔catégorie                                                | user_card_categories                                                      | accounts, cards, categories                | UNIQUE (user_id, card_id)                              |
-| 8    | `20260130106000_create_timelines.sql`                   | Timeline 1:1 profil                                                   | timelines                                                                 | child_profiles                             | UNIQUE child_profile_id                                |
-| 9    | `20260130107000_create_slots.sql`                       | Slots (step/reward) slot_id stable                                    | slots                                                                     | timelines, cards, slot_kind                | CHECK tokens                                           |
-| 10   | `20260130108000_add_timeline_slot_invariants.sql`       | Triggers slots (min 1 step, 1 reward)                                 | Triggers                                                                  | timelines, slots                           | Bloque DELETE dernier step                             |
-| 10.5 | `20260130113000_auto_create_child_profile_timeline.sql` | **Auto-création profil + timeline + slots (PRODUCT_MODEL.md Ch.2.6)** | **Triggers auto-création**                                                | accounts, child_profiles, timelines, slots | **INSERT account → profil + timeline + 2 slots créés** |
-| 11   | `20260130109000_create_sessions.sql`                    | Sessions epoch + état                                                 | sessions                                                                  | child_profiles, timelines, session_state   | Partial index 1 active max                             |
-| 12   | `20260130110000_create_session_validations.sql`         | Validations union ensembliste                                         | session_validations                                                       | sessions, slots                            | UNIQUE (session_id, slot_id)                           |
-| 13   | `20260130111000_create_sequences.sql`                   | Séquences carte mère                                                  | sequences                                                                 | accounts, cards                            | UNIQUE (account_id, mother_card_id)                    |
-| 14   | `20260130112000_create_sequence_steps.sql`              | Étapes séquence                                                       | sequence_steps                                                            | sequences, cards                           | UNIQUE (sequence_id, step_card_id)                     |
-| 15   | `20260130113000_add_sequence_invariants.sql`            | Triggers séquences (min 2 étapes)                                     | Triggers                                                                  | sequences, sequence_steps                  | Bloque DELETE si COUNT=2                               |
-| 16   | `20260130114000_create_storage_buckets.sql`             | Buckets Storage                                                       | personal-images, bank-images                                              | Storage API                                | SELECT storage.buckets                                 |
-| 17   | `20260130115000_create_storage_policies.sql`            | Policies owner-only images                                            | Storage policies                                                          | Buckets                                    | Non-owner → 403                                        |
-| 18   | `20260130116000_enable_rls_core_tables.sql`             | Activer RLS toutes tables                                             | RLS enabled                                                               | Toutes tables                              | SELECT pg_tables rowsecurity                           |
-| 19   | `20260130117000_rls_accounts.sql`                       | RLS accounts owner-only                                               | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 20   | `20260130118000_rls_devices.sql`                        | RLS devices owner-only                                                | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 21   | `20260130119000_rls_child_profiles.sql`                 | RLS profils owner-only                                                | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 22   | `20260130120000_rls_cards.sql`                          | RLS cartes (banque public, personal privé)                            | Policies                                                                  | RLS enabled                                | Banque published=TRUE visible                          |
-| 23   | `20260130121000_rls_categories_pivot.sql`               | RLS catégories + pivot                                                | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 24   | `20260130122000_rls_timelines_slots.sql`                | RLS timelines + slots                                                 | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 25   | `20260130123000_rls_sessions_validations.sql`           | RLS sessions + validations                                            | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 26   | `20260130124000_rls_sequences.sql`                      | RLS séquences + étapes                                                | Policies                                                                  | RLS enabled                                | User A ≠ User B → 0 ligne                              |
-| 27   | `20260130125000_quota_functions_cards.sql`              | Quotas cartes (stock + mensuel)                                       | Fonctions + triggers                                                      | accounts, cards                            | INSERT 51e carte → échoue                              |
-| 28   | `20260130126000_quota_functions_profiles_devices.sql`   | Quotas profils + devices                                              | Fonctions + triggers                                                      | accounts, child_profiles, devices          | INSERT 2e profil Free → échoue                         |
-| 29   | `20260130127000_downgrade_functions.sql`                | Downgrade Abonné → Free                                               | Fonctions + triggers                                                      | accounts, child_profiles, sessions         | Profil excédentaire → locked                           |
-| 30   | `20260130128000_session_state_transitions.sql`          | Transitions état sessions                                             | Fonctions + triggers                                                      | sessions, session_validations              | 1ère validation → active_started                       |
-| 31   | `20260130129000_seed_system_categories.sql`             | Seed "Sans catégorie" (si nécessaire)                                 | Trigger auto                                                              | accounts, categories                       | INSERT account → catégorie système créée               |
+## 3. Liste exhaustive des migrations (réellement présentes dans ce repo)
+
+|   # | Fichier                                                       | Intention (résumé)                                       |
+| --: | ------------------------------------------------------------- | -------------------------------------------------------- |
+|   0 | `20260130100000_create_extensions_enums.sql`                  | Extensions + enums de base                               |
+|   1 | `20260130101000_create_accounts.sql`                          | accounts (extension auth.users)                          |
+|   2 | `20260130102000_create_devices.sql`                           | devices (multi-device + révocation)                      |
+|   3 | `20260130103000_create_child_profiles.sql`                    | profils enfants                                          |
+|   4 | `20260130104000_create_cards.sql`                             | cards (bank/personal)                                    |
+|   5 | `20260130105000_create_categories.sql`                        | categories                                               |
+|   6 | `20260130106000_create_user_card_categories.sql`              | pivot user↔card↔category                               |
+|   7 | `20260130107000_cards_normalize_published.sql`                | normalisation published                                  |
+|   8 | `20260130108000_categories_remap_on_delete.sql`               | remap catégories à la suppression                        |
+|   9 | `20260130109000_create_timelines.sql`                         | timelines (1:1 child_profile)                            |
+|  10 | `20260130110000_create_slots.sql`                             | slots                                                    |
+|  11 | `20260130111000_slots_enforce_min_step.sql`                   | invariant min step                                       |
+|  12 | `20260130112000_slots_enforce_min_reward.sql`                 | invariant min reward                                     |
+|  13 | `20260130113000_auto_create_child_profile_timeline.sql`       | auto-create profil+timeline+slots                        |
+|  14 | `20260130114000_create_sessions.sql`                          | sessions                                                 |
+|  15 | `20260130115000_create_session_validations.sql`               | session_validations                                      |
+|  16 | `20260130116000_add_session_state_transitions.sql`            | transitions sessions + règles validations                |
+|  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql` | snapshot steps_total + completion                        |
+|  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`      | timezone IANA + devices UNIQUE composite + CHECK revoked |
 
 ---
 
@@ -1108,52 +704,6 @@ Cette migration ne doit pas exister dans la timeline finale.
 - [ ] Dernière validation selon snapshot : session passe completed + completed_at fixé
 
 **Verdict** : ✅ GO si toutes vérifications passent, ❌ STOP sinon
-
----
-
-### Gate 3 — Avant Phase 7 (Storage)
-
-**Point STOP/GO** : Storage policies prêtes AVANT tout upload image personnelle
-
-**Vérifications** :
-
-- [ ] Plan Storage policies relu et validé
-- [ ] Bucket `personal-images` privé confirmé (pas public)
-- [ ] Policies owner-only `account_id = auth.uid()` confirmées
-- [ ] **AUCUN bypass Admin** confirmé
-
-**Verdict** : ✅ GO uniquement si 100% sûr, ❌ STOP sinon (CRITIQUE)
-
----
-
-### Gate 4 — Avant Phase 8 (RLS)
-
-**Point STOP/GO** : RLS design relu
-
-**Vérifications** :
-
-- [ ] Toutes tables RLS enabled
-- [ ] Policies owner-only confirmées
-- [ ] Banque publique (cards published=TRUE) confirmée
-- [ ] Admin accès métadonnées uniquement (pas images) confirmé
-
-**Verdict** : ✅ GO si design validé, ❌ STOP si doutes
-
----
-
-### Gate 5 — Après Phase 9 (Quotas)
-
-**Point STOP/GO** : Quotas testés
-
-**Vérifications** :
-
-- [ ] Quota cartes stock testé (Free/Abonné/Admin)
-- [ ] Quota cartes mensuel testé avec timezone
-- [ ] Quota profils testé (Free 1, Abonné 3)
-- [ ] Quota devices testé (revoked_at exclu du COUNT)
-- [ ] Downgrade profils locked testé
-
-**Verdict** : ✅ GO si tous quotas fonctionnent, ❌ STOP sinon
 
 ---
 
@@ -1204,34 +754,6 @@ Cette migration ne doit pas exister dans la timeline finale.
 - [ ] **Min 2 étapes** : DELETE étape si COUNT=2 → échoue (trigger)
 - [ ] **Pas doublons étapes** : INSERT 2x `(sequence_id, step_card_id)` → échoue (UNIQUE)
 - [ ] **Cascade suppression** : DELETE carte mère → séquence supprimée
-
----
-
-### Après Phase 7 (Storage)
-
-**Assertions à vérifier** :
-
-- [ ] **Owner-only images** : Non-owner tente SELECT image personnelle → 403 Forbidden
-- [ ] **Admin bloqué images privées** : Admin tente SELECT image personnelle → 403 Forbidden
-
----
-
-### Après Phase 8 (RLS)
-
-**Assertions à vérifier** :
-
-- [ ] **Owner-only** : User A SELECT données user B → 0 ligne (toutes tables)
-- [ ] **Banque visible à tous** : User A SELECT carte banque published=TRUE → réussit
-- [ ] **Personal privée** : User A SELECT carte personal user B → 0 ligne
-
----
-
-### Après Phase 9 (Quotas)
-
-**Assertions à vérifier** :
-
-- [ ] **Revoked_at bloque device quota** : Device révoqué exclu du COUNT quotas
-- [ ] **Downgrade locked profiles** : Profil excédentaire après downgrade → `status='locked'` après session terminée
 
 ---
 
@@ -1352,7 +874,7 @@ Cette migration ne doit pas exister dans la timeline finale.
 - [x] **Décision 6.5** : ✅ Aucune décision DB requise (logique UI)
 - [x] **UUID** : ✅ **CONFIRMÉ pgcrypto** + `gen_random_uuid()` partout
 - [x] **devices.account_id** : ✅ **CONFIRMÉ NOT NULL** + ON DELETE CASCADE
-- [x] **Timezone validation** : ✅ **CONFIRMÉ responsabilité applicative** (pas de CHECK DB, validation front/edge functions)
+- [x] **Timezone validation** : ✅ **enforced en DB** via CHECK `accounts_timezone_valid_chk` (fonction `public.is_valid_timezone(text)`), en plus de toute validation applicative éventuelle
 
 **Points bloquants si non tranchés** :
 
@@ -1373,9 +895,8 @@ Cette migration ne doit pas exister dans la timeline finale.
 
 1. ✅ Utiliser décisions confirmées ci-dessus
 2. ✅ Démarrer migrations Phase 1-6 sans blocage
-3. ✅ Phase 7 (Storage) : 2 buckets Supabase (bank-images public + personal-images privé)
-4. ⚠️ Trancher 6.3 avant Phase 10 (Seed "Sans catégorie" — recommandation fallback applicatif)
-5. ⚠️ Trancher 6.4 avant Phase 5 (session_validations — recommandation union simple)
+3. ⚠️ Trancher 6.3 avant Phase 10 (Seed "Sans catégorie" — recommandation fallback applicatif)
+4. ⚠️ Trancher 6.4 avant Phase 5 (session_validations — recommandation union simple)
 
 ---
 
@@ -1383,13 +904,12 @@ Cette migration ne doit pas exister dans la timeline finale.
 
 1. ✅ **Traduction SQL** : Convertir ce plan conceptuel en migrations SQL concrètes
 2. 🔒 **Storage Policies** : **PRIORITÉ ABSOLUE** — Configurer avant tout upload image personnelle
-3. ✅ **RLS Policies** : Implémenter plan RLS (Phase 8)
-4. ✅ **Triggers & Fonctions** : Défendre invariants (Phase 9-10)
-5. ✅ **Tests DB** : Vérifier tous tests de contrat (section 5)
-6. ⚠️ **Import Visitor** : Logique applicative avec transactions (hors périmètre migrations)
+3. ✅ **Triggers & Fonctions** : Défendre invariants (Phase 9-10)
+4. ✅ **Tests DB** : Vérifier tous tests de contrat (section 5)
+5. ⚠️ **Import Visitor** : Logique applicative avec transactions (hors périmètre migrations)
 
 ---
 
 **📄 Document prêt pour traduction en migrations SQL DB-first.**
 
-**🔒 CRITIQUE** : Les **Storage Policies** (Phase 7, Migrations 16-17) doivent être implémentées **AVANT** tout upload d'image personnelle en production.
+**🔒 CRITIQUE** : Les **Storage Policies** (Migrations 16-17) doivent être implémentées **AVANT** tout upload d'image personnelle en production.
