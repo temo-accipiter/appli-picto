@@ -439,16 +439,19 @@ La suppression physique d’un profil enfant est autorisée uniquement dans les 
 | Timezone            | Valeur IANA, défaut `Europe/Paris` | ux.md L215     |
 
 **Ownership** : détient cartes, catégories, profils enfants, appareils, timelines.
+**CONTRAT DB (invariant)** : `timezone` doit être une timezone IANA valide (ex: `Europe/Paris`). Toute valeur inconnue est rejetée par la DB (CHECK `accounts_timezone_valid_chk` via `public.is_valid_timezone(text)`).
 
 ---
 
 ## 3.2 Appareil autorisé (Device)
 
-| Attribut conceptuel | Description                                             | Référence            |
-| ------------------- | ------------------------------------------------------- | -------------------- |
-| `device_id`         | UUID généré au premier usage, persisté localement       | ux.md L2643          |
-| Rattachement        | Lié à 0..1 compte                                       | ux.md L2645          |
-| **Révocation**      | Manuelle via Page Profil ; non destructive (revoked_at) | Décision produit v14 |
+| Attribut conceptuel | Description                                                                                           | Référence                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `device_id`         | UUID généré au premier usage, persisté localement                                                     | ux.md L2643                                |
+| Rattachement        | Peut être rattaché à plusieurs comptes (tablette partagée) ; unicité DB = (`account_id`, `device_id`) | ux.md L2645 + Décision produit (Phase 5.5) |
+| **Révocation**      | Manuelle via Page Profil ; non destructive (revoked_at)                                               | Décision produit v14                       |
+
+> Note : En cas de suppression du compte (RGPD/maintenance), les devices peuvent être supprimés via cascade ; “non destructive” s’entend hors suppression du compte.
 
 **Lifecycle révocation** _(Décision produit v14)_ :
 
@@ -456,6 +459,11 @@ La suppression physique d’un profil enfant est autorisée uniquement dans les 
 - **Effet** : Révocation immédiate (appareil révoqué ne peut plus se connecter)
 - **Modèle** : Non destructive — privilégier colonne `revoked_at` (timestamp) ou statut `active | revoked` pour audit et traçabilité
 - **Aucune perte historique** : device_id conservé en base pour référence
+
+**CONTRAT DB (Phase 5.5)** :
+
+- Unicité : `UNIQUE (account_id, device_id)` (pas d’unicité globale sur `device_id`)
+- Cohérence temporelle : `CHECK (revoked_at IS NULL OR revoked_at >= created_at)`
 
 ---
 
@@ -639,7 +647,7 @@ Table : user_card_categories
 ### 4.1.3 Compte → Appareils
 
 - **1 compte** peut être utilisé sur **plusieurs appareils** (selon plan) _(ux.md L2631-2647)_
-- **1 appareil** (device_id) rattaché à **0..1 compte**
+- **1 appareil** (device_id) rattaché à **0..n comptes** (tablette partagée / multi-login), via unicité DB `UNIQUE (account_id, device_id)`
 
 ---
 
