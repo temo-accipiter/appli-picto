@@ -292,7 +292,7 @@
 - PK : `id`
 - FK : `user_id` → `accounts(id)` ON DELETE CASCADE
 - FK : `card_id` → `cards(id)` ON DELETE CASCADE
-- FK : `category_id` → `categories(id)` ON DELETE SET NULL (puis fallback applicatif "Sans catégorie")
+- FK : category_id → categories(id) (RESTRICT/NO ACTION) ; suppression de catégorie = trigger de réassignation vers catégorie système "Sans catégorie"
 - **UNIQUE : `(user_id, card_id)`** (CONTRAT EXPLICITE, DB_BLUEPRINT.md §2.322)
 
 **Dépendances** : `accounts`, `cards`, `categories`
@@ -300,7 +300,8 @@
 **Vérifications** :
 
 - Double INSERT même `(user_id, card_id)` échoue (UNIQUE)
-- Fallback "Sans catégorie" : si aucune ligne pour `(user_id, card_id)`, carte affichée dans "Sans catégorie" côté front (logique applicative, pas DB)
+- "Sans catégorie" : la catégorie système existe toujours en DB (seed automatique à création account).
+  L’absence de ligne pivot peut être interprétée en lecture UI comme "Sans catégorie", mais la DB garantit une cible stable ("Sans catégorie") pour les opérations DB (remap lors suppression de catégorie, intégrité).
 
 ---
 
@@ -559,6 +560,27 @@
 
 ---
 
+#### Migration 13.6 : `20260202121000_phase5_8_invariants_reward_bank_guard.sql`
+
+**Intention** : Invariants DB critiques (reward unique + suppression carte bank référencée)
+
+- Slots : **exactement 1 slot Récompense par timeline**
+  - UNIQUE partiel : `UNIQUE (timeline_id) WHERE kind='reward'`
+  - Trigger anti-contournement (INSERT/UPDATE sur `kind`/`timeline_id`)
+  - STOP si données existantes avec >1 reward (exception explicite)
+- Cards : interdire DELETE d’une carte bank si référencée
+  - Trigger BEFORE DELETE sur `cards` (check `slots` + `user_card_categories`)
+
+**Vérifications** :
+
+- INSERT d’un 2e reward pour une timeline échoue (UNIQUE/trigger)
+- UPDATE step → reward échoue si reward déjà présent
+- UPDATE reward → step ou reward → autre timeline échoue (trigger)
+- DELETE carte bank référencée (slots/pivot) échoue
+- DELETE carte bank non référencée réussit
+
+---
+
 ### Phase 6 — Séquences (aide visuelle décomposition)
 
 **Objectif** : Séquences visuelles (carte mère → étapes)
@@ -643,27 +665,30 @@
 
 ## 3. Liste exhaustive des migrations (réellement présentes dans ce repo)
 
-|   # | Fichier                                                       | Intention (résumé)                                       |
-| --: | ------------------------------------------------------------- | -------------------------------------------------------- |
-|   0 | `20260130100000_create_extensions_enums.sql`                  | Extensions + enums de base                               |
-|   1 | `20260130101000_create_accounts.sql`                          | accounts (extension auth.users)                          |
-|   2 | `20260130102000_create_devices.sql`                           | devices (multi-device + révocation)                      |
-|   3 | `20260130103000_create_child_profiles.sql`                    | profils enfants                                          |
-|   4 | `20260130104000_create_cards.sql`                             | cards (bank/personal)                                    |
-|   5 | `20260130105000_create_categories.sql`                        | categories                                               |
-|   6 | `20260130106000_create_user_card_categories.sql`              | pivot user↔card↔category                               |
-|   7 | `20260130107000_cards_normalize_published.sql`                | normalisation published                                  |
-|   8 | `20260130108000_categories_remap_on_delete.sql`               | remap catégories à la suppression                        |
-|   9 | `20260130109000_create_timelines.sql`                         | timelines (1:1 child_profile)                            |
-|  10 | `20260130110000_create_slots.sql`                             | slots                                                    |
-|  11 | `20260130111000_slots_enforce_min_step.sql`                   | invariant min step                                       |
-|  12 | `20260130112000_slots_enforce_min_reward.sql`                 | invariant min reward                                     |
-|  13 | `20260130113000_auto_create_child_profile_timeline.sql`       | auto-create profil+timeline+slots                        |
-|  14 | `20260130114000_create_sessions.sql`                          | sessions                                                 |
-|  15 | `20260130115000_create_session_validations.sql`               | session_validations                                      |
-|  16 | `20260130116000_add_session_state_transitions.sql`            | transitions sessions + règles validations                |
-|  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql` | snapshot steps_total + completion                        |
-|  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`      | timezone IANA + devices UNIQUE composite + CHECK revoked |
+|   # | Fichier                                                            | Intention (résumé)                                       |
+| --: | ------------------------------------------------------------------ | -------------------------------------------------------- |
+|   0 | `20260130100000_create_extensions_enums.sql`                       | Extensions + enums de base                               |
+|   1 | `20260130101000_create_accounts.sql`                               | accounts (extension auth.users)                          |
+|   2 | `20260130102000_create_devices.sql`                                | devices (multi-device + révocation)                      |
+|   3 | `20260130103000_create_child_profiles.sql`                         | profils enfants                                          |
+|   4 | `20260130104000_create_cards.sql`                                  | cards (bank/personal)                                    |
+|   5 | `20260130105000_create_categories.sql`                             | categories                                               |
+|   6 | `20260130106000_create_user_card_categories.sql`                   | pivot user↔card↔category                               |
+|   7 | `20260130107000_cards_normalize_published.sql`                     | normalisation published                                  |
+|   8 | `20260130108000_categories_remap_on_delete.sql`                    | remap catégories à la suppression                        |
+|   9 | `20260130109000_create_timelines.sql`                              | timelines (1:1 child_profile)                            |
+|  10 | `20260130110000_create_slots.sql`                                  | slots                                                    |
+|  11 | `20260130111000_slots_enforce_min_step.sql`                        | invariant min step                                       |
+|  12 | `20260130112000_slots_enforce_min_reward.sql`                      | invariant min reward                                     |
+|  13 | `20260130113000_auto_create_child_profile_timeline.sql`            | auto-create profil+timeline+slots                        |
+|  14 | `20260130114000_create_sessions.sql`                               | sessions                                                 |
+|  15 | `20260130115000_create_session_validations.sql`                    | session_validations                                      |
+|  16 | `20260130116000_add_session_state_transitions.sql`                 | transitions sessions + règles validations                |
+|  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql`      | snapshot steps_total + completion                        |
+|  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`           | timezone IANA + devices UNIQUE composite + CHECK revoked |
+|  19 | 20260201119000_phase5_6_corrective_integrity.sql                   | hardening intégrité (ownership + reset/guards)           |
+|  20 | 20260201120000_phase5_7_seed_system_category_on_account_create.sql | seed DB catégorie système “Sans catégorie”               |
+|  21 | 20260202121000_phase5_8_invariants_reward_bank_guard.sql           | reward unique + delete guard cartes bank référencées     |
 
 ---
 
@@ -747,117 +772,102 @@
 
 ---
 
-### Après Phase 6 (Séquences)
+### Après Phase 5.8 (Invariants reward + bank)
 
 **Assertions à vérifier** :
 
-- [ ] **Min 2 étapes** : DELETE étape si COUNT=2 → échoue (trigger)
-- [ ] **Pas doublons étapes** : INSERT 2x `(sequence_id, step_card_id)` → échoue (UNIQUE)
-- [ ] **Cascade suppression** : DELETE carte mère → séquence supprimée
+- [ ] **Reward unique** : INSERT 2e slot reward même `timeline_id` → échoue (UNIQUE/trigger)
+- [ ] **Contournement UPDATE bloqué** : UPDATE step → reward quand reward existe → échoue
+- [ ] **Reward immuable** : UPDATE reward `kind` ou `timeline_id` → échoue
+- [ ] **Bank delete guard** : DELETE carte bank référencée (slot/pivot) → échoue
+- [ ] **Bank delete OK si non référencée** : DELETE carte bank non utilisée → OK
 
 ---
 
-## 6. Points "Non spécifié — à trancher"
+### Après Phase 6 — Séquences
 
-### 6.1 Accès Admin aux comptes (DB_BLUEPRINT.md L110-123)
+Les phases suivantes ne doivent être abordées **qu’après validation complète de la Phase 6 (Séquences)**,
+incluant :
 
-**Question** : Admin peut-il accéder métadonnées `accounts` (support technique) ?
+- migrations DB appliquées sans erreur,
+- smoke tests manuels validant les invariants,
+- alignement documenté entre PRODUCT_MODEL, DB_BLUEPRINT et la DB réelle.
 
-**Options** :
+#### Phase 7 — RLS (Row Level Security)
 
-- **A) Admin strict** : Aucun accès global `accounts` (owner-only uniquement)
-- **B) Admin support** : SELECT métadonnées non sensibles (`status`, `created_at`, `timezone`) pour support
+Objectif :
 
-**Recommandation DB_BLUEPRINT** : **Option A** (strict) par défaut
+- Activer les politiques RLS sur l’ensemble des tables persistantes.
+- Traduire strictement les règles d’accès définies dans le contrat produit :
+  - isolation par `account_id`,
+  - accès en lecture/écriture selon le rôle (visitor / free / subscriber / admin),
+  - aucune règle métier critique portée côté frontend.
 
-**✅ DÉCISION CONFIRMÉE** : **Option A strict** — Admin n'a AUCUN accès global aux comptes (owner-only uniquement)
+Contraintes :
 
-**Impact migrations** :
-
-- RLS `accounts` SELECT policy = `id = auth.uid()` uniquement (pas de clause admin)
-
-**Décision requise avant** : Migration 19 (`rls_accounts.sql`)
-
----
-
-### 6.2 Bucket banque images (Migration 15)
-
-**Question** : Images banque stockées dans Supabase Storage ou CDN externe ?
-
-**Options** :
-
-- **A) Supabase Storage** : Bucket `bank-images` public (lecture tous)
-- **B) CDN externe** : Pas de bucket banque, `image_url` pointe vers CDN
-
-**✅ DÉCISION CONFIRMÉE** : **Option A — Supabase Storage**
-
-- Bucket `bank-images` public (lecture tous, policies SELECT publiques)
-- Bucket `personal-images` privé (owner-only, policies RLS Storage strictes)
-
-**Impact migrations** :
-
-- Migration 15 : Créer 2 buckets (`bank-images` public + `personal-images` privé)
-- Migration 16 : Policies Storage (public lecture bank + owner-only personal)
-
-**Décision requise avant** : Migration 15 (`create_storage_buckets.sql`)
+- Aucune modification de structure DB ne doit être introduite à cette phase.
+- Les policies doivent s’appuyer exclusivement sur les invariants déjà garantis par la DB.
 
 ---
 
-### 6.3 Seed "Sans catégorie" (Migration 31)
+#### Phase 8 — Storage (images cartes)
 
-**Question** : "Sans catégorie" créé en DB ou fallback applicatif pur ?
+Objectif :
 
-**Options** :
+- Mettre en place le stockage des images associées aux cartes.
+- Respecter strictement les règles produit :
+  - images personnelles privées,
+  - images banque accessibles en lecture,
+  - aucune modification d’image après création pour les cartes personnelles.
 
-- **A) Seed DB** : Trigger auto-création `categories` avec `is_system=TRUE` à création compte
-- **B) Fallback applicatif** : Pas de ligne DB, front affiche "Sans catégorie" si aucune association pivot
+Contraintes :
 
-**Recommandation DB_BLUEPRINT** (§2.322 L361) : **Fallback applicatif** ("si aucune ligne pour (user_id, card_id), carte affichée dans 'Sans catégorie' côté front")
-
-**Impact migrations** :
-
-- **A)** : Migration 31 requise
-- **B)** : Migration 31 SKIP (pas de seed)
-
-**Décision requise avant** : Phase 10
+- Le storage ne doit pas introduire de nouvelle logique métier.
+- Toute règle critique (immutabilité, ownership) doit déjà être garantie par la DB.
 
 ---
 
-### 6.4 Timestamps validation (DB_BLUEPRINT.md L1049-1065)
+#### Phase 9 — Quotas & plans
 
-**Question** : Stocker `validated_at` sur `session_validations` pour résolution conflits avancée ?
+Objectif :
 
-**Options** :
+- Appliquer les limites liées aux plans (free / subscriber / admin) :
+  - nombre de profils enfants,
+  - nombre d’appareils,
+  - création de cartes personnelles.
 
-- **A) Union simple de `slot_id`** (comme spécifié DB_BLUEPRINT.md Ch.3.10) — pas de timestamp
-- **B) `validated_at` timestamp** pour tri/résolution conflits si nécessaire
+Contraintes :
 
-**Recommandation DB_BLUEPRINT** : **Option A** (union simple)
-
-**Impact migrations** :
-
-- **A)** : `validated_at` peut être SKIP (ou conservé pour audit sans logique métier)
-- **B)** : `validated_at` utilisé pour résolution conflits temporels
-
-**Décision requise avant** : Migration 12 (`create_session_validations.sql`)
-
-**Note** : Migration 12 inclut `validated_at` par défaut (audit), mais logique métier utilise **uniquement union ensembliste** (set de `slot_id`)
+- Les quotas sont des **règles métier DB**, jamais des règles UI.
+- Les dépassements doivent être bloqués côté serveur (DB ou policies), avec un retour explicite.
 
 ---
 
-### 6.5 Aucun slot vide disponible lors ajout carte (PRODUCT_MODEL.md Ch.7)
+#### Phase 10 — Synchronisation & offline
 
-**Question** : Si adulte veut ajouter carte mais tous slots step occupés, que faire ?
+Objectif :
 
-**Options** :
+- Formaliser les règles de synchronisation cloud / local.
+- Définir explicitement :
+  - les états persistés en DB,
+  - les états purement locaux (non synchronisés),
+  - les comportements en cas de conflit ou de reprise.
 
-- **A) Auto-créer slot step** à la fin de timeline
-- **B) Checkbox grisée** (carte non ajoutée)
-- **C) Toast explicatif** "Ajouter d'abord un slot Étape vide"
+Contraintes :
 
-**Impact migrations** : **Aucun** (purement logique applicative front)
+- Aucun état ambigu entre local et cloud.
+- Les états critiques (sessions, progression, séquences) restent toujours DB-authoritative.
 
-**Décision requise** : Avant implémentation UI, **pas bloquant migrations**
+---
+
+#### Principe de clôture des phases
+
+Chaque phase post-Phase 6 doit respecter les règles suivantes :
+
+- aucune dette conceptuelle introduite,
+- aucun mélange de responsabilités (planning / jetons / séquences),
+- aucune règle métier critique déplacée côté frontend,
+- documentation mise à jour **avant** passage à la phase suivante.
 
 ---
 
@@ -869,7 +879,7 @@
 
 - [x] **Décision 6.1** (Admin accès `accounts`) → ✅ **CONFIRMÉ Option A strict** (owner-only uniquement)
 - [x] **Décision 6.2** (Bucket banque) → ✅ **CONFIRMÉ Option A Supabase Storage** (bank-images public + personal-images privé)
-- [ ] **Décision 6.3** (Seed "Sans catégorie") tranchée → recommandation **Option B fallback applicatif**
+- [x] Décision 6.3 (Catégorie système "Sans catégorie") → ✅ implémentée en DB (migration 20260201120000_phase5_7_seed_system_category_on_account_create.sql)
 - [ ] **Décision 6.4** (Timestamps validation) tranchée → recommandation **Option A union simple** (conserver `validated_at` audit uniquement)
 - [x] **Décision 6.5** : ✅ Aucune décision DB requise (logique UI)
 - [x] **UUID** : ✅ **CONFIRMÉ pgcrypto** + `gen_random_uuid()` partout
@@ -880,7 +890,7 @@
 
 - **6.1** : ✅ **CONFIRMÉ Option A strict** — Admin n'a AUCUN accès global `accounts`
 - **6.2** : ✅ **CONFIRMÉ Option A Supabase Storage** — 2 buckets (bank-images public + personal-images privé)
-- **6.3** : Bloque Migration 31 (`seed_system_categories.sql`) — mais peut être SKIP si fallback applicatif
+- 6.3 : ✅ Déjà implémentée (seed DB + unicité catégorie système + delete interdit/remap).
 - **6.4** : Non bloquant (choix design, Migration 12 inclut colonne par défaut)
 
 **Décisions confirmées** :

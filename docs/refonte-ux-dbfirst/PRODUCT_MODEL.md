@@ -136,7 +136,7 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 | **Catégorie**         | Organisation bibliothèque ; toujours personnelle à l'utilisateur.                                                      | ux.md L1131-1143      |
 | **"Sans catégorie"**  | Catégorie système non supprimable ; fallback automatique.                                                              | ux.md L1165-1179      |
 | **Dépublication**     | Retrait d'une carte de banque ≠ suppression ; reste utilisable là où déjà présente.                                    | ux.md L1273-1281      |
-| **Invariant banque**  | Une carte de banque ne doit jamais être supprimée si référencée ; seule dépublication autorisée.                       | ux.md L2979           |
+| **Invariant banque**  | Une carte de banque ne doit jamais être supprimée si référencée ; seule dépublication autorisée (DB: trigger BEFORE DELETE). | ux.md L2979           |
 
 ---
 
@@ -406,7 +406,7 @@ La suppression physique d’un profil enfant est autorisée uniquement dans les 
 
 - Un profil enfant existant possède toujours exactement une timeline.
 - Une timeline existante respecte en permanence la structure minimale : ≥ 1 slot Étape
-  exactement 1 slot Récompense
+  et **exactement 1 slot Récompense** (DB: unique index partiel + trigger anti-contournement)
 - Ces invariants s’appliquent y compris lors des cascades techniques autorisées (suppression compte, RGPD).
 
 ---
@@ -497,7 +497,7 @@ La suppression physique d’un profil enfant est autorisée uniquement dans les 
 - **Carte de banque** : Admin, accessible à tous, non modifiable, quota = 0
 - **Carte personnelle** : Abonné/Admin, privée, consomme quota
 
-**Invariant banque** : jamais supprimée si référencée ; seule dépublication autorisée _(ux.md L2979)_
+**Invariant banque** : jamais supprimée si référencée ; seule dépublication autorisée _(ux.md L2979, DB: trigger BEFORE DELETE)_
 
 ---
 
@@ -508,6 +508,30 @@ La suppression physique d’un profil enfant est autorisée uniquement dans les 
 | Identité                 | Par utilisateur           | ux.md L1143      |
 | Nom                      | —                         | —                |
 | Système "Sans catégorie" | Non supprimable, fallback | ux.md L1165-1179 |
+
+#### Invariant DB — “Sans catégorie” (système)
+
+Pour chaque account, une catégorie système “Sans catégorie” existe en base :
+
+- créée automatiquement à la création du compte (DB-side)
+- non supprimable
+- unique par compte (au plus une catégorie is_system = TRUE)
+  Cette catégorie sert de cible de réassignation lors de la suppression d’une catégorie.
+
+#### Catégorie système "Sans catégorie" (invariant DB)
+
+Chaque compte possède exactement **une et une seule** catégorie système nommée **"Sans catégorie"**.
+
+Invariants :
+
+- Cette catégorie est créée **automatiquement en base** à la création du compte.
+- Elle est identifiée par `is_system = TRUE`.
+- Une contrainte DB garantit l’unicité `(account_id) WHERE is_system = TRUE`.
+- Cette catégorie ne peut pas être supprimée.
+- Toute carte sans catégorie explicite est implicitement rattachée à cette catégorie système.
+
+⚠️ Il n’existe **aucun fallback applicatif** pour "Sans catégorie".
+La DB est la source de vérité.
 
 ---
 
@@ -524,8 +548,9 @@ Table : user_card_categories
 └──────────────────────────────────────────┘
 ```
 
-- **Fallback applicatif** : si aucune ligne pour (user_id, card_id), carte = "Sans catégorie"
-- Le fallback est **applicatif**, pas un NULL en DB
+- La catégorie système “Sans catégorie” existe toujours en DB (seed automatique à la création du compte).
+- Une carte est dans “Sans catégorie” s’il existe une ligne pivot vers la catégorie système, ou si l’application choisit de ne pas matérialiser ce pivot (mais la DB garantit que la cible “Sans catégorie” existe pour les opérations DB : remap lors suppression de catégorie, contraintes d’intégrité).
+- Interdit : category_id NULL dans user_card_categories (la DB ne stocke jamais “sans catégorie” via NULL).
 
 ---
 

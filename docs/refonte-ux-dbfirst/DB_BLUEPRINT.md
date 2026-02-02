@@ -279,14 +279,14 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - Publication : Admin uniquement (bank)
 - Dépublication : `published` = FALSE (≠ suppression)
 - Suppression : Si personal ET pas de références OU confirmation + réinitialisation sessions actives
-- **Invariant banque** : Jamais supprimer carte bank si référencée (PRODUCT_MODEL.md Ch.3.4)
+- **Invariant banque** : Jamais supprimer carte bank si référencée (DB: trigger BEFORE DELETE)
 
 **RLS conceptuelle (table `cards`)** :
 
 - SELECT : `type = 'bank' AND published = TRUE` (tous) OU `account_id = auth.uid()` (owner)
 - INSERT : `account_id = auth.uid()` ET quota non atteint OU `auth.uid() IN (SELECT id FROM accounts WHERE status = 'admin')`
 - UPDATE : `account_id = auth.uid()` (owner-only) OU admin (bank)
-- DELETE : `account_id = auth.uid()` (owner-only) OU admin (bank avec vérif références)
+- DELETE : `account_id = auth.uid()` (owner-only) OU admin (bank) — suppression bank référencée bloquée par trigger DB
 
 **🔒 CRITIQUE — Confidentialité images personnelles (Storage)** _(PRODUCT_MODEL.md Ch.10.4.3)_
 
@@ -377,8 +377,7 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - PK : `id`
 - FK : `user_id` → `accounts(id)` ON DELETE CASCADE
 - FK : `card_id` → `cards(id)` ON DELETE CASCADE
-- FK : `category_id` → `categories(id)` ON DELETE SET NULL puis fallback applicatif "Sans catégorie"
-- **UNIQUE : `(user_id, card_id)`** (CONTRAT EXPLICITE, PRODUCT_MODEL.md Ch.3.6)
+- FK : category_id → categories(id) ON DELETE RESTRICT (ou NO ACTION) ; la suppression d’une catégorie est gérée par trigger de réassignation vers la catégorie système "Sans catégorie"- **UNIQUE : `(user_id, card_id)`** (CONTRAT EXPLICITE, PRODUCT_MODEL.md Ch.3.6)
 
 **Contraintes** :
 
@@ -495,6 +494,7 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - `card_id` NULL autorisé (slot vide)
 - `tokens` NULL si `kind = 'reward'`, 0-5 si `kind = 'step'`
 - CHECK : `kind = 'step' AND tokens BETWEEN 0 AND 5` OU `kind = 'reward' AND tokens IS NULL`
+- UNIQUE : `(timeline_id) WHERE kind='reward'` (exactement 1 slot Récompense par timeline)
 
 **Cardinalités** :
 
@@ -506,6 +506,7 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - Création : Ajout slot Page Édition OU structure minimale timeline
 - Drag & drop : Modification `position` uniquement (slot_id stable)
 - Suppression : Interdit si dernier slot step OU slot déjà validé en session active
+- Slot Récompense : **ne peut pas changer de `kind` ni de `timeline_id`** (guard DB)
 
 **Règles verrouillage** (PRODUCT_MODEL.md Ch.5.4) :
 
@@ -517,6 +518,7 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - `slot_id` (PK `id`) indépendant de `position` (stable lors drag & drop)
 - Slot step vide ignoré en Tableau (pas affiché, pas exécutable)
 - Slot reward vide n'occupe aucun espace côté Tableau
+- **Exactement 1 slot Récompense par timeline** (unique index + trigger anti-contournement)
 
 **RLS conceptuelle** :
 
@@ -879,12 +881,13 @@ active_preview (epoch=N+1)
 
 ### Invariants cartes & catégories
 
-| #   | Invariant                                       | Référence               | Mécanisme DB                                                              |
-| --- | ----------------------------------------------- | ----------------------- | ------------------------------------------------------------------------- |
-| 15  | **Pivot catégorie unique (user, card)**         | PRODUCT_MODEL.md Ch.3.6 | UNIQUE `(user_id, card_id)` sur `user_card_categories`                    |
-| 16  | **Fallback "Sans catégorie" applicatif**        | PRODUCT_MODEL.md Ch.3.6 | Aucune ligne pivot = "Sans catégorie" côté front                          |
-| 17  | **Carte banque jamais supprimée si référencée** | PRODUCT_MODEL.md Ch.3.4 | Trigger vérif références avant DELETE + dépublication ≠ suppression       |
-| 18  | **Image figée après création (personal)**       | PRODUCT_MODEL.md Ch.3.4 | Trigger/constraint : UPDATE interdit sur `image_url` si `type='personal'` |
+| #     | Invariant                                                     | Référence                   | Mécanisme DB                                                                                                                               |
+| ----- | ------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 15    | **Pivot catégorie unique (user, card)**                       | PRODUCT_MODEL.md Ch.3.6     | UNIQUE `(user_id, card_id)` sur `user_card_categories`                                                                                     |
+| 16    | "Sans catégorie" = catégorie système DB seedée                | PRODUCT_MODEL.md Ch.3.5/3.6 | Trigger AFTER INSERT accounts → create category (is_system=TRUE, name='Sans catégorie'), index unique partiel (account_id) WHERE is_system |
+| 16bis | Lecture UX: si aucune ligne pivot, affichage "Sans catégorie" | PRODUCT_MODEL.md Ch.3.6     | Règle de lecture (non-stockée) — mais la DB garantit l’existence d’une cible stable pour remap                                             |
+| 17    | **Carte banque jamais supprimée si référencée**               | PRODUCT_MODEL.md Ch.3.4     | Trigger vérif références avant DELETE + dépublication ≠ suppression                                                                        |
+| 18    | **Image figée après création (personal)**                     | PRODUCT_MODEL.md Ch.3.4     | Trigger/constraint : UPDATE interdit sur `image_url` si `type='personal'`                                                                  |
 
 ### Invariants séquençage
 
