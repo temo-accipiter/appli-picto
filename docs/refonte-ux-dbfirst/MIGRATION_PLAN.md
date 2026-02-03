@@ -585,7 +585,7 @@
 
 **Objectif** : Séquences visuelles (carte mère → étapes)
 
-#### Migration 12 : `20260130111000_create_sequences.sql`
+#### Migration 22 : `20260202122000_phase6_create_sequences.sql`
 
 **Intention** : Séquences visuelles (aide décomposition carte mère)
 
@@ -603,7 +603,7 @@
 - PK : `id`
 - FK : `account_id` → `accounts(id)` ON DELETE CASCADE
 - FK : `mother_card_id` → `cards(id)` ON DELETE CASCADE
-- **UNIQUE : `(account_id, mother_card_id)`** (0..1 séquence par carte par user, DB_BLUEPRINT.md invariant #15)
+- **UNIQUE : `(account_id, mother_card_id)`** (0..1 séquence par carte par compte, DB_BLUEPRINT.md invariant #19)
 
 **Dépendances** : `accounts`, `cards`
 
@@ -613,7 +613,7 @@
 
 ---
 
-#### Migration 13 : `20260130112000_create_sequence_steps.sql`
+#### Migration 23 : `20260202123000_phase6_create_sequence_steps.sql`
 
 **Intention** : Étapes de séquence (liste ordonnée, sans doublons)
 
@@ -631,35 +631,42 @@
 
 - PK : `id`
 - FK : `sequence_id` → `sequences(id)` ON DELETE CASCADE
-- FK : `step_card_id` → `cards(id)` ON DELETE CASCADE (déclenche vérif min 2 étapes)
-- UNIQUE : `(sequence_id, position)` (ordre stable)
-- **UNIQUE : `(sequence_id, step_card_id)`** (pas doublons carte dans même séquence, DB_BLUEPRINT.md invariant #17)
+- FK : `step_card_id` → `cards(id)` ON DELETE CASCADE
+- UNIQUE : `(sequence_id, position)` **DEFERRABLE** (reorder multi-lignes)
+- **UNIQUE : `(sequence_id, step_card_id)`** (pas doublons carte dans même séquence, DB_BLUEPRINT.md invariant #21)
+- `position` >= 0 (aucun gapless imposé par la DB)
 
-**Invariant** : Minimum 2 étapes par séquence (trigger/vérif applicative, DB_BLUEPRINT.md invariant #16)
+**Invariant** : Minimum 2 étapes par séquence **ajouté en migration suivante** (triggers DEFERRABLE)
 
 **Dépendances** : `sequences`, `cards`
 
 **Vérifications** :
 
 - Double INSERT même `(sequence_id, step_card_id)` échoue (UNIQUE)
+- Reorder transactionnel (swap positions) passe grâce à DEFERRABLE
 
 ---
 
-#### Migration 14 : `20260130113000_add_sequence_invariants.sql`
+#### Migration 24 : `20260202124000_phase6_add_sequence_invariants.sql`
 
-**Intention** : Triggers pour invariants séquences (min 2 étapes)
+**Intention** : Invariants DB séquences (min 2 strict) + ownership guards + durcissement delete bank
 
 **Contenu conceptuel** :
 
-- Fonction + trigger : empêcher DELETE `sequence_steps` si COUNT(steps) <= 2
-- Fonction + trigger : si DELETE `cards` utilisée comme étape → retrait séquences ; si <2 étapes restantes → DELETE séquence
+- Fonction + constraint triggers DEFERRABLE : **min 2 étapes strict** (commit-safe) sur `sequences` et `sequence_steps`
+- Ownership guard (sans RLS) :
+  - `sequences.mother_card_id` personnelle → même `account_id`
+  - `sequence_steps.step_card_id` personnelle → même compte que la séquence
+  - cartes bank autorisées
+- Extension du guard suppression carte bank : inclut `sequences` + `sequence_steps`
 
 **Dépendances** : `sequences`, `sequence_steps`, `cards`
 
 **Vérifications** :
 
-- DELETE étape si COUNT = 2 échoue (trigger bloque)
-- DELETE carte utilisée → séquence supprimée si reste <2 étapes
+- INSERT séquence sans 2 étapes dans la même transaction échoue au COMMIT
+- DELETE étape si COUNT = 2 échoue (constraint trigger)
+- DELETE carte bank référencée (slots/categories/séquences/étapes) échoue
 
 ---
 
@@ -686,9 +693,12 @@
 |  16 | `20260130116000_add_session_state_transitions.sql`                 | transitions sessions + règles validations                |
 |  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql`      | snapshot steps_total + completion                        |
 |  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`           | timezone IANA + devices UNIQUE composite + CHECK revoked |
-|  19 | 20260201119000_phase5_6_corrective_integrity.sql                   | hardening intégrité (ownership + reset/guards)           |
-|  20 | 20260201120000_phase5_7_seed_system_category_on_account_create.sql | seed DB catégorie système “Sans catégorie”               |
-|  21 | 20260202121000_phase5_8_invariants_reward_bank_guard.sql           | reward unique + delete guard cartes bank référencées     |
+|  19 | `20260201119000_phase5_6_corrective_integrity.sql`                 | hardening intégrité (ownership + reset/guards)           |
+|  20 | `20260201120000_phase5_7_seed_system_category_on_account_create.sql` | seed DB catégorie système “Sans catégorie”             |
+|  21 | `20260202121000_phase5_8_invariants_reward_bank_guard.sql`           | reward unique + delete guard cartes bank référencées   |
+|  22 | `20260202122000_phase6_create_sequences.sql`                       | sequences (0..1 par carte par compte)                    |
+|  23 | `20260202123000_phase6_create_sequence_steps.sql`                  | sequence_steps (ordre, doublons, deferrable)             |
+|  24 | `20260202124000_phase6_add_sequence_invariants.sql`                | invariants séquences (min 2 strict + ownership + bank guard) |
 
 ---
 

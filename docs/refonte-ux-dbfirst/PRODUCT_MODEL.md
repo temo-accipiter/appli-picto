@@ -190,7 +190,7 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 | **Jeton**                  | Unité de motivation sur slot Étape ; temporaire ; reset chaque session.       | ux.md L546-554   |
 | **Grille de jetons**       | Cases = somme jetons des slots Étapes.                                        | ux.md L558-561   |
 | **Séquençage**             | Aide visuelle optionnelle ; décompose carte mère en étapes ; purement visuel. | ux.md L526-534   |
-| **Carte mère**             | Carte porteuse d'une séquence (0 ou 1 par utilisateur).                       | ux.md L312-317   |
+| **Carte mère**             | Carte porteuse d'une séquence (0 ou 1 par compte).                             | ux.md L312-317   |
 | **État "fait" (séquence)** | Visuel, local-only, non sync ; par slot_id ; reset à chaque session.          | ux.md L2369-2399 |
 
 ---
@@ -612,14 +612,15 @@ Table : user_card_categories
 
 | Attribut conceptuel | Description                                            | Référence        |
 | ------------------- | ------------------------------------------------------ | ---------------- |
-| Propriétaire        | Utilisateur (toujours personnelle)                     | ux.md L2154-2164 |
-| Carte mère          | 0..1 séquence par carte par utilisateur                | ux.md L2147      |
+| Propriétaire        | Compte (toujours locale au compte, jamais partagée)    | ux.md L2154-2164 |
+| Carte mère          | 0..1 séquence par carte **et** par compte              | ux.md L2147      |
 | Étapes              | Liste ordonnée, **sans doublons**, min 2, max illimité | ux.md L2221-2245 |
 
-**Cascade suppression** _(ux.md L2419-2446)_ :
+**Suppression & garde-fous** _(ux.md L2419-2446)_ :
 
-- Suppression étape : retrait des séquences ; si <2 étapes, séquence supprimée
-- Suppression carte mère : séquence supprimée
+- Suppression étape : **refusée** si la séquence tomberait à <2 étapes (min 2 strict, DB-authoritative)
+- Suppression carte mère : séquence supprimée (cascade **si suppression autorisée**)
+- Suppression carte de banque référencée : **interdite** (dépublication requise)
 
 ---
 
@@ -767,8 +768,8 @@ Table : user_card_categories
 
 ### 4.6.1 Carte ↔ Séquence
 
-- **1 carte** peut avoir **0..1 séquence** par utilisateur _(ux.md L2147)_
-- Séquence toujours **personnelle** (pas de globale) _(ux.md L2154-2164)_
+- **1 carte** peut avoir **0..1 séquence** par compte _(ux.md L2147)_
+- Séquence **locale au compte** (jamais partagée, même si carte de banque) _(ux.md L2154-2164)_
 
 ### 4.6.2 Séquence ↔ Étapes
 
@@ -777,8 +778,9 @@ Table : user_card_categories
 
 ### 4.6.3 Cascades suppression
 
-- Suppression étape : retrait ; si <2 étapes, séquence supprimée _(ux.md L2427-2434)_
-- Suppression carte mère : séquence supprimée _(ux.md L2436-2446)_
+- Suppression étape : **refusée** si la séquence tomberait à <2 étapes _(ux.md L2427-2434)_
+- Suppression carte mère : séquence supprimée (cascade **si suppression autorisée**) _(ux.md L2436-2446)_
+- Suppression carte de banque référencée : **interdite** (dépublication requise)
 
 ---
 
@@ -1105,8 +1107,8 @@ _(ux.md L3206-3214)_
 ### 6.3.2 Carte mère ↔ Séquence _(ux.md L2143-2164)_
 
 - Toute carte peut devenir carte mère
-- **0..1 séquence** par carte par utilisateur
-- Séquence **toujours personnelle** (aucune globale)
+- **0..1 séquence** par carte par compte
+- Séquence **locale au compte** (aucune globale, même pour cartes de banque)
 
 ### 6.3.3 Création/édition _(ux.md L2188-2238)_
 
@@ -1121,7 +1123,7 @@ _(ux.md L3206-3214)_
 
 - Liste ordonnée de cartes existantes
 - **Sans doublons** (strictement interdit)
-- **Minimum 2 étapes** (vérifié à la sortie)
+- **Minimum 2 étapes** (vérifié en DB au commit, UI doit l’anticiper)
 - Maximum : illimité
 
 ### 6.3.5 Mini-timeline (Tableau) _(ux.md L2355-2365)_
@@ -1154,11 +1156,13 @@ _(ux.md L3206-3214)_
 ### 6.3.8 Cascades suppression _(ux.md L2419-2446)_
 
 - Suppression carte utilisée comme étape :
-  - Retrait de toutes séquences
-  - Si <2 étapes : séquence supprimée
+  - **Refusée** si cela ferait tomber une séquence à <2 étapes
+  - L’utilisateur doit supprimer la séquence explicitement ou garder ≥2 étapes
 - Suppression carte mère :
-  - Séquence supprimée (cascade)
+  - Séquence supprimée (cascade **si suppression autorisée**)
   - Aucune séquence orpheline
+- Cartes de banque :
+  - Suppression **interdite** si référencées (slots, catégories, séquences, étapes)
 
 ### 6.3.9 Quotas
 
@@ -1370,8 +1374,8 @@ Aucun — les 3 systèmes sont complètement spécifiés dans ux.md.
 | ----------------- | ----------------------------------------------------------------------- |
 | **Acteur**        | Abonné/Admin                                                            |
 | **Contexte**      | Mode Séquençage (Édition)                                               |
-| **Préconditions** | Carte mère sans séquence (pour cet utilisateur) ; ≥2 étapes à la sortie |
-| **Effets**        | Séquence créée ; personnelle à l'utilisateur                            |
+| **Préconditions** | Carte mère sans séquence (pour ce compte) ; ≥2 étapes au commit         |
+| **Effets**        | Séquence créée ; locale au compte (non partagée)                        |
 
 ### 7.5.2 Supprimer séquence
 

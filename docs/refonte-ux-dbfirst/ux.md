@@ -2264,10 +2264,14 @@ L’ordre peut ensuite être ajusté via **drag & drop**.
 - La carte est retirée de la timeline de séquence.
 - Les étapes restantes sont **recompactées automatiquement, sans trou**.
 
-Si toutes les cartes sont retirées :
+**Garde-fou DB (non négociable)**  
+La séquence **ne peut jamais** exister avec moins de 2 étapes.
 
-- la séquence est considérée comme inexistante,
-- la carte redevient une carte normale sans séquence.
+Conséquence UX :
+
+- toute action qui ferait tomber à **< 2 étapes** est **refusée**,
+- un message explicite est affiché,
+- pour supprimer une séquence, l’utilisateur doit utiliser une action **« Supprimer la séquence »** (explicite), pas une suppression implicite par retrait des étapes.
 
 ---
 
@@ -2290,7 +2294,8 @@ L’utilisateur doit :
 
 👉 Pas de bouton “Valider”, pas de modal lourd, pas de risque de perte.
 
-La contrainte **minimum 2 étapes** est vérifiée **uniquement à la sortie**, jamais pendant l’édition.
+La contrainte **minimum 2 étapes** est **vérifiée en base au commit** (transaction-safe).  
+L’UI doit l’anticiper, mais la DB reste l’autorité ultime.
 
 ---
 
@@ -2403,28 +2408,28 @@ Si une carte est supprimée alors qu’elle est utilisée comme étape :
 
 - une confirmation explicite est affichée, par exemple :
 
-  « Cette carte est utilisée dans 3 séquences. Elle sera retirée de ces séquences. »
+  « Cette carte est utilisée dans 3 séquences. La suppression est impossible tant que ces séquences existent. »
 
-Après suppression :
+Après tentative de suppression :
 
-- la carte est retirée de chaque séquence,
-- Les étapes restantes sont recompactées sans trou.
-
-Si une séquence contient moins de deux étapes :
-
-- La séquence est automatiquement supprimée.
+- **si la carte est référencée dans une séquence** et que le retrait ferait passer une séquence à **< 2 étapes**, la suppression est **refusée**,
+- l’utilisateur doit **supprimer la séquence explicitement**, ou retirer d’abord d’autres étapes pour rester à ≥ 2.
 
 **Suppression d’une carte mère (avec séquence)**
 
 Si la carte supprimée est une carte mère (porteuse d’une séquence) :
 
-● la séquence associée est supprimée automatiquement (cascade),
+● la séquence associée est supprimée automatiquement (cascade) **si la suppression est autorisée**,
 
 ● un message de confirmation explicite le retrait de la séquence,
 
 ● La carte est retirée de tous ses usages (slots, timelines, références).
 
-👉Aucune séquence “orpheline” ne doit exister.
+**Cas spécifique cartes de banque**  
+Une carte de banque **ne peut pas être supprimée** si elle est encore référencée (slots, catégories, séquences, étapes).  
+L’action correcte est la **dépublication**, pas la suppression.
+
+👉 Aucune séquence “orpheline” ne doit exister.
 
 ---
 

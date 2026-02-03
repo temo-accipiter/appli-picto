@@ -54,7 +54,7 @@ _(Référence : PRODUCT_MODEL.md Ch.0, ux.md L70-164)_
 | **Slot (Étape/Récompense)**    | `slots`                | PRODUCT_MODEL.md Ch.3.8   | slot_id UUID, position, type, tokens |
 | **Session**                    | `sessions`             | PRODUCT_MODEL.md Ch.3.9   | epoch (int), état, 1 active max      |
 | **Validation (slot validé)**   | `session_validations`  | PRODUCT_MODEL.md Ch.3.10  | (session_id, slot_id) pour union     |
-| **Séquence (carte mère)**      | `sequences`            | PRODUCT_MODEL.md Ch.3.11  | 0..1 par carte par user              |
+| **Séquence (carte mère)**      | `sequences`            | PRODUCT_MODEL.md Ch.3.11  | 0..1 par carte par compte            |
 | **Étapes de séquence**         | `sequence_steps`       | PRODUCT_MODEL.md Ch.3.11  | Liste ordonnée, sans doublons        |
 | **État "fait" (séquence)**     | ❌ **Pas de table**    | PRODUCT_MODEL.md Ch.3.12  | Local-only, non sync cloud           |
 | **Plan/Quotas (compteurs)**    | ⚠️ **À trancher**      | PRODUCT_MODEL.md Ch.9     | Voir section 6 (quotas)              |
@@ -681,7 +681,7 @@ active_preview (epoch=N+1)
 
 **But** : Séquences visuelles (aide décomposition carte mère)
 
-**Owner / visibilité** : `account_id = auth.uid()` (RLS)
+**Owner / visibilité** : **pas de RLS dans cette phase** ; ownership gardé par triggers (cartes personnelles uniquement pour leur compte, cartes bank autorisées)
 
 **Colonnes conceptuelles** :
 
@@ -705,6 +705,7 @@ active_preview (epoch=N+1)
 - `account_id` NOT NULL
 - `mother_card_id` NOT NULL
 - UNIQUE `(account_id, mother_card_id)`
+- **Ownership guard** : si `mother_card_id` est personnelle, elle doit appartenir au même `account_id` (bank autorisée)
 
 **Cardinalités** :
 
@@ -715,19 +716,15 @@ active_preview (epoch=N+1)
 **Lifecycle** :
 
 - Création : Mode Séquençage Page Édition
-- Suppression : Manuelle OU cascade si carte mère supprimée OU si <2 étapes après retrait
+- Suppression : **manuelle** (séquence explicite) OU cascade si carte mère supprimée (si suppression autorisée)
 
 **Cascades suppression** (PRODUCT_MODEL.md Ch.3.11) :
 
 - Suppression carte mère → séquence supprimée
-- Suppression carte utilisée comme étape → retrait séquences ; si <2 étapes restantes → séquence supprimée
+- Suppression carte utilisée comme étape → suppression des steps référencés ; **transaction refusée** si <2 étapes restantes
+- Suppression carte bank référencée → **interdite** (guard global sur `cards`)
 
-**RLS conceptuelle** :
-
-- SELECT : `account_id = auth.uid()` (owner-only)
-- INSERT : `account_id = auth.uid()` (owner-only)
-- UPDATE : `account_id = auth.uid()` (owner-only)
-- DELETE : `account_id = auth.uid()` (owner-only)
+**RLS** : **non implémentée** dans cette phase.
 
 ---
 
@@ -735,7 +732,7 @@ active_preview (epoch=N+1)
 
 **But** : Étapes de séquence (liste ordonnée, sans doublons)
 
-**Owner / visibilité** : `account_id = auth.uid()` via sequence (RLS)
+**Owner / visibilité** : **pas de RLS dans cette phase** ; ownership gardé par triggers (step_card personnelle doit appartenir au compte de la séquence, bank autorisée)
 
 **Colonnes conceptuelles** :
 
@@ -753,7 +750,7 @@ active_preview (epoch=N+1)
 - PK : `id`
 - FK : `sequence_id` → `sequences(id)` ON DELETE CASCADE
 - FK : `step_card_id` → `cards(id)` ON DELETE CASCADE (déclenche vérif min 2 étapes)
-- UNIQUE : `(sequence_id, position)` (ordre stable)
+- UNIQUE : `(sequence_id, position)` **DEFERRABLE INITIALLY DEFERRED** (reorder multi-lignes)
 - **UNIQUE : `(sequence_id, step_card_id)`** (pas de doublons carte dans même séquence)
 
 **Contraintes** :
@@ -761,9 +758,10 @@ active_preview (epoch=N+1)
 - `sequence_id` NOT NULL
 - `step_card_id` NOT NULL
 - `position` NOT NULL, >= 0
-- UNIQUE `(sequence_id, position)`
+- UNIQUE `(sequence_id, position)` (DEFERRABLE)
 - **UNIQUE `(sequence_id, step_card_id)`** (PRODUCT_MODEL.md Ch.3.11 : sans doublons)
-- CHECK : Minimum 2 étapes par séquence (vérif applicative à la sortie Mode Séquençage)
+- **Min 2 étapes** : constraint triggers DEFERRABLE (commit-safe) sur `sequences` et `sequence_steps`
+- **Aucun imposé gapless** : la DB n’impose pas l’absence de trous (responsabilité UI)
 
 **Cardinalités** :
 
@@ -773,14 +771,9 @@ active_preview (epoch=N+1)
 
 - Création : Ajout étape Mode Séquençage
 - Drag & drop : Modification `position` uniquement
-- Suppression : Retrait étape ; si <2 restantes → cascade suppression séquence
+- Suppression : Retrait étape ; **refusé** si <2 restantes (pas d’auto-suppression)
 
-**RLS conceptuelle** :
-
-- SELECT : `sequence_id IN (SELECT id FROM sequences WHERE account_id = auth.uid())` (owner via séquence)
-- INSERT : Idem
-- UPDATE : Idem
-- DELETE : Idem + vérif min 2 étapes après suppression
+**RLS** : **non implémentée** dans cette phase.
 
 ---
 
@@ -893,9 +886,10 @@ active_preview (epoch=N+1)
 
 | #   | Invariant                                | Référence                | Mécanisme DB                                              |
 | --- | ---------------------------------------- | ------------------------ | --------------------------------------------------------- |
-| 19  | **0..1 séquence par carte par user**     | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(account_id, mother_card_id)` sur `sequences`     |
-| 20  | **Min 2 étapes par séquence**            | PRODUCT_MODEL.md Ch.3.11 | Trigger/constraint : COUNT(steps) >= 2 par sequence       |
+| 19  | **0..1 séquence par carte par compte**   | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(account_id, mother_card_id)` sur `sequences`     |
+| 20  | **Min 2 étapes par séquence (strict)**   | PRODUCT_MODEL.md Ch.3.11 | Constraint triggers DEFERRABLE : COUNT(steps) >= 2        |
 | 21  | **Pas de doublons étapes dans séquence** | PRODUCT_MODEL.md Ch.3.11 | UNIQUE `(sequence_id, step_card_id)` sur `sequence_steps` |
+| 22  | **Ownership séquences/étapes (no RLS)**  | PRODUCT_MODEL.md Ch.3.11 | Triggers : personal cards must match `account_id`         |
 
 ### Invariants révocation & downgrade
 
