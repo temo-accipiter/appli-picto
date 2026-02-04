@@ -848,7 +848,7 @@ Contraintes :
 
 #### Phase 8 — Storage (images cartes)
 
-Objectif :
+**Objectif** :
 
 - Mettre en place le stockage des images associées aux cartes.
 - Respecter strictement les règles produit :
@@ -856,27 +856,48 @@ Objectif :
   - images banque accessibles en lecture,
   - aucune modification d'image après création pour les cartes personnelles.
 
+**⚠️ ARCHITECTURE PARTICULIÈRE — Migrations privilégiées**
+
+La Phase 8 introduit une architecture de migration à deux niveaux en raison d'une **limitation Supabase** :
+
+- Le runner de migrations standard (`postgres`) n'est PAS superuser en local
+- `postgres` ne peut pas créer de policies sur `storage.objects` (propriété de `supabase_storage_admin`)
+- `supabase_storage_admin` n'a pas accès au schema `auth` (donc `auth.uid()` inaccessible)
+- Seul `supabase_admin` (superuser) peut créer des policies utilisant `auth.uid()` sur `storage.objects`
+
+**Solution DB-first adoptée** :
+
+```
+supabase/
+├── migrations/                          # Migrations standard (supabase db reset)
+│   └── 20260204101000_phase8_1_create_storage_buckets.sql
+├── migrations_privileged/               # Migrations privilégiées (supabase_admin)
+│   └── 20260204102000_phase8_2_storage_rls_policies.sql
+scripts/
+└── db-reset.sh                          # Wrapper pour reset complet
+```
+
+**Workflow de reset** :
+
+```bash
+# Option 1 : Script wrapper (recommandé)
+./scripts/db-reset.sh
+
+# Option 2 : Manuel
+supabase db reset
+psql postgresql://supabase_admin:postgres@127.0.0.1:5432/postgres \
+  -v ON_ERROR_STOP=1 \
+  -f supabase/migrations_privileged/20260204102000_phase8_2_storage_rls_policies.sql
+```
+
 **Migrations implémentées** :
 
-- **Phase 8.1** : Create storage buckets (`personal-images` privé, `bank-images` public)
-- **Phase 8.2** : Storage RLS policies (7 policies initiales)
-- **Phase 8.3** : Storage hardening (optionnel, path validation)
-- **Phase 8.4** : Fix storage policies and buckets (corrections DB-first strict : retirer limites non validées, UUID validation stricte)
-- **Phase 8.5** : Harden storage policies (UUID case-insensitive + anchored regex + hardening complet)
+| Migration     | Fichier                                                                  | Runner                        | Contenu                                                              |
+| ------------- | ------------------------------------------------------------------------ | ----------------------------- | -------------------------------------------------------------------- |
+| **Phase 8.1** | `migrations/20260204101000_phase8_1_create_storage_buckets.sql`          | `postgres` (standard)         | Création buckets `personal-images` (privé) et `bank-images` (public) |
+| **Phase 8.2** | `migrations_privileged/20260204102000_phase8_2_storage_rls_policies.sql` | `supabase_admin` (privilégié) | 7 RLS policies sur `storage.objects`                                 |
 
-**Corrections appliquées (3 itérations)** :
-
-1. **Correction 8.4** : Retirer décisions produit non validées (file_size_limit, allowed_mime_types), ajouter validation UUID stricte sur paths
-2. **Correction 8.5** : Regex UUID case-insensitive `[0-9a-fA-F]`, anchored `^...$` (refuse `<uuid>garbage`), hardening complet sur TOUTES policies (segments non vides, directory traversal, extension optionnelle stricte)
-3. **Audit is_admin()** : Fonction SECURITY DEFINER vérifiée SAFE (minimal, search_path hardened, reads only current user)
-
-**Tests créés** :
-
-- `phase8_smoke_tests.sql` : Tests initiaux (post-8.2)
-- `phase8_smoke_tests_strict.sql` : Tests post-correction 8.4
-- `phase8_smoke_tests_v2.sql` : Tests exhaustifs post-correction 8.5 (case-insensitive UUID, anchored regex, directory traversal sur toutes ops)
-
-**🔒 CRITIQUE — Storage Policies obligatoires AVANT upload production** :
+**🔑 CRITIQUE — Storage Policies (Phase 8.2)**
 
 - **Bucket `personal-images` (privé)** :
   - SELECT : `split_part(name,'/',1) = auth.uid()::text` (owner-only via path)
@@ -891,36 +912,49 @@ Objectif :
   - UPDATE : `public.is_admin()` (admin uniquement)
   - DELETE : `public.is_admin()` (admin uniquement)
 
-**Note** : Les RLS table `cards` (Phase 7.4) sont une mesure secondaire. La confidentialité réelle des images personnelles repose sur les **Storage Policies** (un Admin ne doit jamais pouvoir accéder aux fichiers, même en connaissant l'URL).
+**Validations de sécurité (hardening)** :
+
+Toutes les policies incluent :
+
+- Anti directory traversal : `name NOT LIKE '%..%'`
+- UUID validation stricte : regex `^[0-9A-Fa-f]{8}-...$` (case-insensitive, anchored)
+- Segments non vides
+- Extension optionnelle : `(\.[A-Za-z0-9]{1,10})?$`
 
 **Path scheme (source-of-truth ownership)** :
 
 - **Bucket `personal-images`** :
-  - Convention : `/<account_id>/<card_id>.<ext>`
-  - Exemple : `/a1b2c3d4-5678-90ab-cdef-1234567890ab/e5f6g7h8-90ab-cdef-1234-567890abcdef.webp`
+  - Convention : `{account_id}/{uuid}.{ext}`
+  - Exemple : `a1b2c3d4-5678-90ab-cdef-1234567890ab/e5f6g7h8-90ab-cdef-1234-567890abcdef.webp`
   - Ownership encodé dans le path (premier segment = `account_id`)
-  - Policies Storage vérifient : `split_part(name,'/',1) = auth.uid()::text`
 
 - **Bucket `bank-images`** :
-  - Convention : `/<card_id>.<ext>`
-  - Exemple : `/card-abc123.webp`
-  - Pas d'account_id (public en lecture)
-
-**Raisons du path scheme** :
-- Ownership source-of-truth = path Storage (PAS la table `cards`)
-- Policies Storage simples (pas de JOIN vers tables métier)
-- Performance optimale + sécurité maximale (pas de bypass possible)
-- Cohérent avec Supabase best practices
+  - Convention : `{uuid}.{ext}` (flat, pas de sous-dossiers)
+  - Exemple : `card-abc123.webp`
 
 **Immutabilité images (alignment Phase 7.0)** :
+
 - UPDATE interdit sur `personal-images` (aucune policy UPDATE)
 - Remplacement = DELETE + INSERT (cohérent avec trigger `cards_prevent_update_image_url_personal`)
 - Contrat TSA : "pas de surprise visuelle" (image figée après création)
 
-Contraintes :
+**Vérifications post-migration** :
+
+```sql
+-- Vérifier les buckets
+SELECT id, public FROM storage.buckets WHERE id IN ('personal-images', 'bank-images');
+-- Attendu : personal-images=false, bank-images=true
+
+-- Vérifier les 7 policies
+SELECT policyname FROM pg_policies WHERE schemaname='storage' ORDER BY policyname;
+-- Attendu : 7 policies (3 personal + 4 bank)
+```
+
+**Contraintes** :
 
 - Le storage ne doit pas introduire de nouvelle logique métier.
 - Toute règle critique (immutabilité, ownership) doit déjà être garantie par la DB.
+- Les migrations privilégiées restent versionnées dans Git (DB-first strict maintenu).
 
 ---
 
