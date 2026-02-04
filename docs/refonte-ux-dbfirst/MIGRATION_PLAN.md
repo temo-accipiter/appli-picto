@@ -856,20 +856,66 @@ Objectif :
   - images banque accessibles en lecture,
   - aucune modification d'image après création pour les cartes personnelles.
 
+**Migrations implémentées** :
+
+- **Phase 8.1** : Create storage buckets (`personal-images` privé, `bank-images` public)
+- **Phase 8.2** : Storage RLS policies (7 policies initiales)
+- **Phase 8.3** : Storage hardening (optionnel, path validation)
+- **Phase 8.4** : Fix storage policies and buckets (corrections DB-first strict : retirer limites non validées, UUID validation stricte)
+- **Phase 8.5** : Harden storage policies (UUID case-insensitive + anchored regex + hardening complet)
+
+**Corrections appliquées (3 itérations)** :
+
+1. **Correction 8.4** : Retirer décisions produit non validées (file_size_limit, allowed_mime_types), ajouter validation UUID stricte sur paths
+2. **Correction 8.5** : Regex UUID case-insensitive `[0-9a-fA-F]`, anchored `^...$` (refuse `<uuid>garbage`), hardening complet sur TOUTES policies (segments non vides, directory traversal, extension optionnelle stricte)
+3. **Audit is_admin()** : Fonction SECURITY DEFINER vérifiée SAFE (minimal, search_path hardened, reads only current user)
+
+**Tests créés** :
+
+- `phase8_smoke_tests.sql` : Tests initiaux (post-8.2)
+- `phase8_smoke_tests_strict.sql` : Tests post-correction 8.4
+- `phase8_smoke_tests_v2.sql` : Tests exhaustifs post-correction 8.5 (case-insensitive UUID, anchored regex, directory traversal sur toutes ops)
+
 **🔒 CRITIQUE — Storage Policies obligatoires AVANT upload production** :
 
 - **Bucket `personal-images` (privé)** :
-  - SELECT : `account_id = auth.uid()` (owner-only)
-  - INSERT : `account_id = auth.uid()` (owner-only)
-  - UPDATE : `account_id = auth.uid()` (owner-only)
-  - DELETE : `account_id = auth.uid()` (owner-only)
+  - SELECT : `split_part(name,'/',1) = auth.uid()::text` (owner-only via path)
+  - INSERT : `split_part(name,'/',1) = auth.uid()::text` (owner-only via path)
+  - DELETE : `split_part(name,'/',1) = auth.uid()::text` (owner-only via path)
+  - UPDATE : **INTERDIT** (aucune policy, force DELETE+INSERT)
   - **AUCUN bypass Admin** (Admin ne peut JAMAIS accéder fichiers images personal)
 
 - **Bucket `bank-images` (public)** :
-  - SELECT : PUBLIC (lecture tous)
-  - INSERT/UPDATE/DELETE : Admin uniquement
+  - SELECT : PUBLIC (anon + authenticated)
+  - INSERT : `public.is_admin()` (admin uniquement)
+  - UPDATE : `public.is_admin()` (admin uniquement)
+  - DELETE : `public.is_admin()` (admin uniquement)
 
 **Note** : Les RLS table `cards` (Phase 7.4) sont une mesure secondaire. La confidentialité réelle des images personnelles repose sur les **Storage Policies** (un Admin ne doit jamais pouvoir accéder aux fichiers, même en connaissant l'URL).
+
+**Path scheme (source-of-truth ownership)** :
+
+- **Bucket `personal-images`** :
+  - Convention : `/<account_id>/<card_id>.<ext>`
+  - Exemple : `/a1b2c3d4-5678-90ab-cdef-1234567890ab/e5f6g7h8-90ab-cdef-1234-567890abcdef.webp`
+  - Ownership encodé dans le path (premier segment = `account_id`)
+  - Policies Storage vérifient : `split_part(name,'/',1) = auth.uid()::text`
+
+- **Bucket `bank-images`** :
+  - Convention : `/<card_id>.<ext>`
+  - Exemple : `/card-abc123.webp`
+  - Pas d'account_id (public en lecture)
+
+**Raisons du path scheme** :
+- Ownership source-of-truth = path Storage (PAS la table `cards`)
+- Policies Storage simples (pas de JOIN vers tables métier)
+- Performance optimale + sécurité maximale (pas de bypass possible)
+- Cohérent avec Supabase best practices
+
+**Immutabilité images (alignment Phase 7.0)** :
+- UPDATE interdit sur `personal-images` (aucune policy UPDATE)
+- Remplacement = DELETE + INSERT (cohérent avec trigger `cards_prevent_update_image_url_personal`)
+- Contrat TSA : "pas de surprise visuelle" (image figée après création)
 
 Contraintes :
 
