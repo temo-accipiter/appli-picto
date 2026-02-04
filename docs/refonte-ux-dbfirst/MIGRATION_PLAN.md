@@ -672,33 +672,33 @@
 
 ## 3. Liste exhaustive des migrations (réellement présentes dans ce repo)
 
-|   # | Fichier                                                            | Intention (résumé)                                       |
-| --: | ------------------------------------------------------------------ | -------------------------------------------------------- |
-|   0 | `20260130100000_create_extensions_enums.sql`                       | Extensions + enums de base                               |
-|   1 | `20260130101000_create_accounts.sql`                               | accounts (extension auth.users)                          |
-|   2 | `20260130102000_create_devices.sql`                                | devices (multi-device + révocation)                      |
-|   3 | `20260130103000_create_child_profiles.sql`                         | profils enfants                                          |
-|   4 | `20260130104000_create_cards.sql`                                  | cards (bank/personal)                                    |
-|   5 | `20260130105000_create_categories.sql`                             | categories                                               |
-|   6 | `20260130106000_create_user_card_categories.sql`                   | pivot user↔card↔category                               |
-|   7 | `20260130107000_cards_normalize_published.sql`                     | normalisation published                                  |
-|   8 | `20260130108000_categories_remap_on_delete.sql`                    | remap catégories à la suppression                        |
-|   9 | `20260130109000_create_timelines.sql`                              | timelines (1:1 child_profile)                            |
-|  10 | `20260130110000_create_slots.sql`                                  | slots                                                    |
-|  11 | `20260130111000_slots_enforce_min_step.sql`                        | invariant min step                                       |
-|  12 | `20260130112000_slots_enforce_min_reward.sql`                      | invariant min reward                                     |
-|  13 | `20260130113000_auto_create_child_profile_timeline.sql`            | auto-create profil+timeline+slots                        |
-|  14 | `20260130114000_create_sessions.sql`                               | sessions                                                 |
-|  15 | `20260130115000_create_session_validations.sql`                    | session_validations                                      |
-|  16 | `20260130116000_add_session_state_transitions.sql`                 | transitions sessions + règles validations                |
-|  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql`      | snapshot steps_total + completion                        |
-|  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`           | timezone IANA + devices UNIQUE composite + CHECK revoked |
-|  19 | `20260201119000_phase5_6_corrective_integrity.sql`                 | hardening intégrité (ownership + reset/guards)           |
-|  20 | `20260201120000_phase5_7_seed_system_category_on_account_create.sql` | seed DB catégorie système “Sans catégorie”             |
-|  21 | `20260202121000_phase5_8_invariants_reward_bank_guard.sql`           | reward unique + delete guard cartes bank référencées   |
-|  22 | `20260202122000_phase6_create_sequences.sql`                       | sequences (0..1 par carte par compte)                    |
-|  23 | `20260202123000_phase6_create_sequence_steps.sql`                  | sequence_steps (ordre, doublons, deferrable)             |
-|  24 | `20260202124000_phase6_add_sequence_invariants.sql`                | invariants séquences (min 2 strict + ownership + bank guard) |
+|   # | Fichier                                                              | Intention (résumé)                                           |
+| --: | -------------------------------------------------------------------- | ------------------------------------------------------------ |
+|   0 | `20260130100000_create_extensions_enums.sql`                         | Extensions + enums de base                                   |
+|   1 | `20260130101000_create_accounts.sql`                                 | accounts (extension auth.users)                              |
+|   2 | `20260130102000_create_devices.sql`                                  | devices (multi-device + révocation)                          |
+|   3 | `20260130103000_create_child_profiles.sql`                           | profils enfants                                              |
+|   4 | `20260130104000_create_cards.sql`                                    | cards (bank/personal)                                        |
+|   5 | `20260130105000_create_categories.sql`                               | categories                                                   |
+|   6 | `20260130106000_create_user_card_categories.sql`                     | pivot user↔card↔category                                   |
+|   7 | `20260130107000_cards_normalize_published.sql`                       | normalisation published                                      |
+|   8 | `20260130108000_categories_remap_on_delete.sql`                      | remap catégories à la suppression                            |
+|   9 | `20260130109000_create_timelines.sql`                                | timelines (1:1 child_profile)                                |
+|  10 | `20260130110000_create_slots.sql`                                    | slots                                                        |
+|  11 | `20260130111000_slots_enforce_min_step.sql`                          | invariant min step                                           |
+|  12 | `20260130112000_slots_enforce_min_reward.sql`                        | invariant min reward                                         |
+|  13 | `20260130113000_auto_create_child_profile_timeline.sql`              | auto-create profil+timeline+slots                            |
+|  14 | `20260130114000_create_sessions.sql`                                 | sessions                                                     |
+|  15 | `20260130115000_create_session_validations.sql`                      | session_validations                                          |
+|  16 | `20260130116000_add_session_state_transitions.sql`                   | transitions sessions + règles validations                    |
+|  17 | `20260130117000_phase5_fix_sessions_validations_snapshot.sql`        | snapshot steps_total + completion                            |
+|  18 | `20260130118000_phase5_5_hardening_accounts_devices.sql`             | timezone IANA + devices UNIQUE composite + CHECK revoked     |
+|  19 | `20260201119000_phase5_6_corrective_integrity.sql`                   | hardening intégrité (ownership + reset/guards)               |
+|  20 | `20260201120000_phase5_7_seed_system_category_on_account_create.sql` | seed DB catégorie système “Sans catégorie”                   |
+|  21 | `20260202121000_phase5_8_invariants_reward_bank_guard.sql`           | reward unique + delete guard cartes bank référencées         |
+|  22 | `20260202122000_phase6_create_sequences.sql`                         | sequences (0..1 par carte par compte)                        |
+|  23 | `20260202123000_phase6_create_sequence_steps.sql`                    | sequence_steps (ordre, doublons, deferrable)                 |
+|  24 | `20260202124000_phase6_add_sequence_invariants.sql`                  | invariants séquences (min 2 strict + ownership + bank guard) |
 
 ---
 
@@ -807,11 +807,37 @@ incluant :
 
 Objectif :
 
-- Activer les politiques RLS sur l’ensemble des tables persistantes.
-- Traduire strictement les règles d’accès définies dans le contrat produit :
+- Activer les politiques RLS sur l'ensemble des tables persistantes.
+- Traduire strictement les règles d'accès définies dans le contrat produit :
   - isolation par `account_id`,
   - accès en lecture/écriture selon le rôle (visitor / free / subscriber / admin),
   - aucune règle métier critique portée côté frontend.
+
+**Migrations implémentées** :
+
+- **Phase 7.0** : Bugfix `cards.image_url` immutable (personal) - trigger enforcement
+- **Phase 7.1** : RLS helpers (`is_admin()`, `is_execution_only()`) - SECURITY DEFINER minimal
+- **Phase 7.2** : Enable RLS + REVOKE/GRANT strict sur 12 tables
+- **Phase 7.3** : RLS Identity (accounts, devices, child_profiles) + execution-only enforcement
+- **Phase 7.4** : RLS Library (cards, categories, pivot) + D2 admin isolation + BLOCKER 5 (bank unpublished readable if referenced)
+- **Phase 7.5** : Admin support channel (targeted access, no mass surveillance)
+- **Phase 7.6** : RLS Planning (timelines, slots)
+- **Phase 7.7** : RLS Sessions (sessions, session_validations)
+- **Phase 7.8** : RLS Sequences (sequences, sequence_steps)
+
+**Blockers résolus** :
+
+1. **BLOCKER 1** : `admin_list_accounts_summary` supprimée (violait owner-only strict + mass surveillance)
+2. **BLOCKER 2** : `search_path` hardened sur toutes fonctions SECURITY DEFINER (`SET search_path = public, pg_temp`)
+3. **BLOCKER 3** : REVOKE/GRANT explicit sur toutes fonctions (pas de PUBLIC)
+4. **BLOCKER 4** : execution-only enforcement (child_profiles, cards, categories, sequences INSERT/UPDATE/DELETE bloqués)
+5. **BLOCKER 5** : bank unpublished readable if referenced by owned objects (TSA critical, prévisibilité)
+
+**Décisions appliquées** :
+
+- **D2** : Admin ne peut JAMAIS accéder personal cards d'autres users (RLS + Storage Policies primaires)
+- **D3** : execution-only := `status='free' AND COUNT(child_profiles) > 1` (détection sans flag)
+- **D4** : is_admin() minimal (lit uniquement compte courant, pas mass surveillance)
 
 Contraintes :
 
@@ -828,7 +854,22 @@ Objectif :
 - Respecter strictement les règles produit :
   - images personnelles privées,
   - images banque accessibles en lecture,
-  - aucune modification d’image après création pour les cartes personnelles.
+  - aucune modification d'image après création pour les cartes personnelles.
+
+**🔒 CRITIQUE — Storage Policies obligatoires AVANT upload production** :
+
+- **Bucket `personal-images` (privé)** :
+  - SELECT : `account_id = auth.uid()` (owner-only)
+  - INSERT : `account_id = auth.uid()` (owner-only)
+  - UPDATE : `account_id = auth.uid()` (owner-only)
+  - DELETE : `account_id = auth.uid()` (owner-only)
+  - **AUCUN bypass Admin** (Admin ne peut JAMAIS accéder fichiers images personal)
+
+- **Bucket `bank-images` (public)** :
+  - SELECT : PUBLIC (lecture tous)
+  - INSERT/UPDATE/DELETE : Admin uniquement
+
+**Note** : Les RLS table `cards` (Phase 7.4) sont une mesure secondaire. La confidentialité réelle des images personnelles repose sur les **Storage Policies** (un Admin ne doit jamais pouvoir accéder aux fichiers, même en connaissant l'URL).
 
 Contraintes :
 
@@ -910,13 +951,6 @@ Chaque phase post-Phase 6 doit respecter les règles suivantes :
 - ✅ **Timezone validation IANA** : Responsabilité applicative (pas de CHECK DB, validation front/edge functions)
 - ✅ **UUID = pgcrypto** : Utiliser `gen_random_uuid()` partout (standard PostgreSQL moderne)
 - ✅ **devices.account_id = NOT NULL** : FK ON DELETE CASCADE (pas de devices orphelins)
-
-**Recommandations pour démarrer** :
-
-1. ✅ Utiliser décisions confirmées ci-dessus
-2. ✅ Démarrer migrations Phase 1-6 sans blocage
-3. ⚠️ Trancher 6.3 avant Phase 10 (Seed "Sans catégorie" — recommandation fallback applicatif)
-4. ⚠️ Trancher 6.4 avant Phase 5 (session_validations — recommandation union simple)
 
 ---
 
