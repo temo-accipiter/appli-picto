@@ -958,19 +958,35 @@ SELECT policyname FROM pg_policies WHERE schemaname='storage' ORDER BY policynam
 
 ---
 
-#### Phase 9 — Quotas & plans
+#### Phase 9 — Quotas & downgrade (ENFORCEMENT DB-first)
 
 Objectif :
 
-- Appliquer les limites liées aux plans (free / subscriber / admin) :
-  - nombre de profils enfants,
-  - nombre d’appareils,
-  - création de cartes personnelles.
+- Implémenter les quotas “plan” (cartes perso stock + mensuel, profils, devices) en **triggers BEFORE INSERT** (bloquants, sans état partiel).
+- Garantir la règle UX “timezone change effect next month” via un **contexte mensuel figé**.
+- Implémenter le verrouillage progressif après downgrade lors de la complétion d’une session.
+- Corriger les privilèges nécessaires aux triggers d’auto-création (timelines) sous RLS.
 
-Contraintes :
+Migrations implémentées :
 
-- Les quotas sont des **règles métier DB**, jamais des règles UI.
-- Les dépassements doivent être bloqués côté serveur (DB ou policies), avec un retour explicite.
+- Phase 9.1 : `20260204135000_phase9_1_quota_month_context.sql`
+  - Table `account_quota_months` + RLS owner-only
+  - Fonction `ensure_quota_month_context(account_id)` (idempotente)
+- Phase 9.2 : `20260204136000_phase9_2_quota_helpers.sql`
+  - Helpers : `get_account_status()`, `quota_*_limit()`, feature gating cartes perso
+- Phase 9.3 : `20260204137000_phase9_3_quota_check_cards.sql`
+  - `check_can_create_personal_card()` + trigger BEFORE INSERT sur `cards` (type='personal')
+- Phase 9.4 : `20260204138000_phase9_4_quota_check_profiles_devices.sql`
+  - `check_can_create_child_profile()` + trigger BEFORE INSERT sur `child_profiles`
+  - `check_can_register_device()` + trigger BEFORE INSERT sur `devices` (revoked_at IS NULL only)
+- Phase 9.5 : `20260204139000_phase9_5_downgrade_lock_profiles_on_session_completion.sql`
+  - `enforce_child_profile_limit_after_session_completion()` **SECURITY DEFINER** + trigger sessions “completed”
+- Phase 9.6 : `20260204140000_phase9_6_fix_child_profiles_auto_timeline_privileges.sql`
+  - Fix privilèges/RLS pour l’auto-création de timeline à l’INSERT profile
+
+Smoke tests :
+
+- `phase9_smoke.sql` : PASS (9.1→9.6)
 
 ---
 

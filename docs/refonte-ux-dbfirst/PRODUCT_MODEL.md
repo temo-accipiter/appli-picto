@@ -128,14 +128,14 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 
 ## 1.5 Termes liés aux cartes et catégories
 
-| Terme                 | Définition                                                                                                             | Référence             |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| **Carte**             | Entité visuelle (image + nom) ; rôle dépend du contexte d'usage ; pas de distinction technique tâche/étape/récompense. | ux.md L274-287        |
-| **Carte de banque**   | Prédéfinie Admin ; accessible à tous ; non modifiable ; ne consomme aucun quota.                                       | ux.md L291-298        |
-| **Carte personnelle** | Créée par Abonné/Admin ; privée ; consomme quota ; image figée après création.                                         | ux.md L302-308, L1378 |
-| **Catégorie**         | Organisation bibliothèque ; toujours personnelle à l'utilisateur.                                                      | ux.md L1131-1143      |
-| **"Sans catégorie"**  | Catégorie système non supprimable ; fallback automatique.                                                              | ux.md L1165-1179      |
-| **Dépublication**     | Retrait d'une carte de banque ≠ suppression ; reste utilisable là où déjà présente.                                    | ux.md L1273-1281      |
+| Terme                 | Définition                                                                                                                   | Référence             |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| **Carte**             | Entité visuelle (image + nom) ; rôle dépend du contexte d'usage ; pas de distinction technique tâche/étape/récompense.       | ux.md L274-287        |
+| **Carte de banque**   | Prédéfinie Admin ; accessible à tous ; non modifiable ; ne consomme aucun quota.                                             | ux.md L291-298        |
+| **Carte personnelle** | Créée par Abonné/Admin ; privée ; consomme quota ; image figée après création.                                               | ux.md L302-308, L1378 |
+| **Catégorie**         | Organisation bibliothèque ; toujours personnelle à l'utilisateur.                                                            | ux.md L1131-1143      |
+| **"Sans catégorie"**  | Catégorie système non supprimable ; fallback automatique.                                                                    | ux.md L1165-1179      |
+| **Dépublication**     | Retrait d'une carte de banque ≠ suppression ; reste utilisable là où déjà présente.                                          | ux.md L1273-1281      |
 | **Invariant banque**  | Une carte de banque ne doit jamais être supprimée si référencée ; seule dépublication autorisée (DB: trigger BEFORE DELETE). | ux.md L2979           |
 
 ---
@@ -190,7 +190,7 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 | **Jeton**                  | Unité de motivation sur slot Étape ; temporaire ; reset chaque session.       | ux.md L546-554   |
 | **Grille de jetons**       | Cases = somme jetons des slots Étapes.                                        | ux.md L558-561   |
 | **Séquençage**             | Aide visuelle optionnelle ; décompose carte mère en étapes ; purement visuel. | ux.md L526-534   |
-| **Carte mère**             | Carte porteuse d'une séquence (0 ou 1 par compte).                             | ux.md L312-317   |
+| **Carte mère**             | Carte porteuse d'une séquence (0 ou 1 par compte).                            | ux.md L312-317   |
 | **État "fait" (séquence)** | Visuel, local-only, non sync ; par slot_id ; reset à chaque session.          | ux.md L2369-2399 |
 
 ---
@@ -1370,12 +1370,12 @@ Aucun — les 3 systèmes sont complètement spécifiés dans ux.md.
 
 ### 7.5.1 Créer séquence
 
-| Élément           | Valeur                                                                  |
-| ----------------- | ----------------------------------------------------------------------- |
-| **Acteur**        | Abonné/Admin                                                            |
-| **Contexte**      | Mode Séquençage (Édition)                                               |
-| **Préconditions** | Carte mère sans séquence (pour ce compte) ; ≥2 étapes au commit         |
-| **Effets**        | Séquence créée ; locale au compte (non partagée)                        |
+| Élément           | Valeur                                                          |
+| ----------------- | --------------------------------------------------------------- |
+| **Acteur**        | Abonné/Admin                                                    |
+| **Contexte**      | Mode Séquençage (Édition)                                       |
+| **Préconditions** | Carte mère sans séquence (pour ce compte) ; ≥2 étapes au commit |
+| **Effets**        | Séquence créée ; locale au compte (non partagée)                |
 
 ### 7.5.2 Supprimer séquence
 
@@ -1604,7 +1604,7 @@ Les quotas sont :
 
 - Timestamps création stockés en **UTC**
 - Timezone sert uniquement pour bornes mois
-- Changement timezone = **effet au prochain mois** (mois en cours conserve timezone initiale)
+  **Garantie DB (non contournable)** : la base de données verrouille pour chaque compte une “timezone de référence” par mois de quota. Un changement de timezone en cours de mois n’affecte jamais le quota du mois courant.
 
 ### 9.3.4 Valeurs par statut
 

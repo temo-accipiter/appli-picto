@@ -42,23 +42,23 @@ _(Référence : PRODUCT_MODEL.md Ch.0, ux.md L70-164)_
 
 ## 1. Cartographie "Concepts → Tables"
 
-| Concept métier                 | Table DB               | Référence                 | Notes                                |
-| ------------------------------ | ---------------------- | ------------------------- | ------------------------------------ |
-| **Compte utilisateur**         | `accounts`             | PRODUCT_MODEL.md Ch.3.1   | Extension auth.users Supabase        |
-| **Appareil autorisé**          | `devices`              | PRODUCT_MODEL.md Ch.3.2   | device_id UUID, revoked_at           |
-| **Profil enfant**              | `child_profiles`       | PRODUCT_MODEL.md Ch.3.3   | Statut active/locked, ancienneté     |
-| **Carte (banque + perso)**     | `cards`                | PRODUCT_MODEL.md Ch.3.4   | Type bank/personal, image URL        |
-| **Catégorie (personnelle)**    | `categories`           | PRODUCT_MODEL.md Ch.3.5   | "Sans catégorie" système             |
-| **Pivot user↔card↔category** | `user_card_categories` | PRODUCT_MODEL.md Ch.3.6   | UNIQUE (user_id, card_id)            |
-| **Timeline**                   | `timelines`            | PRODUCT_MODEL.md Ch.3.7   | 1:1 avec child_profile               |
-| **Slot (Étape/Récompense)**    | `slots`                | PRODUCT_MODEL.md Ch.3.8   | slot_id UUID, position, type, tokens |
-| **Session**                    | `sessions`             | PRODUCT_MODEL.md Ch.3.9   | epoch (int), état, 1 active max      |
-| **Validation (slot validé)**   | `session_validations`  | PRODUCT_MODEL.md Ch.3.10  | (session_id, slot_id) pour union     |
-| **Séquence (carte mère)**      | `sequences`            | PRODUCT_MODEL.md Ch.3.11  | 0..1 par carte par compte            |
-| **Étapes de séquence**         | `sequence_steps`       | PRODUCT_MODEL.md Ch.3.11  | Liste ordonnée, sans doublons        |
-| **État "fait" (séquence)**     | ❌ **Pas de table**    | PRODUCT_MODEL.md Ch.3.12  | Local-only, non sync cloud           |
-| **Plan/Quotas (compteurs)**    | ⚠️ **À trancher**      | PRODUCT_MODEL.md Ch.9     | Voir section 6 (quotas)              |
-| **Visitor (profil local)**     | ❌ **Pas de table**    | PRODUCT_MODEL.md Ch.2.2.1 | Stockage local uniquement            |
+| Concept métier                    | Table DB               | Référence                 | Notes                                        |
+| --------------------------------- | ---------------------- | ------------------------- | -------------------------------------------- |
+| **Compte utilisateur**            | `accounts`             | PRODUCT_MODEL.md Ch.3.1   | Extension auth.users Supabase                |
+| **Appareil autorisé**             | `devices`              | PRODUCT_MODEL.md Ch.3.2   | device_id UUID, revoked_at                   |
+| **Profil enfant**                 | `child_profiles`       | PRODUCT_MODEL.md Ch.3.3   | Statut active/locked, ancienneté             |
+| **Carte (banque + perso)**        | `cards`                | PRODUCT_MODEL.md Ch.3.4   | Type bank/personal, image URL                |
+| **Catégorie (personnelle)**       | `categories`           | PRODUCT_MODEL.md Ch.3.5   | "Sans catégorie" système                     |
+| **Pivot user↔card↔category**    | `user_card_categories` | PRODUCT_MODEL.md Ch.3.6   | UNIQUE (user_id, card_id)                    |
+| **Timeline**                      | `timelines`            | PRODUCT_MODEL.md Ch.3.7   | 1:1 avec child_profile                       |
+| **Slot (Étape/Récompense)**       | `slots`                | PRODUCT_MODEL.md Ch.3.8   | slot_id UUID, position, type, tokens         |
+| **Session**                       | `sessions`             | PRODUCT_MODEL.md Ch.3.9   | epoch (int), état, 1 active max              |
+| **Validation (slot validé)**      | `session_validations`  | PRODUCT_MODEL.md Ch.3.10  | (session_id, slot_id) pour union             |
+| **Séquence (carte mère)**         | `sequences`            | PRODUCT_MODEL.md Ch.3.11  | 0..1 par carte par compte                    |
+| **Étapes de séquence**            | `sequence_steps`       | PRODUCT_MODEL.md Ch.3.11  | Liste ordonnée, sans doublons                |
+| **État "fait" (séquence)**        | ❌ **Pas de table**    | PRODUCT_MODEL.md Ch.3.12  | Local-only, non sync cloud                   |
+| **Quota mensuel (contexte figé)** | `account_quota_months` | PRODUCT_MODEL.md Ch.9.3.3 | Fenêtre mensuelle UTC + timezone verrouillée |
+| **Visitor (profil local)**        | ❌ **Pas de table**    | PRODUCT_MODEL.md Ch.2.2.1 | Stockage local uniquement                    |
 
 ---
 
@@ -129,6 +129,29 @@ PRODUCT_MODEL.md Ch.10.4 indique "Admin accède aux données strictement nécess
 - **B)** : Facilite support (ex: diagnostic quota), mais requiert RLS précis (masquer données sensibles si ajoutées)
 
 **Recommandation** : **Option A** (strict) par défaut, sauf besoin explicite support défini ultérieurement
+
+### Table: `account_quota_months`
+
+**But** : Verrouiller la timezone de référence et les bornes UTC du mois courant pour le quota mensuel de cartes personnelles.
+
+**Clés** :
+
+- PK : (`account_id`, `period_ym`)
+- FK : `account_id` → `accounts(id)` ON DELETE CASCADE
+
+**Colonnes** :
+
+- `period_ym` (YYYYMM)
+- `tz_ref` (timezone IANA figée pour le mois)
+- `month_start_utc`, `month_end_utc` (fenêtre UTC figée)
+- `created_at`
+
+**RLS** : owner-only (SELECT/INSERT/UPDATE/DELETE)
+
+**Notes** :
+
+- row créée “lazy” via `ensure_quota_month_context(account_id)`
+- utilisée par `check_can_create_personal_card()`
 
 ---
 
@@ -978,124 +1001,72 @@ _(Référence : PRODUCT_MODEL.md Ch.12.2)_
 
 ### Enforcement côté serveur
 
-#### 1. Cartes personnelles (stock)
+#### 1. Cartes personnelles (stock + mensuel)
 
 **Opération bloquée** : INSERT `cards` WHERE `type='personal'`
 
 **Mécanisme** :
 
-- Fonction serveur : `check_card_quota_stock(account_id)`
-- Compte `SELECT COUNT(*) FROM cards WHERE account_id = ? AND type='personal'`
-- Compare avec `50` si Abonné, `∞` si Admin, `N/A` (refuse) si Free/Visitor
-- Trigger BEFORE INSERT sur `cards` appelle fonction
+- Trigger **BEFORE INSERT** sur `cards` (filtré sur `type='personal'`)
+- Fonction serveur : `check_can_create_personal_card(account_id)`
 
-**Table dédiée ?** : ❌ Non nécessaire (comptage direct sur `cards`)
+**Ordre de contrôle (déterministe)** :
 
----
+1. Feature gating : Free/Visitor => refus “feature indisponible”
+2. Admin => bypass illimité
+3. Quota stock : `COUNT(*)` des cartes personnelles existantes (delete libère immédiatement)
+4. Quota mensuel : `COUNT(*)` des cartes personnelles créées dans la fenêtre mensuelle UTC “gelée”
 
-#### 2. Cartes personnelles (mensuel)
+**Anti-abus timezone (contrat ux.md / PRODUCT_MODEL Ch.9.3.3)** :
 
-**Opération bloquée** : INSERT `cards` WHERE `type='personal'`
+- Table dédiée `account_quota_months` : 1 ligne par (account, mois)
+- Créée “lazy” via `ensure_quota_month_context(account_id)` au premier usage du mois
+- Stocke `tz_ref` + `month_start_utc` + `month_end_utc` => la timezone du mois courant est **figée**
+- Un changement de timezone du compte **n’affecte que le mois suivant**
 
-**Mécanisme** :
+**Table dédiée ?** : ✅ Oui — `account_quota_months` (contexte mensuel figé, DB as source of truth)
 
-- Fonction serveur : `check_card_quota_monthly(account_id)`
-- Lit `timezone` depuis `accounts`
-- Calcule début mois : `DATE_TRUNC('month', NOW() AT TIME ZONE timezone)`
-- Compte `SELECT COUNT(*) FROM cards WHERE account_id = ? AND type='personal' AND created_at >= debut_mois`
-- Compare avec `100` si Abonné, `∞` si Admin, `N/A` (refuse) si Free/Visitor
-- Trigger BEFORE INSERT sur `cards` appelle fonction
-
-**Anti-abus timezone** (PRODUCT_MODEL.md Ch.9.3.3) :
-
-- `created_at` stocké en **UTC**
-- `timezone` utilisé pour bornes mois uniquement
-- Changement timezone = effet au prochain mois (mois en cours conserve timezone initiale)
-
-**Table dédiée ?** : ❌ Non nécessaire (comptage direct sur `cards` + `accounts.timezone`)
-
----
-
-#### 3. Profils enfants
+#### 2. Profils enfants (quota)
 
 **Opération bloquée** : INSERT `child_profiles`
 
 **Mécanisme** :
 
-- Fonction serveur : `check_profile_quota(account_id)`
-- Compte `SELECT COUNT(*) FROM child_profiles WHERE account_id = ?`
-- Compare avec `1` si Free, `3` si Abonné, `∞` si Admin, `1` (struct.) si Visitor
-- Trigger BEFORE INSERT sur `child_profiles` appelle fonction
+- Trigger **BEFORE INSERT** sur `child_profiles`
+- Fonction serveur : `check_can_create_child_profile(account_id)`
+- Compte **tous** les profils (y compris `locked`) : `COUNT(*) WHERE account_id = ?`
+- Compare avec limite selon statut (free=1, subscriber=3, admin=∞)
 
-**Table dédiée ?** : ❌ Non nécessaire (comptage direct sur `child_profiles`)
+Note : la création auto “Mon enfant” à la création du compte reste compatible (COUNT=0 au moment de l’insert).
 
 ---
 
-#### 4. Appareils
+#### 3. Appareils (quota actifs uniquement)
 
-**Opération bloquée** : INSERT `devices` (rattachement device_id à compte)
+**Opération bloquée** : INSERT `devices`
 
 **Mécanisme** :
 
-- Fonction serveur : `check_device_quota(account_id)`
-- Compte `SELECT COUNT(*) FROM devices WHERE account_id = ? AND revoked_at IS NULL`
-- Compare avec `1` si Free, `3` si Abonné, `∞` si Admin, `1` (struct.) si Visitor
-- Trigger BEFORE INSERT sur `devices` appelle fonction
+- Trigger **BEFORE INSERT** sur `devices`
+- Fonction serveur : `check_can_register_device(account_id, revoked_at)`
+- Ne consomme quota que si `revoked_at IS NULL`
+- Quota compte uniquement les devices actifs : `COUNT(*) WHERE account_id=? AND revoked_at IS NULL`
 
-**Table dédiée ?** : ❌ Non nécessaire (comptage direct sur `devices` WHERE `revoked_at IS NULL`)
+#### 4. Downgrade : “execution-only” + verrouillage progressif
 
----
+**Contrat** : si downgrade (ex: subscriber -> free) et compte a déjà > limite profils, alors :
 
-#### 5. Sessions actives (structurel, pas quota commercial)
+- la configuration (édition) devient bloquée,
+- l’enfant peut continuer l’exécution,
+- après complétion d’une session, la DB “verrouille” progressivement les profils excédentaires.
 
-**Opération bloquée** : INSERT `sessions` WHERE état = active_preview/active_started
+**Mécanisme DB** :
 
-**Mécanisme** :
-
-- UNIQUE partial index : `(child_profile_id, timeline_id) WHERE state IN ('active_preview', 'active_started')`
-- DB refuse automatiquement doublon (erreur UNIQUE constraint)
-
-**Table dédiée ?** : ❌ Non (constraint DB direct)
-
----
-
-### Downgrade Abonné → Free (PRODUCT_MODEL.md Ch.9.8)
-
-**Règle** :
-
-- Exécution uniquement (pas de modification structurelle)
-- Profils au-delà limite Free : accessibles pour terminer sessions actives
-- Session terminée sur profil excédentaire → profil verrouillé (`status='locked'`)
-
-**Mécanisme** :
-
-1. Fonction serveur : `handle_downgrade(account_id)`
-   - Liste profils par ancienneté (`ORDER BY created_at ASC`)
-   - Profil le plus ancien = actif (Free)
-   - Profils excédentaires : `status = 'active'` tant que sessions actives
-   - Trigger : session terminée → vérif si profil excédentaire → `status = 'locked'`
-
-2. RLS : `status = 'locked'` → UPDATE/DELETE interdit (lecture seule)
-
-**Table dédiée ?** : ❌ Non (utilise `child_profiles.status` + `child_profiles.created_at`)
-
----
-
-### ⚠️ Non spécifié — à trancher
-
-**Question** : Faut-il une table `subscription_plans` dédiée pour gérer quotas dynamiques ?
-
-**Options** :
-
-- **A) Quotas hardcodés** (fonctions serveur avec valeurs fixes : 1 Free, 3 Abonné, etc.)
-- **B) Table `subscription_plans`** avec colonnes `max_profiles`, `max_devices`, `max_cards_stock`, `max_cards_monthly`
-
-**Impacts** :
-
-- **A)** : Migrations simples, quotas changent via migrations SQL
-- **B)** : Quotas modifiables sans migration (admin dashboard), mais table supplémentaire non spécifiée dans ux.md/PRODUCT_MODEL.md
-
-**Recommandation** : **Option A** (hardcodés) car ux.md/PRODUCT_MODEL.md ne mentionnent pas table plans dynamiques
+- Trigger **AFTER UPDATE** sur `sessions` lorsque `state` transitionne vers `completed`
+- Fonction `enforce_child_profile_limit_after_session_completion(child_profile_id)`
+  - **SECURITY DEFINER** (nécessaire car `child_profiles.status` est user-immutable via RLS)
+  - garde-fous anti cross-account (doit refuser si `auth.uid()` != account_id)
+  - règle déterministe : garde les N plus anciens profils en `active`, met les autres en `locked`
 
 ---
 
