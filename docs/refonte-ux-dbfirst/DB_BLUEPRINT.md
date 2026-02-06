@@ -1137,150 +1137,106 @@ Note : la création auto “Mon enfant” à la création du compte reste compat
 
 ---
 
-## 8. Points "Non spécifié — à trancher"
+## 8. Points "Non spécifié — à trancher" — RÉSOLUTIONS
+
+> Tous les points listés ci-dessous ont été **tranchés et implémentés** lors des Phases 1-10.
 
 ### 1. Timestamps validation (résolution conflits multi-appareils)
 
-**Contexte** : PRODUCT_MODEL.md Ch.11.1.2 marque "Non spécifié"
+**Décision : Option A — Union simple de `slot_id`**
 
-**Question** : Stocker `validated_at` sur `session_validations` pour résolution conflits avancée ?
+`session_validations` ne contient pas de colonne `validated_at` utilisable pour la logique métier. La colonne existe pour audit uniquement. La fusion multi-appareils repose exclusivement sur l'union ensembliste des `slot_id` (UNIQUE constraint). Formalisé dans SYNC_CONTRACT.md §7.1.
 
-**Options** :
-
-- **A) Union simple de `slot_id`** (comme spécifié PRODUCT_MODEL.md Ch.3.10) — pas de timestamp
-- **B) `validated_at` timestamp** pour tri/résolution conflits si nécessaire
-
-**Impacts** :
-
-- **A)** : Schéma minimal, fusion ensembliste pure
-- **B)** : Permet résolution conflits temporels (ex: slot validé puis dé-validé offline) mais non spécifié dans ux.md
-- **UX TSA** : Aucun impact (fusion monotone garantit pas de régression visuelle)
-
-**Recommandation** : **Option A** (union simple) car PRODUCT_MODEL.md Ch.3.10 dit "ensemble de slot_id", pas "liste horodatée"
+_Implémenté : Phase 5 (migrations 14-17)_
 
 ---
 
 ### 2. Quotas : table dédiée vs hardcodés
 
-**Contexte** : Voir section 6 (Quotas)
+**Décision : Option A — Hardcodés (fonctions serveur)**
 
-**Question** : Table `subscription_plans` pour quotas dynamiques ?
+Quotas définis dans des fonctions SQL (`quota_max_profiles()`, `quota_max_devices()`, `quota_max_personal_cards_stock()`, `quota_max_personal_cards_monthly()`). Modifiables uniquement via migration SQL. Pas de table `subscription_plans`.
 
-**Options** :
-
-- **A) Hardcodés** (fonctions serveur avec valeurs fixes)
-- **B) Table `subscription_plans`** avec colonnes quotas
-
-**Impacts** :
-
-- **A)** : Quotas changent via migrations SQL (simple, ux.md ne mentionne pas table plans)
-- **B)** : Quotas modifiables sans migration (flexibilité) mais invention (pas dans ux.md)
-
-**Recommandation** : **Option A** (hardcodés) car ux.md/PRODUCT_MODEL.md ne spécifient pas table plans
+_Implémenté : Phase 9 (migrations 9.1-9.6)_
 
 ---
 
 ### 3. Aucun slot vide disponible lors ajout carte
 
-**Contexte** : PRODUCT_MODEL.md Ch.7 Points ambigus #2
+**Décision : Non bloquant DB — logique applicative**
 
-**Question** : Si adulte veut ajouter carte dans timeline mais tous slots step occupés, que faire ?
+La DB autorise `card_id = NULL` sur les slots (slot vide). La gestion de l'ajout de carte quand tous les slots sont occupés relève du frontend. Aucune contrainte DB n'empêche un slot vide d'exister.
 
-**Options** :
-
-- **A) Auto-créer slot step** à la fin de timeline
-- **B) Checkbox grisée** (carte non ajoutée)
-- **C) Toast explicatif** "Ajouter d'abord un slot Étape vide"
-
-**Impacts DB** :
-
-- **A)** : Déclenche INSERT `slots` automatique (logique applicative)
-- **B/C)** : Aucun impact DB (bloqué côté front)
-- **UX TSA** : A = prévisible (carte toujours ajoutée), B/C = frustrant ?
-
-**Recommandation** : **Non bloquant DB** (A ou B/C peuvent être implémentés sans changement schéma)
+_Aucune migration requise._
 
 ---
 
 ### 4. Protection accès Page Édition (enfant)
 
-**Contexte** : PRODUCT_MODEL.md Ch.2 Points ambigus #1
+**Décision : Non bloquant DB — logique UI**
 
-**Question** : Mécanisme empêchant enfant d'atteindre Page Édition ?
+Aucune colonne `parental_lock_code` ajoutée en DB. La protection relève exclusivement du frontend. Le mécanisme `execution-only` (Phase 7, BLOCKER 4) bloque les INSERT/UPDATE/DELETE structurels pour les comptes détectés en mode exécution (free + >1 profil), mais ne constitue pas un verrou parental.
 
-**Options** :
-
-- **A) Verrou parental** (code PIN)
-- **B) Code numérique** 4 chiffres
-- **C) Geste tactile** caché
-- **D) Aucun** (distinction UX uniquement)
-
-**Impacts DB** :
-
-- **A/B)** : Colonne `accounts.parental_lock_code` (hash)
-- **C/D)** : Aucun impact DB (logique front uniquement)
-- **UX TSA** : A/B = sécurisé mais complexité, C/D = risque enfant accède Édition
-
-**Recommandation** : **Non bloquant DB** (A/B/C/D implémentables sans changement schéma majeur)
+_Aucune migration requise._
 
 ---
 
-## 9. Verdict "Ready for migrations ?"
+### 5. Admin accès `accounts`
 
-### ✅ **READY pour migrations DB-first**
+**Décision : Option A strict — owner-only**
+
+Admin n'a AUCUN accès global `accounts`. RLS `accounts` = `id = auth.uid()` uniquement. Un canal support ciblé a été ajouté (Phase 7.5 `admin_support_channel`) permettant un accès admin limité via fonction dédiée, sans mass surveillance.
+
+_Implémenté : Phase 7 (migrations 7.1-7.8)_
+
+---
+
+## 9. Verdict — POST-IMPLÉMENTATION
+
+### ✅ IMPLÉMENTATION COMPLÈTE — Phases 1-10
 
 ---
 
 ### Checklist finale
 
-| Élément                               | Statut | Notes                                                                                           |
-| ------------------------------------- | ------ | ----------------------------------------------------------------------------------------------- |
-| **Tables conceptuelles définies**     | ✅     | 12 tables + 2 exclusions (État "fait", Visitor)                                                 |
-| **Colonnes conceptuelles spécifiées** | ✅     | Sans types SQL (conceptuel)                                                                     |
-| **Clés & contraintes documentées**    | ✅     | PK, FK, UNIQUE, CHECK conceptuels                                                               |
-| **Enums & états listés**              | ✅     | 4 enums (account_status [3 valeurs], child_profile_status, card_type, slot_kind, session_state) |
-| **Invariants DB identifiés**          | ✅     | 19 invariants à défendre côté serveur                                                           |
-| **Plan RLS conceptuel**               | ✅     | Owner-only, banque publique, **Storage Policies critiques**                                     |
-| **Quotas enforcement**                | ✅     | Mécanismes serveur (triggers/fonctions) sans table dédiée                                       |
-| **Local-only Visitor**                | ✅     | Hors DB (pas de statut DB) + import vers compte `status='free'`                                 |
-| **Points ambigus tranchés**           | ⚠️     | 5 points listés (1 nouveau : Admin accès `accounts`)                                            |
-| **Aucune invention**                  | ✅     | Tout sourcé depuis ux.md ou PRODUCT_MODEL.md v15                                                |
-| **Séparation systèmes**               | ✅     | Planning visuel / Économie jetons / Séquençage distincts                                        |
-| **Confidentialité images**            | ✅     | **Storage Policies prioritaires** (RLS table insuffisant)                                       |
+| Élément                               | Statut | Notes                                                                               |
+| ------------------------------------- | ------ | ----------------------------------------------------------------------------------- |
+| **Tables conceptuelles définies**     | ✅     | 13 tables + 2 exclusions (État "fait", Visitor)                                     |
+| **Colonnes conceptuelles spécifiées** | ✅     | Traduits en types SQL concrets                                                      |
+| **Clés & contraintes documentées**    | ✅     | PK, FK, UNIQUE, CHECK implémentés                                                   |
+| **Enums & états listés**              | ✅     | 5 enums (account_status, child_profile_status, card_type, slot_kind, session_state) |
+| **Invariants DB identifiés**          | ✅     | 24 invariants défendus côté serveur (triggers, constraints, RLS)                    |
+| **Plan RLS conceptuel**               | ✅     | 20 policies RLS implémentées (Phase 7)                                              |
+| **Storage Policies**                  | ✅     | 7 policies storage (Phase 8) — migration privilégiée                                |
+| **Quotas enforcement**                | ✅     | Triggers BEFORE INSERT (Phase 9) — hardcodés                                        |
+| **Downgrade lock**                    | ✅     | SECURITY DEFINER trigger (Phase 9.5)                                                |
+| **Sync contract**                     | ✅     | SYNC_CONTRACT.md — 0 migration, contrat frontend                                    |
+| **Local-only Visitor**                | ✅     | Hors DB (pas de statut DB) + import vers compte `status='free'`                     |
+| **Points ambigus tranchés**           | ✅     | 5/5 tranchés et implémentés (voir §8)                                               |
+| **Aucune invention**                  | ✅     | Tout sourcé depuis ux.md ou PRODUCT_MODEL.md v15                                    |
+| **Séparation systèmes**               | ✅     | Planning / Jetons / Séquençage distincts en DB                                      |
+| **Smoke tests**                       | ✅     | 130 tests (Phases 1-10) — couverture 100% invariants                                |
 
 ---
 
-### Points à trancher AVANT migrations (optionnels, non bloquants)
+### Décisions confirmées et implémentées
 
-| #   | Point                            | Impact                       | Urgence                                | Statut     |
-| --- | -------------------------------- | ---------------------------- | -------------------------------------- | ---------- |
-| 1   | Timestamps validation            | Schéma `session_validations` | ⚠️ Faible (union simple suffit)        | À trancher |
-| 2   | Table quotas dédiée vs hardcodés | Flexibilité quotas           | ⚠️ Faible (hardcodés OK)               | À trancher |
-| 3   | Aucun slot vide disponible       | Logique ajout carte          | ❌ Non bloquant DB                     | À trancher |
-| 4   | Protection Page Édition          | Verrou parental              | ❌ Non bloquant DB                     | À trancher |
-| 5   | **Admin accès `accounts`**       | RLS `accounts` SELECT        | ⚠️ **Nouveau** (voir Table `accounts`) | À trancher |
-
-**Décisions confirmées** :
-
-- ✅ **Images banque** : Supabase Storage bucket `bank-images` public (lecture tous) — Option A
-- ✅ **Images personnelles** : Supabase Storage bucket `personal-images` privé (owner-only, policies RLS Storage)
-- ✅ **Timezone validation IANA** : Responsabilité applicative (pas de CHECK DB, validation front/edge functions)
-
-**Recommandation** : Démarrer migrations avec **Option A** (union simple validations) + **quotas hardcodés** + **Admin strict** (conformément aux sources).
+- ✅ **Images banque** : Bucket `bank-images` public (SELECT anon+authenticated, write admin-only)
+- ✅ **Images personnelles** : Bucket `personal-images` privé (owner-only, pas d'UPDATE = immutabilité)
+- ✅ **Timezone validation IANA** : CHECK DB `accounts_timezone_valid_chk` via `public.is_valid_timezone(text)`
+- ✅ **UUID** : `pgcrypto` + `gen_random_uuid()` partout
+- ✅ **devices.account_id** : NOT NULL + ON DELETE CASCADE
+- ✅ **Admin strict** : owner-only + canal support ciblé (pas de mass surveillance)
+- ✅ **Quotas hardcodés** : fonctions SQL, pas de table `subscription_plans`
+- ✅ **Union simple validations** : pas de tri temporel, fusion ensembliste pure
 
 ---
 
-### Prochaines étapes
+### Étapes restantes (hors périmètre DB)
 
-1. ✅ **Migrations SQL DB-first** : Traduire ce blueprint en migrations Supabase
-2. 🔒 **Storage Policies** : **PRIORITÉ ABSOLUE** — Configurer bucket privé + policies owner-only pour images personnelles
-3. ✅ **RLS Policies** : Implémenter plan RLS conceptuel (section 5)
-4. ✅ **Triggers & Fonctions** : Défendre invariants (section 4) + quotas (section 6)
-5. ✅ **Tests DB** : Vérifier contraintes, cardinalités, cascades
-6. ⚠️ **Import Visitor** : Logique applicative avec transactions (section 7)
+1. ⚠️ **Import Visitor** : Logique applicative avec transactions (section 7) — non implémenté en DB
+2. 🚀 **Frontend** : Implémentation client basée sur SYNC_CONTRACT.md et les invariants DB
 
 ---
 
-**📄 Document prêt pour traduction en migrations SQL DB-first.**
-
-**🔒 CRITIQUE** : Les **Storage Policies** (step 2) doivent être implémentées **AVANT** tout upload d'image personnelle en production.
+**📄 Base de données complète et sécurisée — prête pour l'implémentation frontend.**
