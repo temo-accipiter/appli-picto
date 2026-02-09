@@ -1,29 +1,16 @@
 -- ============================================================
 -- Phase 8 — Smoke Tests: Storage (buckets + RLS policies)
 -- ============================================================
--- Date: 2026-02-06
 -- Migrations couvertes:
---   20260204101000_phase8_1_create_storage_buckets.sql
---   20260204102000_phase8_2_storage_rls_policies.sql
---
--- Objectif: Vérifier buckets (existence, visibilité publique/privée),
---           policies RLS storage (7 policies), path sanitization,
---           immutabilité personal-images (pas d'UPDATE policy).
--- Exécution: psql -v ON_ERROR_STOP=1 -f phase8_smoke.sql
---
--- NOTE: Les policies storage.objects sont testées STRUCTURELLEMENT
--- (existence, définition). Les tests fonctionnels via JWT simulation
--- sont couverts par le smoke test RLS Phase 7.
+--   20260204134000_phase8_1_create_storage_buckets.sql
+--   20260204135000_phase8_2_storage_rls_policies.sql
 -- ============================================================
 
 BEGIN;
 
--- ============================================================
 -- TEST 1: Bucket personal-images existe et est privé
--- ============================================================
 DO $$
-DECLARE
-  v_public boolean;
+DECLARE v_public boolean;
 BEGIN
   SELECT public INTO v_public
   FROM storage.buckets WHERE id = 'personal-images';
@@ -39,13 +26,9 @@ BEGIN
   RAISE NOTICE '✅ TEST 1 PASS — Bucket personal-images existe (private)';
 END $$;
 
-
--- ============================================================
 -- TEST 2: Bucket bank-images existe et est public
--- ============================================================
 DO $$
-DECLARE
-  v_public boolean;
+DECLARE v_public boolean;
 BEGIN
   SELECT public INTO v_public
   FROM storage.buckets WHERE id = 'bank-images';
@@ -61,15 +44,9 @@ BEGIN
   RAISE NOTICE '✅ TEST 2 PASS — Bucket bank-images existe (public)';
 END $$;
 
-
--- ============================================================
--- TEST 3: Storage policies existent (7 si migration privilégiée appliquée)
--- NOTE: Phase 8.2 est une migration privilégiée (supabase_admin).
---       Si scripts/db-reset.sh n'a pas été exécuté, 0 policies = attendu.
--- ============================================================
+-- TEST 3: Storage policies existent (STRICT)
 DO $$
-DECLARE
-  v_count int;
+DECLARE v_count int;
 BEGIN
   SELECT COUNT(*) INTO v_count
   FROM pg_policies
@@ -85,23 +62,14 @@ BEGIN
       'bank_images_delete_admin'
     );
 
-  IF v_count = 0 THEN
-    RAISE NOTICE '⚠️  TEST 3 SKIP — 0 policies (migration privilégiée 8.2 non appliquée, lancer scripts/db-reset.sh)';
-    RETURN;
-  END IF;
-
   IF v_count != 7 THEN
-    RAISE EXCEPTION 'TEST 3 FAILED: attendu 7 policies, trouvé %', v_count;
+    RAISE EXCEPTION 'TEST 3 FAILED: attendu 7 policies, trouvé % (Phase 8.2 manquante ou non appliquée)', v_count;
   END IF;
 
   RAISE NOTICE '✅ TEST 3 PASS — 7 storage policies installées';
 END $$;
 
-
--- ============================================================
--- TEST 4-7 + 9-11: Storage policies details
--- Requires privileged migration (Phase 8.2 via scripts/db-reset.sh)
--- ============================================================
+-- TEST 4-7 + 9-11: Storage policies details (STRICT)
 DO $$
 DECLARE
   v_policy_count int;
@@ -118,8 +86,7 @@ BEGIN
     AND policyname LIKE '%images_%';
 
   IF v_policy_count = 0 THEN
-    RAISE NOTICE '⚠️  TEST 4-7, 9-11 SKIP — policies absentes (migration privilégiée non appliquée)';
-    RETURN;
+    RAISE EXCEPTION 'TEST FAILED: aucune policy images détectée sur storage.objects';
   END IF;
 
   -- TEST 4: Personal = 3 policies (pas d'UPDATE = immutabilité)
@@ -130,9 +97,11 @@ BEGIN
     RAISE EXCEPTION 'TEST 4 FAILED: personal-images devrait avoir 3 policies, trouvé %', v_personal_count;
   END IF;
 
-  SELECT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname = 'storage'
-    AND tablename = 'objects' AND policyname LIKE 'personal_images_%update%')
-  INTO v_has_update;
+  SELECT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname LIKE 'personal_images_%update%'
+  ) INTO v_has_update;
 
   IF v_has_update THEN
     RAISE EXCEPTION 'TEST 4 FAILED: policy UPDATE trouvée pour personal-images';
@@ -161,9 +130,10 @@ BEGIN
   RAISE NOTICE '✅ TEST 6 PASS — Bank SELECT accessible à anon + authenticated';
 
   -- TEST 7: Bank write policies = authenticated only (no anon)
-  FOR r IN SELECT policyname, roles FROM pg_policies
+  FOR r IN
+    SELECT policyname, roles FROM pg_policies
     WHERE schemaname = 'storage' AND tablename = 'objects'
-    AND policyname IN ('bank_images_insert_admin', 'bank_images_update_admin', 'bank_images_delete_admin')
+      AND policyname IN ('bank_images_insert_admin', 'bank_images_update_admin', 'bank_images_delete_admin')
   LOOP
     IF array_to_string(r.roles, ',') LIKE '%anon%' THEN
       RAISE EXCEPTION 'TEST 7 FAILED: % contient anon', r.policyname;
@@ -172,8 +142,9 @@ BEGIN
 
   RAISE NOTICE '✅ TEST 7 PASS — Bank write réservé à authenticated';
 
-  -- TEST 9: Personal policies contiennent path traversal guard
-  FOR r IN SELECT policyname, qual, with_check FROM pg_policies
+  -- TEST 9: Personal policies contiennent path traversal guard (expects '..' literal)
+  FOR r IN
+    SELECT policyname, qual, with_check FROM pg_policies
     WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname LIKE 'personal_images_%'
   LOOP
     v_qual := COALESCE(r.qual, '') || COALESCE(r.with_check, '');
@@ -185,7 +156,8 @@ BEGIN
   RAISE NOTICE '✅ TEST 9 PASS — Personal policies: path traversal guard';
 
   -- TEST 10: Bank policies contiennent regex UUID
-  FOR r IN SELECT policyname, qual, with_check FROM pg_policies
+  FOR r IN
+    SELECT policyname, qual, with_check FROM pg_policies
     WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname LIKE 'bank_images_%'
   LOOP
     v_qual := COALESCE(r.qual, '') || COALESCE(r.with_check, '');
@@ -198,10 +170,6 @@ BEGIN
   RAISE NOTICE '✅ TEST 11 PASS — Bank policies: structure plate (no subdirectories)';
 END $$;
 
-
--- ============================================================
--- CLEANUP
--- ============================================================
 DO $$
 BEGIN
   RAISE NOTICE '';
