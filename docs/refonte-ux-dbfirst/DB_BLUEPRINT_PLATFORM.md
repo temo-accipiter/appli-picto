@@ -11,7 +11,7 @@
 
 Ce module dépend des entités **déjà existantes** dans le core (non redéfinies ici) :
 
-- `accounts(id, status, …)` (statut `free/subscriber/admin` déjà utilisé pour quotas/RLS).  
+- `accounts(id, status, …)` (statut `free/subscriber/admin` déjà utilisé pour quotas/RLS).
 - Auth Supabase (edge functions avec `service_role`).
 
 Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage images).
@@ -27,23 +27,24 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 
 #### Colonnes (source PLATFORM §1.4.3)
 
-| Colonne | Type | Null | Défaut | Notes |
-|---|---|---:|---|---|
-| `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
-| `account_id` | uuid | NOT NULL | — | FK → `accounts(id)` ON DELETE CASCADE |
-| `stripe_customer_id` | text | NULL | — | `cus_…` |
-| `stripe_subscription_id` | text | NULL | — | `sub_…`, **UNIQUE** |
-| `status` | text | NOT NULL | — | Statut Stripe brut (voir contraintes) |
-| `price_id` | text | NULL | — | `price_…` |
-| `current_period_start` | timestamptz | NULL | — | — |
-| `current_period_end` | timestamptz | NULL | — | — |
-| `cancel_at_period_end` | boolean | NOT NULL | `false` | — |
-| `cancel_at` | timestamptz | NULL | — | — |
-| `last_event_id` | text | NULL | — | idempotence webhook |
-| `created_at` | timestamptz | NOT NULL | `now()` | — |
-| `updated_at` | timestamptz | NOT NULL | `now()` | — |
+| Colonne                  | Type        |     Null | Défaut              | Notes                                 |
+| ------------------------ | ----------- | -------: | ------------------- | ------------------------------------- |
+| `id`                     | uuid        | NOT NULL | `gen_random_uuid()` | PK                                    |
+| `account_id`             | uuid        | NOT NULL | —                   | FK → `accounts(id)` ON DELETE CASCADE |
+| `stripe_customer_id`     | text        |     NULL | —                   | `cus_…`                               |
+| `stripe_subscription_id` | text        |     NULL | —                   | `sub_…`, **UNIQUE**                   |
+| `status`                 | text        | NOT NULL | —                   | Statut Stripe brut (voir contraintes) |
+| `price_id`               | text        |     NULL | —                   | `price_…`                             |
+| `current_period_start`   | timestamptz |     NULL | —                   | —                                     |
+| `current_period_end`     | timestamptz |     NULL | —                   | —                                     |
+| `cancel_at_period_end`   | boolean     | NOT NULL | `false`             | —                                     |
+| `cancel_at`              | timestamptz |     NULL | —                   | —                                     |
+| `last_event_id`          | text        |     NULL | —                   | idempotence webhook                   |
+| `created_at`             | timestamptz | NOT NULL | `now()`             | —                                     |
+| `updated_at`             | timestamptz | NOT NULL | `now()`             | —                                     |
 
 #### Contraintes (source PLATFORM §1.4.4)
+
 - **CHECK `status`** ∈ {`active`, `past_due`, `canceled`, `unpaid`, `incomplete`, `incomplete_expired`, `trialing`, `paused`}
 - **UNIQUE** (`stripe_subscription_id`) (si non NULL)
 - **UNIQUE partiel** “1 actif par compte” : `account_id` unique lorsque `status` ∈ (`active`, `trialing`, `past_due`, `paused`)
@@ -51,15 +52,16 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 - FK `account_id` → `accounts(id)` ON DELETE CASCADE
 
 #### Index (minimum)
+
 - PK (`id`)
 - Unique partiel “active per account”
 - Unique (`stripe_subscription_id`)
 
 #### RLS (principes)
-- **INSERT/UPDATE/DELETE** : **service_role uniquement** (webhook / fonctions serveur).
-- **SELECT** : par défaut **owner-only** ou “self read” si nécessaire, mais PLATFORM insiste surtout sur lecture admin (logs) ; garder `subscriptions` non exposée au client est acceptable (et plus safe).
 
-> Décision de sécurité (safe par défaut) : `subscriptions` non lisible par le client ; seul l’admin/owner peut lire pour support.
+- **INSERT/UPDATE/DELETE** : **service_role uniquement** (webhook / fonctions serveur).
+- **SELECT** : **`is_admin()` uniquement** (owner/support).
+- **Contrat** : `subscriptions` n’est pas exposée au client ; l’état d’accès côté UI provient de `accounts.status`.
 
 ---
 
@@ -70,24 +72,27 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 
 #### Colonnes (source PLATFORM §1.5.2)
 
-| Colonne | Type | Null | Défaut | Notes |
-|---|---|---:|---|---|
-| `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
-| `account_id` | uuid | NULL | — | FK → accounts(id) ON DELETE SET NULL |
-| `event_type` | text | NOT NULL | — | ex `webhook.checkout.session.completed` |
-| `details` | jsonb | NULL | — | détails structurés (bornés) |
-| `created_at` | timestamptz | NOT NULL | `now()` | — |
+| Colonne      | Type        |     Null | Défaut              | Notes                                   |
+| ------------ | ----------- | -------: | ------------------- | --------------------------------------- |
+| `id`         | uuid        | NOT NULL | `gen_random_uuid()` | PK                                      |
+| `account_id` | uuid        |     NULL | —                   | FK → accounts(id) ON DELETE SET NULL    |
+| `event_type` | text        | NOT NULL | —                   | ex `webhook.checkout.session.completed` |
+| `details`    | jsonb       |     NULL | —                   | détails structurés (bornés)             |
+| `created_at` | timestamptz | NOT NULL | `now()`             | —                                       |
 
 #### Contraintes (source PLATFORM §1.5.3)
+
 - FK `account_id` ON DELETE SET NULL
 - `event_type` NOT NULL
 
 #### RLS (source PLATFORM §1.5.4)
+
 - SELECT : `is_admin()` uniquement (owner/support)
 - INSERT : interdit côté client (service_role uniquement)
 - UPDATE/DELETE : interdit
 
 #### Rétention (source PLATFORM §1.5.5)
+
 - purge possible après 12 mois (mécanisme à définir : CRON / job owner/service)
 
 ---
@@ -97,9 +102,10 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 **Rôle** : maintenir la cohérence Stripe ↔ application (source PLATFORM §1.6).  
 **Déclencheur** : AFTER INSERT OR UPDATE sur `subscriptions`.  
 **Logique** (résumé) :
-1) si compte admin → no-op (admin immunisé)  
-2) si existe une subscription active (statuts listés) → `accounts.status = 'subscriber'`  
-3) sinon → `accounts.status = 'free'`
+
+1. si compte admin → no-op (admin immunisé)
+2. si existe une subscription active (statuts listés) → `accounts.status = 'subscriber'`
+3. sinon → `accounts.status = 'free'`
 
 **Pré-requis** : une manière DB de tester “admin” (fonction `is_admin()` ou champ `accounts.status = 'admin'` selon le core).
 
@@ -116,24 +122,25 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 
 #### Colonnes (source PLATFORM §2.5.2)
 
-| Colonne | Type | Null | Défaut | Notes |
-|---|---|---:|---|---|
-| `id` | uuid | NOT NULL | `gen_random_uuid()` | PK |
-| `account_id` | uuid | NULL | — | FK → accounts(id) ON DELETE SET NULL |
-| `consent_type` | text | NOT NULL | — | ex `cookie_banner` |
-| `mode` | text | NOT NULL | `'refuse_all'` | `accept_all` / `refuse_all` / `custom` |
-| `choices` | jsonb | NOT NULL | `'{}'::jsonb` | objet JSON (choix) |
-| `action` | text | NULL | — | contexte : `first_load`/`update`/… |
-| `ip_hash` | text | NULL | — | SHA-256 (minimisation) |
-| `ua` | text | NULL | — | user-agent |
-| `locale` | text | NULL | — | —
-| `app_version` | text | NULL | — | —
-| `origin` | text | NULL | — | URL origine |
-| `ts_client` | timestamptz | NULL | — | informatif |
-| `version` | text | NOT NULL | `'1.0.0'` | version format |
-| `created_at` | timestamptz | NOT NULL | `now()` | preuve serveur |
+| Colonne        | Type        |     Null | Défaut              | Notes                                  |
+| -------------- | ----------- | -------: | ------------------- | -------------------------------------- |
+| `id`           | uuid        | NOT NULL | `gen_random_uuid()` | PK                                     |
+| `account_id`   | uuid        |     NULL | —                   | FK → accounts(id) ON DELETE SET NULL   |
+| `consent_type` | text        | NOT NULL | —                   | ex `cookie_banner`                     |
+| `mode`         | text        | NOT NULL | `'refuse_all'`      | `accept_all` / `refuse_all` / `custom` |
+| `choices`      | jsonb       | NOT NULL | `'{}'::jsonb`       | objet JSON (choix)                     |
+| `action`       | text        |     NULL | —                   | contexte : `first_load`/`update`/…     |
+| `ip_hash`      | text        |     NULL | —                   | SHA-256 (minimisation)                 |
+| `ua`           | text        |     NULL | —                   | user-agent                             |
+| `locale`       | text        |     NULL | —                   | —                                      |
+| `app_version`  | text        |     NULL | —                   | —                                      |
+| `origin`       | text        |     NULL | —                   | URL origine                            |
+| `ts_client`    | timestamptz |     NULL | —                   | informatif                             |
+| `version`      | text        | NOT NULL | `'1.0.0'`           | version format                         |
+| `created_at`   | timestamptz | NOT NULL | `now()`             | preuve serveur                         |
 
 #### Contraintes (source PLATFORM §2.5.3)
+
 - CHECK `mode` ∈ {`accept_all`, `refuse_all`, `custom`}
 - CHECK `action` (si non NULL) ∈ {`first_load`, `update`, `withdraw`, `restore`, `revoke`}
 - CHECK `choices` : `jsonb_typeof(choices) = 'object'`
@@ -141,6 +148,7 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 - FK `account_id` ON DELETE SET NULL
 
 #### RLS (principes)
+
 - INSERT : service_role uniquement (Edge Function `log-consent`)
 - SELECT : owner-only (et éventuellement self-read si requis produit ; PLATFORM insiste surtout sur preuve, pas sur UX)
 - UPDATE/DELETE : interdit (append-only)
@@ -157,27 +165,32 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 **Cardinalité** : `accounts (1) → account_preferences (0..1)` transitoire, cible `1..1` (création DB-first).
 
 #### Colonnes minimales (source PLATFORM §5.3)
-| Colonne | Type | Null | Défaut | Notes |
-|---|---|---:|---|---|
-| `account_id` | uuid | NOT NULL | — | PK + FK → accounts(id) ON DELETE CASCADE |
-| `toasts_enabled` | boolean | NOT NULL | (décision) | |
-| `reduced_motion` | boolean | NOT NULL | (décision) | |
-| `confetti_enabled` | boolean | NOT NULL | (décision) | optionnel V1 si conservé |
+
+| Colonne            | Type    |     Null | Défaut     | Notes                                    |
+| ------------------ | ------- | -------: | ---------- | ---------------------------------------- |
+| `account_id`       | uuid    | NOT NULL | —          | PK + FK → accounts(id) ON DELETE CASCADE |
+| `toasts_enabled`   | boolean | NOT NULL | (décision) |                                          |
+| `reduced_motion`   | boolean | NOT NULL | (décision) |                                          |
+| `confetti_enabled` | boolean | NOT NULL | (décision) | optionnel V1 si conservé                 |
 
 #### Valeurs par défaut recommandées (source PLATFORM §5.4)
+
 - `reduced_motion = true` (safe TSA)
 - `toasts_enabled = true`
 - `confetti_enabled = false` (si colonne conservée)
 
 #### Création DB-first (source PLATFORM §5.3.2)
+
 - trigger/fonction : à la création d’un `accounts`, créer automatiquement `account_preferences`.
 
 #### RLS (source PLATFORM §5.6)
+
 - SELECT : propriétaire uniquement (`account_id = auth.uid()`)
 - INSERT/UPDATE : propriétaire uniquement **ou** DB automation à la création du compte
 - DELETE : inutile (si autorisé : owner-only)
 
 #### Invariants
+
 - Interdit : fallback UI si ligne absente.
 - Interdit : préférences qui unlock une règle métier (quota, status, RLS…).
 
@@ -190,17 +203,19 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 > Cette table est **décrite conceptuellement** dans PLATFORM §6.3 ; les types exacts doivent être figés avant migration.
 
 #### Colonnes minimales (source PLATFORM §6.3.3)
-| Colonne | Type | Null | Défaut | Notes |
-|---|---|---:|---|---|
-| `id` | uuid | NOT NULL | `gen_random_uuid()` | PK (proposé) |
-| `actor_account_id` | uuid | NOT NULL | — | FK → accounts(id) (owner) |
-| `target_account_id` | uuid | NULL | — | FK → accounts(id) (cible) |
-| `action` | text / enum | NOT NULL | — | **liste fermée** (voir catalogue) |
-| `reason` | text | NOT NULL | — | justification courte obligatoire |
-| `metadata` | jsonb | NULL | `'{}'::jsonb` | borné, non sensible |
-| `created_at` | timestamptz | NOT NULL | `now()` | —
+
+| Colonne             | Type        |     Null | Défaut              | Notes                             |
+| ------------------- | ----------- | -------: | ------------------- | --------------------------------- |
+| `id`                | uuid        | NOT NULL | `gen_random_uuid()` | PK (proposé)                      |
+| `actor_account_id`  | uuid        | NOT NULL | —                   | FK → accounts(id) (owner)         |
+| `target_account_id` | uuid        |     NULL | —                   | FK → accounts(id) (cible)         |
+| `action`            | text / enum | NOT NULL | —                   | **liste fermée** (voir catalogue) |
+| `reason`            | text        | NOT NULL | —                   | justification courte obligatoire  |
+| `metadata`          | jsonb       |     NULL | `'{}'::jsonb`       | borné, non sensible               |
+| `created_at`        | timestamptz | NOT NULL | `now()`             | —                                 |
 
 #### Catalogue d’actions V1 (source PLATFORM §6.4)
+
 - `revoke_sessions`
 - `disable_device` (si applicable)
 - `resync_subscription_from_stripe`
@@ -211,12 +226,14 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 > À figer : la liste exacte des valeurs (enum) et leur orthographe stable (DB = source de vérité).
 
 #### Contraintes / invariants (source PLATFORM §6.3.2)
+
 - append-only : UPDATE/DELETE interdits
 - `reason` obligatoire (non vide)
 - `action` liste fermée (enum ou CHECK)
 - `metadata` bornée + non sensible (taille max / structure)
 
 #### RLS (principes)
+
 - SELECT : owner-only
 - INSERT : owner-only **via fonctions dédiées** (ou service_role)
 - UPDATE/DELETE : interdit
@@ -226,12 +243,15 @@ Ce module **ne doit créer aucun accès** aux contenus privés (ex : Storage ima
 ## 5. Conventions transversales (module plateforme)
 
 ### 5.1 Append-only (logs / preuves / audit)
+
 - Interdire UPDATE/DELETE côté client via RLS.
 - Option DB : triggers “anti-update/delete” pour rendre la contrainte non contournable même en cas d’erreur de policy.
 
 ### 5.2 Idempotence
+
 - Webhooks Stripe : `subscriptions.last_event_id` + unique sur `stripe_event_id` si stocké ailleurs (non demandé ici).
 - Delete account : verrou opérationnel (ex : table de jobs) — **hors périmètre DB** tant que non spécifié ; minimum : opérations DB idempotentes.
 
 ### 5.3 Confidentialité (non-négociable)
+
 - Aucune policy/fonction admin ne doit donner accès aux images privées (Storage), ni à des payloads sensibles.

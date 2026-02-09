@@ -199,14 +199,14 @@ Cet index garantit qu'un compte ne peut avoir qu'**un seul abonnement actif** à
 
 | Opération | Policy                                                       |
 | --------- | ------------------------------------------------------------ |
-| SELECT    | `account_id = auth.uid()` OR `is_admin()`                    |
+| SELECT    | `is_admin()` uniquement                                      |
 | INSERT    | Interdit côté client — uniquement via webhook (service_role) |
 | UPDATE    | Interdit côté client — uniquement via webhook (service_role) |
 | DELETE    | Interdit côté client — CASCADE via accounts uniquement       |
 
-**Justification** : l'utilisateur peut lire son abonnement (affichage statut, dates, bouton "gérer"). Il ne peut **jamais** le modifier directement. Seul le webhook Stripe (qui utilise `service_role`) écrit dans cette table.
+**Justification** : minimiser l’exposition des données de facturation côté client. L’UI ne lit pas `subscriptions` ; elle se base uniquement sur `accounts.status` (`free` / `subscriber` / `admin`) pour afficher l’état d’accès.
 
-L'admin peut lire les abonnements pour le support technique (diagnostic quota, problème facturation).
+L’admin peut lire les abonnements pour le support technique (diagnostic quota, problème facturation).
 
 ---
 
@@ -435,7 +435,7 @@ Crée une session Checkout Stripe pour un utilisateur authentifié, ou redirige 
 | 6   | Downgrade `subscriber → free` immédiat quand subscription canceled/unpaid   | Trigger §1.6                  |
 | 7   | Upgrade `free → subscriber` réactive profils locked automatiquement         | Trigger §1.7                  |
 | 8   | subscription_logs INSERT-only, visible admin uniquement                     | RLS §1.5.4                    |
-| 9   | Webhook seule source d'écriture dans subscriptions                          | RLS §1.4.6 (no client write)  |
+| 9   | Webhook seule source d'écriture dans subscriptions + lectures admin-only    | RLS §1.4.6                    |
 | 10  | Idempotence : rejouer un événement Stripe produit le même résultat          | Upsert + trigger déterministe |
 
 ---
