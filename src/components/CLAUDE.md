@@ -5,6 +5,7 @@ Guide organisation et conventions composants pour **Appli-Picto** - Application 
 ## 🎯 Vue d'Ensemble
 
 Ce dossier contient **97 composants** organisés en **4 catégories strictes** :
+
 - **features/** (24 composants) - Domaines métier complets
 - **shared/** (38 composants) - Réutilisables métier
 - **ui/** (12 composants) - Primitives pures design system
@@ -21,6 +22,7 @@ Ce dossier contient **97 composants** organisés en **4 catégories strictes** :
 **Définition** : Composants fonctionnalités métier spécifiques et complexes.
 
 **Structure** :
+
 ```
 features/
 ├── taches/              # Gestion tâches
@@ -52,17 +54,20 @@ features/
 ```
 
 **Règles** :
+
 - ✅ **Peuvent importer** : `shared/` et `ui/`
 - ❌ **JAMAIS importer** : Entre eux (pas `features/taches` → `features/admin`)
 - ✅ **Contiennent** : Logique métier complexe, hooks custom, business logic
 - ✅ **Responsabilité** : Feature complète end-to-end
 
 **Exemples** :
+
 - `features/taches/TachesDnd` - Drag & drop tâches avec persistence Supabase
 - `features/time-timer/TimeTimer` - Timer visuel pour enfants TSA (reducer, localStorage)
 - `features/admin/MetricsDashboard` - Dashboard métriques avec 9 queries parallèles
 
 **Pourquoi cette catégorie** :
+
 - Isolation domaines métier (maintenance facilitée)
 - Évite couplage entre features
 - Réutilisation via `shared/` si besoin commun
@@ -74,6 +79,7 @@ features/
 **Définition** : Composants mise en page globale et navigation.
 
 **Structure** :
+
 ```
 layout/
 ├── navbar/          # Barre navigation principale
@@ -84,17 +90,20 @@ layout/
 ```
 
 **Règles** :
+
 - ✅ **Peuvent importer** : `shared/` et `ui/`
 - ❌ **JAMAIS importer** : `features/` (pas de logique métier)
 - ✅ **Utilisés dans** : Layouts Next.js (`src/app/layout.tsx`, `src/app/(protected)/layout.tsx`)
 - ✅ **Responsabilité** : Structure visuelle globale, navigation
 
 **Exemples** :
+
 - `layout/Navbar` - Navigation avec auth status, liens principales pages
 - `layout/UserMenu` - Dropdown profil (Mon profil, Paramètres, Déconnexion)
 - `layout/Footer` - Pied de page avec liens légaux
 
 **Pourquoi cette catégorie** :
+
 - Composants structurels partagés toutes pages
 - Navigation cohérente application
 - Séparation layout vs business logic
@@ -106,6 +115,7 @@ layout/
 **Définition** : Composants réutilisables avec logique métier **légère**.
 
 **Structure** (28 dossiers) :
+
 ```
 shared/
 ├── modal/              # Système modales
@@ -151,6 +161,7 @@ shared/
 ```
 
 **Règles** :
+
 - ✅ **Peuvent importer** : `ui/` uniquement
 - ❌ **JAMAIS importer** : `features/` ou `layout/`
 - ✅ **Contiennent** : Logique métier **légère** (quotas, auth, storage)
@@ -158,12 +169,14 @@ shared/
 - ✅ **Responsabilité** : Composants business transverses
 
 **Exemples** :
+
 - `shared/Modal` - Modale réutilisable avec overlay, fermeture ESC
 - `shared/FeatureGate` - Limiter feature par rôle (`<FeatureGate role="abonne">`)
 - `shared/SignedImage` - Image avec URL signée Supabase Storage (sécurité)
 - `shared/DndCard` - Carte draggable wrapper `@dnd-kit` (réutilisable)
 
 **Pourquoi cette catégorie** :
+
 - Évite duplication code entre features
 - Logique métier légère partagée
 - Plus spécialisé que `ui/` mais moins que `features/`
@@ -175,6 +188,7 @@ shared/
 **Définition** : Composants UI **sans logique métier** (purement présentationnels).
 
 **Structure** :
+
 ```
 ui/
 ├── button/          # Button, ButtonClose, ButtonDelete
@@ -191,6 +205,7 @@ ui/
 ```
 
 **Règles** :
+
 - ❌ **ZÉRO logique métier** (pas de hooks Supabase, contextes métier)
 - ❌ **ZÉRO import** autres catégories (features/layout/shared)
 - ✅ **Props génériques** : `label`, `onClick`, `disabled`, `value`, `onChange`
@@ -198,16 +213,19 @@ ui/
 - ✅ **Responsabilité** : Composants UI réutilisables bruts
 
 **Exemples** :
+
 - `ui/Button` - Bouton générique stylé (variant, size, disabled)
 - `ui/Input` - Input contrôlé React avec validation visuelle
 - `ui/Loader` - Spinner loading animé
 
 **Pourquoi cette catégorie** :
+
 - Design system cohérent
 - Composants testables isolément
 - Pas de couplage logique métier
 
 **Antipattern ❌** :
+
 ```typescript
 // ❌ INTERDIT dans ui/ - Logique métier
 import { useAccountStatus } from '@/hooks'
@@ -253,6 +271,7 @@ shared/modal/
 ```
 
 **Règles** :
+
 - ✅ Un composant = un dossier (pas fichier isolé)
 - ✅ Nom fichier = Nom composant (PascalCase)
 - ✅ `.scss` avec même nom que `.tsx`
@@ -267,13 +286,17 @@ shared/modal/
 ### Pattern Standard
 
 ```scss
-.block {                    // Block (composant principal)
-  &__element {             // Element (partie du block)
-    &--modifier {          // Modifier (variante element)
+.block {
+  // Block (composant principal)
+  &__element {
+    // Element (partie du block)
+    &--modifier {
+      // Modifier (variante element)
     }
   }
 
-  &--modifier {            // Modifier (variante block)
+  &--modifier {
+    // Modifier (variante block)
   }
 }
 ```
@@ -348,6 +371,7 @@ shared/modal/
 ### Règles CRITIQUES
 
 **TOUJOURS utiliser tokens** :
+
 - ✅ `color()`, `surface()`, `text()`, `semantic()` - Couleurs
 - ✅ `spacing()` - Margin, padding, gap
 - ✅ `size()` - Width, height, min-height
@@ -359,16 +383,19 @@ shared/modal/
 - ✅ `@include respond-to()` - Media queries
 
 **JAMAIS valeurs hardcodées** :
+
 - ❌ `16px`, `2rem`, `#FFB3BA`, `rgba(255, 179, 186, 0.5)`
 - ❌ `var(--color-primary)` (utiliser fonctions tokens)
 - ❌ `lighten()`, `darken()`, `color.adjust()` (manipulations couleurs)
 
 **Nommage** :
+
 - ✅ kebab-case (`.tache-card`, pas `.tacheCard` ou `.TacheCard`)
 - ✅ BEM-lite : Block, Element (`__`), Modifier (`--`)
 - ✅ Noms descriptifs (`.tache-card__title`, pas `.title`)
 
 **Imbrication** :
+
 - ✅ Max 3 niveaux (lisibilité)
 - ✅ Utiliser `&` pour chaînage (`.block { &__element {} }`)
 
@@ -394,12 +421,14 @@ pnpm verify:css  # lint:hardcoded + validate:touch-targets + build:css
 ### 🎬 Animations (Max 0.3s ease)
 
 **Règles** :
+
 - ✅ **Durée max 0.3s** (animations douces, pas brusques)
 - ✅ **Easing** : `ease` ou `ease-in-out` uniquement
 - ❌ **Jamais** : `linear`, `bounce`, `elastic`, effets brusques
 - ✅ **Respecter** : `prefers-reduced-motion` (hook `useReducedMotion()`)
 
 **Pattern Correct** :
+
 ```scss
 // ✅ CORRECT - Animation douce TSA-friendly
 .card {
@@ -416,6 +445,7 @@ pnpm verify:css  # lint:hardcoded + validate:touch-targets + build:css
 ```
 
 **Antipatterns** :
+
 ```scss
 // ❌ INTERDIT - Trop rapide
 .card {
@@ -434,6 +464,7 @@ pnpm verify:css  # lint:hardcoded + validate:touch-targets + build:css
 ```
 
 **Validation** :
+
 ```typescript
 import { useReducedMotion } from '@/hooks'
 
@@ -456,15 +487,17 @@ function AnimatedCard() {
 ### 🎨 Couleurs & Contraste
 
 **Règles WCAG 2.2 AA** :
+
 - ✅ **Contraste minimum 4.5:1** pour texte normal
 - ✅ **Contraste minimum 3:1** pour composants UI (boutons, borders)
 - ✅ **Palette pastel apaisante** (tokens `color()` déjà conformes)
 
 **Pattern Correct** :
+
 ```scss
 // ✅ CORRECT - Tokens avec contrastes validés
 .text {
-  color: text('primary');      // Contraste 7:1 sur surface('body')
+  color: text('primary'); // Contraste 7:1 sur surface('body')
   background: surface('card'); // Contraste 1.5:1 avec surface('body')
 }
 
@@ -475,20 +508,22 @@ function AnimatedCard() {
 ```
 
 **Antipatterns** :
+
 ```scss
 // ❌ INTERDIT - Hardcode + contraste faible
 .text {
-  color: #FFB3BA;              // Contraste 2.1:1 (insuffisant)
-  background: #FFF5F5;
+  color: #ffb3ba; // Contraste 2.1:1 (insuffisant)
+  background: #fff5f5;
 }
 
 // ❌ INTERDIT - Couleurs non testées
 .button {
-  background: lighten(#FFB3BA, 20%); // Manipulation couleur = contraste inconnu
+  background: lighten(#ffb3ba, 20%); // Manipulation couleur = contraste inconnu
 }
 ```
 
 **Validation** :
+
 - Utiliser **outils contraste** : WebAIM Contrast Checker, Chrome DevTools
 - Tokens `color()` pré-validés WCAG 2.2 AA
 - Commande : `pnpm validate:touch-targets` (inclut vérification contraste)
@@ -498,6 +533,7 @@ function AnimatedCard() {
 ### 🎯 ARIA & Navigation Clavier
 
 **Règles** :
+
 - ✅ `aria-label` sur boutons icônes (pas de texte visible)
 - ✅ `aria-hidden="true"` sur icônes décoratives
 - ✅ `role` approprié (`button`, `dialog`, `alert`)
@@ -505,6 +541,7 @@ function AnimatedCard() {
 - ✅ Focus visible avec `@include focus-visible`
 
 **Pattern Correct** :
+
 ```typescript
 // ✅ CORRECT - ARIA complet
 <button
@@ -534,6 +571,7 @@ function AnimatedCard() {
 ```
 
 **Antipatterns** :
+
 ```typescript
 // ❌ INTERDIT - Pas de label
 <button onClick={handleDelete}>
@@ -552,6 +590,7 @@ function AnimatedCard() {
 ```
 
 **Navigation clavier** :
+
 - ✅ `Tab` : Navigation éléments interactifs
 - ✅ `Enter`/`Space` : Activer bouton
 - ✅ `Escape` : Fermer modales (hook `useEscapeKey`)
@@ -562,18 +601,20 @@ function AnimatedCard() {
 ### 📏 Cibles Tactiles (44×44px min)
 
 **Règles WCAG 2.5.5** :
+
 - ✅ **Min 44×44px** pour tous éléments interactifs (boutons, liens, inputs)
 - ✅ **Espacement 8px** entre cibles adjacentes
 - ✅ Validation automatique : `pnpm validate:touch-targets`
 
 **Pattern Correct** :
+
 ```scss
 // ✅ CORRECT - Taille tactile suffisante
 .button {
-  min-width: size('44');   // 44px
-  min-height: size('44');  // 44px
-  padding: spacing('2');   // 8px
-  gap: spacing('2');       // 8px entre icône et texte
+  min-width: size('44'); // 44px
+  min-height: size('44'); // 44px
+  padding: spacing('2'); // 8px
+  gap: spacing('2'); // 8px entre icône et texte
 }
 
 // ✅ CORRECT - Icône cliquable
@@ -587,21 +628,23 @@ function AnimatedCard() {
 ```
 
 **Antipatterns** :
+
 ```scss
 // ❌ INTERDIT - Trop petit pour enfants
 .button {
-  width: 32px;   // < 44px
+  width: 32px; // < 44px
   height: 32px;
 }
 
 // ❌ INTERDIT - Hardcode taille
 .button {
-  width: 40px;   // Hardcode + insuffisant
+  width: 40px; // Hardcode + insuffisant
   height: 40px;
 }
 ```
 
 **Validation** :
+
 ```bash
 pnpm validate:touch-targets  # Détecte cibles < 44×44px
 ```
@@ -611,12 +654,14 @@ pnpm validate:touch-targets  # Détecte cibles < 44×44px
 ### 🔊 Feedback Utilisateur
 
 **Règles TSA-friendly** :
+
 - ✅ **Feedback visuel immédiat** : Hover, focus, active states
 - ✅ **Messages clairs et courts** : Toasts, erreurs explicites
 - ✅ **Pas de surprises** : Actions prévisibles, confirmations
 - ✅ **Sons optionnels** : Hook `useAudioContext` (désactivable)
 
 **Pattern Correct** :
+
 ```scss
 // ✅ CORRECT - États visuels clairs
 .button {
@@ -646,11 +691,13 @@ pnpm validate:touch-targets  # Détecte cibles < 44×44px
 ### Quand utiliser `'use client'`
 
 **3 cas obligatoires** :
+
 1. **Hooks React** : `useState`, `useEffect`, `useContext`, `useRef`, `useReducer`
 2. **Event handlers** : `onClick`, `onChange`, `onSubmit`, `onKeyDown`
 3. **Browser APIs** : `window`, `localStorage`, `document`, `navigator`
 
 **Pattern Correct** :
+
 ```typescript
 // ✅ CORRECT - 'use client' nécessaire (hooks + events)
 'use client'
@@ -688,6 +735,7 @@ export default function StaticCard({ title, children }: CardProps) {
 ```
 
 **Antipatterns** :
+
 ```typescript
 // ❌ INTERDIT - 'use client' inutile
 'use client'
@@ -705,6 +753,7 @@ export default function StaticCard({ title }: { title: string }) {
 - ✅ **Minimiser** composants Client (isoler interactivité)
 
 **Exemple isolation interactivité** :
+
 ```typescript
 // ✅ CORRECT - Isoler interactivité dans sous-composant
 // Card.tsx (Server Component)
@@ -785,7 +834,10 @@ export { DndCard, DndSlot, DndGrid, useDndGrid } from './shared/dnd'
 export type { DndCardProps, DndSlotProps } from './shared/dnd'
 
 // Feature Gates
-export { FeatureGate, PremiumFeatureGate } from './shared/feature-gate/FeatureGate'
+export {
+  FeatureGate,
+  PremiumFeatureGate,
+} from './shared/feature-gate/FeatureGate'
 
 // Images
 export { default as SignedImage } from './shared/signed-image/SignedImage'
@@ -803,6 +855,7 @@ export { default as Toast } from './ui/toast/Toast'
 ```
 
 **Utilisation** :
+
 ```typescript
 // ✅ CORRECT - Import groupé depuis barrel
 import {
@@ -820,6 +873,7 @@ import TachesDnd from '@/components/features/taches/taches-dnd/TachesDnd'
 ```
 
 **Avantages barrel exports** :
+
 - ✅ Imports simplifiés et groupés
 - ✅ Abstraction structure interne
 - ✅ Auto-complétion IDE améliorée
@@ -838,6 +892,7 @@ import TacheCard from '@/components/features/taches/TacheCard'
 ```
 
 **Pourquoi interdit** :
+
 - Couplage entre domaines métier
 - Maintenance difficile (chaîne dépendances)
 - Réutilisation impossible isolément
@@ -872,6 +927,7 @@ export default function Button({ children }: { children: ReactNode }) {
 ```
 
 **Pourquoi interdit** :
+
 - `ui/` = primitives pures (ZÉRO logique métier)
 - Couplage composant UI à règles business
 - Tests difficiles (besoin mock hooks métier)
@@ -902,11 +958,11 @@ export default function CreateTaskButton() {
 ```scss
 // ❌ INTERDIT - Hardcodes
 .card {
-  margin: 16px;              // Hardcode spacing
-  padding: 12px 20px;        // Hardcode spacing
-  background: #FFB3BA;       // Hardcode couleur
-  border-radius: 8px;        // Hardcode radius
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); // Hardcode shadow
+  margin: 16px; // Hardcode spacing
+  padding: 12px 20px; // Hardcode spacing
+  background: #ffb3ba; // Hardcode couleur
+  border-radius: 8px; // Hardcode radius
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Hardcode shadow
 }
 
 // ✅ CORRECT - Tokens
@@ -920,6 +976,7 @@ export default function CreateTaskButton() {
 ```
 
 **Validation** :
+
 ```bash
 pnpm lint:hardcoded  # Détecte hardcodes automatiquement
 ```
@@ -1049,14 +1106,17 @@ describe('Button', () => {
 ### Exemples Référence
 
 **Features** :
+
 - `features/taches/TachesDnd` - Drag & drop complexe
 - `features/time-timer/TimeTimer` - useReducer + localStorage
 
 **Shared** :
+
 - `shared/modal/Modal` - Système modal complet
 - `shared/dnd/DndCard` - Wrapper @dnd-kit réutilisable
 
 **UI** :
+
 - `ui/button/Button` - Primitive pure typique
 - `ui/input/Input` - Input contrôlé avec validation
 

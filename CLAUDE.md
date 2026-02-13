@@ -82,6 +82,7 @@ src/
 ```
 
 **Supabase Edge Functions** (`supabase/functions/`) :
+
 - `create-checkout-session/` - Checkout Stripe
 - `stripe-webhook/` - Webhooks Stripe
 - `delete-account/` - Suppression compte RGPD
@@ -91,31 +92,39 @@ src/
 **CRITIQUE** : Organisation stricte en 4 catégories
 
 ### 1. features/ - Domaines Métier
+
 Composants liés à fonctionnalités métier complètes (taches, time-timer, admin, consent, subscription, legal).
 
 **Règles** :
+
 - ✅ Contiennent logique métier spécifique
 - ✅ Peuvent importer depuis `shared/` et `ui/`
 - ❌ NE DOIVENT PAS être importés entre eux
 
 ### 2. layout/ - Structure App
+
 Composants structurels (navbar, footer, user-menu, settings-menu).
 
 **Règles** :
+
 - ✅ Utilisés dans layouts Next.js
 - ✅ Gèrent navigation et structure globale
 
 ### 3. shared/ - Composants Réutilisables
+
 Composants avec logique métier légère (modal, card, dnd, forms, feature-gate, quota-indicator).
 
 **Règles** :
+
 - ✅ Réutilisables dans plusieurs features
 - ❌ NE DOIVENT PAS importer depuis `features/` ou `layout/`
 
 ### 4. ui/ - Primitives UI Pures
+
 Composants sans logique métier (button, input, select, loader, toast).
 
 **Règles** :
+
 - ✅ ZÉRO logique métier
 - ❌ NE DOIVENT PAS importer hooks Supabase ou contextes
 
@@ -138,12 +147,14 @@ import { Modal, Button, TachesDnd } from '@/components'
 ## 🏷️ Conventions Nommage
 
 **Fichiers** :
+
 - Composants : PascalCase (`TacheCard.tsx`)
 - Hooks : camelCase + préfixe `use` (`useTaches.ts`)
 - Styles : Même nom que composant (`TacheCard.scss`)
 - Tests : `[nom-fichier].test.ts`
 
 **Code** :
+
 - Composants : PascalCase, nom descriptif
 - Props interfaces : Suffixe `Props` (`TacheCardProps`)
 - Hooks : Préfixe `use`, camelCase
@@ -151,10 +162,13 @@ import { Modal, Button, TachesDnd } from '@/components'
 - Constantes : SCREAMING_SNAKE_CASE (`MAX_IMAGE_SIZE`)
 
 **SCSS** : BEM-lite
+
 ```scss
 .tache-card {
-  &__title { }      // Element
-  &--completed { }  // Modifier
+  &__title {
+  } // Element
+  &--completed {
+  } // Modifier
 }
 ```
 
@@ -176,6 +190,7 @@ import { Modal, Button, TachesDnd } from '@/components'
 ### Règles SCSS
 
 **Fonctions autorisées** :
+
 - **Couleurs** : `color()`, `surface()`, `text()`, `semantic()`, `role-color()`
 - **Spacing** : `spacing()` (margin/padding/gap UNIQUEMENT)
 - **Size** : `size()` (width/height/min-height)
@@ -185,11 +200,13 @@ import { Modal, Button, TachesDnd } from '@/components'
 - **Responsive** : `@include respond-to()` (mobile-first)
 
 **Interdictions** :
+
 - ❌ AUCUNE valeur hardcodée (`px`, `rem`, `#hex`, `rgb()`)
 - ❌ AUCUN `var(--*)` direct
 - ❌ AUCUN `lighten()`, `darken()`, `color.adjust()`
 
 **Validation** :
+
 ```bash
 pnpm lint:hardcoded        # Détecter hardcodes
 pnpm build:css             # Compiler SCSS
@@ -211,6 +228,7 @@ const { taches, loading, error } = useTaches()
 ```
 
 **Hooks disponibles** :
+
 - **CRUD** : `useTaches`, `useTachesEdition`, `useRecompenses`, `useCategories`
 - **Auth & Permissions** : `useAuth`, `useRBAC`, `useSimpleRole`, `useAdminPermissions`
 - **Quotas** : `useAccountStatus`, `useSubscriptionStatus`
@@ -226,6 +244,7 @@ import { supabase } from '@/utils/supabaseClient'
 ### 3. Next.js App Router
 
 **Structure Routes** :
+
 ```
 app/
 ├── (public)/           # Route group public (pas d'auth)
@@ -239,6 +258,7 @@ app/
 ```
 
 **Navigation** :
+
 ```typescript
 // ✅ CORRECT
 import { useRouter } from 'next/navigation'
@@ -250,6 +270,7 @@ import { useNavigate } from 'react-router-dom'
 ```
 
 **Metadata SEO** :
+
 ```typescript
 import type { Metadata } from 'next'
 
@@ -262,6 +283,7 @@ export const metadata: Metadata = {
 ### 4. Server vs Client Components
 
 **Ajouter `'use client'` UNIQUEMENT si** :
+
 - Hooks React (`useState`, `useEffect`)
 - Event handlers (`onClick`, `onChange`)
 - Browser APIs (`window`, `localStorage`)
@@ -316,22 +338,26 @@ function SubscribeButton() {
 ### 8. Contextes Disponibles
 
 **AuthContext** : `useAuth()` - Authentification
+
 ```typescript
 const { user, authReady, signOut } = useAuth()
 ```
 
 **PermissionsContext** : `usePermissions()` - Contrôle accès
+
 ```typescript
 const { canEdit, role } = usePermissions()
 ```
 
 **ToastContext** : `useToast()` - Notifications
+
 ```typescript
 const { showToast } = useToast()
 showToast('Succès !', 'success')
 ```
 
 **LoadingContext** : `useLoading()` - États chargement
+
 ```typescript
 const { loading, setLoading } = useLoading()
 ```
@@ -411,6 +437,7 @@ type TacheInsert = Database['public']['Tables']['taches']['Insert']
 **Configuration** : `@ducanh2912/next-pwa` dans `next.config.mjs`
 
 **Manifest** : `public/manifest.json`
+
 - `start_url: "/tableau"`
 - `display: "standalone"`
 - Icônes 192×192 et 512×512 obligatoires
@@ -420,6 +447,7 @@ type TacheInsert = Database['public']['Tables']['taches']['Insert']
 ## 📦 Variables Environnement
 
 **Client-Side** (`NEXT_PUBLIC_*` exposé navigateur) :
+
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
@@ -427,6 +455,7 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
 **Server-Side** (Edge Functions uniquement) :
+
 ```bash
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
@@ -477,23 +506,27 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 ## 📚 Références Clés
 
 **Fichiers Critiques** :
+
 - `src/contexts/AuthContext.tsx` - Authentification
 - `src/hooks/useRBAC.ts` - Permissions
 - `src/utils/supabaseClient.ts` - Client Supabase unique
 - `src/types/supabase.ts` - Types générés
 
 **Hooks Essentiels** :
+
 - `src/hooks/useTaches*.ts` - CRUD + DnD tâches
 - `src/hooks/useAccountStatus.ts` - Quotas
 - `src/hooks/useCheckout.ts` - Stripe checkout
 - `src/hooks/useMetrics.ts` - Métriques admin
 
 **Edge Functions** :
+
 - `supabase/functions/create-checkout-session/`
 - `supabase/functions/stripe-webhook/`
 - `supabase/functions/delete-account/`
 
 **Design System** :
+
 - `src/styles/abstracts/_variables.scss` - Tokens
 - `src/styles/abstracts/_mixins.scss` - Mixins
 
@@ -502,6 +535,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 **CRITIQUE** : Design apaisant pour enfants autistes
 
 **Principes** :
+
 - **Animations** : Max 0.3s ease, douces et prévisibles
 - **Pas surcharge visuelle** : Interface épurée, minimaliste
 - **Prévisibilité** : Actions cohérentes, pas de surprises
@@ -509,6 +543,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 - **Navigation** : Simple, claire, logique
 
 **Accessibilité (WCAG 2.2 AA)** :
+
 - ✅ Contraste minimum : 4.5:1 texte, 3:1 UI
 - ✅ Focus visible toujours
 - ✅ Cibles tactiles : 44×44px minimum
@@ -517,6 +552,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 - ✅ Respecter `prefers-reduced-motion`
 
 **Validation** :
+
 ```bash
 pnpm validate:touch-targets # Vérifier cibles tactiles
 pnpm test:e2e               # Tests incluent axe-core

@@ -7,6 +7,7 @@ Guide design system tokens-first pour **Appli-Picto** - Application Next.js 16 p
 **Phase 6 finalisée (Déc 2024)** : Migration complète vers système tokens centralisés.
 
 **70 fichiers SCSS refactorisés** :
+
 - ✅ **ZÉRO valeur hardcodée** dans composants
 - ✅ **18 fichiers abstracts** (tokens, functions, mixins)
 - ✅ **563 lignes mixins** accessibilité et patterns
@@ -23,33 +24,34 @@ Guide design system tokens-first pour **Appli-Picto** - Application Next.js 16 p
 ```scss
 // ❌ INTERDIT - Valeurs hardcodées
 .card {
-  margin: 16px;                     // Hardcode spacing
-  padding: 12px 20px;               // Hardcode spacing
-  background: #FFB3BA;              // Hardcode couleur
-  border-radius: 8px;               // Hardcode radius
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1); // Hardcode shadow
-  font-size: 14px;                  // Hardcode typographie
-  transition: all 0.3s ease;        // OK timing mais 'all' déconseillé
+  margin: 16px; // Hardcode spacing
+  padding: 12px 20px; // Hardcode spacing
+  background: #ffb3ba; // Hardcode couleur
+  border-radius: 8px; // Hardcode radius
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Hardcode shadow
+  font-size: 14px; // Hardcode typographie
+  transition: all 0.3s ease; // OK timing mais 'all' déconseillé
 }
 
 // ✅ CORRECT - Tokens uniquement
 .card {
-  margin: spacing('4');              // 16px via token
+  margin: spacing('4'); // 16px via token
   padding: spacing('3') spacing('5'); // 12px 20px via tokens
-  background: color('primary');      // Couleur primaire token
-  border-radius: radius('md');       // Radius moyen token
-  box-shadow: shadow('md');          // Shadow moyen token
-  font-size: font-size('sm');        // Taille petite token
+  background: color('primary'); // Couleur primaire token
+  border-radius: radius('md'); // Radius moyen token
+  box-shadow: shadow('md'); // Shadow moyen token
+  font-size: font-size('sm'); // Taille petite token
   @include safe-transition(transform box-shadow); // Transition sécurisée
 }
 ```
 
 **Pourquoi CRITIQUE** :
+
 - ✅ **Cohérence** : Design system harmonisé (pas de valeurs arbitraires)
 - ✅ **Maintenance** : Changer token = update global (pas 70 fichiers)
 - ✅ **Accessibilité** : Tokens pré-validés WCAG 2.2 AA
 - ✅ **Thème dark** : Tokens CSS variables (switch automatique)
-- ✅ **Scalabilité** : Ajouter valeur = 1 seul endroit (_tokens.scss)
+- ✅ **Scalabilité** : Ajouter valeur = 1 seul endroit (\_tokens.scss)
 
 ---
 
@@ -112,15 +114,17 @@ abstracts/
 #### **color()** - Couleurs Principales
 
 **Usage** :
+
 ```scss
 .element {
-  background: color('primary');      // Rose primaire #FFB3BA
-  color: color('primary', 'dark');   // Rose foncé
-  border-color: color('secondary');  // Couleur secondaire
+  background: color('primary'); // Rose primaire #FFB3BA
+  color: color('primary', 'dark'); // Rose foncé
+  border-color: color('secondary'); // Couleur secondaire
 }
 ```
 
 **Tokens disponibles** :
+
 - `color('primary')` - Rose principal (#FFB3BA)
 - `color('primary', 'light')` - Rose clair
 - `color('primary', 'dark')` - Rose foncé
@@ -132,21 +136,23 @@ abstracts/
 #### **text()** - Couleurs Texte (Phase 6)
 
 **Usage** :
+
 ```scss
 .title {
-  color: text('primary');    // Texte principal (contraste 7:1)
+  color: text('primary'); // Texte principal (contraste 7:1)
 }
 
 .subtitle {
-  color: text('secondary');  // Texte secondaire (contraste 4.5:1)
+  color: text('secondary'); // Texte secondaire (contraste 4.5:1)
 }
 
 .muted {
-  color: text('muted');      // Texte atténué
+  color: text('muted'); // Texte atténué
 }
 ```
 
 **Tokens disponibles** :
+
 - `text('primary')` - Texte principal (#1f2937, contraste WCAG AAA)
 - `text('secondary')` - Texte secondaire (#6b7280, contraste AA)
 - `text('muted')` - Texte atténué (#9ca3af)
@@ -154,6 +160,7 @@ abstracts/
 - `text('inverse')` - Texte sur fond foncé (blanc)
 
 **Règles Accessibilité** :
+
 - ✅ **Contraste minimum 4.5:1** (WCAG 2.2 AA)
 - ✅ `text('primary')` : Contraste 7:1 (AAA)
 - ✅ Tous tokens pré-validés WebAIM Contrast Checker
@@ -163,18 +170,20 @@ abstracts/
 #### **surface()** - Couleurs Surfaces/Fonds (Phase 6)
 
 **Usage** :
+
 ```scss
 .card {
-  background: surface('card');    // Fond carte (#ffffff)
+  background: surface('card'); // Fond carte (#ffffff)
   border-color: surface('border'); // Bordure (#e5e7eb)
 }
 
 .page {
-  background: surface('body');    // Fond page (#fafafa)
+  background: surface('body'); // Fond page (#fafafa)
 }
 ```
 
 **Tokens disponibles** :
+
 - `surface('body')` - Fond page (#fafafa)
 - `surface('card')` - Fond carte (#ffffff)
 - `surface('elevated')` - Surface surélevée
@@ -187,19 +196,21 @@ abstracts/
 #### **semantic()** - Couleurs Feedback (Phase 6)
 
 **Usage** :
+
 ```scss
 .success-message {
-  color: semantic('success');         // Vert #10b981
+  color: semantic('success'); // Vert #10b981
   background: semantic('success', 'light'); // Vert clair #d1fae5
 }
 
 .error-message {
-  color: semantic('error');           // Rouge #ef4444
+  color: semantic('error'); // Rouge #ef4444
   background: semantic('error', 'light'); // Rouge clair #fee2e2
 }
 ```
 
 **Tokens disponibles** :
+
 - `semantic('success')` - Vert succès (#10b981)
 - `semantic('success', 'light')` - Fond succès clair
 - `semantic('success', 'dark')` - Succès foncé
@@ -211,11 +222,12 @@ abstracts/
 - `semantic('info', 'light')` - Fond info clair
 
 **Usage TSA-friendly** :
+
 ```scss
 // ✅ CORRECT - Feedback visuel clair enfants autistes
 .toast--success {
   background: semantic('success', 'light'); // Fond vert pastel
-  color: semantic('success', 'dark');       // Texte vert foncé (contraste)
+  color: semantic('success', 'dark'); // Texte vert foncé (contraste)
   border-left: border-width('thick') solid semantic('success');
 }
 ```
@@ -225,18 +237,20 @@ abstracts/
 #### **role-color()** - Couleurs Rôles Utilisateurs
 
 **Usage** :
+
 ```scss
 .badge--admin {
-  background: role-color('admin');       // Violet admin #667eea
-  color: role-color('admin', 'light');   // Violet clair
+  background: role-color('admin'); // Violet admin #667eea
+  color: role-color('admin', 'light'); // Violet clair
 }
 
 .badge--abonne {
-  background: role-color('abonne');      // Vert abonné #22c55e
+  background: role-color('abonne'); // Vert abonné #22c55e
 }
 ```
 
 **Tokens disponibles** :
+
 - `role-color('admin')` - Violet admin (#667eea)
 - `role-color('admin', 'gradient-start')` - Début gradient
 - `role-color('admin', 'gradient-end')` - Fin gradient
@@ -250,15 +264,17 @@ abstracts/
 #### Palettes Couleurs (Legacy)
 
 **Usage** :
+
 ```scss
 .element {
-  color: gray(500);     // Gris moyen #6b7280
+  color: gray(500); // Gris moyen #6b7280
   background: blue(50); // Bleu très clair #eff6ff
   border-color: red(600); // Rouge moyen #dc2626
 }
 ```
 
 **Palettes disponibles** :
+
 - `gray(50..900)` - Échelle gris (50=clair, 900=foncé)
 - `blue(50..900)` - Échelle bleu
 - `red(50..900)` - Échelle rouge
@@ -279,19 +295,21 @@ abstracts/
 Pour `width`, `height`, `min-height`, utiliser `size()` (voir section Tailles)
 
 **Usage** :
+
 ```scss
 .card {
-  margin: spacing('4');          // 16px
-  padding: spacing('6');         // 24px
-  gap: spacing('2');             // 8px
+  margin: spacing('4'); // 16px
+  padding: spacing('6'); // 24px
+  gap: spacing('2'); // 8px
 
   // Spacing différents
   padding: spacing('3') spacing('5'); // 12px 20px (vertical horizontal)
-  margin-bottom: spacing('8');   // 32px
+  margin-bottom: spacing('8'); // 32px
 }
 ```
 
 **Grille 4px (Phase 6)** :
+
 ```scss
 // ✅ CORRECT - Grille 4px stricte
 spacing('1')   // 4px   (0.25rem)
@@ -309,6 +327,7 @@ spacing('24')  // 96px  (6rem)
 ```
 
 **Tokens sémantiques (Phase 6)** :
+
 ```scss
 spacing('card-padding')    // 24px (padding cartes standard)
 spacing('section-gap')     // 32px (gap entre sections)
@@ -318,6 +337,7 @@ spacing('button-padding-x') // 20px (padding horizontal boutons)
 ```
 
 **Règles** :
+
 - ✅ **TOUJOURS** grille 4px (pas de 13px, 17px arbitraires)
 - ❌ **JAMAIS** `spacing()` pour `width`/`height` (utiliser `size()`)
 - ✅ Noms sémantiques pour patterns récurrents (card-padding, etc.)
@@ -329,25 +349,27 @@ spacing('button-padding-x') // 20px (padding horizontal boutons)
 ### Fonction size()
 
 **Usage** :
+
 ```scss
 .button {
-  width: size('44');           // 44px (cible tactile min)
-  height: size('44');          // 44px
-  min-width: size('120');      // 120px
+  width: size('44'); // 44px (cible tactile min)
+  height: size('44'); // 44px
+  min-width: size('120'); // 120px
 }
 
 .modal {
   max-width: size('modal-width-md'); // 600px
-  min-height: size('400');     // 400px
+  min-height: size('400'); // 400px
 }
 
 .icon {
-  width: size('24');           // 24px (icône standard)
+  width: size('24'); // 24px (icône standard)
   height: size('24');
 }
 ```
 
 **Tokens disponibles** :
+
 ```scss
 // Tailles fixes
 size('24')   // 24px (icône small)
@@ -369,19 +391,20 @@ size('sidebar-width')    // 280px
 ```
 
 **Différence spacing() vs size()** :
+
 ```scss
 // ✅ CORRECT
 .card {
-  padding: spacing('4');   // Espacement interne → spacing()
-  width: size('400');      // Dimension → size()
-  gap: spacing('2');       // Espacement éléments → spacing()
+  padding: spacing('4'); // Espacement interne → spacing()
+  width: size('400'); // Dimension → size()
+  gap: spacing('2'); // Espacement éléments → spacing()
   min-height: size('200'); // Dimension → size()
 }
 
 // ❌ INTERDIT - Confusion spacing/size
 .card {
-  padding: size('4');      // FAUX (size pour dimensions)
-  width: spacing('400');   // FAUX (spacing pour espacement)
+  padding: size('4'); // FAUX (size pour dimensions)
+  width: spacing('400'); // FAUX (spacing pour espacement)
 }
 ```
 
@@ -392,15 +415,16 @@ size('sidebar-width')    // 280px
 ### Fonctions Typography
 
 **Usage** :
+
 ```scss
 .title {
-  font-size: font-size('2xl');       // 24px (1.5rem)
-  font-weight: font-weight('bold');  // 700
+  font-size: font-size('2xl'); // 24px (1.5rem)
+  font-weight: font-weight('bold'); // 700
   line-height: line-height('tight'); // 1.25
 }
 
 .body-text {
-  font-size: font-size('base');      // 16px (1rem)
+  font-size: font-size('base'); // 16px (1rem)
   font-weight: font-weight('normal'); // 400
   line-height: line-height('relaxed'); // 1.625
 }
@@ -409,6 +433,7 @@ size('sidebar-width')    // 280px
 ### Tokens font-size()
 
 **Échelle typographique** :
+
 ```scss
 font-size('xs')    // 12px (0.75rem)  - Très petit texte
 font-size('sm')    // 14px (0.875rem) - Petit texte
@@ -422,6 +447,7 @@ font-size('5xl')   // 48px (3rem)     - Hero title
 ```
 
 **Règles TSA-friendly** :
+
 - ✅ **Minimum 14px** pour texte corps (lisibilité enfants)
 - ✅ Échelle harmonieuse (ratio 1.125 - Major Second)
 - ✅ Pas de tailles < 12px (accessibilité)
@@ -443,9 +469,10 @@ font-weight('black')      // 900
 ```
 
 **Usage courant** :
+
 ```scss
 .title {
-  font-weight: font-weight('bold');  // 700 - Titres
+  font-weight: font-weight('bold'); // 700 - Titres
 }
 
 .body {
@@ -471,11 +498,13 @@ line-height('loose')    // 2      - Texte très aéré
 ```
 
 **Règles TSA-friendly** :
+
 - ✅ **Minimum 1.5** pour texte corps (lisibilité enfants)
 - ✅ Préférer `relaxed` (1.625) pour longs paragraphes
 - ✅ `tight` uniquement pour titres courts
 
 **Usage** :
+
 ```scss
 h1 {
   font-size: font-size('4xl');
@@ -495,21 +524,23 @@ p {
 ### Fonction radius()
 
 **Usage** :
+
 ```scss
 .card {
-  border-radius: radius('md');    // 8px (radius standard)
+  border-radius: radius('md'); // 8px (radius standard)
 }
 
 .button {
-  border-radius: radius('lg');    // 12px (boutons arrondis)
+  border-radius: radius('lg'); // 12px (boutons arrondis)
 }
 
 .avatar {
-  border-radius: radius('full');  // 9999px (cercle parfait)
+  border-radius: radius('full'); // 9999px (cercle parfait)
 }
 ```
 
 **Tokens disponibles** :
+
 ```scss
 radius('none')   // 0     - Aucun arrondi
 radius('sm')     // 4px   - Léger arrondi
@@ -521,6 +552,7 @@ radius('full')   // 9999px - Cercle/pilule parfait
 ```
 
 **Règles TSA-friendly** :
+
 - ✅ Préférer `md` (8px) pour cartes (doux, pas agressif)
 - ✅ Éviter `none` (coins pointus peuvent sembler agressifs)
 - ✅ `full` pour avatars circulaires
@@ -532,21 +564,23 @@ radius('full')   // 9999px - Cercle/pilule parfait
 ### Fonction shadow()
 
 **Usage** :
+
 ```scss
 .card {
-  box-shadow: shadow('md');    // Ombre moyenne
+  box-shadow: shadow('md'); // Ombre moyenne
 }
 
 .modal {
-  box-shadow: shadow('xl');    // Ombre forte (élévation)
+  box-shadow: shadow('xl'); // Ombre forte (élévation)
 }
 
 .button:hover {
-  box-shadow: shadow('lg');    // Ombre hover
+  box-shadow: shadow('lg'); // Ombre hover
 }
 ```
 
 **Tokens disponibles** :
+
 ```scss
 shadow('sm')   // 0 1px 2px rgba(0,0,0,0.05)  - Légère
 shadow('md')   // 0 4px 6px rgba(0,0,0,0.07)  - Moyenne (cartes)
@@ -557,6 +591,7 @@ shadow('none') // none - Aucune ombre
 ```
 
 **Règles TSA-friendly** :
+
 - ✅ Ombres **douces** (opacity faible 0.05-0.15)
 - ✅ Éviter ombres trop marquées (agressif visuellement)
 - ✅ `md` pour cartes standard (élévation subtile)
@@ -570,6 +605,7 @@ shadow('none') // none - Aucune ombre
 **CRITIQUE** : Utiliser `@include safe-transition()` pour animations TSA-friendly
 
 **Usage** :
+
 ```scss
 .button {
   @include safe-transition(transform background-color);
@@ -588,12 +624,14 @@ shadow('none') // none - Aucune ombre
 ```
 
 **Règles TSA-friendly** :
+
 - ✅ **Durée max 0.3s** (animations douces, pas brusques)
 - ✅ **Easing `ease`** uniquement (pas `linear`, `bounce`)
 - ✅ **Propriétés spécifiques** (pas `all`)
 - ✅ **Respecte `prefers-reduced-motion`** automatiquement
 
 **Antipattern** :
+
 ```scss
 // ❌ INTERDIT - Animation trop rapide
 .button {
@@ -616,14 +654,16 @@ shadow('none') // none - Aucune ombre
 ### Fonctions Timing & Easing
 
 **Usage** :
+
 ```scss
 .element {
-  transition-duration: timing('fast');    // 0.15s
+  transition-duration: timing('fast'); // 0.15s
   transition-timing-function: easing('smooth'); // ease-in-out
 }
 ```
 
 **Tokens timing()** :
+
 ```scss
 timing('instant')  // 0s    - Instantané
 timing('fast')     // 0.15s - Rapide
@@ -632,6 +672,7 @@ timing('slow')     // 0.5s  - Lent (éviter)
 ```
 
 **Tokens easing()** :
+
 ```scss
 easing('linear')      // linear (éviter)
 easing('ease')        // ease (défaut TSA-friendly)
@@ -642,6 +683,7 @@ easing('smooth')      // cubic-bezier(0.4, 0, 0.2, 1)
 ```
 
 **Règles** :
+
 - ✅ **Max 0.3s** pour toutes animations (TSA)
 - ✅ `ease` ou `ease-in-out` uniquement
 - ❌ **Jamais** `linear`, `bounce`, `elastic`
@@ -651,10 +693,15 @@ easing('smooth')      // cubic-bezier(0.4, 0, 0.2, 1)
 ### Mixin safe-animation()
 
 **Usage** :
+
 ```scss
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
@@ -670,6 +717,7 @@ easing('smooth')      // cubic-bezier(0.4, 0, 0.2, 1)
 ### Mixin respond-to()
 
 **Usage** :
+
 ```scss
 .card {
   padding: spacing('4');
@@ -685,6 +733,7 @@ easing('smooth')      // cubic-bezier(0.4, 0, 0.2, 1)
 ```
 
 **Breakpoints disponibles** :
+
 ```scss
 respond-to('mobile')      // 0-767px     (smartphones)
 respond-to('tablet')      // 768px+      (tablettes)
@@ -694,10 +743,11 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ```
 
 **Mobile-First OBLIGATOIRE** :
+
 ```scss
 // ✅ CORRECT - Mobile-first (défaut = mobile)
 .card {
-  padding: spacing('2');  // Mobile (défaut)
+  padding: spacing('2'); // Mobile (défaut)
 
   @include respond-to('tablet') {
     padding: spacing('4'); // Tablette et +
@@ -721,6 +771,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ### @include focus-visible
 
 **Usage** :
+
 ```scss
 .button {
   &:focus-visible {
@@ -734,6 +785,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ```
 
 **Règles** :
+
 - ✅ **TOUJOURS** ajouter focus visible (navigation clavier)
 - ✅ Outline min 2px (WCAG 2.4.7)
 - ✅ Offset 2px (séparation claire)
@@ -743,6 +795,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ### @include touch-target
 
 **Usage** :
+
 ```scss
 .button {
   @include touch-target; // Min 44×44px (TSA)
@@ -754,6 +807,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ```
 
 **Règles WCAG 2.5.5** :
+
 - ✅ **Min 44×44px** tous éléments interactifs (TSA)
 - ✅ Espacement 8px entre cibles adjacentes
 
@@ -762,6 +816,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ### @include visually-hidden
 
 **Usage** :
+
 ```scss
 .sr-only {
   @include visually-hidden; // Caché visuellement, lecteur écran OK
@@ -776,6 +831,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ```
 
 **Usage ARIA** :
+
 ```html
 <button aria-label="Supprimer">
   <TrashIcon aria-hidden="true" />
@@ -790,6 +846,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ### Fonction border-width()
 
 **Usage** :
+
 ```scss
 .card {
   border: border-width('thin') solid surface('border');
@@ -801,6 +858,7 @@ respond-to('ultrawide')   // 1920px+     (ultra-larges)
 ```
 
 **Tokens disponibles** :
+
 ```scss
 border-width('none')   // 0
 border-width('thin')   // 1px (bordure légère)
@@ -819,9 +877,9 @@ border-width('thick')  // 4px (bordure emphase)
 .card {
   margin: 16px;
   padding: 12px 20px;
-  background: #FFB3BA;
+  background: #ffb3ba;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 14px;
 }
 
@@ -838,7 +896,7 @@ border-width('thick')  // 4px (bordure emphase)
 
 ---
 
-### ❌ var(--*) Direct
+### ❌ var(--\*) Direct
 
 ```scss
 // ❌ INTERDIT - Accès direct CSS variables
@@ -863,19 +921,19 @@ border-width('thick')  // 4px (bordure emphase)
 ```scss
 // ❌ INTERDIT - lighten/darken
 .button {
-  background: lighten(#FFB3BA, 10%);
-  border-color: darken(#FFB3BA, 20%);
+  background: lighten(#ffb3ba, 10%);
+  border-color: darken(#ffb3ba, 20%);
 }
 
 // ❌ INTERDIT - color.adjust
 @use 'sass:color';
 .button {
-  background: color.adjust(#FFB3BA, $lightness: 10%);
+  background: color.adjust(#ffb3ba, $lightness: 10%);
 }
 
 // ✅ CORRECT - Tokens variants
 .button {
-  background: color('primary');        // Base
+  background: color('primary'); // Base
   border-color: color('primary', 'dark'); // Dark variant
 }
 ```
@@ -889,14 +947,14 @@ border-width('thick')  // 4px (bordure emphase)
 ```scss
 // ❌ INTERDIT
 .card {
-  padding: size('4');      // FAUX (size pour dimensions)
-  width: spacing('400');   // FAUX (spacing pour espacement)
+  padding: size('4'); // FAUX (size pour dimensions)
+  width: spacing('400'); // FAUX (spacing pour espacement)
 }
 
 // ✅ CORRECT
 .card {
-  padding: spacing('4');   // Espacement interne
-  width: size('400');      // Dimension
+  padding: spacing('4'); // Espacement interne
+  width: size('400'); // Dimension
 }
 ```
 
@@ -912,9 +970,15 @@ border-width('thick')  // 4px (bordure emphase)
 
 // ❌ INTERDIT - Animations brusques
 @keyframes bounce {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .element {
@@ -952,12 +1016,14 @@ pnpm verify:css  # lint:hardcoded + validate:touch-targets + build:css
 **Localisation** : `scripts/check-hardcoded.js`
 
 **Détecte** :
+
 - ✅ `16px`, `2rem` (spacing hardcodes)
 - ✅ `#FFB3BA`, `rgb(255, 179, 186)` (couleurs hardcodes)
 - ✅ `rgba(0,0,0,0.1)` (shadows hardcodes)
 - ✅ Exceptions autorisées : `0`, `1px`, `100%`, `auto`, `inherit`
 
 **Usage** :
+
 ```bash
 pnpm lint:hardcoded
 
@@ -973,11 +1039,13 @@ pnpm lint:hardcoded
 **Localisation** : `scripts/check-touch-targets.js`
 
 **Détecte** :
+
 - ✅ Éléments interactifs < 44×44px
 - ✅ Boutons, liens, inputs trop petits
 - ✅ Violations WCAG 2.5.5
 
 **Usage** :
+
 ```bash
 pnpm validate:touch-targets
 
@@ -1063,36 +1131,36 @@ pnpm type-check            # Vérifier TypeScript
 
 ## 📖 Résumé Fonctions Tokens
 
-| Fonction | Usage | Exemple |
-|----------|-------|---------|
-| `color()` | Couleurs principales | `color('primary')` |
-| `text()` | Couleurs texte (Phase 6) | `text('primary')` |
-| `surface()` | Couleurs fonds (Phase 6) | `surface('card')` |
-| `semantic()` | Couleurs feedback (Phase 6) | `semantic('success')` |
-| `role-color()` | Couleurs rôles | `role-color('admin')` |
-| `spacing()` | Margin/padding/gap | `spacing('4')` |
-| `size()` | Width/height/min-max | `size('44')` |
-| `font-size()` | Taille texte | `font-size('lg')` |
-| `font-weight()` | Épaisseur texte | `font-weight('bold')` |
-| `line-height()` | Hauteur ligne | `line-height('relaxed')` |
-| `radius()` | Border-radius | `radius('md')` |
-| `shadow()` | Box-shadow | `shadow('md')` |
-| `border-width()` | Épaisseur bordure | `border-width('thin')` |
-| `timing()` | Durée animation | `timing('normal')` |
-| `easing()` | Easing animation | `easing('ease')` |
+| Fonction         | Usage                       | Exemple                  |
+| ---------------- | --------------------------- | ------------------------ |
+| `color()`        | Couleurs principales        | `color('primary')`       |
+| `text()`         | Couleurs texte (Phase 6)    | `text('primary')`        |
+| `surface()`      | Couleurs fonds (Phase 6)    | `surface('card')`        |
+| `semantic()`     | Couleurs feedback (Phase 6) | `semantic('success')`    |
+| `role-color()`   | Couleurs rôles              | `role-color('admin')`    |
+| `spacing()`      | Margin/padding/gap          | `spacing('4')`           |
+| `size()`         | Width/height/min-max        | `size('44')`             |
+| `font-size()`    | Taille texte                | `font-size('lg')`        |
+| `font-weight()`  | Épaisseur texte             | `font-weight('bold')`    |
+| `line-height()`  | Hauteur ligne               | `line-height('relaxed')` |
+| `radius()`       | Border-radius               | `radius('md')`           |
+| `shadow()`       | Box-shadow                  | `shadow('md')`           |
+| `border-width()` | Épaisseur bordure           | `border-width('thin')`   |
+| `timing()`       | Durée animation             | `timing('normal')`       |
+| `easing()`       | Easing animation            | `easing('ease')`         |
 
 ---
 
 ## 🔗 Mixins Principaux
 
-| Mixin | Usage | Description |
-|-------|-------|-------------|
-| `@include safe-transition()` | Animations TSA | Max 0.3s, respecte prefers-reduced-motion |
-| `@include focus-visible` | Focus clavier | Outline 2px accessible |
-| `@include touch-target` | Cibles tactiles | Min 44×44px (TSA) |
-| `@include visually-hidden` | Lecteur écran | Caché visuellement, lecteur OK |
-| `@include respond-to()` | Responsive | Media queries mobile-first |
-| `@include card-style` | Pattern carte | Styles cartes standard |
+| Mixin                        | Usage           | Description                               |
+| ---------------------------- | --------------- | ----------------------------------------- |
+| `@include safe-transition()` | Animations TSA  | Max 0.3s, respecte prefers-reduced-motion |
+| `@include focus-visible`     | Focus clavier   | Outline 2px accessible                    |
+| `@include touch-target`      | Cibles tactiles | Min 44×44px (TSA)                         |
+| `@include visually-hidden`   | Lecteur écran   | Caché visuellement, lecteur OK            |
+| `@include respond-to()`      | Responsive      | Media queries mobile-first                |
+| `@include card-style`        | Pattern carte   | Styles cartes standard                    |
 
 ---
 

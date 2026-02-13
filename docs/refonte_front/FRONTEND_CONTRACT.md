@@ -48,19 +48,19 @@ Le frontend DOIT :
 
 Les migrations dans `supabase/migrations/` suivent un ordre strict. Les phases clés :
 
-| Phase | Contenu | Migrations |
-|-------|---------|------------|
-| 1 | Enums + accounts + devices | 1-2 |
-| 2 | Child profiles + auto "Mon enfant" | 3-5 |
-| 3 | Cards + categories + pivot | 6-8 |
-| 4 | Timelines + slots | 9 |
-| 5 | Sessions + validations + snapshot + epoch | 10-13.5 |
-| 6 | Sequences + steps | 14-15 |
-| 7 | RLS (20 policies) + execution-only + admin support | 16-22 |
-| 8 | Storage policies (7 policies) | 23-24 |
-| 9 | Quotas + downgrade lock | 25-30 |
-| 10 | Final hardening | 31+ |
-| P1-P4 | Platform (billing, RGPD, preferences, audit) | Platform migrations |
+| Phase | Contenu                                            | Migrations          |
+| ----- | -------------------------------------------------- | ------------------- |
+| 1     | Enums + accounts + devices                         | 1-2                 |
+| 2     | Child profiles + auto "Mon enfant"                 | 3-5                 |
+| 3     | Cards + categories + pivot                         | 6-8                 |
+| 4     | Timelines + slots                                  | 9                   |
+| 5     | Sessions + validations + snapshot + epoch          | 10-13.5             |
+| 6     | Sequences + steps                                  | 14-15               |
+| 7     | RLS (20 policies) + execution-only + admin support | 16-22               |
+| 8     | Storage policies (7 policies)                      | 23-24               |
+| 9     | Quotas + downgrade lock                            | 25-30               |
+| 10    | Final hardening                                    | 31+                 |
+| P1-P4 | Platform (billing, RGPD, preferences, audit)       | Platform migrations |
 
 ---
 
@@ -96,34 +96,34 @@ Le frontend DOIT respecter la matrice **fermée** de `SYNC_CONTRACT.md` :
 
 **DB-authoritative (source de vérité cloud)** :
 
-| Donnée | Table(s) DB | Mécanisme sync |
-|--------|-------------|----------------|
-| Structure timeline (slots, positions, cartes) | `timelines`, `slots` | Cloud → local au Chargement Contexte Tableau |
-| État session (state, epoch, timestamps) | `sessions` | Cloud-authoritative ; local = cache |
-| Validations (ensemble slot_id) | `session_validations` | Union ensembliste, UNIQUE (session_id, slot_id) |
-| Snapshot progression | `sessions.steps_total_snapshot` | Fixé à 1ère validation, immuable ensuite |
-| Cartes (bank + personal) | `cards` | Cloud-authoritative |
-| Catégories + pivot | `categories`, `user_card_categories` | Cloud-authoritative |
-| Profils enfants (name, status) | `child_profiles` | Cloud-authoritative |
-| Séquences + étapes | `sequences`, `sequence_steps` | Cloud-authoritative |
-| Quotas mensuels | `account_quota_months` | Cloud-authoritative |
-| Comptes + devices | `accounts`, `devices` | Cloud-authoritative |
-| Préférences utilisateur | `account_preferences` | Cloud-authoritative (DB-first, pas localStorage) |
+| Donnée                                        | Table(s) DB                          | Mécanisme sync                                   |
+| --------------------------------------------- | ------------------------------------ | ------------------------------------------------ |
+| Structure timeline (slots, positions, cartes) | `timelines`, `slots`                 | Cloud → local au Chargement Contexte Tableau     |
+| État session (state, epoch, timestamps)       | `sessions`                           | Cloud-authoritative ; local = cache              |
+| Validations (ensemble slot_id)                | `session_validations`                | Union ensembliste, UNIQUE (session_id, slot_id)  |
+| Snapshot progression                          | `sessions.steps_total_snapshot`      | Fixé à 1ère validation, immuable ensuite         |
+| Cartes (bank + personal)                      | `cards`                              | Cloud-authoritative                              |
+| Catégories + pivot                            | `categories`, `user_card_categories` | Cloud-authoritative                              |
+| Profils enfants (name, status)                | `child_profiles`                     | Cloud-authoritative                              |
+| Séquences + étapes                            | `sequences`, `sequence_steps`        | Cloud-authoritative                              |
+| Quotas mensuels                               | `account_quota_months`               | Cloud-authoritative                              |
+| Comptes + devices                             | `accounts`, `devices`                | Cloud-authoritative                              |
+| Préférences utilisateur                       | `account_preferences`                | Cloud-authoritative (DB-first, pas localStorage) |
 
 **Local-only (INTERDIT en DB)** :
 
-| Donnée | Raison |
-|--------|--------|
-| État réseau (online/offline) | Observable uniquement côté client |
-| Queue de synchronisation offline | Logique applicative (retry, ordering) |
-| Indicateurs UI anti-choc (bannière "mise à jour disponible") | UX pure, aucun état DB |
-| Cache local des timelines/cartes/slots | Cache = copie temporaire de données DB-authoritative |
-| État "fait" des étapes de séquence | Visuel, local-only, non sync, reset chaque session |
-| Données Visitor (avant signup) | Local-only jusqu'à import explicite |
-| Focus courant (quelle étape est "active" visuellement) | État UI éphémère |
-| État d'animation / transition visuelle | UX TSA, aucun état persistant |
-| Préférences TimeTimer | Device-only (localStorage), non synchronisées |
-| Profil enfant actif sélectionné | État UI local (pas de colonne DB "active_child") |
+| Donnée                                                       | Raison                                               |
+| ------------------------------------------------------------ | ---------------------------------------------------- |
+| État réseau (online/offline)                                 | Observable uniquement côté client                    |
+| Queue de synchronisation offline                             | Logique applicative (retry, ordering)                |
+| Indicateurs UI anti-choc (bannière "mise à jour disponible") | UX pure, aucun état DB                               |
+| Cache local des timelines/cartes/slots                       | Cache = copie temporaire de données DB-authoritative |
+| État "fait" des étapes de séquence                           | Visuel, local-only, non sync, reset chaque session   |
+| Données Visitor (avant signup)                               | Local-only jusqu'à import explicite                  |
+| Focus courant (quelle étape est "active" visuellement)       | État UI éphémère                                     |
+| État d'animation / transition visuelle                       | UX TSA, aucun état persistant                        |
+| Préférences TimeTimer                                        | Device-only (localStorage), non synchronisées        |
+| Profil enfant actif sélectionné                              | État UI local (pas de colonne DB "active_child")     |
 
 **Règle de fermeture** : tout nouveau besoin de persistance/sync NON listé = **INTERDIT** tant qu'il n'est pas formalisé dans les sources.
 
@@ -159,16 +159,16 @@ Le frontend DOIT :
 
 ### 2.1 Matrice des écrans (public vs protégé)
 
-| Écran / route fonctionnelle | Public / Protégé | Statuts autorisés | Contexte | Si non autorisé |
-|---|---|---|---|---|
-| Entrée "Visitor / Découverte" | Public | Visitor | Édition (adulte) | — |
-| Auth (signup / login) | Public | Visitor | Édition | — |
-| **Page Tableau** | Protégé "enfant" | Visitor / Free / Subscriber / Admin | Tableau | Rediriger vers Édition (écran neutre) |
-| **Page Édition** (composer timelines) | Protégé "adulte" | Visitor / Free / Subscriber / Admin | Édition | Rediriger vers Tableau ou écran neutre |
-| Bibliothèque cartes (banque + perso si Subscriber) | Protégé "adulte" | Visitor / Free / Subscriber / Admin* | Édition | Désactiver actions non permises (voir §3) |
-| Mode Séquençage (édition d'une séquence) | Protégé "adulte" | Visitor (local) / Free (lecture) / Subscriber / Admin | Édition | PersonalizationModal pour Free sans séquences |
-| **Page Profil / Paramètres compte** | Protégé "adulte" | Free / Subscriber / Admin | Édition | Visitor : interdit (rediriger / proposer création compte) |
-| **Page Administration** | Protégé "owner" | Admin | Administration | 404/écran neutre (pas d'indice d'existence) |
+| Écran / route fonctionnelle                        | Public / Protégé | Statuts autorisés                                     | Contexte         | Si non autorisé                                           |
+| -------------------------------------------------- | ---------------- | ----------------------------------------------------- | ---------------- | --------------------------------------------------------- |
+| Entrée "Visitor / Découverte"                      | Public           | Visitor                                               | Édition (adulte) | —                                                         |
+| Auth (signup / login)                              | Public           | Visitor                                               | Édition          | —                                                         |
+| **Page Tableau**                                   | Protégé "enfant" | Visitor / Free / Subscriber / Admin                   | Tableau          | Rediriger vers Édition (écran neutre)                     |
+| **Page Édition** (composer timelines)              | Protégé "adulte" | Visitor / Free / Subscriber / Admin                   | Édition          | Rediriger vers Tableau ou écran neutre                    |
+| Bibliothèque cartes (banque + perso si Subscriber) | Protégé "adulte" | Visitor / Free / Subscriber / Admin\*                 | Édition          | Désactiver actions non permises (voir §3)                 |
+| Mode Séquençage (édition d'une séquence)           | Protégé "adulte" | Visitor (local) / Free (lecture) / Subscriber / Admin | Édition          | PersonalizationModal pour Free sans séquences             |
+| **Page Profil / Paramètres compte**                | Protégé "adulte" | Free / Subscriber / Admin                             | Édition          | Visitor : interdit (rediriger / proposer création compte) |
+| **Page Administration**                            | Protégé "owner"  | Admin                                                 | Administration   | 404/écran neutre (pas d'indice d'existence)               |
 
 \* Visitor/Free peuvent consulter la banque ; la création perso/catégories est interdite (voir §3).
 
@@ -190,11 +190,11 @@ Quand il existe plusieurs profils enfants pour un compte, un **profil enfant act
 
 **Changement d'enfant actif** :
 
-| Ce qui change | Ce qui NE change PAS |
-|--------------|---------------------|
+| Ce qui change       | Ce qui NE change PAS                         |
+| ------------------- | -------------------------------------------- |
 | Timelines affichées | Cartes visibles (partagées au niveau compte) |
-| Sessions actives | Catégories (partagées au niveau compte) |
-| Progression | Préférences compte |
+| Sessions actives    | Catégories (partagées au niveau compte)      |
+| Progression         | Préférences compte                           |
 
 - Le sélecteur est un **filtre de contexte**, pas un changement d'univers ou de données.
 - Le profil enfant actif est un **état UI local** (pas de colonne DB `active_child`).
@@ -215,16 +215,16 @@ Conventions :
 
 ### 3.1 Contexte Tableau (enfant) — actions
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | Règle UX |
-|---|---|---|---|---|---|---|
-| Exécuter une timeline existante | ✅ | ✅ | ✅ | ✅ | DB-authoritative (auth) / Local-only (Visitor) | Tableau neutre, stable |
-| Créer session (si aucune active) à l'entrée Tableau | ✅ (local) | ✅ | ✅ | ✅ | DB (unicité session active) / Local-only | Invisible enfant |
-| Valider une étape (checkbox) | ✅ | ✅ | ✅ | ✅ | DB (RLS + UNIQUE validations) / Local-only | Aucun message technique |
-| Progression multi‑appareils (union) | N/A | ✅ | ✅ | ✅ | DB + SYNC_CONTRACT | Jamais de régression "en direct" |
-| Collecte jetons (si activé) | ✅ | ✅ | ✅ | ✅ | Dérivé des validations + slots | Respect reduced_motion |
-| Récompense conditionnelle (si jetons + reward) | ✅ | ✅ | ✅ | ✅ | Dérivé état session | Aucun échec / aucun négatif |
-| Voir mini‑timeline de séquence (si présente) | ✅ | ✅ | ✅ | ✅ | DB (séquence) + local "fait" | "fait" = visuel local-only |
-| Modifier structure (slots, cartes, jetons, séquence) | ❌ | ❌ | ❌ | ❌ | UX (interdit en contexte Tableau) | NE DOIT JAMAIS exister |
+| Action                                               | Visitor    | Free | Subscriber | Admin | Enforcement                                    | Règle UX                         |
+| ---------------------------------------------------- | ---------- | ---- | ---------- | ----- | ---------------------------------------------- | -------------------------------- |
+| Exécuter une timeline existante                      | ✅         | ✅   | ✅         | ✅    | DB-authoritative (auth) / Local-only (Visitor) | Tableau neutre, stable           |
+| Créer session (si aucune active) à l'entrée Tableau  | ✅ (local) | ✅   | ✅         | ✅    | DB (unicité session active) / Local-only       | Invisible enfant                 |
+| Valider une étape (checkbox)                         | ✅         | ✅   | ✅         | ✅    | DB (RLS + UNIQUE validations) / Local-only     | Aucun message technique          |
+| Progression multi‑appareils (union)                  | N/A        | ✅   | ✅         | ✅    | DB + SYNC_CONTRACT                             | Jamais de régression "en direct" |
+| Collecte jetons (si activé)                          | ✅         | ✅   | ✅         | ✅    | Dérivé des validations + slots                 | Respect reduced_motion           |
+| Récompense conditionnelle (si jetons + reward)       | ✅         | ✅   | ✅         | ✅    | Dérivé état session                            | Aucun échec / aucun négatif      |
+| Voir mini‑timeline de séquence (si présente)         | ✅         | ✅   | ✅         | ✅    | DB (séquence) + local "fait"                   | "fait" = visuel local-only       |
+| Modifier structure (slots, cartes, jetons, séquence) | ❌         | ❌   | ❌         | ❌    | UX (interdit en contexte Tableau)              | NE DOIT JAMAIS exister           |
 
 #### 3.1.1 Slots vides — Invisibilité Tableau (INVARIANT TSA)
 
@@ -268,14 +268,14 @@ Quand une session passe à **Terminée** (toutes étapes validées = `steps_tota
 
 #### 3.2.1 Planning visuel (timelines / slots)
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | Offline (auth) |
-|---|---|---|---|---|---|---|
-| Créer / éditer timeline | ✅ (local) | ✅ | ✅ | ✅ | DB (auth) / Local-only | **Interdit offline** (guard UX) |
-| Ajouter/supprimer/réordonner slots | ✅ (local) | ✅ | ✅ | ✅ | DB / Local-only | **Interdit offline** (guard UX) |
-| Assigner/retirer une carte à un slot | ✅ (local) | ✅ | ✅ | ✅ | DB / Local-only | **Interdit offline** (guard UX) |
-| Modifier jetons d'un slot Étape (0..5) | ✅ (local) | ✅ | ✅ | ✅ | DB (CHECK 0..5, kind=step) / Local-only | **Interdit offline** (guard UX) |
-| Vider la timeline | ✅ (local) | ✅ | ✅ | ✅ | DB / Local-only | **Interdit offline** (guard UX) |
-| Nombre de timelines | ∞ tous statuts | ∞ | ∞ | ∞ | Intentionnel (pas de limite) | — |
+| Action                                 | Visitor        | Free | Subscriber | Admin | Enforcement                             | Offline (auth)                  |
+| -------------------------------------- | -------------- | ---- | ---------- | ----- | --------------------------------------- | ------------------------------- |
+| Créer / éditer timeline                | ✅ (local)     | ✅   | ✅         | ✅    | DB (auth) / Local-only                  | **Interdit offline** (guard UX) |
+| Ajouter/supprimer/réordonner slots     | ✅ (local)     | ✅   | ✅         | ✅    | DB / Local-only                         | **Interdit offline** (guard UX) |
+| Assigner/retirer une carte à un slot   | ✅ (local)     | ✅   | ✅         | ✅    | DB / Local-only                         | **Interdit offline** (guard UX) |
+| Modifier jetons d'un slot Étape (0..5) | ✅ (local)     | ✅   | ✅         | ✅    | DB (CHECK 0..5, kind=step) / Local-only | **Interdit offline** (guard UX) |
+| Vider la timeline                      | ✅ (local)     | ✅   | ✅         | ✅    | DB / Local-only                         | **Interdit offline** (guard UX) |
+| Nombre de timelines                    | ∞ tous statuts | ∞    | ∞          | ∞     | Intentionnel (pas de limite)            | —                               |
 
 **Vider la timeline** (action distincte de « Réinitialisation de session ») :
 
@@ -297,10 +297,10 @@ Quand une session passe à **Terminée** (toutes étapes validées = `steps_tota
 
 #### 3.2.2 Sessions (réinitialisation) & anti‑choc
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | Contrainte TSA |
-|---|---|---|---|---|---|---|
-| Réinitialisation de session (epoch++) | ✅ (local) | ✅* | ✅ | ✅ | DB (epoch monotone) / Local-only | S'applique au **prochain Chargement Tableau** |
-| Appliquer changements structurants "en direct" sur Tableau | ❌ | ❌ | ❌ | ❌ | Interdit (anti‑choc) | NE DOIT JAMAIS arriver |
+| Action                                                     | Visitor    | Free | Subscriber | Admin | Enforcement                      | Contrainte TSA                                |
+| ---------------------------------------------------------- | ---------- | ---- | ---------- | ----- | -------------------------------- | --------------------------------------------- |
+| Réinitialisation de session (epoch++)                      | ✅ (local) | ✅\* | ✅         | ✅    | DB (epoch monotone) / Local-only | S'applique au **prochain Chargement Tableau** |
+| Appliquer changements structurants "en direct" sur Tableau | ❌         | ❌   | ❌         | ❌    | Interdit (anti‑choc)             | NE DOIT JAMAIS arriver                        |
 
 \* **Free en mode execution-only** : la DB refuse les écritures structurelles. Le frontend DOIT traiter ce refus et afficher l'état "lecture seule / exécution uniquement" en Édition. Condition : `accounts.status = 'free'` ET le compte possède plus de profils enfants que la limite free (détecté par `is_execution_only()` côté DB).
 
@@ -314,21 +314,21 @@ Timeline entièrement éditable (toutes actions autorisées).
 
 **b) Session Active (Prévisualisation — 0 validation)** :
 
-| Élément | Autorisé ? |
-|---------|-----------|
-| Modifier cartes dans slots | ✅ |
-| Modifier ordre slots | ✅ |
-| Ajouter/supprimer slots | ✅ (sauf dernier Step) |
-| Modifier jetons | ✅ |
+| Élément                    | Autorisé ?             |
+| -------------------------- | ---------------------- |
+| Modifier cartes dans slots | ✅                     |
+| Modifier ordre slots       | ✅                     |
+| Ajouter/supprimer slots    | ✅ (sauf dernier Step) |
+| Modifier jetons            | ✅                     |
 
 **c) Session Active (Démarrée — ≥1 validation)** :
 
-| Élément | Slot validé | Slot non validé |
-|---------|------------|-----------------|
-| Déplacer | ❌ | ✅ |
-| Supprimer | ❌ | ✅ (sauf dernier Step) |
-| Modifier jetons | ❌ | ❌* |
-| Vider (retirer carte) | ❌ | ✅ |
+| Élément               | Slot validé | Slot non validé        |
+| --------------------- | ----------- | ---------------------- |
+| Déplacer              | ❌          | ✅                     |
+| Supprimer             | ❌          | ✅ (sauf dernier Step) |
+| Modifier jetons       | ❌          | ❌\*                   |
+| Vider (retirer carte) | ❌          | ✅                     |
 
 \* Exception : peut ajouter un **nouveau** slot avec jetons au moment de l'ajout.
 
@@ -343,17 +343,17 @@ Timeline entièrement éditable (toutes actions autorisées).
 
 #### 3.2.3 Cartes personnelles & catégories (gating + quotas)
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | UX (Édition uniquement) |
-|---|---|---|---|---|---|---|
-| Lire banque de cartes (published) | ✅ | ✅ | ✅ | ✅ | RLS (read) | Images via bucket `bank-images` (public/auth) |
-| Créer carte personnelle | ❌ | ❌ | ✅ | ✅ | DB (feature gating + quotas) | Messages explicites (pas Tableau) |
-| Supprimer carte personnelle | ❌ | ❌ | ✅ | ✅ | DB + cascades | Confirmation si utilisée — voir §3.2.2bis. Libère quota stock immédiatement. |
-| CRUD catégories | ❌ | ❌ | ✅ | ✅ | DB (feature gating) | Édition only |
-| Supprimer catégorie custom | ❌ | ❌ | ✅ | ✅ | DB (trigger remap) | Cartes réassignées à "Sans catégorie" automatiquement par DB |
-| Supprimer catégorie "Sans catégorie" (is_system) | ❌ | ❌ | ❌ | ❌ | DB (RLS + is_system check) | Bouton invisible ou désactivé |
-| Assigner catégorie via pivot | ❌ | ❌ | ✅ | ✅ | DB (pivot) | Édition only |
-| Utiliser carte banque dépubliée dans usages existants | ✅ | ✅ | ✅ | ✅ | DB autorise références existantes | Dépublication bloque "nouveaux usages" uniquement |
-| Décocher carte dans bibliothèque (édition timeline) | ✅ (local) | ✅ | ✅ | ✅ | Front (pas contrainte DB) | Voir règle ci-dessous |
+| Action                                                | Visitor    | Free | Subscriber | Admin | Enforcement                       | UX (Édition uniquement)                                                      |
+| ----------------------------------------------------- | ---------- | ---- | ---------- | ----- | --------------------------------- | ---------------------------------------------------------------------------- |
+| Lire banque de cartes (published)                     | ✅         | ✅   | ✅         | ✅    | RLS (read)                        | Images via bucket `bank-images` (public/auth)                                |
+| Créer carte personnelle                               | ❌         | ❌   | ✅         | ✅    | DB (feature gating + quotas)      | Messages explicites (pas Tableau)                                            |
+| Supprimer carte personnelle                           | ❌         | ❌   | ✅         | ✅    | DB + cascades                     | Confirmation si utilisée — voir §3.2.2bis. Libère quota stock immédiatement. |
+| CRUD catégories                                       | ❌         | ❌   | ✅         | ✅    | DB (feature gating)               | Édition only                                                                 |
+| Supprimer catégorie custom                            | ❌         | ❌   | ✅         | ✅    | DB (trigger remap)                | Cartes réassignées à "Sans catégorie" automatiquement par DB                 |
+| Supprimer catégorie "Sans catégorie" (is_system)      | ❌         | ❌   | ❌         | ❌    | DB (RLS + is_system check)        | Bouton invisible ou désactivé                                                |
+| Assigner catégorie via pivot                          | ❌         | ❌   | ✅         | ✅    | DB (pivot)                        | Édition only                                                                 |
+| Utiliser carte banque dépubliée dans usages existants | ✅         | ✅   | ✅         | ✅    | DB autorise références existantes | Dépublication bloque "nouveaux usages" uniquement                            |
+| Décocher carte dans bibliothèque (édition timeline)   | ✅ (local) | ✅   | ✅         | ✅    | Front (pas contrainte DB)         | Voir règle ci-dessous                                                        |
 
 **Décocher une carte dans la bibliothèque** :
 
@@ -364,23 +364,23 @@ Timeline entièrement éditable (toutes actions autorisées).
 
 **Quotas cartes personnelles (Subscriber)** :
 
-| Quota | Valeur | Mécanisme DB |
-|-------|--------|-------------|
-| Stock max total | 50 | Trigger BEFORE INSERT `check_can_create_personal_card` |
-| Mensuel max (créations/mois) | 100 | Même trigger + `account_quota_months` (timezone figée par mois) |
-| Modifier carte existante | Ne consomme PAS de quota | — |
-| Supprimer puis recréer | Consomme quota mensuel | — |
+| Quota                        | Valeur                   | Mécanisme DB                                                    |
+| ---------------------------- | ------------------------ | --------------------------------------------------------------- |
+| Stock max total              | 50                       | Trigger BEFORE INSERT `check_can_create_personal_card`          |
+| Mensuel max (créations/mois) | 100                      | Même trigger + `account_quota_months` (timezone figée par mois) |
+| Modifier carte existante     | Ne consomme PAS de quota | —                                                               |
+| Supprimer puis recréer       | Consomme quota mensuel   | —                                                               |
 
 **Anti-abus timezone** : la DB verrouille une "timezone de référence" par mois de quota (`account_quota_months.tz_ref`). Un changement de timezone en cours de mois n'affecte jamais le quota du mois courant. Le front NE DOIT PAS tenter de contourner cette règle.
 
 #### 3.2.4 Profils enfants & appareils
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | UX |
-|---|---|---|---|---|---|---|
-| Créer profil enfant | ❌ (1 local implicite) | ✅ (≤1) | ✅ (≤3) | ✅ (∞) | DB (trigger quota) | Message : « Nombre maximum de profils enfants atteint. » |
-| Supprimer profil enfant | N/A | ✅ (si >1 profil) | ✅ (si >1 profil) | ✅ (si >1 profil) | DB (trigger min 1 profil) | Voir §8.6 — modal confirmation irréversible, adulte-only |
-| Enregistrer un device | N/A (mono‑appareil) | ✅ (≤1) | ✅ (≤3) | ✅ (∞) | DB (trigger quota actifs `revoked_at IS NULL`) | Message : « Nombre maximum d'appareils atteint. » |
-| Révoquer un device | N/A | ✅ | ✅ | ✅ | DB (UPDATE `revoked_at`, pas de DELETE) | Non-destructif — données conservées |
+| Action                  | Visitor                | Free              | Subscriber        | Admin             | Enforcement                                    | UX                                                       |
+| ----------------------- | ---------------------- | ----------------- | ----------------- | ----------------- | ---------------------------------------------- | -------------------------------------------------------- |
+| Créer profil enfant     | ❌ (1 local implicite) | ✅ (≤1)           | ✅ (≤3)           | ✅ (∞)            | DB (trigger quota)                             | Message : « Nombre maximum de profils enfants atteint. » |
+| Supprimer profil enfant | N/A                    | ✅ (si >1 profil) | ✅ (si >1 profil) | ✅ (si >1 profil) | DB (trigger min 1 profil)                      | Voir §8.6 — modal confirmation irréversible, adulte-only |
+| Enregistrer un device   | N/A (mono‑appareil)    | ✅ (≤1)           | ✅ (≤3)           | ✅ (∞)            | DB (trigger quota actifs `revoked_at IS NULL`) | Message : « Nombre maximum d'appareils atteint. »        |
+| Révoquer un device      | N/A                    | ✅                | ✅                | ✅                | DB (UPDATE `revoked_at`, pas de DELETE)        | Non-destructif — données conservées                      |
 
 **Profil auto "Mon enfant"** : à la création de compte, un trigger DB crée automatiquement un profil enfant nommé "Mon enfant". Le front NE DOIT PAS créer ce profil manuellement — il apparaît automatiquement après signup.
 
@@ -388,26 +388,26 @@ Timeline entièrement éditable (toutes actions autorisées).
 
 #### 3.2.5 Séquençage
 
-| Action | Visitor | Free | Subscriber | Admin | Enforcement | Points critiques |
-|---|---|---|---|---|---|---|
-| Créer/éditer une séquence (≥2 étapes, sans doublons) | ✅ (local) | ❌ | ✅ | ✅ | DB (contraintes) / Local-only (Visitor) | UI DEVRAIT anticiper (minimum 2, no duplicates) |
-| Afficher mini‑timeline Tableau | ✅ | ✅ | ✅ | ✅ | DB (séquence) | État "fait" = local-only par `slot_id` |
-| Validation carte mère via checkbox | ✅ | ✅ | ✅ | ✅ | DB (validation slot) | Tap sur image/nom = aucune action |
+| Action                                               | Visitor    | Free | Subscriber | Admin | Enforcement                             | Points critiques                                |
+| ---------------------------------------------------- | ---------- | ---- | ---------- | ----- | --------------------------------------- | ----------------------------------------------- |
+| Créer/éditer une séquence (≥2 étapes, sans doublons) | ✅ (local) | ❌   | ✅         | ✅    | DB (contraintes) / Local-only (Visitor) | UI DEVRAIT anticiper (minimum 2, no duplicates) |
+| Afficher mini‑timeline Tableau                       | ✅         | ✅   | ✅         | ✅    | DB (séquence)                           | État "fait" = local-only par `slot_id`          |
+| Validation carte mère via checkbox                   | ✅         | ✅   | ✅         | ✅    | DB (validation slot)                    | Tap sur image/nom = aucune action               |
 
 > **Clarification Visitor** : Visitor PEUT composer des séquences localement (PRODUCT_MODEL.md Ch.8.2). Ces séquences sont importées lors du passage Visitor → Compte.
 
 ### 3.3 Contexte Administration (owner)
 
-| Action admin (plateforme) | Admin | Enforcement | Interdictions |
-|---|---|---|---|
-| Accéder à Page Administration | ✅ | RLS/guards | NE DOIT PAS divulguer l'existence aux non-admin |
-| Gestion banque de cartes (création/publication/dépublication) | ✅ | DB (RLS admin write) | Interdit : suppression banque si référencée |
-| Audit / logs (plateforme) | ✅ | DB (append-only, `admin_audit_log`) | Interdit : UPDATE/DELETE sur logs |
-| Support ciblé | ✅ | DB (fonction `admin_support_channel`) | **Interdit** : accès global `accounts` (RLS = `id = auth.uid()` uniquement, admin utilise une fonction dédiée) |
-| Resync subscription Stripe | ✅ | Edge Function dédiée + audit | Pas de "set account status manual" |
-| Request account deletion | ✅ | Edge Function `delete-account` + audit | Via flux standard, pas de DELETE SQL direct |
-| Accès images personnelles | ❌ | Storage policies + contrat | **Admin ne voit JAMAIS images personnelles** |
-| Lecture données produit enfant (cards perso, séquences) | ❌ | RLS owner-only | **Interdit même pour support** |
+| Action admin (plateforme)                                     | Admin | Enforcement                            | Interdictions                                                                                                  |
+| ------------------------------------------------------------- | ----- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Accéder à Page Administration                                 | ✅    | RLS/guards                             | NE DOIT PAS divulguer l'existence aux non-admin                                                                |
+| Gestion banque de cartes (création/publication/dépublication) | ✅    | DB (RLS admin write)                   | Interdit : suppression banque si référencée                                                                    |
+| Audit / logs (plateforme)                                     | ✅    | DB (append-only, `admin_audit_log`)    | Interdit : UPDATE/DELETE sur logs                                                                              |
+| Support ciblé                                                 | ✅    | DB (fonction `admin_support_channel`)  | **Interdit** : accès global `accounts` (RLS = `id = auth.uid()` uniquement, admin utilise une fonction dédiée) |
+| Resync subscription Stripe                                    | ✅    | Edge Function dédiée + audit           | Pas de "set account status manual"                                                                             |
+| Request account deletion                                      | ✅    | Edge Function `delete-account` + audit | Via flux standard, pas de DELETE SQL direct                                                                    |
+| Accès images personnelles                                     | ❌    | Storage policies + contrat             | **Admin ne voit JAMAIS images personnelles**                                                                   |
+| Lecture données produit enfant (cards perso, séquences)       | ❌    | RLS owner-only                         | **Interdit même pour support**                                                                                 |
 
 ---
 
@@ -434,12 +434,12 @@ Toute modification structurante (édition timeline, changements jetons, réiniti
 - être appliquée **uniquement** au prochain **Chargement du Contexte Tableau** ;
 - ne JAMAIS "réarranger" un Tableau déjà affiché.
 
-| Situation | Comportement correct | CE QUI NE DOIT JAMAIS ARRIVER |
-|-----------|---------------------|-------------------------------|
-| Adulte modifie timeline pendant que l'enfant est sur Tableau | Enfant continue sur état actuel, changements au prochain chargement | Timeline qui se "réarrange" en direct |
-| Reset session (epoch++) pendant exécution enfant | Enfant continue, écrasement au prochain chargement | Progression qui disparaît en direct |
-| Sync multi-appareils apporte nouvelles validations | Progression peut augmenter (fusion monotone) | Étapes qui se "décochent" |
-| Appareil revient online avec epoch obsolète | Réalignement au prochain chargement | Popup "votre progression a été écrasée" côté enfant |
+| Situation                                                    | Comportement correct                                                | CE QUI NE DOIT JAMAIS ARRIVER                       |
+| ------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------------------------------- |
+| Adulte modifie timeline pendant que l'enfant est sur Tableau | Enfant continue sur état actuel, changements au prochain chargement | Timeline qui se "réarrange" en direct               |
+| Reset session (epoch++) pendant exécution enfant             | Enfant continue, écrasement au prochain chargement                  | Progression qui disparaît en direct                 |
+| Sync multi-appareils apporte nouvelles validations           | Progression peut augmenter (fusion monotone)                        | Étapes qui se "décochent"                           |
+| Appareil revient online avec epoch obsolète                  | Réalignement au prochain chargement                                 | Popup "votre progression a été écrasée" côté enfant |
 
 ### 4.4 Offline (utilisateurs authentifiés)
 
@@ -495,13 +495,13 @@ Le frontend NE DOIT JAMAIS :
 
 **Lifecycle device complet** :
 
-| Étape | Mécanisme | Détails |
-|-------|-----------|---------|
-| Création | `INSERT devices` | Premier usage sur un appareil. Soumis au quota (Free ≤1, Subscriber ≤3, Admin ∞). Seuls les devices actifs (`revoked_at IS NULL`) comptent pour le quota. |
-| Révocation | `UPDATE devices SET revoked_at = NOW()` | Action manuelle depuis Page Profil adulte. Non-destructif : le device n'est JAMAIS supprimé (`DELETE` interdit par RLS). Les données associées sont conservées. |
-| Comptage quota | `COUNT(*) WHERE account_id = :id AND revoked_at IS NULL` | Uniquement les devices actifs. |
-| Réactivation | **NON SPÉCIFIÉ PAR LES SOURCES** | Ne pas implémenter sans spécification. |
-| Suppression | ❌ **Interdit** | RLS empêche DELETE sur `devices`. Jamais de suppression, même par l'utilisateur. |
+| Étape          | Mécanisme                                                | Détails                                                                                                                                                         |
+| -------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Création       | `INSERT devices`                                         | Premier usage sur un appareil. Soumis au quota (Free ≤1, Subscriber ≤3, Admin ∞). Seuls les devices actifs (`revoked_at IS NULL`) comptent pour le quota.       |
+| Révocation     | `UPDATE devices SET revoked_at = NOW()`                  | Action manuelle depuis Page Profil adulte. Non-destructif : le device n'est JAMAIS supprimé (`DELETE` interdit par RLS). Les données associées sont conservées. |
+| Comptage quota | `COUNT(*) WHERE account_id = :id AND revoked_at IS NULL` | Uniquement les devices actifs.                                                                                                                                  |
+| Réactivation   | **NON SPÉCIFIÉ PAR LES SOURCES**                         | Ne pas implémenter sans spécification.                                                                                                                          |
+| Suppression    | ❌ **Interdit**                                          | RLS empêche DELETE sur `devices`. Jamais de suppression, même par l'utilisateur.                                                                                |
 
 Le frontend DOIT exposer la gestion des devices dans la **Page Profil adulte** :
 
@@ -566,11 +566,11 @@ Le front DOIT utiliser le snapshot pour la progression Tableau (pas de recomptag
 
 Le frontend DOIT utiliser ces buckets :
 
-| Bucket | Chemin | Accès | Usage |
-|--------|--------|-------|-------|
-| `personal-images` | `{account_id}/cards/{card_id}.jpg` | Owner-only (RLS Storage) | Images cartes personnelles |
-| `personal-images` | `{account_id}/avatars/{child_profile_id}.jpg` | Owner-only (RLS Storage) | Avatars profils enfants |
-| `bank-images` | NON SPÉCIFIÉ PAR LES SOURCES (chemin exact) | Lecture auth/anon | Images cartes banque (admin upload) |
+| Bucket            | Chemin                                        | Accès                    | Usage                               |
+| ----------------- | --------------------------------------------- | ------------------------ | ----------------------------------- |
+| `personal-images` | `{account_id}/cards/{card_id}.jpg`            | Owner-only (RLS Storage) | Images cartes personnelles          |
+| `personal-images` | `{account_id}/avatars/{child_profile_id}.jpg` | Owner-only (RLS Storage) | Avatars profils enfants             |
+| `bank-images`     | NON SPÉCIFIÉ PAR LES SOURCES (chemin exact)   | Lecture auth/anon        | Images cartes banque (admin upload) |
 
 Le frontend NE DOIT JAMAIS :
 
@@ -586,16 +586,16 @@ Le frontend NE DOIT JAMAIS :
 
 Le frontend DOIT gérer au minimum ces catégories :
 
-| # | Catégorie | Exemples | Contexte Édition | Contexte Tableau |
-|---|-----------|----------|------------------|------------------|
-| 1 | **Refus RLS / permission denied** | Écriture ou lecture interdite | Message explicite non technique | Écran **neutre** (aucune mention) |
-| 2 | **Violation contrainte CHECK/UNIQUE/FK** | Doublon, valeur hors range | Inline error state | Jamais affiché |
-| 3 | **Quota/feature gating** | Création cartes perso, limites profils/devices | PersonalizationModal ou message explicite | Jamais affiché |
-| 4 | **Offline (auth)** | Action structurelle offline | Désactivation + toast + **bandeau persistant** (voir §4.4.1) | Aucun indicateur |
-| 5 | **Conflit epoch / état obsolète** | Retour online avec epoch ancien | Réalignement silencieux au prochain chargement | Aucun message, fusion monotone |
-| 6 | **Storage refusé** | Policy bucket, quota storage | Message explicite | Jamais affiché |
-| 7 | **Timeout / erreurs réseau** | Online instable | Toast ou inline error | Écran neutre, aucune mention technique |
-| 8 | **Execution-only refusé** | Free + profils excédentaires tente une écriture structurelle | Message « exécution uniquement » ou équivalent | Jamais affiché |
+| #   | Catégorie                                | Exemples                                                     | Contexte Édition                                             | Contexte Tableau                       |
+| --- | ---------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------------- |
+| 1   | **Refus RLS / permission denied**        | Écriture ou lecture interdite                                | Message explicite non technique                              | Écran **neutre** (aucune mention)      |
+| 2   | **Violation contrainte CHECK/UNIQUE/FK** | Doublon, valeur hors range                                   | Inline error state                                           | Jamais affiché                         |
+| 3   | **Quota/feature gating**                 | Création cartes perso, limites profils/devices               | PersonalizationModal ou message explicite                    | Jamais affiché                         |
+| 4   | **Offline (auth)**                       | Action structurelle offline                                  | Désactivation + toast + **bandeau persistant** (voir §4.4.1) | Aucun indicateur                       |
+| 5   | **Conflit epoch / état obsolète**        | Retour online avec epoch ancien                              | Réalignement silencieux au prochain chargement               | Aucun message, fusion monotone         |
+| 6   | **Storage refusé**                       | Policy bucket, quota storage                                 | Message explicite                                            | Jamais affiché                         |
+| 7   | **Timeout / erreurs réseau**             | Online instable                                              | Toast ou inline error                                        | Écran neutre, aucune mention technique |
+| 8   | **Execution-only refusé**                | Free + profils excédentaires tente une écriture structurelle | Message « exécution uniquement » ou équivalent               | Jamais affiché                         |
 
 ### 6.2 Règle d'or Contexte Tableau (enfant)
 
@@ -625,10 +625,12 @@ Le frontend DOIT :
 Le frontend DOIT utiliser ces messages (Édition uniquement) :
 
 **PersonalizationModal — Visitor** :
+
 > « Pour créer tes propres tâches et catégories, crée un compte et abonne-toi. »
 > Boutons : « Créer un compte » | « Plus tard »
 
 **PersonalizationModal — Free** :
+
 > « Ton compte gratuit te permet de sauvegarder tes plannings. Pour créer tes propres tâches et catégories, passe à la version Premium. »
 > Boutons : « Passer Premium » | « Plus tard »
 
@@ -711,11 +713,11 @@ Le frontend DOIT :
 
 **Préférences V1 (liste fermée)** :
 
-| Préférence | Défaut | Rôle | Invariant |
-|------------|--------|------|-----------|
-| `reduced_motion` | `true` | Réduire charge sensorielle (TSA) | Si `true`, toutes animations non essentielles désactivées (confettis inclus) |
-| `toasts_enabled` | `true` | Feedback adulte non bloquant | Si `false`, toasts info/success/warning supprimés. Erreurs critiques ont un fallback inline. |
-| `confetti_enabled` | `false` | Renforcement visuel ponctuel | Affiché uniquement si `confetti_enabled = true` ET `reduced_motion = false` |
+| Préférence         | Défaut  | Rôle                             | Invariant                                                                                    |
+| ------------------ | ------- | -------------------------------- | -------------------------------------------------------------------------------------------- |
+| `reduced_motion`   | `true`  | Réduire charge sensorielle (TSA) | Si `true`, toutes animations non essentielles désactivées (confettis inclus)                 |
+| `toasts_enabled`   | `true`  | Feedback adulte non bloquant     | Si `false`, toasts info/success/warning supprimés. Erreurs critiques ont un fallback inline. |
+| `confetti_enabled` | `false` | Renforcement visuel ponctuel     | Affiché uniquement si `confetti_enabled = true` ET `reduced_motion = false`                  |
 
 **Préférences locales (device-only, hors DB)** : TimeTimer (showTimeTimer, lastDuration, silentMode, vibrate, diskColor, showNumbers, customDurations, position).
 
@@ -759,10 +761,10 @@ Le composant `CookieBanner.tsx` existant envoie `action: 'accept_all'` / `action
 
 Correction requise :
 
-| Ancien code (INCORRECT) | Code corrigé |
-|--------------------------|-------------|
-| `action: 'accept_all'` | `mode: 'accept_all', action: 'first_load'` |
-| `action: 'refuse_all'` | `mode: 'refuse_all', action: 'first_load'` |
+| Ancien code (INCORRECT) | Code corrigé                               |
+| ----------------------- | ------------------------------------------ |
+| `action: 'accept_all'`  | `mode: 'accept_all', action: 'first_load'` |
+| `action: 'refuse_all'`  | `mode: 'refuse_all', action: 'first_load'` |
 
 **Valeurs autorisées de `action`** (liste fermée) : `first_load` (premier choix après chargement), `update` (modification ultérieure), `withdraw` (retrait d'un consentement spécifique), `restore` (restauration d'un consentement), `revoke` (révocation complète).
 
@@ -857,22 +859,22 @@ Impact front : après signup, le front DEVRAIT encourager la confirmation email.
 
 Non bloquant pour l'implémentation immédiate (CRON futurs), mais documenté pour cohérence :
 
-| Donnée | Durée de rétention | Mécanisme de purge |
-|--------|-------------------|-------------------|
-| Compte + données produit | Jusqu'à suppression par l'utilisateur (EF `delete-account`) | CASCADE DB + purge Storage |
-| `consent_events` | 6 mois après `created_at` | CRON futur (non implémenté) |
-| `subscription_logs` | 12 mois après `created_at` | CRON futur (non implémenté) |
-| Images Storage (cartes perso, avatars) | Jusqu'à suppression carte/profil/compte | CASCADE + EF purge |
+| Donnée                                 | Durée de rétention                                          | Mécanisme de purge          |
+| -------------------------------------- | ----------------------------------------------------------- | --------------------------- |
+| Compte + données produit               | Jusqu'à suppression par l'utilisateur (EF `delete-account`) | CASCADE DB + purge Storage  |
+| `consent_events`                       | 6 mois après `created_at`                                   | CRON futur (non implémenté) |
+| `subscription_logs`                    | 12 mois après `created_at`                                  | CRON futur (non implémenté) |
+| Images Storage (cartes perso, avatars) | Jusqu'à suppression carte/profil/compte                     | CASCADE + EF purge          |
 
 Le front NE DOIT PAS implémenter de logique de rétention — c'est une responsabilité serveur. Cependant, la Page Profil DEVRAIT mentionner la politique de rétention dans le cadre de la conformité RGPD (informations disponibles à l'utilisateur).
 
 ### 8.8 Edge Functions — contrat d'appel front
 
-| Edge Function | Auth | Méthode | Payload front | Réponse | Erreurs |
-|---------------|------|---------|---------------|---------|---------|
-| `create-checkout-session` | JWT | POST | `{}` (l'EF décide checkout vs portal) | `{ url: string }` | 401, 500 |
-| `log-consent` | Anon key (+ optionnel JWT) | POST | `{ mode, action, choices, ua, locale, app_version, origin, ts_client }` | 200 OK | 400, 500 |
-| `delete-account` | JWT + Turnstile token | POST | `{ turnstile_token: string }` | `{ success: true }` | 401, 403 (Turnstile fail), 500 |
+| Edge Function             | Auth                       | Méthode | Payload front                                                           | Réponse             | Erreurs                        |
+| ------------------------- | -------------------------- | ------- | ----------------------------------------------------------------------- | ------------------- | ------------------------------ |
+| `create-checkout-session` | JWT                        | POST    | `{}` (l'EF décide checkout vs portal)                                   | `{ url: string }`   | 401, 500                       |
+| `log-consent`             | Anon key (+ optionnel JWT) | POST    | `{ mode, action, choices, ua, locale, app_version, origin, ts_client }` | 200 OK              | 400, 500                       |
+| `delete-account`          | JWT + Turnstile token      | POST    | `{ turnstile_token: string }`                                           | `{ success: true }` | 401, 403 (Turnstile fail), 500 |
 
 Le front NE DOIT PAS appeler directement :
 
@@ -1117,7 +1119,7 @@ Avant toute modification, Claude Code CLI DOIT :
 
 - **Scan config** : aucune clé `service_role` dans le bundle.
 - **Pas de RBAC** : aucun système de rôles/permissions côté client (vérifier absence de patterns `user.role`, `hasPermission`, `checkAccess`).
-- **Requêtes interdites** : pas d'accès `subscriptions`, `consent_events` (direct), `admin_audit_log` (direct) ; pas de "SELECT *" cross-tenant.
+- **Requêtes interdites** : pas d'accès `subscriptions`, `consent_events` (direct), `admin_audit_log` (direct) ; pas de "SELECT \*" cross-tenant.
 - **Gestion refus RLS** : 0 crash, UX Édition propre, Tableau neutre.
 - **Storage** : aucun accès cross-account sur `personal-images`.
 - **Edge Functions** : seules `create-checkout-session`, `log-consent`, `delete-account` sont appelées depuis le client.
@@ -1177,11 +1179,11 @@ Mais la **source de vérité** reste toujours la DB. Si un bouton est visible pa
 
 Les 3 systèmes DOIVENT rester distincts en termes de noms, écrans, états et persistance :
 
-| Système | Tables DB | Contexte Tableau | Contexte Édition |
-|---------|-----------|-----------------|-----------------|
-| **Planning visuel** | `timelines`, `slots` | Affichage timeline complète | CRUD timeline/slots |
+| Système                | Tables DB                        | Contexte Tableau                       | Contexte Édition             |
+| ---------------------- | -------------------------------- | -------------------------------------- | ---------------------------- |
+| **Planning visuel**    | `timelines`, `slots`             | Affichage timeline complète            | CRUD timeline/slots          |
 | **Économie de jetons** | `slots.tokens` (0..5, kind=step) | Comptage visuel dérivé + grille jetons | Modification tokens par slot |
-| **Séquençage** | `sequences`, `sequence_steps` | Mini-timeline "fait" (local-only) | CRUD séquences/étapes |
+| **Séquençage**         | `sequences`, `sequence_steps`    | Mini-timeline "fait" (local-only)      | CRUD séquences/étapes        |
 
 ❗ Interdiction de fusion conceptuelle (noms, écrans, états, persistance).
 
@@ -1190,6 +1192,7 @@ Les 3 systèmes DOIVENT rester distincts en termes de noms, écrans, états et p
 Ce document intègre les 16 lacunes identifiées par l'audit exhaustif du 2026-02-12 :
 
 **🔴 Critiques (5)** :
+
 - C1 → §3.2.2bis : Matrice verrouillage pendant session active (preview/started × validé/non validé)
 - C2 → §3.1.1 : Slot Étape vide = invisible Contexte Tableau (invariant TSA)
 - C3 → §3.2.2bis : Suppression carte personnelle → Réinitialisation session + modal confirmation
@@ -1197,6 +1200,7 @@ Ce document intègre les 16 lacunes identifiées par l'audit exhaustif du 2026-0
 - C5 → §8.2 : Payload complet EF `log-consent` + correction bug legacy `CookieBanner.tsx` (mode vs action)
 
 **🟡 Importants (6)** :
+
 - I1 → §3.2.3 : Décocher carte bibliothèque retire toutes occurrences + reflow
 - I2 → §3.2.2bis : Focus après suppression slot → prochaine étape non validée
 - I3 → §3.2.1 : Vider timeline — effets détaillés (structure base + Réinitialisation si session active)
@@ -1205,6 +1209,7 @@ Ce document intègre les 16 lacunes identifiées par l'audit exhaustif du 2026-0
 - I6 → §3.1.2 : Grille jetons Tableau (zone affichage, respect reduced_motion)
 
 **🟢 Mineurs (5)** :
+
 - M1 → §3.1.3 : Session Terminée = consultation lecture seule Tableau
 - M2 → §8.7 : Rétention données (politique consent_events/subscription_logs/images)
 - M3 → §3.1.3 : Récompense conditionnelle — conditions affichage (aucun négatif)

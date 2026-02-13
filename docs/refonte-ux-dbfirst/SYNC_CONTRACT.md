@@ -26,15 +26,15 @@ _(Référence : PRODUCT_MODEL.md Ch.8.1, ux.md "Persistance / Sync / Offline")_
 
 ## 1. Définitions
 
-| Terme | Définition | Scope |
-|-------|-----------|-------|
-| **Online** | L'application a une connexion réseau et peut communiquer avec Supabase. | État client, non observable par la DB. |
-| **Offline** | L'application n'a pas de connexion réseau. | État client, non observable par la DB. |
-| **DB-authoritative** | Donnée dont la source de vérité est la base de données cloud (Supabase). Le local est un cache. | Sessions, validations, epoch, structure (cards/slots/timelines). |
-| **Local-only** | Donnée qui n'existe jamais en DB et n'est jamais synchronisée. | État réseau, queue offline, indicateurs UI, état "fait" séquence. |
-| **Chargement du Contexte Tableau** | Toute entrée fraîche dans la Page Tableau qui reconstruit l'écran à partir de l'état courant (local + cloud). Inclut : navigation vers Tableau, changement profil actif, relaunch app, retour premier plan, refresh explicite. Exclut : rester sur Tableau sans quitter. | _(ux.md glossaire)_ |
-| **Fusion monotone** | La progression ne régresse jamais automatiquement. | _(ux.md L2679-2694, PRODUCT_MODEL.md Ch.8.5.2)_ |
-| **Epoch** | Entier de versioning par session. Création = 1, réinitialisation = MAX(epoch)+1. Toute progression avec epoch inférieur au courant = obsolète. | _(ux.md L2696-2702, PRODUCT_MODEL.md Ch.8.5.3)_ |
+| Terme                              | Définition                                                                                                                                                                                                                                                               | Scope                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| **Online**                         | L'application a une connexion réseau et peut communiquer avec Supabase.                                                                                                                                                                                                  | État client, non observable par la DB.                            |
+| **Offline**                        | L'application n'a pas de connexion réseau.                                                                                                                                                                                                                               | État client, non observable par la DB.                            |
+| **DB-authoritative**               | Donnée dont la source de vérité est la base de données cloud (Supabase). Le local est un cache.                                                                                                                                                                          | Sessions, validations, epoch, structure (cards/slots/timelines).  |
+| **Local-only**                     | Donnée qui n'existe jamais en DB et n'est jamais synchronisée.                                                                                                                                                                                                           | État réseau, queue offline, indicateurs UI, état "fait" séquence. |
+| **Chargement du Contexte Tableau** | Toute entrée fraîche dans la Page Tableau qui reconstruit l'écran à partir de l'état courant (local + cloud). Inclut : navigation vers Tableau, changement profil actif, relaunch app, retour premier plan, refresh explicite. Exclut : rester sur Tableau sans quitter. | _(ux.md glossaire)_                                               |
+| **Fusion monotone**                | La progression ne régresse jamais automatiquement.                                                                                                                                                                                                                       | _(ux.md L2679-2694, PRODUCT_MODEL.md Ch.8.5.2)_                   |
+| **Epoch**                          | Entier de versioning par session. Création = 1, réinitialisation = MAX(epoch)+1. Toute progression avec epoch inférieur au courant = obsolète.                                                                                                                           | _(ux.md L2696-2702, PRODUCT_MODEL.md Ch.8.5.3)_                   |
 
 ---
 
@@ -42,35 +42,35 @@ _(Référence : PRODUCT_MODEL.md Ch.8.1, ux.md "Persistance / Sync / Offline")_
 
 ### 2.1 DB-authoritative (source de vérité cloud)
 
-| Donnée | Table DB | Mécanisme sync | Référence |
-|--------|----------|---------------|-----------|
-| Structure timeline (slots, positions, cartes) | `timelines`, `slots` | Cloud → local au Chargement Contexte Tableau | DB_BLUEPRINT §2 |
-| État session (state, epoch, timestamps) | `sessions` | Cloud-authoritative ; local = cache | DB_BLUEPRINT §2, invariant #11 |
-| Validations (ensemble slot_id) | `session_validations` | Union ensembliste, UNIQUE (session_id, slot_id) | DB_BLUEPRINT §2, invariant #13 |
-| Snapshot progression (steps_total_snapshot) | `sessions.steps_total_snapshot` | Fixé à 1ère validation, immuable ensuite | Phase 5 migration #17 |
-| Cartes (bank + personal) | `cards` | Cloud-authoritative | DB_BLUEPRINT §2 |
-| Catégories + pivot | `categories`, `user_card_categories` | Cloud-authoritative | DB_BLUEPRINT §2 |
-| Profils enfants (name, status) | `child_profiles` | Cloud-authoritative | DB_BLUEPRINT §2 |
-| Séquences + étapes | `sequences`, `sequence_steps` | Cloud-authoritative | DB_BLUEPRINT §2 |
-| Quotas mensuels | `account_quota_months` | Cloud-authoritative | Phase 9 |
-| Comptes + devices | `accounts`, `devices` | Cloud-authoritative | DB_BLUEPRINT §2 |
+| Donnée                                        | Table DB                             | Mécanisme sync                                  | Référence                      |
+| --------------------------------------------- | ------------------------------------ | ----------------------------------------------- | ------------------------------ |
+| Structure timeline (slots, positions, cartes) | `timelines`, `slots`                 | Cloud → local au Chargement Contexte Tableau    | DB_BLUEPRINT §2                |
+| État session (state, epoch, timestamps)       | `sessions`                           | Cloud-authoritative ; local = cache             | DB_BLUEPRINT §2, invariant #11 |
+| Validations (ensemble slot_id)                | `session_validations`                | Union ensembliste, UNIQUE (session_id, slot_id) | DB_BLUEPRINT §2, invariant #13 |
+| Snapshot progression (steps_total_snapshot)   | `sessions.steps_total_snapshot`      | Fixé à 1ère validation, immuable ensuite        | Phase 5 migration #17          |
+| Cartes (bank + personal)                      | `cards`                              | Cloud-authoritative                             | DB_BLUEPRINT §2                |
+| Catégories + pivot                            | `categories`, `user_card_categories` | Cloud-authoritative                             | DB_BLUEPRINT §2                |
+| Profils enfants (name, status)                | `child_profiles`                     | Cloud-authoritative                             | DB_BLUEPRINT §2                |
+| Séquences + étapes                            | `sequences`, `sequence_steps`        | Cloud-authoritative                             | DB_BLUEPRINT §2                |
+| Quotas mensuels                               | `account_quota_months`               | Cloud-authoritative                             | Phase 9                        |
+| Comptes + devices                             | `accounts`, `devices`                | Cloud-authoritative                             | DB_BLUEPRINT §2                |
 
 ### 2.2 Local-only (INTERDIT en DB)
 
-| Donnée | Raison | Référence |
-|--------|--------|-----------|
-| État réseau (online/offline) | Observable uniquement côté client | PRODUCT_MODEL.md Ch.8.1 |
-| Queue de synchronisation offline | Logique applicative (retry, ordering) | — |
-| Indicateurs UI anti-choc (bannière "mise à jour disponible") | UX pure, aucun état DB | PRODUCT_MODEL.md Ch.8.5.4 |
-| Cache local des timelines/cartes/slots | Cache = copie temporaire de données DB-authoritative | ux.md L2857-2860 |
-| État "fait" des étapes de séquence | Visuel, local-only, non sync, reset chaque session | PRODUCT_MODEL.md Ch.3.12, DB_BLUEPRINT §2 |
-| Données Visitor (avant signup) | Local-only jusqu'à import explicite | PRODUCT_MODEL.md Ch.8.2, ux.md L2838-2841 |
-| Focus courant (quelle étape est "active" visuellement) | État UI éphémère | — |
-| État d'animation / transition visuelle | UX TSA, aucun état persistant | — |
+| Donnée                                                       | Raison                                               | Référence                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------- | ----------------------------------------- |
+| État réseau (online/offline)                                 | Observable uniquement côté client                    | PRODUCT_MODEL.md Ch.8.1                   |
+| Queue de synchronisation offline                             | Logique applicative (retry, ordering)                | —                                         |
+| Indicateurs UI anti-choc (bannière "mise à jour disponible") | UX pure, aucun état DB                               | PRODUCT_MODEL.md Ch.8.5.4                 |
+| Cache local des timelines/cartes/slots                       | Cache = copie temporaire de données DB-authoritative | ux.md L2857-2860                          |
+| État "fait" des étapes de séquence                           | Visuel, local-only, non sync, reset chaque session   | PRODUCT_MODEL.md Ch.3.12, DB_BLUEPRINT §2 |
+| Données Visitor (avant signup)                               | Local-only jusqu'à import explicite                  | PRODUCT_MODEL.md Ch.8.2, ux.md L2838-2841 |
+| Focus courant (quelle étape est "active" visuellement)       | État UI éphémère                                     | —                                         |
+| État d'animation / transition visuelle                       | UX TSA, aucun état persistant                        | —                                         |
 
 ### 2.3 Règle de fermeture
 
-**Cette liste est fermée.** Tout nouveau champ ou donnée non présent dans cette matrice nécessite une décision produit explicite documentée dans PRODUCT_MODEL.md **avant** toute implémentation. L'ajout d'une colonne `sync_*`, `offline_*`, `progress_*`, `last_synced_at`, ou `synced_from_device_id` dans une table métier est **interdit** sans passage par ce processus.
+**Cette liste est fermée.** Tout nouveau champ ou donnée non présent dans cette matrice nécessite une décision produit explicite documentée dans PRODUCT*MODEL.md **avant** toute implémentation. L'ajout d'une colonne `sync*_`, `offline\__`, `progress\_\*`, `last_synced_at`, ou `synced_from_device_id` dans une table métier est **interdit** sans passage par ce processus.
 
 ---
 
@@ -97,10 +97,12 @@ _(Référence : PRODUCT_MODEL.md Ch.8.5.2, ux.md L2685-2694)_
 **Règle** : la réinitialisation crée une nouvelle session avec `epoch = MAX(epoch)+1`. L'ancienne session passe à `completed`. Toute progression associée à un epoch inférieur est obsolète.
 
 **Mécanisme DB** :
+
 - Trigger `ensure_epoch_monotone` (Phase 5, migration #16) : force `NEW.epoch = MAX(epoch)+1` si epoch fourni ≤ max existant.
 - Partial UNIQUE index : 1 seule session active par `(child_profile_id, timeline_id)`.
 
 **Edge case contractuel** :
+
 1. Appareil A valide slots 1-3 (offline, epoch=1)
 2. Appareil B réinitialise la session (epoch 1→2)
 3. A revient online
@@ -138,26 +140,26 @@ _(Référence : PRODUCT_MODEL.md Ch.8.5.1, ux.md L2659-2666, DB_BLUEPRINT invari
 
 ### 4.1 Autorisé offline
 
-| Action | Détail | Enforcement |
-|--------|--------|-------------|
-| Exécuter timeline existante | Continuer session en cours | Guard applicatif : utiliser cache local |
-| Valider étapes (cocher) | Stocker localement, sync au retour | Guard applicatif : queue locale |
-| Pause/reprise session | Implicite (quitter/revenir Tableau) | Aucun — état session inchangé |
-| Basculer profils/activités | Sans modification structurelle | Guard applicatif |
+| Action                      | Détail                              | Enforcement                             |
+| --------------------------- | ----------------------------------- | --------------------------------------- |
+| Exécuter timeline existante | Continuer session en cours          | Guard applicatif : utiliser cache local |
+| Valider étapes (cocher)     | Stocker localement, sync au retour  | Guard applicatif : queue locale         |
+| Pause/reprise session       | Implicite (quitter/revenir Tableau) | Aucun — état session inchangé           |
+| Basculer profils/activités  | Sans modification structurelle      | Guard applicatif                        |
 
 _(Référence : PRODUCT_MODEL.md Ch.8.4.1, ux.md L2879-2884)_
 
 ### 4.2 Interdit offline (STRICT)
 
-| Action interdite | Raison | Enforcement |
-|-----------------|--------|-------------|
-| CRUD cartes | Modification structurelle | **Guard applicatif** (DB ne sait pas si client offline) |
-| CRUD catégories | Modification structurelle | Guard applicatif |
-| Créer/modifier timeline | Modification structurelle | Guard applicatif |
-| Réorganiser slots | Modification structurelle | Guard applicatif |
-| Modifier jetons | Modification structurelle | Guard applicatif |
-| Réinitialiser session | Modification structurelle | Guard applicatif |
-| Créer profil enfant | Modification structurelle + quota check DB-side | Guard applicatif |
+| Action interdite        | Raison                                          | Enforcement                                             |
+| ----------------------- | ----------------------------------------------- | ------------------------------------------------------- |
+| CRUD cartes             | Modification structurelle                       | **Guard applicatif** (DB ne sait pas si client offline) |
+| CRUD catégories         | Modification structurelle                       | Guard applicatif                                        |
+| Créer/modifier timeline | Modification structurelle                       | Guard applicatif                                        |
+| Réorganiser slots       | Modification structurelle                       | Guard applicatif                                        |
+| Modifier jetons         | Modification structurelle                       | Guard applicatif                                        |
+| Réinitialiser session   | Modification structurelle                       | Guard applicatif                                        |
+| Créer profil enfant     | Modification structurelle + quota check DB-side | Guard applicatif                                        |
 
 **UX** : actions visibles mais **désactivées** + toast « Indisponible hors ligne » (Contexte Édition uniquement). Aucun message côté enfant.
 
@@ -183,12 +185,12 @@ _(Référence : PRODUCT_MODEL.md Ch.8.5.4, ux.md L2717-2722, ux.md glossaire "Ch
 
 ### 5.2 Comportement attendu du frontend
 
-| Situation | Comportement | Ce qui ne doit JAMAIS arriver |
-|-----------|-------------|-------------------------------|
-| Adulte modifie timeline pendant que l'enfant est sur Tableau | Enfant continue sur état actuel, changements appliqués au prochain chargement | Timeline qui se "réarrange" en direct sous les yeux de l'enfant |
-| Reset session (epoch++) pendant exécution enfant | Enfant continue sur état actuel, écrasement au prochain chargement | Progression qui disparaît en direct, message "session réinitialisée" côté enfant |
-| Sync multi-appareils apporte nouvelles validations | Progression peut augmenter (fusion monotone), jamais diminuer en direct | Étapes qui se "décochent" en direct |
-| Appareil revient online avec epoch obsolète | Réalignement au prochain chargement, pas en direct | Popup "votre progression a été écrasée" côté enfant |
+| Situation                                                    | Comportement                                                                  | Ce qui ne doit JAMAIS arriver                                                    |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Adulte modifie timeline pendant que l'enfant est sur Tableau | Enfant continue sur état actuel, changements appliqués au prochain chargement | Timeline qui se "réarrange" en direct sous les yeux de l'enfant                  |
+| Reset session (epoch++) pendant exécution enfant             | Enfant continue sur état actuel, écrasement au prochain chargement            | Progression qui disparaît en direct, message "session réinitialisée" côté enfant |
+| Sync multi-appareils apporte nouvelles validations           | Progression peut augmenter (fusion monotone), jamais diminuer en direct       | Étapes qui se "décochent" en direct                                              |
+| Appareil revient online avec epoch obsolète                  | Réalignement au prochain chargement, pas en direct                            | Popup "votre progression a été écrasée" côté enfant                              |
 
 ### 5.3 Messages techniques interdits côté Tableau
 
@@ -218,14 +220,14 @@ _(Référence : PRODUCT_MODEL.md Ch.8.2, ux.md L2838-2841)_
 
 ### 6.2 Import Visitor → Compte
 
-| Aspect | Règle | Référence |
-|--------|-------|-----------|
-| Déclencheur | Visitor crée compte sur même appareil | ux.md L2953-2956 |
-| Choix | Import **explicite** (proposé, pas forcé) | ux.md L2956 |
-| Périmètre | Timelines + sessions + progression + séquences + mapping catégories | ux.md L2964-2970 |
+| Aspect            | Règle                                                                  | Référence        |
+| ----------------- | ---------------------------------------------------------------------- | ---------------- |
+| Déclencheur       | Visitor crée compte sur même appareil                                  | ux.md L2953-2956 |
+| Choix             | Import **explicite** (proposé, pas forcé)                              | ux.md L2956      |
+| Périmètre         | Timelines + sessions + progression + séquences + mapping catégories    | ux.md L2964-2970 |
 | Cartes dépubliées | Restent utilisables dans usages importés (dépublication ≠ suppression) | ux.md L2973-2984 |
-| Mécanisme | Transaction applicative (pas de table dédiée en DB) | DB_BLUEPRINT §7 |
-| Perte de données | Aucune — import sans perte, ne supprime rien sans confirmation | ux.md L2960-2962 |
+| Mécanisme         | Transaction applicative (pas de table dédiée en DB)                    | DB_BLUEPRINT §7  |
+| Perte de données  | Aucune — import sans perte, ne supprime rien sans confirmation         | ux.md L2960-2962 |
 
 ---
 
@@ -282,22 +284,22 @@ Pour garantir que la DB reste fidèle à ce contrat dans le temps, les tests Pha
 
 ## 9. Résumé des responsabilités
 
-| Responsabilité | Qui | Mécanisme |
-|---------------|-----|-----------|
-| Intégrité des données (contraintes, invariants) | **DB** | Triggers, CHECK, UNIQUE, RLS |
-| Unicité session active | **DB** | Partial UNIQUE index |
-| Epoch monotone | **DB** | Trigger BEFORE INSERT |
-| Idempotence validations | **DB** | UNIQUE (session_id, slot_id) |
-| Anti-race condition complétion | **DB** | SELECT ... FOR UPDATE |
-| Quotas (cards, profils, devices) | **DB** | Triggers BEFORE INSERT |
-| Downgrade/verrouillage profils | **DB** | Trigger AFTER UPDATE sessions (SECURITY DEFINER) |
-| Détection online/offline | **Frontend** | État réseau client |
-| Blocage modifications offline | **Frontend** | Guard applicatif + toast |
-| Cache local + queue sync | **Frontend** | Stratégie client (IndexedDB/AsyncStorage) |
-| Anti-choc TSA (pas de push en direct) | **Frontend** | Chargement Contexte Tableau uniquement |
-| Import Visitor | **Frontend** | Transaction applicative |
-| Vérification epoch au retour online | **Frontend** | Comparer epoch_local vs epoch_DB |
-| Messages techniques invisibles côté enfant | **Frontend** | Séparation Contexte Édition / Tableau |
+| Responsabilité                                  | Qui          | Mécanisme                                        |
+| ----------------------------------------------- | ------------ | ------------------------------------------------ |
+| Intégrité des données (contraintes, invariants) | **DB**       | Triggers, CHECK, UNIQUE, RLS                     |
+| Unicité session active                          | **DB**       | Partial UNIQUE index                             |
+| Epoch monotone                                  | **DB**       | Trigger BEFORE INSERT                            |
+| Idempotence validations                         | **DB**       | UNIQUE (session_id, slot_id)                     |
+| Anti-race condition complétion                  | **DB**       | SELECT ... FOR UPDATE                            |
+| Quotas (cards, profils, devices)                | **DB**       | Triggers BEFORE INSERT                           |
+| Downgrade/verrouillage profils                  | **DB**       | Trigger AFTER UPDATE sessions (SECURITY DEFINER) |
+| Détection online/offline                        | **Frontend** | État réseau client                               |
+| Blocage modifications offline                   | **Frontend** | Guard applicatif + toast                         |
+| Cache local + queue sync                        | **Frontend** | Stratégie client (IndexedDB/AsyncStorage)        |
+| Anti-choc TSA (pas de push en direct)           | **Frontend** | Chargement Contexte Tableau uniquement           |
+| Import Visitor                                  | **Frontend** | Transaction applicative                          |
+| Vérification epoch au retour online             | **Frontend** | Comparer epoch_local vs epoch_DB                 |
+| Messages techniques invisibles côté enfant      | **Frontend** | Séparation Contexte Édition / Tableau            |
 
 ---
 

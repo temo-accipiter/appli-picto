@@ -155,23 +155,23 @@ appli-picto/
 
 ### Décision par dossier principal
 
-| Dossier | Décision | Raison | Priorité |
-|---------|----------|--------|----------|
-| `src/app/` | MODIFY | Routes à adapter au nouveau schéma | HAUTE |
-| `src/components/features/taches/` | DELETE | Remplacer par timelines/slots | CRITIQUE |
-| `src/components/features/recompenses/` | DELETE | Remplacer par cards (reward) | CRITIQUE |
-| `src/page-components/edition/` | DELETE/REWRITE | Logique legacy taches/recompenses | CRITIQUE |
-| `src/page-components/tableau/` | DELETE/REWRITE | Logique legacy taches/recompenses | CRITIQUE |
-| `src/contexts/PermissionsContext.tsx` | DELETE | RBAC interdit (DB-first) | CRITIQUE |
-| `src/hooks/useRBAC.ts` | DELETE | RBAC interdit (DB-first) | CRITIQUE |
-| `src/hooks/useTaches*.ts` | DELETE | Legacy tables | CRITIQUE |
-| `src/hooks/useRecompenses.ts` | DELETE | Legacy tables | CRITIQUE |
-| `src/hooks/useParametres.ts` | DELETE | Legacy tables | CRITIQUE |
-| `src/utils/permissions-api.ts` | DELETE | RBAC interdit | CRITIQUE |
-| `src/test/mocks/handlers.ts` | DELETE/REWRITE | Mocks legacy (taches/recompenses/parametres) | HAUTE |
-| `src/styles/` | KEEP | ✅ Design system complet et conforme | AUCUNE |
-| `src/utils/supabaseClient.ts` | KEEP | ✅ Anon key uniquement | AUCUNE |
-| `supabase/migrations/` | READ-ONLY | ✅ Source de vérité backend | AUCUNE |
+| Dossier                                | Décision       | Raison                                       | Priorité |
+| -------------------------------------- | -------------- | -------------------------------------------- | -------- |
+| `src/app/`                             | MODIFY         | Routes à adapter au nouveau schéma           | HAUTE    |
+| `src/components/features/taches/`      | DELETE         | Remplacer par timelines/slots                | CRITIQUE |
+| `src/components/features/recompenses/` | DELETE         | Remplacer par cards (reward)                 | CRITIQUE |
+| `src/page-components/edition/`         | DELETE/REWRITE | Logique legacy taches/recompenses            | CRITIQUE |
+| `src/page-components/tableau/`         | DELETE/REWRITE | Logique legacy taches/recompenses            | CRITIQUE |
+| `src/contexts/PermissionsContext.tsx`  | DELETE         | RBAC interdit (DB-first)                     | CRITIQUE |
+| `src/hooks/useRBAC.ts`                 | DELETE         | RBAC interdit (DB-first)                     | CRITIQUE |
+| `src/hooks/useTaches*.ts`              | DELETE         | Legacy tables                                | CRITIQUE |
+| `src/hooks/useRecompenses.ts`          | DELETE         | Legacy tables                                | CRITIQUE |
+| `src/hooks/useParametres.ts`           | DELETE         | Legacy tables                                | CRITIQUE |
+| `src/utils/permissions-api.ts`         | DELETE         | RBAC interdit                                | CRITIQUE |
+| `src/test/mocks/handlers.ts`           | DELETE/REWRITE | Mocks legacy (taches/recompenses/parametres) | HAUTE    |
+| `src/styles/`                          | KEEP           | ✅ Design system complet et conforme         | AUCUNE   |
+| `src/utils/supabaseClient.ts`          | KEEP           | ✅ Anon key uniquement                       | AUCUNE   |
+| `supabase/migrations/`                 | READ-ONLY      | ✅ Source de vérité backend                  | AUCUNE   |
 
 ---
 
@@ -280,21 +280,21 @@ const key =
 
 ### Matrice complète
 
-| Route (Next.js) | Écran fonctionnel (contrat §2.1) | Contexte | Statut(s) visés | État actuel | Legacy ? |
-|-----------------|-----------------------------------|----------|-----------------|-------------|----------|
-| `/` | Entrée "Visitor / Découverte" | Édition (adulte) | Visitor | **ABSENT** | N/A |
-| `/signup` | Auth (signup) | Édition | Visitor | **EXISTE** | Partiel (ancien schéma) |
-| `/login` | Auth (login) | Édition | Visitor / All | **EXISTE** | Partiel (ancien schéma) |
-| `/tableau` | **Page Tableau** | Tableau (enfant) | Visitor / Free / Subscriber / Admin | **EXISTE** | **OUI** (taches/recompenses) |
-| `/edition` | **Page Édition** | Édition (adulte) | Visitor / Free / Subscriber / Admin | **EXISTE** | **OUI** (taches/recompenses) |
-| `/profil` | **Page Profil / Paramètres compte** | Édition (adulte) | Free / Subscriber / Admin | **EXISTE** | **OUI** (profiles/parametres) |
-| `/abonnement` | Abonnement / Billing | Édition (adulte) | Free / Subscriber / Admin | **EXISTE** | Partiel (ancien schéma) |
-| `/admin/metrics` | **Page Administration** — Métriques | Administration (owner) | Admin | **EXISTE** | **OUI** (profiles/taches/abonnements) |
-| `/admin/logs` | **Page Administration** — Logs | Administration (owner) | Admin | **EXISTE** | Partiel |
-| `/admin/permissions` | **Page Administration** — Permissions | Administration (owner) | Admin | **EXISTE** | **OUI** (RBAC legacy) |
-| `/forgot-password` | Password reset (demande) | Public | All | **EXISTE** | OK |
-| `/reset-password` | Password reset (formulaire) | Public | All | **EXISTE** | OK |
-| `/legal/*` | Pages légales (CGU, CGV, RGPD, etc.) | Public | All | **EXISTE** | OK |
+| Route (Next.js)      | Écran fonctionnel (contrat §2.1)      | Contexte               | Statut(s) visés                     | État actuel | Legacy ?                              |
+| -------------------- | ------------------------------------- | ---------------------- | ----------------------------------- | ----------- | ------------------------------------- |
+| `/`                  | Entrée "Visitor / Découverte"         | Édition (adulte)       | Visitor                             | **ABSENT**  | N/A                                   |
+| `/signup`            | Auth (signup)                         | Édition                | Visitor                             | **EXISTE**  | Partiel (ancien schéma)               |
+| `/login`             | Auth (login)                          | Édition                | Visitor / All                       | **EXISTE**  | Partiel (ancien schéma)               |
+| `/tableau`           | **Page Tableau**                      | Tableau (enfant)       | Visitor / Free / Subscriber / Admin | **EXISTE**  | **OUI** (taches/recompenses)          |
+| `/edition`           | **Page Édition**                      | Édition (adulte)       | Visitor / Free / Subscriber / Admin | **EXISTE**  | **OUI** (taches/recompenses)          |
+| `/profil`            | **Page Profil / Paramètres compte**   | Édition (adulte)       | Free / Subscriber / Admin           | **EXISTE**  | **OUI** (profiles/parametres)         |
+| `/abonnement`        | Abonnement / Billing                  | Édition (adulte)       | Free / Subscriber / Admin           | **EXISTE**  | Partiel (ancien schéma)               |
+| `/admin/metrics`     | **Page Administration** — Métriques   | Administration (owner) | Admin                               | **EXISTE**  | **OUI** (profiles/taches/abonnements) |
+| `/admin/logs`        | **Page Administration** — Logs        | Administration (owner) | Admin                               | **EXISTE**  | Partiel                               |
+| `/admin/permissions` | **Page Administration** — Permissions | Administration (owner) | Admin                               | **EXISTE**  | **OUI** (RBAC legacy)                 |
+| `/forgot-password`   | Password reset (demande)              | Public                 | All                                 | **EXISTE**  | OK                                    |
+| `/reset-password`    | Password reset (formulaire)           | Public                 | All                                 | **EXISTE**  | OK                                    |
+| `/legal/*`           | Pages légales (CGU, CGV, RGPD, etc.)  | Public                 | All                                 | **EXISTE**  | OK                                    |
 
 ### Écrans manquants (par rapport au contrat)
 
@@ -318,48 +318,48 @@ const key =
 
 #### ❌ LEGACY (ancien schéma — à remplacer)
 
-| Table legacy | Fichiers utilisant | Opérations | Nouveau schéma équivalent |
-|--------------|-------------------|------------|---------------------------|
-| **`taches`** | `src/page-components/edition/Edition.tsx:208`<br>`src/hooks/useTachesEdition.ts`<br>`src/hooks/useTachesDnd.ts`<br>`src/test/mocks/handlers.ts:60-119`<br>`src/hooks/useMetrics.ts:90`<br>`src/hooks/useRBAC.ts:270` | SELECT, INSERT, UPDATE, DELETE, realtime | `cards` (kind=task) + `timelines` + `slots` |
-| **`recompenses`** | `src/page-components/edition/Edition.tsx:258`<br>`src/hooks/useRecompenses.ts`<br>`src/test/mocks/handlers.ts:136-189`<br>`src/hooks/useRBAC.ts:275` | SELECT, INSERT, UPDATE, DELETE, realtime | `cards` (kind=reward) |
-| **`profiles`** | `src/page-components/profil/Profil.tsx:66,79,150`<br>`src/utils/permissions-api.ts:168`<br>`src/hooks/useMetrics.ts:80,84`<br>`src/test/mocks/handlers.ts:299` | SELECT, INSERT, UPDATE | `child_profiles` |
-| **`parametres`** | `src/hooks/useParametres.ts`<br>`src/contexts/ToastContext.tsx:55`<br>`src/components/layout/settings-menu/SettingsMenu.tsx:18`<br>`src/test/mocks/handlers.ts:239-274` | SELECT, INSERT, UPDATE, PATCH | `account_preferences` |
-| **`abonnements`** | `src/hooks/useSubscriptionStatus.ts:36`<br>`src/hooks/useMetrics.ts:96` | SELECT | `subscriptions` (NON exposée client — lecture via `accounts.status`) |
-| **`consentements`** | **NON trouvé** dans le code actuel | — | `consent_events` (NON exposée client — écriture via EF `log-consent`) |
+| Table legacy        | Fichiers utilisant                                                                                                                                                                                                   | Opérations                               | Nouveau schéma équivalent                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| **`taches`**        | `src/page-components/edition/Edition.tsx:208`<br>`src/hooks/useTachesEdition.ts`<br>`src/hooks/useTachesDnd.ts`<br>`src/test/mocks/handlers.ts:60-119`<br>`src/hooks/useMetrics.ts:90`<br>`src/hooks/useRBAC.ts:270` | SELECT, INSERT, UPDATE, DELETE, realtime | `cards` (kind=task) + `timelines` + `slots`                           |
+| **`recompenses`**   | `src/page-components/edition/Edition.tsx:258`<br>`src/hooks/useRecompenses.ts`<br>`src/test/mocks/handlers.ts:136-189`<br>`src/hooks/useRBAC.ts:275`                                                                 | SELECT, INSERT, UPDATE, DELETE, realtime | `cards` (kind=reward)                                                 |
+| **`profiles`**      | `src/page-components/profil/Profil.tsx:66,79,150`<br>`src/utils/permissions-api.ts:168`<br>`src/hooks/useMetrics.ts:80,84`<br>`src/test/mocks/handlers.ts:299`                                                       | SELECT, INSERT, UPDATE                   | `child_profiles`                                                      |
+| **`parametres`**    | `src/hooks/useParametres.ts`<br>`src/contexts/ToastContext.tsx:55`<br>`src/components/layout/settings-menu/SettingsMenu.tsx:18`<br>`src/test/mocks/handlers.ts:239-274`                                              | SELECT, INSERT, UPDATE, PATCH            | `account_preferences`                                                 |
+| **`abonnements`**   | `src/hooks/useSubscriptionStatus.ts:36`<br>`src/hooks/useMetrics.ts:96`                                                                                                                                              | SELECT                                   | `subscriptions` (NON exposée client — lecture via `accounts.status`)  |
+| **`consentements`** | **NON trouvé** dans le code actuel                                                                                                                                                                                   | —                                        | `consent_events` (NON exposée client — écriture via EF `log-consent`) |
 
 #### ✅ NOUVEAU SCHÉMA (déjà présents partiellement)
 
-| Table/Vue nouveau schéma | Fichiers utilisant | Opérations | Conforme ? |
-|--------------------------|-------------------|------------|-----------|
-| **`accounts`** | `src/app/(public)/tableau/page.tsx:63` (relation) | SELECT (via FK) | **PARTIEL** (bootstrap check) |
-| **`child_profiles`** | `src/app/(public)/tableau/page.tsx:63,82` | SELECT (via FK) | **PARTIEL** (bootstrap check) |
-| **`cards`** | **NON trouvé** | — | **ABSENT** |
-| **`categories`** | **NON trouvé** | — | **ABSENT** |
-| **`user_card_categories`** | **NON trouvé** | — | **ABSENT** |
-| **`timelines`** | **NON trouvé** | — | **ABSENT** |
-| **`slots`** | **NON trouvé** | — | **ABSENT** |
-| **`sessions`** | **NON trouvé** | — | **ABSENT** |
-| **`session_validations`** | **NON trouvé** | — | **ABSENT** |
-| **`sequences`** | **NON trouvé** | — | **ABSENT** |
-| **`sequence_steps`** | **NON trouvé** | — | **ABSENT** |
-| **`devices`** | **NON trouvé** | — | **ABSENT** |
-| **`account_preferences`** | **NON trouvé** | — | **ABSENT** |
-| **`subscriptions`** | **NON trouvé** (normal — admin-only) | — | **CONFORME** |
-| **`consent_events`** | **NON trouvé** (normal — service-role via EF) | — | **CONFORME** |
-| **`admin_audit_log`** | **NON trouvé** (normal — admin-only) | — | **CONFORME** |
+| Table/Vue nouveau schéma   | Fichiers utilisant                                | Opérations      | Conforme ?                    |
+| -------------------------- | ------------------------------------------------- | --------------- | ----------------------------- |
+| **`accounts`**             | `src/app/(public)/tableau/page.tsx:63` (relation) | SELECT (via FK) | **PARTIEL** (bootstrap check) |
+| **`child_profiles`**       | `src/app/(public)/tableau/page.tsx:63,82`         | SELECT (via FK) | **PARTIEL** (bootstrap check) |
+| **`cards`**                | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`categories`**           | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`user_card_categories`** | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`timelines`**            | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`slots`**                | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`sessions`**             | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`session_validations`**  | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`sequences`**            | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`sequence_steps`**       | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`devices`**              | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`account_preferences`**  | **NON trouvé**                                    | —               | **ABSENT**                    |
+| **`subscriptions`**        | **NON trouvé** (normal — admin-only)              | —               | **CONFORME**                  |
+| **`consent_events`**       | **NON trouvé** (normal — service-role via EF)     | —               | **CONFORME**                  |
+| **`admin_audit_log`**      | **NON trouvé** (normal — admin-only)              | —               | **CONFORME**                  |
 
 #### Storage
 
-| Bucket | Chemins utilisés | Fichiers | Nouveau bucket équivalent |
-|--------|------------------|----------|---------------------------|
+| Bucket                                | Chemins utilisés                                                                | Fichiers                                                                              | Nouveau bucket équivalent                                                                                           |
+| ------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | **Legacy** (non spécifiés exactement) | `images/{userId}/taches`<br>`images/{userId}/recompenses`<br>`avatars/{userId}` | `src/utils/storage/uploadImage.ts:47`<br>`src/utils/storage/modernUploadImage.ts:540` | `personal-images/{account_id}/cards/{card_id}.jpg`<br>`personal-images/{account_id}/avatars/{child_profile_id}.jpg` |
-| **`bank-images`** | **NON trouvé** | — | **ABSENT** (doit être utilisé pour cartes banque) |
+| **`bank-images`**                     | **NON trouvé**                                                                  | —                                                                                     | **ABSENT** (doit être utilisé pour cartes banque)                                                                   |
 
 #### RPC (fonctions DB)
 
-| RPC ancien | Fichiers | Nouveau RPC équivalent |
-|------------|----------|------------------------|
-| **NON utilisé** actuellement | — | Migrations récentes contiennent plusieurs RPC à explorer |
+| RPC ancien                   | Fichiers | Nouveau RPC équivalent                                   |
+| ---------------------------- | -------- | -------------------------------------------------------- |
+| **NON utilisé** actuellement | —        | Migrations récentes contiennent plusieurs RPC à explorer |
 
 ---
 
@@ -544,10 +544,13 @@ canCreate: (contentType: ContentType) => boolean
 canCreateTask: () => boolean
 canCreateReward: () => boolean
 canCreateCategory: () => boolean
-getQuotaInfo: (type) => { current, limit, canCreate }
+getQuotaInfo: type => {
+  ;(current, limit, canCreate)
+}
 ```
 
 **Logique interne** :
+
 - Comptage quotas côté front (INTERDIT)
 - Vérification permissions côté front (INTERDIT)
 - Gestion transitions statut côté front (INTERDIT)
@@ -569,10 +572,10 @@ ready: boolean
 
 #### 7.3 Hooks dérivés RBAC
 
-| Hook | Fichier | Rôle |
-|------|---------|------|
-| `usePermissions` | (via PermissionsContext) | Lecture permissions + `isAdmin` |
-| `useSimpleRole` | `src/hooks/useSimpleRole.ts` | Lecture `isAdmin`, `isFree`, etc. |
+| Hook               | Fichier                         | Rôle                                |
+| ------------------ | ------------------------------- | ----------------------------------- |
+| `usePermissions`   | (via PermissionsContext)        | Lecture permissions + `isAdmin`     |
+| `useSimpleRole`    | `src/hooks/useSimpleRole.ts`    | Lecture `isAdmin`, `isFree`, etc.   |
 | `useAccountStatus` | `src/hooks/useAccountStatus.ts` | Lecture status + `canCreateContent` |
 
 #### 7.4 Fichiers utilisant RBAC
@@ -623,17 +626,20 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **ARCHITECTURAL MAJEUR**
 
 **Description** :
+
 - Système RBAC sophistiqué avec `useRBAC`, `PermissionsContext`, `usePermissions`
 - Logique de quotas côté front (comptage `taches`, `recompenses`, etc.)
 - Vérification permissions côté front (`canCreateTask()`, `isAdmin`, etc.)
 - **Utilisé dans ~40 fichiers**
 
 **Pourquoi c'est CRITIQUE** :
+
 - **Violation contrat §0.3** : "Le frontend NE DOIT JAMAIS implémenter un système de rôles ou de permissions côté client"
 - **Violation contrat §1.6** : "Ne jamais re-implémenter des règles critiques (quotas, statuts, droits)"
 - **Violation Annexe B** : "Le frontend ne maintient aucune table de rôles, aucune matrice de permissions"
 
 **Action requise** :
+
 - **SUPPRIMER** complètement le système RBAC
 - Remplacer par lecture simple de `accounts.status` (COSMÉTIQUE uniquement)
 - Déléguer TOUTE autorisation à la DB (RLS)
@@ -645,17 +651,20 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **FONCTIONNEL MAJEUR**
 
 **Description** :
+
 - Tables anciennes (`taches`, `recompenses`, `profiles`, `parametres`, `abonnements`) utilisées **PARTOUT**
 - Dossiers complets legacy : `components/features/taches/`, `components/features/recompenses/`
 - Hooks legacy : `useTachesEdition`, `useTachesDnd`, `useRecompenses`, `useParametres`
 - Page-components legacy : `edition/`, `tableau/`, `profil/`
 
 **Pourquoi c'est CRITIQUE** :
+
 - Le frontend **ne peut PAS fonctionner** avec le nouveau backend tant que ces tables sont utilisées
 - Les tables anciennes **n'existent plus** dans les migrations récentes
 - **~50-60% du code frontend** dépend de ces tables
 
 **Action requise** :
+
 - **RÉÉCRIRE** complètement les pages Tableau et Édition
 - **SUPPRIMER** les hooks legacy (`useTaches*`, `useRecompenses`, `useParametres`)
 - **CRÉER** nouveaux hooks (`useTimelines`, `useSlots`, `useSessions`, `useCards`, etc.)
@@ -668,15 +677,18 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **SÉCURITÉ**
 
 **Description** :
+
 - Système RBAC côté front peut créer l'illusion d'une autorisation alors que la DB refuserait
 - Logique de quotas côté front peut être désynchronisée de la DB
 - Risk que certains boutons soient accessibles alors qu'ils ne devraient pas l'être
 
 **Pourquoi c'est CRITIQUE** :
+
 - **Violation contrat §1.6** : "Ne jamais contourner la RLS"
 - Si le frontend "filtre" côté UI, l'utilisateur pourrait croire qu'il a accès à quelque chose alors que la DB refuserait
 
 **Action requise** :
+
 - Supprimer tout système RBAC
 - Toute action doit être tentée → DB refuse ou autorise → UI gère le refus proprement
 
@@ -689,10 +701,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **FONCTIONNEL**
 
 **Description** :
+
 - Chemins Storage utilisent des préfixes legacy : `taches`, `recompenses`
 - Nouveau schéma : `personal-images/{account_id}/cards/{card_id}.jpg`
 
 **Action requise** :
+
 - Adapter `src/utils/storage/uploadImage.ts` et `modernUploadImage.ts`
 - Migrer images existantes (ou accepter perte si environnement dev)
 
@@ -703,10 +717,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **QUALITÉ**
 
 **Description** :
+
 - Tous les mocks MSW (`src/test/mocks/handlers.ts`) utilisent les anciennes tables
 - Tests unitaires et E2E vont échouer dès le premier changement
 
 **Action requise** :
+
 - **RÉÉCRIRE** complètement les mocks MSW pour le nouveau schéma
 - Adapter les tests existants (~30 fichiers de tests)
 
@@ -717,10 +733,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **QUALITÉ**
 
 **Description** :
+
 - `src/types/global.d.ts` exporte des types legacy : `Tache`, `Recompense`, `Profile`, `Parametre`
 - Ces types sont utilisés partout dans le code
 
 **Action requise** :
+
 - Remplacer par nouveaux types : `Card`, `Slot`, `Timeline`, `Session`, `ChildProfile`, etc.
 - Adapter tous les fichiers utilisant ces types (~100+ fichiers)
 
@@ -731,11 +749,13 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **ARCHITECTURAL**
 
 **Description** :
+
 - `ToastContext` dépend de `parametres` (legacy) pour `toasts_enabled`
 - `PermissionsContext` complet à supprimer
 - `AuthContext` probablement à adapter
 
 **Action requise** :
+
 - Adapter `ToastContext` pour utiliser `account_preferences.toasts_enabled` (DB)
 - Supprimer `PermissionsContext`
 - Vérifier `AuthContext` (probablement OK mais à valider)
@@ -747,10 +767,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **CONFORMITÉ LÉGALE**
 
 **Description** :
+
 - `src/utils/rgpdExport.ts` exporte `taches`, `recompenses`, `profiles` (legacy)
 - Le frontend doit permettre export RGPD des données personnelles
 
 **Action requise** :
+
 - Adapter export pour nouveau schéma : `child_profiles`, `timelines`, `slots`, `sessions`, `cards`, `sequences`, etc.
 
 ---
@@ -762,10 +784,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **QUALITÉ**
 
 **Description** :
+
 - `ignoreBuildErrors: true` dans `next.config.js`
 - ~329 erreurs TypeScript documentées dans le code
 
 **Action requise** :
+
 - Corriger progressivement les erreurs après migration
 - Retirer `ignoreBuildErrors` avant déploiement final
 
@@ -776,10 +800,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **PERFORMANCE/SÉCURITÉ**
 
 **Description** :
+
 - Logs de debug actifs dans `supabaseClient.ts` (ligne 34-35)
 - Compiler supprime les `console.log` en production (`removeConsole: true`)
 
 **Action requise** :
+
 - Vérifier que les logs sensibles ne fuitent pas en dev
 - Accepter l'état actuel (logs supprimés en prod)
 
@@ -790,10 +816,12 @@ Guide complet d'utilisation du système RBAC côté client — **À SUPPRIMER**.
 **Impact** : **SÉCURITÉ**
 
 **Description** :
+
 - Clé anon hardcodée dans `supabaseClient.ts` (ligne 31)
 - Acceptable en dev, mais devrait être uniquement en `.env` en prod
 
 **Action requise** :
+
 - Vérifier que la clé est bien remplacée par variable d'environnement en prod
 - Optionnel : retirer le fallback
 
@@ -814,20 +842,20 @@ Le frontend actuel est **massivement legacy**. Pour passer en Slice S1, il faut 
 
 ### Estimation d'effort
 
-| Slice | Effort estimé | Complexité | Risque |
-|-------|---------------|------------|--------|
-| S1 (Auth + Accounts) | MOYEN | MOYENNE | FAIBLE |
-| S2 (Profils enfants) | FAIBLE | FAIBLE | FAIBLE |
-| S3 (Cartes + Storage) | MOYEN | MOYENNE | MOYEN |
-| S4 (Timelines + Slots) | **ÉLEVÉ** | **ÉLEVÉE** | **ÉLEVÉ** |
-| S5 (Sessions + Tableau) | **ÉLEVÉ** | **ÉLEVÉE** | **ÉLEVÉ** |
-| S6 (Verrouillage + Anti-choc) | MOYEN | ÉLEVÉE | MOYEN |
-| S7 (Séquençage) | MOYEN | MOYENNE | FAIBLE |
-| S8 (Offline + Sync) | MOYEN | ÉLEVÉE | MOYEN |
-| S9 (Quotas + Downgrade) | FAIBLE | FAIBLE | FAIBLE |
-| S10 (Devices) | FAIBLE | FAIBLE | FAIBLE |
-| S11 (Plateforme) | MOYEN | MOYENNE | FAIBLE |
-| S12 (Admin) | FAIBLE | FAIBLE | FAIBLE |
+| Slice                         | Effort estimé | Complexité | Risque    |
+| ----------------------------- | ------------- | ---------- | --------- |
+| S1 (Auth + Accounts)          | MOYEN         | MOYENNE    | FAIBLE    |
+| S2 (Profils enfants)          | FAIBLE        | FAIBLE     | FAIBLE    |
+| S3 (Cartes + Storage)         | MOYEN         | MOYENNE    | MOYEN     |
+| S4 (Timelines + Slots)        | **ÉLEVÉ**     | **ÉLEVÉE** | **ÉLEVÉ** |
+| S5 (Sessions + Tableau)       | **ÉLEVÉ**     | **ÉLEVÉE** | **ÉLEVÉ** |
+| S6 (Verrouillage + Anti-choc) | MOYEN         | ÉLEVÉE     | MOYEN     |
+| S7 (Séquençage)               | MOYEN         | MOYENNE    | FAIBLE    |
+| S8 (Offline + Sync)           | MOYEN         | ÉLEVÉE     | MOYEN     |
+| S9 (Quotas + Downgrade)       | FAIBLE        | FAIBLE     | FAIBLE    |
+| S10 (Devices)                 | FAIBLE        | FAIBLE     | FAIBLE    |
+| S11 (Plateforme)              | MOYEN         | MOYENNE    | FAIBLE    |
+| S12 (Admin)                   | FAIBLE        | FAIBLE     | FAIBLE    |
 
 **Total estimé** : **~150-200 heures** de développement.
 
@@ -854,17 +882,17 @@ Le frontend actuel est **massivement legacy**. Pour passer en Slice S1, il faut 
 
 ### A) Fichiers critiques à auditer en détail (Slices futures)
 
-| Fichier | Slice | Raison |
-|---------|-------|--------|
-| `src/hooks/useRBAC.ts` | S1 | RBAC complet à supprimer |
-| `src/contexts/PermissionsContext.tsx` | S1 | RBAC complet à supprimer |
-| `src/hooks/useTachesEdition.ts` | S4 | Logique taches → timelines/slots |
-| `src/hooks/useTachesDnd.ts` | S4 | Drag&drop taches → timelines/slots |
-| `src/page-components/edition/Edition.tsx` | S4 | Page Édition complète (legacy) |
-| `src/page-components/tableau/Tableau.tsx` | S5 | Page Tableau complète (legacy) |
-| `src/hooks/useParametres.ts` | S11 | parametres → account_preferences |
-| `src/hooks/useRecompenses.ts` | S3 | recompenses → cards (reward) |
-| `src/page-components/profil/Profil.tsx` | S2,S10 | profiles → child_profiles + devices |
+| Fichier                                   | Slice  | Raison                              |
+| ----------------------------------------- | ------ | ----------------------------------- |
+| `src/hooks/useRBAC.ts`                    | S1     | RBAC complet à supprimer            |
+| `src/contexts/PermissionsContext.tsx`     | S1     | RBAC complet à supprimer            |
+| `src/hooks/useTachesEdition.ts`           | S4     | Logique taches → timelines/slots    |
+| `src/hooks/useTachesDnd.ts`               | S4     | Drag&drop taches → timelines/slots  |
+| `src/page-components/edition/Edition.tsx` | S4     | Page Édition complète (legacy)      |
+| `src/page-components/tableau/Tableau.tsx` | S5     | Page Tableau complète (legacy)      |
+| `src/hooks/useParametres.ts`              | S11    | parametres → account_preferences    |
+| `src/hooks/useRecompenses.ts`             | S3     | recompenses → cards (reward)        |
+| `src/page-components/profil/Profil.tsx`   | S2,S10 | profiles → child_profiles + devices |
 
 ---
 

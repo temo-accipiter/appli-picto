@@ -5,6 +5,7 @@ Guide patterns utilitaires pour **Appli-Picto** - Application Next.js 16 pour en
 ## 🎯 Vue d'Ensemble
 
 Ce dossier contient **23 fichiers utilitaires** organisés en **6 sous-dossiers thématiques** :
+
 - **Racine** (9 fichiers) : Supabase client, validation, RGPD, permissions
 - **images/** (7 fichiers) : Validation, compression, conversion formats
 - **storage/** (5 fichiers) : Upload Supabase Storage, signed URLs, cache
@@ -29,9 +30,7 @@ Ce dossier contient **23 fichiers utilitaires** organisés en **6 sous-dossiers 
 import { supabase } from '@/utils/supabaseClient'
 
 async function fetchTaches() {
-  const { data, error } = await supabase
-    .from('taches')
-    .select('*')
+  const { data, error } = await supabase.from('taches').select('*')
 
   return data
 }
@@ -70,6 +69,7 @@ useEffect(() => {
 ```
 
 **Configuration** :
+
 - **Timeout** : 15s dev, 5s production
 - **Storage key** : `sb-${projectRef}-auth-token`
 - **SSR-safe** : Vérifie `typeof window !== 'undefined'`
@@ -99,30 +99,31 @@ import {
 ALLOWED_MIME_TYPES = [
   'image/png',
   'image/jpeg',
-  'image/jpg',      // Normalisé automatiquement → image/jpeg
+  'image/jpg', // Normalisé automatiquement → image/jpeg
   'image/webp',
   'image/svg+xml',
-  'image/heic',     // iPhone iOS 11+
-  'image/heif',     // Variante HEIF
+  'image/heic', // iPhone iOS 11+
+  'image/heif', // Variante HEIF
 ]
 
 // Limites taille
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024  // 10 Mo (upload Storage)
-TARGET_MAX_UI_SIZE_KB = 20           // 20 Ko (cible compression UI)
-FALLBACK_MAX_UI_SIZE_KB = 30         // 30 Ko (fallback si 20 Ko impossible)
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10 Mo (upload Storage)
+TARGET_MAX_UI_SIZE_KB = 20 // 20 Ko (cible compression UI)
+FALLBACK_MAX_UI_SIZE_KB = 30 // 30 Ko (fallback si 20 Ko impossible)
 
 // Dimensions
-TARGET_DIMENSION = 192               // 192×192px (mobile-first TSA)
+TARGET_DIMENSION = 192 // 192×192px (mobile-first TSA)
 
 // Buckets
-PRIVATE_BUCKET = 'images'            // Bucket images privées utilisateurs
-DEMO_PUBLIC_BUCKET = 'demo-images'  // Bucket démo admin
+PRIVATE_BUCKET = 'images' // Bucket images privées utilisateurs
+DEMO_PUBLIC_BUCKET = 'demo-images' // Bucket démo admin
 
 // Signed URLs TTL
-SIGNED_URL_TTL_SECONDS = 24 * 60 * 60  // 24h
+SIGNED_URL_TTL_SECONDS = 24 * 60 * 60 // 24h
 ```
 
 **Règles** :
+
 - ✅ **TOUJOURS** utiliser constantes config (jamais hardcode)
 - ✅ **TOUJOURS** compresser images avant upload (`compressImageIfNeeded`)
 - ✅ Valider MIME type ET magic bytes (sécurité)
@@ -174,6 +175,7 @@ if (!compressed) {
 ```
 
 **Magic Bytes vérifiés** :
+
 - **PNG** : `89 50 4E 47 0D 0A 1A 0A`
 - **JPEG** : `FF D8`
 - **WEBP** : `RIFF .... WEBP`
@@ -202,6 +204,7 @@ if (!compressed) {
 ```
 
 **Stratégies compression** :
+
 1. **256×256 qualité 0.9 JPEG** (haute qualité)
 2. **256×256 qualité 0.7 JPEG** (qualité moyenne)
 3. **256×256 qualité 0.5 JPEG** (qualité basse)
@@ -211,12 +214,14 @@ if (!compressed) {
 7. **128×128 PNG** (dernier recours, sans perte)
 
 **Optimisations** :
+
 - ✅ **SVG** : Retourné tel quel (déjà optimisé)
 - ✅ **Si ≤ cible** : Retourné tel quel (pas de recompression)
 - ✅ **Canvas** : Dessin optimisé (clearRect avant drawImage)
 - ✅ **Nom fichier** : Extension adaptée (.jpg ou .png)
 
 **Règles** :
+
 - ✅ **TOUJOURS** compresser avant upload Storage
 - ✅ Gérer échec compression (null retourné)
 - ❌ **JAMAIS** upload image non compressée (gaspillage stockage)
@@ -240,7 +245,10 @@ const jpegFile = new File([jpegBlob], 'converted.jpg', { type: 'image/jpeg' })
 **WEBP → JPEG/PNG** (`webpConverter.ts`)
 
 ```typescript
-import { convertWebpToJpeg, convertWebpToPng } from '@/utils/images/webpConverter'
+import {
+  convertWebpToJpeg,
+  convertWebpToPng,
+} from '@/utils/images/webpConverter'
 
 // Convertir WEBP en JPEG (qualité 0.9)
 const jpegBlob = await convertWebpToJpeg(webpFile, 0.9)
@@ -250,6 +258,7 @@ const pngBlob = await convertWebpToPng(webpFile)
 ```
 
 **Règles** :
+
 - ✅ Utiliser pour compatibilité navigateurs anciens
 - ✅ Toujours compresser après conversion
 - ❌ Éviter conversions multiples (perte qualité)
@@ -278,12 +287,12 @@ async function handleUpload(file: File, userId: string) {
 
   // 2. Upload vers Storage
   const result: UploadResult = await uploadImage(compressed, {
-    userId,                     // Requis (scoping par user)
-    bucket: 'images',           // Défaut 'images'
-    prefix: 'taches',           // Préfixe (taches, recompenses, misc)
-    upsert: false,              // false = erreur si existe déjà
-    sign: true,                 // true = retourne signed URL immédiatement
-    expiresIn: 3600,            // TTL signed URL (1h)
+    userId, // Requis (scoping par user)
+    bucket: 'images', // Défaut 'images'
+    prefix: 'taches', // Préfixe (taches, recompenses, misc)
+    upsert: false, // false = erreur si existe déjà
+    sign: true, // true = retourne signed URL immédiatement
+    expiresIn: 3600, // TTL signed URL (1h)
   })
 
   if (result.error) {
@@ -293,8 +302,8 @@ async function handleUpload(file: File, userId: string) {
   }
 
   // ✅ Upload réussi
-  console.log('Path Storage:', result.path)    // "user123/taches/2026/01/27/1738012345-abc123-image.jpg"
-  console.log('Signed URL:', result.url)       // "https://xxx.supabase.co/storage/v1/object/sign/..."
+  console.log('Path Storage:', result.path) // "user123/taches/2026/01/27/1738012345-abc123-image.jpg"
+  console.log('Signed URL:', result.url) // "https://xxx.supabase.co/storage/v1/object/sign/..."
 
   return { path: result.path, url: result.url }
 }
@@ -315,6 +324,7 @@ const path = buildScopedPath('user-abc123', 'image.jpg', 'taches')
 ```
 
 **Structure chemin Storage** :
+
 ```
 {userId}/{prefix}/{YYYY}/{MM}/{DD}/{timestamp}-{random}-{sanitizedFileName}
 
@@ -323,6 +333,7 @@ user-abc123/taches/2026/01/27/1738012345-x3k9z2-mon-image.jpg
 ```
 
 **Règles** :
+
 - ✅ **TOUJOURS** compresser avant `uploadImage()`
 - ✅ **TOUJOURS** scoping par userId (sécurité RLS)
 - ✅ Vérifier `result.error` avant utiliser `result.path/url`
@@ -335,14 +346,17 @@ user-abc123/taches/2026/01/27/1738012345-x3k9z2-mon-image.jpg
 **Pattern signed URLs** :
 
 ```typescript
-import { getSignedImageUrl, invalidateSignedImageUrl } from '@/utils/storage/getSignedUrl'
+import {
+  getSignedImageUrl,
+  invalidateSignedImageUrl,
+} from '@/utils/storage/getSignedUrl'
 import type { SignedUrlResult } from '@/utils/storage/getSignedUrl'
 
 async function loadImage(path: string) {
   const result: SignedUrlResult = await getSignedImageUrl(path, {
-    bucket: 'images',        // Défaut 'images'
-    expiresIn: 3600,         // TTL 1h (défaut 3600s)
-    forceRefresh: false,     // false = utilise cache si valide
+    bucket: 'images', // Défaut 'images'
+    expiresIn: 3600, // TTL 1h (défaut 3600s)
+    forceRefresh: false, // false = utilise cache si valide
   })
 
   if (result.error) {
@@ -355,6 +369,7 @@ async function loadImage(path: string) {
 ```
 
 **Cache automatique** :
+
 - **Clé** : `${bucket}/${path}` (ex: `images/user123/taches/2026/01/27/...`)
 - **TTL** : `expiresIn - 30s` (marge sécurité)
 - **Stockage** : Map en mémoire (vidée au refresh page)
@@ -371,15 +386,18 @@ invalidateSignedImageUrl(oldPath, 'images') // Purge cache
 ```
 
 **WORKAROUND Bucket Avatars** :
+
 - Bucket `avatars` : Utilise `download()` au lieu `createSignedUrl()` (bug SDK)
 - Crée Object URL locale via `URL.createObjectURL(blob)`
 - Cache 24h (pas d'expiration réelle Object URLs)
 
 **Timeout Protection** :
+
 - Timeout 5s pour `createSignedUrl()` (évite hanging)
 - `Promise.race([signedUrlPromise, timeoutPromise])`
 
 **Règles** :
+
 - ✅ **TOUJOURS** utiliser `getSignedImageUrl()` pour images privées
 - ✅ Invalider cache après `replaceImageIfAny()` ou `deleteImageIfAny()`
 - ✅ Gérer `result.error` (timeout, 404, permissions)
@@ -395,7 +413,10 @@ invalidateSignedImageUrl(oldPath, 'images') // Purge cache
 import { deleteImageIfAny } from '@/utils/storage/deleteImageIfAny'
 
 // Supprimer image si path fourni (safe si null)
-const deleted = await deleteImageIfAny('user123/taches/2026/01/27/image.jpg', 'images')
+const deleted = await deleteImageIfAny(
+  'user123/taches/2026/01/27/image.jpg',
+  'images'
+)
 if (deleted) {
   console.log('Image supprimée')
 }
@@ -408,8 +429,8 @@ import { replaceImageIfAny } from '@/utils/storage/replaceImageIfAny'
 
 // Remplacer image existante par nouvelle
 const result = await replaceImageIfAny(
-  oldPath,         // Path existant (supprimé si fourni)
-  newFile,         // Nouveau fichier (uploadé)
+  oldPath, // Path existant (supprimé si fourni)
+  newFile, // Nouveau fichier (uploadé)
   userId,
   'taches'
 )
@@ -433,7 +454,7 @@ const result = await modernUploadImage(file, {
   userId,
   bucket: 'images',
   prefix: 'taches',
-  onProgress: (percent) => {
+  onProgress: percent => {
     console.log(`Upload ${percent}%`)
   },
 })
@@ -457,12 +478,12 @@ import {
 } from '@/utils/validationRules'
 
 // Validation nom/label
-const error1 = validateNotEmpty(nom)       // "Le nom est requis"
-const error2 = noEdgeSpaces(nom)           // "Pas d'espace en début/fin"
-const error3 = noDoubleSpaces(nom)         // "Pas de doubles espaces"
+const error1 = validateNotEmpty(nom) // "Le nom est requis"
+const error2 = noEdgeSpaces(nom) // "Pas d'espace en début/fin"
+const error3 = noDoubleSpaces(nom) // "Pas de doubles espaces"
 
 // Normalisation avant enregistrement
-const clean = normalizeSpaces(nom)         // Supprime espaces doublons et bords
+const clean = normalizeSpaces(nom) // Supprime espaces doublons et bords
 
 // Validation pseudo utilisateur
 const errorPseudo = validatePseudo(pseudo) // Max 30 chars
@@ -536,6 +557,7 @@ const errorMatch = matchPassword(confirmPassword)
 ```
 
 **Règles Supabase** :
+
 - ✅ Min 10 caractères (aligné config Supabase Auth)
 - ✅ 1 minuscule + 1 majuscule + 1 chiffre + 1 symbole
 - ❌ Pas d'espace
@@ -596,7 +618,11 @@ const error2 = validateFeatureDisplayName('Créer des tâches')
 const error3 = validateFeatureDescription(description)
 
 // Vérifier unicité
-const error4 = validateFeatureNameUniqueness('create-tasks', existingFeatures, currentId)
+const error4 = validateFeatureNameUniqueness(
+  'create-tasks',
+  existingFeatures,
+  currentId
+)
 ```
 
 ---
@@ -619,15 +645,15 @@ EXPIRY_DAYS = 180 // 6 mois
 type ConsentCategory = 'necessary' | 'analytics' | 'marketing'
 
 interface ConsentChoices {
-  necessary: boolean   // Toujours true (requis)
+  necessary: boolean // Toujours true (requis)
   analytics: boolean
   marketing: boolean
 }
 
 interface ConsentRecord {
-  version: string      // "1.0.0"
-  ts: string           // ISO timestamp
-  mode: string         // "accept-all" | "reject-all" | "custom"
+  version: string // "1.0.0"
+  ts: string // ISO timestamp
+  mode: string // "accept-all" | "reject-all" | "custom"
   choices: ConsentChoices
 }
 ```
@@ -680,7 +706,7 @@ const record = saveConsent(
     marketing: false,
   },
   'custom', // Mode: "accept-all" | "reject-all" | "custom"
-  {}        // Extra metadata (optionnel)
+  {} // Extra metadata (optionnel)
 )
 
 // ✅ Sauvegardé dans localStorage
@@ -722,6 +748,7 @@ unsubscribe()
 ```
 
 **Pattern** :
+
 - Si consentement déjà accordé → Exécute callback immédiatement
 - Sinon → Écoute event `consent:changed`, exécute quand accordé
 
@@ -794,18 +821,20 @@ await tryLogServerConsent({
   ts: new Date().toISOString(),
   mode: 'accept-all',
   choices: { necessary: true, analytics: true, marketing: true },
-  userId: user?.id,          // Optionnel (lié user si auth)
+  userId: user?.id, // Optionnel (lié user si auth)
   userAgent: navigator.userAgent,
-  ip: 'xxx.xxx.xxx.xxx',     // Récupéré server-side
+  ip: 'xxx.xxx.xxx.xxx', // Récupéré server-side
 })
 ```
 
 **Gestion erreurs** :
+
 - ✅ Silent fail (ne bloque pas utilisateur)
 - ✅ Dev warning si Edge Function 503 (normal en dev local)
 - ✅ Console warn si erreur réseau
 
 **Table Supabase** : `consents`
+
 - Colonnes : `id`, `user_id`, `version`, `ts`, `mode`, `choices`, `metadata`, `created_at`
 - RLS : Admin only (utilisateurs peuvent pas lire/modifier)
 
@@ -843,7 +872,9 @@ const data = await exportUserData(userId)
 // }
 
 // Télécharger JSON
-const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+const blob = new Blob([JSON.stringify(data, null, 2)], {
+  type: 'application/json',
+})
 const url = URL.createObjectURL(blob)
 const a = document.createElement('a')
 a.href = url
@@ -952,7 +983,11 @@ import { compressImageIfNeeded } from '@/utils/validationRules'
 ```typescript
 // validationRules.test.ts
 import { describe, it, expect } from 'vitest'
-import { validateEmail, validatePasswordStrength, normalizeEmail } from '@/utils/validationRules'
+import {
+  validateEmail,
+  validatePasswordStrength,
+  normalizeEmail,
+} from '@/utils/validationRules'
 
 describe('validateEmail', () => {
   it('doit valider email correct', () => {
@@ -964,7 +999,9 @@ describe('validateEmail', () => {
   })
 
   it('doit rejeter email avec espaces', () => {
-    expect(validateEmail('user @example.com')).toBe("L'e-mail ne doit pas contenir d'espace.")
+    expect(validateEmail('user @example.com')).toBe(
+      "L'e-mail ne doit pas contenir d'espace."
+    )
   })
 })
 
@@ -976,7 +1013,9 @@ describe('normalizeEmail', () => {
 
 describe('validatePasswordStrength', () => {
   it('doit rejeter mot de passe court', () => {
-    expect(validatePasswordStrength('Pass1!')).toContain('au moins 10 caractères')
+    expect(validatePasswordStrength('Pass1!')).toContain(
+      'au moins 10 caractères'
+    )
   })
 
   it('doit rejeter sans minuscule', () => {
@@ -1000,7 +1039,7 @@ import { compressImageIfNeeded } from '@/utils/validationRules'
 
 // Mock canvas toBlob
 beforeEach(() => {
-  HTMLCanvasElement.prototype.toBlob = vi.fn((callback) => {
+  HTMLCanvasElement.prototype.toBlob = vi.fn(callback => {
     const blob = new Blob(['fake'], { type: 'image/jpeg' })
     callback(blob)
   })
@@ -1039,16 +1078,27 @@ describe('compressImageIfNeeded', () => {
 ```typescript
 // consent.test.ts
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { saveConsent, getConsent, hasConsent, revokeConsent } from '@/utils/consent'
+import {
+  saveConsent,
+  getConsent,
+  hasConsent,
+  revokeConsent,
+} from '@/utils/consent'
 
 // Mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {}
   return {
     getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value },
-    removeItem: (key: string) => { delete store[key] },
-    clear: () => { store = {} },
+    setItem: (key: string, value: string) => {
+      store[key] = value
+    },
+    removeItem: (key: string) => {
+      delete store[key]
+    },
+    clear: () => {
+      store = {}
+    },
   }
 })()
 Object.defineProperty(window, 'localStorage', { value: localStorageMock })
@@ -1078,7 +1128,7 @@ describe('consent utils', () => {
   it('doit vérifier catégorie consentement', () => {
     saveConsent({ analytics: true, marketing: false }, 'custom')
 
-    expect(hasConsent('necessary')).toBe(true)  // Toujours true
+    expect(hasConsent('necessary')).toBe(true) // Toujours true
     expect(hasConsent('analytics')).toBe(true)
     expect(hasConsent('marketing')).toBe(false)
   })
@@ -1117,9 +1167,7 @@ supabase.from('taches').select()
 
 ```typescript
 // ❌ INTERDIT - Upload direct sans compression
-const { error } = await supabase.storage
-  .from('images')
-  .upload(path, file) // File peut être 5 Mo
+const { error } = await supabase.storage.from('images').upload(path, file) // File peut être 5 Mo
 
 // ✅ CORRECT - Compression avant upload
 const compressed = await compressImageIfNeeded(file, TARGET_MAX_UI_SIZE_KB)
@@ -1162,9 +1210,9 @@ await uploadImage(compressed, { userId })
 
 ```typescript
 // ❌ INTERDIT - Hardcode valeurs
-const MAX_SIZE = 20 * 1024        // Hardcode
-const DIMENSION = 192              // Hardcode
-const BUCKET = 'images'            // Hardcode
+const MAX_SIZE = 20 * 1024 // Hardcode
+const DIMENSION = 192 // Hardcode
+const BUCKET = 'images' // Hardcode
 
 // ✅ CORRECT - Utiliser constantes config
 import {
@@ -1216,7 +1264,7 @@ const path = result.path // Safe - path garanti non-null
 
 ```typescript
 // ❌ INTERDIT - Sauvegarder input brut
-const email = emailInput.value           // "  User@Example.COM  "
+const email = emailInput.value // "  User@Example.COM  "
 await supabase.from('profiles').insert({ email })
 
 // ✅ CORRECT - Normaliser avant enregistrement
@@ -1231,32 +1279,38 @@ await supabase.from('profiles').insert({ email })
 Avant d'utiliser utilitaires :
 
 **Supabase Client** :
+
 - [ ] Import depuis `@/utils/supabaseClient` (instance unique)
 - [ ] JAMAIS créer nouvelle instance `createClient()`
 
 **Images** :
+
 - [ ] **TOUJOURS** compresser avec `compressImageIfNeeded()`
 - [ ] Valider MIME type ET magic bytes (`validateImageType` + `validateImageHeader`)
 - [ ] Utiliser constantes config (`TARGET_MAX_UI_SIZE_KB`, `ALLOWED_MIME_TYPES`)
 - [ ] Gérer échec compression (null retourné)
 
 **Upload Storage** :
+
 - [ ] Compresser AVANT `uploadImage()`
 - [ ] Fournir `userId` obligatoire (scoping)
 - [ ] Vérifier `result.error` avant utiliser `result.path/url`
 - [ ] Invalider cache après `replaceImageIfAny()` ou `deleteImageIfAny()`
 
 **Signed URLs** :
+
 - [ ] Utiliser `getSignedImageUrl()` pour images privées
 - [ ] Gérer `result.error` (timeout, 404, permissions)
 - [ ] Invalider cache après modification image
 
 **Validation** :
+
 - [ ] Utiliser fonctions validation appropriées (email, password, texte)
 - [ ] Normaliser avant enregistrement (`normalizeEmail`, `normalizeSpaces`)
 - [ ] Vérifier retour validation (`""` = OK, sinon message erreur)
 
 **RGPD/Consent** :
+
 - [ ] Vérifier `hasConsent(category)` avant trackers
 - [ ] Sauvegarder avec `saveConsent()` + log server (`tryLogServerConsent()`)
 - [ ] Écouter events `consent:changed` pour init conditionnelle
@@ -1292,26 +1346,32 @@ pnpm build                            # Build production (inclut Next.js)
 ### Fichiers Clés
 
 **Instance Supabase** :
+
 - `src/utils/supabaseClient.ts` - Instance unique (TOUJOURS importer depuis)
 
 **Images** :
+
 - `src/utils/images/config.ts` - Constantes configuration
 - `src/utils/validationRules.ts` - Validation + compression
 
 **Storage** :
+
 - `src/utils/storage/uploadImage.ts` - Upload avec scoping
 - `src/utils/storage/getSignedUrl.ts` - Cache signed URLs
 
 **RGPD** :
+
 - `src/utils/consent.ts` - Gestion consentements CNIL
 - `supabase/functions/log-consent/` - Edge Function logging server-side
 
 **Validation** :
+
 - `src/utils/validationRules.ts` - Toutes règles validation
 
 ### Exemples Référence
 
 **Upload complet** :
+
 ```typescript
 // 1. Validation
 const errorType = validateImageType(file)
@@ -1331,6 +1391,7 @@ console.log(result.path, result.url)
 ```
 
 **Consent RGPD complet** :
+
 ```typescript
 // Vérifier consentement existant
 const status = getConsentStatus()

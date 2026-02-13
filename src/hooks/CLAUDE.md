@@ -42,6 +42,7 @@ function TachesListe() {
 ```
 
 **Pourquoi CRITIQUE** :
+
 - ✅ **Réutilisabilité** : Un hook = une source de vérité pour données
 - ✅ **Testabilité** : Mock hooks facilement, pas besoin mock Supabase partout
 - ✅ **Cleanup automatique** : withAbortSafe gère annulation requêtes
@@ -69,7 +70,7 @@ export default function useTaches() {
 
   useEffect(() => {
     // Pattern withAbortSafe pour cleanup automatique
-    return withAbortSafe(async (signal) => {
+    return withAbortSafe(async signal => {
       try {
         const { data, error } = await supabase
           .from('taches')
@@ -95,11 +96,13 @@ export default function useTaches() {
 ### Éléments Obligatoires
 
 **1. États (useState)**
+
 - ✅ `data` : Données fetchées (type Supabase)
 - ✅ `loading: boolean` : État chargement
 - ✅ `error: Error | null` : Erreur éventuelle
 
 **2. Types Supabase**
+
 ```typescript
 import type { Database } from '@/types/supabase'
 
@@ -109,18 +112,17 @@ type TacheUpdate = Database['public']['Tables']['taches']['Update']
 ```
 
 **3. Cleanup (withAbortSafe)**
+
 ```typescript
-return withAbortSafe(async (signal) => {
-  const { data } = await supabase
-    .from('taches')
-    .select()
-    .abortSignal(signal) // Annule si composant démonté
+return withAbortSafe(async signal => {
+  const { data } = await supabase.from('taches').select().abortSignal(signal) // Annule si composant démonté
 
   setTaches(data)
 })
 ```
 
 **4. Gestion Erreurs**
+
 ```typescript
 try {
   const { data, error } = await supabase.from('taches').select()
@@ -143,9 +145,11 @@ try {
 ### 📊 Données (CRUD)
 
 #### **useTaches()** - Lecture Tâches
+
 **Localisation** : `src/hooks/useTaches.ts`
 
 **Usage** :
+
 ```typescript
 import { useTaches } from '@/hooks'
 
@@ -157,6 +161,7 @@ function TableauTaches() {
 ```
 
 **API** :
+
 - `taches: Tache[]` - Liste tâches utilisateur
 - `loading: boolean` - État chargement
 - `error: Error | null` - Erreur éventuelle
@@ -164,9 +169,11 @@ function TableauTaches() {
 ---
 
 #### **useTachesEdition()** - Création/Modification Tâches
+
 **Localisation** : `src/hooks/useTachesEdition.ts`
 
 **Usage** :
+
 ```typescript
 import { useTachesEdition } from '@/hooks'
 
@@ -182,6 +189,7 @@ function TachesEditor() {
 ```
 
 **API** :
+
 - `createTache(data: TacheInsert): Promise<void>` - Créer tâche
 - `updateTache(id: string, updates: TacheUpdate): Promise<void>` - Modifier tâche
 - `deleteTache(id: string): Promise<void>` - Supprimer tâche
@@ -189,9 +197,11 @@ function TachesEditor() {
 ---
 
 #### **useTachesDnd()** - Drag & Drop Tâches
+
 **Localisation** : `src/hooks/useTachesDnd.ts`
 
 **Usage** :
+
 ```typescript
 import { useTachesDnd } from '@/hooks'
 
@@ -207,6 +217,7 @@ function TableauDnd() {
 ```
 
 **API** :
+
 - `taches: Tache[]` - Tâches avec positions
 - `stations: Station[]` - Stations (lieux)
 - `handleDragEnd: (event: DragEndEvent) => void` - Handler drag & drop
@@ -215,9 +226,11 @@ function TableauDnd() {
 ---
 
 #### **useRecompenses()** - CRUD Récompenses
+
 **Localisation** : `src/hooks/useRecompenses.ts`
 
 **API** :
+
 - `recompenses: Recompense[]`
 - `createRecompense(data): Promise<void>`
 - `updateRecompense(id, updates): Promise<void>`
@@ -227,9 +240,11 @@ function TableauDnd() {
 ---
 
 #### **useCategories()** - CRUD Catégories
+
 **Localisation** : `src/hooks/useCategories.ts`
 
 **API** :
+
 - `categories: Categorie[]`
 - `createCategorie(data): Promise<void>`
 - `updateCategorie(id, updates): Promise<void>`
@@ -239,9 +254,11 @@ function TableauDnd() {
 ---
 
 #### **useStations()** - Gestion Stations (Lieux)
+
 **Localisation** : `src/hooks/useStations.ts`
 
 **API** :
+
 - `stations: Station[]`
 - `createStation(data): Promise<void>`
 - `updateStation(id, updates): Promise<void>`
@@ -250,9 +267,11 @@ function TableauDnd() {
 ---
 
 #### **useParametres()** - Paramètres Utilisateur
+
 **Localisation** : `src/hooks/useParametres.ts`
 
 **API** :
+
 - `parametres: Parametres | null`
 - `updateParametres(updates): Promise<void>`
 - `loading: boolean`
@@ -262,9 +281,11 @@ function TableauDnd() {
 ### 🔐 Auth & Permissions
 
 #### **useAuth()** - Authentification
+
 **Localisation** : `src/hooks/useAuth.ts`
 
 **Usage** :
+
 ```typescript
 import { useAuth } from '@/hooks'
 
@@ -284,21 +305,25 @@ function ProfilePage() {
 ```
 
 **API** :
+
 - `user: User | null` - Utilisateur connecté
 - `authReady: boolean` - Flag auth initialisé (TOUJOURS vérifier avant user)
 - `signOut: () => Promise<void>` - Déconnexion
 
 **Règles** :
+
 - ✅ **TOUJOURS** vérifier `authReady` avant `user` (évite flash non-auth)
 - ✅ Utiliser `useAuth()` hook (pas `AuthContext` direct)
 
 ---
 
 #### **useRBAC()** - Permissions Rôles (Role-Based Access Control)
+
 **Localisation** : `src/hooks/useRBAC.ts`
 **Documentation** : `src/hooks/RBAC_GUIDE.md` (guide complet)
 
 **Usage** :
+
 ```typescript
 import { useRBAC } from '@/hooks'
 
@@ -314,6 +339,7 @@ function EditionPage() {
 ```
 
 **API** :
+
 - `isAdmin: boolean` - Utilisateur admin
 - `isFree: boolean` - Utilisateur Free (gratuit)
 - `isSubscriber: boolean` - Utilisateur abonné (payant)
@@ -326,15 +352,18 @@ function EditionPage() {
 ---
 
 #### **useSimpleRole()** - Rôle Utilisateur Simplifié
+
 **Localisation** : `src/hooks/useSimpleRole.ts`
 
 **API** :
+
 - `role: 'visiteur' | 'free' | 'abonne' | 'admin'` - Rôle utilisateur
 - `loading: boolean`
 
 ---
 
 #### **usePermissionsAPI()** - API Permissions Supabase
+
 **Localisation** : `src/hooks/usePermissionsAPI.ts`
 
 **Usage interne** : Utilisé par `useRBAC` pour fetch permissions depuis DB
@@ -342,9 +371,11 @@ function EditionPage() {
 ---
 
 #### **useAdminPermissions()** - Permissions Admin Avancées
+
 **Localisation** : `src/hooks/useAdminPermissions.ts`
 
 **API** :
+
 - `canManageUsers: boolean` - Gérer utilisateurs
 - `canViewMetrics: boolean` - Voir métriques
 - `canManageQuotas: boolean` - Gérer quotas
@@ -354,9 +385,11 @@ function EditionPage() {
 ### 📈 Quotas & Abonnements
 
 #### **useAccountStatus()** - Quotas Utilisateur
+
 **Localisation** : `src/hooks/useAccountStatus.ts`
 
 **Usage** :
+
 ```typescript
 import { useAccountStatus } from '@/hooks'
 
@@ -372,6 +405,7 @@ function CreateTaskButton() {
 ```
 
 **API** :
+
 - `canCreateTask: boolean` - Peut créer tâche (quota respecté)
 - `canCreateReward: boolean` - Peut créer récompense
 - `canCreateCategory: boolean` - Peut créer catégorie
@@ -379,15 +413,18 @@ function CreateTaskButton() {
 - `limits: { tasks: number, rewards: number, categories: number }` - Limites rôle
 
 **Règles** :
+
 - ✅ **TOUJOURS** vérifier `canCreateTask` avant création tâche
 - ✅ Combiner avec `<FeatureGate>` pour UI conditionnelle
 
 ---
 
 #### **useSubscriptionStatus()** - Statut Abonnement Stripe
+
 **Localisation** : `src/hooks/useSubscriptionStatus.ts`
 
 **API** :
+
 - `isSubscribed: boolean` - Utilisateur abonné actif
 - `subscriptionStatus: 'active' | 'canceled' | 'past_due' | null`
 - `subscriptionEndDate: Date | null` - Date fin abonnement
@@ -398,9 +435,11 @@ function CreateTaskButton() {
 ### 🎨 UX & Accessibilité
 
 #### **useToast()** - Notifications Utilisateur
+
 **Localisation** : Via `@/contexts/ToastContext`
 
 **Usage** :
+
 ```typescript
 import { useToast } from '@/hooks'
 
@@ -421,9 +460,11 @@ function CreateButton() {
 ```
 
 **API** :
+
 - `showToast(message: string, type: 'success' | 'error' | 'info'): void`
 
 **Règles TSA-friendly** :
+
 - ✅ Messages courts et clairs (enfants autistes)
 - ✅ Pas de toasts multiples simultanés (surcharge visuelle)
 - ❌ Éviter toasts trop longs (>3s)
@@ -431,9 +472,11 @@ function CreateButton() {
 ---
 
 #### **useLoading()** - État Chargement Global
+
 **Localisation** : Via `@/contexts/LoadingContext`
 
 **Usage** :
+
 ```typescript
 import { useLoading } from '@/hooks'
 
@@ -454,10 +497,12 @@ function ImportButton() {
 ```
 
 **API** :
+
 - `loading: boolean` - État global
 - `setLoading(state: boolean): void`
 
 **Règles** :
+
 - ✅ **TOUJOURS** reset dans `finally` (évite loading bloqué)
 - ✅ Utiliser pour opérations longues (>1s)
 - ❌ Ne PAS utiliser pour chargements courts (<500ms)
@@ -465,9 +510,11 @@ function ImportButton() {
 ---
 
 #### **useAudioContext()** - Sons et Beeps
+
 **Localisation** : `src/hooks/useAudioContext.ts`
 
 **Usage** :
+
 ```typescript
 import { useAudioContext } from '@/hooks'
 
@@ -485,10 +532,12 @@ function TimeTimerAlert() {
 ```
 
 **API** :
+
 - `playSound(url: string, volume?: number): Promise<void>` - Lecture fichier audio
 - `playBeep(frequency: number): void` - Son bip (fréquence Hz)
 
 **Règles** :
+
 - ✅ Volume par défaut 0.5 (50%)
 - ✅ Respecter préférences utilisateur (mode silencieux)
 - ❌ Éviter sons trop forts ou brusques (TSA-friendly)
@@ -496,9 +545,11 @@ function TimeTimerAlert() {
 ---
 
 #### **useReducedMotion()** - Détection Mouvement Réduit
+
 **Localisation** : `src/hooks/useReducedMotion.ts`
 
 **Usage** :
+
 ```typescript
 import { useReducedMotion } from '@/hooks'
 
@@ -518,9 +569,11 @@ function AnimatedCard() {
 ```
 
 **API** :
+
 - `prefersReducedMotion: boolean` - `true` si utilisateur préfère mouvement réduit
 
 **Règles Accessibilité TSA** :
+
 - ✅ **TOUJOURS** respecter `prefers-reduced-motion`
 - ✅ Si `true` : Désactiver animations ou duration: 0
 - ✅ Animations max 0.3s si activées
@@ -528,6 +581,7 @@ function AnimatedCard() {
 ---
 
 #### **useDragAnimation()** - Animations Drag & Drop
+
 **Localisation** : `src/hooks/useDragAnimation.ts`
 
 **Usage** : Animations douces drag & drop compatibles TSA
@@ -535,9 +589,11 @@ function AnimatedCard() {
 ---
 
 #### **useDebounce()** - Debounce Inputs
+
 **Localisation** : `src/hooks/useDebounce.ts`
 
 **Usage** :
+
 ```typescript
 import { useDebounce } from '@/hooks'
 
@@ -555,14 +611,17 @@ function SearchInput() {
 ```
 
 **API** :
+
 - `useDebounce<T>(value: T, delay: number): T` - Valeur debouncée
 
 ---
 
 #### **useI18n()** - Internationalisation
+
 **Localisation** : `src/hooks/useI18n.ts`
 
 **Usage** :
+
 ```typescript
 import { useI18n } from '@/hooks'
 
@@ -579,6 +638,7 @@ function Greeting() {
 ```
 
 **API** :
+
 - `t(key: string): string` - Traduire clé
 - `locale: 'fr' | 'en'` - Langue actuelle
 - `setLocale(locale): void` - Changer langue
@@ -588,9 +648,11 @@ function Greeting() {
 ### 💼 Business Logic Extraits (Déc 2024)
 
 #### **useCheckout()** - Stripe Checkout Session
+
 **Localisation** : `src/hooks/useCheckout.ts`
 
 **Usage** :
+
 ```typescript
 import { useCheckout } from '@/hooks'
 
@@ -606,9 +668,11 @@ function SubscribeButton() {
 ```
 
 **API** :
+
 - `handleCheckout(): Promise<void>` - Redirection Stripe Checkout
 
 **Fonctionnalités** :
+
 - Invoke Supabase Functions (primaire) + fallback fetch (secours)
 - Validation automatique priceId depuis env
 - Protection double-clic avec useRef
@@ -617,9 +681,11 @@ function SubscribeButton() {
 ---
 
 #### **useMetrics()** - Métriques Dashboard Admin
+
 **Localisation** : `src/hooks/useMetrics.ts`
 
 **Usage** :
+
 ```typescript
 import { useMetrics } from '@/hooks'
 
@@ -638,6 +704,7 @@ function AdminDashboard() {
 ```
 
 **API** :
+
 - `metrics: AdminMetrics` - Métriques complètes
   - `users: { total, new_7d, active_7d }`
   - `subscriptions: { active, new_7d, cancelled_7d }`
@@ -650,9 +717,11 @@ function AdminDashboard() {
 ---
 
 #### **useTimerPreferences()** - localStorage TimeTimer
+
 **Localisation** : `src/hooks/useTimerPreferences.ts`
 
 **Usage** :
+
 ```typescript
 import { useTimerPreferences } from '@/hooks'
 
@@ -675,6 +744,7 @@ function TimeTimerSettings() {
 ```
 
 **API** :
+
 - `preferences: TimerPreferences` - 5 préférences centralisées
   - `isSilentMode: boolean`
   - `lastDuration: number`
@@ -690,9 +760,11 @@ function TimeTimerSettings() {
 ---
 
 #### **useTimerSvgPath()** - Géométrie SVG TimeTimer
+
 **Localisation** : `src/hooks/useTimerSvgPath.ts`
 
 **Usage** :
+
 ```typescript
 import { useTimerSvgPath } from '@/hooks'
 
@@ -708,6 +780,7 @@ function TimeTimerDisk({ percentage }: { percentage: number }) {
 ```
 
 **API** :
+
 - `redDiskPath: string` - Path SVG disque rouge (memoïzé)
 - `dimensions: { radius, svgSize, centerX, centerY }`
 
@@ -716,9 +789,11 @@ function TimeTimerDisk({ percentage }: { percentage: number }) {
 ---
 
 #### **useDbPseudo()** - Fetch Pseudo Utilisateur
+
 **Localisation** : `src/hooks/useDbPseudo.ts`
 
 **Usage** :
+
 ```typescript
 import { useDbPseudo } from '@/hooks'
 
@@ -730,6 +805,7 @@ function UserGreeting({ userId }: { userId: string }) {
 ```
 
 **API** :
+
 - `pseudo: string | null` - Pseudo utilisateur depuis `profiles.pseudo`
 
 **Pattern** : Fetch automatique avec `withAbortSafe` + cleanup
@@ -739,17 +815,20 @@ function UserGreeting({ userId }: { userId: string }) {
 ### 📦 Data Utilities
 
 #### **useDemoCards()** - Cartes Démo Visiteurs
+
 **Localisation** : `src/hooks/useDemoCards.ts`
 
 **Usage** : Fournir cartes démo pour visiteurs non connectés
 
 **API** :
+
 - `demoTaches: Tache[]` - 3 tâches démo
 - `demoRecompenses: Recompense[]` - 2 récompenses démo
 
 ---
 
 #### **useFallbackData()** - Données Fallback si Erreur
+
 **Localisation** : `src/hooks/useFallbackData.ts`
 
 **Usage** : Données par défaut si fetch échoue
@@ -826,6 +905,7 @@ describe('useTaches', () => {
 ```
 
 **Structure test** :
+
 1. **Mock Supabase** : `vi.mock('@/utils/supabaseClient')`
 2. **Setup/Cleanup** : `beforeEach` / `afterEach`
 3. **Arrange-Act-Assert** : Pattern standard
@@ -894,11 +974,13 @@ describe('useCategories avec MSW', () => {
 ```
 
 **Avantages MSW** :
+
 - ✅ Tests intégration **réalistes** (requêtes HTTP vraies)
 - ✅ Simuler erreurs HTTP spécifiques (500, 403, 429, etc.)
 - ✅ Valider format requêtes Supabase (headers, query params)
 
 **Quand utiliser** :
+
 - ✅ **MSW** : Tests intégration, simulation erreurs réseau, validation format API
 - ✅ **Vitest mocks** : Tests unitaires isolés, rapidité, contrôle précis
 
@@ -923,7 +1005,8 @@ useEffect(() => {
 
     // Traiter résultats individuellement
     if (usersResult.error) console.error('Erreur users:', usersResult.error)
-    if (subscriptionsResult.error) console.error('Erreur subs:', subscriptionsResult.error)
+    if (subscriptionsResult.error)
+      console.error('Erreur subs:', subscriptionsResult.error)
 
     setMetrics({
       users: usersResult.data || [],
@@ -937,6 +1020,7 @@ useEffect(() => {
 ```
 
 **Règles** :
+
 - ✅ Utiliser pour requêtes **indépendantes** (pas de dépendances entre elles)
 - ✅ Gestion erreurs **individuelles** (une erreur n'annule pas les autres)
 - ❌ Éviter si requêtes **dépendantes** (préférer chaînage avec `await`)
@@ -973,7 +1057,7 @@ export function withAbortSafe(
 
 ```typescript
 useEffect(() => {
-  return withAbortSafe(async (signal) => {
+  return withAbortSafe(async signal => {
     const { data, error } = await supabase
       .from('taches')
       .select()
@@ -986,6 +1070,7 @@ useEffect(() => {
 ```
 
 **Pourquoi CRITIQUE** :
+
 - ✅ **Annulation automatique** : Requêtes annulées si composant démonté
 - ✅ **Pas de setState après unmount** : Évite warnings React
 - ✅ **Gestion erreurs propre** : Flag `cancelled` pour ignorer erreurs après unmount
@@ -1021,6 +1106,7 @@ async function updateTache(id: string, updates: TacheUpdate) {
 ```
 
 **Règles** :
+
 - ✅ Update UI **immédiatement** (UX instantané)
 - ✅ Persist en DB **après**
 - ✅ **Revert si erreur** (rollback état précédent)
@@ -1046,6 +1132,7 @@ function TachesListe() {
 ```
 
 **Pourquoi interdit** :
+
 - Code dupliqué (chaque composant refait même logic)
 - Pas de cleanup (requêtes non annulées)
 - Pas de réutilisation
@@ -1060,7 +1147,10 @@ function TachesListe() {
 ```typescript
 // ❌ INTERDIT - Fuite mémoire
 useEffect(() => {
-  supabase.from('taches').select().then(({ data }) => setTaches(data))
+  supabase
+    .from('taches')
+    .select()
+    .then(({ data }) => setTaches(data))
 }, []) // Pas de cleanup si composant démonté
 ```
 
@@ -1133,10 +1223,9 @@ setTaches(data) // Safe - data garanti non-null
 **Localisation** : `@/hooks/_net.ts`
 
 **Signature** :
+
 ```typescript
-function withAbortSafe(
-  fn: (signal: AbortSignal) => Promise<void>
-): () => void
+function withAbortSafe(fn: (signal: AbortSignal) => Promise<void>): () => void
 ```
 
 **Usage** : Voir section "Cleanup avec withAbortSafe"
@@ -1148,6 +1237,7 @@ function withAbortSafe(
 **Localisation** : `@/hooks/_net.ts`
 
 **Signature** :
+
 ```typescript
 function isAbortLike(error: unknown): boolean
 ```

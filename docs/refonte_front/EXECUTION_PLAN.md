@@ -40,18 +40,23 @@ Pour chaque slice, le rapport AUDIT suit ce format :
 ## Rapport AUDIT — Slice SX
 
 ### Fichiers analysés
+
 - `path/to/file.tsx` — [KEEP | MODIFY | DELETE] — raison courte
 
 ### Legacy identifié
+
 - Description du pattern legacy trouvé
 
 ### Manquant
+
 - Ce qui doit être créé ex nihilo
 
 ### Risques
+
 - Points d'attention spécifiques à cette slice
 
 ### Décision
+
 - Prêt pour ADAPT : OUI / NON (si NON, expliquer le bloquant)
 ```
 
@@ -62,11 +67,13 @@ Pour chaque slice, le rapport AUDIT suit ce format :
 > **Objectif** : cartographier l'existant AVANT toute modification. Aucun code modifié dans cette slice.
 
 ### Référence contrat
+
 - §0 (Contexte d'utilisation)
 - §10.1 (Audit initial)
 - §10.2 (Keep / Modify / Delete)
 
 ### Migrations à lire
+
 - Aucune en détail — vue d'ensemble seulement (liste des fichiers dans `supabase/migrations/`)
 
 ### Phase AUDIT (= la totalité de cette slice)
@@ -86,6 +93,7 @@ Pour chaque slice, le rapport AUDIT suit ce format :
 ### Livrable
 
 Un fichier `AUDIT_REPORT.md` dans le repo avec :
+
 - Tree annoté
 - Inventaire legacy (par fichier)
 - Inventaire des tables DB appelées (anciennes vs nouvelles)
@@ -108,6 +116,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : le client Supabase fonctionne avec le nouveau schéma. Login/signup/logout opérationnels. `accounts.status` est lu. Visitor = local-only (pas de DB).
 
 ### Référence contrat
+
 - §0.3 (Modèle contrôle d'accès DB-first)
 - §1.1 (Statuts fonctionnels)
 - §1.2 (Contextes UX)
@@ -119,6 +128,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - Annexe B (Rappel contrôle d'accès DB-first)
 
 ### Migrations à lire
+
 - Phase 1 : migrations 1-2 (enums, accounts, devices)
 - Phase 7 : migrations 16+ (RLS policies sur accounts)
 - Platform : migration P3 (account_preferences — juste constater l'existence)
@@ -160,6 +170,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : CRUD profils enfants fonctionne avec la DB. Le sélecteur d'enfant actif est opérationnel. Contextes Édition/Tableau séparés.
 
 ### Référence contrat
+
 - §1.2 (Contextes UX)
 - §1.3 (Chargement du Contexte Tableau)
 - §2.1 (Matrice des écrans)
@@ -170,6 +181,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §6.2 (Règle d'or Contexte Tableau)
 
 ### Migrations à lire
+
 - Phase 2 : migrations 3-5 (child_profiles, auto "Mon enfant")
 - Phase 7 : RLS policies sur child_profiles
 - Phase 9 : quotas profils (trigger)
@@ -210,6 +222,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : lecture banque cartes, CRUD cartes perso (subscriber), CRUD catégories, images fonctionnelles.
 
 ### Référence contrat
+
 - §3.2.3 (Cartes personnelles & catégories — gating + quotas)
 - §5.2.3 (Cartes — requêtes)
 - §5.2.4 (Catégories & pivot)
@@ -219,6 +232,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §6.4 (PersonalizationModal — Visitor et Free)
 
 ### Migrations à lire
+
 - Phase 3 : migrations 6-8 (cards, categories, user_card_categories)
 - Phase 7 : RLS policies sur cards, categories, pivot
 - Phase 8 : migrations 23-24 (Storage policies)
@@ -262,6 +276,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : CRUD timelines/slots en Édition. Compactage/reflow. Vider timeline. Pas encore de sessions.
 
 ### Référence contrat
+
 - §3.2.1 (Planning visuel — timelines/slots, compactage/reflow, vider timeline, timelines multiples)
 - §3.2.3 (Décocher carte bibliothèque — retirer toutes occurrences)
 - §5.2.5 (Timelines/slots — requêtes)
@@ -269,6 +284,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - Annexe C (Séparation 3 systèmes cœur)
 
 ### Migrations à lire
+
 - Phase 4 : migration 9 (timelines, slots)
 - Phase 7 : RLS policies sur timelines, slots
 
@@ -312,6 +328,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : le Contexte Tableau fonctionne. Création session, validation étapes, progression via snapshot, slots vides invisibles, grille jetons, session terminée.
 
 ### Référence contrat
+
 - §3.1 (Contexte Tableau — toutes sous-sections)
 - §3.1.1 (Slots vides = invisibles Tableau)
 - §3.1.2 (Grille de jetons)
@@ -322,6 +339,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §6.2 (Règle d'or Contexte Tableau)
 
 ### Migrations à lire
+
 - Phase 5 : migrations 10-13.5 (sessions, session_validations, snapshot, epoch, transitions)
 - Phase 7 : RLS policies sur sessions, session_validations
 
@@ -364,12 +382,14 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : en Édition, les boutons sont activés/désactivés selon l'état session. Anti-choc garanti. Suppression carte avec session active = modal + reset.
 
 ### Référence contrat
+
 - §3.2.2 (Sessions — réinitialisation, anti-choc)
 - §3.2.2bis (Matrice de verrouillage complète — preview/started × validé/non validé)
 - §4.3 (Règle anti-choc — implémentation complète)
 - §6.4 (Message « Cette carte est actuellement utilisée... »)
 
 ### Migrations à lire
+
 - Relire Phase 5 (sessions, epoch) pour comprendre les transitions d'état
 - Vérifier les triggers de réinitialisation
 
@@ -384,7 +404,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 1. **Matrice verrouillage** :
    - **Aucune session / Terminée** : tout éditable
    - **Preview (0 validation)** : tout éditable (modifier cartes, ordre, slots, jetons)
-   - **Started (≥1 validation)** : slots validés = verrouillés (pas de déplacement, suppression, modification jetons, vidage). Slots non validés = éditables (déplacement, suppression sauf dernier, vidage). Jetons non validés = non modifiables* (exception : nouveau slot)
+   - **Started (≥1 validation)** : slots validés = verrouillés (pas de déplacement, suppression, modification jetons, vidage). Slots non validés = éditables (déplacement, suppression sauf dernier, vidage). Jetons non validés = non modifiables\* (exception : nouveau slot)
 2. **Réinitialisation de session** (epoch++) : action explicite adulte. S'applique au prochain Chargement Contexte Tableau
 3. **Focus après suppression slot** : si le slot supprimé était au focus (non validé, session started), focus → prochaine étape non validée. Jamais d'écran vide
 4. **Suppression carte depuis bibliothèque** : si utilisée en session active → modal confirmation avec wording contractuel → Réinitialisation session → changement au prochain Chargement
@@ -409,12 +429,14 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : CRUD séquences en Édition (subscriber/admin). Mini-timeline en Tableau. État "fait" local-only.
 
 ### Référence contrat
+
 - §3.1.4 (Mini-timeline de séquence — Tableau)
 - §3.2.5 (Séquençage — Édition)
 - §5.2.7 (Séquences — requêtes)
 - Annexe C (Séparation 3 systèmes cœur)
 
 ### Migrations à lire
+
 - Phase 6 : migrations 14-15 (sequences, sequence_steps)
 - Phase 7 : RLS policies sur sequences, sequence_steps
 
@@ -456,6 +478,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : queue de validations offline, guards UX en Édition, bandeau offline persistant, fusion monotone, anti-choc multi-appareils.
 
 ### Référence contrat
+
 - §4 entier (Contrat Sync / Offline / Cache)
 - §4.4 (Offline — autorisé vs interdit)
 - §4.4.1 (Indicateur offline persistant — Édition)
@@ -465,6 +488,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §6.1 catégorie #5 (Conflit epoch)
 
 ### Migrations à lire
+
 - Relire Phase 5 (sessions, epoch) pour comprendre la fusion
 
 ### Phase AUDIT
@@ -503,6 +527,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : gestion des refus de quota/feature gating. PersonalizationModal. Mode execution-only. Verrouillage progressif profils. Upgrade.
 
 ### Référence contrat
+
 - §3.2.3 (Quotas cartes)
 - §3.2.4 (Quotas profils/devices — profils seulement ici)
 - §6.1 catégories #3 et #8 (Quota/feature gating, Execution-only)
@@ -510,6 +535,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §9 entier (Downgrade Subscriber → Free)
 
 ### Migrations à lire
+
 - Phase 9 : migrations 25-30 (quotas, execution-only, downgrade lock)
 - Relire Phase 7 (RLS policies execution-only)
 
@@ -545,12 +571,14 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : gestion complète du lifecycle des devices en Page Profil. Enregistrement, liste, révocation, quota.
 
 ### Référence contrat
+
 - §3.2.4 (Profils enfants & appareils — partie devices)
 - §5.2.1 (Accounts — lifecycle device complet)
 - §6.1 catégorie #3 (Quota — devices)
 - §6.4 (Message « Nombre maximum d'appareils atteint. »)
 
 ### Migrations à lire
+
 - Phase 1 : migration 2 (devices)
 - Phase 7 : RLS policies sur devices
 - Phase 9 : quota devices (trigger)
@@ -587,6 +615,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : fonctionnalités plateforme complètes. Préférences. Bannière consentement (bug corrigé). Abonnement Stripe. Suppression compte. Suppression profil enfant.
 
 ### Référence contrat
+
 - §8.1 (Préférences — account_preferences)
 - §8.2 (RGPD / consentement — bannière, payload complet, correction bug legacy)
 - §8.3 (Abonnement / Stripe — create-checkout-session)
@@ -598,6 +627,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 - §8.9 (Micro-features — confettis, TrainProgressBar, TimeTimer, toasts)
 
 ### Migrations à lire
+
 - Platform : migrations P1 (subscriptions, subscription_logs), P2 (consent_events), P3 (account_preferences), P4 (admin_audit_log)
 - Phase 8 : Storage policies (pour purge avatar)
 
@@ -649,10 +679,12 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 > **Objectif** : routes admin pour statut Admin. Non visible pour les autres statuts.
 
 ### Référence contrat
+
 - §3.3 (Contexte Administration)
 - §8.10 (Administration)
 
 ### Migrations à lire
+
 - Phase 7 : migrations 20-22 (admin RLS, admin_support_channel)
 - Platform : migration P4 (admin_audit_log)
 

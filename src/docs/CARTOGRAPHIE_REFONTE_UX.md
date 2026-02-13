@@ -49,12 +49,13 @@
 
 ### Routes Next.js (App Router)
 
-| Route | Fichier | Groupe | Protection | Composant Principal |
-|-------|---------|--------|------------|---------------------|
-| `/edition` | `src/app/(protected)/edition/page.tsx` | Protected | Auth requise | `Edition.tsx` (517 lignes) |
-| `/tableau` | `src/app/(public)/tableau/page.tsx` | Public | Aucune (visiteurs OK) | `Tableau.tsx` (394 lignes) |
+| Route      | Fichier                                | Groupe    | Protection            | Composant Principal        |
+| ---------- | -------------------------------------- | --------- | --------------------- | -------------------------- |
+| `/edition` | `src/app/(protected)/edition/page.tsx` | Protected | Auth requise          | `Edition.tsx` (517 lignes) |
+| `/tableau` | `src/app/(public)/tableau/page.tsx`    | Public    | Aucune (visiteurs OK) | `Tableau.tsx` (394 lignes) |
 
 **Notes** :
+
 - Les deux pages utilisent `export const dynamic = 'force-dynamic'` (client-side rendering)
 - Édition = zone protégée (auth obligatoire)
 - Tableau = zone publique (mode démo disponible pour visiteurs)
@@ -99,6 +100,7 @@ Edition.tsx [517L]
 ```
 
 **Fichiers principaux** :
+
 - `/src/page-components/edition/Edition.tsx` (517 lignes)
 - `/src/components/features/taches/taches-edition/TachesEdition.tsx` (312 lignes)
 - `/src/components/features/recompenses/recompenses-edition/RecompensesEdition.tsx` (193 lignes)
@@ -108,6 +110,7 @@ Edition.tsx [517L]
 ### 2.2 Bibliothèque de Cartes - Rendu
 
 **TachesEdition** :
+
 ```typescript
 // Fichier: TachesEdition.tsx (lignes 229-257)
 <DndGrid
@@ -134,10 +137,12 @@ Edition.tsx [517L]
 ```
 
 **Filtrage** :
+
 ```typescript
 // Deux filtres indépendants
 const visibleTaches = taches.filter(t => {
-  const catMatch = filterCategory === 'all' || (t.categorie || 'none') === filterCategory
+  const catMatch =
+    filterCategory === 'all' || (t.categorie || 'none') === filterCategory
   const doneMatch = !filterDone || !!t.aujourdhui
   return catMatch && doneMatch
 })
@@ -149,13 +154,14 @@ const visibleTaches = taches.filter(t => {
 
 **Hooks Custom CRITIQUES** :
 
-| Hook | Fichier | Responsabilité | Méthodes |
-|------|---------|----------------|----------|
+| Hook                       | Fichier                                | Responsabilité      | Méthodes                                                                                                                                  |
+| -------------------------- | -------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `useTachesEdition(reload)` | `src/hooks/useTachesEdition.ts` (350L) | CRUD tâches édition | `toggleAujourdhui()`, `updateLabel()`, `updateCategorie()`, `deleteTache()`, `resetEdition()`, `addTacheFromFile()`, `updateTacheImage()` |
-| `useRecompenses(reload)` | `src/hooks/useRecompenses.ts` (440L) | CRUD récompenses | `selectRecompense()`, `deselectAll()`, `updateLabel()`, `deleteRecompense()`, `createRecompense()`, `addRecompenseFromFile()` |
-| `useCategories(reload)` | `src/hooks/useCategories.ts` (173L) | CRUD catégories | `addCategory()`, `deleteCategory()`, `updateCategory()` |
+| `useRecompenses(reload)`   | `src/hooks/useRecompenses.ts` (440L)   | CRUD récompenses    | `selectRecompense()`, `deselectAll()`, `updateLabel()`, `deleteRecompense()`, `createRecompense()`, `addRecompenseFromFile()`             |
+| `useCategories(reload)`    | `src/hooks/useCategories.ts` (173L)    | CRUD catégories     | `addCategory()`, `deleteCategory()`, `updateCategory()`                                                                                   |
 
 **Flux Création Tâche** :
+
 ```
 User clique "➕ Ajouter"
   ↓
@@ -179,6 +185,7 @@ Toast success + UI mise à jour
 ```
 
 **Flux Édition Label** :
+
 ```
 User modifie label "Faire le lit" → "Ranger la chambre"
   ↓
@@ -196,6 +203,7 @@ setSuccessIds([id]) → Animation CSS 600ms ".input--success"
 ```
 
 **Flux Suppression** :
+
 ```
 User clique ButtonDelete
   ↓
@@ -218,6 +226,7 @@ Toast success + fermeture modal
 **Système** : Colonne `taches.aujourdhui` (booléen)
 
 **Comportement** :
+
 ```typescript
 // Fichier: Edition.tsx (lignes 237-259)
 const handleToggleAujourdhui = (id: string, current: boolean) => {
@@ -226,29 +235,34 @@ const handleToggleAujourdhui = (id: string, current: boolean) => {
 
 // Hook: useTachesEdition.ts (lignes 158-177)
 const toggleAujourdhui = async (id, current) => {
-  await supabase.from('taches')
+  await supabase
+    .from('taches')
     .update({
       aujourdhui: !current,
-      fait: false  // ⚠️ Reset "fait" quand on change sélection
+      fait: false, // ⚠️ Reset "fait" quand on change sélection
     })
     .eq('id', id)
     .eq('user_id', user.id)
 
-  setTaches(prev => prev.map(t =>
-    t.id === id ? {...t, aujourdhui: !current, fait: false} : t
-  ))
+  setTaches(prev =>
+    prev.map(t =>
+      t.id === id ? { ...t, aujourdhui: !current, fait: false } : t
+    )
+  )
 }
 ```
 
 **⚠️ IMPORTANT** : Cocher "aujourd'hui" remet automatiquement `fait=false` pour éviter incohérences.
 
 **Visuel** :
+
 - Checkbox coché → Classe CSS `.active` sur EditionCard
 - Filtre UI (bouton "Tâches d'aujourd'hui") → Affiche seulement `aujourdhui=true`
 
 ### 2.5 Catégories et Filtres
 
 **Table** : `categories`
+
 ```sql
 CREATE TABLE categories (
   id UUID PRIMARY KEY,
@@ -260,9 +274,11 @@ CREATE TABLE categories (
 ```
 
 **Catégories système** (hardcodées) :
+
 - `maison`, `école`, `loisirs`, `hygiène`, `alimentation`, `social`
 
 **Hook useCategories** : Charge catégories système + utilisateur
+
 ```typescript
 // Fichier: useCategories.ts (lignes 44-62)
 const { data } = await supabase
@@ -273,6 +289,7 @@ const { data } = await supabase
 ```
 
 **Filtre UI** :
+
 ```typescript
 // TachesEdition.tsx (lignes 108-123)
 <Select
@@ -286,6 +303,7 @@ const { data } = await supabase
 ```
 
 **ModalCategory** :
+
 - Affiche liste catégories utilisateur (non-système)
 - Input ajout nouvelle catégorie
 - Bouton delete par catégorie avec confirmation
@@ -293,17 +311,18 @@ const { data } = await supabase
 
 ### 2.6 Modales Liées
 
-| Modale | Composant | Trigger | Lazy-loaded |
-|--------|-----------|---------|-------------|
-| **ModalAjout** (tâche) | `ModalAjout` | Bouton "➕ Ajouter" | ❌ Non |
-| **ModalAjout** (récompense) | `ModalAjout` | Bouton "🏱 Ajouter récompense" | ❌ Non |
-| **ModalCategory** | `ModalCategory` | "⚙️ Gérer catégories" | ✅ Oui (Suspense) |
-| **ModalConfirm** (suppression tâche) | `ModalConfirm` | ButtonDelete | ✅ Oui (Suspense) |
-| **ModalConfirm** (suppression récompense) | `ModalConfirm` | ButtonDelete | ✅ Oui (Suspense) |
-| **ModalConfirm** (reset édition) | `ModalConfirm` | "Réinitialiser" | ✅ Oui (Suspense) |
-| **ModalQuota** | `ModalQuota` | Quota dépassé | ✅ Oui (Suspense) |
+| Modale                                    | Composant       | Trigger                       | Lazy-loaded       |
+| ----------------------------------------- | --------------- | ----------------------------- | ----------------- |
+| **ModalAjout** (tâche)                    | `ModalAjout`    | Bouton "➕ Ajouter"           | ❌ Non            |
+| **ModalAjout** (récompense)               | `ModalAjout`    | Bouton "🏱 Ajouter récompense" | ❌ Non            |
+| **ModalCategory**                         | `ModalCategory` | "⚙️ Gérer catégories"         | ✅ Oui (Suspense) |
+| **ModalConfirm** (suppression tâche)      | `ModalConfirm`  | ButtonDelete                  | ✅ Oui (Suspense) |
+| **ModalConfirm** (suppression récompense) | `ModalConfirm`  | ButtonDelete                  | ✅ Oui (Suspense) |
+| **ModalConfirm** (reset édition)          | `ModalConfirm`  | "Réinitialiser"               | ✅ Oui (Suspense) |
+| **ModalQuota**                            | `ModalQuota`    | Quota dépassé                 | ✅ Oui (Suspense) |
 
 **Lazy-loading pattern** :
+
 ```typescript
 // Edition.tsx (lignes 31-33)
 const ModalCategory = lazy(() => import('@/components').then(m => ({ default: m.ModalCategory })))
@@ -321,18 +340,20 @@ const ModalQuota = lazy(() => import('@/components').then(m => ({ default: m.Mod
 ### 2.7 Gestion Quotas
 
 **Hook useRBAC** :
+
 ```typescript
 // Fichier: Edition.tsx (lignes 68-76)
 const {
-  canCreateTask,       // boolean
-  canCreateReward,     // boolean
-  canCreateCategory,   // boolean
-  getQuotaInfo,        // (type) => { limit, current, remaining, percentage }
-  refreshQuotas,       // () => Promise<void>
+  canCreateTask, // boolean
+  canCreateReward, // boolean
+  canCreateCategory, // boolean
+  getQuotaInfo, // (type) => { limit, current, remaining, percentage }
+  refreshQuotas, // () => Promise<void>
 } = useRBAC()
 ```
 
 **Vérification avant création** :
+
 ```typescript
 // Edition.tsx (lignes 298-314)
 const handleQuotaCheck = (type: 'task' | 'reward') => {
@@ -343,7 +364,7 @@ const handleQuotaCheck = (type: 'task' | 'reward') => {
     setQuotaModalData({
       type,
       currentUsage: quota.current,
-      limit: quota.limit
+      limit: quota.limit,
     })
     setShowQuotaModal(true)
     return false
@@ -354,12 +375,12 @@ const handleQuotaCheck = (type: 'task' | 'reward') => {
 
 **Quotas par rôle** :
 
-| Rôle | Tâches | Récompenses | Catégories |
-|------|--------|-------------|------------|
-| Visiteur | 3 démo | - | - |
-| Free | 5/mois | 2/mois | 2 max |
-| Abonné | 40 | 10 | 50 |
-| Admin | ∞ | ∞ | ∞ |
+| Rôle     | Tâches | Récompenses | Catégories |
+| -------- | ------ | ----------- | ---------- |
+| Visiteur | 3 démo | -           | -          |
+| Free     | 5/mois | 2/mois      | 2 max      |
+| Abonné   | 40     | 10          | 50         |
+| Admin    | ∞      | ∞           | ∞          |
 
 ---
 
@@ -398,6 +419,7 @@ Tableau.tsx [394L]
 ```
 
 **Fichiers principaux** :
+
 - `/src/page-components/tableau/Tableau.tsx` (394 lignes)
 - `/src/components/features/taches/taches-dnd/TachesDnd.tsx` (~350 lignes)
 - `/src/components/shared/card/tableau-card/TableauCard.tsx` (131 lignes)
@@ -434,9 +456,12 @@ Tableau.tsx [394L]
 
 ```typescript
 // Fichier: useTachesDnd.ts (lignes 60-120)
-const useTachesDnd = (onChange: (done: number, total: number) => void, reload = 0) => {
+const useTachesDnd = (
+  onChange: (done: number, total: number) => void,
+  reload = 0
+) => {
   const [taches, setTaches] = useState([])
-  const [doneMap, setDone] = useState({})  // { tacheId → bool }
+  const [doneMap, setDone] = useState({}) // { tacheId → bool }
 
   // Charge SEULEMENT tâches avec aujourd'hui=true
   const loadTaches = useCallback(async () => {
@@ -444,7 +469,7 @@ const useTachesDnd = (onChange: (done: number, total: number) => void, reload = 
       .from('taches')
       .select('*')
       .eq('user_id', user.id)
-      .eq('aujourdhui', true)        // ⚠️ FILTRE CRITIQUE
+      .eq('aujourdhui', true) // ⚠️ FILTRE CRITIQUE
       .order('position', { ascending: true })
 
     const initDone = Object.fromEntries(
@@ -456,7 +481,8 @@ const useTachesDnd = (onChange: (done: number, total: number) => void, reload = 
 
   // Toggle fait = UPDATE DB + state local
   const toggleDone = async (id, newDone) => {
-    await supabase.from('taches')
+    await supabase
+      .from('taches')
       .update({ fait: newDone })
       .eq('id', id)
       .eq('user_id', user.id)
@@ -467,26 +493,27 @@ const useTachesDnd = (onChange: (done: number, total: number) => void, reload = 
   }
 
   // Sauvegarder ordre drag-drop
-  const saveOrder = async (newList) => {
+  const saveOrder = async newList => {
     // Batch par 5 avec délai 100ms
     for (const batch of chunks(newList, 5)) {
-      await Promise.all(batch.map((t, i) =>
-        supabase.from('taches')
-          .update({ position: i })
-          .eq('id', t.id)
-      ))
+      await Promise.all(
+        batch.map((t, i) =>
+          supabase.from('taches').update({ position: i }).eq('id', t.id)
+        )
+      )
       await delay(100)
     }
   }
 
   // Reset tous "fait" à false
   const resetAll = async () => {
-    await supabase.from('taches')
+    await supabase
+      .from('taches')
       .update({ fait: false })
       .eq('user_id', user.id)
       .eq('aujourdhui', true)
 
-    setDone({})  // Tous à false
+    setDone({}) // Tous à false
     onChange(0, taches.length)
   }
 
@@ -499,6 +526,7 @@ const useTachesDnd = (onChange: (done: number, total: number) => void, reload = 
 ### 3.3 Logique de Progression
 
 **États** :
+
 ```typescript
 // Tableau.tsx (lignes 60-64)
 const [doneCount, setDoneCount] = useState(0)
@@ -508,6 +536,7 @@ const [showModalRecompense, setShowModalRecompense] = useState(false)
 ```
 
 **Callback onChange** : Rapporte progression au composant parent
+
 ```typescript
 // Tableau.tsx (lignes 121-124)
 useTachesDnd((done, total) => {
@@ -517,6 +546,7 @@ useTachesDnd((done, total) => {
 ```
 
 **Détection fin tâches** :
+
 ```typescript
 // Tableau.tsx (lignes 268-293)
 useEffect(() => {
@@ -535,15 +565,16 @@ useEffect(() => {
 
   if (confettisEnabled) {
     setShowConfettis(true)
-    setTimeout(() => setShowConfettis(false), 10000)  // 10s
+    setTimeout(() => setShowConfettis(false), 10000) // 10s
   }
 
   setShowModalRecompense(true)
-  setTimeout(() => setShowModalRecompense(false), 13000)  // 13s
+  setTimeout(() => setShowModalRecompense(false), 13000) // 13s
 }, [totalTaches, doneCount, isDemoMode, parametres])
 ```
 
 **TrainProgressBar** : Progression visuelle
+
 ```typescript
 // TrainProgressBar.tsx (lignes 140-157)
 const progress = totalTaches > 0 ? (doneCount / totalTaches) * 100 : 0
@@ -561,6 +592,7 @@ const trainPosition = stationCount > 1
 ### 3.4 Système de Récompenses
 
 **Sélection récompense unique** :
+
 ```typescript
 // Tableau.tsx (lignes 244-257)
 const selected = recompenses.find(r => r?.selected === true)
@@ -569,14 +601,15 @@ const selectedReward = useMemo(() => {
   const list = Array.isArray(recompenses) ? recompenses : []
 
   if (isDemoMode && list.length > 0) {
-    return list[0]  // Démo : première récompense
+    return list[0] // Démo : première récompense
   }
 
-  return selected   // Utilisateur : celle marquée selected=true
+  return selected // Utilisateur : celle marquée selected=true
 }, [isDemoMode, recompenses, selected])
 ```
 
 **Index UNIQUE DB** : Garantit une seule récompense sélectionnée par utilisateur
+
 ```sql
 -- Fichier: supabase/migrations_archive/20251015194000_add_missing_indexes.sql (lignes 37-41)
 CREATE UNIQUE INDEX idx_recompenses_user_selected
@@ -585,6 +618,7 @@ CREATE UNIQUE INDEX idx_recompenses_user_selected
 ```
 
 **RPC Atomique** : Sélection sans race condition
+
 ```typescript
 // useRecompenses.ts (lignes 120-134)
 const selectRecompense = async (id: string) => {
@@ -595,13 +629,16 @@ const selectRecompense = async (id: string) => {
   if (error) throw error
 
   // Mise à jour state local
-  setRecompenses(prev => prev.map(r =>
-    r.id === id ? {...r, selected: true} : {...r, selected: false}
-  ))
+  setRecompenses(prev =>
+    prev.map(r =>
+      r.id === id ? { ...r, selected: true } : { ...r, selected: false }
+    )
+  )
 }
 ```
 
 **ModalRecompense** : Affichée 13s à la fin
+
 ```typescript
 // Tableau.tsx (lignes 371-378)
 {showModalRecompense && selectedReward && (
@@ -616,6 +653,7 @@ const selectRecompense = async (id: string) => {
 ```
 
 **SelectedRewardFloating** : Card récompense grisée flottante
+
 ```typescript
 // Tableau.tsx (lignes 381-382)
 {showRecompense && selectedReward && doneCount < totalTaches && (
@@ -626,6 +664,7 @@ const selectRecompense = async (id: string) => {
 ### 3.5 Confettis et Sons
 
 **Confettis** : Librairie `react-confetti`
+
 ```typescript
 // Tableau.tsx (lignes 364-370)
 {showConfettis && (
@@ -640,13 +679,14 @@ const selectRecompense = async (id: string) => {
 ```
 
 **Beep Audio** : Son 440 Hz (note La) à chaque coche
+
 ```typescript
 // TableauCard.tsx (lignes 49-53)
 const { playBeep } = useAudioContext()
 
-const handleCheck = (e) => {
+const handleCheck = e => {
   if (!done && playSound) {
-    playBeep(440)  // Fréquence 440Hz, durée 0.1s, volume 0.1
+    playBeep(440) // Fréquence 440Hz, durée 0.1s, volume 0.1
   }
   toggleDone(tache.id, !done)
 }
@@ -655,6 +695,7 @@ const handleCheck = (e) => {
 ### 3.6 Persistance Locale
 
 **localStorage (DisplayContext)** :
+
 ```typescript
 // DisplayContext.tsx (lignes 38-82)
 const [showTrain, setShowTrain] = useState(() =>
@@ -673,16 +714,17 @@ useEffect(() => {
 
 **Clés localStorage tableau** :
 
-| Clé | Valeur | Utilisé pour |
-|-----|--------|--------------|
-| `showTrain` | `'true'`/`'false'` | Affichage TrainProgressBar |
-| `showAutre` | `'true'`/`'false'` | Affichage autre section |
-| `showRecompense` | `'true'`/`'false'` | Affichage SelectedRewardFloating |
-| `showTimeTimer` | `'true'`/`'false'` | Affichage FloatingTimeTimer |
-| `ligne` | `'1'`/`'6'`/`'12'` | Ligne métro sélectionnée (TrainProgressBar) |
-| `timeTimer_position` | JSON `{x, y}` | Position floating timer |
+| Clé                  | Valeur             | Utilisé pour                                |
+| -------------------- | ------------------ | ------------------------------------------- |
+| `showTrain`          | `'true'`/`'false'` | Affichage TrainProgressBar                  |
+| `showAutre`          | `'true'`/`'false'` | Affichage autre section                     |
+| `showRecompense`     | `'true'`/`'false'` | Affichage SelectedRewardFloating            |
+| `showTimeTimer`      | `'true'`/`'false'` | Affichage FloatingTimeTimer                 |
+| `ligne`              | `'1'`/`'6'`/`'12'` | Ligne métro sélectionnée (TrainProgressBar) |
+| `timeTimer_position` | JSON `{x, y}`      | Position floating timer                     |
 
 **sessionStorage (Edition)** :
+
 ```typescript
 // Edition.tsx (lignes 116-118)
 const [showRecompenses, setShowRecompenses] = useState(
@@ -712,27 +754,30 @@ DndCard [100L]            ← Wrapper drag-drop générique (séparé)
 **Fichier** : `/src/components/shared/card/base-card/BaseCard.tsx` (96 lignes)
 
 **Responsabilités** :
+
 - Layout Grid 2-colonnes : `image-section` + `content`
 - Gestion états visuels : `size`, `disabled`, `completed`, `checked`
 - Animations Framer Motion : hover scale 1.02, fade out smooth
 - Accessibilité TSA : focus-within, focus-visible, reduced-motion
 
 **Props** :
+
 ```typescript
 interface BaseCardProps {
-  imageSlot?: ReactNode         // Slot image
-  contentSlot?: ReactNode       // Slot contenu
-  actionsSlot?: ReactNode       // Slot actions
+  imageSlot?: ReactNode // Slot image
+  contentSlot?: ReactNode // Slot contenu
+  actionsSlot?: ReactNode // Slot actions
   size?: 'sm' | 'md' | 'lg'
   disabled?: boolean
-  completed?: boolean           // Grayscale
-  checked?: boolean             // Bordure + couleur
+  completed?: boolean // Grayscale
+  checked?: boolean // Bordure + couleur
   className?: string
   ariaLabel?: string
 }
 ```
 
 **SCSS** : `/src/components/shared/card/base-card/BaseCard.scss` (165 lignes)
+
 - Tokens Phase 6 validés : `spacing()`, `radius()`, `shadow()`, `text()`, `surface()`, `tsa-pastel()`
 - Touch targets min : `size('touch-target-min')` → 44×44px
 - Responsive mobile-first : `@include respond-to(sm/md)`
@@ -744,6 +789,7 @@ interface BaseCardProps {
 **Fichier** : `/src/components/shared/card/edition-card/EditionCard.tsx` (157 lignes)
 
 **Responsabilités** :
+
 - Édition inline : label via `InputWithValidation`
 - Sélection catégorie via `Select` dropdown
 - Actions : `ButtonDelete` + `Checkbox` (toggle visibility)
@@ -751,12 +797,13 @@ interface BaseCardProps {
 - Compose **BaseCard** avec slots
 
 **Props** :
+
 ```typescript
 interface EditionCardProps {
   image?: string
   label: string
   categorie?: string
-  checked: boolean              // État visibility ("aujourd'hui" ou "selected")
+  checked: boolean // État visibility ("aujourd'hui" ou "selected")
 
   onLabelChange?: (newLabel: string) => void
   onBlur?: (val: string) => void
@@ -764,7 +811,7 @@ interface EditionCardProps {
   onToggleCheck: () => void
   onDelete?: () => void
 
-  categorieOptions?: CategoryOption[]  // Vide pour récompenses
+  categorieOptions?: CategoryOption[] // Vide pour récompenses
   labelId: string | number
   imageComponent?: ReactNode
   editable?: boolean
@@ -774,18 +821,20 @@ interface EditionCardProps {
 
 **Mapping données Supabase → UI** :
 
-| Champ Supabase | EditionCard Prop | Affichage | Type |
-|---|---|---|---|
-| `tache.label` | `label` | Input text (éditable) | string |
-| `tache.imagepath` | `image` | Via SignedImage | string \| null |
-| `tache.categorie` | `categorie` | Select dropdown | string \| null |
-| `tache.aujourdhui` | `checked` | Checkbox + couleur | boolean |
+| Champ Supabase     | EditionCard Prop | Affichage             | Type           |
+| ------------------ | ---------------- | --------------------- | -------------- |
+| `tache.label`      | `label`          | Input text (éditable) | string         |
+| `tache.imagepath`  | `image`          | Via SignedImage       | string \| null |
+| `tache.categorie`  | `categorie`      | Select dropdown       | string \| null |
+| `tache.aujourdhui` | `checked`        | Checkbox + couleur    | boolean        |
 
 **Variante** : Même composant pour **tâches ET récompenses**
+
 - TachesEdition : avec `categorieOptions`
 - RecompensesEdition : sans `categorieOptions={[]}`
 
 **SCSS** : `/src/components/shared/card/edition-card/EditionCard.scss` (14 lignes)
+
 - **Thin wrapper** sans styles propres, tous styles hérités de BaseCard
 
 ### 4.4 TableauCard - Couche Métier Tableau
@@ -793,6 +842,7 @@ interface EditionCardProps {
 **Fichier** : `/src/components/shared/card/tableau-card/TableauCard.tsx` (131 lignes)
 
 **Responsabilités** :
+
 - Affichage lecture seule (label + image)
 - Drag & drop via `@dnd-kit/core` (`useDraggable`)
 - Checkbox pour marquer "fait" avec bip sonore (440 Hz)
@@ -800,39 +850,40 @@ interface EditionCardProps {
 - Animations fluides avec `useDragAnimation` hook
 
 **Props** :
+
 ```typescript
 interface TableauCardProps {
-  tache: Tache                  // Objet tâche complet
-  done: boolean                 // État "fait" (du parent)
+  tache: Tache // Objet tâche complet
+  done: boolean // État "fait" (du parent)
   toggleDone: (id: string, newDone: boolean) => void
   isDraggingGlobal?: boolean
   isBeingSwapped?: boolean
-  playSound?: boolean           // Jouer bip si done=false → true
+  playSound?: boolean // Jouer bip si done=false → true
 }
 ```
 
 **Affichage image** (lignes 94-108) :
+
 ```tsx
-{tache.imagepath && (
-  tache.isDemo ? (
-    <DemoSignedImage filePath={tache.imagepath} alt={tache.label} />
-  ) : (
-    <SignedImage
-      filePath={tache.imagepath}
-      bucket="images"
-      size={100}
-    />
-  )
-)}
+{
+  tache.imagepath &&
+    (tache.isDemo ? (
+      <DemoSignedImage filePath={tache.imagepath} alt={tache.label} />
+    ) : (
+      <SignedImage filePath={tache.imagepath} bucket="images" size={100} />
+    ))
+}
 ```
 
 **SCSS** : `/src/components/shared/card/tableau-card/TableauCard.scss` (114 lignes)
+
 - Tokens Phase 6 validés
 - Drag states : `&.dragging`, `&.done` (grayscale opacity)
 - Hover effect : image rotate 8°, scale 1.15
 - Animation swap fluide : 5 phases (lifting, shrinking, growing, moving, idle)
 
 **Interaction checkbox** (lignes 111-124) :
+
 - Wrapper isolé du drag listener avec `e.stopPropagation()`
 - Playback bip 440Hz via `useAudioContext().playBeep()`
 - Callback `toggleDone(tache.id, !done)`
@@ -841,18 +892,20 @@ interface TableauCardProps {
 
 **Buckets Supabase Storage** :
 
-| Bucket | Type | Accès | Utilisé pour | Signé ? |
-|---|---|---|---|---|
-| `images` | Privé | RLS (user_id match) | Tâches + Récompenses | Oui (3600s) |
-| `demo-images` | Public | Publique | Cartes démo visiteurs | Non (URL directe) |
-| `avatars` | Privé | RLS | Avatars utilisateurs | Oui (fallback) |
+| Bucket        | Type   | Accès               | Utilisé pour          | Signé ?           |
+| ------------- | ------ | ------------------- | --------------------- | ----------------- |
+| `images`      | Privé  | RLS (user_id match) | Tâches + Récompenses  | Oui (3600s)       |
+| `demo-images` | Public | Publique            | Cartes démo visiteurs | Non (URL directe) |
+| `avatars`     | Privé  | RLS                 | Avatars utilisateurs  | Oui (fallback)    |
 
 **Composants d'image** :
 
 #### SignedImage
+
 **Fichier** : `/src/components/shared/signed-image/SignedImage.tsx` (132 lignes)
 
 **Responsabilités** :
+
 - Fetch URL signée pour images **privées**
 - Fallback transparent : si `bucket=avatars` échoue → tente `images`
 - Support bucket public `demo-images` (URL directe sans signature)
@@ -860,41 +913,46 @@ interface TableauCardProps {
 - Retry 2× avec délai 2s si erreur
 
 **Props** :
+
 ```typescript
 interface SignedImageProps {
   filePath?: string
-  alt: string                    // WCAG obligatoire
-  size?: number                  // 60 (défaut)
-  bucket?: string                // 'images' (défaut)
+  alt: string // WCAG obligatoire
+  size?: number // 60 (défaut)
+  bucket?: string // 'images' (défaut)
   className?: string
 }
 ```
 
 #### DemoSignedImage
+
 **Fichier** : `/src/components/shared/demo-signed-image/DemoSignedImage.tsx` (136 lignes)
 
 **Responsabilités** :
+
 - Images démo **publiques** (bucket `demo-images`)
 - Cache mémoire `Map<string, string>` pour éviter requêtes redondantes
 - Retry automatique 2s après erreur
 - Placeholder spinner pendant chargement
 
 #### ImagePreview
+
 **Fichier** : `/src/components/ui/image-preview/ImagePreview.tsx` (28 lignes)
 
 **Responsabilités** :
+
 - Affichage simple URL (pas authentification)
 - Tailles : sm (60px), md (100px), lg (160px)
 - Utilisé dans **EditionCard** uniquement (avant upload)
 
 ### 4.6 Mapping Composants → Images
 
-| Composant | Champ Supabase | Composant Image | Size | Bucket | Notes |
-|---|---|---|---|---|---|
-| **EditionCard** | `imagepath` | `SignedImage` | sm (60px) | images | Dans imageComponent slot |
-| **TableauCard** (privée) | `imagepath` | `SignedImage` | lg (100px) | images | `bucket="images"` |
-| **TableauCard** (démo) | `imagepath` | `DemoSignedImage` | lg (100px) | demo-images | Si `isDemo=true` |
-| **ModalAjout** (preview) | File upload | `ImagePreview` | md/lg | N/A | Avant upload |
+| Composant                | Champ Supabase | Composant Image   | Size       | Bucket      | Notes                    |
+| ------------------------ | -------------- | ----------------- | ---------- | ----------- | ------------------------ |
+| **EditionCard**          | `imagepath`    | `SignedImage`     | sm (60px)  | images      | Dans imageComponent slot |
+| **TableauCard** (privée) | `imagepath`    | `SignedImage`     | lg (100px) | images      | `bucket="images"`        |
+| **TableauCard** (démo)   | `imagepath`    | `DemoSignedImage` | lg (100px) | demo-images | Si `isDemo=true`         |
+| **ModalAjout** (preview) | File upload    | `ImagePreview`    | md/lg      | N/A         | Avant upload             |
 
 ---
 
@@ -931,6 +989,7 @@ interface SignedImageProps {
 ### 5.2 Stockage de la Sélection
 
 **Tâches - Colonne `aujourdhui`** :
+
 ```sql
 -- Table taches
 CREATE TABLE taches (
@@ -951,6 +1010,7 @@ CREATE INDEX idx_taches_user_aujourdhui
 ```
 
 **Récompenses - Colonne `selected`** :
+
 ```sql
 -- Table recompenses
 CREATE TABLE recompenses (
@@ -1061,6 +1121,7 @@ Si doneCount === totalTaches :
 **Colonne `position`** : Index ordre (0, 1, 2, ...)
 
 **Édition** : Réordonnancement via DnD
+
 ```typescript
 // DndGrid appelle onReorder immédiatement (optimistic UI)
 handleReorder(newOrderedList)
@@ -1079,6 +1140,7 @@ for (const batch of chunks(newOrderedList, 5)) {
 ```
 
 **Tableau** : Chargement ordonné
+
 ```typescript
 // useTachesDnd.ts (ligne 72)
 const { data } = await supabase
@@ -1086,7 +1148,7 @@ const { data } = await supabase
   .select('*')
   .eq('user_id', user.id)
   .eq('aujourdhui', true)
-  .order('position', { ascending: true })  // ✅ Ordre préservé
+  .order('position', { ascending: true }) // ✅ Ordre préservé
 ```
 
 ### 5.5 Navigation entre Pages
@@ -1106,6 +1168,7 @@ const { data } = await supabase
 ```
 
 **Rechargement Automatique** : Détection pathname change
+
 ```typescript
 // Tableau.tsx (lignes 94-110)
 const prevPathRef = useRef<string | null>(null)
@@ -1116,22 +1179,22 @@ useEffect(() => {
   prevPathRef.current = pathname
 
   if (pathname === '/tableau' && prevPath !== null && prevPath !== '/tableau') {
-    setReloadKey(prev => prev + 1)  // Force useTachesDnd reload
+    setReloadKey(prev => prev + 1) // Force useTachesDnd reload
   }
 }, [pathname])
 ```
 
 ### 5.6 Points de Persistance
 
-| Élément | Où | Quand | Mécanisme |
-|---------|-----|-------|-----------|
-| **Aujourd'hui** | `taches.aujourdhui` | Toggle immédiat | `UPDATE` + state local |
-| **Récompense Sélectionnée** | `recompenses.selected` | Click immédiat | RPC atomique + state local |
-| **Fait** | `taches.fait` | Checkbox tableau | `UPDATE` + state local |
-| **Ordre Tâches** | `taches.position` | Drag-and-drop | Batch `UPDATE` + state local |
-| **Paramètres** | `parametres` table (id=1) | Modifications manuelles | `UPSERT` |
-| **Affichage Récompense** | localStorage | Navigation | `localStorage.showRecompense` |
-| **Ligne Train** | localStorage | Changement | `localStorage.ligne` |
+| Élément                     | Où                        | Quand                   | Mécanisme                     |
+| --------------------------- | ------------------------- | ----------------------- | ----------------------------- |
+| **Aujourd'hui**             | `taches.aujourdhui`       | Toggle immédiat         | `UPDATE` + state local        |
+| **Récompense Sélectionnée** | `recompenses.selected`    | Click immédiat          | RPC atomique + state local    |
+| **Fait**                    | `taches.fait`             | Checkbox tableau        | `UPDATE` + state local        |
+| **Ordre Tâches**            | `taches.position`         | Drag-and-drop           | Batch `UPDATE` + state local  |
+| **Paramètres**              | `parametres` table (id=1) | Modifications manuelles | `UPSERT`                      |
+| **Affichage Récompense**    | localStorage              | Navigation              | `localStorage.showRecompense` |
+| **Ligne Train**             | localStorage              | Changement              | `localStorage.ligne`          |
 
 ---
 
@@ -1139,15 +1202,16 @@ useEffect(() => {
 
 ### 6.1 Contextes Globaux (React Context API)
 
-| Context | Fichier | Lignes | État Exposé |
-|---------|---------|--------|------------|
-| **AuthContext** | `src/contexts/AuthContext.tsx` | 231 | `user`, `authReady`, `loading`, `error`, `signOut()` |
-| **PermissionsContext** | `src/contexts/PermissionsContext.tsx` | 309 | `ready`, `role`, `permissions`, `isVisitor`, `isAdmin`, `can()`, `reload()` |
-| **DisplayContext** | `src/contexts/DisplayContext.tsx` | 113 | `showTrain`, `showAutre`, `showRecompense`, `showTimeTimer` (+ setters) |
-| **LoadingContext** | `src/contexts/LoadingContext.tsx` | 86 | `isLoading`, `loadingMessage`, `setLoading()`, `startLoading()`, `stopLoading()` |
-| **ToastContext** | `src/contexts/ToastContext.tsx` | 124 | `show()`, `hide()`, `showToast()` |
+| Context                | Fichier                               | Lignes | État Exposé                                                                      |
+| ---------------------- | ------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| **AuthContext**        | `src/contexts/AuthContext.tsx`        | 231    | `user`, `authReady`, `loading`, `error`, `signOut()`                             |
+| **PermissionsContext** | `src/contexts/PermissionsContext.tsx` | 309    | `ready`, `role`, `permissions`, `isVisitor`, `isAdmin`, `can()`, `reload()`      |
+| **DisplayContext**     | `src/contexts/DisplayContext.tsx`     | 113    | `showTrain`, `showAutre`, `showRecompense`, `showTimeTimer` (+ setters)          |
+| **LoadingContext**     | `src/contexts/LoadingContext.tsx`     | 86     | `isLoading`, `loadingMessage`, `setLoading()`, `startLoading()`, `stopLoading()` |
+| **ToastContext**       | `src/contexts/ToastContext.tsx`       | 124    | `show()`, `hide()`, `showToast()`                                                |
 
 **Synchronisation** :
+
 - **AuthContext** : Supabase SDK `onAuthStateChange()` + localStorage session auto
 - **PermissionsContext** : RPC queries `get_my_primary_role()` + `get_my_permissions()` avec retry exponentiel
 - **DisplayContext** : localStorage + useState (sync via useEffect)
@@ -1156,34 +1220,35 @@ useEffect(() => {
 
 ### 6.2 Clés localStorage
 
-| Clé | Valeur | Format | Scope | Utilisé par |
-|-----|--------|--------|-------|-------------|
-| `showTrain` | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau |
-| `showAutre` | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau |
-| `showRecompense` | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau |
-| `showTimeTimer` | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, FloatingTimeTimer |
-| `ligne` | `'1'`/`'2'`/`'3'` | String numéro | Global | TrainProgressBar |
-| `timeTimer_position` | JSON `{x, y}` | JSON object | Global | FloatingTimeTimer |
-| `timeTimer_silentMode` | `'true'`/`'false'` | String booléen | Global | useTimerPreferences |
-| `timeTimer_lastDuration` | `'10'` | String nombre | Global | useTimerPreferences |
-| `timeTimer_diskColor` | `'red'`/`'blue'` | String enum | Global | useTimerPreferences |
-| `timeTimer_showNumbers` | `'true'`/`'false'` | String booléen | Global | useTimerPreferences |
-| `timeTimer_vibrate` | `'true'`/`'false'` | String booléen | Global | useTimerPreferences |
-| `timeTimer_customDurations` | JSON `[10, 15]` | JSON array | Global | useTimerPreferences |
-| `lang` | `'fr'`/`'en'` | String | Global | i18n.ts |
-| `theme` | `'light'`/`'dark'` | String | Global | ThemeToggle |
-| `cookie_consent_v2` | JSON consent | JSON object | Global | consent.ts (180j expiry) |
-| `sb-<project>-auth-token` | Session JSON | SDK-managed | Global | Supabase SDK (automatique) |
+| Clé                         | Valeur             | Format         | Scope        | Utilisé par                       |
+| --------------------------- | ------------------ | -------------- | ------------ | --------------------------------- |
+| `showTrain`                 | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau           |
+| `showAutre`                 | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau           |
+| `showRecompense`            | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, Tableau           |
+| `showTimeTimer`             | `'true'`/`'false'` | String booléen | Non-visiteur | DisplayContext, FloatingTimeTimer |
+| `ligne`                     | `'1'`/`'2'`/`'3'`  | String numéro  | Global       | TrainProgressBar                  |
+| `timeTimer_position`        | JSON `{x, y}`      | JSON object    | Global       | FloatingTimeTimer                 |
+| `timeTimer_silentMode`      | `'true'`/`'false'` | String booléen | Global       | useTimerPreferences               |
+| `timeTimer_lastDuration`    | `'10'`             | String nombre  | Global       | useTimerPreferences               |
+| `timeTimer_diskColor`       | `'red'`/`'blue'`   | String enum    | Global       | useTimerPreferences               |
+| `timeTimer_showNumbers`     | `'true'`/`'false'` | String booléen | Global       | useTimerPreferences               |
+| `timeTimer_vibrate`         | `'true'`/`'false'` | String booléen | Global       | useTimerPreferences               |
+| `timeTimer_customDurations` | JSON `[10, 15]`    | JSON array     | Global       | useTimerPreferences               |
+| `lang`                      | `'fr'`/`'en'`      | String         | Global       | i18n.ts                           |
+| `theme`                     | `'light'`/`'dark'` | String         | Global       | ThemeToggle                       |
+| `cookie_consent_v2`         | JSON consent       | JSON object    | Global       | consent.ts (180j expiry)          |
+| `sb-<project>-auth-token`   | Session JSON       | SDK-managed    | Global       | Supabase SDK (automatique)        |
 
 ### 6.3 Clés sessionStorage
 
-| Clé | Valeur | Format | Scope | Utilisé par |
-|-----|--------|--------|-------|-------------|
+| Clé               | Valeur             | Format         | Scope                      | Utilisé par |
+| ----------------- | ------------------ | -------------- | -------------------------- | ----------- |
 | `showRecompenses` | `'true'`/`'false'` | String booléen | Session Édition uniquement | Edition.tsx |
 
 ### 6.4 Tables Supabase (État Utilisateur)
 
 **Table `parametres`** :
+
 ```sql
 CREATE TABLE parametres (
   id SERIAL PRIMARY KEY,         -- Singleton id=1 par user
@@ -1194,11 +1259,13 @@ CREATE TABLE parametres (
 ```
 
 **Hook** : `useParametres()` (184 lignes)
+
 - `refresh()` : Fetch depuis `parametres WHERE id=1`
 - `updateParametres()` : UPSERT avec `onConflict: 'id'`
 - Pattern fallback : Visiteur mode utilise defaults locaux sans insertion DB
 
 **Table `profiles`** :
+
 ```sql
 CREATE TABLE profiles (
   user_id UUID PRIMARY KEY,
@@ -1218,25 +1285,26 @@ CREATE TABLE profiles (
 
 ### 6.5 Hooks Custom pour State Global
 
-| Hook | Fichier | Responsabilité |
-|------|---------|----------------|
-| **useAuth** | `src/hooks/useAuth.ts` | Wrapper Context `AuthContext` |
-| **usePermissions** | Importe depuis `PermissionsContext` | Rôles RBAC + permissions |
-| **useRBAC** | `src/hooks/useRBAC.ts` | Combine Permissions + Quotas unified API |
-| **useSimpleRole** | `src/hooks/useSimpleRole.ts` | Rôle simplifié (unknown/visitor/user/admin) |
-| **useParametres** | `src/hooks/useParametres.ts` (184L) | Fetch/update table `parametres` |
-| **useTachesDnd** | `src/hooks/useTachesDnd.ts` | Fetch tâches `aujourdhui=true` + DnD state |
-| **useTachesEdition** | `src/hooks/useTachesEdition.ts` (350L) | CRUD tâches édition |
-| **useRecompenses** | `src/hooks/useRecompenses.ts` (440L) | CRUD récompenses |
-| **useCategories** | `src/hooks/useCategories.ts` (173L) | CRUD catégories |
-| **useDisplay** | Context wrapper | DisplayContext : localStorage synchronisé |
-| **useToast** | Context wrapper | ToastContext : show/hide |
-| **useLoading** | Context wrapper | LoadingContext : état local |
-| **useTimerPreferences** | `src/hooks/useTimerPreferences.ts` (192L) | localStorage centralisé TimeTimer (6 clés) |
+| Hook                    | Fichier                                   | Responsabilité                              |
+| ----------------------- | ----------------------------------------- | ------------------------------------------- |
+| **useAuth**             | `src/hooks/useAuth.ts`                    | Wrapper Context `AuthContext`               |
+| **usePermissions**      | Importe depuis `PermissionsContext`       | Rôles RBAC + permissions                    |
+| **useRBAC**             | `src/hooks/useRBAC.ts`                    | Combine Permissions + Quotas unified API    |
+| **useSimpleRole**       | `src/hooks/useSimpleRole.ts`              | Rôle simplifié (unknown/visitor/user/admin) |
+| **useParametres**       | `src/hooks/useParametres.ts` (184L)       | Fetch/update table `parametres`             |
+| **useTachesDnd**        | `src/hooks/useTachesDnd.ts`               | Fetch tâches `aujourdhui=true` + DnD state  |
+| **useTachesEdition**    | `src/hooks/useTachesEdition.ts` (350L)    | CRUD tâches édition                         |
+| **useRecompenses**      | `src/hooks/useRecompenses.ts` (440L)      | CRUD récompenses                            |
+| **useCategories**       | `src/hooks/useCategories.ts` (173L)       | CRUD catégories                             |
+| **useDisplay**          | Context wrapper                           | DisplayContext : localStorage synchronisé   |
+| **useToast**            | Context wrapper                           | ToastContext : show/hide                    |
+| **useLoading**          | Context wrapper                           | LoadingContext : état local                 |
+| **useTimerPreferences** | `src/hooks/useTimerPreferences.ts` (192L) | localStorage centralisé TimeTimer (6 clés)  |
 
 ### 6.6 Synchronisation Édition ↔ Tableau
 
 **Pattern Reload Counter** :
+
 ```typescript
 // ÉDITION: useState reload counter
 const [reload, setReload] = useState(0)
@@ -1270,17 +1338,19 @@ const { taches } = useTachesDnd((done, total) => {...}, reloadKey)
 **Problème** : Le tableau charge UNIQUEMENT les tâches avec `aujourdhui=true`. Si cette colonne n'est pas maintenue correctement, le tableau sera vide.
 
 **Impact** :
+
 - Si refonte retire colonne `aujourdhui` → tableau cassé
 - Si logique de sélection change sans adapter hook → données invisibles
 - Si filtre DB oublié dans nouvelle implémentation → performance dégradée
 
 **Fichier critique** : `src/hooks/useTachesDnd.ts` (ligne 72)
+
 ```typescript
 const { data } = await supabase
   .from('taches')
   .select('*')
   .eq('user_id', user.id)
-  .eq('aujourdhui', true)  // ⚠️ COUPLAGE CRITIQUE
+  .eq('aujourdhui', true) // ⚠️ COUPLAGE CRITIQUE
   .order('position', { ascending: true })
 ```
 
@@ -1293,16 +1363,19 @@ const { data } = await supabase
 **Problème** : Édition et Tableau utilisent des systèmes drag-and-drop différents.
 
 **Édition** : `DndGrid` + `DndCard` wrapper
+
 - Fichier : `src/components/shared/dnd/DndGrid/DndGrid.tsx`
 - Grille fixe 3 colonnes
 - Pattern : `DndGrid → renderItem() → DndCard → EditionCard`
 
 **Tableau** : `DndContext` natif + `useDraggable`
+
 - Fichier : `src/components/features/taches/taches-dnd/TachesDnd.tsx`
 - Slots dynamiques (vides si pas assez items)
 - Pattern : `DndContext → DroppableSlot → TableauCard (native useDraggable)`
 
 **Impact** :
+
 - Refonte UX doit choisir une approche unifiée
 - Migration nécessitera refactoring complet d'une des deux pages
 - Animations et transitions différentes → incohérence UX
@@ -1316,6 +1389,7 @@ const { data } = await supabase
 **Problème** : Si UPDATE Supabase échoue mais state local est mis à jour → incohérence.
 
 **Scénario** :
+
 ```
 User: toggleDone → state local update immédiat
   ↓
@@ -1327,10 +1401,12 @@ Reload page : décoché surprenant
 ```
 
 **Fichiers impactés** :
+
 - `src/hooks/useTachesDnd.ts` (toggleDone, saveOrder, resetAll)
 - `src/hooks/useTachesEdition.ts` (toggleAujourdhui, updateLabel, deleteTache)
 
 **Mitigation actuelle** :
+
 - Chaque UPDATE attend response avant setState
 - En cas erreur : appelle `loadTaches()` pour restaurer
 - Pattern `withAbortSafe` + retry exponential
@@ -1344,18 +1420,28 @@ Reload page : décoché surprenant
 **Problème** : 6 modales lazy-loaded dans Édition et Tableau. Si refonte change structure, code-splitting peut casser.
 
 **Modales lazy-loaded** :
+
 ```typescript
 // Edition.tsx (lignes 31-33)
-const ModalCategory = lazy(() => import('@/components').then(m => ({ default: m.ModalCategory })))
-const ModalConfirm = lazy(() => import('@/components').then(m => ({ default: m.ModalConfirm })))
-const ModalQuota = lazy(() => import('@/components').then(m => ({ default: m.ModalQuota })))
+const ModalCategory = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalCategory }))
+)
+const ModalConfirm = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalConfirm }))
+)
+const ModalQuota = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalQuota }))
+)
 
 // Tableau.tsx (lignes 45-47)
 const Confetti = lazy(() => import('react-confetti'))
-const ModalRecompense = lazy(() => import('@/components').then(m => ({ default: m.ModalRecompense })))
+const ModalRecompense = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalRecompense }))
+)
 ```
 
 **Impact** :
+
 - Refactoring barrel exports `@/components/index.ts` peut casser imports
 - Migration vers composants non-lazy nécessite changement pattern
 - Suspense fallback `null` → pas de loading state visible
@@ -1369,6 +1455,7 @@ const ModalRecompense = lazy(() => import('@/components').then(m => ({ default: 
 **Problème** : Tous les hooks métier dépendent d'un compteur `reload` pour recharger. Si logique change, il faut adapter partout.
 
 **Pattern actuel** :
+
 ```typescript
 // Edition.tsx
 const [reload, setReload] = useState(0)
@@ -1381,6 +1468,7 @@ useRecompenses(reload)
 ```
 
 **Impact** :
+
 - Refonte doit préserver ce pattern OU migrer tous hooks
 - Si oubli d'appeler `triggerReload()`, UI désynchronisée
 - Pas de granularité : tout se recharge même si seulement 1 entité change
@@ -1396,6 +1484,7 @@ useRecompenses(reload)
 **Avantage** : BaseCard est **purement présentationnel** avec composition via slots.
 
 **Réutilisation** :
+
 - Créer nouvelles variantes (ListCard, GridCard, CompactCard) en composant BaseCard
 - Garder logique métier séparée (validation, callbacks) dans couches supérieures
 - Animations TSA-friendly déjà intégrées (reduced-motion, focus-visible)
@@ -1411,6 +1500,7 @@ useRecompenses(reload)
 **Avantage** : Tous les hooks CRUD sont découplés des composants UI.
 
 **Hooks réutilisables** :
+
 - `useTachesEdition` : CRUD tâches complet (350L)
 - `useTachesDnd` : Lecture + progression tableau
 - `useRecompenses` : CRUD récompenses (440L)
@@ -1419,6 +1509,7 @@ useRecompenses(reload)
 - `useParametres` : Settings utilisateur (184L)
 
 **Réutilisation** :
+
 - Refonte UI peut garder hooks intacts
 - Composants nouveaux peuvent importer hooks existants
 - Logique métier reste stable même si UI change radicalement
@@ -1432,6 +1523,7 @@ useRecompenses(reload)
 **Avantage** : Design system complet tokens-first, aucune valeur hardcodée.
 
 **Tokens disponibles** :
+
 - `spacing()`, `size()`, `radius()`, `shadow()`
 - `color()`, `surface()`, `text()`, `semantic()`, `tsa-pastel()`
 - `font-size()`, `font-weight()`, `line-height()`
@@ -1439,11 +1531,13 @@ useRecompenses(reload)
 - `@include safe-transition()`, `@include respond-to()`
 
 **Réutilisation** :
+
 - Nouveaux composants UX utilisent mêmes tokens
 - Cohérence visuelle garantie (couleurs pastel TSA, animations ≤0.3s)
 - Thèmes futurs (dark mode) via tokens centralisés
 
 **Fichiers** :
+
 - `src/styles/abstracts/_variables.scss`
 - `src/styles/abstracts/_mixins.scss`
 - `src/styles/abstracts/_typography.scss`
@@ -1457,6 +1551,7 @@ useRecompenses(reload)
 **Avantage** : Système de validation réutilisable avec règles i18n.
 
 **Pattern** :
+
 ```typescript
 // EditionCard.tsx (lignes 88-92)
 const validationRules = [
@@ -1474,6 +1569,7 @@ const validationRules = [
 ```
 
 **Réutilisation** :
+
 - Ajouter nouvelles règles (ex: minLength, maxLength, pattern)
 - Réutiliser dans nouveaux formulaires (catégories, paramètres, profil)
 - Feedback visuel déjà intégré (success, error states)
@@ -1489,6 +1585,7 @@ const validationRules = [
 **Avantage** : RPC `select_recompense_atomic` garantit sélection unique sans race condition.
 
 **Pattern** :
+
 ```sql
 -- RPC atomique (1 round-trip réseau)
 CREATE OR REPLACE FUNCTION select_recompense_atomic(p_reward_id UUID)
@@ -1504,6 +1601,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ```
 
 **Réutilisation** :
+
 - Créer RPCs similaires pour autres sélections uniques (station active, catégorie favoris)
 - Pattern évite 2 queries + race condition
 - Atomicité garantie côté DB
@@ -1560,16 +1658,19 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ### 🔧 Outils Recommandés
 
 **Tests** :
+
 - Vitest : Tests unitaires hooks custom
 - Playwright : Tests E2E flux complets
 - React Testing Library : Tests composants UI
 
 **Monitoring** :
+
 - Sentry : Erreurs client-side
 - Supabase Logs : Erreurs DB + RPC
 - Vercel Analytics : Performance + Web Vitals
 
 **Migration** :
+
 - Database Diff : Comparer schémas avant/après
 - TypeScript Strict : Détecter regressions types
 - ESLint + Prettier : Cohérence code
@@ -1580,102 +1681,102 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 ### 10.1 Routes et Pages
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/app/(protected)/edition/page.tsx` | 13 | Route édition protégée |
-| `src/app/(public)/tableau/page.tsx` | 14 | Route tableau publique |
-| `src/page-components/edition/Edition.tsx` | 517 | Composant principal édition |
-| `src/page-components/tableau/Tableau.tsx` | 394 | Composant principal tableau |
+| Fichier                                   | Lignes | Rôle                        |
+| ----------------------------------------- | ------ | --------------------------- |
+| `src/app/(protected)/edition/page.tsx`    | 13     | Route édition protégée      |
+| `src/app/(public)/tableau/page.tsx`       | 14     | Route tableau publique      |
+| `src/page-components/edition/Edition.tsx` | 517    | Composant principal édition |
+| `src/page-components/tableau/Tableau.tsx` | 394    | Composant principal tableau |
 
 ### 10.2 Composants Features
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/components/features/taches/taches-edition/TachesEdition.tsx` | 312 | Éditeur tâches |
-| `src/components/features/recompenses/recompenses-edition/RecompensesEdition.tsx` | 193 | Éditeur récompenses |
-| `src/components/features/taches/taches-dnd/TachesDnd.tsx` | ~350 | Drag & drop tableau |
-| `src/components/features/taches/train-progress-bar/TrainProgressBar.tsx` | ~180 | Progression visuelle |
-| `src/components/features/time-timer/FloatingTimeTimer.tsx` | ~200 | Timer flottant |
-| `src/components/features/time-timer/TimeTimer.tsx` | ~600 | Cadran timer |
+| Fichier                                                                          | Lignes | Rôle                 |
+| -------------------------------------------------------------------------------- | ------ | -------------------- |
+| `src/components/features/taches/taches-edition/TachesEdition.tsx`                | 312    | Éditeur tâches       |
+| `src/components/features/recompenses/recompenses-edition/RecompensesEdition.tsx` | 193    | Éditeur récompenses  |
+| `src/components/features/taches/taches-dnd/TachesDnd.tsx`                        | ~350   | Drag & drop tableau  |
+| `src/components/features/taches/train-progress-bar/TrainProgressBar.tsx`         | ~180   | Progression visuelle |
+| `src/components/features/time-timer/FloatingTimeTimer.tsx`                       | ~200   | Timer flottant       |
+| `src/components/features/time-timer/TimeTimer.tsx`                               | ~600   | Cadran timer         |
 
 ### 10.3 Composants Cards
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/components/shared/card/base-card/BaseCard.tsx` | 96 | Composant base présentationnel |
-| `src/components/shared/card/edition-card/EditionCard.tsx` | 157 | Couche métier édition |
-| `src/components/shared/card/tableau-card/TableauCard.tsx` | 131 | Couche métier tableau |
+| Fichier                                                   | Lignes | Rôle                           |
+| --------------------------------------------------------- | ------ | ------------------------------ |
+| `src/components/shared/card/base-card/BaseCard.tsx`       | 96     | Composant base présentationnel |
+| `src/components/shared/card/edition-card/EditionCard.tsx` | 157    | Couche métier édition          |
+| `src/components/shared/card/tableau-card/TableauCard.tsx` | 131    | Couche métier tableau          |
 
 ### 10.4 Composants Images
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/components/shared/signed-image/SignedImage.tsx` | 132 | Images privées signées |
-| `src/components/shared/demo-signed-image/DemoSignedImage.tsx` | 136 | Images publiques démo |
-| `src/components/ui/image-preview/ImagePreview.tsx` | 28 | Preview avant upload |
+| Fichier                                                       | Lignes | Rôle                   |
+| ------------------------------------------------------------- | ------ | ---------------------- |
+| `src/components/shared/signed-image/SignedImage.tsx`          | 132    | Images privées signées |
+| `src/components/shared/demo-signed-image/DemoSignedImage.tsx` | 136    | Images publiques démo  |
+| `src/components/ui/image-preview/ImagePreview.tsx`            | 28     | Preview avant upload   |
 
 ### 10.5 Composants DnD
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/components/shared/dnd/DndGrid/DndGrid.tsx` | 167 | Grille drag-drop édition |
-| `src/components/shared/dnd/DndCard/DndCard.tsx` | 100 | Wrapper drag-drop générique |
-| `src/components/shared/dnd/useDndGrid.ts` | 160 | Hook logique DnD |
+| Fichier                                         | Lignes | Rôle                        |
+| ----------------------------------------------- | ------ | --------------------------- |
+| `src/components/shared/dnd/DndGrid/DndGrid.tsx` | 167    | Grille drag-drop édition    |
+| `src/components/shared/dnd/DndCard/DndCard.tsx` | 100    | Wrapper drag-drop générique |
+| `src/components/shared/dnd/useDndGrid.ts`       | 160    | Hook logique DnD            |
 
 ### 10.6 Hooks Custom CRUD
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/hooks/useTachesEdition.ts` | 350 | CRUD tâches édition |
-| `src/hooks/useTachesDnd.ts` | ~200 | État tâches + ordre tableau |
-| `src/hooks/useRecompenses.ts` | 440 | CRUD récompenses |
-| `src/hooks/useCategories.ts` | 173 | CRUD catégories |
-| `src/hooks/useParametres.ts` | 184 | Settings utilisateur |
+| Fichier                         | Lignes | Rôle                        |
+| ------------------------------- | ------ | --------------------------- |
+| `src/hooks/useTachesEdition.ts` | 350    | CRUD tâches édition         |
+| `src/hooks/useTachesDnd.ts`     | ~200   | État tâches + ordre tableau |
+| `src/hooks/useRecompenses.ts`   | 440    | CRUD récompenses            |
+| `src/hooks/useCategories.ts`    | 173    | CRUD catégories             |
+| `src/hooks/useParametres.ts`    | 184    | Settings utilisateur        |
 
 ### 10.7 Hooks Contextes
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/hooks/useAuth.ts` | ~50 | Wrapper AuthContext |
-| `src/hooks/useRBAC.ts` | ~200 | Permissions + quotas unified |
-| `src/hooks/useSimpleRole.ts` | ~80 | Rôle simplifié |
-| `src/hooks/useTimerPreferences.ts` | 192 | localStorage TimeTimer |
+| Fichier                            | Lignes | Rôle                         |
+| ---------------------------------- | ------ | ---------------------------- |
+| `src/hooks/useAuth.ts`             | ~50    | Wrapper AuthContext          |
+| `src/hooks/useRBAC.ts`             | ~200   | Permissions + quotas unified |
+| `src/hooks/useSimpleRole.ts`       | ~80    | Rôle simplifié               |
+| `src/hooks/useTimerPreferences.ts` | 192    | localStorage TimeTimer       |
 
 ### 10.8 Contextes React
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/contexts/AuthContext.tsx` | 231 | Authentification |
-| `src/contexts/PermissionsContext.tsx` | 309 | Rôles RBAC |
-| `src/contexts/DisplayContext.tsx` | 113 | Affichage UI sections |
-| `src/contexts/LoadingContext.tsx` | 86 | État loading global |
-| `src/contexts/ToastContext.tsx` | 124 | Notifications toasts |
+| Fichier                               | Lignes | Rôle                  |
+| ------------------------------------- | ------ | --------------------- |
+| `src/contexts/AuthContext.tsx`        | 231    | Authentification      |
+| `src/contexts/PermissionsContext.tsx` | 309    | Rôles RBAC            |
+| `src/contexts/DisplayContext.tsx`     | 113    | Affichage UI sections |
+| `src/contexts/LoadingContext.tsx`     | 86     | État loading global   |
+| `src/contexts/ToastContext.tsx`       | 124    | Notifications toasts  |
 
 ### 10.9 Styles SCSS
 
-| Fichier | Lignes | Rôle |
-|---------|--------|------|
-| `src/page-components/edition/Edition.scss` | 164 | Styles page édition |
-| `src/page-components/tableau/Tableau.scss` | ~180 | Styles page tableau |
-| `src/components/features/taches/taches-edition/TachesEdition.scss` | 184 | Styles éditeur tâches |
-| `src/components/features/taches/taches-dnd/TachesDnd.scss` | ~150 | Styles drag-drop tableau |
-| `src/components/shared/card/base-card/BaseCard.scss` | 165 | Styles base card |
-| `src/components/shared/card/tableau-card/TableauCard.scss` | 114 | Styles tableau card |
-| `src/components/shared/dnd/DndGrid/DndGrid.scss` | 67 | Styles grille DnD |
-| `src/styles/abstracts/_variables.scss` | ~400 | Tokens design system |
-| `src/styles/abstracts/_mixins.scss` | ~300 | Mixins réutilisables |
+| Fichier                                                            | Lignes | Rôle                     |
+| ------------------------------------------------------------------ | ------ | ------------------------ |
+| `src/page-components/edition/Edition.scss`                         | 164    | Styles page édition      |
+| `src/page-components/tableau/Tableau.scss`                         | ~180   | Styles page tableau      |
+| `src/components/features/taches/taches-edition/TachesEdition.scss` | 184    | Styles éditeur tâches    |
+| `src/components/features/taches/taches-dnd/TachesDnd.scss`         | ~150   | Styles drag-drop tableau |
+| `src/components/shared/card/base-card/BaseCard.scss`               | 165    | Styles base card         |
+| `src/components/shared/card/tableau-card/TableauCard.scss`         | 114    | Styles tableau card      |
+| `src/components/shared/dnd/DndGrid/DndGrid.scss`                   | 67     | Styles grille DnD        |
+| `src/styles/abstracts/_variables.scss`                             | ~400   | Tokens design system     |
+| `src/styles/abstracts/_mixins.scss`                                | ~300   | Mixins réutilisables     |
 
 ### 10.10 Base de Données
 
-| Fichier | Rôle |
-|---------|------|
-| `supabase/migrations/20260121100000_baseline_init_schema.sql` | Schema complet tables |
-| `supabase/migrations/20260121101000_baseline_rls_policies.sql` | Politiques RLS |
-| `supabase/migrations/20260121102000_baseline_storage.sql` | Buckets storage |
-| `supabase/migrations_archive/20251015194000_add_missing_indexes.sql` | Indexes optimisation |
-| `supabase/migrations_archive/20251015192900_add_select_recompense_atomic.sql` | RPC sélection unique |
-| `src/types/supabase.ts` | Types générés Supabase |
-| `src/types/global.d.ts` | Types métier (Tache, Recompense, Parametre) |
+| Fichier                                                                       | Rôle                                        |
+| ----------------------------------------------------------------------------- | ------------------------------------------- |
+| `supabase/migrations/20260121100000_baseline_init_schema.sql`                 | Schema complet tables                       |
+| `supabase/migrations/20260121101000_baseline_rls_policies.sql`                | Politiques RLS                              |
+| `supabase/migrations/20260121102000_baseline_storage.sql`                     | Buckets storage                             |
+| `supabase/migrations_archive/20251015194000_add_missing_indexes.sql`          | Indexes optimisation                        |
+| `supabase/migrations_archive/20251015192900_add_select_recompense_atomic.sql` | RPC sélection unique                        |
+| `src/types/supabase.ts`                                                       | Types générés Supabase                      |
+| `src/types/global.d.ts`                                                       | Types métier (Tache, Recompense, Parametre) |
 
 ---
 
