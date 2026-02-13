@@ -77,3 +77,5 @@ supabase/.archive/
 blueprint-archive/
 
 .DS_Store
+.DS_Store
+supabase/migrations/.DS_Store
