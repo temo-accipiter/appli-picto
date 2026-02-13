@@ -1,7 +1,6 @@
 'use client'
 
 import { Checkbox, Dropdown } from '@/components'
-import { FeatureGate } from '@/components/shared/feature-gate/FeatureGate'
 import { useDisplay, useToast } from '@/contexts'
 import { useI18n, useParametres } from '@/hooks'
 import { Settings } from 'lucide-react'
@@ -60,14 +59,12 @@ export default function SettingsMenu() {
           />
         )}
 
-        <FeatureGate feature="trainprogressbar">
-          <Checkbox
-            id="settings-train"
-            label={t('edition.train')}
-            checked={showTrain}
-            onChange={e => setShowTrain(e.target.checked)}
-          />
-        </FeatureGate>
+        <Checkbox
+          id="settings-train"
+          label={t('edition.train')}
+          checked={showTrain}
+          onChange={e => setShowTrain(e.target.checked)}
+        />
 
         <Checkbox
           id="settings-recompense"

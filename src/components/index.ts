@@ -76,12 +76,6 @@ export { default as SearchInput } from './shared/search-input/SearchInput'
 export { default as GlobalLoader } from './shared/global-loader/GlobalLoader'
 export { default as WebVitals } from './shared/web-vitals/WebVitals'
 
-// Feature Gates
-export {
-  FeatureGate,
-  PremiumFeatureGate,
-} from './shared/feature-gate/FeatureGate'
-
 // Modals
 export { default as Modal } from './shared/modal/Modal'
 export { default as ModalAjout } from './shared/modal/modal-ajout/ModalAjout'

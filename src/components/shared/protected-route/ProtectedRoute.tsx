@@ -2,7 +2,6 @@
 
 import { useAuth } from '@/hooks'
 import { useRouter } from 'next/navigation'
-import useSimpleRole from '@/hooks/useSimpleRole'
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 
@@ -10,23 +9,28 @@ interface ProtectedRouteProps {
   children: ReactNode
 }
 
+/**
+ * Composant pour protéger les routes nécessitant une authentification
+ *
+ * Redirige vers /login si l'utilisateur n'est pas connecté
+ * (mode Visitor = !user)
+ */
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, authReady } = useAuth()
-  const { isVisitor, ready: roleReady } = useSimpleRole()
   const router = useRouter()
 
   useEffect(() => {
-    // Attendre que l'auth et les rôles soient prêts
-    if (!authReady || !roleReady) return
+    // Attendre que l'auth soit prête
+    if (!authReady) return
 
-    // Si pas d'utilisateur OU visiteur → rediriger vers login
-    if (!user || isVisitor) {
+    // Si pas d'utilisateur (Visitor) → rediriger vers login
+    if (!user) {
       router.replace('/login')
     }
-  }, [user, isVisitor, authReady, roleReady, router])
+  }, [user, authReady, router])
 
   // Ne rien afficher pendant le chargement ou la redirection
-  if (!authReady || !roleReady || !user || isVisitor) {
+  if (!authReady || !user) {
     return null
   }
 
