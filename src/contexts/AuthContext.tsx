@@ -53,6 +53,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setSentryUser({
             id: user.id,
             ...(user.email !== undefined && { email: user.email }),
+            // Note : user_metadata.role n'est plus géré par le nouveau schéma DB
+            // Le statut utilisateur est dans accounts.status ('free' | 'subscriber' | 'admin')
+            // Pour Sentry, ce fallback 'user' est suffisant (impact faible)
             role: user.user_metadata?.role || 'user',
           })
         } else {

@@ -66,24 +66,8 @@ export default function Signup() {
 
     const emailNorm = normalizeEmail(email)
 
-    const { data: exists, error: checkError } = await supabase.rpc(
-      'email_exists',
-      { email_to_check: emailNorm }
-    )
-
-    if (checkError) {
-      setError(t('errors.validationError'))
-      setLoading(false)
-      return
-    }
-
-    if (exists) {
-      setError(t('auth.emailAlreadyUsed'))
-      setLoading(false)
-      return
-    }
-
-    const defaultPseudo = (emailNorm || '').split('@')[0] || t('auth.pseudo')
+    // Note : Supabase Auth gère nativement les doublons d'email
+    // Pas besoin de vérification préalable RPC email_exists
 
     const { error: signUpError } = await supabase.auth.signUp({
       email: emailNorm,
@@ -91,7 +75,8 @@ export default function Signup() {
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
         captchaToken,
-        data: { pseudo: defaultPseudo },
+        // Note : Le nouveau schéma DB n'utilise pas user_metadata.pseudo
+        // Le trigger DB crée automatiquement le profil enfant "Mon enfant"
       },
     })
 

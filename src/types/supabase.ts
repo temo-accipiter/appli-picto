@@ -34,604 +34,583 @@ export type Database = {
   }
   public: {
     Tables: {
-      abonnements: {
+      account_preferences: {
         Row: {
-          cancel_at: string | null
-          cancel_at_period_end: boolean
+          account_id: string
+          confetti_enabled: boolean
           created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          end_date: string | null
-          id: string
-          last_event_id: string | null
-          latest_invoice: string | null
-          plan: string | null
-          price_id: string | null
-          raw_data: Json | null
-          start_date: string | null
-          status: string
-          stripe_customer: string | null
-          stripe_subscription_id: string | null
+          reduced_motion: boolean
+          toasts_enabled: boolean
+          train_line: string | null
+          train_progress_enabled: boolean
+          train_type: Database["public"]["Enums"]["transport_type"]
           updated_at: string
-          user_id: string
         }
         Insert: {
-          cancel_at?: string | null
-          cancel_at_period_end?: boolean
+          account_id: string
+          confetti_enabled?: boolean
           created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          end_date?: string | null
-          id?: string
-          last_event_id?: string | null
-          latest_invoice?: string | null
-          plan?: string | null
-          price_id?: string | null
-          raw_data?: Json | null
-          start_date?: string | null
-          status: string
-          stripe_customer?: string | null
-          stripe_subscription_id?: string | null
+          reduced_motion?: boolean
+          toasts_enabled?: boolean
+          train_line?: string | null
+          train_progress_enabled?: boolean
+          train_type?: Database["public"]["Enums"]["transport_type"]
           updated_at?: string
-          user_id: string
         }
         Update: {
-          cancel_at?: string | null
-          cancel_at_period_end?: boolean
+          account_id?: string
+          confetti_enabled?: boolean
           created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          end_date?: string | null
-          id?: string
-          last_event_id?: string | null
-          latest_invoice?: string | null
-          plan?: string | null
-          price_id?: string | null
-          raw_data?: Json | null
-          start_date?: string | null
-          status?: string
-          stripe_customer?: string | null
-          stripe_subscription_id?: string | null
+          reduced_motion?: boolean
+          toasts_enabled?: boolean
+          train_line?: string | null
+          train_progress_enabled?: boolean
+          train_type?: Database["public"]["Enums"]["transport_type"]
           updated_at?: string
-          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_preferences_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: true
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      account_quota_months: {
+        Row: {
+          account_id: string
+          created_at: string
+          month_end_utc: string
+          month_start_utc: string
+          period_ym: number
+          personal_cards_created: number
+          tz_ref: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          month_end_utc: string
+          month_start_utc: string
+          period_ym: number
+          personal_cards_created?: number
+          tz_ref: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          month_end_utc?: string
+          month_start_utc?: string
+          period_ym?: number
+          personal_cards_created?: number
+          tz_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_quota_months_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accounts: {
+        Row: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["account_status"]
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          status: Database["public"]["Enums"]["account_status"]
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["account_status"]
+          timezone?: string
+          updated_at?: string
         }
         Relationships: []
       }
-      account_audit_logs: {
+      admin_audit_log: {
         Row: {
-          action: string
-          changed_by: string | null
-          created_at: string | null
+          action: Database["public"]["Enums"]["admin_action"]
+          actor_account_id: string
+          created_at: string
           id: string
-          metadata: Json | null
-          new_role: string | null
-          new_status: string | null
-          old_role: string | null
-          old_status: string | null
-          reason: string | null
-          user_id: string
+          metadata: Json
+          reason: string
+          target_account_id: string | null
         }
         Insert: {
-          action: string
-          changed_by?: string | null
-          created_at?: string | null
+          action: Database["public"]["Enums"]["admin_action"]
+          actor_account_id: string
+          created_at?: string
           id?: string
-          metadata?: Json | null
-          new_role?: string | null
-          new_status?: string | null
-          old_role?: string | null
-          old_status?: string | null
-          reason?: string | null
-          user_id: string
+          metadata?: Json
+          reason: string
+          target_account_id?: string | null
         }
         Update: {
-          action?: string
-          changed_by?: string | null
-          created_at?: string | null
+          action?: Database["public"]["Enums"]["admin_action"]
+          actor_account_id?: string
+          created_at?: string
           id?: string
-          metadata?: Json | null
-          new_role?: string | null
-          new_status?: string | null
-          old_role?: string | null
-          old_status?: string | null
-          reason?: string | null
-          user_id?: string
+          metadata?: Json
+          reason?: string
+          target_account_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_actor_account_id_fkey"
+            columns: ["actor_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_audit_log_target_account_id_fkey"
+            columns: ["target_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cards: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          published: boolean | null
+          type: Database["public"]["Enums"]["card_type"]
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          published?: boolean | null
+          type: Database["public"]["Enums"]["card_type"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          published?: boolean | null
+          type?: Database["public"]["Enums"]["card_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
+          account_id: string
           created_at: string
           id: string
-          label: string
+          is_system: boolean
+          name: string
           updated_at: string
-          user_id: string | null
-          value: string
         }
         Insert: {
+          account_id: string
           created_at?: string
           id?: string
-          label: string
+          is_system?: boolean
+          name: string
           updated_at?: string
-          user_id?: string | null
-          value: string
         }
         Update: {
+          account_id?: string
           created_at?: string
           id?: string
-          label?: string
+          is_system?: boolean
+          name?: string
           updated_at?: string
-          user_id?: string | null
-          value?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      consentements: {
+      child_profiles: {
         Row: {
+          account_id: string
+          created_at: string
+          id: string
+          name: string
+          status: Database["public"]["Enums"]["child_profile_status"]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          name: string
+          status?: Database["public"]["Enums"]["child_profile_status"]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          status?: Database["public"]["Enums"]["child_profile_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_profiles_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_events: {
+        Row: {
+          account_id: string | null
           action: string | null
           app_version: string | null
           choices: Json
+          consent_type: string
           created_at: string
-          donnees: string | null
           id: string
           ip_hash: string | null
           locale: string | null
           mode: string
           origin: string | null
-          ts: string
           ts_client: string | null
-          type_consentement: string
           ua: string | null
-          user_id: string | null
           version: string
         }
         Insert: {
+          account_id?: string | null
           action?: string | null
           app_version?: string | null
           choices?: Json
+          consent_type: string
           created_at?: string
-          donnees?: string | null
           id?: string
           ip_hash?: string | null
           locale?: string | null
           mode?: string
           origin?: string | null
-          ts?: string
           ts_client?: string | null
-          type_consentement: string
           ua?: string | null
-          user_id?: string | null
           version?: string
         }
         Update: {
+          account_id?: string | null
           action?: string | null
           app_version?: string | null
           choices?: Json
+          consent_type?: string
           created_at?: string
-          donnees?: string | null
           id?: string
           ip_hash?: string | null
           locale?: string | null
           mode?: string
           origin?: string | null
-          ts?: string
           ts_client?: string | null
-          type_consentement?: string
           ua?: string | null
-          user_id?: string | null
           version?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consent_events_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      demo_cards: {
+      devices: {
         Row: {
-          card_type: string
-          created_at: string | null
-          id: string
-          imagepath: string | null
-          is_active: boolean | null
-          label: string
-          position: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          card_type: string
-          created_at?: string | null
-          id?: string
-          imagepath?: string | null
-          is_active?: boolean | null
-          label: string
-          position?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          card_type?: string
-          created_at?: string | null
-          id?: string
-          imagepath?: string | null
-          is_active?: boolean | null
-          label?: string
-          position?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      features: {
-        Row: {
-          category: string | null
+          account_id: string
           created_at: string
-          description: string | null
-          display_name: string
+          device_id: string
           id: string
-          is_active: boolean
-          name: string
+          revoked_at: string | null
           updated_at: string
         }
         Insert: {
-          category?: string | null
+          account_id: string
           created_at?: string
-          description?: string | null
-          display_name: string
+          device_id: string
           id?: string
-          is_active?: boolean
-          name: string
+          revoked_at?: string | null
           updated_at?: string
         }
         Update: {
-          category?: string | null
+          account_id?: string
           created_at?: string
-          description?: string | null
-          display_name?: string
+          device_id?: string
           id?: string
-          is_active?: boolean
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      image_metrics: {
-        Row: {
-          asset_type: string
-          compressed_size: number
-          compression_ratio: number | null
-          conversion_method: string | null
-          conversion_ms: number | null
-          created_at: string | null
-          error_message: string | null
-          id: string
-          mime_type_final: string | null
-          mime_type_original: string | null
-          original_size: number
-          result: string
-          sha256_hash: string
-          upload_ms: number | null
-          user_id: string | null
-        }
-        Insert: {
-          asset_type: string
-          compressed_size: number
-          compression_ratio?: number | null
-          conversion_method?: string | null
-          conversion_ms?: number | null
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          mime_type_final?: string | null
-          mime_type_original?: string | null
-          original_size: number
-          result: string
-          sha256_hash: string
-          upload_ms?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          asset_type?: string
-          compressed_size?: number
-          compression_ratio?: number | null
-          conversion_method?: string | null
-          conversion_ms?: number | null
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          mime_type_final?: string | null
-          mime_type_original?: string | null
-          original_size?: number
-          result?: string
-          sha256_hash?: string
-          upload_ms?: number | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      parametres: {
-        Row: {
-          confettis: boolean
-          created_at: string
-          id: number
-          toasts_enabled: boolean
-          updated_at: string
-        }
-        Insert: {
-          confettis?: boolean
-          created_at?: string
-          id?: number
-          toasts_enabled?: boolean
-          updated_at?: string
-        }
-        Update: {
-          confettis?: boolean
-          created_at?: string
-          id?: number
-          toasts_enabled?: boolean
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      permission_changes: {
-        Row: {
-          change_reason: string | null
-          change_type: string
-          changed_at: string
-          changed_by: string | null
-          created_at: string
-          id: string
-          new_values: Json | null
-          old_values: Json | null
-          record_id: string
-          table_name: string
-        }
-        Insert: {
-          change_reason?: string | null
-          change_type: string
-          changed_at?: string
-          changed_by?: string | null
-          created_at?: string
-          id?: string
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id: string
-          table_name: string
-        }
-        Update: {
-          change_reason?: string | null
-          change_type?: string
-          changed_at?: string
-          changed_by?: string | null
-          created_at?: string
-          id?: string
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id?: string
-          table_name?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          account_status: string
-          avatar_url: string | null
-          created_at: string
-          date_naissance: string | null
-          deletion_scheduled_at: string | null
-          id: string
-          is_admin: boolean
-          pseudo: string | null
-          updated_at: string
-          ville: string | null
-        }
-        Insert: {
-          account_status?: string
-          avatar_url?: string | null
-          created_at?: string
-          date_naissance?: string | null
-          deletion_scheduled_at?: string | null
-          id: string
-          is_admin?: boolean
-          pseudo?: string | null
-          updated_at?: string
-          ville?: string | null
-        }
-        Update: {
-          account_status?: string
-          avatar_url?: string | null
-          created_at?: string
-          date_naissance?: string | null
-          deletion_scheduled_at?: string | null
-          id?: string
-          is_admin?: boolean
-          pseudo?: string | null
-          updated_at?: string
-          ville?: string | null
-        }
-        Relationships: []
-      }
-      recompenses: {
-        Row: {
-          couleur: string | null
-          created_at: string
-          description: string | null
-          icone: string | null
-          id: string
-          imagepath: string | null
-          label: string
-          points_requis: number
-          selected: boolean
-          updated_at: string
-          user_id: string | null
-          visible_en_demo: boolean
-        }
-        Insert: {
-          couleur?: string | null
-          created_at?: string
-          description?: string | null
-          icone?: string | null
-          id?: string
-          imagepath?: string | null
-          label: string
-          points_requis?: number
-          selected?: boolean
-          updated_at?: string
-          user_id?: string | null
-          visible_en_demo?: boolean
-        }
-        Update: {
-          couleur?: string | null
-          created_at?: string
-          description?: string | null
-          icone?: string | null
-          id?: string
-          imagepath?: string | null
-          label?: string
-          points_requis?: number
-          selected?: boolean
-          updated_at?: string
-          user_id?: string | null
-          visible_en_demo?: boolean
-        }
-        Relationships: []
-      }
-      role_permissions: {
-        Row: {
-          can_access: boolean
-          created_at: string
-          feature_id: string
-          id: string
-          role_id: string
-          updated_at: string
-        }
-        Insert: {
-          can_access?: boolean
-          created_at?: string
-          feature_id: string
-          id?: string
-          role_id: string
-          updated_at?: string
-        }
-        Update: {
-          can_access?: boolean
-          created_at?: string
-          feature_id?: string
-          id?: string
-          role_id?: string
+          revoked_at?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'role_permissions_feature_id_fkey'
-            columns: ['feature_id']
+            foreignKeyName: "devices_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: 'features'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'role_permissions_role_id_fkey'
-            columns: ['role_id']
-            isOneToOne: false
-            referencedRelation: 'roles'
-            referencedColumns: ['id']
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
           },
         ]
       }
-      role_quotas: {
-        Row: {
-          created_at: string | null
-          id: string
-          quota_limit: number
-          quota_period: string | null
-          quota_type: string
-          role_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          quota_limit: number
-          quota_period?: string | null
-          quota_type: string
-          role_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          quota_limit?: number
-          quota_period?: string | null
-          quota_type?: string
-          role_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'role_quotas_role_id_fkey'
-            columns: ['role_id']
-            isOneToOne: false
-            referencedRelation: 'roles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      role_quotas_backup_legacy: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          quota_limit: number | null
-          quota_period: string | null
-          quota_type: string | null
-          role_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          quota_limit?: number | null
-          quota_period?: string | null
-          quota_type?: string | null
-          role_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          quota_limit?: number | null
-          quota_period?: string | null
-          quota_type?: string | null
-          role_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      roles: {
+      sequence_steps: {
         Row: {
           created_at: string
-          description: string | null
-          display_name: string
           id: string
-          is_active: boolean
-          name: string
-          priority: number | null
+          position: number
+          sequence_id: string
+          step_card_id: string
           updated_at: string
         }
         Insert: {
           created_at?: string
-          description?: string | null
-          display_name: string
           id?: string
-          is_active?: boolean
-          name: string
-          priority?: number | null
+          position: number
+          sequence_id: string
+          step_card_id: string
           updated_at?: string
         }
         Update: {
           created_at?: string
-          description?: string | null
-          display_name?: string
           id?: string
-          is_active?: boolean
-          name?: string
-          priority?: number | null
+          position?: number
+          sequence_id?: string
+          step_card_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "sequences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_steps_step_card_id_fkey"
+            columns: ["step_card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequences: {
+        Row: {
+          account_id: string
+          created_at: string
+          id: string
+          mother_card_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          id?: string
+          mother_card_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          id?: string
+          mother_card_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequences_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequences_mother_card_id_fkey"
+            columns: ["mother_card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_validations: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          slot_id: string
+          validated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          slot_id: string
+          validated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          slot_id?: string
+          validated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_validations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_validations_slot_id_fkey"
+            columns: ["slot_id"]
+            isOneToOne: false
+            referencedRelation: "slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          child_profile_id: string
+          completed_at: string | null
+          created_at: string
+          epoch: number
+          id: string
+          started_at: string | null
+          state: Database["public"]["Enums"]["session_state"]
+          steps_total_snapshot: number | null
+          timeline_id: string
+          updated_at: string
+        }
+        Insert: {
+          child_profile_id: string
+          completed_at?: string | null
+          created_at?: string
+          epoch?: number
+          id?: string
+          started_at?: string | null
+          state: Database["public"]["Enums"]["session_state"]
+          steps_total_snapshot?: number | null
+          timeline_id: string
+          updated_at?: string
+        }
+        Update: {
+          child_profile_id?: string
+          completed_at?: string | null
+          created_at?: string
+          epoch?: number
+          id?: string
+          started_at?: string | null
+          state?: Database["public"]["Enums"]["session_state"]
+          steps_total_snapshot?: number | null
+          timeline_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_timeline_id_fkey"
+            columns: ["timeline_id"]
+            isOneToOne: false
+            referencedRelation: "timelines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      slots: {
+        Row: {
+          card_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["slot_kind"]
+          position: number
+          timeline_id: string
+          tokens: number | null
+          updated_at: string
+        }
+        Insert: {
+          card_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["slot_kind"]
+          position: number
+          timeline_id: string
+          tokens?: number | null
+          updated_at?: string
+        }
+        Update: {
+          card_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["slot_kind"]
+          position?: number
+          timeline_id?: string
+          tokens?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "slots_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "slots_timeline_id_fkey"
+            columns: ["timeline_id"]
+            isOneToOne: false
+            referencedRelation: "timelines"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stations: {
         Row: {
@@ -640,7 +619,7 @@ export type Database = {
           label: string
           ligne: string
           ordre: number
-          type: Database['public']['Enums']['transport_type']
+          type: Database["public"]["Enums"]["transport_type"]
           updated_at: string
         }
         Insert: {
@@ -649,7 +628,7 @@ export type Database = {
           label: string
           ligne: string
           ordre: number
-          type?: Database['public']['Enums']['transport_type']
+          type: Database["public"]["Enums"]["transport_type"]
           updated_at?: string
         }
         Update: {
@@ -658,560 +637,265 @@ export type Database = {
           label?: string
           ligne?: string
           ordre?: number
-          type?: Database['public']['Enums']['transport_type']
+          type?: Database["public"]["Enums"]["transport_type"]
           updated_at?: string
         }
         Relationships: []
       }
       subscription_logs: {
         Row: {
+          account_id: string | null
+          created_at: string
           details: Json | null
           event_type: string
           id: string
-          timestamp: string
-          user_id: string | null
         }
         Insert: {
+          account_id?: string | null
+          created_at?: string
           details?: Json | null
           event_type: string
           id?: string
-          timestamp?: string
-          user_id?: string | null
         }
         Update: {
+          account_id?: string | null
+          created_at?: string
           details?: Json | null
           event_type?: string
           id?: string
-          timestamp?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      taches: {
-        Row: {
-          aujourdhui: boolean
-          categorie: string | null
-          categorie_id: string | null
-          couleur: string | null
-          created_at: string
-          description: string | null
-          fait: boolean
-          icone: string | null
-          id: string
-          imagepath: string | null
-          label: string
-          points: number
-          position: number
-          updated_at: string
-          user_id: string | null
-          visible_en_demo: boolean
-        }
-        Insert: {
-          aujourdhui?: boolean
-          categorie?: string | null
-          categorie_id?: string | null
-          couleur?: string | null
-          created_at?: string
-          description?: string | null
-          fait?: boolean
-          icone?: string | null
-          id?: string
-          imagepath?: string | null
-          label: string
-          points?: number
-          position?: number
-          updated_at?: string
-          user_id?: string | null
-          visible_en_demo?: boolean
-        }
-        Update: {
-          aujourdhui?: boolean
-          categorie?: string | null
-          categorie_id?: string | null
-          couleur?: string | null
-          created_at?: string
-          description?: string | null
-          fait?: boolean
-          icone?: string | null
-          id?: string
-          imagepath?: string | null
-          label?: string
-          points?: number
-          position?: number
-          updated_at?: string
-          user_id?: string | null
-          visible_en_demo?: boolean
         }
         Relationships: [
           {
-            foreignKeyName: 'taches_categorie_id_fkey'
-            columns: ['categorie_id']
+            foreignKeyName: "subscription_logs_account_id_fkey"
+            columns: ["account_id"]
             isOneToOne: false
-            referencedRelation: 'categories'
-            referencedColumns: ['id']
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
           },
         ]
       }
-      user_assets: {
+      subscriptions: {
         Row: {
-          asset_type: string
+          account_id: string
+          cancel_at: string | null
+          cancel_at_period_end: boolean
           created_at: string
-          dimensions: string | null
-          file_path: string
-          file_size: number
-          height: number | null
+          current_period_end: string | null
+          current_period_start: string | null
           id: string
-          mime_type: string | null
-          sha256_hash: string | null
+          last_event_id: string | null
+          price_id: string | null
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           updated_at: string
-          user_id: string
-          version: number | null
-          width: number | null
         }
         Insert: {
-          asset_type: string
+          account_id: string
+          cancel_at?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
-          dimensions?: string | null
-          file_path: string
-          file_size: number
-          height?: number | null
+          current_period_end?: string | null
+          current_period_start?: string | null
           id?: string
-          mime_type?: string | null
-          sha256_hash?: string | null
+          last_event_id?: string | null
+          price_id?: string | null
+          status: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
-          user_id: string
-          version?: number | null
-          width?: number | null
         }
         Update: {
-          asset_type?: string
+          account_id?: string
+          cancel_at?: string | null
+          cancel_at_period_end?: boolean
           created_at?: string
-          dimensions?: string | null
-          file_path?: string
-          file_size?: number
-          height?: number | null
+          current_period_end?: string | null
+          current_period_start?: string | null
           id?: string
-          mime_type?: string | null
-          sha256_hash?: string | null
+          last_event_id?: string | null
+          price_id?: string | null
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           updated_at?: string
-          user_id?: string
-          version?: number | null
-          width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      user_prefs: {
+      timelines: {
         Row: {
-          timezone: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          timezone?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          timezone?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string | null
+          child_profile_id: string
           created_at: string
-          expires_at: string | null
           id: string
-          is_active: boolean
-          role_id: string
+          updated_at: string
+        }
+        Insert: {
+          child_profile_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          child_profile_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timelines_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: true
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_card_categories: {
+        Row: {
+          card_id: string
+          category_id: string
+          created_at: string
+          id: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          assigned_at?: string | null
-          assigned_by?: string | null
+          card_id: string
+          category_id: string
           created_at?: string
-          expires_at?: string | null
           id?: string
-          is_active?: boolean
-          role_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          assigned_at?: string | null
-          assigned_by?: string | null
+          card_id?: string
+          category_id?: string
           created_at?: string
-          expires_at?: string | null
           id?: string
-          is_active?: boolean
-          role_id?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: 'user_roles_role_id_fkey'
-            columns: ['role_id']
+            foreignKeyName: "user_card_categories_card_id_fkey"
+            columns: ["card_id"]
             isOneToOne: false
-            referencedRelation: 'roles'
-            referencedColumns: ['id']
+            referencedRelation: "cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_card_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_card_categories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
           },
         ]
-      }
-      user_usage_counters: {
-        Row: {
-          categories: number
-          rewards: number
-          tasks: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          categories?: number
-          rewards?: number
-          tasks?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          categories?: number
-          rewards?: number
-          tasks?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
     }
     Views: {
-      consentements_latest: {
-        Row: {
-          action: string | null
-          app_version: string | null
-          choices: Json | null
-          created_at: string | null
-          effective_ts: string | null
-          id: string | null
-          ip_hash: string | null
-          locale: string | null
-          mode: string | null
-          origin: string | null
-          ts: string | null
-          ts_client: string | null
-          ua: string | null
-          user_id: string | null
-          version: string | null
-        }
-        Relationships: []
-      }
-      role_permissions_admin_view: {
-        Row: {
-          can_access: boolean | null
-          category: string | null
-          created_at: string | null
-          feature_display_name: string | null
-          feature_id: string | null
-          feature_name: string | null
-          id: string | null
-          role_display_name: string | null
-          role_id: string | null
-          role_name: string | null
-          updated_at: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'role_permissions_feature_id_fkey'
-            columns: ['feature_id']
-            isOneToOne: false
-            referencedRelation: 'features'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'role_permissions_role_id_fkey'
-            columns: ['role_id']
-            isOneToOne: false
-            referencedRelation: 'roles'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      v_role_quota_matrix: {
-        Row: {
-          quota_limit: number | null
-          quota_period: string | null
-          quota_type: string | null
-          role_name: string | null
-        }
-        Relationships: []
-      }
-      v_user_storage_usage: {
-        Row: {
-          bytes_total: number | null
-          files_count: number | null
-          last_upload_at: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      _compute_my_permissions: {
-        Args: never
-        Returns: {
-          can_access: boolean
-          feature_name: string
-        }[]
+      admin_get_account_support_info: {
+        Args: { target_account_id: string }
+        Returns: Json
       }
-      _compute_my_primary_role: {
-        Args: never
-        Returns: {
-          priority: number
-          role_id: string
-          role_name: string
-        }[]
-      }
-      assert_self_or_admin: { Args: { p_target: string }; Returns: undefined }
-      bump_usage_counter: {
-        Args: { p_col: string; p_delta: number; p_user: string }
+      apply_subscription_to_account_status: {
+        Args: { p_account_id: string }
         Returns: undefined
       }
-      change_account_status: {
-        Args: {
-          changed_by_user_id?: string
-          metadata?: Json
-          new_status: string
-          reason?: string
-          target_user_id: string
-        }
+      cards_personal_feature_enabled: {
+        Args: { p_status: Database["public"]["Enums"]["account_status"] }
         Returns: boolean
       }
-      check_duplicate_image: {
-        Args: { p_sha256_hash: string; p_user_id: string }
-        Returns: Json
+      check_can_create_child_profile: {
+        Args: { p_account_id: string }
+        Returns: undefined
       }
-      check_image_quota: {
-        Args: { p_asset_type: string; p_file_size?: number; p_user_id: string }
-        Returns: Json
+      check_can_create_personal_card: {
+        Args: { p_account_id: string }
+        Returns: undefined
       }
-      check_user_quota: {
-        Args: { quota_period?: string; quota_type: string; user_uuid: string }
-        Returns: boolean
+      check_can_register_device: {
+        Args: { p_account_id: string; p_revoked_at: string }
+        Returns: undefined
       }
-      check_user_quota_free_only: {
-        Args: { p_period: string; p_quota_type: string; p_user_id: string }
-        Returns: boolean
+      enforce_child_profile_limit_after_session_completion: {
+        Args: { p_child_profile_id: string }
+        Returns: undefined
       }
-      cleanup_old_audit_logs: {
-        Args: { retention_days?: number }
-        Returns: number
-      }
-      email_exists: { Args: { email_to_check: string }; Returns: boolean }
-      generate_unique_pseudo: { Args: { base: string }; Returns: string }
-      get_account_history: {
-        Args: { limit_count?: number; user_uuid: string }
+      ensure_quota_month_context: {
+        Args: { p_account_id: string }
         Returns: {
-          action: string
-          changed_by_pseudo: string
-          created_at: string
-          id: string
-          new_role: string
-          new_status: string
-          old_role: string
-          old_status: string
-          reason: string
+          month_end_utc: string
+          month_start_utc: string
+          period_ym: number
+          tz_ref: string
         }[]
       }
       get_account_status: {
-        Args: { user_uuid: string }
-        Returns: {
-          account_status: string
-          deletion_date: string
-          is_pending_verification: boolean
-          is_scheduled_for_deletion: boolean
-          is_suspended: boolean
-          role_name: string
-          user_id: string
-        }[]
-      }
-      get_confettis: { Args: never; Returns: boolean }
-      get_demo_cards: {
-        Args: { card_type_filter?: string }
-        Returns: {
-          card_type: string
-          id: string
-          imagepath: string
-          label: string
-          position: number
-        }[]
-      }
-      get_demo_rewards: {
-        Args: never
-        Returns: {
-          id: string
-          imagepath: string
-          label: string
-          position: number
-        }[]
-      }
-      get_demo_tasks: {
-        Args: never
-        Returns: {
-          id: string
-          imagepath: string
-          label: string
-          position: number
-        }[]
-      }
-      get_image_analytics_summary: { Args: never; Returns: Json }
-      get_migration_report: {
-        Args: never
-        Returns: {
-          abonne_users: number
-          active_users: number
-          admin_users: number
-          deletion_scheduled_users: number
-          free_users: number
-          pending_users: number
-          staff_users: number
-          suspended_users: number
-          total_users: number
-          visitor_users: number
-        }[]
-      }
-      get_my_permissions: {
-        Args: never
-        Returns: {
-          can_access: boolean
-          feature_name: string
-        }[]
-      }
-      get_my_primary_role: {
-        Args: never
-        Returns: {
-          priority: number
-          role_id: string
-          role_name: string
-        }[]
-      }
-      get_usage: { Args: { p_user_id: string }; Returns: Json }
-      get_usage_fast: { Args: { p_user_id: string }; Returns: Json }
-      get_user_assets_stats: { Args: { p_user_id: string }; Returns: Json }
-      get_user_emails: {
-        Args: never
-        Returns: {
-          email: string
-          user_id: string
-        }[]
-      }
-      get_user_last_logins: {
-        Args: never
-        Returns: {
-          is_online: boolean
-          last_login: string
-          user_id: string
-        }[]
-      }
-      get_user_month_bounds_utc: {
-        Args: { p_user_id: string }
-        Returns: {
-          end_utc: string
-          start_utc: string
-        }[]
-      }
-      get_user_permissions: {
-        Args: { user_uuid: string }
-        Returns: {
-          can_access: boolean
-          feature_name: string
-        }[]
-      }
-      get_user_primary_role: {
-        Args: { p_user_id: string }
-        Returns: {
-          priority: number
-          role_id: string
-          role_name: string
-        }[]
-      }
-      get_user_quota_info: {
-        Args: { quota_period?: string; quota_type: string; user_uuid: string }
-        Returns: {
-          current_usage: number
-          is_limited: boolean
-          quota_limit: number
-          remaining: number
-        }[]
-      }
-      get_user_roles: {
-        Args: { p_user_id: string }
-        Returns: {
-          is_active: boolean
-          priority: number
-          role_id: string
-          role_name: string
-        }[]
-      }
-      get_users_with_roles: {
-        Args: {
-          page_limit?: number
-          page_num?: number
-          role_filter?: string
-          status_filter?: string
-        }
-        Returns: {
-          account_status: string
-          created_at: string
-          email: string
-          id: string
-          is_online: boolean
-          last_login: string
-          pseudo: string
-          total_count: number
-          user_roles: Json
-        }[]
+        Args: { p_account_id: string }
+        Returns: Database["public"]["Enums"]["account_status"]
       }
       is_admin: { Args: never; Returns: boolean }
-      is_subscriber: { Args: { p_user?: string }; Returns: boolean }
-      is_system_role: { Args: { role_name: string }; Returns: boolean }
-      log_card_creation: {
-        Args: { _entity: string; _id: string; _user: string }
+      is_execution_only: { Args: never; Returns: boolean }
+      is_valid_timezone: { Args: { tz: string }; Returns: boolean }
+      quota_cards_monthly_limit: {
+        Args: { p_status: Database["public"]["Enums"]["account_status"] }
+        Returns: number
+      }
+      quota_cards_stock_limit: {
+        Args: { p_status: Database["public"]["Enums"]["account_status"] }
+        Returns: number
+      }
+      quota_devices_limit: {
+        Args: { p_status: Database["public"]["Enums"]["account_status"] }
+        Returns: number
+      }
+      quota_profiles_limit: {
+        Args: { p_status: Database["public"]["Enums"]["account_status"] }
+        Returns: number
+      }
+      reset_active_started_session_for_timeline: {
+        Args: { p_reason?: string; p_timeline_id: string }
         Returns: undefined
       }
-      purge_old_consentements: {
-        Args: { retention_months?: number }
+      sequences_enforce_min_two_steps: {
+        Args: { p_sequence_id: string }
         Returns: undefined
       }
-      select_recompense_atomic: {
-        Args: { p_reward_id: string }
-        Returns: {
-          couleur: string | null
-          created_at: string
-          description: string | null
-          icone: string | null
-          id: string
-          imagepath: string | null
-          label: string
-          points_requis: number
-          selected: boolean
-          updated_at: string
-          user_id: string | null
-          visible_en_demo: boolean
-        }[]
-        SetofOptions: {
-          from: '*'
-          to: 'recompenses'
-          isOneToOne: false
-          isSetofReturn: true
-        }
-      }
-      user_can_upload_avatar: { Args: { uid: string }; Returns: boolean }
     }
     Enums: {
-      transport_type: 'metro' | 'bus' | 'tram' | 'rer'
+      account_status: "free" | "subscriber" | "admin"
+      admin_action:
+        | "revoke_sessions"
+        | "disable_device"
+        | "resync_subscription_from_stripe"
+        | "append_subscription_log"
+        | "request_account_deletion"
+        | "export_proof_evidence"
+      card_type: "bank" | "personal"
+      child_profile_status: "active" | "locked"
+      session_state: "active_preview" | "active_started" | "completed"
+      slot_kind: "step" | "reward"
+      transport_type: "metro" | "tram" | "bus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1219,33 +903,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])
-    ? (DefaultSchema['Tables'] &
-        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1254,23 +938,23 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1279,23 +963,23 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema['Tables']
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
-    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1304,36 +988,36 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema['Enums']
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
-    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema['CompositeTypes']
+    | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
-    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
@@ -1342,7 +1026,21 @@ export const Constants = {
   },
   public: {
     Enums: {
-      transport_type: ['metro', 'bus', 'tram', 'rer'],
+      account_status: ["free", "subscriber", "admin"],
+      admin_action: [
+        "revoke_sessions",
+        "disable_device",
+        "resync_subscription_from_stripe",
+        "append_subscription_log",
+        "request_account_deletion",
+        "export_proof_evidence",
+      ],
+      card_type: ["bank", "personal"],
+      child_profile_status: ["active", "locked"],
+      session_state: ["active_preview", "active_started", "completed"],
+      slot_kind: ["step", "reward"],
+      transport_type: ["metro", "tram", "bus"],
     },
   },
 } as const
+
