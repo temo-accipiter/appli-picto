@@ -79,3 +79,6 @@ blueprint-archive/
 .DS_Store
 .DS_Store
 supabase/migrations/.DS_Store
+
+# macOS
+.DS_Store
