@@ -29,7 +29,7 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-enabled = true
+enabled = false
 sql_paths = ["./seed.sql"]
 
 [db.network_restrictions]
@@ -68,7 +68,7 @@ refresh_token_reuse_interval = 10
 enable_signup = true
 enable_anonymous_sign_ins = false
 enable_manual_linking = false
-minimum_password_length = 6
+minimum_password_length = 8
 password_requirements = ""
 
 [auth.rate_limit]
@@ -148,8 +148,4 @@ s3_region = "env(S3_REGION)"
 s3_access_key = "env(S3_ACCESS_KEY)"
 s3_secret_key = "env(S3_SECRET_KEY)"
 
-[functions.create-checkout-session]
-enabled = true
-verify_jwt = true
-import_map = "./functions/create-checkout-session/deno.json"
-entrypoint = "./functions/create-checkout-session/index.ts"
+# Edge functions supprimées - À recréer quand besoin (Stripe, RGPD)

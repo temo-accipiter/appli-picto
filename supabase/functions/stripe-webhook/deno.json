@@ -1,9 +1,0 @@
-{
-  "verifyJWT": false,
-  "env": [
-    "STRIPE_SECRET_KEY",
-    "STRIPE_WEBHOOK_SECRET",
-    "SUPABASE_URL",
-    "SUPABASE_SERVICE_ROLE_KEY"
-  ]
-}
