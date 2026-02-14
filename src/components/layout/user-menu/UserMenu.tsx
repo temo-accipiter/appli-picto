@@ -1,8 +1,8 @@
 'use client'
 
 import { LangSelector, SignedImage, ThemeToggle } from '@/components'
-import { usePermissions } from '@/contexts'
 import {
+  useAccountStatus,
   useAuth,
   useI18n,
   useSubscriptionStatus,
@@ -29,7 +29,7 @@ import './UserMenu.scss'
 export default function UserMenu() {
   const { user, signOut, authReady } = useAuth()
   const { isActive, loading } = useSubscriptionStatus()
-  const { isAdmin } = usePermissions() // ⚠️ On ne bloque plus sur isUnknown
+  const { isAdmin } = useAccountStatus()
   const { t } = useI18n()
   const { handleCheckout } = useCheckout()
   const dbPseudo = useDbPseudo(user?.id)

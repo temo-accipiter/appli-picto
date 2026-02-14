@@ -10,6 +10,7 @@ import {
 import ImageQuotaIndicator from '@/components/shared/image-quota-indicator/ImageQuotaIndicator'
 import { useToast } from '@/contexts'
 import {
+  useAccountStatus,
   useAuth,
   useCategories,
   useI18n,
@@ -62,6 +63,7 @@ export default function Edition() {
   const { user } = useAuth()
 
   // 👉 Hook RBAC unifié (Phase 2)
+  // ⚠️ S1-bis : quotas logic kept in useRBAC (deferred to S2+)
   const {
     canCreateTask,
     canCreateReward,
@@ -69,8 +71,10 @@ export default function Edition() {
     getQuotaInfo,
     getMonthlyQuotaInfo,
     refreshQuotas,
-    isAdmin,
   } = useRBAC()
+
+  // 👉 S1-bis : isAdmin from DB-first accounts.status
+  const { isAdmin } = useAccountStatus()
 
   // États modaux quotas
   const [quotaModalOpen, setQuotaModalOpen] = useState(false)

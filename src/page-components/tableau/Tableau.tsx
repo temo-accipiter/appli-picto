@@ -8,14 +8,14 @@ import {
   TrainProgressBar,
 } from '@/components'
 
-import { useDisplay, usePermissions } from '@/contexts'
+import { useDisplay } from '@/contexts'
 import {
   useDemoCards,
   useFallbackData,
   useI18n,
+  useIsVisitor,
   useParametres,
   useRecompenses,
-  useSimpleRole,
   useTachesDnd,
 } from '@/hooks'
 import {
@@ -73,14 +73,10 @@ export default function TableauGrille({
     useState(false)
 
   const { width, height } = useWindowSize()
-  const { role: permissionsRole } = usePermissions()
-  const { role: simpleRole /*, loading: _roleLoading*/ } = useSimpleRole()
-
-  // Utiliser le rôle simple en priorité, fallback vers permissions
-  const role = simpleRole !== 'unknown' ? simpleRole : permissionsRole
+  const { isVisitor } = useIsVisitor()
 
   // Détecter automatiquement le mode démo si pas spécifié
-  const isDemoMode = isDemo || role === 'visitor'
+  const isDemoMode = isDemo || isVisitor
 
   // Gérer le changement de ligne pour les visiteurs
   const handleLineChange = (action: string) => {

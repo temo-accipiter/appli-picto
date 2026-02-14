@@ -7,8 +7,7 @@ import {
   ThemeToggle,
   UserMenu,
 } from '@/components'
-import { usePermissions } from '@/contexts'
-import { useAuth, useI18n } from '@/hooks'
+import { useAuth, useI18n, useIsVisitor } from '@/hooks'
 import { motion } from 'framer-motion'
 import {
   LayoutDashboard,
@@ -25,7 +24,7 @@ import './Navbar.scss'
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const { can: _can, isVisitor, ready } = usePermissions()
+  const { isVisitor, authReady } = useIsVisitor()
   const { t } = useI18n() // 🌐 Hook i18n pour les traductions
   const [showPersonalizationModal, setShowPersonalizationModal] =
     useState(false)
@@ -35,8 +34,8 @@ export default function Navbar() {
   const isProfil = pathname === '/profil'
   const isAdminPermissions = pathname === '/admin/permissions'
 
-  // 🔧 CORRECTIF : Détecter visitor même pendant le chargement
-  const isVisitorMode = !user && (isVisitor || !ready)
+  // Détecter visitor même pendant le chargement
+  const isVisitorMode = !user && (isVisitor || !authReady)
 
   return (
     <nav className="navbar">
