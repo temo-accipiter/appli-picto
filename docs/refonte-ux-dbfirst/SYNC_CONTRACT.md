@@ -70,7 +70,7 @@ _(Référence : PRODUCT_MODEL.md Ch.8.1, ux.md "Persistance / Sync / Offline")_
 
 ### 2.3 Règle de fermeture
 
-**Cette liste est fermée.** Tout nouveau champ ou donnée non présent dans cette matrice nécessite une décision produit explicite documentée dans PRODUCT*MODEL.md **avant** toute implémentation. L'ajout d'une colonne `sync*_`, `offline\__`, `progress\_\*`, `last_synced_at`, ou `synced_from_device_id` dans une table métier est **interdit** sans passage par ce processus.
+**Cette liste est fermée.** Tout nouveau champ ou donnée non présent dans cette matrice nécessite une décision produit explicite documentée dans PRODUCT*MODEL.md **avant** toute implémentation. L'ajout d'une colonne `sync*\_`, `offline\_\_`, `progress\_\*`, `last_synced_at`, ou `synced_from_device_id` dans une table métier est **interdit** sans passage par ce processus.
 
 ---
 

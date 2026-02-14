@@ -8,7 +8,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { usePermissions } from './PermissionsContext'
+import { useIsVisitor } from '@/hooks'
 
 interface DisplayContextValue {
   showTrain: boolean
@@ -31,9 +31,8 @@ interface DisplayProviderProps {
 export const DisplayContext = createContext<DisplayContextValue | null>(null)
 
 export function DisplayProvider({ children }: DisplayProviderProps) {
-  // Dans notre PermissionsContext refondu, on a `ready` au lieu de `loading`
-  const { isVisitor, ready } = usePermissions()
-  const loading = !ready // alias pour compat avec l'ancienne logique
+  const { isVisitor, authReady } = useIsVisitor()
+  const loading = !authReady // alias pour compat avec l'ancienne logique
 
   const [showTrain, setShowTrain] = useState(() => {
     if (typeof window === 'undefined') return true

@@ -3,7 +3,7 @@
 // src/components/features/time-timer/FloatingTimeTimer.tsx
 import React, { useCallback, useEffect, useState } from 'react'
 import { useDisplay } from '@/contexts/DisplayContext'
-import { useSimpleRole } from '@/hooks'
+import { useIsVisitor } from '@/hooks'
 import TimeTimer from './TimeTimer'
 import './FloatingTimeTimer.scss'
 
@@ -23,7 +23,7 @@ export default function FloatingTimeTimer({
   const { setShowTimeTimer } = useDisplay()
 
   // Vérifier le rôle de l'utilisateur - ne pas afficher pour les visiteurs
-  const { ready, isVisitor } = useSimpleRole()
+  const { authReady, isVisitor } = useIsVisitor()
 
   // Calculer la taille du timer selon la largeur de l'écran (responsive)
   const getTimerSize = useCallback(() => {
@@ -228,7 +228,7 @@ export default function FloatingTimeTimer({
     .join(' ')
 
   // Ne pas afficher le timer pour les visiteurs (après tous les hooks)
-  if (!ready) return null // Attendre le chargement du rôle
+  if (!authReady) return null // Attendre le chargement auth
   if (isVisitor) return null // Masquer pour les visiteurs
 
   return (

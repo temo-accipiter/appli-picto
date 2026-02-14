@@ -1,7 +1,7 @@
 'use client'
 
 import { Loader } from '@/components'
-import { usePermissions } from '@/contexts'
+import { useAuth } from '@/hooks'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
@@ -11,15 +11,15 @@ import { useEffect } from 'react'
  * - Utilisateurs connectés → /tableau (avec cartes personnelles)
  */
 export default function HomeRedirect() {
-  const { role: _role, loading } = usePermissions()
+  const { authReady } = useAuth()
   const router = useRouter()
 
   // Redirection selon le rôle - tous vers /tableau
   useEffect(() => {
-    if (!loading) {
+    if (authReady) {
       router.replace('/tableau')
     }
-  }, [loading, router])
+  }, [authReady, router])
 
   // Afficher un loader pendant la détermination du rôle
   return (

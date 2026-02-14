@@ -3,7 +3,6 @@
 import React from 'react'
 import { Loader } from '@/components'
 import { useAuth } from '@/hooks'
-import { usePermissions } from '@/contexts'
 import './InitializationLoader.scss'
 
 interface InitializationLoaderProps {
@@ -11,17 +10,16 @@ interface InitializationLoaderProps {
 }
 
 /**
- * Loader global qui attend que AuthContext ET PermissionsContext soient prêts
+ * Loader global qui attend que AuthContext soit prêt
  * avant d'afficher l'application. Cela évite les "sursauts" pendant le chargement initial.
  */
 export default function InitializationLoader({
   children,
 }: InitializationLoaderProps) {
   const { authReady } = useAuth()
-  const { ready: permissionsReady } = usePermissions()
 
-  // Attendre que TOUT soit initialisé
-  const isReady = authReady && permissionsReady
+  // Attendre que l'auth soit initialisée
+  const isReady = authReady
 
   if (!isReady) {
     return (

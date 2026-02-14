@@ -6,7 +6,7 @@
  * Ce hook centralise TOUTES les vérifications d'accès, quotas et rôles.
  */
 
-import { usePermissions } from '@/contexts/PermissionsContext'
+import { usePermissions } from '@/contexts/PermissionsContext.stub'
 import { supabase } from '@/utils/supabaseClient'
 import { ROLE } from '@/utils/roleUtils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'

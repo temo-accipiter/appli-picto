@@ -6,7 +6,6 @@ import ErrorBoundary from '@/components/shared/error-boundary/ErrorBoundary'
 import WebVitals from '@/components/shared/web-vitals/WebVitals'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { PermissionsProvider } from '@/contexts/PermissionsContext'
 import { DisplayProvider } from '@/contexts/DisplayContext'
 import { LoadingProvider } from '@/contexts/LoadingContext'
 import { ToastProvider } from '@/contexts/ToastContext'
@@ -25,21 +24,19 @@ export function Providers({ children }: { children: ReactNode }) {
     <ErrorBoundary>
       <WebVitals />
       <AuthProvider>
-        <PermissionsProvider>
-          <DisplayProvider>
-            <LoadingProvider>
-              <ToastProvider>
-                <InitializationLoader>
-                  <Suspense fallback={<Loader />}>
-                    {children}
-                    {/* Bottom Navigation Bar - Mobile only (< 768px) */}
-                    <BottomNav />
-                  </Suspense>
-                </InitializationLoader>
-              </ToastProvider>
-            </LoadingProvider>
-          </DisplayProvider>
-        </PermissionsProvider>
+        <DisplayProvider>
+          <LoadingProvider>
+            <ToastProvider>
+              <InitializationLoader>
+                <Suspense fallback={<Loader />}>
+                  {children}
+                  {/* Bottom Navigation Bar - Mobile only (< 768px) */}
+                  <BottomNav />
+                </Suspense>
+              </InitializationLoader>
+            </ToastProvider>
+          </LoadingProvider>
+        </DisplayProvider>
       </AuthProvider>
     </ErrorBoundary>
   )

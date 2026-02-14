@@ -21,10 +21,8 @@ export { useMetrics } from './useMetrics'
 export { default as useFallbackData } from './useFallbackData'
 export { useI18n } from './useI18n'
 export { default as useParametres } from './useParametres'
-export { default as usePermissionsAPI } from './usePermissionsAPI'
-export { default as useRBAC } from './useRBAC'
+export { default as useRBAC } from './useRBAC' // ⚠️ Quota logic deferred to S2+
 export { default as useRecompenses } from './useRecompenses'
-export { default as useSimpleRole } from './useSimpleRole'
 export { default as useStations } from './useStations'
 export { default as useSubscriptionStatus } from './useSubscriptionStatus'
 export { default as useTaches } from './useTaches'
@@ -32,4 +30,4 @@ export { default as useTachesDnd } from './useTachesDnd'
 export { default as useTachesEdition } from './useTachesEdition'
 
 // Re-export hooks from contexts
-export { useLoading, useToast, usePermissions } from '@/contexts'
+export { useLoading, useToast, usePermissions } from '@/contexts' // ⚠️ usePermissions stub for S2+
