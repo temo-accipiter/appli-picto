@@ -7,14 +7,12 @@ import {
   Separator,
   TachesEdition,
 } from '@/components'
-import ImageQuotaIndicator from '@/components/shared/image-quota-indicator/ImageQuotaIndicator'
 import { useToast } from '@/contexts'
 import {
   useAccountStatus,
   useAuth,
   useCategories,
   useI18n,
-  useRBAC,
   useRecompenses,
   useTachesEdition,
 } from '@/hooks'
@@ -32,19 +30,6 @@ const ModalCategory = lazy(() =>
 const ModalConfirm = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalConfirm }))
 )
-const ModalQuota = lazy(() =>
-  import('@/components').then(m => ({ default: m.ModalQuota }))
-)
-
-type ContentType = 'task' | 'reward' | 'category'
-type QuotaPeriod = 'total' | 'monthly'
-
-interface QuotaModalContent {
-  contentType: ContentType
-  currentUsage: number
-  limit: number
-  period: QuotaPeriod
-}
 
 interface TaskSubmitParams {
   label: string
@@ -62,74 +47,12 @@ export default function Edition() {
   const { show } = useToast()
   const { user } = useAuth()
 
-  // 👉 Hook RBAC unifié (Phase 2)
-  // ⚠️ S1-bis : quotas logic kept in useRBAC (deferred to S2+)
-  const {
-    canCreateTask,
-    canCreateReward,
-    canCreateCategory,
-    getQuotaInfo,
-    getMonthlyQuotaInfo,
-    refreshQuotas,
-  } = useRBAC()
-
-  // 👉 S1-bis : isAdmin from DB-first accounts.status
+  // ✅ DB-first : isAdmin from accounts.status
   const { isAdmin } = useAccountStatus()
 
-  // États modaux quotas
-  const [quotaModalOpen, setQuotaModalOpen] = useState(false)
-  const [quotaModalContent, setQuotaModalContent] = useState<QuotaModalContent>(
-    {
-      contentType: 'task',
-      currentUsage: 0,
-      limit: 0,
-      period: 'total',
-    }
-  )
-
-  // Note: Vérification des quotas d'images maintenant gérée automatiquement
-  // dans modernUploadImage() via check_image_quota() RPC
-
-  // Vérification locale (sans refaire des selects) + ouverture modal si bloqué
-  const handleQuotaCheck = async (
-    contentType: ContentType
-  ): Promise<boolean> => {
-    const allowed =
-      contentType === 'task'
-        ? canCreateTask()
-        : contentType === 'reward'
-          ? canCreateReward()
-          : contentType === 'category'
-            ? canCreateCategory()
-            : true
-
-    if (allowed) return true
-
-    const total = getQuotaInfo(contentType)
-    const monthly = getMonthlyQuotaInfo(contentType)
-
-    if (total && total.current >= total.limit) {
-      setQuotaModalContent({
-        contentType,
-        currentUsage: total.current,
-        limit: total.limit,
-        period: 'total',
-      })
-      setQuotaModalOpen(true)
-      return false
-    }
-    if (monthly && monthly.current >= monthly.limit) {
-      setQuotaModalContent({
-        contentType,
-        currentUsage: monthly.current,
-        limit: monthly.limit,
-        period: 'monthly',
-      })
-      setQuotaModalOpen(true)
-      return false
-    }
-    return false
-  }
+  // ✅ DB-first : Quota validation 100% server-side via RLS
+  // Le client fait INSERT optimistic, serveur reject si quota dépassé
+  // Pas de vérification côté client = pas de révélation de business logic
 
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState<string | null>(null)
@@ -184,11 +107,10 @@ export default function Edition() {
       return
     }
 
-    // Vérif quota côté bouton via handleQuotaCheck dans TachesEdition
+    // ✅ DB-first : Optimistic UI, quota validation server-side via RLS
     let imagePath = ''
     if (image) {
       try {
-        // 🆕 Utiliser le nouveau pipeline moderne (quota check inclus)
         const uploadResult = await modernUploadImage(image, {
           userId: user.id,
           assetType: 'task_image',
@@ -223,6 +145,12 @@ export default function Edition() {
     ] as any)
 
     if (insertError) {
+      // ✅ DB-first : RLS quota violation détectée server-side
+      if (insertError.code === '23514' || insertError.message?.includes('quota')) {
+        show(t('quota.limitReached'), 'error')
+        return
+      }
+
       console.error('❌ Erreur insertion tâche:', {
         message: insertError.message,
         code: insertError.code,
@@ -236,11 +164,6 @@ export default function Edition() {
     console.log('✅ Tâche créée en BDD, déclenchement reload...')
     handleTacheAjoutee()
     show(t('edition.taskAdded'), 'success')
-
-    // Rafraîchir les quotas sans dépendre de window
-    setTimeout(() => {
-      refreshQuotas()
-    }, 100)
   }
 
   const handleSubmitReward = async ({ label, image }: RewardSubmitParams) => {
@@ -255,7 +178,7 @@ export default function Edition() {
     }
 
     try {
-      // 🆕 Utiliser le nouveau pipeline moderne (quota check inclus)
+      // ✅ DB-first : Upload image avec quota check server-side
       const uploadResult = await modernUploadImage(image, {
         userId: user.id,
         assetType: 'reward_image',
@@ -266,32 +189,26 @@ export default function Edition() {
         throw uploadResult.error
       }
 
-      // Créer la récompense avec le chemin d'image uploadé
+      // ✅ DB-first : createRecompense() handle RLS quota validation
       await createRecompense({ label, imagepath: uploadResult.path })
       handleRecompenseAjoutee()
       show(t('edition.rewardAdded'), 'success')
-      setTimeout(() => {
-        refreshQuotas()
-      }, 100)
     } catch (error) {
-      show(
-        `${t('edition.errorImageUpload')}: ${(error as Error).message}`,
-        'error'
-      )
+      // ✅ DB-first : Quota errors handled server-side
+      const errorMessage = (error as Error).message
+      if (errorMessage?.includes('quota')) {
+        show(t('quota.limitReached'), 'error')
+      } else {
+        show(`${t('edition.errorImageUpload')}: ${errorMessage}`, 'error')
+      }
     }
   }
 
-  // Ajouter une catégorie avec vérif quota (sans re-requête DB)
+  // ✅ DB-first : Ajout catégorie avec validation server-side
   const handleAddCategoryWithQuota = async (
     _e: React.FormEvent,
     categoryLabel: string | null = null
   ) => {
-    const allowed = canCreateCategory()
-    if (!allowed) {
-      await handleQuotaCheck('category')
-      return
-    }
-
     const labelToUse = (categoryLabel ?? newCatLabel ?? '')
       .trim()
       .replace(/\s+/g, ' ')
@@ -299,20 +216,23 @@ export default function Edition() {
     if (!labelToUse) return
 
     const slug = labelToUse.toLowerCase().replace(/ /g, '-')
-    await addCategory({ value: slug, label: labelToUse })
-    setNewCatLabel('')
-    triggerReload()
-    setTimeout(() => {
-      refreshQuotas()
-    }, 100)
+
+    try {
+      await addCategory({ value: slug, label: labelToUse })
+      setNewCatLabel('')
+      triggerReload()
+    } catch (error) {
+      // ✅ DB-first : RLS quota violation détectée server-side
+      const errorMessage = (error as Error).message
+      if (errorMessage?.includes('quota')) {
+        show(t('quota.limitReached'), 'error')
+      }
+    }
   }
 
   const handleRemoveCategory = async (value: string) => {
     await deleteCategory(value)
     triggerReload()
-    setTimeout(() => {
-      refreshQuotas()
-    }, 300)
   }
 
   const toggleSelectRecompense = (id: string, sel: boolean) =>
@@ -339,8 +259,10 @@ export default function Edition() {
     await deleteCategory(String(value))
   }
 
-  const handleShowQuotaModal = async (type: string): Promise<boolean> => {
-    return handleQuotaCheck(type as ContentType)
+  // ✅ DB-first : Plus de modal quota côté client
+  // Validation 100% server-side, toast error si quota dépassé
+  const handleShowQuotaModal = async (_type: string): Promise<boolean> => {
+    return true // Always allow client-side, RLS will enforce
   }
 
   const handleToggleSelectRecompense = (
@@ -371,11 +293,7 @@ export default function Edition() {
         <Separator />
 
         <div className="taches-edition">
-          {!isAdmin && (
-            <div className="quota-indicators">
-              <ImageQuotaIndicator assetType="task_image" size="small" />
-            </div>
-          )}
+          {/* ✅ DB-first : Pas de quota indicator côté client */}
           <TachesEdition
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             items={visibleTaches as any}
@@ -417,11 +335,7 @@ export default function Edition() {
         />
         {showRecompenses && (
           <div className="recompenses-edition">
-            {!isAdmin && (
-              <div className="quota-indicators">
-                <ImageQuotaIndicator assetType="reward_image" size="small" />
-              </div>
-            )}
+            {/* ✅ DB-first : Pas de quota indicator côté client */}
             <RecompensesEdition
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               items={recompenses as any}
@@ -446,9 +360,6 @@ export default function Edition() {
               deleteRecompense(recompenseASupprimer.id)
               show(t('edition.rewardDeleted'), 'error')
               setRecompenseASupprimer(null)
-              setTimeout(() => {
-                refreshQuotas()
-              }, 300)
             }
           }}
         >
@@ -465,9 +376,6 @@ export default function Edition() {
               deleteTache(tacheASupprimer)
               show(t('edition.taskDeleted'), 'error')
               setTacheASupprimer(null)
-              setTimeout(() => {
-                refreshQuotas()
-              }, 300)
             }
           }}
         >
@@ -506,16 +414,8 @@ export default function Edition() {
         </ModalConfirm>
       </Suspense>
 
-      <Suspense fallback={null}>
-        <ModalQuota
-          isOpen={quotaModalOpen}
-          onClose={() => setQuotaModalOpen(false)}
-          contentType={quotaModalContent.contentType}
-          currentUsage={quotaModalContent.currentUsage}
-          limit={quotaModalContent.limit}
-          period={quotaModalContent.period}
-        />
-      </Suspense>
+      {/* ✅ DB-first : Pas de modal quota côté client */}
+      {/* Validation 100% server-side via RLS, erreurs affichées en toast */}
     </div>
   )
 }
