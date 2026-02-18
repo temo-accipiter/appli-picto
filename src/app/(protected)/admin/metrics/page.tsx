@@ -1,13 +1,18 @@
-import Metrics from '@/page-components/admin/metrics/Metrics'
+'use client'
 
-export const metadata = {
-  title: 'Métriques - Admin - Appli-Picto',
-  description: 'Tableau de bord des métriques système',
-}
+import AdminRoute from '@/components/shared/admin-route/AdminRoute'
+import dynamic from 'next/dynamic'
 
-// Force dynamic rendering (no prerendering) due to client-only dependencies
-export const dynamic = 'force-dynamic'
+// Chargement différé : le code admin n'est PAS inclus dans le bundle non-admin
+const Metrics = dynamic(
+  () => import('@/page-components/admin/metrics/Metrics'),
+  { ssr: false }
+)
 
 export default function MetricsPage() {
-  return <Metrics />
+  return (
+    <AdminRoute>
+      <Metrics />
+    </AdminRoute>
+  )
 }

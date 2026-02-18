@@ -89,7 +89,7 @@
     animation: slideInDown timing('fast') easing('ease-out');
   }
 
-  /* Remonter le menu sur mobile pour pages edition/profil/admin */
+  /* Remonter le menu sur mobile pour pages edition/profil */
   &.user-menu-dialog--elevated {
     margin: 0 spacing('md') spacing('md') 0;
     max-height: 70vh;

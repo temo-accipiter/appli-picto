@@ -20,9 +20,6 @@ import './BottomNav.scss'
  * /profil (Mobile < 768px):
  * - Fixed bottom: Édition, Tableau, Avatar
  *
- * /admin (Mobile < 768px):
- * - Fixed bottom: Édition, Tableau, Avatar
- *
  * Desktop (≥ 768px):
  * - Hidden (navbar top remains)
  */
@@ -34,10 +31,9 @@ export default function BottomNav() {
   const isTableau = pathname === '/tableau'
   const isEdition = pathname === '/edition'
   const isProfil = pathname === '/profil'
-  const isAdmin = pathname.startsWith('/admin')
 
   // Only show BottomNav on specific pages
-  const showNav = isTableau || isEdition || isProfil || isAdmin
+  const showNav = isTableau || isEdition || isProfil
 
   if (!showNav || !user) {
     return null
@@ -93,28 +89,6 @@ export default function BottomNav() {
           </>
         )}
 
-        {/* /admin: Édition, Tableau, Avatar */}
-        {isAdmin && (
-          <>
-            <Link
-              href="/edition"
-              className="nav-icon-link"
-              aria-label={t('nav.edition')}
-              title={t('nav.edition')}
-            >
-              <Pencil size={24} strokeWidth={2} aria-hidden="true" />
-            </Link>
-            <Link
-              href="/tableau"
-              className="nav-icon-link"
-              aria-label={t('nav.tableau')}
-              title={t('nav.tableau')}
-            >
-              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
-            </Link>
-            <UserMenu />
-          </>
-        )}
       </div>
     </nav>
   )

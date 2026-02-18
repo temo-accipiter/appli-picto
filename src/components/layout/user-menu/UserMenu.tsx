@@ -14,15 +14,22 @@ import {
   Crown,
   LogOut,
   Pencil,
-  Shield,
   User,
   FileText,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react'
+import dynamic from 'next/dynamic'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
+
+// Import dynamique : le code AdminMenuItem n'est chargé que si isAdmin === true
+// Aucun hint admin n'est inclus dans le bundle des utilisateurs non-admin
+const AdminMenuItem = dynamic(
+  () => import('@/components/features/admin/AdminMenuItem'),
+  { ssr: false }
+)
 
 import './UserMenu.scss'
 
@@ -196,9 +203,7 @@ export default function UserMenu() {
             aria-label={t('nav.profil')}
             className={`user-menu-dialog ${
               isMobile &&
-              (pathname === '/edition' ||
-                pathname === '/profil' ||
-                pathname.startsWith('/admin'))
+              (pathname === '/edition' || pathname === '/profil')
                 ? 'user-menu-dialog--elevated'
                 : ''
             }`}
@@ -274,19 +279,6 @@ export default function UserMenu() {
                     </button>
                   )}
 
-                  {/* Sur admin: afficher Profil */}
-                  {pathname.startsWith('/admin') && (
-                    <button
-                      ref={el => {
-                        if (el) menuItemsRef.current[0] = el
-                      }}
-                      className="user-menu-item"
-                      onClick={() => router.push('/profil')}
-                    >
-                      <User className="icon" aria-hidden />
-                      <span>{t('nav.profil')}</span>
-                    </button>
-                  )}
                 </>
               )}
 
@@ -333,19 +325,6 @@ export default function UserMenu() {
                     </button>
                   )}
 
-                  {/* Sur admin mobile: afficher Profil */}
-                  {pathname.startsWith('/admin') && (
-                    <button
-                      ref={el => {
-                        if (el) menuItemsRef.current[0] = el
-                      }}
-                      className="user-menu-item"
-                      onClick={() => router.push('/profil')}
-                    >
-                      <User className="icon" aria-hidden />
-                      <span>{t('nav.profil')}</span>
-                    </button>
-                  )}
                 </>
               )}
 
@@ -390,32 +369,7 @@ export default function UserMenu() {
                 </button>
               )}
 
-              {isAdmin && (
-                <button
-                  ref={el => {
-                    if (el) {
-                      let adminIndex = 0
-                      if (isMobile) {
-                        // Mobile: après les liens contextuels sur tableau
-                        adminIndex = pathname === '/tableau' ? 2 : 0
-                      } else {
-                        // Desktop: après les liens contextuels
-                        if (pathname === '/tableau') {
-                          adminIndex = 2 // Edition + Profil + Admin
-                        } else {
-                          adminIndex = 1 // Profil + Admin
-                        }
-                      }
-                      menuItemsRef.current[adminIndex] = el
-                    }
-                  }}
-                  className="user-menu-item admin"
-                  onClick={() => router.push('/admin/permissions')}
-                >
-                  <Shield className="icon" aria-hidden />
-                  <span>{t('nav.admin')}</span>
-                </button>
-              )}
+              {isAdmin && <AdminMenuItem />}
 
               {/* Separator before legal links - Mobile only */}
               {isMobile && <div className="user-menu-separator" />}

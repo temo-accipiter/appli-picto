@@ -32,7 +32,6 @@ export default function Navbar() {
   const isTableau = pathname === '/tableau'
   const isEdition = pathname === '/edition'
   const isProfil = pathname === '/profil'
-  const isAdminPermissions = pathname === '/admin/permissions'
 
   // Détecter visitor même pendant le chargement
   const isVisitorMode = !user && (isVisitor || !authReady)
@@ -40,7 +39,7 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-left">
-        {(isTableau || isProfil || isAdminPermissions) && !isVisitor && (
+        {(isTableau || isProfil) && !isVisitor && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -57,9 +56,7 @@ export default function Navbar() {
           </motion.div>
         )}
 
-        {(isEdition ||
-          isProfil ||
-          isAdminPermissions) /* ✅ aussi sur /profil et /admin/permissions */ && (
+        {(isEdition || isProfil) && (
           <Link
             href="/tableau"
             className="nav-icon-link"

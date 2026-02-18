@@ -27,7 +27,7 @@
  * - Desktop: top-right (standard UI position)
  * - Shows ONLY avatar (no nav-icon-links)
  *
- * Other pages (/profil, /edition, /admin):
+ * Other pages (/profil, /edition):
  * - Mobile: bottom fixed navbar with 3 icons
  * - Desktop: hidden (navbar remains at top)
  */
@@ -74,7 +74,7 @@
   }
 }
 
-// Other pages (/edition, /profil, /admin): Bottom fixed navbar
+// Other pages (/edition, /profil): Bottom fixed navbar
 .bottom-nav--fixed {
   // Mobile par défaut (320px-767px) : bas de l'écran (full width navbar)
   top: auto;

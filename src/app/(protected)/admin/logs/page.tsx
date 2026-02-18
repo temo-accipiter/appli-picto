@@ -1,13 +1,17 @@
-import Logs from '@/page-components/admin/logs/Logs'
+'use client'
 
-export const metadata = {
-  title: 'Logs - Admin - Appli-Picto',
-  description: "Journal des événements et logs d'audit",
-}
+import AdminRoute from '@/components/shared/admin-route/AdminRoute'
+import dynamic from 'next/dynamic'
 
-// Force dynamic rendering (no prerendering) due to client-only dependencies
-export const dynamic = 'force-dynamic'
+// Chargement différé : le code admin n'est PAS inclus dans le bundle non-admin
+const Logs = dynamic(() => import('@/page-components/admin/logs/Logs'), {
+  ssr: false,
+})
 
 export default function LogsPage() {
-  return <Logs />
+  return (
+    <AdminRoute>
+      <Logs />
+    </AdminRoute>
+  )
 }

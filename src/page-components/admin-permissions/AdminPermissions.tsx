@@ -1,8 +1,8 @@
 'use client'
 
 // src/pages/admin-permissions/AdminPermissions.tsx
+import ImageAnalytics from '@/components/features/admin/ImageAnalytics'
 import {
-  ImageAnalytics,
   InputWithValidation,
   Loader,
   ModalConfirm,

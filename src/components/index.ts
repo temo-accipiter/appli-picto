@@ -23,11 +23,6 @@ export { default as CookiePreferences } from './features/consent/CookiePreferenc
 export { default as DeleteAccountGuard } from './features/settings/DeleteAccountGuard'
 export { default as DeleteAccountModal } from './features/settings/DeleteAccountModal'
 
-// Admin
-export { default as AccountManagement } from './features/admin/AccountManagement'
-export { default as QuotaManagement } from './features/admin/QuotaManagement'
-export { default as ImageAnalytics } from './features/admin/ImageAnalytics'
-
 // Subscription
 export { default as SubscribeButton } from './features/subscription/subscribe-button/SubscribeButton'
 
@@ -61,14 +56,12 @@ export { default as DemoSignedImage } from './shared/demo-signed-image/DemoSigne
 export { default as EditionList } from './shared/edition-list/EditionList'
 export { default as ErrorBoundary } from './shared/error-boundary/ErrorBoundary'
 export { default as ItemForm } from './shared/forms/ItemForm'
-export { default as ImageQuotaIndicator } from './shared/image-quota-indicator/ImageQuotaIndicator'
 export { default as InputWithValidation } from './shared/input-with-validation/InputWithValidation'
 export { default as LangSelector } from './shared/lang-selector/LangSelector'
 export { default as Layout } from './shared/layout/Layout'
 export { default as PageTransition } from './shared/page-transition/PageTransition'
 export { default as ProtectedRoute } from './shared/protected-route/ProtectedRoute'
 export { default as InitializationLoader } from './shared/initialization-loader/InitializationLoader'
-export { default as QuotaIndicator } from './shared/quota-indicator/QuotaIndicator'
 export { default as Separator } from './shared/separator/Separator'
 export { default as SignedImage } from './shared/signed-image/SignedImage'
 export { default as ThemeToggle } from './shared/theme-toggle/ThemeToggle'

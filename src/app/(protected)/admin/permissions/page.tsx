@@ -1,13 +1,18 @@
-import AdminPermissions from '@/page-components/admin-permissions/AdminPermissions'
+'use client'
 
-export const metadata = {
-  title: 'Gestion des permissions - Admin - Appli-Picto',
-  description: 'Gestion des rôles et permissions utilisateurs',
-}
+import AdminRoute from '@/components/shared/admin-route/AdminRoute'
+import dynamic from 'next/dynamic'
 
-// Force dynamic rendering (no prerendering) due to client-only dependencies
-export const dynamic = 'force-dynamic'
+// Chargement différé : le code admin n'est PAS inclus dans le bundle non-admin
+const AdminPermissions = dynamic(
+  () => import('@/page-components/admin-permissions/AdminPermissions'),
+  { ssr: false }
+)
 
 export default function AdminPermissionsPage() {
-  return <AdminPermissions />
+  return (
+    <AdminRoute>
+      <AdminPermissions />
+    </AdminRoute>
+  )
 }

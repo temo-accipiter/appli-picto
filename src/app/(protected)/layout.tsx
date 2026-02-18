@@ -31,30 +31,19 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Routes où la navbar peut être affichée (uniquement desktop)
-  const navbarRoutes = ['/profil', '/edition', '/abonnement', '/admin']
+  // Routes où la navbar desktop est affichée (uniquement desktop)
+  const navbarRoutes = ['/profil', '/edition', '/abonnement']
   const isNavbarRoute = navbarRoutes.some(route => pathname.startsWith(route))
 
-  // Footer caché sur mobile UNIQUEMENT pour /edition, /profil, /admin
+  // Footer caché sur mobile pour les routes d'édition et de profil
   // Sur desktop, footer toujours visible
-  const footerMobileHiddenRoutes = ['/edition', '/profil', '/admin']
+  const footerMobileHiddenRoutes = ['/edition', '/profil']
   const footerMobileHidden = footerMobileHiddenRoutes.some(route =>
     pathname.startsWith(route)
   )
 
   // Navbar affichée UNIQUEMENT sur desktop (≥768px) pour certaines routes
   const shouldShowNavbar = mounted && isNavbarRoute && !isMobile
-
-  // Debug log
-  if (process.env.NODE_ENV === 'development' && pathname.startsWith('/admin')) {
-    console.log('[Layout /admin]', {
-      pathname,
-      mounted,
-      isNavbarRoute,
-      isMobile,
-      shouldShowNavbar,
-    })
-  }
 
   return (
     <ProtectedRoute>
