@@ -4,6 +4,8 @@ export { default as useAccountStatus } from './useAccountStatus'
 export { default as useAuth } from './useAuth'
 // S8 — Offline + Sync
 export { useOnlineStatus } from './useOnlineStatus'
+// S9 — Quotas + Feature Gating + Downgrade
+export { default as useExecutionOnly } from './useExecutionOnly'
 // S3 — Cartes + Catégories (DB-first)
 export { default as useBankCards } from './useBankCards'
 export type { BankCard } from './useBankCards'

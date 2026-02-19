@@ -79,6 +79,12 @@ interface SlotsEditorProps {
    * §4.4 : CRUD structure interdit offline (guard UX).
    */
   isOffline?: boolean
+  /**
+   * S9 : Désactiver toutes les actions structurelles si le compte est en mode
+   * exécution-uniquement (downgrade Subscriber → Free, §9).
+   * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
+   */
+  isExecutionOnly?: boolean
 }
 
 export function SlotsEditor({
@@ -94,6 +100,7 @@ export function SlotsEditor({
   validatedSlotIds,
   onResetSession,
   isOffline = false,
+  isExecutionOnly = false,
 }: SlotsEditorProps) {
   const [busyId, setBusyId] = useState<string | null>(null)
   const [addingStep, setAddingStep] = useState(false)
@@ -179,14 +186,16 @@ export function SlotsEditor({
     if (err) setActionError('Impossible de réinitialiser la session. Réessaie.')
   }
 
-  // §4.4 : Actions structurelles désactivées si offline (guard UX S8)
+  // §4.4 S8 : Actions structurelles désactivées si offline
+  // §6.1 catégorie #8 S9 : Actions structurelles désactivées si execution-only
   const isActionBusy =
     addingStep ||
     addingReward ||
     !!busyId ||
     clearingCards ||
     resettingSession ||
-    isOffline
+    isOffline ||
+    isExecutionOnly
 
   // ── État chargement ──────────────────────────────────────────────────────────
   if (loading) {
@@ -247,6 +256,7 @@ export function SlotsEditor({
                 onCreateSequence={createSequence}
                 onDeleteSequence={deleteSequence}
                 isOffline={isOffline}
+                isExecutionOnly={isExecutionOnly}
               />
             )
           })}

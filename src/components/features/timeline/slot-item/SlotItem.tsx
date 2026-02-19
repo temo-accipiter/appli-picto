@@ -83,6 +83,11 @@ interface SlotItemProps {
    * §4.4 : CRUD structure interdit offline (guard UX).
    */
   isOffline?: boolean
+  /**
+   * S9 : Désactiver les actions structurelles si le compte est en mode execution-only.
+   * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
+   */
+  isExecutionOnly?: boolean
 }
 
 /** Icône selon le kind du slot */
@@ -111,6 +116,7 @@ export function SlotItem({
   onCreateSequence,
   onDeleteSequence,
   isOffline = false,
+  isExecutionOnly = false,
 }: SlotItemProps) {
   const isStep = slot.kind === 'step'
 
@@ -119,12 +125,14 @@ export function SlotItem({
 
   // Slot validé pendant session démarrée → tout verrouillé
   // §4.4 S8 : Offline → même comportement que slot validé (tout verrouillé)
-  const isFullyLocked = (isSessionStarted && isValidated) || isOffline
+  // §6.1 catégorie #8 S9 : Execution-only → même comportement (structure verrouillée)
+  const isFullyLocked =
+    (isSessionStarted && isValidated) || isOffline || isExecutionOnly
 
   // Pendant session démarrée, les jetons sont toujours non modifiables
   // (même sur slot non validé — exception : nouveau slot lors de l'ajout,
   //  mais on ne peut pas distinguer ici → restriction conservatrice)
-  const tokensLocked = isSessionStarted || isOffline
+  const tokensLocked = isSessionStarted || isOffline || isExecutionOnly
 
   // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)

@@ -1,0 +1,80 @@
+// src/components/shared/execution-only-banner/ExecutionOnlyBanner.scss — S9
+//
+// ⚠️ RÈGLES TOKENS-FIRST (§ SCSS)
+// - ZÉRO valeur hardcodée : TOUJOURS via fonctions tokens
+// - Mobile-first : défaut = mobile, `respond-to()` pour agrandir
+//
+// ⚠️ RÈGLES TSA
+// - Discret : ne doit pas monopoliser l'attention de l'adulte
+// - Non agressif : fond pastel, sans rouge alarmiste
+// - Visuellement distinct du bandeau offline (border-left double)
+// - Animation douce entrée via safe-transition (max 0.3s)
+
+@use '@/styles/abstracts' as *;
+
+.execution-only-banner {
+  // ── Layout ───────────────────────────────────────────────────────────────
+  display: flex;
+  align-items: center;
+  gap: spacing('2');
+
+  // ── Espacement ───────────────────────────────────────────────────────────
+  padding: spacing('2') spacing('4');
+  margin-bottom: spacing('2');
+
+  // ── Couleurs : verrou permanent (plus sérieux que offline) ────────────────
+  background: semantic('warning', 'light');
+  color: text('primary');
+  border-left: border-width('thick') solid semantic('warning', 'base');
+
+  // ── Bordures ─────────────────────────────────────────────────────────────
+  border-radius: radius('md');
+
+  // ── Typographie ──────────────────────────────────────────────────────────
+  font-size: font-size('sm');
+  font-weight: font-weight('normal');
+  line-height: line-height('normal');
+
+  // ── Animation d'apparition douce (TSA-friendly ≤ 0.3s) ──────────────────
+  @include safe-transition(opacity);
+
+  // ── Tablette et + : légèrement plus compact (sm = 768px+) ────────────────
+  @include respond-to('sm') {
+    padding: spacing('2') spacing('4');
+    font-size: font-size('sm');
+  }
+
+  // ─── Icon ──────────────────────────────────────────────────────────────
+  &__icon {
+    flex-shrink: 0;
+    font-size: font-size('base');
+    line-height: line-height('none');
+  }
+
+  // ─── Message ───────────────────────────────────────────────────────────
+  &__message {
+    flex: 1;
+    color: text('primary');
+  }
+
+  // ─── Lien upgrade ──────────────────────────────────────────────────────
+  &__link {
+    color: text('primary');
+    font-weight: font-weight('semibold');
+    text-decoration: underline;
+
+    // Cible tactile ≥ 44px (inline-block pour min-height)
+    display: inline-block;
+    min-height: size('44');
+    line-height: size('44');
+
+    &:hover,
+    &:focus-visible {
+      color: text('secondary');
+    }
+
+    &:focus-visible {
+      @include focus-visible;
+    }
+  }
+}

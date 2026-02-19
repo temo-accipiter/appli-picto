@@ -56,6 +56,8 @@ export { default as UserMenu } from './layout/user-menu/UserMenu'
 
 // S8 — Offline + Sync
 export { default as OfflineBanner } from './shared/offline-banner/OfflineBanner'
+// S9 — Mode execution-only (Downgrade)
+export { default as ExecutionOnlyBanner } from './shared/execution-only-banner/ExecutionOnlyBanner'
 
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'

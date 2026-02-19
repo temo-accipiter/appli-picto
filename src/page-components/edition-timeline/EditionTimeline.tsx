@@ -29,9 +29,11 @@ import useTimelines from '@/hooks/useTimelines'
 import useSlots from '@/hooks/useSlots'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
+import useExecutionOnly from '@/hooks/useExecutionOnly'
 import { ChildProfileSelector } from '@/components/features/child-profile'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
+import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
 import './EditionTimeline.scss'
 
 export default function EditionTimeline() {
@@ -49,6 +51,15 @@ export default function EditionTimeline() {
   // ⚠️ Il N'EST PAS affiché en Contexte Tableau (§6.2 — invariant TSA)
   const { isOnline, pendingCount } = useOffline()
   const { showToast } = useToast()
+
+  // ── S9 : Execution-only guard (§9 — Downgrade) ──────────────────────────────
+  // isExecutionOnly : true si le compte est en mode exécution-uniquement après downgrade.
+  // CRUD structure désactivé (RLS BLOCKER 4), exécution (sessions, validations) autorisée.
+  //
+  // ⚠️ Usage COSMÉTIQUE : la DB refuse les écritures structurelles via RLS.
+  // ⚠️ Le bandeau execution-only EST affiché en Contexte Édition uniquement.
+  // ⚠️ Il N'EST PAS affiché en Contexte Tableau (§6.2 — invariant TSA).
+  const { isExecutionOnly } = useExecutionOnly()
 
   // Clé de rechargement : change quand l'enfant actif change
   // Permet de forcer un reset propre de l'état local (TSA anti-choc)
@@ -96,27 +107,37 @@ export default function EditionTimeline() {
   // Ces fonctions sont définies APRÈS tous les hooks (useSessions etc.) pour
   // pouvoir referencer addStep, resetSession, etc. en closure.
 
-  /** Guard offline : informe l'adulte et bloque l'action */
-  const guardOffline = (): boolean => {
+  /**
+   * Guard structure : informe l'adulte et bloque l'action si offline ou execution-only.
+   * Retourne true si l'action doit être bloquée.
+   */
+  const guardStructural = (): boolean => {
     if (!isOnline) {
       showToast('Indisponible hors connexion', 'warning')
+      return true
+    }
+    if (isExecutionOnly) {
+      showToast(
+        "Mode exécution uniquement — l'édition de structure est désactivée",
+        'warning'
+      )
       return true
     }
     return false
   }
 
   const safeAddStep = async () => {
-    if (guardOffline()) return { error: null }
+    if (guardStructural()) return { error: null }
     return addStep()
   }
 
   const safeAddReward = async () => {
-    if (guardOffline()) return { error: null }
+    if (guardStructural()) return { error: null }
     return addReward()
   }
 
   const safeClearAllCards = async () => {
-    if (guardOffline()) return { error: null }
+    if (guardStructural()) return { error: null }
     return clearAllCards()
   }
 
@@ -124,18 +145,18 @@ export default function EditionTimeline() {
     id: string,
     updates: { card_id?: string | null; tokens?: number | null }
   ) => {
-    if (guardOffline()) return { error: null }
+    if (guardStructural()) return { error: null }
     return updateSlot(id, updates)
   }
 
   const safeRemoveSlot = async (id: string) => {
-    if (guardOffline()) return { error: null }
+    if (guardStructural()) return { error: null }
     return removeSlot(id)
   }
 
   const safeResetSession = session
     ? async () => {
-        if (guardOffline()) return { error: null }
+        if (guardStructural()) return { error: null }
         return resetSession()
       }
     : undefined
@@ -148,6 +169,14 @@ export default function EditionTimeline() {
            ⚠️ Jamais affiché en Contexte Tableau (§6.2) — uniquement ici.
       ── */}
       {!isOnline && <OfflineBanner pendingCount={pendingCount} />}
+
+      {/* ── S9 : Bandeau execution-only (§9 — Downgrade) ────────────────────────
+           Affiché quand le compte est en mode exécution-uniquement (après downgrade).
+           Non modal, non bloquant. Propose un lien vers la page abonnement.
+           ⚠️ Jamais affiché en Contexte Tableau (§6.2) — uniquement ici.
+           ⚠️ L'exécution (sessions, validations) reste autorisée même en execution-only.
+      ── */}
+      {isExecutionOnly && <ExecutionOnlyBanner />}
 
       {/* ── En-tête ────────────────────────────────────────────────────────────── */}
       <header className="edition-timeline__header">
@@ -215,7 +244,7 @@ export default function EditionTimeline() {
               </p>
             )}
 
-            {/* Éditeur de slots — S6 : verrouillage session · S8 : guard offline */}
+            {/* Éditeur de slots — S6 : verrouillage session · S8 : guard offline · S9 : guard execution-only */}
             {timeline && (
               <SlotsEditor
                 key={`${timeline.id}-${reloadKey}`}
@@ -231,6 +260,7 @@ export default function EditionTimeline() {
                 validatedSlotIds={validatedSlotIds}
                 onResetSession={safeResetSession}
                 isOffline={!isOnline}
+                isExecutionOnly={isExecutionOnly}
               />
             )}
           </>
