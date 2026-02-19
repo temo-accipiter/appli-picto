@@ -8,8 +8,8 @@ import {
   TachesEdition,
 } from '@/components'
 import { useToast } from '@/contexts'
+import { useChildProfile } from '@/contexts/ChildProfileContext'
 import {
-  useAccountStatus,
   useAuth,
   useCategories,
   useI18n,
@@ -20,7 +20,7 @@ import type { Tache, Recompense } from '@/types/global'
 import { modernUploadImage } from '@/utils/storage/modernUploadImage'
 import { supabase } from '@/utils/supabaseClient'
 import { ChevronDown, Gift } from 'lucide-react'
-import React, { lazy, Suspense, useEffect, useState } from 'react'
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import './Edition.scss'
 
 // Lazy load des modales (affichées conditionnellement)
@@ -47,9 +47,6 @@ export default function Edition() {
   const { show } = useToast()
   const { user } = useAuth()
 
-  // ✅ DB-first : isAdmin from accounts.status
-  const { isAdmin } = useAccountStatus()
-
   // ✅ DB-first : Quota validation 100% server-side via RLS
   // Le client fait INSERT optimistic, serveur reject si quota dépassé
   // Pas de vérification côté client = pas de révélation de business logic
@@ -62,6 +59,20 @@ export default function Edition() {
   const [tacheASupprimer, setTacheASupprimer] = useState<Tache | null>(null)
   const [reload, setReload] = useState(0)
   const [filterCategory, setFilterCategory] = useState('all')
+
+  // ── Enfant actif : rechargement stable quand l'enfant change (S2) ────────────
+  const { activeChildId } = useChildProfile()
+  const prevChildIdRef = useRef<string | null | undefined>(undefined)
+  useEffect(() => {
+    if (prevChildIdRef.current === undefined) {
+      prevChildIdRef.current = activeChildId
+      return
+    }
+    if (prevChildIdRef.current !== activeChildId) {
+      prevChildIdRef.current = activeChildId
+      setReload(r => r + 1)
+    }
+  }, [activeChildId])
   const [filterDone, setFilterDone] = useState(false)
   const [showRecompenses, setShowRecompenses] = useState(
     () => sessionStorage.getItem('showRecompenses') === 'true'
@@ -146,7 +157,10 @@ export default function Edition() {
 
     if (insertError) {
       // ✅ DB-first : RLS quota violation détectée server-side
-      if (insertError.code === '23514' || insertError.message?.includes('quota')) {
+      if (
+        insertError.code === '23514' ||
+        insertError.message?.includes('quota')
+      ) {
         show(t('quota.limitReached'), 'error')
         return
       }

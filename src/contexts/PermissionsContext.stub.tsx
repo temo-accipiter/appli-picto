@@ -19,8 +19,10 @@ interface PermissionsContextValue {
 const PermissionsContext = createContext<PermissionsContextValue | null>(null)
 
 export function PermissionsProvider({ children }: { children: ReactNode }) {
-  console.warn('[STUB] PermissionsProvider utilisé - S2+ requis pour fonctionnalité complète')
-  
+  console.warn(
+    '[STUB] PermissionsProvider utilisé - S2+ requis pour fonctionnalité complète'
+  )
+
   const stubValue: PermissionsContextValue = {
     role: 'unknown',
     isVisitor: false,

@@ -40,14 +40,18 @@ export const TARGET_DIMENSION = 192 // 🆕 192×192px (au lieu de 256px)
 // BUCKETS SUPABASE STORAGE
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Bucket images privées utilisateurs
-export const PRIVATE_BUCKET = 'images'
+// Bucket images privées utilisateurs (cartes personnelles)
+// Path attendu : {account_id}/{card_id}.ext (owner-only, signed URL)
+// Contrat S3 §5.3 + Migration phase8_1
+export const PRIVATE_BUCKET = 'personal-images'
 
 // ⚠️ DEPRECATED : Utiliser PRIVATE_BUCKET à la place
 export const PUBLIC_BUCKET = PRIVATE_BUCKET
 
-// Bucket images démo publiques (admin only)
-export const DEMO_PUBLIC_BUCKET = 'demo-images'
+// Bucket banque de cartes (images publiques, lecture par tous)
+// Path attendu : {uuid}.ext (flat, pas de sous-dossiers)
+// Contrat S3 §5.3 + Migration phase8_1
+export const BANK_IMAGES_BUCKET = 'bank-images'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SIGNED URL TTL

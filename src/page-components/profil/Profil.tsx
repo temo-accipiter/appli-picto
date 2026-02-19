@@ -10,6 +10,7 @@ import {
   InputWithValidation,
   ModalConfirm,
 } from '@/components'
+import { ChildProfileSelector } from '@/components/features/child-profile'
 import { useToast } from '@/contexts'
 import { useAuth, useI18n, useSubscriptionStatus } from '@/hooks'
 import {
@@ -434,7 +435,20 @@ export default function Profil() {
         </form>
       </section>
 
-      {/* CARD 2: Sécurité */}
+      {/* CARD 2: Profils enfants */}
+      <section className="profil-card profil-card--children">
+        <h2 className="profil-card__title">
+          <span className="profil-card__icon" aria-hidden="true">
+            👶
+          </span>
+          Profils enfants
+        </h2>
+        <div className="profil-card__content">
+          <ChildProfileSelector showCreateButton={true} />
+        </div>
+      </section>
+
+      {/* CARD 3: Sécurité */}
       <section className="profil-card profil-card--security">
         <h2 className="profil-card__title">
           <span className="profil-card__icon">🔒</span>

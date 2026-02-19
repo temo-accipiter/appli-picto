@@ -1,0 +1,118 @@
+// src/page-components/edition-timeline/EditionTimeline.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : page apaisante, lecture facile tablette/smartphone
+
+@use '@styles/abstracts' as *;
+
+.edition-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xl');
+  min-height: 100dvh;
+  padding: spacing('lg') spacing('md');
+  background: surface('page');
+
+  // ── Tablette et plus ──
+  @include respond-to('md') {
+    padding: spacing('xl') spacing('2xl');
+    max-width: size('800');
+    margin: 0 auto;
+  }
+
+  // ── En-tête ──
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xs');
+  }
+
+  &__title {
+    font-size: font-size('2xl');
+    font-weight: font-weight('bold');
+    color: text('dark');
+    margin: 0;
+
+    @include respond-to('md') {
+      font-size: font-size('3xl');
+    }
+  }
+
+  &__subtitle {
+    font-size: font-size('base');
+    color: text('muted');
+    margin: 0;
+    line-height: line-height('relaxed');
+  }
+
+  // ── Sélecteur de profil ──
+  &__profiles {
+    padding: spacing('md');
+    background: surface('card');
+    border-radius: radius('lg');
+  }
+
+  // ── Contenu principal ──
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('lg');
+    flex: 1;
+  }
+
+  // ── Chargement — texte visible, pas d'écran vide ──
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: spacing('sm');
+    padding: spacing('2xl');
+    color: text('muted');
+    font-size: font-size('base');
+  }
+
+  // ── État vide (aucun profil sélectionné) ──
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('md');
+    padding: spacing('2xl') spacing('xl');
+    text-align: center;
+    color: text('muted');
+    font-size: font-size('base');
+  }
+
+  &__empty-icon {
+    font-size: font-size('4xl');
+    line-height: 1;
+  }
+
+  // ── Nom de l'enfant actif ──
+  &__child-name {
+    font-size: font-size('xl');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    margin: 0;
+    padding-bottom: spacing('sm');
+    border-bottom: border-width('thin') solid surface('border');
+  }
+
+  // ── Erreur timeline (lecture DB) ──
+  &__error {
+    font-size: font-size('sm');
+    color: semantic('error');
+    background: semantic('error', 'bg');
+    border-radius: radius('sm');
+    padding: spacing('sm') spacing('md');
+    margin: 0;
+  }
+
+  // ── Timeline en attente d'initialisation ──
+  &__no-timeline {
+    font-size: font-size('base');
+    color: text('muted');
+    text-align: center;
+    padding: spacing('xl');
+    margin: 0;
+  }
+}

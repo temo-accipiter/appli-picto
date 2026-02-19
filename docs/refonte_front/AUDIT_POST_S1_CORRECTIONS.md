@@ -13,6 +13,7 @@
 **Commit** : `006f3fc`
 
 **Supprimé** :
+
 - `useRBAC` import + usage (can Create Task/Reward/Category)
 - `ImageQuotaIndicator` (2 occurrences lignes 299, 345)
 - `handleQuotaCheck()` fonction (30 lignes quota validation)
@@ -21,12 +22,14 @@
 - `getQuotaInfo/getMonthlyQuotaInfo` usage
 
 **Ajouté** :
+
 - ✅ **Optimistic UI** : Client fait INSERT direct
 - ✅ **Server Validation** : RLS reject si quota dépassé
 - ✅ **Error Detection** : `error.code === '23514'` ou `message.includes('quota')`
 - ✅ **Toast Simple** : Affichage `t('quota.limitReached')` si erreur server
 
 **Impact** :
+
 - `-141 lignes` de quota logic côté client
 - `+41 lignes` optimistic UI + server validation
 - **100 lignes nettes supprimées**
@@ -41,6 +44,7 @@
 **Lignes** : 393-417
 
 **Problème** :
+
 ```typescript
 {isAdmin && (  // ❌ Révèle existence pages admin aux non-admin
   <button onClick={() => router.push('/admin/permissions')}>
@@ -51,11 +55,13 @@
 ```
 
 **Action Requise** :
+
 1. Créer `src/components/layout/user-menu/AdminMenuItem.tsx` (hors barrel export)
 2. Remplacer bloc admin par `{isAdmin && <AdminMenuItem />}`
 3. Aucun élément admin dans DOM pour non-admin
 
 **Commande** :
+
 ```bash
 # 1. Créer AdminMenuItem.tsx
 cat > src/components/layout/user-menu/AdminMenuItem.tsx <<'EOF'
@@ -91,6 +97,7 @@ EOF
 **Lignes** : 35, 62
 
 **Problème** :
+
 ```typescript
 const isAdminPermissions = pathname === '/admin/permissions'  // ❌ Hardcode admin route
 
@@ -98,10 +105,12 @@ const isAdminPermissions = pathname === '/admin/permissions'  // ❌ Hardcode ad
 ```
 
 **Action Requise** :
+
 1. Supprimer variable `isAdminPermissions`
 2. Rendre conditionnel basé sur `useAccountStatus().isAdmin`
 
 **Patch** :
+
 ```diff
 - const isAdminPermissions = pathname === '/admin/permissions'
 + const { isAdmin } = useAccountStatus()
@@ -116,12 +125,14 @@ const isAdminPermissions = pathname === '/admin/permissions'  // ❌ Hardcode ad
 **Lignes** : 35, 40
 
 **Problème** :
+
 ```typescript
-const navbarRoutes = ['/profil', '/edition', '/abonnement', '/admin']  // ❌ Hardcode
-const footerMobileHiddenRoutes = ['/edition', '/profil', '/admin']    // ❌ Hardcode
+const navbarRoutes = ['/profil', '/edition', '/abonnement', '/admin'] // ❌ Hardcode
+const footerMobileHiddenRoutes = ['/edition', '/profil', '/admin'] // ❌ Hardcode
 ```
 
 **Action Requise** :
+
 ```diff
 + import { useAccountStatus } from '@/hooks'
 + const { isAdmin } = useAccountStatus()
@@ -142,11 +153,13 @@ const footerMobileHiddenRoutes = ['/edition', '/profil', '/admin']    // ❌ Har
 ### 5️⃣ Pages Admin — Protection Lazy + 404 Neutre
 
 **Fichiers** :
+
 - `src/app/(protected)/admin/permissions/page.tsx`
 - `src/app/(protected)/admin/logs/page.tsx`
 - `src/app/(protected)/admin/metrics/page.tsx`
 
 **Problème** :
+
 ```typescript
 export default function AdminPermissionsPage() {
   return <AdminPermissions />  // ❌ Chargé pour tous, redirect client-side trop tard
@@ -154,6 +167,7 @@ export default function AdminPermissionsPage() {
 ```
 
 **Action Requise** (appliquer aux 3 pages) :
+
 ```typescript
 'use client'
 import { notFound } from 'next/navigation'
@@ -197,6 +211,7 @@ export default function AdminPermissionsPage() {
 **Estimation** : ~2h de travail
 
 **Ordre recommandé** :
+
 1. UserMenu.tsx (30 min)
 2. Navbar.tsx (15 min)
 3. Layout.tsx (15 min)
@@ -204,6 +219,7 @@ export default function AdminPermissionsPage() {
 5. Build + tests (15 min)
 
 **Après ces corrections** :
+
 - ✅ Quota logic 100% server-side (RLS)
 - ✅ Aucun hint admin pour non-admin
 - ✅ Routes admin protégées lazy + 404

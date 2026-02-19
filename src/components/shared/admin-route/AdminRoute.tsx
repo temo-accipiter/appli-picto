@@ -42,7 +42,9 @@ export default function AdminRoute({ children }: AdminRouteProps) {
           textAlign: 'center',
         }}
       >
-        <h1 style={{ fontSize: '4rem', marginBottom: '1rem', color: '#5A9FB8' }}>
+        <h1
+          style={{ fontSize: '4rem', marginBottom: '1rem', color: '#5A9FB8' }}
+        >
           404
         </h1>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#666' }}>

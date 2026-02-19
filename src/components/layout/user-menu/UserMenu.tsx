@@ -202,8 +202,7 @@ export default function UserMenu() {
             aria-modal="true"
             aria-label={t('nav.profil')}
             className={`user-menu-dialog ${
-              isMobile &&
-              (pathname === '/edition' || pathname === '/profil')
+              isMobile && (pathname === '/edition' || pathname === '/profil')
                 ? 'user-menu-dialog--elevated'
                 : ''
             }`}
@@ -278,7 +277,6 @@ export default function UserMenu() {
                       <span>{t('nav.profil')}</span>
                     </button>
                   )}
-
                 </>
               )}
 
@@ -324,7 +322,6 @@ export default function UserMenu() {
                       <span>{t('nav.profil')}</span>
                     </button>
                   )}
-
                 </>
               )}
 

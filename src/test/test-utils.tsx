@@ -20,6 +20,8 @@ import {
   PermissionsProvider,
   DisplayProvider,
   LoadingProvider,
+  OfflineProvider,
+  ChildProfileProvider,
 } from '@/contexts'
 
 /**
@@ -40,15 +42,19 @@ interface AllTheProvidersProps {
 
 export function AllTheProviders({ children }: AllTheProvidersProps) {
   return (
-    <AuthProvider>
-      <PermissionsProvider>
-        <DisplayProvider>
-          <LoadingProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </LoadingProvider>
-        </DisplayProvider>
-      </PermissionsProvider>
-    </AuthProvider>
+    <OfflineProvider>
+      <AuthProvider>
+        <ChildProfileProvider>
+          <PermissionsProvider>
+            <DisplayProvider>
+              <LoadingProvider>
+                <ToastProvider>{children}</ToastProvider>
+              </LoadingProvider>
+            </DisplayProvider>
+          </PermissionsProvider>
+        </ChildProfileProvider>
+      </AuthProvider>
+    </OfflineProvider>
   )
 }
 

@@ -1,0 +1,162 @@
+// src/components/features/timeline/slot-item/SlotItem.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : interface simple, lisible, cibles tactiles ≥ 44px
+
+@use '@styles/abstracts' as *;
+
+.slot-item {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background: surface('card');
+  border-radius: radius('md');
+  list-style: none;
+  // Largeur fixe pour le défilement horizontal (mobile)
+  flex-shrink: 0;
+  width: size('modal-width-sm'); // 320px — lisible sur smartphone
+  scroll-snap-align: start; // Snap vers chaque carte (TSA prévisible)
+
+  // Sur tablette : les slots wrappent → largeur plus flexible
+  @include respond-to('md') {
+    flex-shrink: 1;
+    width: auto;
+    min-width: size('modal-width-sm');
+    max-width: size('card-max-width');
+    scroll-snap-align: none;
+  }
+
+  @include safe-transition(background opacity);
+
+  // ── Variante Étape ──
+  &--step {
+    border-left: border-width('thick') solid semantic('info');
+  }
+
+  // ── Variante Récompense ──
+  &--reward {
+    border-left: border-width('thick') solid semantic('warning');
+  }
+
+  // ── En-tête : icône + meta + bouton suppression ──
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: spacing('md');
+  }
+
+  // ── Icône ──
+  &__icon {
+    font-size: font-size('2xl');
+    line-height: 1;
+    flex-shrink: 0;
+    width: size('touch-target-min');
+    text-align: center;
+  }
+
+  // ── Meta (position + kind) ──
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xs');
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__position {
+    font-size: font-size('xs');
+    color: text('muted');
+    font-weight: font-weight('medium');
+  }
+
+  &__kind {
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+  }
+
+  // ── Corps : contrôles carte + jetons ──
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+
+    // Sur tablette : côte à côte
+    @include respond-to('md') {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: spacing('md');
+    }
+  }
+
+  // ── Contrôle tokens ──
+  &__tokens-control {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xs');
+  }
+
+  &__tokens-label {
+    font-size: font-size('xs');
+    font-weight: font-weight('medium');
+    color: text('muted');
+  }
+
+  &__tokens-input {
+    width: size('touch-target-min');
+    min-height: size('touch-target-min');
+    padding: spacing('xs') spacing('sm');
+    background: surface('soft');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    text-align: center;
+    @include safe-transition(border-color);
+
+    &:focus {
+      outline: none;
+      border-color: semantic('info');
+    }
+
+    &:disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+    }
+  }
+
+  &__tokens-error {
+    font-size: font-size('xs');
+    color: semantic('error');
+    margin: 0;
+  }
+
+  // ── Bouton supprimer ──
+  &__delete {
+    flex-shrink: 0;
+    min-width: size('touch-target-min');
+    min-height: size('touch-target-min');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: text('muted');
+    font-size: font-size('base');
+    border-radius: radius('sm');
+    cursor: pointer;
+    margin-left: auto;
+    @include safe-transition(background color);
+
+    &:hover:not(:disabled) {
+      background: surface('hover');
+      color: semantic('error');
+    }
+
+    &:disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+    }
+  }
+}

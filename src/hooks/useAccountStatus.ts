@@ -26,7 +26,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import { isAbortLike } from '@/hooks'
 import useAuth from './useAuth'
 import type { Database } from '@/types/supabase'
 
@@ -71,14 +71,18 @@ export default function useAccountStatus(): UseAccountStatusReturn {
     }
 
     // Fetch account status depuis DB
-    return withAbortSafe(async signal => {
+    const controller = new AbortController()
+
+    const fetchStatus = async () => {
       try {
         const { data, error: fetchError } = await supabase
           .from('accounts')
           .select('status')
           .eq('id', user.id)
-          .abortSignal(signal)
+          .abortSignal(controller.signal)
           .single()
+
+        if (controller.signal.aborted) return
 
         if (fetchError) {
           throw fetchError
@@ -87,17 +91,21 @@ export default function useAccountStatus(): UseAccountStatusReturn {
         setStatus(data?.status || 'free') // Fallback 'free' si absent
       } catch (err) {
         // Ignorer erreurs d'annulation (composant démonté)
-        if (isAbortLike(err)) {
-          return
-        }
+        if (controller.signal.aborted || isAbortLike(err)) return
 
         console.error('[useAccountStatus] Erreur lecture accounts.status:', err)
         setError(err as Error)
         setStatus('free') // Fallback sécurisé en cas d'erreur
       } finally {
-        setLoading(false)
+        if (!controller.signal.aborted) setLoading(false)
       }
-    })
+    }
+
+    void fetchStatus()
+
+    return () => {
+      controller.abort()
+    }
   }, [user, authReady])
 
   return {

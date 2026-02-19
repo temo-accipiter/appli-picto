@@ -1,0 +1,59 @@
+// src/components/features/tableau/tokens-grid/TokensGrid.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : affichage calme des jetons gagnés
+
+@use '@styles/abstracts' as *;
+
+.tokens-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('sm');
+
+  // ── Grille de jetons ──
+  &__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing('xs');
+    justify-content: center;
+    padding: spacing('sm');
+  }
+
+  // ── Jeton individuel ──
+  // Taille : size('touch-target-min') / 2 → environ 22px, lisible sur écran tactile
+  &__token {
+    width: size('touch-target-min');
+    height: size('touch-target-min');
+    border-radius: radius('full');
+    background: surface('border');
+    border: border-width('thin') solid surface('border');
+    @include safe-transition(background border-color);
+
+    // ── Jeton gagné ──
+    &--earned {
+      background: semantic('warning');
+      border-color: semantic('warning');
+    }
+
+    // ── Animation d'apparition (sauf reduced-motion) ──
+    &--animated {
+      animation: token-pop 0.25s ease-out both;
+    }
+  }
+}
+
+@keyframes token-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.15);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

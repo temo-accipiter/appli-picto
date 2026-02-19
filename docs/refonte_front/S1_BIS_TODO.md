@@ -52,55 +52,59 @@ src/hooks/useAdminPermissions.ts
 
 **Composants à adapter** (22 fichiers) :
 
-| Catégorie | Fichiers | Action |
-|-----------|----------|--------|
-| **Shared (prioritaire)** | 5 fichiers | Adapter en premier |
-| - `FeatureGate.tsx` | | Remplacer `usePermissions()` par logique simple ou supprimer |
-| - `ProtectedRoute.tsx` | | Utiliser `useAuth()` + `useAccountStatus()` |
-| - `QuotaIndicator.tsx` | | Utiliser nouveau `useAccountStatus()` |
-| - `ImageQuotaIndicator.tsx` | | Idem |
-| - `InitializationLoader.tsx` | | Vérifier usage RBAC |
-| **Layout** | 2 fichiers | |
-| - `Navbar.tsx` | | Affichage conditionnel via `useAccountStatus()` |
-| - `UserMenu.tsx` | | Badge statut via `useAccountStatus()` |
-| **Features** | 3 fichiers | |
-| - `admin/AccountManagement.tsx` | | Vérifier logique admin |
-| - `admin/QuotaManagement.tsx` | | Adapter quotas |
-| - `time-timer/FloatingTimeTimer.tsx` | | Vérifier permissions |
-| **Pages** | 7 fichiers | |
-| - `tableau/Tableau.tsx` | | Affichage conditionnel |
-| - `edition/Edition.tsx` | | Idem |
-| - `admin/logs/Logs.tsx` | | Admin only (RLS) |
-| - `admin/metrics/Metrics.tsx` | | Idem |
-| - `admin-permissions/AdminPermissions.tsx` | | Refactor complet |
-| - `HomeRedirect.tsx` | | Logique routing |
-| **App & Contexts** | 2 fichiers | |
-| - `app/providers.tsx` | | Retirer PermissionsProvider |
-| - `contexts/DisplayContext.tsx` | | Vérifier dépendances |
-| **Barrel Exports** | 3 fichiers | |
-| - `hooks/index.ts` | | Retirer exports RBAC |
-| - `contexts/index.ts` | | Retirer PermissionsContext |
-| - `types/contexts.d.ts` | | Nettoyer types |
+| Catégorie                                  | Fichiers   | Action                                                       |
+| ------------------------------------------ | ---------- | ------------------------------------------------------------ |
+| **Shared (prioritaire)**                   | 5 fichiers | Adapter en premier                                           |
+| - `FeatureGate.tsx`                        |            | Remplacer `usePermissions()` par logique simple ou supprimer |
+| - `ProtectedRoute.tsx`                     |            | Utiliser `useAuth()` + `useAccountStatus()`                  |
+| - `QuotaIndicator.tsx`                     |            | Utiliser nouveau `useAccountStatus()`                        |
+| - `ImageQuotaIndicator.tsx`                |            | Idem                                                         |
+| - `InitializationLoader.tsx`               |            | Vérifier usage RBAC                                          |
+| **Layout**                                 | 2 fichiers |                                                              |
+| - `Navbar.tsx`                             |            | Affichage conditionnel via `useAccountStatus()`              |
+| - `UserMenu.tsx`                           |            | Badge statut via `useAccountStatus()`                        |
+| **Features**                               | 3 fichiers |                                                              |
+| - `admin/AccountManagement.tsx`            |            | Vérifier logique admin                                       |
+| - `admin/QuotaManagement.tsx`              |            | Adapter quotas                                               |
+| - `time-timer/FloatingTimeTimer.tsx`       |            | Vérifier permissions                                         |
+| **Pages**                                  | 7 fichiers |                                                              |
+| - `tableau/Tableau.tsx`                    |            | Affichage conditionnel                                       |
+| - `edition/Edition.tsx`                    |            | Idem                                                         |
+| - `admin/logs/Logs.tsx`                    |            | Admin only (RLS)                                             |
+| - `admin/metrics/Metrics.tsx`              |            | Idem                                                         |
+| - `admin-permissions/AdminPermissions.tsx` |            | Refactor complet                                             |
+| - `HomeRedirect.tsx`                       |            | Logique routing                                              |
+| **App & Contexts**                         | 2 fichiers |                                                              |
+| - `app/providers.tsx`                      |            | Retirer PermissionsProvider                                  |
+| - `contexts/DisplayContext.tsx`            |            | Vérifier dépendances                                         |
+| **Barrel Exports**                         | 3 fichiers |                                                              |
+| - `hooks/index.ts`                         |            | Retirer exports RBAC                                         |
+| - `contexts/index.ts`                      |            | Retirer PermissionsContext                                   |
+| - `types/contexts.d.ts`                    |            | Nettoyer types                                               |
 
 **Plan recommandé (4 phases)** :
 
 #### Phase 1 : Composants Shared (2h)
+
 1. Adapter `FeatureGate` ou le supprimer
 2. Adapter `ProtectedRoute` → `useAuth()` + `useAccountStatus()`
 3. Adapter `QuotaIndicator` → nouveau `useAccountStatus()`
 4. Tests adaptations
 
 #### Phase 2 : Layout + Pages simples (3h)
+
 1. Adapter `Navbar`, `UserMenu` (affichage badges)
 2. Adapter pages tableau/edition (affichage conditionnel)
 3. Tests
 
 #### Phase 3 : Features Admin (4h)
+
 1. Adapter composants admin (gestion errors TS legacy tables)
 2. Créer nouveaux hooks admin si nécessaire
 3. Tests admin flows
 
 #### Phase 4 : Suppression Core RBAC (3h)
+
 1. Retirer `PermissionsProvider` de `app/providers.tsx`
 2. Supprimer 6 fichiers core RBAC
 3. Nettoyer barrel exports
@@ -116,6 +120,7 @@ src/hooks/useAdminPermissions.ts
 **À créer** :
 
 1. **Détection Visitor simple** (`src/hooks/useIsVisitor.ts`)
+
    ```typescript
    // Hook simple : Visitor = !user
    export default function useIsVisitor() {
@@ -172,16 +177,19 @@ export const normalizeStatus = (status: unknown): string => {
 **Erreurs actuelles** : 11 erreurs TS dans composants admin
 
 **Tables legacy encore référencées** :
+
 - `profiles` → doit être `accounts`
 - `roles` → n'existe plus (RBAC)
 - `role_quotas` → n'existe plus (RBAC)
 
 **RPC legacy** :
+
 - `get_image_analytics_summary` → vérifier existence ou adapter
 
 **Scope traitement** : **S2+** (Admin + Métriques)
 
 **Impact actuel** : ZÉRO
+
 - ✅ Build Next.js passe
 - ✅ Application fonctionnelle
 - ⚠️ Composants admin peuvent avoir comportements legacy (acceptable temporairement)

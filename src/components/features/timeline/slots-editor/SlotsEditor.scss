@@ -1,0 +1,190 @@
+// src/components/features/timeline/slots-editor/SlotsEditor.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : interface apaisante, lisible sur tablette/smartphone
+
+@use '@styles/abstracts' as *;
+
+.slots-editor {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('lg');
+
+  // ── Liste de slots — disposition horizontale ──
+  // Mobile : défilement horizontal (scroll) — les slots ne wrappent pas
+  // Tablette (md+) : les slots wrappent sur plusieurs lignes
+  &__list {
+    display: flex;
+    flex-direction: row;
+    gap: spacing('sm');
+    padding: spacing('xs') spacing('xs') spacing('md'); // padding-bottom pour la scrollbar
+    margin: 0;
+    list-style: none;
+    overflow-x: auto;
+    // Snap léger pour tablette (TSA : défilement prévisible)
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+
+    @include respond-to('md') {
+      flex-wrap: wrap;
+      overflow-x: visible;
+      scroll-snap-type: none;
+    }
+  }
+
+  // ── État vide ──
+  &__empty {
+    font-size: font-size('base');
+    color: text('muted');
+    text-align: center;
+    padding: spacing('xl') spacing('md');
+    margin: 0;
+  }
+
+  // ── Erreur (lecture ou action) ──
+  &__error {
+    font-size: font-size('sm');
+    color: semantic('error');
+    background: semantic('error', 'bg');
+    border-radius: radius('sm');
+    padding: spacing('sm') spacing('md');
+    margin: 0;
+  }
+
+  // ── Boutons d'action ──
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing('sm');
+
+    @include respond-to('md') {
+      gap: spacing('md');
+    }
+  }
+
+  &__btn {
+    flex: 1;
+    min-height: size('touch-target-min');
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: spacing('xs');
+    padding: spacing('sm') spacing('lg');
+    border: none;
+    border-radius: radius('md');
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
+    cursor: pointer;
+    @include safe-transition(opacity background);
+
+    &:disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+    }
+
+    // Bouton Étape → bleu neutre
+    &--step {
+      background: semantic('info', 'bg');
+      color: semantic('info');
+      border: border-width('thin') solid semantic('info');
+
+      &:hover:not(:disabled) {
+        background: semantic('info');
+        color: text('invert');
+      }
+    }
+
+    // Bouton Récompense → couleur success (douce)
+    &--reward {
+      background: semantic('success', 'bg');
+      color: semantic('success');
+      border: border-width('thin') solid semantic('success');
+
+      &:hover:not(:disabled) {
+        background: semantic('success');
+        color: text('invert');
+      }
+    }
+
+    // Bouton "Retirer toutes les cartes" → warning doux
+    &--clear {
+      background: semantic('warning', 'bg');
+      color: semantic('warning');
+      border: border-width('thin') solid semantic('warning');
+      flex: 1;
+
+      &:hover:not(:disabled) {
+        background: semantic('warning');
+        color: text('invert');
+      }
+    }
+
+    // Variante confirmation (mise en évidence)
+    &--clear-confirm {
+      background: semantic('warning');
+      color: text('invert');
+      font-weight: font-weight('semibold');
+    }
+
+    // Bouton Annuler → neutre
+    &--cancel {
+      background: surface('soft');
+      color: text('muted');
+      border: border-width('thin') solid surface('border');
+
+      &:hover:not(:disabled) {
+        background: surface('hover');
+        color: text('dark');
+      }
+    }
+  }
+
+  // ── Zone bouton retirer les cartes ──
+  &__clear {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing('sm');
+
+    @include respond-to('md') {
+      gap: spacing('md');
+    }
+  }
+
+  // ── Animation chargement (3 points pulsants) ──
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: spacing('sm');
+    padding: spacing('xl');
+  }
+
+  &__dot {
+    width: size('8');
+    height: size('8');
+    border-radius: radius('full');
+    background: surface('border');
+    animation: slots-dot-pulse 1.2s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+  }
+}
+
+@keyframes slots-dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: opacity('half');
+    transform: scale(0.8);
+  }
+
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

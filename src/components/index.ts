@@ -2,6 +2,18 @@
 // FEATURES - Domaines métier
 // ========================================
 
+// Child Profile
+export { ChildProfileSelector } from './features/child-profile'
+
+// Timeline (S4 — Éditeur timelines + slots)
+export { CardPicker, SlotItem, SlotsEditor } from './features/timeline'
+
+// Tableau (S5 — Contexte enfant : sessions + validations)
+export { SlotCard, TokensGrid, SessionComplete } from './features/tableau'
+
+// Séquences (S7 — Séquençage : éditeur + mini-timeline)
+export { SequenceEditor, SequenceMiniTimeline } from './features/sequences'
+
 // Taches
 export { default as TachesDnd } from './features/taches/taches-dnd/TachesDnd'
 export { default as TachesEdition } from './features/taches/taches-edition/TachesEdition'
@@ -42,6 +54,9 @@ export { default as UserMenu } from './layout/user-menu/UserMenu'
 // SHARED - Composants réutilisables métier
 // ========================================
 
+// S8 — Offline + Sync
+export { default as OfflineBanner } from './shared/offline-banner/OfflineBanner'
+
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'
 export { default as Dropdown } from './shared/dropdown/Dropdown'
@@ -77,6 +92,7 @@ export { default as ModalConfirm } from './shared/modal/modal-confirm/ModalConfi
 export { default as ModalQuota } from './shared/modal/modal-quota/ModalQuota'
 export { default as ModalRecompense } from './shared/modal/modal-recompense/ModalRecompense'
 export { default as PersonalizationModal } from './shared/modal/modal-personalization/PersonalizationModal'
+export type { PersonalizationContext } from './shared/modal/modal-personalization/PersonalizationModal'
 
 // ========================================
 // UI - Primitives UI pures

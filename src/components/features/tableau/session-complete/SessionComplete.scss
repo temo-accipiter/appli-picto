@@ -1,0 +1,92 @@
+// src/components/features/tableau/session-complete/SessionComplete.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Interface de fin de session : apaisante, célébrative sans surcharge sensorielle
+
+@use '@styles/abstracts' as *;
+
+.session-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('xl');
+  padding: spacing('xl') spacing('md');
+  text-align: center;
+
+  // ── Message de félicitation ──
+  &__message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('sm');
+  }
+
+  &__icon {
+    font-size: font-size('heading-xl');
+    line-height: 1;
+    display: block;
+  }
+
+  &__text {
+    font-size: font-size('xl');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    margin: 0;
+  }
+
+  // ── Récompense ──
+  &__reward {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('md');
+  }
+
+  &__reward-label {
+    font-size: font-size('base');
+    color: text('muted');
+    margin: 0;
+  }
+
+  &__reward-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('sm');
+    padding: spacing('md');
+    background: surface('card');
+    border-radius: radius('lg');
+    border: border-width('thin') solid semantic('warning');
+  }
+
+  &__reward-image {
+    width: size('card-image-height');
+    height: size('card-image-height');
+    object-fit: cover;
+    border-radius: radius('md');
+    display: block;
+  }
+
+  &__reward-placeholder {
+    width: size('card-image-height');
+    height: size('card-image-height');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: font-size('4xl');
+    background: surface('soft');
+    border-radius: radius('md');
+  }
+
+  &__reward-name {
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    margin: 0;
+  }
+
+  // ── Feedback neutre (pas de récompense) ──
+  &__no-reward {
+    font-size: font-size('heading-xl');
+    margin: 0;
+  }
+}

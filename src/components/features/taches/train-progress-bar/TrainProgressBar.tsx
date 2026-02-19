@@ -102,7 +102,7 @@ export default function TrainProgressBar({
             width={40}
             height={40}
             className="train-icon"
-            priority={false}
+            priority
           />
         </div>
 

@@ -2,11 +2,7 @@
 
 // src/pages/admin-permissions/AdminPermissions.tsx
 import ImageAnalytics from '@/components/features/admin/ImageAnalytics'
-import {
-  InputWithValidation,
-  Loader,
-  ModalConfirm,
-} from '@/components'
+import { InputWithValidation, Loader, ModalConfirm } from '@/components'
 import {
   HistoryTab,
   LogsTab,

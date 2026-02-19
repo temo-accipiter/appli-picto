@@ -1,0 +1,150 @@
+// src/components/features/tableau/slot-card/SlotCard.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : interface calme, lisible, cibles tactiles ≥ 44px
+
+@use '@styles/abstracts' as *;
+
+.slot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background: surface('card');
+  border-radius: radius('lg');
+  border: border-width('thin') solid surface('border');
+  width: size('card-max-width');
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  @include safe-transition(background border-color opacity);
+
+  // Tablette : taille fixe dans une grille
+  @include respond-to('md') {
+    width: auto;
+    scroll-snap-align: none;
+  }
+
+  // ── État validé ──
+  &--validated {
+    background: semantic('success', 'bg');
+    border-color: semantic('success');
+    opacity: opacity('md');
+  }
+
+  // ── Wrapper image ──
+  &__image-wrapper {
+    position: relative;
+    width: size('card-image-height');
+    height: size('card-image-height');
+    border-radius: radius('md');
+    overflow: hidden;
+    background: surface('soft');
+    flex-shrink: 0;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: radius('md');
+    display: block;
+  }
+
+  &__image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: font-size('4xl');
+    color: text('muted');
+  }
+
+  // ── Overlay "fait" ──
+  &__done-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: semantic('success', 'bg');
+    font-size: font-size('4xl');
+    color: semantic('success');
+    border-radius: radius('md');
+  }
+
+  // ── Label ──
+  &__label {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('dark');
+    text-align: center;
+    margin: 0;
+    // Limiter à 2 lignes pour les étiquettes longues
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: line-height('tight');
+  }
+
+  // ── Bouton "Voir étapes" (séquence S7) ──
+  // Visible uniquement sur la carte active (gérée par le parent)
+  &__sequence-toggle {
+    width: 100%;
+    min-height: size('touch-target-min');
+    padding: spacing('xs') spacing('sm');
+    border: border-width('thin') solid semantic('info');
+    background: surface('soft');
+    border-radius: radius('sm');
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: semantic('info');
+    cursor: pointer;
+    text-align: center;
+    @include safe-transition(background color border-color);
+
+    &:hover {
+      background: surface('hover');
+    }
+
+    &--open {
+      background: surface('hover');
+      border-color: semantic('info');
+    }
+  }
+
+  // ── Bouton de validation ──
+  // Cible tactile large (TSA) : min 44×44px
+  &__check {
+    min-width: size('touch-target-min');
+    min-height: size('touch-target-min');
+    border-radius: radius('full');
+    border: border-width('thin') solid surface('border');
+    background: surface('card');
+    font-size: font-size('xl');
+    color: text('muted');
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include safe-transition(background border-color color);
+
+    &:hover:not(:disabled) {
+      background: semantic('success', 'bg');
+      border-color: semantic('success');
+      color: semantic('success');
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+
+    // ── État coché ──
+    &--done {
+      background: semantic('success');
+      border-color: semantic('success');
+      color: text('invert');
+    }
+  }
+}

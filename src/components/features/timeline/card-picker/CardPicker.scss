@@ -1,0 +1,64 @@
+// src/components/features/timeline/card-picker/CardPicker.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : sélecteur simple, lisible, cible tactile ≥ 44px
+
+@use '@styles/abstracts' as *;
+
+.card-picker {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+
+  // ── Label ──
+  &__label {
+    font-size: font-size('xs');
+    font-weight: font-weight('medium');
+    color: text('muted');
+  }
+
+  // ── Ligne sélecteur + indicateur ──
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+  }
+
+  // ── Select natif ──
+  &__select {
+    flex: 1;
+    min-height: size('touch-target-min');
+    padding: spacing('xs') spacing('sm');
+    background: surface('soft');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    font-size: font-size('sm');
+    color: text('dark');
+    cursor: pointer;
+    @include safe-transition(border-color background);
+
+    &:focus {
+      outline: none;
+      border-color: semantic('info');
+      background: surface('card');
+    }
+
+    &:disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+    }
+  }
+
+  // ── Indicateur de sauvegarde ──
+  &__saving {
+    font-size: font-size('sm');
+    color: text('muted');
+    flex-shrink: 0;
+  }
+
+  // ── Erreur d'assignation ──
+  &__error {
+    font-size: font-size('xs');
+    color: semantic('error');
+    margin: 0;
+  }
+}

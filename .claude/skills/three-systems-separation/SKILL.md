@@ -7,11 +7,11 @@ description: Prevents conceptual fusion between the three core therapeutic syste
 
 ## The systems
 
-| System | DB tables | Tableau (child) | Édition (adult) |
-|--------|-----------|-----------------|-----------------|
-| **Visual planning** | `timelines`, `slots` | Full timeline display | CRUD timeline/slots |
-| **Token economy** | `slots.tokens` (0..5, kind=step) | Visual count + token grid | Modify tokens per slot |
-| **Sequencing** | `sequences`, `sequence_steps` | Mini-timeline "done" (local-only) | CRUD sequences/steps |
+| System              | DB tables                        | Tableau (child)                   | Édition (adult)        |
+| ------------------- | -------------------------------- | --------------------------------- | ---------------------- |
+| **Visual planning** | `timelines`, `slots`             | Full timeline display             | CRUD timeline/slots    |
+| **Token economy**   | `slots.tokens` (0..5, kind=step) | Visual count + token grid         | Modify tokens per slot |
+| **Sequencing**      | `sequences`, `sequence_steps`    | Mini-timeline "done" (local-only) | CRUD sequences/steps   |
 
 ## Rules
 

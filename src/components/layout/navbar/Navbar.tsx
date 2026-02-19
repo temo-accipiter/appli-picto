@@ -159,6 +159,7 @@ export default function Navbar() {
       <PersonalizationModal
         isOpen={showPersonalizationModal}
         onClose={() => setShowPersonalizationModal(false)}
+        context="visitor"
       />
     </nav>
   )

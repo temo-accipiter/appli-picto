@@ -32,6 +32,7 @@ Never add a token yourself. Never use a magic number as placeholder.
 ## Quick reference
 
 Before writing any style, check these files in `styles/`:
+
 - Token files (colors, spacing, typography, motion, etc.)
 - Wrapper functions/mixins
 - Existing component patterns for similar UI

@@ -1,0 +1,158 @@
+'use client'
+
+// src/components/features/tableau/slot-card/SlotCard.tsx
+// Affichage d'un slot étape en Tableau (contexte enfant)
+//
+// ⚠️ Règles Contexte Tableau (§6.2)
+// - ZÉRO message technique, réseau, quota, erreur DB
+// - Interface calme, prévisible, TSA-friendly
+// - Cibles tactiles ≥ 44px
+// - Seuls les slots avec card_id NOT NULL sont affichés (filtrés par le parent)
+//
+// ⚠️ Validation idempotente
+// - Un slot déjà validé reste coché mais la checkbox est désactivée
+// - Pas de "décocher" en Tableau (la progression ne régresse jamais)
+// - Session terminée → tous les slots sont en lecture seule
+//
+// ⚠️ Mini-timeline séquence (S7 — §3.1.4)
+// - Bouton "Voir étapes" visible UNIQUEMENT sur la carte en focus (active)
+// - La mini-timeline se referme quand la carte est validée
+// - L'état "fait" des étapes est LOCAL-ONLY — jamais persisté en DB
+
+import Image from 'next/image'
+import { useCallback, useState, type MouseEvent } from 'react'
+import type { Slot } from '@/hooks/useSlots'
+import type { BankCard } from '@/hooks/useBankCards'
+import type { PersonalCard } from '@/hooks/usePersonalCards'
+import type { SequenceStep } from '@/hooks/useSequenceSteps'
+import { SequenceMiniTimeline } from '@/components/features/sequences'
+import './SlotCard.scss'
+
+interface SlotCardProps {
+  slot: Slot
+  /** Carte associée (banque ou personnelle) — obligatoire (les slots vides sont filtrés avant) */
+  card: BankCard | PersonalCard | null
+  /** Ce slot est-il déjà validé ? */
+  validated: boolean
+  /** La session est-elle terminée ? (lecture seule) */
+  sessionCompleted: boolean
+  /** Callback de validation — appelé quand l'enfant coche la case */
+  onValidate: (slotId: string) => void
+  // ── S7 : Séquence (optionnel) ──────────────────────────────────────────────
+  /** Cette carte est-elle la carte "active" (focus) ? Détermine si "Voir étapes" est visible */
+  isActive?: boolean
+  /** Étapes de la séquence associée à cette carte (vide = pas de séquence) */
+  sequenceSteps?: SequenceStep[]
+  /** Cartes banque pour affichage dans la mini-timeline */
+  bankCards?: BankCard[]
+  /** Cartes personnelles pour affichage dans la mini-timeline */
+  personalCards?: PersonalCard[]
+}
+
+export function SlotCard({
+  slot,
+  card,
+  validated,
+  sessionCompleted,
+  onValidate,
+  isActive = false,
+  sequenceSteps = [],
+  bankCards = [],
+  personalCards = [],
+}: SlotCardProps) {
+  const isDisabled = validated || sessionCompleted
+
+  // État local : mini-timeline ouverte ou non (local-only)
+  const [miniTimelineOpen, setMiniTimelineOpen] = useState(false)
+
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      if (isDisabled) return
+      // Fermer la mini-timeline quand la carte est validée (§3.1.4)
+      setMiniTimelineOpen(false)
+      onValidate(slot.id)
+    },
+    [isDisabled, onValidate, slot.id]
+  )
+
+  const cardLabel = card?.label ?? 'Étape'
+  const hasSequence = sequenceSteps.length > 0
+
+  return (
+    <article
+      className={`slot-card${validated ? ' slot-card--validated' : ''}`}
+      aria-label={`${cardLabel}${validated ? ' (terminé)' : ''}`}
+    >
+      {/* Image de la carte */}
+      <div className="slot-card__image-wrapper">
+        {card?.image_url ? (
+          <Image
+            src={card.image_url}
+            alt={cardLabel}
+            className="slot-card__image"
+            width={200}
+            height={200}
+            draggable={false}
+          />
+        ) : (
+          <div className="slot-card__image-placeholder" aria-hidden="true">
+            📋
+          </div>
+        )}
+
+        {/* Indicateur "fait" — superposé sur l'image quand validé */}
+        {validated && (
+          <div className="slot-card__done-overlay" aria-hidden="true">
+            ✓
+          </div>
+        )}
+      </div>
+
+      {/* Nom de la carte */}
+      <p className="slot-card__label">{cardLabel}</p>
+
+      {/* Bouton "Voir étapes" — visible si carte active ET séquence présente ET non validée (§3.1.4) */}
+      {isActive && hasSequence && !validated && (
+        <button
+          type="button"
+          className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}
+          onClick={() => setMiniTimelineOpen(o => !o)}
+          aria-expanded={miniTimelineOpen}
+          aria-controls={`sequence-${slot.id}`}
+          aria-label={
+            miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes'
+          }
+        >
+          {miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes 📋'}
+        </button>
+      )}
+
+      {/* Mini-timeline (visible uniquement si bouton ouvert) */}
+      {miniTimelineOpen && hasSequence && (
+        <div id={`sequence-${slot.id}`}>
+          <SequenceMiniTimeline
+            steps={sequenceSteps}
+            bankCards={bankCards}
+            personalCards={personalCards}
+            onClose={() => setMiniTimelineOpen(false)}
+          />
+        </div>
+      )}
+
+      {/* Bouton de validation (checkbox agrandie pour enfants TSA) */}
+      <button
+        type="button"
+        className={`slot-card__check${validated ? ' slot-card__check--done' : ''}`}
+        onClick={handleClick}
+        disabled={isDisabled}
+        aria-pressed={validated}
+        aria-label={
+          validated ? `${cardLabel} est terminé` : `Valider ${cardLabel}`
+        }
+      >
+        {validated ? '✓' : '○'}
+      </button>
+    </article>
+  )
+}

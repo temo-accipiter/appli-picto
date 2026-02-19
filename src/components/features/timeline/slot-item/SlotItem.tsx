@@ -1,0 +1,285 @@
+'use client'
+
+/**
+ * SlotItem — Affichage et édition d'un seul slot dans l'éditeur de timeline.
+ *
+ * ⚠️ RÈGLES TSA
+ * - Interface simple et prévisible.
+ * - Transitions douces ≤ 0.3s.
+ * - Cibles tactiles ≥ 44px.
+ * - Pas de jargon technique.
+ *
+ * ⚠️ RÈGLES DB-FIRST
+ * - tokens : 0-5 pour step, null pour reward (contrainte DB)
+ * - card_id : FK optionnelle (null = non attribuée)
+ * - Toutes les modifications passent par onUpdate → remontées à useSlots → DB
+ *
+ * ⚠️ MATRICE DE VERROUILLAGE S6 (§3.2.2bis)
+ * - Session terminée ou inexistante → tout éditable
+ * - Session preview (0 validation) → tout éditable
+ * - Session démarrée (≥1 validation) :
+ *     Slot validé  : delete ❌, update tokens ❌, change card ❌
+ *     Slot non validé : delete ✅, update tokens ❌, change card ✅
+ */
+
+import { useState, type ChangeEvent } from 'react'
+import type { Slot } from '@/hooks/useSlots'
+import type { SessionState } from '@/hooks/useSessions'
+import type { BankCard } from '@/hooks/useBankCards'
+import type { PersonalCard } from '@/hooks/usePersonalCards'
+import type { Sequence } from '@/hooks/useSequences'
+import { CardPicker } from '../card-picker/CardPicker'
+import { SequenceEditor } from '@/components/features/sequences'
+import './SlotItem.scss'
+
+interface SlotItemProps {
+  slot: Slot
+  /** Indice humain (position + 1) */
+  positionLabel: number
+  /** Modifier ce slot (card_id et/ou tokens) */
+  onUpdate: (
+    id: string,
+    updates: { card_id?: string | null; tokens?: number | null }
+  ) => Promise<{ error: Error | null }>
+  /** Supprimer ce slot (peut être refusé par la DB si dernier du genre) */
+  onRemove: (id: string) => void
+  /** Cartes banque disponibles (transmises par SlotsEditor) */
+  bankCards: BankCard[]
+  /** Cartes personnelles disponibles (transmises par SlotsEditor) */
+  personalCards: PersonalCard[]
+  /** Opération de suppression en cours */
+  busy?: boolean
+  // ── S6 : Verrouillage selon état session ──────────────────────────────────
+  /**
+   * État de la session active pour ce profil+timeline.
+   * null = aucune session, 'completed' = terminée → tout éditable.
+   * 'active_preview' → tout éditable.
+   * 'active_started' → verrouillage conditionnel par isValidated.
+   */
+  sessionState?: SessionState | null
+  /** Ce slot a-t-il été validé dans la session en cours ? */
+  isValidated?: boolean
+  // ── S7 : Séquence ──────────────────────────────────────────────────────────
+  /**
+   * Séquence existante pour la carte assignée à ce slot.
+   * null = pas de séquence. Le bouton "Gérer la séquence" s'affiche
+   * uniquement pour les étapes (kind='step') ayant une carte assignée.
+   */
+  sequence?: Sequence | null
+  /**
+   * Créer une séquence pour la carte de ce slot.
+   * Fourni par le parent (SlotsEditor → useSequences).
+   */
+  onCreateSequence?: (
+    motherCardId: string
+  ) => Promise<{ id: string | null; error: Error | null }>
+  /**
+   * Supprimer la séquence liée à ce slot.
+   * Fourni par le parent (SlotsEditor → useSequences).
+   */
+  onDeleteSequence?: (sequenceId: string) => Promise<{ error: Error | null }>
+  /**
+   * S8 : Désactiver les actions structurelles si le navigateur est offline.
+   * §4.4 : CRUD structure interdit offline (guard UX).
+   */
+  isOffline?: boolean
+}
+
+/** Icône selon le kind du slot */
+const SLOT_ICONS: Record<'step' | 'reward', string> = {
+  step: '🎯',
+  reward: '🏆',
+}
+
+/** Libellé selon le kind du slot */
+const SLOT_LABELS: Record<'step' | 'reward', string> = {
+  step: 'Étape',
+  reward: 'Récompense',
+}
+
+export function SlotItem({
+  slot,
+  positionLabel,
+  onUpdate,
+  onRemove,
+  bankCards,
+  personalCards,
+  busy = false,
+  sessionState = null,
+  isValidated = false,
+  sequence = null,
+  onCreateSequence,
+  onDeleteSequence,
+  isOffline = false,
+}: SlotItemProps) {
+  const isStep = slot.kind === 'step'
+
+  // ── Calcul de la matrice de verrouillage (§3.2.2bis) ──────────────────────
+  const isSessionStarted = sessionState === 'active_started'
+
+  // Slot validé pendant session démarrée → tout verrouillé
+  // §4.4 S8 : Offline → même comportement que slot validé (tout verrouillé)
+  const isFullyLocked = (isSessionStarted && isValidated) || isOffline
+
+  // Pendant session démarrée, les jetons sont toujours non modifiables
+  // (même sur slot non validé — exception : nouveau slot lors de l'ajout,
+  //  mais on ne peut pas distinguer ici → restriction conservatrice)
+  const tokensLocked = isSessionStarted || isOffline
+
+  // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
+  const [updatingTokens, setUpdatingTokens] = useState(false)
+  const [tokensError, setTokensError] = useState<string | null>(null)
+
+  // État local pour afficher/masquer le SequenceEditor
+  const [sequenceEditorOpen, setSequenceEditorOpen] = useState(false)
+
+  // Séquençage disponible : uniquement pour les étapes avec une carte assignée
+  const canManageSequence =
+    isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
+
+  const handleTokensChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10)
+    // Validation côté client (double filet — la DB a aussi le CHECK)
+    if (isNaN(value) || value < 0 || value > 5) return
+
+    setUpdatingTokens(true)
+    setTokensError(null)
+
+    const { error } = await onUpdate(slot.id, { tokens: value })
+
+    setUpdatingTokens(false)
+    if (error) setTokensError('Erreur mise à jour jetons.')
+  }
+
+  const handleCardSelect = async (cardId: string | null) => {
+    return onUpdate(slot.id, { card_id: cardId })
+  }
+
+  // Indicateur visuel pour les slots verrouillés
+  const lockBadge = isFullyLocked ? (
+    <span
+      className="slot-item__lock"
+      aria-label="Étape validée — non modifiable"
+      title="Validé"
+    >
+      🔒
+    </span>
+  ) : null
+
+  return (
+    <li
+      className={`slot-item slot-item--${slot.kind}${isFullyLocked ? ' slot-item--locked' : ''}`}
+      aria-label={`Position ${positionLabel} — ${SLOT_LABELS[slot.kind]}${isFullyLocked ? ' (validé)' : ''}`}
+    >
+      {/* En-tête : icône + position + kind + verrou + suppression */}
+      <div className="slot-item__header">
+        <span className="slot-item__icon" aria-hidden="true" role="img">
+          {SLOT_ICONS[slot.kind]}
+        </span>
+
+        <div className="slot-item__meta">
+          <span className="slot-item__position" aria-hidden="true">
+            #{positionLabel}
+          </span>
+          <span className="slot-item__kind">{SLOT_LABELS[slot.kind]}</span>
+        </div>
+
+        {/* Indicateur de verrou (slot validé) */}
+        {lockBadge}
+
+        {/* Bouton supprimer — désactivé si slot validé pendant session démarrée */}
+        <button
+          type="button"
+          className="slot-item__delete"
+          onClick={() => onRemove(slot.id)}
+          disabled={busy || isFullyLocked}
+          aria-label={`Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`}
+          aria-disabled={isFullyLocked}
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Corps : contrôles carte + jetons */}
+      <div className="slot-item__body">
+        {/* Contrôle tokens (étapes uniquement : 0-5) — verrouillé si session démarrée */}
+        {isStep && (
+          <div className="slot-item__tokens-control">
+            <label
+              className="slot-item__tokens-label"
+              htmlFor={`tokens-${slot.id}`}
+            >
+              Jetons 🪙
+            </label>
+            <input
+              id={`tokens-${slot.id}`}
+              type="number"
+              className="slot-item__tokens-input"
+              min={0}
+              max={5}
+              value={slot.tokens ?? 0}
+              onChange={handleTokensChange}
+              disabled={busy || updatingTokens || tokensLocked}
+              aria-busy={updatingTokens}
+              aria-disabled={tokensLocked}
+              aria-label={`Nombre de jetons pour l'étape #${positionLabel} (0 à 5)${tokensLocked ? ' — verrouillé pendant la session' : ''}`}
+            />
+            {tokensError && (
+              <p className="slot-item__tokens-error" role="alert">
+                {tokensError}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Sélecteur de carte — désactivé si slot validé pendant session démarrée */}
+        <CardPicker
+          bankCards={bankCards}
+          personalCards={personalCards}
+          currentCardId={slot.card_id}
+          onSelect={handleCardSelect}
+          disabled={busy || isFullyLocked}
+        />
+      </div>
+
+      {/* ── Gestion séquence (S7 — étapes uniquement, carte assignée) ─────────── */}
+      {canManageSequence && (
+        <div className="slot-item__sequence">
+          <button
+            type="button"
+            className={`slot-item__sequence-toggle${sequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
+            onClick={() => setSequenceEditorOpen(o => !o)}
+            aria-expanded={sequenceEditorOpen}
+            aria-label={
+              sequenceEditorOpen
+                ? "Masquer l'éditeur de séquence"
+                : sequence
+                  ? 'Modifier la séquence'
+                  : 'Créer une séquence'
+            }
+          >
+            {sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
+          </button>
+
+          {sequenceEditorOpen && (
+            <SequenceEditor
+              motherCardId={slot.card_id!}
+              motherCardLabel={
+                bankCards.find(c => c.id === slot.card_id)?.label ??
+                personalCards.find(c => c.id === slot.card_id)?.label ??
+                'Carte'
+              }
+              sequence={sequence}
+              bankCards={bankCards}
+              personalCards={personalCards}
+              onCreateSequence={onCreateSequence!}
+              onDeleteSequence={onDeleteSequence!}
+            />
+          )}
+        </div>
+      )}
+    </li>
+  )
+}
+
+export default SlotItem

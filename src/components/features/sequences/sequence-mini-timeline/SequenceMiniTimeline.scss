@@ -1,0 +1,158 @@
+// src/components/features/sequences/sequence-mini-timeline/SequenceMiniTimeline.scss
+// ✅ Tokens validés — aucune valeur hardcodée
+// Mobile-first TSA : calme, scrollable horizontalement, cibles ≥ 44px
+
+@use '@styles/abstracts' as *;
+
+.sequence-mini-timeline {
+  position: relative;
+  background: surface('soft');
+  border-radius: radius('md');
+  padding: spacing('sm');
+  // Entrée douce ≤ 0.3s (TSA anti-choc)
+  @include safe-transition(opacity);
+
+  // ── Bouton fermeture ──
+  &__close {
+    position: absolute;
+    top: spacing('xs');
+    right: spacing('xs');
+    min-width: size('touch-target-min');
+    min-height: size('touch-target-min');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: text('muted');
+    font-size: font-size('sm');
+    border-radius: radius('sm');
+    cursor: pointer;
+    z-index: 1;
+    @include safe-transition(background color);
+
+    &:hover {
+      background: surface('hover');
+      color: text('dark');
+    }
+  }
+
+  // ── Liste scrollable horizontalement ──
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    padding-top: spacing('xs'); // espace sous le bouton fermeture
+    display: flex;
+    gap: spacing('sm');
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    // Masque la scrollbar visuellement (TSA — moins de distraction)
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  // ── Étape individuelle ──
+  &__step {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    // Largeur adaptée à la main d'un enfant (tactile)
+    width: size('touch-target-min');
+
+    @include respond-to('md') {
+      width: size('icon-xl');
+    }
+
+    // État "fait" : légèrement atténué
+    &--done .sequence-mini-timeline__step-image,
+    &--done .sequence-mini-timeline__step-placeholder {
+      opacity: opacity('md');
+    }
+
+    &--done .sequence-mini-timeline__step-label {
+      color: text('muted');
+      text-decoration: line-through;
+    }
+  }
+
+  // ── Bouton-carte (toute la zone est cliquable) ──
+  &__step-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('xs');
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: spacing('xs');
+    border-radius: radius('sm');
+    @include safe-transition(background);
+
+    &:hover {
+      background: surface('hover');
+    }
+
+    &[aria-pressed='true'] {
+      background: surface('hover');
+    }
+  }
+
+  // ── Image de l'étape ──
+  &__step-image-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: radius('xs');
+    overflow: hidden;
+  }
+
+  &__step-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    @include safe-transition(opacity);
+  }
+
+  &__step-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: surface('card');
+    font-size: font-size('xl');
+    @include safe-transition(opacity);
+  }
+
+  // ── Overlay "fait" ──
+  &__done-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: semantic('success', 'bg');
+    color: text('invert');
+    font-size: font-size('xl');
+    font-weight: font-weight('bold');
+    border-radius: radius('xs');
+  }
+
+  // ── Label de l'étape ──
+  &__step-label {
+    font-size: font-size('xs');
+    color: text('dark');
+    text-align: center;
+    font-weight: font-weight('medium');
+    // Tronque si trop long
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    @include safe-transition(color);
+  }
+}
