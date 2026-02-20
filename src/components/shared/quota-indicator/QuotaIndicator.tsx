@@ -32,7 +32,7 @@ export default function QuotaIndicator({
     isFree: isFreeAccount,
     getQuotaInfo,
     getMonthlyQuotaInfo,
-    canCreate,
+    // canCreate SUPPRIMÉ : validation métier en DB uniquement (§1.1 FRONTEND_CONTRACT)
   } = useRBAC()
 
   if (loading) {
@@ -58,7 +58,7 @@ export default function QuotaIndicator({
   if (!info) return null
 
   const monthly = getMonthlyQuotaInfo(contentType)
-  const canCreateContent = canCreate(contentType)
+  // canCreateContent SUPPRIMÉ : affichage basé sur isAtLimit uniquement (lecture passive)
 
   const contentLabel =
     contentType === 'task'
@@ -159,14 +159,12 @@ export default function QuotaIndicator({
         <div className="quota-warning at-limit">
           <span className="warning-icon">🚫</span>
           <span className="warning-text">{t('quota.limitReached')}</span>
-        </div>
-      )}
-
-      {!canCreateContent && (
-        <div className="quota-upgrade">
-          <span className="upgrade-text">
-            {t('quota.upgradeToPremium', { contentType: contentLabel })}
-          </span>
+          {/* Message upgrade affiché uniquement si limite atteinte (lecture passive) */}
+          <div className="quota-upgrade">
+            <span className="upgrade-text">
+              {t('quota.upgradeToPremium', { contentType: contentLabel })}
+            </span>
+          </div>
         </div>
       )}
     </div>

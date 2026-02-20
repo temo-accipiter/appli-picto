@@ -90,10 +90,8 @@ export interface RBACValue extends PermissionsContextValue {
   isSubscriber: boolean
   quotas: Record<string, { limit: number; period: string }>
   usage: Record<string, number>
-  canCreate: (contentType: QuotaType) => boolean
-  canCreateTask: () => boolean
-  canCreateReward: () => boolean
-  canCreateCategory: () => boolean
+  // canCreate SUPPRIMÉ (§1.1 FRONTEND_CONTRACT - validation métier en DB uniquement)
+  // Utiliser getQuotaInfo() pour affichage passif uniquement
   getQuotaInfo: (contentType: QuotaType) => QuotaInfo | null
   getMonthlyQuotaInfo: (contentType: QuotaType) => QuotaInfo | null
   refreshQuotas: () => void

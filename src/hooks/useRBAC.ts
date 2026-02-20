@@ -79,10 +79,8 @@ interface UseRBACReturn {
   canAny: (featureNames: string[]) => boolean
   quotas: QuotaMap
   usage: UsageMap
-  canCreate: (contentType: ContentType) => boolean
-  canCreateTask: () => boolean
-  canCreateReward: () => boolean
-  canCreateCategory: () => boolean
+  // ⚠️ canCreate() SUPPRIMÉ : validation métier doit être en DB (RLS), pas côté UI (§1.1 FRONTEND_CONTRACT)
+  // Utiliser getQuotaInfo() pour affichage uniquement, jamais pour décider
   getQuotaInfo: (contentType: ContentType) => QuotaInfo | null
   getMonthlyQuotaInfo: (contentType: ContentType) => QuotaInfo | null
   refreshQuotas: () => void
@@ -292,46 +290,10 @@ export default function useRBAC(): UseRBACReturn {
     }
   }, [permissions.ready, isFreeAccount, fetchQuotasStable])
 
-  // Helpers de vérification
-  const canCreate = useCallback(
-    (contentType: ContentType): boolean => {
-      if (!isFreeAccount) return true
-
-      // Mapper le type de contenu vers la clé de quota
-      const key: keyof QuotaMap | null =
-        contentType === 'task'
-          ? 'max_tasks'
-          : contentType === 'reward'
-            ? 'max_rewards'
-            : contentType === 'category'
-              ? 'max_categories'
-              : null
-
-      if (!key || !quotas[key]) return true
-
-      // ✅ PHASE 1: Utiliser le bon compteur selon quota_period
-      const quotaPeriod = quotas[key]!.period || 'total'
-      const limit = quotas[key]!.limit
-
-      let currentUsage: number
-      if (quotaPeriod === 'monthly') {
-        // Quotas mensuels : utiliser monthly_tasks/monthly_rewards/monthly_categories
-        const monthlyKey: keyof UsageMap =
-          contentType === 'task'
-            ? 'monthly_tasks'
-            : contentType === 'reward'
-              ? 'monthly_rewards'
-              : 'monthly_categories'
-        currentUsage = usage[monthlyKey] ?? 0
-      } else {
-        // Quotas totaux : utiliser max_tasks/max_rewards/max_categories
-        currentUsage = usage[key] ?? 0
-      }
-
-      return currentUsage < limit
-    },
-    [isFreeAccount, quotas, usage]
-  )
+  // ⚠️ canCreate() SUPPRIMÉ (§1.1 FRONTEND_CONTRACT)
+  // Raison : Validation métier côté front = INTERDIT
+  // La DB/RLS décide via constraints/triggers (ex: check_card_quota())
+  // Le front affiche seulement warnings via getQuotaInfo() (lecture passive)
 
   const getQuotaInfo = useCallback(
     (contentType: ContentType): QuotaInfo | null => {
@@ -419,10 +381,7 @@ export default function useRBAC(): UseRBACReturn {
       // Quotas
       quotas,
       usage,
-      canCreate,
-      canCreateTask: () => canCreate('task'),
-      canCreateReward: () => canCreate('reward'),
-      canCreateCategory: () => canCreate('category'),
+      // canCreate SUPPRIMÉ (§1.1 FRONTEND_CONTRACT - validation métier en DB uniquement)
       getQuotaInfo,
       getMonthlyQuotaInfo,
       refreshQuotas: () => fetchQuotas(),
@@ -439,7 +398,7 @@ export default function useRBAC(): UseRBACReturn {
       isFreeAccount,
       quotas,
       usage,
-      canCreate,
+      // canCreate supprimé des dépendances
       getQuotaInfo,
       getMonthlyQuotaInfo,
       fetchQuotas,
