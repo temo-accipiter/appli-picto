@@ -5,7 +5,7 @@
 .delete-profile-guard {
   display: flex;
   flex-direction: column;
-  gap: spacing('4');
+  gap: spacing('md');
 
   &__intro {
     font-size: font-size('base');
@@ -19,25 +19,25 @@
   }
 
   &__warning {
-    background: surface('warning-subtle');
-    padding: spacing('3');
+    background: surface('soft');
+    padding: spacing('sm');
     border-radius: radius('md');
     border-left: border-width('thick') solid semantic('warning');
 
     p {
       font-weight: font-weight('semibold');
-      margin-bottom: spacing('2');
+      margin-bottom: spacing('sm');
       color: semantic('warning');
       font-size: font-size('base');
     }
 
     ul {
       list-style: disc;
-      padding-left: spacing('5');
+      padding-left: spacing('md');
       color: text('secondary');
 
       li {
-        margin-bottom: spacing('1');
+        margin-bottom: spacing('xs');
         font-size: font-size('sm');
       }
     }

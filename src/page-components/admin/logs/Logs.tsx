@@ -1,8 +1,16 @@
 'use client'
 
 // src/pages/admin/logs/Logs.tsx
+/**
+ * Page admin : Logs d'abonnement.
+ *
+ * Règles S12 §8.10 :
+ * - Guard déjà appliqué par AdminRoute (404 neutre, sans hint)
+ * - Scope lecture : subscription_logs uniquement (RLS is_admin())
+ * - Pas de redirect, pas de toast "accès refusé"
+ */
 import { Button, FloatingPencil } from '@/components'
-import { usePermissions, useToast } from '@/contexts'
+import { useToast } from '@/contexts'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -19,7 +27,6 @@ interface SubscriptionLog {
 type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'
 
 export default function Logs() {
-  const { role: _role, isAdmin, loading: permissionsLoading } = usePermissions()
   const { show: showToast } = useToast()
   const router = useRouter()
 
@@ -32,27 +39,14 @@ export default function Logs() {
 
   const ITEMS_PER_PAGE = 50
 
-  // Vérifier si l'utilisateur est admin
-  useEffect(() => {
-    if (permissionsLoading) return
-
-    if (!isAdmin) {
-      showToast('Accès non autorisé', 'error')
-      router.push('/profil')
-      return
-    }
-  }, [isAdmin, permissionsLoading, router, showToast])
-
-  // Charger les logs
+  // Charger les logs — AdminRoute garantit que l'utilisateur est admin
   const loadLogs = useCallback(
     async (reset = false) => {
-      if (!isAdmin || permissionsLoading) return
-
       try {
         setLoading(true)
         const currentPage = reset ? 0 : page
 
-        // Utiliser la fonction is_admin() de Supabase pour les permissions RLS
+        // RLS is_admin() enforced côté DB — pas besoin de guard front
         const { data, error, count } = await supabase
           .from('subscription_logs')
           .select('*', { count: 'exact' })
@@ -64,10 +58,7 @@ export default function Logs() {
 
         if (error) {
           console.error('Erreur chargement logs:', error)
-          showToast(
-            `Erreur lors du chargement des logs: ${error.message}`,
-            'error'
-          )
+          showToast(`Erreur lors du chargement des logs: ${error.message}`, 'error')
           return
         }
 
@@ -79,9 +70,7 @@ export default function Logs() {
         }
 
         setTotalCount(count || 0)
-        setHasMore(
-          ((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE
-        )
+        setHasMore(((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE)
       } catch (error) {
         console.error('Erreur chargement logs:', error)
         showToast('Erreur lors du chargement des logs', 'error')
@@ -89,14 +78,14 @@ export default function Logs() {
         setLoading(false)
       }
     },
-    [isAdmin, permissionsLoading, page, showToast]
+    [page, showToast]
   )
 
+  // Chargement initial
   useEffect(() => {
-    if (isAdmin) {
-      loadLogs(true)
-    }
-  }, [isAdmin, loadLogs])
+    loadLogs(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleFilterChange = (newFilter: FilterType) => {
     setFilter(newFilter)
@@ -132,24 +121,6 @@ export default function Logs() {
     return userId.slice(0, 8) + '...'
   }
 
-  if (permissionsLoading) {
-    return (
-      <div className="logs-page">
-        <h1>Logs d&apos;abonnement</h1>
-        <p>Chargement des permissions...</p>
-      </div>
-    )
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="logs-page">
-        <h1>Logs d&apos;abonnement</h1>
-        <p>Accès non autorisé. Redirection en cours...</p>
-      </div>
-    )
-  }
-
   return (
     <div className="logs-page">
       <h1>Logs d&apos;abonnement</h1>
@@ -178,16 +149,12 @@ export default function Logs() {
           <Button
             onClick={() => handleFilterChange('event:webhook')}
             label="Webhooks"
-            variant={
-              filter.startsWith('event:webhook') ? 'primary' : 'secondary'
-            }
+            variant={filter.startsWith('event:webhook') ? 'primary' : 'secondary'}
           />
           <Button
             onClick={() => handleFilterChange('event:checkout')}
             label="Checkout"
-            variant={
-              filter.startsWith('event:checkout') ? 'primary' : 'secondary'
-            }
+            variant={filter.startsWith('event:checkout') ? 'primary' : 'secondary'}
           />
         </div>
 

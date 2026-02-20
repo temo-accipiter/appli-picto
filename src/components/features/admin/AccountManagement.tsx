@@ -1,410 +1,185 @@
 'use client'
 
 // src/components/admin/AccountManagement.tsx
-import { usePermissions } from '@/contexts'
-import { supabase } from '@/utils/supabaseClient'
-import { useEffect, useState, useMemo } from 'react'
-import { useDebounce } from '@/hooks'
-import { Select } from '@/components'
+/**
+ * Composant de support admin — lecture seule des comptes.
+ *
+ * Règles S12 §8.10 :
+ * - Scope lecture : identité minimale + statut + compteurs
+ * - JAMAIS d'image personnelle (avatar interdit §8.10 D2)
+ * - Pas de "set account status manual" (interdit §8.10)
+ * - Accès via admin_get_account_support_info (fonction SECURITY DEFINER)
+ */
+import { useAccountStatus } from '@/hooks'
+import { useAdminSupportInfo } from '@/hooks'
+import { useState } from 'react'
 import './AccountManagement.scss'
-
-type AccountStatus =
-  | 'active'
-  | 'suspended'
-  | 'deletion_scheduled'
-  | 'pending_verification'
-
-interface UserRole {
-  is_active: boolean
-  roles: {
-    name: string
-    display_name: string
-    priority: number | null
-  }
-}
-
-interface User {
-  id: string
-  pseudo?: string | null
-  email: string
-  created_at: string
-  account_status: AccountStatus
-  avatar_url?: string | null
-  user_roles: UserRole[]
-  role: string
-  roleDisplay: string
-}
-
-interface StatusDisplay {
-  label: string
-  color: 'success' | 'error' | 'warning' | 'info' | 'default'
-  icon: string
-}
 
 interface AccountManagementProps {
   className?: string
 }
 
-/**
- * Composant de gestion des comptes pour les administrateurs
- * Permet de visualiser et modifier les états des comptes utilisateurs
- */
 export default function AccountManagement({
   className = '',
 }: AccountManagementProps) {
-  const { can } = usePermissions()
+  const { isAdmin } = useAccountStatus()
+  const { info, loading, error, fetch: fetchInfo, reset } = useAdminSupportInfo()
+  const [accountIdInput, setAccountIdInput] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
-  const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState<User[]>([])
-  const [filter, setFilter] = useState<'all' | AccountStatus>('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
-
-  // Charger les utilisateurs
-  useEffect(() => {
-    if (!can('account_management')) return
-    const fetchUsers = async () => {
-      setLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(
-            `
-            *,
-            user_roles!inner(
-              is_active,
-              roles!inner(name, display_name, priority)
-            )
-          `
-          )
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-
-        // Traiter les données pour avoir un format plus simple
-        const processedUsers: User[] = (data || []).map(
-          (user: Record<string, unknown>) => {
-            const userRoles = Array.isArray(user.user_roles)
-              ? (user.user_roles as UserRole[])
-              : []
-            const activeRole = userRoles.find(ur => ur.is_active)
-            return {
-              id: user.id as string,
-              pseudo: user.pseudo as string | null,
-              email: '', // profiles n'a pas de champ email
-              created_at: user.created_at as string,
-              account_status: user.account_status as AccountStatus,
-              avatar_url: user.avatar_url as string | null,
-              user_roles: userRoles,
-              role: activeRole?.roles?.name || 'visitor',
-              roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
-            }
-          }
-        )
-
-        setUsers(processedUsers)
-      } catch (error) {
-        console.error('Erreur chargement utilisateurs:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUsers()
-  }, [can])
-
-  // Filtrer les utilisateurs avec debounce et mémoïsation
-  const filteredUsers = useMemo(() => {
-    return users.filter(user => {
-      const matchesFilter = filter === 'all' || user.account_status === filter
-      const matchesSearch =
-        debouncedSearchTerm === '' ||
-        user.pseudo
-          ?.toLowerCase()
-          .includes(debouncedSearchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-
-      return matchesFilter && matchesSearch
-    })
-  }, [users, filter, debouncedSearchTerm])
-
-  // Changer l'état d'un compte
-  const changeAccountStatus = async (
-    userId: string,
-    newStatus: AccountStatus,
-    reason = ''
-  ) => {
-    setActionLoading(true)
-    try {
-      const { error } = await supabase.functions.invoke(
-        'change-account-status',
-        {
-          body: {
-            target_user_id: userId,
-            new_status: newStatus,
-            reason: reason,
-          },
-        }
-      )
-
-      if (error) throw error
-
-      // Rafraîchir la liste
-      const { data, error: refreshError } = await supabase
-        .from('profiles')
-        .select(
-          `
-          *,
-          user_roles!inner(
-            is_active,
-            roles!inner(name, display_name, priority)
-          )
-        `
-        )
-        .order('created_at', { ascending: false })
-
-      if (refreshError) throw refreshError
-
-      const processedUsers: User[] = (data || []).map(
-        (user: Record<string, unknown>) => {
-          const userRoles = Array.isArray(user.user_roles)
-            ? (user.user_roles as UserRole[])
-            : []
-          const activeRole = userRoles.find(ur => ur.is_active)
-          return {
-            id: user.id as string,
-            pseudo: user.pseudo as string | null,
-            email: '',
-            created_at: user.created_at as string,
-            account_status: user.account_status as AccountStatus,
-            avatar_url: user.avatar_url as string | null,
-            user_roles: userRoles,
-            role: activeRole?.roles?.name || 'visitor',
-            roleDisplay: activeRole?.roles?.display_name || 'Visiteur',
-          }
-        }
-      )
-
-      setUsers(processedUsers)
-      setSelectedUser(null)
-    } catch (error) {
-      console.error('Erreur changement état compte:', error)
-    } finally {
-      setActionLoading(false)
-    }
+  if (!isAdmin) {
+    return null
   }
 
-  // Obtenir l'affichage de l'état
-  const getStatusDisplay = (status: AccountStatus): StatusDisplay => {
-    switch (status) {
-      case 'active':
-        return { label: 'Actif', color: 'success', icon: '✅' }
-      case 'suspended':
-        return { label: 'Suspendu', color: 'error', icon: '⛔' }
-      case 'deletion_scheduled':
-        return { label: 'Suppression programmée', color: 'warning', icon: '🗑️' }
-      case 'pending_verification':
-        return { label: 'En attente', color: 'info', icon: '⏳' }
-      default:
-        return { label: 'Inconnu', color: 'default', icon: '❓' }
-    }
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = accountIdInput.trim()
+    if (!trimmed) return
+
+    setSubmitted(true)
+    await fetchInfo(trimmed)
   }
 
-  if (loading) {
-    return (
-      <div className={`account-management loading ${className}`}>
-        <div className="loading-spinner">⏳</div>
-        <p>Chargement des comptes...</p>
-      </div>
-    )
-  }
-
-  // Vérifier les permissions
-  if (!can('account_management')) {
-    return (
-      <div className={`account-management no-permission ${className}`}>
-        <p>Vous n&apos;avez pas les permissions pour gérer les comptes.</p>
-      </div>
-    )
+  const handleReset = () => {
+    setAccountIdInput('')
+    setSubmitted(false)
+    reset()
   }
 
   return (
     <div className={`account-management ${className}`}>
       <div className="account-header">
-        <h2>Gestion des Comptes</h2>
-        <p>Visualisez et gérez les états des comptes utilisateurs</p>
+        <h2>Support Compte</h2>
+        <p>Consultez les métadonnées d&apos;un compte spécifique (lecture seule).</p>
       </div>
 
-      <div className="account-controls">
-        <div className="search-box">
+      {/* Recherche par Account ID */}
+      <form className="account-search" onSubmit={handleSearch}>
+        <label htmlFor="account-id-input" className="account-search__label">
+          Account ID (UUID)
+        </label>
+        <div className="account-search__row">
           <input
+            id="account-id-input"
             type="text"
-            placeholder="Rechercher par pseudo ou email..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            className="account-search__input"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            value={accountIdInput}
+            onChange={e => setAccountIdInput(e.target.value)}
+            pattern="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+            aria-describedby="account-id-hint"
           />
+          <button
+            type="submit"
+            className="account-search__submit"
+            disabled={loading || !accountIdInput.trim()}
+          >
+            {loading ? 'Chargement…' : 'Consulter'}
+          </button>
+          {submitted && (
+            <button
+              type="button"
+              className="account-search__reset"
+              onClick={handleReset}
+            >
+              Effacer
+            </button>
+          )}
         </div>
+        <p id="account-id-hint" className="account-search__hint">
+          Saisir l&apos;UUID exact du compte (accès ciblé uniquement, pas de liste globale).
+        </p>
+      </form>
 
-        <Select
-          id="filter-status"
-          value={filter}
-          onChange={e => setFilter(e.target.value as 'all' | AccountStatus)}
-          options={[
-            { value: 'all', label: 'Tous les états' },
-            { value: 'active', label: 'Actifs' },
-            { value: 'suspended', label: 'Suspendus' },
-            { value: 'deletion_scheduled', label: 'Suppression programmée' },
-            { value: 'pending_verification', label: 'En attente' },
-          ]}
-        />
-      </div>
+      {/* Erreur */}
+      {error && submitted && (
+        <div className="account-management__error" role="alert">
+          <p>Compte introuvable ou accès refusé.</p>
+        </div>
+      )}
 
-      <div className="users-list">
-        {filteredUsers.map(user => {
-          const statusDisplay = getStatusDisplay(user.account_status)
-          return (
-            <div key={user.id} className="user-card">
-              <div className="user-info">
-                <div className="user-avatar">
-                  {user.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt={user.pseudo || 'Avatar'}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="avatar-placeholder">
-                      {user.pseudo?.charAt(0)?.toUpperCase() || '?'}
-                    </div>
-                  )}
-                </div>
+      {/* Résultats — métadonnées support */}
+      {info && (
+        <div className="account-info">
+          {/* Statut compte */}
+          <section className="account-info__section">
+            <h3>Compte</h3>
+            <dl className="account-info__list">
+              <dt>ID</dt>
+              <dd className="account-info__mono">{info.account.account_id}</dd>
+              <dt>Statut</dt>
+              <dd>
+                <span className={`status-badge status-badge--${info.account.status}`}>
+                  {info.account.status}
+                </span>
+              </dd>
+              <dt>Fuseau horaire</dt>
+              <dd>{info.account.timezone || '—'}</dd>
+              <dt>Créé le</dt>
+              <dd>{new Date(info.account.created_at).toLocaleDateString('fr-FR')}</dd>
+            </dl>
+          </section>
 
-                <div className="user-details">
-                  <h3 className="user-name">{user.pseudo || 'Sans pseudo'}</h3>
-                  <p className="user-email">{user.email}</p>
-                  <div className="user-meta">
-                    <span className="user-role">{user.roleDisplay}</span>
-                    <span className="user-created">
-                      Inscrit le{' '}
-                      {new Date(user.created_at).toLocaleDateString('fr-FR')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          {/* Appareils */}
+          <section className="account-info__section">
+            <h3>Appareils</h3>
+            <dl className="account-info__list">
+              <dt>Total</dt>
+              <dd>{info.devices.total_devices}</dd>
+              <dt>Actifs</dt>
+              <dd>{info.devices.active_devices}</dd>
+              <dt>Révoqués</dt>
+              <dd>{info.devices.revoked_devices}</dd>
+            </dl>
+          </section>
 
-              <div className="user-status">
-                <div className={`status-badge ${statusDisplay.color}`}>
-                  <span className="status-icon">{statusDisplay.icon}</span>
-                  <span className="status-label">{statusDisplay.label}</span>
-                </div>
-              </div>
+          {/* Profils enfants */}
+          <section className="account-info__section">
+            <h3>Profils enfants</h3>
+            <dl className="account-info__list">
+              <dt>Total</dt>
+              <dd>{info.profiles.total_profiles}</dd>
+              <dt>Actifs</dt>
+              <dd>{info.profiles.active_profiles}</dd>
+              <dt>Verrouillés</dt>
+              <dd>{info.profiles.locked_profiles}</dd>
+            </dl>
+            {info.profiles.profiles && info.profiles.profiles.length > 0 && (
+              <ul className="account-info__profiles">
+                {info.profiles.profiles.map(p => (
+                  <li key={p.profile_id} className="account-info__profile">
+                    <span className="account-info__mono">{p.profile_id.slice(0, 8)}…</span>
+                    <span>{p.name}</span>
+                    <span className={`status-badge status-badge--${p.status}`}>{p.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
 
-              <div className="user-actions">
-                <button
-                  className="action-button"
-                  onClick={() => setSelectedUser(user)}
-                  disabled={actionLoading}
-                >
-                  Gérer
-                </button>
-              </div>
-            </div>
-          )
-        })}
+          {/* Cartes */}
+          <section className="account-info__section">
+            <h3>Cartes personnelles</h3>
+            <dl className="account-info__list">
+              <dt>Total</dt>
+              <dd>{info.cards.personal_cards_count}</dd>
+              <dt>Ce mois-ci</dt>
+              <dd>{info.cards.personal_cards_current_month}</dd>
+            </dl>
+          </section>
 
-        {filteredUsers.length === 0 && (
-          <div className="no-users">
-            <p>Aucun utilisateur trouvé</p>
-          </div>
-        )}
-      </div>
-
-      {/* Modal de gestion */}
-      {selectedUser && (
-        <div className="account-modal">
-          <div className="modal-content">
-            <h3>Gérer le compte de {selectedUser.pseudo}</h3>
-
-            <div className="user-summary">
-              <p>
-                <strong>Email:</strong> {selectedUser.email}
-              </p>
-              <p>
-                <strong>Rôle:</strong> {selectedUser.roleDisplay}
-              </p>
-              <p>
-                <strong>État actuel:</strong>{' '}
-                {getStatusDisplay(selectedUser.account_status).label}
-              </p>
-            </div>
-
-            <div className="status-actions">
-              <h4>Changer l&apos;état du compte</h4>
-
-              <div className="action-buttons">
-                <button
-                  className="status-button success"
-                  onClick={() =>
-                    changeAccountStatus(
-                      selectedUser.id,
-                      'active',
-                      'Réactivation par admin'
-                    )
-                  }
-                  disabled={
-                    actionLoading || selectedUser.account_status === 'active'
-                  }
-                >
-                  ✅ Activer
-                </button>
-
-                <button
-                  className="status-button error"
-                  onClick={() =>
-                    changeAccountStatus(
-                      selectedUser.id,
-                      'suspended',
-                      'Suspension par admin'
-                    )
-                  }
-                  disabled={
-                    actionLoading || selectedUser.account_status === 'suspended'
-                  }
-                >
-                  ⛔ Suspendre
-                </button>
-
-                <button
-                  className="status-button warning"
-                  onClick={() =>
-                    changeAccountStatus(
-                      selectedUser.id,
-                      'deletion_scheduled',
-                      'Suppression programmée par admin'
-                    )
-                  }
-                  disabled={
-                    actionLoading ||
-                    selectedUser.account_status === 'deletion_scheduled'
-                  }
-                >
-                  🗑️ Programmer suppression
-                </button>
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button
-                className="close-button"
-                onClick={() => setSelectedUser(null)}
-                disabled={actionLoading}
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
+          {/* Sessions */}
+          <section className="account-info__section">
+            <h3>Sessions</h3>
+            <dl className="account-info__list">
+              <dt>Total</dt>
+              <dd>{info.sessions.total_sessions}</dd>
+              <dt>Actives</dt>
+              <dd>{info.sessions.active_sessions}</dd>
+              <dt>Terminées</dt>
+              <dd>{info.sessions.completed_sessions}</dd>
+            </dl>
+          </section>
         </div>
       )}
     </div>
