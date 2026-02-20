@@ -6,6 +6,10 @@ export { default as useAuth } from './useAuth'
 export { useOnlineStatus } from './useOnlineStatus'
 // S9 — Quotas + Feature Gating + Downgrade
 export { default as useExecutionOnly } from './useExecutionOnly'
+// S10 — Devices
+export { default as useDevices } from './useDevices'
+export type { Device } from './useDevices'
+export { default as useDeviceRegistration } from './useDeviceRegistration'
 // S3 — Cartes + Catégories (DB-first)
 export { default as useBankCards } from './useBankCards'
 export type { BankCard } from './useBankCards'

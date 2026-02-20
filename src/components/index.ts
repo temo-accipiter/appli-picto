@@ -58,6 +58,8 @@ export { default as UserMenu } from './layout/user-menu/UserMenu'
 export { default as OfflineBanner } from './shared/offline-banner/OfflineBanner'
 // S9 — Mode execution-only (Downgrade)
 export { default as ExecutionOnlyBanner } from './shared/execution-only-banner/ExecutionOnlyBanner'
+// S10 — Devices (Page Profil)
+export { default as DeviceList } from './features/profil/device-list/DeviceList'
 
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'

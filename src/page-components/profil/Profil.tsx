@@ -11,8 +11,10 @@ import {
   ModalConfirm,
 } from '@/components'
 import { ChildProfileSelector } from '@/components/features/child-profile'
+import DeviceList from '@/components/features/profil/device-list/DeviceList'
 import { useToast } from '@/contexts'
 import { useAuth, useI18n, useSubscriptionStatus } from '@/hooks'
+import useDeviceRegistration from '@/hooks/useDeviceRegistration'
 import {
   getDisplayPseudo,
   makeNoDoubleSpaces,
@@ -20,7 +22,7 @@ import {
   normalizeSpaces,
   supabase,
 } from '@/utils'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
@@ -37,6 +39,21 @@ export default function Profil() {
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
   const router = useRouter()
+
+  // ── S10 : Enregistrement device + gestion devices ─────────────────────────
+  // deviceId : UUID de l'appareil actuel (localStorage), transmis à DeviceList
+  //            pour l'identifier visuellement dans la liste.
+  // registrationError : 'quota' si le quota appareils est atteint → toast adulte.
+  const { deviceId, registrationError } = useDeviceRegistration()
+
+  // Toast unique si quota appareils atteint (§6.4 — message contractuel)
+  const quotaToastShown = useRef(false)
+  useEffect(() => {
+    if (registrationError === 'quota' && !quotaToastShown.current) {
+      quotaToastShown.current = true
+      showToast("Nombre maximum d'appareils atteint.", 'warning')
+    }
+  }, [registrationError, showToast])
 
   const [pseudo, setPseudo] = useState('')
   const [dateNaissance, setDateNaissance] = useState('')
@@ -448,7 +465,28 @@ export default function Profil() {
         </div>
       </section>
 
-      {/* CARD 3: Sécurité */}
+      {/* CARD 3 : Mes appareils (S10 — lifecycle devices) ─────────────────────
+           Affiche la liste des appareils du compte avec révocation inline.
+           ⚠️ Adulte uniquement — jamais en Contexte Tableau (§6.2).
+           ⚠️ Message quota contractuel : « Nombre maximum d'appareils atteint. »
+      ── */}
+      <section className="profil-card profil-card--devices">
+        <h2 className="profil-card__title">
+          <span className="profil-card__icon" aria-hidden="true">
+            📱
+          </span>
+          Mes appareils
+        </h2>
+        <div className="profil-card__content">
+          <p className="profil-card__description">
+            Gérez les appareils autorisés à accéder à votre compte. La
+            révocation d'un appareil est immédiate et non réversible.
+          </p>
+          <DeviceList currentDeviceId={deviceId} />
+        </div>
+      </section>
+
+      {/* CARD 4: Sécurité */}
       <section className="profil-card profil-card--security">
         <h2 className="profil-card__title">
           <span className="profil-card__icon">🔒</span>

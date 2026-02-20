@@ -65,8 +65,8 @@
 
     // Cible tactile ≥ 44px (inline-block pour min-height)
     display: inline-block;
-    min-height: size('44');
-    line-height: size('44');
+    min-height: size('touch-target-min');
+    line-height: size('touch-target-min');
 
     &:hover,
     &:focus-visible {
@@ -74,7 +74,7 @@
     }
 
     &:focus-visible {
-      @include focus-visible;
+      @include focus-ring;
     }
   }
 }

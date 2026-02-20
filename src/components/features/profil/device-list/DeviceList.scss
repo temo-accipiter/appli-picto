@@ -1,0 +1,269 @@
+// src/components/features/profil/device-list/DeviceList.scss — S10
+//
+// ⚠️ RÈGLES TOKENS-FIRST (§ SCSS)
+// - ZÉRO valeur hardcodée : TOUJOURS via fonctions tokens
+// - Mobile-first : défaut = mobile, respond-to() pour agrandir
+//
+// ⚠️ RÈGLES TSA
+// - Appareils actifs vs révoqués : distinction visuelle claire mais calme
+// - Cibles tactiles ≥ 44px (boutons Révoquer / Annuler)
+// - Confirmation inline : pas de modale (anti-surprise TSA)
+// - Transitions douces ≤ 0.3s
+
+@use '@/styles/abstracts' as *;
+
+.device-list {
+  // ── Layout global ───────────────────────────────────────────────────────
+  display: flex;
+  flex-direction: column;
+  gap: spacing('3');
+
+  // ── État chargement ──────────────────────────────────────────────────────
+  &--loading {
+    display: flex;
+    justify-content: center;
+    padding: spacing('4');
+  }
+
+  // ── Dots de chargement (même pattern que SlotsEditor) ──────────────────
+  &__dots {
+    display: flex;
+    gap: spacing('1');
+    align-items: center;
+  }
+
+  &__dot {
+    width: size('2');
+    height: size('2');
+    border-radius: radius('full');
+    background: color('base');
+    animation: device-pulse 1.2s ease-in-out infinite;
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+  }
+
+  @keyframes device-pulse {
+    0%,
+    100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  // ── Messages état ────────────────────────────────────────────────────────
+  &__error {
+    color: semantic('error', 'base');
+    font-size: font-size('sm');
+    background: semantic('error', 'light');
+    border-left: border-width('thick') solid semantic('error', 'base');
+    border-radius: radius('sm');
+    padding: spacing('2') spacing('3');
+  }
+
+  &__empty {
+    color: text('secondary');
+    font-size: font-size('sm');
+    font-style: italic;
+    text-align: center;
+    padding: spacing('3');
+  }
+
+  // ── Sections (actifs / révoqués) ─────────────────────────────────────────
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('2');
+
+    &--revoked {
+      opacity: 0.7;
+    }
+  }
+
+  &__section-title {
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    color: text('secondary');
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  &__count {
+    font-weight: font-weight('normal');
+    color: text('muted');
+  }
+
+  // ── Liste d'appareils ────────────────────────────────────────────────────
+  &__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: spacing('2');
+  }
+
+  // ── Item appareil ────────────────────────────────────────────────────────
+  &__item {
+    background: surface('card');
+    border-radius: radius('md');
+    border: border-width('thin') solid surface('border');
+    padding: spacing('3');
+    display: flex;
+    flex-direction: column;
+    gap: spacing('2');
+    @include safe-transition(opacity border-color);
+
+    // Révoqué : visuellement atténué
+    &--revoked {
+      opacity: 0.6;
+      border-style: dashed;
+    }
+
+    // Tablette et + : layout horizontal
+    @include respond-to('sm') {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  // ── Informations de l'appareil ───────────────────────────────────────────
+  &__item-info {
+    display: flex;
+    align-items: center;
+    gap: spacing('2');
+    flex: 1;
+  }
+
+  &__item-icon {
+    flex-shrink: 0;
+    font-size: font-size('xl');
+    line-height: line-height('none');
+  }
+
+  &__item-details {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('1');
+    flex: 1;
+  }
+
+  &__item-date {
+    font-size: font-size('sm');
+    color: text('primary');
+    font-weight: font-weight('normal');
+  }
+
+  &__item-current {
+    font-size: font-size('xs');
+    color: semantic('success', 'base');
+    font-weight: font-weight('semibold');
+    background: semantic('success', 'light');
+    padding: 0 spacing('2');
+    border-radius: radius('full');
+    width: fit-content;
+  }
+
+  &__item-revoked-at {
+    font-size: font-size('xs');
+    color: text('muted');
+  }
+
+  // ── Badge statut ─────────────────────────────────────────────────────────
+  &__item-status {
+    font-size: font-size('xs');
+    font-weight: font-weight('semibold');
+    padding: 0 spacing('2');
+    border-radius: radius('full');
+    flex-shrink: 0;
+
+    &--active {
+      background: semantic('success', 'light');
+      color: semantic('success', 'base');
+    }
+
+    &--revoked {
+      background: surface('overlay');
+      color: text('muted');
+    }
+  }
+
+  // ── Actions (boutons Révoquer / Annuler) ──────────────────────────────────
+  &__item-actions {
+    display: flex;
+    gap: spacing('2');
+    flex-shrink: 0;
+    flex-wrap: wrap;
+
+    @include respond-to('sm') {
+      flex-wrap: nowrap;
+    }
+  }
+
+  // ── Bouton Révoquer ───────────────────────────────────────────────────────
+  &__revoke-btn {
+    // Cible tactile ≥ 44px (WCAG AA + TSA)
+    min-height: size('touch-target-min');
+    padding: spacing('2') spacing('3');
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    border-radius: radius('md');
+    border: border-width('thin') solid semantic('warning', 'base');
+    background: transparent;
+    color: semantic('warning', 'base');
+    cursor: pointer;
+    @include safe-transition(background color border-color);
+
+    &:hover:not(:disabled) {
+      background: semantic('warning', 'light');
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    // État confirmation : fond warning pour signaler l'action destructrice
+    &--confirm {
+      background: semantic('warning', 'light');
+      border-color: semantic('warning', 'base');
+      color: text('primary');
+    }
+  }
+
+  // ── Bouton Annuler ───────────────────────────────────────────────────────
+  &__cancel-btn {
+    // Cible tactile ≥ 44px
+    min-height: size('touch-target-min');
+    padding: spacing('2') spacing('3');
+    font-size: font-size('sm');
+    font-weight: font-weight('normal');
+    border-radius: radius('md');
+    border: border-width('thin') solid surface('border');
+    background: surface('page');
+    color: text('secondary');
+    cursor: pointer;
+    @include safe-transition(background color);
+
+    &:hover {
+      background: surface('hover');
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}
