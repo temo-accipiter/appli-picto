@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Modal, InputWithValidation } from '@/components'
 import { useToast } from '@/contexts'
 import { useAuth, useI18n } from '@/hooks'
@@ -25,6 +26,7 @@ export default function DeleteAccountModal({
   const { t, language } = useI18n()
   const { user } = useAuth()
   const { show } = useToast()
+  const router = useRouter()
 
   // Créer la fonction de validation i18n avec useMemo
   const validatePasswordNotEmpty = useMemo(
@@ -124,7 +126,35 @@ export default function DeleteAccountModal({
       }
 
       // Étape B — suppression (token distinct, même widget rechargé)
-      await onConfirm(tokenDelete || '')
+      const { data, error: deleteError } = await supabase.functions.invoke(
+        'delete-account',
+        {
+          body: { turnstile_token: tokenDelete || '' },
+        }
+      )
+
+      if (deleteError) {
+        console.error('Erreur Edge Function delete-account:', deleteError)
+        show(t('profil.deleteModalErrorDelete'), 'error')
+        return
+      }
+
+      // Succès : toast + logout + redirect
+      show(t('profil.deleteModalSuccess'), 'success')
+
+      // Déconnexion
+      await supabase.auth.signOut()
+
+      // Redirection vers page d'accueil
+      router.push('/')
+
+      // Appeler onConfirm si fourni (callback optionnel)
+      if (typeof onConfirm === 'function') {
+        await onConfirm(tokenDelete || '')
+      }
+    } catch (error) {
+      console.error('Erreur suppression compte:', error)
+      show(t('profil.deleteModalErrorUnexpected'), 'error')
     } finally {
       setBusy(false)
     }

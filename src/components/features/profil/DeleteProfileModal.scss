@@ -1,0 +1,45 @@
+// src/components/features/profil/DeleteProfileModal.scss
+// Styles modal suppression profil enfant (TSA-friendly)
+@use '@styles/abstracts' as *;
+
+.delete-profile-guard {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('4');
+
+  &__intro {
+    font-size: font-size('base');
+    line-height: line-height('relaxed');
+    color: text('primary');
+
+    strong {
+      color: semantic('error');
+      font-weight: font-weight('semibold');
+    }
+  }
+
+  &__warning {
+    background: surface('warning-subtle');
+    padding: spacing('3');
+    border-radius: radius('md');
+    border-left: border-width('thick') solid semantic('warning');
+
+    p {
+      font-weight: font-weight('semibold');
+      margin-bottom: spacing('2');
+      color: semantic('warning');
+      font-size: font-size('base');
+    }
+
+    ul {
+      list-style: disc;
+      padding-left: spacing('5');
+      color: text('secondary');
+
+      li {
+        margin-bottom: spacing('1');
+        font-size: font-size('sm');
+      }
+    }
+  }
+}

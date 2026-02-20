@@ -35,6 +35,9 @@ export { default as CookiePreferences } from './features/consent/CookiePreferenc
 export { default as DeleteAccountGuard } from './features/settings/DeleteAccountGuard'
 export { default as DeleteAccountModal } from './features/settings/DeleteAccountModal'
 
+// Profil (S11 — Plateforme)
+export { default as DeleteProfileModal } from './features/profil/DeleteProfileModal'
+
 // Subscription
 export { default as SubscribeButton } from './features/subscription/subscribe-button/SubscribeButton'
 

@@ -69,6 +69,8 @@ export default function CookieBanner() {
     ua: navigator.userAgent,
     locale: navigator.language || 'fr',
     app_version: '1.0.0',
+    origin: typeof window !== 'undefined' ? window.location.hostname : null,
+    ts_client: new Date().toISOString(),
   })
 
   const acceptAll = async () => {
@@ -78,7 +80,11 @@ export default function CookieBanner() {
       baseExtra()
     )
     setVisible(false)
-    await tryLogServerConsent({ ...payload, action: 'accept_all' })
+    await tryLogServerConsent({
+      ...payload,
+      mode: 'accept_all',
+      action: 'first_load',
+    })
   }
 
   const refuseAll = async () => {
@@ -88,7 +94,11 @@ export default function CookieBanner() {
       baseExtra()
     )
     setVisible(false)
-    await tryLogServerConsent({ ...payload, action: 'refuse_all' })
+    await tryLogServerConsent({
+      ...payload,
+      mode: 'refuse_all',
+      action: 'first_load',
+    })
   }
 
   const openPreferences = () => {

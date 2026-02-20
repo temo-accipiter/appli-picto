@@ -2,7 +2,7 @@
 
 import { Checkbox, Dropdown } from '@/components'
 import { useDisplay, useToast } from '@/contexts'
-import { useI18n, useParametres } from '@/hooks'
+import { useI18n, useAccountPreferences } from '@/hooks'
 import { Settings } from 'lucide-react'
 import { useRef, useState } from 'react'
 
@@ -14,7 +14,7 @@ export default function SettingsMenu() {
   const [open, setOpen] = useState(false)
   const btnRef = useRef<HTMLButtonElement>(null)
 
-  const { parametres, updateParametres } = useParametres()
+  const { preferences, updatePreferences } = useAccountPreferences()
   const {
     showTrain,
     setShowTrain,
@@ -50,12 +50,14 @@ export default function SettingsMenu() {
       </header>
 
       <div className="settings-menu__content">
-        {parametres && (
+        {preferences && (
           <Checkbox
             id="settings-confettis"
             label={t('edition.confetti')}
-            checked={!!parametres.confettis}
-            onChange={e => updateParametres({ confettis: e.target.checked })}
+            checked={!!preferences.confetti_enabled}
+            onChange={e =>
+              updatePreferences({ confetti_enabled: e.target.checked })
+            }
           />
         )}
 
@@ -80,13 +82,13 @@ export default function SettingsMenu() {
           onChange={e => setShowTimeTimer(e.target.checked)}
         />
 
-        {parametres && (
+        {preferences && (
           <Checkbox
             id="settings-toasts"
             label={t('edition.notifications')}
-            checked={parametres.toasts_enabled ?? true}
+            checked={preferences.toasts_enabled ?? true}
             onChange={async e => {
-              const result = await updateParametres({
+              const result = await updatePreferences({
                 toasts_enabled: e.target.checked,
               })
               if (!result.ok) {
@@ -95,6 +97,18 @@ export default function SettingsMenu() {
             }}
           />
         )}
+
+        <div className="settings-menu__divider" />
+
+        <button
+          className="settings-menu__link"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('cookie-preferences:open'))
+            setOpen(false)
+          }}
+        >
+          🍪 {t('settings.cookiePreferences')}
+        </button>
       </div>
     </>
   )

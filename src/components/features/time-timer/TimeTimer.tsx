@@ -2,12 +2,14 @@
 
 // src/components/features/time-timer/TimeTimer.tsx
 import { useCallback, useEffect, useReducer, useRef } from 'react'
+import Link from 'next/link'
 import {
   useI18n,
   useTimerPreferences,
   useTimerSvgPath,
   useAudioContext,
   getNumberPosition,
+  useRBAC,
 } from '@/hooks'
 import type { DiskColor } from '@/hooks/useTimerPreferences'
 import { Modal } from '@/components'
@@ -142,6 +144,21 @@ export default function TimeTimer({
 }: TimeTimerProps) {
   const { t } = useI18n()
   const { playSound } = useAudioContext()
+  const { isVisitor } = useRBAC()
+
+  // Guard Visitor : TimeTimer désactivé pour visiteurs (contrat §8.9.3)
+  if (isVisitor) {
+    return (
+      <div className="time-timer__visitor-guard">
+        <p className="time-timer__visitor-message">
+          {t('timeTimer.visitorBlocked')}
+        </p>
+        <Link href="/login" className="time-timer__visitor-link">
+          {t('auth.login')}
+        </Link>
+      </div>
+    )
+  }
 
   // Hook préférences (localStorage centralisé)
   const {

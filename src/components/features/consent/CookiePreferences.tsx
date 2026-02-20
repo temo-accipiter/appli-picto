@@ -82,6 +82,8 @@ export default function CookiePreferences() {
     ua: navigator.userAgent,
     locale: navigator.language || 'fr',
     app_version: '1.0.0',
+    origin: typeof window !== 'undefined' ? window.location.hostname : null,
+    ts_client: new Date().toISOString(),
   })
 
   const close = () => {
@@ -100,7 +102,11 @@ export default function CookiePreferences() {
       'accept_all',
       baseExtra()
     )
-    await tryLogServerConsent({ ...payload, action: 'accept_all' })
+    await tryLogServerConsent({
+      ...payload,
+      mode: 'accept_all',
+      action: 'update',
+    })
     close()
   }
 
@@ -110,13 +116,21 @@ export default function CookiePreferences() {
       'refuse_all',
       baseExtra()
     )
-    await tryLogServerConsent({ ...payload, action: 'refuse_all' })
+    await tryLogServerConsent({
+      ...payload,
+      mode: 'refuse_all',
+      action: 'update',
+    })
     close()
   }
 
   const save = async () => {
     const payload = saveConsent(choices, 'custom', baseExtra())
-    await tryLogServerConsent({ ...payload, action: 'custom' })
+    await tryLogServerConsent({
+      ...payload,
+      mode: 'custom',
+      action: 'update',
+    })
     close()
   }
 

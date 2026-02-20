@@ -4,7 +4,12 @@ import Image from 'next/image'
 import { SelectWithImage } from '@/components/ui/select-with-image'
 import type { SelectWithImageOption } from '@/components/ui/select-with-image'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
-import { useI18n, useStations } from '@/hooks'
+import {
+  useI18n,
+  useStations,
+  useAccountPreferences,
+  useReducedMotion,
+} from '@/hooks'
 import { useEffect, useState } from 'react'
 import './TrainProgressBar.scss'
 
@@ -28,7 +33,10 @@ export default function TrainProgressBar({
   onLineChange,
 }: TrainProgressBarProps) {
   const { t } = useI18n()
-  const [ligne, setLigne] = useState(() => localStorage.getItem('ligne') || '1')
+  const { preferences, updatePreferences } = useAccountPreferences()
+  const prefersReducedMotion = useReducedMotion()
+
+  const [ligne, setLigne] = useState(preferences?.train_line || '1')
   const couleur =
     COULEURS_LIGNES[ligne as unknown as keyof typeof COULEURS_LIGNES] || '#999'
   const stationCount = Number(total) + 1
@@ -41,6 +49,13 @@ export default function TrainProgressBar({
   useEffect(() => {
     document.documentElement.style.setProperty('--couleur-ligne', couleur)
   }, [couleur])
+
+  // Synchroniser ligne avec preferences quand preferences change
+  useEffect(() => {
+    if (preferences?.train_line) {
+      setLigne(preferences.train_line)
+    }
+  }, [preferences?.train_line])
 
   useEffect(() => {
     if (!loading && ligneStations.length > 0) {
@@ -95,7 +110,10 @@ export default function TrainProgressBar({
         ))}
 
         {/* Train en mouvement */}
-        <div className="train" style={trainStyle}>
+        <div
+          className={`train ${prefersReducedMotion ? 'train--no-motion' : ''}`}
+          style={trainStyle}
+        >
           <Image
             src="/images/train.png"
             alt="Métro"
@@ -137,7 +155,7 @@ export default function TrainProgressBar({
 
             // Mode normal : changer la ligne
             setLigne(nouvelleLigne)
-            localStorage.setItem('ligne', nouvelleLigne)
+            updatePreferences({ train_line: nouvelleLigne })
           }}
           options={
             [

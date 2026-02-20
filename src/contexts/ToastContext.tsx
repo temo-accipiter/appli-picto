@@ -16,7 +16,7 @@ import {
   type ReactNode,
 } from 'react'
 import Toast from '@/components/ui/toast/Toast'
-import { useParametres } from '@/hooks'
+import { useAccountPreferences } from '@/hooks'
 
 type ToastType = 'info' | 'success' | 'warning' | 'error'
 
@@ -52,7 +52,7 @@ export function ToastProvider({
   children,
   defaultDuration = 2000,
 }: ToastProviderProps) {
-  const { parametres } = useParametres()
+  const { preferences } = useAccountPreferences()
   const [toast, setToast] = useState<ToastState>({
     visible: false,
     message: '',
@@ -82,8 +82,8 @@ export function ToastProvider({
       type: ToastType = 'info',
       options: { duration?: number } = {}
     ) => {
-      // Vérifier si les toasts sont activés (par défaut: true si parametres est null/undefined)
-      const toastsEnabled = parametres?.toasts_enabled ?? true
+      // Vérifier si les toasts sont activés (par défaut: true si preferences est null/undefined)
+      const toastsEnabled = preferences?.toasts_enabled ?? true
 
       // Ne rien faire si les toasts sont désactivés, sauf pour les erreurs critiques
       if (!toastsEnabled && type !== 'error') {
@@ -98,7 +98,7 @@ export function ToastProvider({
         timerRef.current = null
       }, duration)
     },
-    [defaultDuration, clearTimer, parametres?.toasts_enabled]
+    [defaultDuration, clearTimer, preferences?.toasts_enabled]
   )
 
   return (
