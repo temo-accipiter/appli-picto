@@ -37,8 +37,13 @@ export default function Navbar() {
   const isVisitorMode = !user && (isVisitor || !authReady)
 
   return (
-    <nav className="navbar">
-      <div className="navbar-left">
+    <header className="navbar-header">
+      {/* Lien d'évitement : permet à la navigation clavier/lecteur d'écran de sauter au contenu */}
+      <a href="#main-content" className="skip-link">
+        {t('nav.skipToContent')}
+      </a>
+      <nav className="navbar" aria-label={t('nav.main')}>
+        <div className="navbar-left">
         {(isTableau || isProfil) && !isVisitor && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -162,5 +167,6 @@ export default function Navbar() {
         context="visitor"
       />
     </nav>
+    </header>
   )
 }

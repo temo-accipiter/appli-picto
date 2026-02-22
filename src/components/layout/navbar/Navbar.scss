@@ -23,6 +23,43 @@
 //    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
 // ============================================================================
 
+// ============================================================================
+// SKIP LINK — WCAG 2.4.1 (Contourner des blocs)
+// Visible uniquement au focus clavier, invisible par défaut
+// ============================================================================
+
+.navbar-header {
+  // Le header est juste un conteneur sémantique — pas de style propre
+  display: contents;
+}
+
+.skip-link {
+  // Positionné hors écran par défaut (invisible mais accessible aux lecteurs d'écran)
+  position: absolute;
+  top: spacing('sm');
+  left: spacing('sm');
+  z-index: z-index('modal') + 1;
+  transform: translateY(calc(-100% - #{spacing('md')}));
+
+  // Style visible au focus
+  &:focus-visible {
+    transform: translateY(0);
+    background: surface('bg');
+    color: text();
+    padding: spacing('sm') spacing('md');
+    border-radius: radius('md');
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    text-decoration: none;
+    box-shadow: shadow('elevation-md');
+    outline: a11y('focus-ring-width') solid color('base');
+    outline-offset: a11y('focus-ring-offset');
+    border: border-width('thin') solid color('base');
+  }
+}
+
+// ============================================================================
+
 .navbar {
   position: fixed;
   top: 0;

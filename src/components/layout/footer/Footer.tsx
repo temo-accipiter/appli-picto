@@ -20,7 +20,6 @@ export default function Footer() {
     <footer
       className="app-footer"
       role="contentinfo"
-      aria-label={t('legal.mentions')}
     >
       <nav className="app-footer__nav" aria-label={t('legal.mentions')}>
         <ul className="app-footer__list">
