@@ -45,7 +45,8 @@ export default function ExecutionOnlyBanner() {
         🔒
       </span>
       <span className="execution-only-banner__message">
-        Mode exécution uniquement — les modifications de structure sont désactivées.{' '}
+        Mode exécution uniquement — les modifications de structure sont
+        désactivées.{' '}
         <Link
           href="/profil#abonnement"
           className="execution-only-banner__link"

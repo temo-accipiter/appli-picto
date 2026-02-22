@@ -17,10 +17,7 @@ export default function Footer() {
   }
 
   return (
-    <footer
-      className="app-footer"
-      role="contentinfo"
-    >
+    <footer className="app-footer" role="contentinfo">
       <nav className="app-footer__nav" aria-label={t('legal.mentions')}>
         <ul className="app-footer__list">
           <li>

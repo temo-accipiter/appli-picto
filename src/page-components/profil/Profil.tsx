@@ -480,7 +480,7 @@ export default function Profil() {
         <div className="profil-card__content">
           <p className="profil-card__description">
             Gérez les appareils autorisés à accéder à votre compte. La
-            révocation d'un appareil est immédiate et non réversible.
+            révocation d&apos;un appareil est immédiate et non réversible.
           </p>
           <DeviceList currentDeviceId={deviceId} />
         </div>

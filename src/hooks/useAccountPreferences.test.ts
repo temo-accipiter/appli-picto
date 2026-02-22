@@ -43,6 +43,7 @@ vi.mock('@/hooks', async () => {
 
 describe('useAccountPreferences', () => {
   // Import dynamique du hook (après les mocks)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let useAccountPreferences: any
   beforeAll(async () => {
     useAccountPreferences = (await import('./useAccountPreferences')).default
@@ -53,11 +54,16 @@ describe('useAccountPreferences', () => {
     mockIsAbortLike.mockReturnValue(false)
 
     // Mock withAbortSafe qui prend une promesse et retourne {data, error, aborted}
-    mockWithAbortSafe.mockImplementation(async (promise: any) => {
+    mockWithAbortSafe.mockImplementation(async (promise: Promise<unknown>) => {
       try {
         const result = await promise
         // Si c'est une réponse Supabase {data, error}
-        if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
+        if (
+          result &&
+          typeof result === 'object' &&
+          'data' in result &&
+          'error' in result
+        ) {
           return {
             data: result.data,
             error: result.error,
@@ -119,7 +125,7 @@ describe('useAccountPreferences', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it('doit gérer le cas où les préférences n\'existent pas encore', async () => {
+  it("doit gérer le cas où les préférences n'existent pas encore", async () => {
     mockSupabase.from.mockReturnValue({
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({

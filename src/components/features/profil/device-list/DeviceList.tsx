@@ -77,9 +77,7 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
 
   // ── Liste vide ─────────────────────────────────────────────────────────────
   if (devices.length === 0) {
-    return (
-      <p className="device-list__empty">Aucun appareil enregistré.</p>
-    )
+    return <p className="device-list__empty">Aucun appareil enregistré.</p>
   }
 
   const activeDevices = devices.filter(d => d.revoked_at === null)
@@ -142,9 +140,7 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
               Enregistré le {formatDate(device.created_at)}
             </span>
             {isCurrent && (
-              <span className="device-list__item-current">
-                Appareil actuel
-              </span>
+              <span className="device-list__item-current">Appareil actuel</span>
             )}
             {!isActive && device.revoked_at && (
               <span className="device-list__item-revoked-at">

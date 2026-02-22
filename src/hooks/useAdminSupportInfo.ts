@@ -87,11 +87,14 @@ export default function useAdminSupportInfo(): UseAdminSupportInfoReturn {
       setLoading(true)
       setError(null)
 
-      const { data, error: fetchError, aborted } = await withAbortSafe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const {
+        data,
+        error: fetchError,
+        aborted,
+      } = await withAbortSafe(
         supabase.rpc('admin_get_account_support_info', {
           target_account_id: accountId,
-        }) as any
+        }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       )
 
       if (aborted || (fetchError && isAbortLike(fetchError))) {

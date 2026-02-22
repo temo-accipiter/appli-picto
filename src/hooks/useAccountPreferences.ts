@@ -60,7 +60,11 @@ export default function useAccountPreferences(): UseAccountPreferencesReturn {
     setLoading(true)
     setError(null)
 
-    const { data, error: fetchError, aborted } = await withAbortSafe(
+    const {
+      data,
+      error: fetchError,
+      aborted,
+    } = await withAbortSafe(
       supabase
         .from('account_preferences')
         .select('*')

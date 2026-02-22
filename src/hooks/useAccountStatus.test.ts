@@ -106,7 +106,10 @@ describe('useAccountStatus', () => {
 
     it('doit fallback à "free" en cas d\'erreur réseau (sécurité UX)', async () => {
       mockSupabase.from.mockReturnValue(
-        mockChain({ data: null, error: { message: 'Network error', code: 'PGRST301' } })
+        mockChain({
+          data: null,
+          error: { message: 'Network error', code: 'PGRST301' },
+        })
       )
 
       const { result } = renderHook(() => useAccountStatus())
@@ -130,8 +133,9 @@ describe('useAccountStatus', () => {
       )
 
       // Import frais avec le nouveau mock
-      const { default: hook } = await import('./useAccountStatus?visitor')
-        .catch(() => import('./useAccountStatus'))
+      const { default: hook } = await import(
+        './useAccountStatus?visitor'
+      ).catch(() => import('./useAccountStatus'))
 
       const { result } = renderHook(() => hook())
 

@@ -58,7 +58,10 @@ export default function Logs() {
 
         if (error) {
           console.error('Erreur chargement logs:', error)
-          showToast(`Erreur lors du chargement des logs: ${error.message}`, 'error')
+          showToast(
+            `Erreur lors du chargement des logs: ${error.message}`,
+            'error'
+          )
           return
         }
 
@@ -70,7 +73,9 @@ export default function Logs() {
         }
 
         setTotalCount(count || 0)
-        setHasMore(((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE)
+        setHasMore(
+          ((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE
+        )
       } catch (error) {
         console.error('Erreur chargement logs:', error)
         showToast('Erreur lors du chargement des logs', 'error')
@@ -149,12 +154,16 @@ export default function Logs() {
           <Button
             onClick={() => handleFilterChange('event:webhook')}
             label="Webhooks"
-            variant={filter.startsWith('event:webhook') ? 'primary' : 'secondary'}
+            variant={
+              filter.startsWith('event:webhook') ? 'primary' : 'secondary'
+            }
           />
           <Button
             onClick={() => handleFilterChange('event:checkout')}
             label="Checkout"
-            variant={filter.startsWith('event:checkout') ? 'primary' : 'secondary'}
+            variant={
+              filter.startsWith('event:checkout') ? 'primary' : 'secondary'
+            }
           />
         </div>
 

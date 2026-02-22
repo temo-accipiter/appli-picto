@@ -12,7 +12,7 @@
  */
 import { useAccountStatus } from '@/hooks'
 import { useAdminSupportInfo } from '@/hooks'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import './AccountManagement.scss'
 
 interface AccountManagementProps {
@@ -23,7 +23,13 @@ export default function AccountManagement({
   className = '',
 }: AccountManagementProps) {
   const { isAdmin } = useAccountStatus()
-  const { info, loading, error, fetch: fetchInfo, reset } = useAdminSupportInfo()
+  const {
+    info,
+    loading,
+    error,
+    fetch: fetchInfo,
+    reset,
+  } = useAdminSupportInfo()
   const [accountIdInput, setAccountIdInput] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -31,7 +37,7 @@ export default function AccountManagement({
     return null
   }
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = async (e: FormEvent) => {
     e.preventDefault()
     const trimmed = accountIdInput.trim()
     if (!trimmed) return
@@ -50,7 +56,9 @@ export default function AccountManagement({
     <div className={`account-management ${className}`}>
       <div className="account-header">
         <h2>Support Compte</h2>
-        <p>Consultez les métadonnées d&apos;un compte spécifique (lecture seule).</p>
+        <p>
+          Consultez les métadonnées d&apos;un compte spécifique (lecture seule).
+        </p>
       </div>
 
       {/* Recherche par Account ID */}
@@ -87,7 +95,8 @@ export default function AccountManagement({
           )}
         </div>
         <p id="account-id-hint" className="account-search__hint">
-          Saisir l&apos;UUID exact du compte (accès ciblé uniquement, pas de liste globale).
+          Saisir l&apos;UUID exact du compte (accès ciblé uniquement, pas de
+          liste globale).
         </p>
       </form>
 
@@ -109,14 +118,18 @@ export default function AccountManagement({
               <dd className="account-info__mono">{info.account.account_id}</dd>
               <dt>Statut</dt>
               <dd>
-                <span className={`status-badge status-badge--${info.account.status}`}>
+                <span
+                  className={`status-badge status-badge--${info.account.status}`}
+                >
                   {info.account.status}
                 </span>
               </dd>
               <dt>Fuseau horaire</dt>
               <dd>{info.account.timezone || '—'}</dd>
               <dt>Créé le</dt>
-              <dd>{new Date(info.account.created_at).toLocaleDateString('fr-FR')}</dd>
+              <dd>
+                {new Date(info.account.created_at).toLocaleDateString('fr-FR')}
+              </dd>
             </dl>
           </section>
 
@@ -148,9 +161,13 @@ export default function AccountManagement({
               <ul className="account-info__profiles">
                 {info.profiles.profiles.map(p => (
                   <li key={p.profile_id} className="account-info__profile">
-                    <span className="account-info__mono">{p.profile_id.slice(0, 8)}…</span>
+                    <span className="account-info__mono">
+                      {p.profile_id.slice(0, 8)}…
+                    </span>
                     <span>{p.name}</span>
-                    <span className={`status-badge status-badge--${p.status}`}>{p.status}</span>
+                    <span className={`status-badge status-badge--${p.status}`}>
+                      {p.status}
+                    </span>
                   </li>
                 ))}
               </ul>

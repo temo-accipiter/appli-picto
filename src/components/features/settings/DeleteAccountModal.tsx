@@ -126,12 +126,10 @@ export default function DeleteAccountModal({
       }
 
       // Étape B — suppression (token distinct, même widget rechargé)
-      const { data, error: deleteError } = await supabase.functions.invoke(
-        'delete-account',
-        {
+      const { data: _data, error: deleteError } =
+        await supabase.functions.invoke('delete-account', {
           body: { turnstile_token: tokenDelete || '' },
-        }
-      )
+        })
 
       if (deleteError) {
         console.error('Erreur Edge Function delete-account:', deleteError)

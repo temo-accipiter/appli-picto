@@ -146,21 +146,8 @@ export default function TimeTimer({
   const { playSound } = useAudioContext()
   const { isVisitor } = useRBAC()
 
-  // Guard Visitor : TimeTimer désactivé pour visiteurs (contrat §8.9.3)
-  if (isVisitor) {
-    return (
-      <div className="time-timer__visitor-guard">
-        <p className="time-timer__visitor-message">
-          {t('timeTimer.visitorBlocked')}
-        </p>
-        <Link href="/login" className="time-timer__visitor-link">
-          {t('auth.login')}
-        </Link>
-      </div>
-    )
-  }
-
   // Hook préférences (localStorage centralisé)
+  // ⚠️ IMPORTANT : Tous les hooks DOIVENT être appelés AVANT tout return conditionnel
   const {
     preferences,
     updateSilentMode,
@@ -307,6 +294,21 @@ export default function TimeTimer({
   const containerClass = compact
     ? 'time-timer time-timer--compact'
     : 'time-timer time-timer--full'
+
+  // Guard Visitor : TimeTimer désactivé pour visiteurs (contrat §8.9.3)
+  // ⚠️ IMPORTANT : Guard APRÈS tous les hooks (règle React)
+  if (isVisitor) {
+    return (
+      <div className="time-timer__visitor-guard">
+        <p className="time-timer__visitor-message">
+          {t('timeTimer.visitorBlocked')}
+        </p>
+        <Link href="/login" className="time-timer__visitor-link">
+          {t('auth.login')}
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <div className={containerClass}>
