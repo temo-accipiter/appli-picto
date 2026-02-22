@@ -234,8 +234,11 @@ describe('useCategories', () => {
         })
         .mockReturnValueOnce({
           insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockResolvedValue({
-              error: { message: 'Duplicate key error', code: '23505' },
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue({
+                data: null,
+                error: { message: 'Duplicate key error', code: '23505' },
+              }),
             }),
           }),
         })
@@ -248,16 +251,13 @@ describe('useCategories', () => {
       })
 
       const response = await act(async () => {
-        return await result.current.addCategory({
-          label: 'Duplicate',
-          value: 'duplicate',
-        })
+        return await result.current.addCategory('Duplicate')
       })
 
       // Assert
       expect(response.error).toBeTruthy()
       expect(mockToast.show).toHaveBeenCalledWith(
-        'toasts.categoryAddError',
+        'Impossible de créer la catégorie',
         'error'
       )
     })

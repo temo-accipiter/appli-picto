@@ -27,11 +27,16 @@ const mockSupabase = vi.hoisted(() => ({
   },
 }))
 
-// Mock useParametres pour éviter les appels Supabase
+// Mock hooks pour éviter les appels Supabase
 vi.mock('@/hooks', () => ({
   useParametres: vi.fn(() => ({
     parametres: { toasts_enabled: true },
     loading: false,
+  })),
+  useAccountPreferences: vi.fn(() => ({
+    preferences: { toasts_enabled: true },
+    loading: false,
+    error: null,
   })),
 }))
 

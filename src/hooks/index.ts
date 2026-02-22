@@ -36,7 +36,6 @@ export { default as useCategories } from './useCategories'
 export { default as useIsVisitor } from './useIsVisitor'
 export { useCategoryValidation } from './useCategoryValidation'
 export { default as useDebounce } from './useDebounce'
-export { default as useDemoCards } from './useDemoCards'
 export { useDragAnimation } from './useDragAnimation'
 export { useEscapeKey } from './useEscapeKey'
 export { useFocusTrap } from './useFocusTrap'
@@ -54,17 +53,20 @@ export { useDbPseudo } from './useDbPseudo'
 //
 // export { useMetrics } from './useMetrics'
 // export { default as useFallbackData } from './useFallbackData'
-// export { default as useRecompenses } from './useRecompenses'
+export { default as useRecompenses } from './useRecompenses'
 // export { default as useTaches } from './useTaches'
 // export { default as useTachesDnd } from './useTachesDnd'
-// export { default as useTachesEdition } from './useTachesEdition'
+export { default as useTachesEdition } from './useTachesEdition'
 
 export { useI18n } from './useI18n'
 // S11 — Plateforme (account_preferences)
 export { default as useAccountPreferences } from './useAccountPreferences'
 // S12 — Administration (support info via admin_get_account_support_info)
 export { default as useAdminSupportInfo } from './useAdminSupportInfo'
-export type { AdminSupportAccountInfo, AdminSupportChildProfile } from './useAdminSupportInfo'
+export type {
+  AdminSupportAccountInfo,
+  AdminSupportChildProfile,
+} from './useAdminSupportInfo'
 export { default as useParametres } from './useParametres' // ⚠️ LEGACY — Remplacé par useAccountPreferences (S11)
 export { default as useRBAC } from './useRBAC' // ⚠️ Quota logic deferred to S2+
 export { default as useStations } from './useStations'
