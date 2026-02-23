@@ -6,7 +6,6 @@ import {
   Button,
   DeleteAccountModal,
   FloatingPencil,
-  Input,
   InputWithValidation,
   ModalConfirm,
 } from '@/components'
@@ -56,15 +55,12 @@ export default function Profil() {
   }, [registrationError, showToast])
 
   const [pseudo, setPseudo] = useState('')
-  const [dateNaissance, setDateNaissance] = useState('')
-  const [ville, setVille] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
   const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
   const [captchaTokenReset, setCaptchaTokenReset] = useState<string | null>(
     null
   )
   const [captchaKey, setCaptchaKey] = useState(0)
-  const [_isAdmin, setIsAdmin] = useState(false)
   const [tempAvatarPath, setTempAvatarPath] = useState<string | null>(null)
   const [avatarKey, setAvatarKey] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
@@ -78,43 +74,8 @@ export default function Profil() {
 
   useEffect(() => {
     if (!user) return
-
-    const checkAndInsertProfile = async () => {
-      const { data, error, status } = await supabase
-        .from('profiles')
-        .select('pseudo, date_naissance, ville, is_admin')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      if (error?.code === 'PGRST116' || status === 406 || !data) {
-        const pseudoSignup =
-          user.user_metadata?.pseudo ||
-          user.user_metadata?.full_name ||
-          user.user_metadata?.name ||
-          user.email?.split('@')[0] ||
-          'Utilisateur'
-
-        const { error: insertError } = await supabase.from('profiles').insert({
-          id: user.id,
-          pseudo: pseudoSignup,
-          date_naissance: null,
-          ville: null,
-        })
-
-        if (!insertError) setPseudo(pseudoSignup)
-        return
-      }
-
-      if (!error && data) {
-        setPseudo(data.pseudo || '')
-        setDateNaissance(data.date_naissance || '')
-        setVille(data.ville || '')
-        setIsAdmin(data.is_admin || false)
-      }
-    }
-
-    checkAndInsertProfile()
-  }, [user, showToast])
+    setPseudo(String(user.user_metadata?.pseudo || '').trim())
+  }, [user])
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -126,28 +87,21 @@ export default function Profil() {
       if (process.env.NODE_ENV === 'development') {
         console.log('🔍 handleSave - Début sauvegarde profil', {
           pseudo,
-          dateNaissance,
-          ville,
         })
       }
 
       // Bloque si règle violée
       const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
-      const villeMsg = noEdgeSpaces(ville) || noDoubleSpaces(ville)
-      if (pseudoMsg || villeMsg) {
+      if (pseudoMsg) {
         showToast(t('profil.fixFieldErrors'), 'error')
         return
       }
 
       // Nettoyage final
       const pseudoClean = normalizeSpaces(pseudo || '')
-      const villeClean = normalizeSpaces(ville || '')
 
       const payload = {
         pseudo: pseudoClean === '' ? null : pseudoClean,
-        ville: villeClean === '' ? null : villeClean,
-        date_naissance:
-          (dateNaissance || '').trim() === '' ? null : dateNaissance,
       }
 
       if (process.env.NODE_ENV === 'development') {
@@ -156,32 +110,16 @@ export default function Profil() {
 
       // 1. Mise à jour metadata Auth
       const { error: metaError } = await supabase.auth.updateUser({
-        data: { pseudo: payload.pseudo },
+        data: {
+          pseudo: payload.pseudo,
+        },
       })
-      if (metaError)
+      if (metaError) {
         console.warn('⚠️ Mise à jour metadata échouée :', metaError)
-
-      if (!user?.id) return
-
-      // 2. Mise à jour table profiles
-      const { error } = await supabase
-        .from('profiles')
-        .update(payload)
-        .eq('id', user.id)
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 handleSave - Résultat update profiles', { error })
-      }
-
-      if (error) {
         showToast(t('profil.profileUpdateError'), 'error')
-        console.error('❌ Erreur sauvegarde profil:', error)
+        console.error('❌ Erreur sauvegarde profil:', metaError)
       } else {
-        // 3. IMPORTANT: Mettre à jour l'état local avec les valeurs nettoyées
-        // Cela suffit pour mettre à jour l'UI car getDisplayPseudo() utilise dbPseudo en priorité
         setPseudo(payload.pseudo || '')
-        setVille(payload.ville || '')
-        setDateNaissance(payload.date_naissance || '')
 
         showToast(t('profil.profileUpdated'), 'success')
       }
@@ -254,13 +192,9 @@ export default function Profil() {
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
     })
-    await supabase
-      .from('profiles')
-      .update({ avatar_url: data.path })
-      .eq('id', user.id)
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleAvatarUpload - Mise à jour metadata/profil', {
+      console.log('🔍 handleAvatarUpload - Mise à jour metadata', {
         metaError,
         avatarPath: data.path,
       })
@@ -414,25 +348,6 @@ export default function Profil() {
             onValid={val => setPseudo(normalizeSpaces(val))}
             ariaLabel={t('profil.pseudo')}
             placeholder="ex. Alex"
-          />
-
-          <Input
-            id="date-naissance"
-            label={t('profil.birthdate')}
-            type="date"
-            value={dateNaissance}
-            onChange={e => setDateNaissance(e.target.value)}
-          />
-
-          <InputWithValidation
-            id="ville"
-            label={t('profil.city')}
-            value={ville}
-            rules={[noEdgeSpaces, noDoubleSpaces]}
-            onChange={val => setVille(val)}
-            onValid={val => setVille(normalizeSpaces(val))}
-            ariaLabel={t('profil.city')}
-            placeholder="ex. Paris"
           />
 
           <div className="profil-card__email-display">

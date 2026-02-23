@@ -5,9 +5,8 @@ import type { SupabaseClient, User } from '@supabase/supabase-js'
 
 interface Profile {
   id: string
-  pseudo?: string
-  avatar_url?: string
-  [key: string]: any
+  pseudo: string | null
+  avatar_url: string | null
 }
 
 interface Tache {
@@ -64,12 +63,13 @@ export async function exportUserDataZip(
   // 1) Data retrieval
   const [{ data: profile }, { data: taches }, { data: recompenses }] =
     await Promise.all([
-      supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle()
-        .then(({ data }) => ({ data })),
+      Promise.resolve({
+        data: {
+          id: user.id,
+          pseudo: user.user_metadata?.pseudo || null,
+          avatar_url: user.user_metadata?.avatar || null,
+        },
+      }),
       supabase
         .from('taches')
         .select('*')
