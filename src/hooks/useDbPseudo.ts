@@ -1,64 +1,34 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
-import { withAbortSafe, isAbortLike } from '@/hooks'
+import { useMemo } from 'react'
+import useAuth from './useAuth'
 
 /**
- * Hook pour récupérer le pseudo d'un utilisateur depuis la DB
- * Gère automatiquement le fetch, l'annulation et les erreurs
+ * Hook pour récupérer un libellé utilisateur stable sans table legacy.
  *
  * @param userId - ID de l'utilisateur (optionnel)
- * @returns Pseudo de l'utilisateur ou chaîne vide si non trouvé
+ * @returns Libellé utilisateur (metadata -> email -> "Compte")
  */
 export function useDbPseudo(userId: string | undefined): string {
-  const [pseudo, setPseudo] = useState<string>('')
+  const { user } = useAuth()
 
-  useEffect(() => {
-    let cancelled = false
+  return useMemo(() => {
+    if (!userId || !user || user.id !== userId) return ''
 
-    const fetchPseudo = async () => {
-      if (!userId) return
+    const metadataLabel = String(
+      user.user_metadata?.display_name ||
+        user.user_metadata?.full_name ||
+        user.user_metadata?.name ||
+        user.user_metadata?.pseudo ||
+        ''
+    ).trim()
+    if (metadataLabel) return metadataLabel
 
-      const { data, error, aborted } = await withAbortSafe<{
-        pseudo: string | null
-      }>(
-        supabase
-          .from('profiles')
-          .select('pseudo')
-          .eq('id', userId)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .single() as any
-      )
+    const emailLabel = String(user.email || '')
+      .split('@')[0]
+      .trim()
+    if (emailLabel) return emailLabel
 
-      // Si le composant a été démonté, ne rien faire
-      if (cancelled) return
-
-      // Si requête annulée (abort), ne rien faire
-      if (aborted || (error && isAbortLike(error))) return
-
-      // Si erreur autre qu'abort, logger en dev
-      if (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn(
-            'useDbPseudo: Erreur fetch pseudo:',
-            String(error?.message ?? error)
-          )
-        }
-        return
-      }
-
-      // Mise à jour du pseudo
-      setPseudo(data?.pseudo ?? '')
-    }
-
-    fetchPseudo()
-
-    // Cleanup: marquer comme annulé si le composant se démonte
-    return () => {
-      cancelled = true
-    }
-  }, [userId])
-
-  return pseudo
+    return 'Compte'
+  }, [user, userId])
 }

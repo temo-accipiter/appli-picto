@@ -1,98 +1,35 @@
-// src/hooks/useSubscriptionStatus.js
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
-import useAuth from './useAuth'
-
-const ACTIVE_SET = new Set(['trialing', 'active', 'past_due', 'paused'])
+import { useMemo } from 'react'
+import useAccountStatus from './useAccountStatus'
 
 export function useSubscriptionStatus() {
-  const { user, authReady } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [status, setStatus] = useState<string | null>(null) // 'active' | 'trialing' | 'past_due' | 'paused' | null
-  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null)
+  const { status, isSubscriber, loading, error } = useAccountStatus()
 
-  const runIdRef = useRef(0)
-
-  useEffect(() => {
-    const runId = ++runIdRef.current
-    let alive = true
-
-    async function fetchStatus() {
-      if (!authReady) {
-        setLoading(true)
-        return
-      }
-      if (!user?.id) {
-        setStatus(null)
-        setCurrentPeriodEnd(null)
-        setLoading(false)
-        return
-      }
-
-      setLoading(true)
-      try {
-        // On lit la ligne la plus récente de l’utilisateur (webhooks alimentent `abonnements`)
-        const { data, error } = await supabase
-          .from('abonnements')
-          .select(
-            'status,current_period_end,cancel_at,cancel_at_period_end,price_id,plan'
-          )
-          .eq('user_id', user.id)
-          .order('current_period_end', { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle()
-
-        if (error) throw error
-
-        const st = data?.status ?? null
-        const cpe = data?.current_period_end ?? null
-
-        if (alive && runIdRef.current === runId) {
-          setStatus(st)
-          setCurrentPeriodEnd(cpe)
-          setLoading(false)
-        }
-      } catch (e) {
-        console.warn('useSubscriptionStatus: fallback → null', e)
-        if (alive && runIdRef.current === runId) {
-          setStatus(null)
-          setCurrentPeriodEnd(null)
-          setLoading(false)
-        }
-      }
+  const statusDisplay = useMemo(() => {
+    switch (status) {
+      case 'subscriber':
+        return { label: 'Actif', icon: '', color: 'success' }
+      case 'free':
+        return { label: 'Gratuit', icon: '', color: 'default' }
+      case 'admin':
+        return { label: 'Admin', icon: '', color: 'info' }
+      default:
+        return { label: 'Inconnu', icon: '', color: 'default' }
     }
+  }, [status])
 
-    fetchStatus()
-    return () => {
-      alive = false
-    }
-  }, [authReady, user?.id])
-
-  const isTrial = status === 'trialing'
-  const isActive = ACTIVE_SET.has(status || '')
-
-  return useMemo(() => {
-    const end = currentPeriodEnd ? new Date(currentPeriodEnd) : null
-    const in7d = new Date(Date.now() + 7 * 24 * 3600 * 1000)
-    return {
-      loading,
-      status,
-      isActive,
-      isTrial,
-      currentPeriodEnd,
-      daysUntilExpiry:
-        end && !isNaN(+end) ? Math.ceil((+end - Date.now()) / 86400000) : null,
-      isExpiringSoon: !!end && end < in7d,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      subscription: null as any, // TODO: Implement subscription data
-      statusDisplay: {
-        label: status || 'Inconnu',
-        icon: '',
-        color: 'default',
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-    }
-  }, [loading, status, isActive, isTrial, currentPeriodEnd])
+  return {
+    loading,
+    error,
+    status,
+    isSubscriber,
+    isActive: isSubscriber,
+    isTrial: false,
+    currentPeriodEnd: null,
+    daysUntilExpiry: null,
+    isExpiringSoon: false,
+    subscription: null,
+    statusDisplay,
+  }
 }
 
 export default useSubscriptionStatus

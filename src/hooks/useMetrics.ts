@@ -77,11 +77,11 @@ export function useMetrics(): UseMetricsReturn {
           imageErrors,
         ] = await Promise.all([
           // Total utilisateurs
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('accounts').select('*', { count: 'exact', head: true }),
 
           // Nouveaux utilisateurs (7j)
           supabase
-            .from('profiles')
+            .from('accounts')
             .select('*', { count: 'exact', head: true })
             .gte('created_at', weekAgoISO),
 
@@ -93,9 +93,9 @@ export function useMetrics(): UseMetricsReturn {
 
           // Abonnements actifs
           supabase
-            .from('abonnements')
+            .from('accounts')
             .select('*', { count: 'exact', head: true })
-            .eq('status', 'active'),
+            .eq('status', 'subscriber'),
 
           // Nouveaux abonnements (7j)
           supabase
