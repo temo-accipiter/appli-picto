@@ -36,7 +36,13 @@ import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
 import './EditionTimeline.scss'
 
-export default function EditionTimeline() {
+interface EditionTimelineProps {
+  embedded?: boolean
+}
+
+export default function EditionTimeline({
+  embedded = false,
+}: EditionTimelineProps) {
   const {
     activeChildId,
     activeChildProfile,
@@ -161,8 +167,11 @@ export default function EditionTimeline() {
       }
     : undefined
 
+  const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
+  const TitleTag: 'h1' | 'h2' = embedded ? 'h2' : 'h1'
+
   return (
-    <main className="edition-timeline" aria-label="Édition de la timeline">
+    <RootTag className="edition-timeline" aria-label="Édition de la timeline">
       {/* ── S8 : Bandeau offline (§4.4.1) ──────────────────────────────────────
            Affiché uniquement quand le navigateur est hors connexion.
            Non modal, non bloquant, discret pour l'adulte.
@@ -180,7 +189,9 @@ export default function EditionTimeline() {
 
       {/* ── En-tête ────────────────────────────────────────────────────────────── */}
       <header className="edition-timeline__header">
-        <h1 className="edition-timeline__title">Édition de la timeline</h1>
+        <TitleTag className="edition-timeline__title">
+          Édition de la timeline
+        </TitleTag>
         <p className="edition-timeline__subtitle">
           Sélectionne un profil enfant pour modifier sa timeline.
         </p>
@@ -266,6 +277,6 @@ export default function EditionTimeline() {
           </>
         )}
       </section>
-    </main>
+    </RootTag>
   )
 }

@@ -19,6 +19,9 @@ export { default as TachesDnd } from './features/taches/taches-dnd/TachesDnd'
 export { default as TachesEdition } from './features/taches/taches-edition/TachesEdition'
 export { default as TrainProgressBar } from './features/taches/train-progress-bar/TrainProgressBar'
 
+// Cards
+export { default as CardsEdition } from './features/cards/cards-edition/CardsEdition'
+
 // Time Timer
 export { default as TimeTimer } from './features/time-timer/TimeTimer'
 export { default as FloatingTimeTimer } from './features/time-timer/FloatingTimeTimer'

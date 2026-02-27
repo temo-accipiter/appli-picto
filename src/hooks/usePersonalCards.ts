@@ -17,6 +17,7 @@ export type PersonalCard = Card & {
   type: 'personal'
   account_id: string
   published: null
+  category_id?: string // ✅ Catégorie associée via user_card_categories (hydraté client-side)
 }
 
 // Résultat des actions (erreur DB retournée telle quelle)
@@ -25,8 +26,9 @@ interface ActionResult {
 }
 
 interface CreatePersonalCardInput {
+  id: string // ✅ UUID v4 généré client-side (même ID que Storage)
   name: string
-  image_url: string
+  image_url: string // ✅ Path strict: {accountId}/cards/{cardId}.jpg
 }
 
 interface UsePersonalCardsReturn {
@@ -35,6 +37,7 @@ interface UsePersonalCardsReturn {
   error: Error | null
   createCard: (input: CreatePersonalCardInput) => Promise<ActionResult>
   updateCard: (id: string, updates: { name: string }) => Promise<ActionResult>
+  updateCardCategory: (cardId: string, categoryId: string) => Promise<ActionResult>
   deleteCard: (id: string) => Promise<ActionResult>
   refresh: () => void
 }
@@ -74,7 +77,8 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
 
     const fetchPersonalCards = async () => {
       try {
-        const { data, error: fetchError } = await supabase
+        // ✅ Query 1 : Cartes personnelles
+        const { data: cardsData, error: fetchError } = await supabase
           .from('cards')
           .select('*')
           .eq('type', 'personal')
@@ -85,7 +89,37 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
         if (controller.signal.aborted) return
         if (fetchError) throw fetchError
 
-        setCards((data as PersonalCard[]) || [])
+        const rawCards = (cardsData as Card[]) || []
+
+        // ✅ Query 2 : Mappings user_card_categories (catégories associées)
+        const { data: mappingsData, error: mappingsError } = await supabase
+          .from('user_card_categories')
+          .select('card_id, category_id')
+          .eq('user_id', user.id)
+          .abortSignal(controller.signal)
+
+        if (controller.signal.aborted) return
+        if (mappingsError) {
+          console.warn('[usePersonalCards] Erreur mappings (non bloquant):', mappingsError)
+        }
+
+        // ✅ Hydratation : Associer category_id à chaque carte via mapping
+        const mappingsMap = new Map<string, string>()
+        if (mappingsData) {
+          mappingsData.forEach(m => {
+            mappingsMap.set(m.card_id, m.category_id)
+          })
+        }
+
+        const hydratedCards: PersonalCard[] = rawCards.map(card => ({
+          ...card,
+          type: 'personal' as const,
+          account_id: user.id,
+          published: null,
+          category_id: mappingsMap.get(card.id), // undefined si pas de mapping (fallback "Sans catégorie" côté UI)
+        }))
+
+        setCards(hydratedCards)
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
         console.error('[usePersonalCards] Erreur lecture cartes perso:', err)
@@ -117,6 +151,7 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
       if (!user) return { error: new Error('Non connecté') }
 
       const cardInsert: CardInsert = {
+        id: input.id, // ✅ UUID v4 généré client-side (même ID que Storage)
         type: 'personal',
         account_id: user.id,
         name: input.name,
@@ -164,6 +199,36 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
   )
 
   /**
+   * Associer une catégorie à une carte (UPSERT dans user_card_categories)
+   * - Utilise onConflict avec contrainte UNIQUE (user_id, card_id)
+   * - Crée ou met à jour le mapping utilisateur ↔ carte ↔ catégorie
+   */
+  const updateCardCategory = useCallback(
+    async (cardId: string, categoryId: string): Promise<ActionResult> => {
+      if (!user) return { error: new Error('Non connecté') }
+
+      const { error: upsertError } = await supabase
+        .from('user_card_categories')
+        .upsert(
+          {
+            user_id: user.id,
+            card_id: cardId,
+            category_id: categoryId,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id,card_id', // ✅ Contrainte UNIQUE (user_id, card_id)
+          }
+        )
+
+      if (!upsertError) refresh()
+
+      return { error: upsertError as Error | null }
+    },
+    [user, refresh]
+  )
+
+  /**
    * Supprimer une carte personnelle
    * - DB gère les cascades (slots, sequences, pivot)
    * - Si carte utilisée en session active → Réinitialisation session (epoch++)
@@ -192,6 +257,7 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
     error,
     createCard,
     updateCard,
+    updateCardCategory,
     deleteCard,
     refresh,
   }

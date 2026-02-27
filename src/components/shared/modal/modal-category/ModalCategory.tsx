@@ -20,6 +20,7 @@ interface ModalCategoryProps {
   onAddCategory: (e: FormEvent, category: string) => void
   newCategory: string
   onChangeNewCategory: (value: string) => void
+  isSubmitting?: boolean
 }
 
 export default function ModalCategory({
@@ -30,6 +31,7 @@ export default function ModalCategory({
   onAddCategory,
   newCategory,
   onChangeNewCategory,
+  isSubmitting = false,
 }: ModalCategoryProps) {
   const { t } = useI18n()
   const [visibleCats, setVisibleCats] = useState<CategoryOption[]>([])
@@ -110,7 +112,11 @@ export default function ModalCategory({
             rules={validationRules}
             ariaLabel={t('edition.newCategory')}
           />
-          <Button label={t('actions.add')} type="submit" />
+          <Button
+            label={t('actions.add')}
+            type="submit"
+            disabled={isSubmitting || hasError}
+          />
         </form>
       </Modal>
     </>

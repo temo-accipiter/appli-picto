@@ -20,6 +20,7 @@ interface SignedImageProps {
   size?: number
   bucket?: string
   className?: string
+  allowLegacyFallback?: boolean // Si true, tente fallback vers 'images' si bucket échoue (avatars legacy uniquement)
 }
 
 export default function SignedImage({
@@ -28,6 +29,7 @@ export default function SignedImage({
   size = 60,
   bucket = 'images',
   className,
+  allowLegacyFallback = false,
 }: SignedImageProps) {
   const [url, setUrl] = useState<string | null>(null)
   const [error, setError] = useState(false)
@@ -71,9 +73,14 @@ export default function SignedImage({
         return
       }
 
-      // 3) …puis on tente un fallback transparent sur 'images'
-      // (utile si des anciens avatars ont été enregistrés dans 'images')
-      if (!cancelled && mountedRef.current && bucket !== 'images') {
+      // 3) Fallback opt-in vers 'images' (avatars legacy uniquement)
+      // ⚠️ CRITIQUE : Désactivé par défaut. Passer allowLegacyFallback={true} explicitement si besoin.
+      if (
+        !cancelled &&
+        mountedRef.current &&
+        allowLegacyFallback &&
+        bucket !== 'images'
+      ) {
         const fallback = await getSignedImageUrl(filePath, {
           bucket: 'images',
           expiresIn: 3600,

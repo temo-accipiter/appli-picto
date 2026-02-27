@@ -11,10 +11,11 @@ import {
 import { useI18n } from '@/hooks'
 import { useAuth } from '@/hooks'
 import {
-  modernUploadImage,
-  type AssetType,
-  type ProgressInfo,
-} from '@/utils/storage/modernUploadImage'
+  uploadCardImage,
+  type UploadCardImageResult,
+} from '@/utils/storage/uploadCardImage'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
+import type { AssetType } from '@/utils/storage/modernUploadImage'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
@@ -35,6 +36,9 @@ interface ItemFormData {
   label: string
   categorie: string
   image: File
+  imagePath: string // Chemin uploadé dans Storage (ex: "{accountId}/cards/{cardId}.jpg")
+  imageUrl?: string // URL signée (optionnel, si besoin d'affichage direct)
+  cardId: string // ID carte généré client-side (UUID v4)
 }
 
 interface ItemFormProps {
@@ -67,6 +71,10 @@ export default function ItemForm({
   const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(
     null
   )
+  const [uploadedCardId, setUploadedCardId] = useState<string | null>(null)
+
+  // 🆕 Flag pour éviter cleanup après submit réussi
+  const committedRef = useRef(false)
 
   const confirmRef = useRef<HTMLButtonElement>(null)
   const labelRef = useRef<InputWithValidationRef>(null)
@@ -82,15 +90,42 @@ export default function ItemForm({
     confirmRef.current?.focus()
   }, [])
 
+  // 🆕 Cleanup robuste : supprimer image orpheline si composant unmount sans submit
+  useEffect(() => {
+    return () => {
+      // Cleanup seulement si image uploadée ET pas committed
+      if (uploadedImagePath && !committedRef.current) {
+        console.log(
+          '🗑️ [ItemForm] Cleanup image orpheline (unmount sans commit):',
+          uploadedImagePath
+        )
+        deleteImageIfAny(uploadedImagePath, 'personal-images').catch(err => {
+          console.error('Erreur cleanup image:', err)
+        })
+      }
+
+      // Revoke preview URL to free memory
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadedImagePath]) // Re-run si uploadedImagePath change
+
   const cleanLabel = label.trim().replace(/\s+/g, ' ')
 
   const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) {
       setImage(null)
+      // 🆕 Revoke previous preview URL to free memory
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
       setPreviewUrl(null)
       setImageError('')
       setUploadedImagePath(null)
+      setUploadedCardId(null)
       setIsUploading(false)
       return
     }
@@ -99,9 +134,13 @@ export default function ItemForm({
     const typeError = validateImageType(file)
     if (typeError) {
       setImage(null)
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
       setPreviewUrl(null)
       setImageError(typeError)
       setUploadedImagePath(null)
+      setUploadedCardId(null)
       return
     }
 
@@ -109,51 +148,81 @@ export default function ItemForm({
     const headerError = await validateImageHeader(file)
     if (headerError) {
       setImage(null)
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
       setPreviewUrl(null)
       setImageError(headerError)
       setUploadedImagePath(null)
+      setUploadedCardId(null)
       return
     }
 
-    // ✅ Fichier validé - afficher preview et LANCER UPLOAD AUTOMATIQUEMENT
+    // ✅ Fichier validé - afficher preview via URL.createObjectURL (pas sign)
+    // Revoke previous URL first
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
     setImage(file)
     setPreviewUrl(URL.createObjectURL(file))
     setImageError('')
     setUploadedImagePath(null)
+    setUploadedCardId(null)
 
     // 🆕 Déclencher l'upload automatiquement
     await handleAutoUpload(file)
   }
 
-  // 🆕 Auto-upload quand fichier validé
+  // 🆕 Auto-upload quand fichier validé (cartes personnelles uniquement)
   const handleAutoUpload = async (file: File) => {
     if (!user?.id) {
       setImageError(t('edition.errorUser') || 'User not found')
       return
     }
 
+    // 🆕 Générer cardId client-side (UUID v4)
+    const cardId = crypto.randomUUID()
+    setUploadedCardId(cardId)
+
     setIsUploading(true)
     setUploadProgress(0)
     setImageError('')
 
     try {
-      const result = await modernUploadImage(file, {
-        userId: user.id,
-        assetType,
-        prefix,
-        onProgress: (info: ProgressInfo) => {
-          setUploadProgress(info.progress)
-          setUploadStep(info.step as UploadStep)
-        },
+      // ✅ Étape 1 : Validation (0-20%)
+      setUploadStep('validation')
+      setUploadProgress(10)
+
+      // ✅ Étape 2 : Compression/Conversion (20-50%)
+      setUploadStep('compression')
+      setUploadProgress(30)
+
+      // ✅ Étape 3 : Upload (50-90%)
+      setUploadStep('upload')
+      setUploadProgress(60)
+
+      // 🆕 Upload dédié cartes avec conversion JPEG + path strict
+      const result: UploadCardImageResult = await uploadCardImage(file, {
+        accountId: user.id,
+        cardId,
       })
 
       if (result.error) {
         throw result.error
       }
 
+      // ✅ Étape 4 : Finalisation (90-100%)
+      setUploadProgress(95)
+      setUploadStep('complete')
+      setUploadProgress(100)
+
       // ✅ Upload réussi - sauvegarder le chemin
       setUploadedImagePath(result.path)
       setIsUploading(false)
+
+      console.log('✅ [ItemForm] Upload carte réussi')
+      console.log('   • Card ID:', cardId)
+      console.log('   • Path:', result.path)
     } catch (error) {
       const errorMsg =
         (error as Error).message ||
@@ -162,6 +231,9 @@ export default function ItemForm({
       setImageError(errorMsg)
       setIsUploading(false)
       setUploadedImagePath(null)
+      setUploadedCardId(null)
+
+      console.error('❌ [ItemForm] Erreur upload carte:', error)
     }
   }
 
@@ -176,8 +248,8 @@ export default function ItemForm({
     e.preventDefault()
     labelRef.current?.validateNow?.()
 
-    // 🆕 Vérifier que l'upload est complété (uploadedImagePath existe)
-    const uploadComplete = uploadedImagePath !== null
+    // 🆕 Vérifier que l'upload est complété (uploadedImagePath + uploadedCardId existent)
+    const uploadComplete = uploadedImagePath !== null && uploadedCardId !== null
     if (!uploadComplete) {
       setImageError(
         t('edition.uploadNotComplete') || 'Image upload not complete'
@@ -186,7 +258,17 @@ export default function ItemForm({
     }
 
     if (label && uploadComplete) {
-      onSubmit({ label: cleanLabel, categorie, image: image! })
+      // 🆕 Marquer comme committed pour éviter cleanup
+      committedRef.current = true
+
+      onSubmit({
+        label: cleanLabel,
+        categorie,
+        image: image!,
+        imagePath: uploadedImagePath!, // Path Storage: {accountId}/cards/{cardId}.jpg
+        imageUrl: uploadedImagePath,   // Alias pour compatibilité
+        cardId: uploadedCardId!,       // 🆕 ID carte généré client-side
+      })
     }
   }
 

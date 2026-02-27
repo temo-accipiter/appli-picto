@@ -1,26 +1,19 @@
 'use client'
 
 // src/pages/edition/Edition.tsx
-import {
-  Button,
-  RecompensesEdition,
-  Separator,
-  TachesEdition,
-} from '@/components'
+import { Button, CardsEdition, Separator } from '@/components'
 import { useToast } from '@/contexts'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
-import {
-  useAuth,
-  useCategories,
-  useI18n,
-  useRecompenses,
-  useTachesEdition,
-} from '@/hooks'
-import type { Tache, Recompense } from '@/types/global'
-import { modernUploadImage } from '@/utils/storage/modernUploadImage'
-import { supabase } from '@/utils/supabaseClient'
-import { ChevronDown, Gift } from 'lucide-react'
-import React, { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { useAuth, useCategories, useI18n, usePersonalCards } from '@/hooks'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import './Edition.scss'
 
 // Lazy load des modales (affichées conditionnellement)
@@ -31,15 +24,20 @@ const ModalConfirm = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalConfirm }))
 )
 
-interface TaskSubmitParams {
+interface CardFormData {
   label: string
   categorie?: string
-  image?: File
+  image: File
+  imagePath: string // Path Storage uploadé: {accountId}/cards/{cardId}.jpg
+  imageUrl?: string
+  cardId: string // ID carte généré client-side (UUID v4)
 }
 
-interface RewardSubmitParams {
-  label: string
-  image?: File
+interface CardItem {
+  id: string
+  name: string
+  image_url?: string
+  categorie?: string
 }
 
 export default function Edition() {
@@ -47,18 +45,16 @@ export default function Edition() {
   const { show } = useToast()
   const { user } = useAuth()
 
-  // ✅ DB-first : Quota validation 100% server-side via RLS
+  // ✅ DB-first : Quota validation 100% server-side via RLS + triggers
   // Le client fait INSERT optimistic, serveur reject si quota dépassé
-  // Pas de vérification côté client = pas de révélation de business logic
 
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState<string | null>(null)
   const [newCatLabel, setNewCatLabel] = useState('')
-  const [recompenseASupprimer, setRecompenseASupprimer] =
-    useState<Recompense | null>(null)
-  const [tacheASupprimer, setTacheASupprimer] = useState<Tache | null>(null)
+  const [cardASupprimer, setCardASupprimer] = useState<CardItem | null>(null)
   const [reload, setReload] = useState(0)
   const [filterCategory, setFilterCategory] = useState('all')
+  const [isSubmittingCategory, setIsSubmittingCategory] = useState(false)
 
   // ── Enfant actif : rechargement stable quand l'enfant change (S2) ────────────
   const { activeChildId } = useChildProfile()
@@ -73,14 +69,6 @@ export default function Edition() {
       setReload(r => r + 1)
     }
   }, [activeChildId])
-  const [filterDone, setFilterDone] = useState(false)
-  const [showRecompenses, setShowRecompenses] = useState(
-    () => sessionStorage.getItem('showRecompenses') === 'true'
-  )
-
-  useEffect(() => {
-    sessionStorage.setItem('showRecompenses', String(showRecompenses))
-  }, [showRecompenses])
 
   const triggerReload = () => {
     console.log('🔄 triggerReload appelé, reload:', reload, '→', reload + 1)
@@ -88,134 +76,85 @@ export default function Edition() {
   }
 
   const { categories, addCategory, deleteCategory } = useCategories(reload)
-  const {
-    taches,
-    toggleAujourdhui,
-    updateLabel: updateTaskLabel,
-    updateCategorie,
-    deleteTache,
-    resetEdition,
-  } = useTachesEdition(reload)
-  const {
-    recompenses,
-    selectRecompense,
-    deselectAll,
-    deleteRecompense,
-    updateLabel: updateRewardLabel,
-    createRecompense,
-  } = useRecompenses(reload)
+  const { cards, createCard, updateCard, updateCardCategory, deleteCard } =
+    usePersonalCards()
 
-  const handleTacheAjoutee = () => triggerReload()
-  const handleRecompenseAjoutee = () => triggerReload()
+  // ✅ Transformation Category (DB) → Categorie (UI) + Déduplication
+  const uniqueCategories = useMemo(() => {
+    const seen = new Set<string>()
+    return categories
+      .map(cat => ({
+        value: cat.id, // ✅ Utiliser id comme value (unique garanti)
+        label: cat.name, // ✅ Nom de la catégorie
+      }))
+      .filter(cat => {
+        if (seen.has(cat.value as string)) return false
+        seen.add(cat.value as string)
+        return true
+      })
+  }, [categories])
 
-  const handleSubmitTask = async ({
+  const handleCardAjoutee = () => triggerReload()
+
+  const handleSubmitCard = async ({
     label,
-    categorie,
-    image,
-  }: TaskSubmitParams) => {
+    imagePath,
+    cardId,
+  }: CardFormData) => {
     if (!user?.id) {
       show(t('edition.errorUser'), 'error')
       return
     }
 
-    // ✅ DB-first : Optimistic UI, quota validation server-side via RLS
-    let imagePath = ''
-    if (image) {
-      try {
-        const uploadResult = await modernUploadImage(image, {
-          userId: user.id,
-          assetType: 'task_image',
-          prefix: 'taches',
-        })
+    console.log('📝 [Edition] Création carte en DB...')
+    console.log('   • Card ID:', cardId)
+    console.log('   • Name:', label)
+    console.log('   • Image path:', imagePath)
 
-        if (uploadResult.error) {
-          throw uploadResult.error
-        }
+    // ✅ DB-first : INSERT avec cardId généré client-side
+    const { error: insertError } = await createCard({
+      id: cardId, // 🆕 Même ID que Storage
+      name: label,
+      image_url: imagePath, // Path: {accountId}/cards/{cardId}.jpg
+    })
 
-        imagePath = uploadResult.path || ''
-      } catch (error) {
+    if (insertError) {
+      // 🗑️ Cleanup image orpheline si INSERT échoue
+      console.log('🗑️ [Edition] INSERT failed, cleanup image:', imagePath)
+      await deleteImageIfAny(imagePath, 'personal-images')
+
+      // ✅ DB-first : Parser erreur quota/gating
+      const errorMsg = insertError.message?.toLowerCase() ?? ''
+
+      if (errorMsg.includes('stock')) {
+        show('Tu as atteint la limite de 50 cartes.', 'error')
+        return
+      }
+
+      if (errorMsg.includes('monthly')) {
+        show('Tu as créé 100 cartes ce mois-ci. Limite atteinte.', 'error')
+        return
+      }
+
+      if (errorMsg.includes('feature_unavailable') || errorMsg.includes('feature')) {
         show(
-          `${t('edition.errorImageUpload')}: ${(error as Error).message}`,
+          'Fonctionnalité réservée aux abonnés. Passe Premium pour créer des cartes personnelles.',
           'error'
         )
         return
       }
-    }
 
-    const { error: insertError } = await supabase.from('taches').insert([
-      {
-        label,
-        ...(categorie && { categorie }),
-        aujourdhui: false,
-        fait: false,
-        position: 0,
-        ...(imagePath && { imagepath: imagePath }),
-        user_id: user.id,
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ] as any)
-
-    if (insertError) {
-      // ✅ DB-first : RLS quota violation détectée server-side
-      if (
-        insertError.code === '23514' ||
-        insertError.message?.includes('quota')
-      ) {
-        show(t('quota.limitReached'), 'error')
-        return
-      }
-
-      console.error('❌ Erreur insertion tâche:', {
+      // Erreur générique
+      console.error('❌ Erreur insertion carte:', {
         message: insertError.message,
-        code: insertError.code,
-        details: insertError.details,
-        hint: insertError.hint,
       })
-      show(t('edition.errorTaskCreation'), 'error')
+      show('Erreur lors de la création de la carte.', 'error')
       return
     }
 
-    console.log('✅ Tâche créée en BDD, déclenchement reload...')
-    handleTacheAjoutee()
-    show(t('edition.taskAdded'), 'success')
-  }
-
-  const handleSubmitReward = async ({ label, image }: RewardSubmitParams) => {
-    if (!image) {
-      show(t('edition.imageMissing'), 'error')
-      return
-    }
-
-    if (!user?.id) {
-      show(t('edition.errorUser'), 'error')
-      return
-    }
-
-    try {
-      // ✅ DB-first : Upload image avec quota check server-side
-      const uploadResult = await modernUploadImage(image, {
-        userId: user.id,
-        assetType: 'reward_image',
-        prefix: 'recompenses',
-      })
-
-      if (uploadResult.error) {
-        throw uploadResult.error
-      }
-
-      // ✅ DB-first : createRecompense() handle RLS quota validation
-      await createRecompense({ label, imagepath: uploadResult.path })
-      handleRecompenseAjoutee()
-      show(t('edition.rewardAdded'), 'success')
-    } catch (error) {
-      // ✅ DB-first : Quota errors handled server-side
-      const errorMessage = (error as Error).message
-      if (errorMessage?.includes('quota')) {
-        show(t('quota.limitReached'), 'error')
-      } else {
-        show(`${t('edition.errorImageUpload')}: ${errorMessage}`, 'error')
-      }
-    }
+    console.log('✅ Carte créée en BDD, déclenchement reload...')
+    handleCardAjoutee()
+    show('Carte créée avec succès !', 'success')
   }
 
   // ✅ DB-first : Ajout catégorie avec validation server-side
@@ -229,18 +168,34 @@ export default function Edition() {
 
     if (!labelToUse) return
 
-    const slug = labelToUse.toLowerCase().replace(/ /g, '-')
+    // ✅ Éviter double-submit pendant requête
+    if (isSubmittingCategory) return
+
+    setIsSubmittingCategory(true)
 
     try {
-      await addCategory({ value: slug, label: labelToUse })
+      // ✅ FIX : Passer string directement (pas d'objet {value, label})
+      // La table categories.name attend le nom complet, pas un slug
+      const { error: addError } = await addCategory(labelToUse)
+
+      if (addError) {
+        // L'erreur est déjà loggée + toast dans le hook
+        // Pas besoin de re-show, juste arrêter l'exécution
+        return
+      }
+
+      // ✅ Succès : Reset + reload + toast explicite
       setNewCatLabel('')
       triggerReload()
+      show('Catégorie créée avec succès !', 'success')
     } catch (error) {
       // ✅ DB-first : RLS quota violation détectée server-side
       const errorMessage = (error as Error).message
       if (errorMessage?.includes('quota')) {
         show(t('quota.limitReached'), 'error')
       }
+    } finally {
+      setIsSubmittingCategory(false)
     }
   }
 
@@ -249,53 +204,39 @@ export default function Edition() {
     triggerReload()
   }
 
-  const toggleSelectRecompense = (id: string, sel: boolean) =>
-    sel ? deselectAll() : selectRecompense(id)
-
-  const visibleTaches = taches.filter(t => {
+  const visibleCards = cards.filter(c => {
     const catMatch =
-      filterCategory === 'all' || (t.categorie || 'none') === filterCategory
-    const doneMatch = !filterDone || !!t.aujourdhui
-    return catMatch && doneMatch
+      filterCategory === 'all' || (c.category_id || 'none') === filterCategory
+    return catMatch
   })
 
-  // Wrappers pour adapter les signatures de callback aux interfaces attendues
-  const handleToggleAujourdhui = (
-    id: string | number,
-    currentState: boolean | number | undefined
-  ) => {
-    toggleAujourdhui(String(id), !!currentState)
-  }
-
+  // Wrappers pour adapter les signatures
   const handleDeleteCategory = async (
     value: string | number
   ): Promise<void> => {
     await deleteCategory(String(value))
   }
 
-  // ✅ DB-first : Plus de modal quota côté client
-  // Validation 100% server-side, toast error si quota dépassé
-  const handleShowQuotaModal = async (_type: string): Promise<boolean> => {
-    return true // Always allow client-side, RLS will enforce
-  }
-
-  const handleToggleSelectRecompense = (
+  const handleUpdateCategorie = async (
     id: string | number,
-    currentSelected: boolean
+    categoryId: string
   ) => {
-    toggleSelectRecompense(String(id), currentSelected)
+    // ✅ DB-first : UPSERT dans user_card_categories (mapping user ↔ card ↔ category)
+    const { error } = await updateCardCategory(String(id), categoryId)
+
+    if (error) {
+      console.error('[Edition] Erreur update catégorie:', error)
+      show('Impossible de modifier la catégorie', 'error')
+      return
+    }
+
+    // ✅ Succès : Reload pour refetch les mappings
+    triggerReload()
+    show('Catégorie modifiée', 'success')
   }
 
-  const handleUpdateRewardLabel = async (
-    id: string | number,
-    label: string
-  ): Promise<{ error?: Error }> => {
-    updateRewardLabel(String(id), label)
-    return {}
-  }
-
-  const handleUpdateCategorie = (id: string | number, categorie: string) => {
-    updateCategorie(String(id), categorie || null)
+  const handleUpdateLabel = async (id: string | number, label: string) => {
+    await updateCard(String(id), { name: label })
   }
 
   return (
@@ -307,94 +248,42 @@ export default function Edition() {
         <Separator />
 
         <div className="taches-edition">
-          {/* ✅ DB-first : Pas de quota indicator côté client */}
-          <TachesEdition
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            items={visibleTaches as any}
-            categories={categories}
-            onToggleAujourdhui={handleToggleAujourdhui}
-            resetEdition={resetEdition}
-            onSubmitTask={handleSubmitTask}
+          {/* ✅ Nouveau système : Cards uniquement */}
+          <CardsEdition
+            items={visibleCards.map(c => ({
+              id: c.id,
+              name: c.name,
+              image_url: c.image_url,
+              categorie: c.category_id, // ✅ Mapping category_id → categorie (prop attendue par CardsEdition)
+            }))}
+            categories={uniqueCategories}
+            onSubmitCard={handleSubmitCard}
             onAddCategory={handleAddCategoryWithQuota}
             onDeleteCategory={handleDeleteCategory}
             filterCategory={filterCategory}
             onChangeFilterCategory={setFilterCategory}
-            filterDone={filterDone}
-            onChangeFilterDone={setFilterDone}
-            onShowQuotaModal={handleShowQuotaModal}
-            onUpdateLabel={(id, label) => {
-              updateTaskLabel(String(id), label)
-              show(t('edition.taskRenamed'), 'success')
-            }}
+            onUpdateLabel={handleUpdateLabel}
             onUpdateCategorie={handleUpdateCategorie}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            onDelete={t => setTacheASupprimer(t as any)}
+            onDelete={c => setCardASupprimer(c)}
+            isSubmittingCategory={isSubmittingCategory}
           />
         </div>
-
-        <Button
-          label={
-            <span className="button-label">
-              <Gift className="button-icon" size={18} aria-hidden="true" />
-              {t('rewards.title')}
-              <ChevronDown
-                className={`chevron ${showRecompenses ? 'open' : ''}`}
-                size={16}
-                aria-hidden="true"
-              />
-            </span>
-          }
-          onClick={() => setShowRecompenses(prev => !prev)}
-          aria-expanded={showRecompenses}
-        />
-        {showRecompenses && (
-          <div className="recompenses-edition">
-            {/* ✅ DB-first : Pas de quota indicator côté client */}
-            <RecompensesEdition
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              items={recompenses as any}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onDelete={r => setRecompenseASupprimer(r as any)}
-              onToggleSelect={handleToggleSelectRecompense}
-              onSubmitReward={handleSubmitReward}
-              onShowQuotaModal={handleShowQuotaModal}
-              onLabelChange={handleUpdateRewardLabel}
-            />
-          </div>
-        )}
       </div>
 
       <Suspense fallback={null}>
         <ModalConfirm
-          isOpen={!!recompenseASupprimer}
-          onClose={() => setRecompenseASupprimer(null)}
-          confirmLabel={t('edition.confirmDeleteReward')}
-          onConfirm={() => {
-            if (recompenseASupprimer) {
-              deleteRecompense(recompenseASupprimer.id)
-              show(t('edition.rewardDeleted'), 'error')
-              setRecompenseASupprimer(null)
-            }
-          }}
-        >
-          ❗ {t('edition.confirmDeleteReward')} &quot;
-          {recompenseASupprimer?.label}&quot; ?
-        </ModalConfirm>
-
-        <ModalConfirm
-          isOpen={!!tacheASupprimer}
-          onClose={() => setTacheASupprimer(null)}
+          isOpen={!!cardASupprimer}
+          onClose={() => setCardASupprimer(null)}
           confirmLabel={t('edition.confirmDeleteTask')}
-          onConfirm={() => {
-            if (tacheASupprimer) {
-              deleteTache(tacheASupprimer)
-              show(t('edition.taskDeleted'), 'error')
-              setTacheASupprimer(null)
+          onConfirm={async () => {
+            if (cardASupprimer) {
+              await deleteCard(cardASupprimer.id)
+              show('Carte supprimée', 'error')
+              setCardASupprimer(null)
             }
           }}
         >
-          ❗ {t('edition.confirmDeleteTask')} &quot;{tacheASupprimer?.label}
-          &quot; ?
+          ❗ Confirmer la suppression de &quot;{cardASupprimer?.name}&quot; ?
         </ModalConfirm>
       </Suspense>
 
@@ -402,7 +291,7 @@ export default function Edition() {
         <ModalCategory
           isOpen={manageCatOpen}
           onClose={() => setManageCatOpen(false)}
-          categories={categories}
+          categories={uniqueCategories}
           onDeleteCategory={value => setCatASupprimer(String(value))}
           onAddCategory={handleAddCategoryWithQuota}
           newCategory={newCatLabel}
@@ -421,7 +310,8 @@ export default function Edition() {
         >
           <>
             ❗ {t('edition.confirmDeleteCategory')} &quot;
-            {categories.find(c => c.value === catASupprimer)?.label}&quot; ?
+            {uniqueCategories.find(c => c.value === catASupprimer)?.label}
+            &quot; ?
             <br />
             {t('edition.categoryDeleteWarning')}
           </>
@@ -429,7 +319,6 @@ export default function Edition() {
       </Suspense>
 
       {/* ✅ DB-first : Pas de modal quota côté client */}
-      {/* Validation 100% server-side via RLS, erreurs affichées en toast */}
     </div>
   )
 }

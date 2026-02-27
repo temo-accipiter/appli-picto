@@ -44,6 +44,26 @@ export function sanitizeFileName(name: string = ''): string {
   return safeExt ? `${safeBase}.${safeExt}` : safeBase
 }
 
+/** Génère un UUID v4 (format: 8-4-4-4-12 caractères hexadécimaux) */
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = (Math.random() * 16) | 0
+    const v = c === 'x' ? r : (r & 0x3) | 0x8
+    return v.toString(16)
+  })
+}
+
+/**
+ * Construit un chemin conforme à la RLS policy Storage.
+ * Format: {userId}/{UUID}.{extension}
+ * Compatible avec la policy: name ~ '^{userId}/[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'
+ */
+export function buildRLSPath(userId: string, fileName: string): string {
+  const uuid = generateUUID()
+  const ext = fileName.split('.').pop()?.toLowerCase() || 'jpg'
+  return `${userId}/${uuid}.${ext}`
+}
+
 /** Construit un chemin scoping par user, avec préfixe (ex: taches, recompenses) */
 export function buildScopedPath(
   userId: string,
@@ -108,9 +128,39 @@ export async function uploadImage(
     }
   }
 
-  // Chemin final
+  // Vérifier session auth AVANT génération chemin (RLS policy nécessite auth.uid())
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session) {
+    return {
+      path: null,
+      url: null,
+      error: new Error('Utilisateur non authentifié'),
+    }
+  }
+
+  // CRITIQUE : Utiliser session.user.id (= auth.uid() dans RLS) pour le chemin
+  // La RLS policy vérifie: name ~ '^{auth.uid()}/[UUID].{ext}'
+  const authenticatedUserId = session.user.id
+
+  // Chemin final - Utiliser authenticatedUserId pour garantir correspondance RLS
   const nameGuess = file.name || `upload.${type.split('/')[1] || 'bin'}`
-  const path = buildScopedPath(userId, nameGuess, prefix)
+  const path =
+    bucket === 'personal-images'
+      ? buildRLSPath(authenticatedUserId, nameGuess) // ✅ session.user.id
+      : buildScopedPath(authenticatedUserId, nameGuess, prefix)
+
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  console.log('🔍 [uploadImage] Détails upload:')
+  console.log('   • Bucket:', bucket)
+  console.log('   • Path généré:', path)
+  console.log('   • User auth.uid():', authenticatedUserId)
+  console.log('   • Format path:', `{userId}/${path.split('/').slice(1).join('/')}`)
+  console.log('   • File type:', type)
+  console.log('   • File size:', (size / 1024).toFixed(2), 'Ko')
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
   // Upload
   const { data, error } = await supabase.storage
@@ -122,8 +172,17 @@ export async function uploadImage(
     })
 
   if (error) {
+    console.error('❌ [uploadImage] Erreur Storage:')
+    console.error('   • Message:', error.message)
+    console.error('   • Status:', error.statusCode || 'N/A')
+    console.error('   • Error object:', JSON.stringify(error, null, 2))
+    console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     return { path: null, url: null, error }
   }
+
+  console.log('✅ [uploadImage] Upload réussi!')
+  console.log('   • Path final:', data.path)
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
   // Buckets privés : pas d'URL publique. On peut signer si demandé.
   if (sign) {

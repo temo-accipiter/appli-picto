@@ -20,7 +20,7 @@ import { buildScopedPath, sanitizeFileName } from '@/utils/storage/uploadImage'
 import { invalidateImageCache } from '@/utils/serviceWorker/register'
 import { ensureValidSession } from '../auth/ensureValidSession'
 
-export type AssetType = 'task_image' | 'reward_image'
+export type AssetType = 'task_image' | 'reward_image' | 'card_image'
 export type ConversionMethod =
   | 'none'
   | 'heic_to_jpeg_then_webp'

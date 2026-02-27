@@ -1,16 +1,19 @@
 /** Helper de storage :
- * NE supprime PLUS physiquement les images du Storage (déduplication).
- * Les fichiers restent dans Storage même après suppression de tâche/récompense.
- * Raison : Avec la déduplication SHA-256, plusieurs tâches peuvent partager
- * le même fichier. Supprimer le fichier casserait les autres références.
  *
- * Solution : Soft-delete dans user_assets (deleted_at) suffit.
- * Un cleanup périodique peut supprimer les fichiers orphelins plus tard.
+ * Comportement selon le bucket :
  *
- * Retourne toujours { deleted: true, skipped: true } pour compatibilité.
+ * 1. Bucket "personal-images" (cartes personnelles) :
+ *    - Suppression RÉELLE du fichier Storage
+ *    - Path strict: {accountId}/cards/{cardId}.jpg
+ *    - AUCUNE déduplication → safe de supprimer
+ *
+ * 2. Autres buckets (legacy avec déduplication) :
+ *    - Soft-delete uniquement (fichier conservé)
+ *    - Raison : Déduplication SHA-256, plusieurs entités peuvent partager le même fichier
+ *    - Solution : Soft-delete dans user_assets (deleted_at) suffit
  */
 
-// import { supabase } from '@/utils/supabaseClient' // Unused for now (deduplication)
+import { supabase } from '@/utils/supabaseClient'
 
 interface DeleteImageResult {
   deleted: boolean
@@ -19,22 +22,34 @@ interface DeleteImageResult {
 }
 
 export default async function deleteImageIfAny(
-  imagePath: string | null | undefined
+  imagePath: string | null | undefined,
+  bucket: string = 'images' // Default legacy bucket
 ): Promise<DeleteImageResult> {
   if (!imagePath) return { deleted: false, skipped: true }
 
-  // ⚠️ NE PAS SUPPRIMER du Storage (déduplication)
-  // Le fichier peut être utilisé par d'autres tâches/récompenses
-  console.log('ℹ️ Soft-delete uniquement (fichier conservé):', imagePath)
+  // 🆕 Cartes personnelles : VRAIE suppression (pas de déduplication)
+  if (bucket === 'personal-images') {
+    try {
+      console.log('🗑️ [deleteImageIfAny] Suppression réelle (personal-images):', imagePath)
 
+      const { error } = await supabase.storage
+        .from('personal-images')
+        .remove([imagePath])
+
+      if (error) {
+        console.error('❌ [deleteImageIfAny] Erreur suppression:', error)
+        return { deleted: false, skipped: false, error: error as Error }
+      }
+
+      console.log('✅ [deleteImageIfAny] Fichier supprimé avec succès')
+      return { deleted: true, skipped: false }
+    } catch (e) {
+      console.error('❌ [deleteImageIfAny] Exception:', e)
+      return { deleted: false, skipped: false, error: e as Error }
+    }
+  }
+
+  // Legacy buckets avec déduplication : Soft-delete uniquement
+  console.log('ℹ️ [deleteImageIfAny] Soft-delete uniquement (fichier conservé):', imagePath)
   return { deleted: true, skipped: true }
-
-  // 💡 Ancien code (désactivé pour déduplication) :
-  // try {
-  //   const { error } = await supabase.storage.from('images').remove([imagePath])
-  //   if (error) return { deleted: false, error }
-  //   return { deleted: true }
-  // } catch (e) {
-  //   return { deleted: false, error: e }
-  // }
 }

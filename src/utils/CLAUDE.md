@@ -410,12 +410,14 @@ invalidateSignedImageUrl(oldPath, 'images') // Purge cache
 **deleteImageIfAny()**
 
 ```typescript
-import { deleteImageIfAny } from '@/utils/storage/deleteImageIfAny'
+import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 
 // Supprimer image si path fourni (safe si null)
+// - bucket="personal-images" : Suppression RÉELLE (cartes, pas de déduplication)
+// - autres buckets : Soft-delete uniquement (déduplication SHA-256)
 const deleted = await deleteImageIfAny(
-  'user123/taches/2026/01/27/image.jpg',
-  'images'
+  'user123/cards/abc-123.jpg',
+  'personal-images' // Vraie suppression
 )
 if (deleted) {
   console.log('Image supprimée')
