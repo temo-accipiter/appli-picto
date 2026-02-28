@@ -61,7 +61,7 @@ async function convertToJpeg(file: File): Promise<Blob> {
     }
 
     img.onerror = () => {
-      reject(new Error('Impossible de charger l\'image pour conversion'))
+      reject(new Error("Impossible de charger l'image pour conversion"))
     }
 
     // Charger depuis File
@@ -134,7 +134,7 @@ export async function uploadCardImage(
   if (session.user.id !== accountId) {
     return {
       path: null,
-      error: new Error('accountId ne correspond pas à l\'utilisateur'),
+      error: new Error("accountId ne correspond pas à l'utilisateur"),
     }
   }
 

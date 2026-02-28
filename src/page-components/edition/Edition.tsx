@@ -1,7 +1,7 @@
 'use client'
 
 // src/pages/edition/Edition.tsx
-import { Button, CardsEdition, Separator } from '@/components'
+import { CardsEdition, Separator } from '@/components'
 import { useToast } from '@/contexts'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useAuth, useCategories, useI18n, usePersonalCards } from '@/hooks'
@@ -136,7 +136,10 @@ export default function Edition() {
         return
       }
 
-      if (errorMsg.includes('feature_unavailable') || errorMsg.includes('feature')) {
+      if (
+        errorMsg.includes('feature_unavailable') ||
+        errorMsg.includes('feature')
+      ) {
         show(
           'Fonctionnalité réservée aux abonnés. Passe Premium pour créer des cartes personnelles.',
           'error'

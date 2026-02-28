@@ -7,17 +7,12 @@
 .edition-timeline {
   display: flex;
   flex-direction: column;
-  gap: spacing('xl');
-  min-height: 100dvh;
-  padding: spacing('lg') spacing('md');
-  background: surface('page');
-
-  // ── Tablette et plus ──
-  @include respond-to('md') {
-    padding: spacing('xl') spacing('2xl');
-    max-width: size('800');
-    margin: 0 auto;
-  }
+  gap: spacing('md'); // ✅ Aligné avec checklist-edition
+  padding: spacing('lg'); // ✅ Padding uniforme comme checklist-edition
+  background: semantic('info', 'bg'); // ✅ Harmonisé avec checklist-edition
+  border-radius: radius('lg'); // ✅ Harmonisé avec checklist-edition
+  box-shadow: shadow('elevation-lg'); // ✅ Harmonisé avec checklist-edition
+  min-width: 0; // ✅ Empêche l'extension au-delà du parent (flex-item)
 
   // ── En-tête ──
   &__header {

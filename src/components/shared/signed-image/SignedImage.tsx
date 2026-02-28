@@ -108,7 +108,7 @@ export default function SignedImage({
     return () => {
       cancelled = true
     }
-  }, [filePath, bucket, retryCount])
+  }, [filePath, bucket, allowLegacyFallback, retryCount])
 
   return (
     <div

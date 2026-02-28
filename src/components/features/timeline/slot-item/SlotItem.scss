@@ -12,19 +12,10 @@
   background: surface('card');
   border-radius: radius('md');
   list-style: none;
-  // Largeur fixe pour le défilement horizontal (mobile)
+  // ✅ Largeur fixe sur tous les écrans — permet le scroll horizontal
   flex-shrink: 0;
-  width: size('modal-width-sm'); // 320px — lisible sur smartphone
-  scroll-snap-align: start; // Snap vers chaque carte (TSA prévisible)
-
-  // Sur tablette : les slots wrappent → largeur plus flexible
-  @include respond-to('md') {
-    flex-shrink: 1;
-    width: auto;
-    min-width: size('modal-width-sm');
-    max-width: size('card-max-width');
-    scroll-snap-align: none;
-  }
+  width: size('modal-width-sm'); // 320px — lisible sur tous les écrans
+  scroll-snap-align: start; // TSA : snap prévisible à chaque slot
 
   @include safe-transition(background opacity);
 

@@ -15,7 +15,6 @@ import {
   type UploadCardImageResult,
 } from '@/utils/storage/uploadCardImage'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
-import type { AssetType } from '@/utils/storage/modernUploadImage'
 import {
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
@@ -45,16 +44,12 @@ interface ItemFormProps {
   includeCategory?: boolean
   categories?: CategoryOption[]
   onSubmit: (data: ItemFormData) => void
-  assetType?: AssetType // Pour upload (task_image ou reward_image)
-  prefix?: string // Pour chemin upload (taches ou recompenses)
 }
 
 export default function ItemForm({
   includeCategory = false,
   categories = [],
   onSubmit,
-  assetType = 'task_image',
-  prefix = 'misc',
 }: ItemFormProps) {
   const { t } = useI18n()
   const { user } = useAuth()
@@ -266,8 +261,8 @@ export default function ItemForm({
         categorie,
         image: image!,
         imagePath: uploadedImagePath!, // Path Storage: {accountId}/cards/{cardId}.jpg
-        imageUrl: uploadedImagePath,   // Alias pour compatibilité
-        cardId: uploadedCardId!,       // 🆕 ID carte généré client-side
+        imageUrl: uploadedImagePath, // Alias pour compatibilité
+        cardId: uploadedCardId!, // 🆕 ID carte généré client-side
       })
     }
   }

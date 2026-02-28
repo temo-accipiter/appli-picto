@@ -30,7 +30,10 @@ export default async function deleteImageIfAny(
   // 🆕 Cartes personnelles : VRAIE suppression (pas de déduplication)
   if (bucket === 'personal-images') {
     try {
-      console.log('🗑️ [deleteImageIfAny] Suppression réelle (personal-images):', imagePath)
+      console.log(
+        '🗑️ [deleteImageIfAny] Suppression réelle (personal-images):',
+        imagePath
+      )
 
       const { error } = await supabase.storage
         .from('personal-images')
@@ -50,6 +53,9 @@ export default async function deleteImageIfAny(
   }
 
   // Legacy buckets avec déduplication : Soft-delete uniquement
-  console.log('ℹ️ [deleteImageIfAny] Soft-delete uniquement (fichier conservé):', imagePath)
+  console.log(
+    'ℹ️ [deleteImageIfAny] Soft-delete uniquement (fichier conservé):',
+    imagePath
+  )
   return { deleted: true, skipped: true }
 }

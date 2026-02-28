@@ -100,7 +100,11 @@ export default function useCategories(reload: number = 0): UseCategoriesReturn {
 
       // ✅ Garde contre appel legacy avec objet au lieu de string
       if (typeof name !== 'string') {
-        console.error('[useCategories] addCategory: name doit être string, reçu:', typeof name, name)
+        console.error(
+          '[useCategories] addCategory: name doit être string, reçu:',
+          typeof name,
+          name
+        )
         const err = new Error('Paramètre invalide : name doit être une string')
         show('Erreur : paramètre invalide', 'error')
         return { error: err }

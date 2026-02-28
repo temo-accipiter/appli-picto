@@ -7,6 +7,7 @@ import {
   ThemeToggle,
   UserMenu,
 } from '@/components'
+import { ChildProfileSelector } from '@/components/features/child-profile'
 import { useAuth, useI18n, useIsVisitor } from '@/hooks'
 import { motion } from 'framer-motion'
 import {
@@ -81,6 +82,12 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
+            {/* ✅ Sélecteur de profil enfant (uniquement sur page Edition) */}
+            {isEdition && (
+              <div className="navbar-profile-selector">
+                <ChildProfileSelector showCreateButton={false} />
+              </div>
+            )}
             {isEdition && <SettingsMenu />}
             <UserMenu />
           </motion.div>

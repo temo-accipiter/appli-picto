@@ -106,6 +106,13 @@
   flex-wrap: nowrap;
 }
 
+// ✅ Sélecteur de profil enfant dans bottom nav (mobile uniquement)
+.bottom-nav__profile-selector {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 // Nav icon link styling (used for Édition/Tableau icons)
 .nav-icon-link {
   display: inline-flex;

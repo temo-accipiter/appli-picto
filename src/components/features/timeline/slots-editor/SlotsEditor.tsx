@@ -128,6 +128,9 @@ export function SlotsEditor({
     if (msg.includes('reward') && msg.includes('min')) {
       return 'La timeline doit avoir au moins une récompense.'
     }
+    if (msg.includes('timeline') || msg.includes('pas de timeline')) {
+      return 'Aucun profil enfant sélectionné. Sélectionne un profil dans la barre de navigation.'
+    }
     return 'Une erreur est survenue. Réessaie.'
   }
 
@@ -229,12 +232,18 @@ export function SlotsEditor({
   // Afficher le bouton "Retirer les cartes" uniquement si au moins un slot a une carte
   const hasSomeCard = slots.some(s => s.card_id !== null)
 
+  // ✅ Récompenses en premier, puis étapes (ordre position ASC dans chaque groupe)
+  const sortedSlots = [
+    ...slots.filter(s => s.kind === 'reward'),
+    ...slots.filter(s => s.kind === 'step'),
+  ]
+
   return (
     <div className="slots-editor">
       {/* ── Liste des slots ──────────────────────────────────────────────────── */}
       {slots.length > 0 ? (
         <ul className="slots-editor__list" aria-label="Slots de la timeline">
-          {slots.map((slot, idx) => {
+          {sortedSlots.map((slot, idx) => {
             // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
             const sequence = slot.card_id
               ? (sequences.find(s => s.mother_card_id === slot.card_id) ?? null)

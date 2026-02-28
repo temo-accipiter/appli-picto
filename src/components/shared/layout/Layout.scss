@@ -58,9 +58,11 @@
     padding: spacing('sm');
     background-color: surface('bg');
     color: text();
+    min-width: 0; // ✅ Empêche l'extension au-delà de la largeur viewport (flex-item constraint)
 
     main {
       flex: 1;
+      min-width: 0; // ✅ Permet aux enfants (EditionTimeline, Edition) de respecter la largeur parent
       /* [Mobile-first] Base = mobile (320px+) */
       padding: spacing('md');
     }

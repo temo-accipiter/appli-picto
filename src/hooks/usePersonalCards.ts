@@ -37,7 +37,10 @@ interface UsePersonalCardsReturn {
   error: Error | null
   createCard: (input: CreatePersonalCardInput) => Promise<ActionResult>
   updateCard: (id: string, updates: { name: string }) => Promise<ActionResult>
-  updateCardCategory: (cardId: string, categoryId: string) => Promise<ActionResult>
+  updateCardCategory: (
+    cardId: string,
+    categoryId: string
+  ) => Promise<ActionResult>
   deleteCard: (id: string) => Promise<ActionResult>
   refresh: () => void
 }
@@ -100,7 +103,10 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
 
         if (controller.signal.aborted) return
         if (mappingsError) {
-          console.warn('[usePersonalCards] Erreur mappings (non bloquant):', mappingsError)
+          console.warn(
+            '[usePersonalCards] Erreur mappings (non bloquant):',
+            mappingsError
+          )
         }
 
         // ✅ Hydratation : Associer category_id à chaque carte via mapping

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Pencil } from 'lucide-react'
 import { UserMenu, SettingsMenu } from '@/components'
+import { ChildProfileSelector } from '@/components/features/child-profile'
 import './BottomNav.scss'
 
 /**
@@ -15,7 +16,7 @@ import './BottomNav.scss'
  * - Desktop: top-right avatar only
  *
  * /edition (Mobile < 768px):
- * - Fixed bottom: Tableau, Avatar, Settings
+ * - Fixed bottom: Tableau, Profile Selector, Avatar, Settings
  *
  * /profil (Mobile < 768px):
  * - Fixed bottom: Édition, Tableau, Avatar
@@ -50,7 +51,7 @@ export default function BottomNav() {
         {/* /tableau: Avatar only (zen mode) */}
         {isTableau && <UserMenu />}
 
-        {/* /edition: Tableau, Avatar, Settings */}
+        {/* /edition: Tableau, Profile Selector, Avatar, Settings */}
         {isEdition && (
           <>
             <Link
@@ -61,6 +62,9 @@ export default function BottomNav() {
             >
               <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
             </Link>
+            <div className="bottom-nav__profile-selector">
+              <ChildProfileSelector showCreateButton={false} />
+            </div>
             <UserMenu />
             <SettingsMenu />
           </>

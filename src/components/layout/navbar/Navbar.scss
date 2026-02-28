@@ -122,6 +122,16 @@
     gap: spacing('md');
   }
 
+  // Sélecteur de profil enfant (page Edition uniquement)
+  // ✅ Stylisé comme user-menu-trigger (transparent, minimal)
+  .navbar-profile-selector {
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: none;
+    outline-offset: spacing('xs');
+  }
+
   // Actions spécifiques aux visiteurs
   &.visitor-actions {
     gap: spacing('lg');

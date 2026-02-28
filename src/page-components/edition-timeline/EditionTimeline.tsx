@@ -30,7 +30,6 @@ import useSlots from '@/hooks/useSlots'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
-import { ChildProfileSelector } from '@/components/features/child-profile'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
@@ -43,11 +42,7 @@ interface EditionTimelineProps {
 export default function EditionTimeline({
   embedded = false,
 }: EditionTimelineProps) {
-  const {
-    activeChildId,
-    activeChildProfile,
-    loading: profilesLoading,
-  } = useChildProfile()
+  const { activeChildId } = useChildProfile()
 
   // ── S8 : Offline guard (§4.4) ───────────────────────────────────────────────
   // isOnline : détermine si les actions structurelles sont autorisées
@@ -76,11 +71,8 @@ export default function EditionTimeline({
   }, [activeChildId])
 
   // Lecture de la timeline pour l'enfant actif (1:1)
-  const {
-    timeline,
-    loading: timelineLoading,
-    error: timelineError,
-  } = useTimelines(activeChildId)
+  // ✅ timelineLoading transmis à SlotsEditor pour bloquer les boutons pendant le chargement
+  const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
 
   // CRUD slots de la timeline
   const {
@@ -104,8 +96,6 @@ export default function EditionTimeline({
 
   // Validations de la session (pour savoir quels slots sont verrouillés)
   const { validatedSlotIds } = useSessionValidations(session?.id ?? null)
-
-  const isLoading = profilesLoading || timelineLoading
 
   // ── S8 : Wrappers offline pour les handlers de SlotsEditor ─────────────────
   // §4.4 : CRUD structure interdit offline → guard UX (toast + désactivation)
@@ -168,7 +158,6 @@ export default function EditionTimeline({
     : undefined
 
   const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
-  const TitleTag: 'h1' | 'h2' = embedded ? 'h2' : 'h1'
 
   return (
     <RootTag className="edition-timeline" aria-label="Édition de la timeline">
@@ -187,96 +176,29 @@ export default function EditionTimeline({
       ── */}
       {isExecutionOnly && <ExecutionOnlyBanner />}
 
-      {/* ── En-tête ────────────────────────────────────────────────────────────── */}
-      <header className="edition-timeline__header">
-        <TitleTag className="edition-timeline__title">
-          Édition de la timeline
-        </TitleTag>
-        <p className="edition-timeline__subtitle">
-          Sélectionne un profil enfant pour modifier sa timeline.
-        </p>
-      </header>
-
-      {/* ── Sélecteur de profil ─────────────────────────────────────────────────
-           showCreateButton=false : la page Édition reste focalisée sur la tâche.
-           Pour créer un profil → /profil. Moins d'options = moins de charge cognitive TSA.
+      {/* ── Éditeur de slots — rendu uniquement si la timeline est chargée ──────
+           ⚠️ GUARD CRITIQUE : sans timeline, SlotsEditor ne peut pas créer de slots
+           (addSlot vérifie timelineId dans useSlots et retourne une erreur si null).
+           Ce guard empêche l'utilisateur de cliquer pendant le chargement asynchrone.
       ── */}
-      <section
-        className="edition-timeline__profiles"
-        aria-label="Choisir un profil enfant"
-      >
-        <ChildProfileSelector showCreateButton={false} />
-      </section>
-
-      {/* ── Contenu principal ───────────────────────────────────────────────────── */}
-      <section className="edition-timeline__content" aria-live="polite">
-        {/* Chargement global — texte visible, pas d'écran vide */}
-        {isLoading && (
-          <div className="edition-timeline__loading" aria-busy="true">
-            <span aria-hidden="true">⏳</span>
-            <span>Chargement…</span>
-          </div>
-        )}
-
-        {/* Aucun profil sélectionné */}
-        {!isLoading && !activeChildId && (
-          <div className="edition-timeline__empty">
-            <span
-              className="edition-timeline__empty-icon"
-              aria-hidden="true"
-              role="img"
-            >
-              👆
-            </span>
-            <p>Sélectionne un profil ci-dessus pour commencer.</p>
-          </div>
-        )}
-
-        {/* Profil actif → titre + éditeur */}
-        {!isLoading && activeChildId && (
-          <>
-            {activeChildProfile && (
-              <h2 className="edition-timeline__child-name">
-                Timeline de {activeChildProfile.name}
-              </h2>
-            )}
-
-            {/* Erreur de chargement timeline — message neutre */}
-            {!timelineLoading && timelineError && (
-              <p className="edition-timeline__error" role="alert">
-                Impossible de charger la timeline. Réessaie plus tard.
-              </p>
-            )}
-
-            {/* Timeline pas encore créée — uniquement si pas d'erreur */}
-            {!timelineLoading && !timelineError && !timeline && (
-              <p className="edition-timeline__no-timeline">
-                La timeline est en cours d&apos;initialisation…
-              </p>
-            )}
-
-            {/* Éditeur de slots — S6 : verrouillage session · S8 : guard offline · S9 : guard execution-only */}
-            {timeline && (
-              <SlotsEditor
-                key={`${timeline.id}-${reloadKey}`}
-                slots={slots}
-                loading={slotsLoading}
-                error={slotsError}
-                onAddStep={safeAddStep}
-                onAddReward={safeAddReward}
-                onUpdateSlot={safeUpdateSlot}
-                onRemoveSlot={safeRemoveSlot}
-                onClearAllCards={safeClearAllCards}
-                sessionState={session?.state ?? null}
-                validatedSlotIds={validatedSlotIds}
-                onResetSession={safeResetSession}
-                isOffline={!isOnline}
-                isExecutionOnly={isExecutionOnly}
-              />
-            )}
-          </>
-        )}
-      </section>
+      {timeline && (
+        <SlotsEditor
+          key={`${timeline.id}-${reloadKey}`}
+          slots={slots}
+          loading={slotsLoading}
+          error={slotsError}
+          onAddStep={safeAddStep}
+          onAddReward={safeAddReward}
+          onUpdateSlot={safeUpdateSlot}
+          onRemoveSlot={safeRemoveSlot}
+          onClearAllCards={safeClearAllCards}
+          sessionState={session?.state ?? null}
+          validatedSlotIds={validatedSlotIds}
+          onResetSession={safeResetSession}
+          isOffline={!isOnline}
+          isExecutionOnly={isExecutionOnly}
+        />
+      )}
     </RootTag>
   )
 }
