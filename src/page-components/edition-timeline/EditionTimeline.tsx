@@ -71,8 +71,7 @@ export default function EditionTimeline({
   }, [activeChildId])
 
   // Lecture de la timeline pour l'enfant actif (1:1)
-  // ✅ timelineLoading transmis à SlotsEditor pour bloquer les boutons pendant le chargement
-  const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
+  const { timeline } = useTimelines(activeChildId)
 
   // CRUD slots de la timeline
   const {
