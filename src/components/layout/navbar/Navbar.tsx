@@ -85,7 +85,7 @@ export default function Navbar() {
             {/* ✅ Sélecteur de profil enfant (uniquement sur page Edition) */}
             {isEdition && (
               <div className="navbar-profile-selector">
-                <ChildProfileSelector showCreateButton={false} />
+                <ChildProfileSelector showCreateButton={true} />
               </div>
             )}
             {isEdition && <SettingsMenu />}

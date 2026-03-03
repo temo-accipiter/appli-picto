@@ -3,7 +3,10 @@
 // ========================================
 
 // Child Profile
-export { ChildProfileSelector } from './features/child-profile'
+export {
+  ChildProfileSelector,
+  ChildProfileManager,
+} from './features/child-profile'
 
 // Timeline (S4 — Éditeur timelines + slots)
 export { CardPicker, SlotItem, SlotsEditor } from './features/timeline'

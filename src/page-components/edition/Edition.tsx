@@ -4,11 +4,20 @@
 import { CardsEdition, Separator } from '@/components'
 import { useToast } from '@/contexts'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
-import { useAuth, useCategories, useI18n, usePersonalCards } from '@/hooks'
+import { useOffline } from '@/contexts/OfflineContext'
+import {
+  useAuth,
+  useCategories,
+  useI18n,
+  usePersonalCards,
+  useExecutionOnly,
+} from '@/hooks'
+import type { Timeline, Slot } from '@/types/supabase'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import React, {
   lazy,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -40,7 +49,16 @@ interface CardItem {
   categorie?: string
 }
 
-export default function Edition() {
+interface EditionProps {
+  timeline: Timeline | null
+  slots: Slot[]
+  updateSlot: (
+    id: string,
+    updates: { card_id?: string | null; tokens?: number | null }
+  ) => Promise<{ error: Error | null }>
+}
+
+export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
   const { t } = useI18n()
   const { show } = useToast()
   const { user } = useAuth()
@@ -78,6 +96,17 @@ export default function Edition() {
   const { categories, addCategory, deleteCategory } = useCategories(reload)
   const { cards, createCard, updateCard, updateCardCategory, deleteCard } =
     usePersonalCards()
+
+  // ── PHASE 1 : Timeline + Slots reçus en props (source unique partagée) ───
+  // Suppression useTimelines/useSlots locaux → désync résolu
+  // timeline, slots, updateSlot proviennent du parent page.tsx
+
+  // ── Guards : offline + execution-only ────────────────────────────────────
+  const { isOnline } = useOffline()
+  const { isExecutionOnly } = useExecutionOnly()
+
+  // Checkbox disabled si offline ou execution-only
+  const checkboxDisabled = !isOnline || isExecutionOnly
 
   // ✅ Transformation Category (DB) → Categorie (UI) + Déduplication
   const uniqueCategories = useMemo(() => {
@@ -242,6 +271,73 @@ export default function Edition() {
     await updateCard(String(id), { name: label })
   }
 
+  /**
+   * PHASE 1 : Handler checkbox bibliothèque.
+   * - Si currentlyChecked=false : ajoute au premier slot étape vide (kind='step', card_id=null).
+   * - Si currentlyChecked=true : retire de TOUS les slots.
+   * - Guard offline/execution-only déjà géré par checkboxDisabled.
+   */
+  const handleToggleCardInTimeline = useCallback(
+    async (cardId: string, currentlyChecked: boolean) => {
+      // Guard : pas de timeline ou pas de slots
+      if (!timeline || !slots) {
+        show('Aucune timeline active', 'warning')
+        return
+      }
+
+      if (currentlyChecked) {
+        // Retirer la carte de TOUS les slots où elle est présente
+        const slotsWithCard = slots.filter(s => s.card_id === cardId)
+
+        if (slotsWithCard.length === 0) {
+          // Edge case : checkbox checked mais pas de slot (désync)
+          console.warn(
+            '[Edition] Checkbox checked mais aucun slot trouvé pour card:',
+            cardId
+          )
+          return
+        }
+
+        // Retirer de tous les slots (UPDATE card_id = null)
+        for (const slot of slotsWithCard) {
+          const { error } = await updateSlot(slot.id, { card_id: null })
+          if (error) {
+            console.error('[Edition] Erreur retrait carte:', error)
+            show('Erreur lors du retrait de la carte', 'error')
+            return
+          }
+        }
+
+        show(`Carte retirée de ${slotsWithCard.length} slot(s)`, 'success')
+      } else {
+        // Ajouter au premier slot étape vide
+        const stepSlots = slots
+          .filter(s => s.kind === 'step')
+          .sort((a, b) => a.position - b.position)
+
+        const firstEmptyStepSlot = stepSlots.find(s => s.card_id === null)
+
+        if (!firstEmptyStepSlot) {
+          show('Aucune étape vide. Ajoute une étape.', 'warning')
+          return
+        }
+
+        const { error } = await updateSlot(firstEmptyStepSlot.id, {
+          card_id: cardId,
+        })
+
+        if (error) {
+          console.error('[Edition] Erreur assignation carte:', error)
+          show("Erreur lors de l'assignation de la carte", 'error')
+          return
+        }
+
+        show("Carte ajoutée à l'étape", 'success')
+      }
+    },
+    [timeline, slots, updateSlot, show]
+  )
+
   return (
     <div className="page-edition">
       {/* WCAG 2.4.6 - Structure sémantique avec h1 */}
@@ -269,6 +365,9 @@ export default function Edition() {
             onUpdateCategorie={handleUpdateCategorie}
             onDelete={c => setCardASupprimer(c)}
             isSubmittingCategory={isSubmittingCategory}
+            timelineSlots={slots}
+            onToggleCardInTimeline={handleToggleCardInTimeline}
+            checkboxDisabled={checkboxDisabled}
           />
         </div>
       </div>

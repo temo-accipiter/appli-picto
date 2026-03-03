@@ -34,88 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      account_preferences: {
-        Row: {
-          account_id: string
-          confetti_enabled: boolean
-          created_at: string
-          reduced_motion: boolean
-          toasts_enabled: boolean
-          train_line: string | null
-          train_progress_enabled: boolean
-          train_type: Database['public']['Enums']['transport_type']
-          updated_at: string
-        }
-        Insert: {
-          account_id: string
-          confetti_enabled?: boolean
-          created_at?: string
-          reduced_motion?: boolean
-          toasts_enabled?: boolean
-          train_line?: string | null
-          train_progress_enabled?: boolean
-          train_type?: Database['public']['Enums']['transport_type']
-          updated_at?: string
-        }
-        Update: {
-          account_id?: string
-          confetti_enabled?: boolean
-          created_at?: string
-          reduced_motion?: boolean
-          toasts_enabled?: boolean
-          train_line?: string | null
-          train_progress_enabled?: boolean
-          train_type?: Database['public']['Enums']['transport_type']
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'account_preferences_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: true
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      account_quota_months: {
-        Row: {
-          account_id: string
-          created_at: string
-          month_end_utc: string
-          month_start_utc: string
-          period_ym: number
-          personal_cards_created: number
-          tz_ref: string
-        }
-        Insert: {
-          account_id: string
-          created_at?: string
-          month_end_utc: string
-          month_start_utc: string
-          period_ym: number
-          personal_cards_created?: number
-          tz_ref: string
-        }
-        Update: {
-          account_id?: string
-          created_at?: string
-          month_end_utc?: string
-          month_start_utc?: string
-          period_ym?: number
-          personal_cards_created?: number
-          tz_ref?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'account_quota_months_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       accounts: {
         Row: {
           created_at: string
@@ -139,51 +57,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      admin_audit_log: {
-        Row: {
-          action: Database['public']['Enums']['admin_action']
-          actor_account_id: string
-          created_at: string
-          id: string
-          metadata: Json
-          reason: string
-          target_account_id: string | null
-        }
-        Insert: {
-          action: Database['public']['Enums']['admin_action']
-          actor_account_id: string
-          created_at?: string
-          id?: string
-          metadata?: Json
-          reason: string
-          target_account_id?: string | null
-        }
-        Update: {
-          action?: Database['public']['Enums']['admin_action']
-          actor_account_id?: string
-          created_at?: string
-          id?: string
-          metadata?: Json
-          reason?: string
-          target_account_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'admin_audit_log_actor_account_id_fkey'
-            columns: ['actor_account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-          {
-            foreignKeyName: 'admin_audit_log_target_account_id_fkey'
-            columns: ['target_account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
       }
       cards: {
         Row: {
@@ -289,65 +162,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: 'child_profiles_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      consent_events: {
-        Row: {
-          account_id: string | null
-          action: string | null
-          app_version: string | null
-          choices: Json
-          consent_type: string
-          created_at: string
-          id: string
-          ip_hash: string | null
-          locale: string | null
-          mode: string
-          origin: string | null
-          ts_client: string | null
-          ua: string | null
-          version: string
-        }
-        Insert: {
-          account_id?: string | null
-          action?: string | null
-          app_version?: string | null
-          choices?: Json
-          consent_type: string
-          created_at?: string
-          id?: string
-          ip_hash?: string | null
-          locale?: string | null
-          mode?: string
-          origin?: string | null
-          ts_client?: string | null
-          ua?: string | null
-          version?: string
-        }
-        Update: {
-          account_id?: string | null
-          action?: string | null
-          app_version?: string | null
-          choices?: Json
-          consent_type?: string
-          created_at?: string
-          id?: string
-          ip_hash?: string | null
-          locale?: string | null
-          mode?: string
-          origin?: string | null
-          ts_client?: string | null
-          ua?: string | null
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'consent_events_account_id_fkey'
             columns: ['account_id']
             isOneToOne: false
             referencedRelation: 'accounts'
@@ -612,124 +426,6 @@ export type Database = {
           },
         ]
       }
-      stations: {
-        Row: {
-          created_at: string
-          id: string
-          label: string
-          ligne: string
-          ordre: number
-          type: Database['public']['Enums']['transport_type']
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          label: string
-          ligne: string
-          ordre: number
-          type: Database['public']['Enums']['transport_type']
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          label?: string
-          ligne?: string
-          ordre?: number
-          type?: Database['public']['Enums']['transport_type']
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      subscription_logs: {
-        Row: {
-          account_id: string | null
-          created_at: string
-          details: Json | null
-          event_type: string
-          id: string
-        }
-        Insert: {
-          account_id?: string | null
-          created_at?: string
-          details?: Json | null
-          event_type: string
-          id?: string
-        }
-        Update: {
-          account_id?: string | null
-          created_at?: string
-          details?: Json | null
-          event_type?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'subscription_logs_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
-      }
-      subscriptions: {
-        Row: {
-          account_id: string
-          cancel_at: string | null
-          cancel_at_period_end: boolean
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          id: string
-          last_event_id: string | null
-          price_id: string | null
-          status: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          account_id: string
-          cancel_at?: string | null
-          cancel_at_period_end?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          last_event_id?: string | null
-          price_id?: string | null
-          status: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          account_id?: string
-          cancel_at?: string | null
-          cancel_at_period_end?: boolean
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          id?: string
-          last_event_id?: string | null
-          price_id?: string | null
-          status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: 'subscriptions_account_id_fkey'
-            columns: ['account_id']
-            isOneToOne: false
-            referencedRelation: 'accounts'
-            referencedColumns: ['id']
-          },
-        ]
-      }
       timelines: {
         Row: {
           child_profile_id: string
@@ -817,62 +513,9 @@ export type Database = {
         Args: { target_account_id: string }
         Returns: Json
       }
-      apply_subscription_to_account_status: {
-        Args: { p_account_id: string }
-        Returns: undefined
-      }
-      cards_personal_feature_enabled: {
-        Args: { p_status: Database['public']['Enums']['account_status'] }
-        Returns: boolean
-      }
-      check_can_create_child_profile: {
-        Args: { p_account_id: string }
-        Returns: undefined
-      }
-      check_can_create_personal_card: {
-        Args: { p_account_id: string }
-        Returns: undefined
-      }
-      check_can_register_device: {
-        Args: { p_account_id: string; p_revoked_at: string }
-        Returns: undefined
-      }
-      enforce_child_profile_limit_after_session_completion: {
-        Args: { p_child_profile_id: string }
-        Returns: undefined
-      }
-      ensure_quota_month_context: {
-        Args: { p_account_id: string }
-        Returns: {
-          month_end_utc: string
-          month_start_utc: string
-          period_ym: number
-          tz_ref: string
-        }[]
-      }
-      get_account_status: {
-        Args: { p_account_id: string }
-        Returns: Database['public']['Enums']['account_status']
-      }
       is_admin: { Args: never; Returns: boolean }
       is_execution_only: { Args: never; Returns: boolean }
       is_valid_timezone: { Args: { tz: string }; Returns: boolean }
-      quota_cards_monthly_limit: {
-        Args: { p_status: Database['public']['Enums']['account_status'] }
-        Returns: number
-      }
-      quota_cards_stock_limit: {
-        Args: { p_status: Database['public']['Enums']['account_status'] }
-        Returns: number
-      }
-      quota_devices_limit: {
-        Args: { p_status: Database['public']['Enums']['account_status'] }
-        Returns: number
-      }
-      quota_profiles_limit: {
-        Args: { p_status: Database['public']['Enums']['account_status'] }
-        Returns: number
-      }
       reset_active_started_session_for_timeline: {
         Args: { p_reason?: string; p_timeline_id: string }
         Returns: undefined
@@ -884,18 +527,10 @@ export type Database = {
     }
     Enums: {
       account_status: 'free' | 'subscriber' | 'admin'
-      admin_action:
-        | 'revoke_sessions'
-        | 'disable_device'
-        | 'resync_subscription_from_stripe'
-        | 'append_subscription_log'
-        | 'request_account_deletion'
-        | 'export_proof_evidence'
       card_type: 'bank' | 'personal'
       child_profile_status: 'active' | 'locked'
       session_state: 'active_preview' | 'active_started' | 'completed'
       slot_kind: 'step' | 'reward'
-      transport_type: 'metro' | 'tram' | 'bus'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1027,19 +662,10 @@ export const Constants = {
   public: {
     Enums: {
       account_status: ['free', 'subscriber', 'admin'],
-      admin_action: [
-        'revoke_sessions',
-        'disable_device',
-        'resync_subscription_from_stripe',
-        'append_subscription_log',
-        'request_account_deletion',
-        'export_proof_evidence',
-      ],
       card_type: ['bank', 'personal'],
       child_profile_status: ['active', 'locked'],
       session_state: ['active_preview', 'active_started', 'completed'],
       slot_kind: ['step', 'reward'],
-      transport_type: ['metro', 'tram', 'bus'],
     },
   },
 } as const

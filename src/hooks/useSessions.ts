@@ -91,6 +91,14 @@ export default function useSessions(
       return
     }
 
+    // VISITOR mode → ZÉRO appel DB (profil local uniquement)
+    if (childProfileId === 'visitor-local') {
+      setSession(null)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     const controller = new AbortController()
     setLoading(true)
     setError(null)

@@ -25,22 +25,42 @@ import { useEffect, useState } from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
 import { useToast } from '@/contexts'
-import useTimelines from '@/hooks/useTimelines'
-import useSlots from '@/hooks/useSlots'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
+import type { Timeline, Slot } from '@/types/supabase'
 import './EditionTimeline.scss'
 
 interface EditionTimelineProps {
   embedded?: boolean
+  timeline: Timeline | null
+  slots: Slot[]
+  slotsLoading: boolean
+  slotsError: Error | null
+  addStep: () => Promise<{ error: Error | null }>
+  addReward: () => Promise<{ error: Error | null }>
+  updateSlot: (
+    id: string,
+    updates: { card_id?: string | null; tokens?: number | null }
+  ) => Promise<{ error: Error | null }>
+  removeSlot: (id: string) => Promise<{ error: Error | null }>
+  clearAllCards: () => Promise<{ error: Error | null }>
 }
 
 export default function EditionTimeline({
   embedded = false,
+  timeline,
+  slots,
+  slotsLoading,
+  slotsError,
+  addStep,
+  addReward,
+  updateSlot,
+  removeSlot,
+  clearAllCards,
 }: EditionTimelineProps) {
   const { activeChildId } = useChildProfile()
 
@@ -70,20 +90,9 @@ export default function EditionTimeline({
     setReloadKey(k => k + 1)
   }, [activeChildId])
 
-  // Lecture de la timeline pour l'enfant actif (1:1)
-  const { timeline } = useTimelines(activeChildId)
-
-  // CRUD slots de la timeline
-  const {
-    slots,
-    loading: slotsLoading,
-    error: slotsError,
-    addStep,
-    addReward,
-    updateSlot,
-    removeSlot,
-    clearAllCards,
-  } = useSlots(timeline?.id ?? null)
+  // ── SLOTS : Reçus en props depuis page.tsx (source unique partagée) ─────────
+  // Plus de useSlots local → désync Timeline ↔ Bibliothèque résolu
+  // Toutes les fonctions CRUD (addStep, updateSlot, etc.) proviennent du parent
 
   // ── S6 : Session active pour verrouillage et réinitialisation ──────────────
   // On charge la session uniquement si on a un profil + une timeline.

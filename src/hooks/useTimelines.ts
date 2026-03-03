@@ -56,6 +56,15 @@ export default function useTimelines(
       return
     }
 
+    // VISITOR mode → ZÉRO appel DB (profil local uniquement)
+    // 'visitor-local' est un ID spécial qui ne doit jamais toucher la DB
+    if (childProfileId === 'visitor-local') {
+      setTimeline(null)
+      setLoading(false)
+      setError(null)
+      return
+    }
+
     const controller = new AbortController()
     setLoading(true)
     setError(null)

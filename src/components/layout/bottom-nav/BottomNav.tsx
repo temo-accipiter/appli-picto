@@ -63,7 +63,7 @@ export default function BottomNav() {
               <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
             </Link>
             <div className="bottom-nav__profile-selector">
-              <ChildProfileSelector showCreateButton={false} />
+              <ChildProfileSelector showCreateButton={true} />
             </div>
             <UserMenu />
             <SettingsMenu />

@@ -9,7 +9,7 @@ import {
   InputWithValidation,
   ModalConfirm,
 } from '@/components'
-import { ChildProfileSelector } from '@/components/features/child-profile'
+import { ChildProfileManager } from '@/components/features/child-profile'
 import DeviceList from '@/components/features/profil/device-list/DeviceList'
 import { useToast } from '@/contexts'
 import { useAuth, useI18n, useSubscriptionStatus } from '@/hooks'
@@ -376,7 +376,7 @@ export default function Profil() {
           Profils enfants
         </h2>
         <div className="profil-card__content">
-          <ChildProfileSelector showCreateButton={true} />
+          <ChildProfileManager />
         </div>
       </section>
 

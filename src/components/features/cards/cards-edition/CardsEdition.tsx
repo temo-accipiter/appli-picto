@@ -47,6 +47,29 @@ interface CardsEditionProps {
   onChangeFilterCategory: (value: string) => void
   onReorder?: (ids: (string | number)[]) => void
   isSubmittingCategory?: boolean
+  // ── PHASE 1 : Checkbox bibliothèque contrôlée par timeline ────────────────
+  /**
+   * Slots de la timeline active (pour calculer checked).
+   * Si undefined, la checkbox est masquée (pas de timeline active).
+   */
+  timelineSlots?: Array<{
+    id: string
+    card_id: string | null
+    kind: 'step' | 'reward'
+    position: number
+  }>
+  /**
+   * Handler checkbox : ajoute carte au premier slot étape vide ou retire de tous.
+   * Fourni par Edition.tsx qui a accès à useSlots.
+   */
+  onToggleCardInTimeline?: (
+    cardId: string,
+    currentlyChecked: boolean
+  ) => Promise<void>
+  /**
+   * Guards : checkbox disabled si offline/execution-only/session locked.
+   */
+  checkboxDisabled?: boolean
 }
 
 export default function CardsEdition({
@@ -62,6 +85,9 @@ export default function CardsEdition({
   onChangeFilterCategory,
   onReorder,
   isSubmittingCategory = false,
+  timelineSlots,
+  onToggleCardInTimeline,
+  checkboxDisabled = false,
 }: CardsEditionProps) {
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [drafts, setDrafts] = useState<Record<string | number, string>>({})
@@ -139,6 +165,25 @@ export default function CardsEdition({
     setCatASupprimer(null)
   }
 
+  /**
+   * PHASE 1 : Calculer si une carte est présente dans au moins un slot.
+   * checked = true si card_id existe dans timelineSlots.
+   */
+  const isCardInTimeline = (cardId: string | number): boolean => {
+    if (!timelineSlots) return false
+    return timelineSlots.some(slot => slot.card_id === String(cardId))
+  }
+
+  /**
+   * PHASE 1 : Handler checkbox — toggle carte dans timeline.
+   */
+  const handleToggleCheckbox = async (cardId: string | number) => {
+    if (!onToggleCardInTimeline) return
+
+    const currentlyChecked = isCardInTimeline(cardId)
+    await onToggleCardInTimeline(String(cardId), currentlyChecked)
+  }
+
   return (
     <div className="checklist-edition">
       <Button
@@ -210,8 +255,9 @@ export default function CardsEdition({
               onLabelChange={val => handleChange(item.id, val)}
               onBlur={val => handleBlur(item.id, val)}
               onDelete={() => onDelete(item)}
-              checked={false} // Pas de checkbox pour cards
-              onToggleCheck={() => {}} // Pas d'action
+              checked={isCardInTimeline(item.id)}
+              onToggleCheck={() => handleToggleCheckbox(item.id)}
+              disabled={checkboxDisabled}
               categorie={item.categorie || ''}
               onCategorieChange={val => onUpdateCategorie(item.id, val)}
               categorieOptions={categories}
