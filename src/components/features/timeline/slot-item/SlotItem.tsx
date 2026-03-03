@@ -226,7 +226,7 @@ export function SlotItem({
           {/* Image de la carte */}
           {assignedCard?.image_url ? (
             <SignedImage
-              path={assignedCard.image_url}
+              filePath={assignedCard.image_url}
               alt={assignedCard.name}
               bucket={
                 bankCards.some(c => c.id === slot.card_id)

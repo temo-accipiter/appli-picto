@@ -16,10 +16,10 @@ export function useDbPseudo(userId: string | undefined): string {
     if (!userId || !user || user.id !== userId) return ''
 
     const metadataLabel = String(
-      user.user_metadata?.display_name ||
+      user.user_metadata?.pseudo ||
+        user.user_metadata?.display_name ||
         user.user_metadata?.full_name ||
         user.user_metadata?.name ||
-        user.user_metadata?.pseudo ||
         ''
     ).trim()
     if (metadataLabel) return metadataLabel

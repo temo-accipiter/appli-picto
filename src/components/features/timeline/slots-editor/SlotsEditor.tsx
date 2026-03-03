@@ -30,7 +30,7 @@
  * - Le verrouillage est appliqué dans SlotItem, pas ici.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
 import useBankCards from '@/hooks/useBankCards'
@@ -112,11 +112,45 @@ export function SlotsEditor({
   const [actionError, setActionError] = useState<string | null>(null)
 
   // Chargement des cartes une seule fois, transmises à chaque SlotItem
-  const { cards: bankCards } = useBankCards()
-  const { cards: personalCards } = usePersonalCards()
+  const { cards: bankCards, refresh: refreshBankCards } = useBankCards()
+  const { cards: personalCards, refresh: refreshPersonalCards } =
+    usePersonalCards()
+  const lastMissingSignatureRef = useRef('')
 
   // Chargement des séquences du compte (S7 — pour les étapes avec carte assignée)
   const { sequences, createSequence, deleteSequence } = useSequences()
+
+  // Après création/assignation d'une nouvelle carte, ce composant peut avoir
+  // un cache local périmé (hook distinct de l'édition des cartes).
+  // On déclenche un refresh ciblé si un slot référence une carte introuvable.
+  useEffect(() => {
+    const missingIds = slots
+      .map(s => s.card_id)
+      .filter((id): id is string => Boolean(id))
+      .filter(
+        id =>
+          !bankCards.some(card => card.id === id) &&
+          !personalCards.some(card => card.id === id)
+      )
+
+    if (missingIds.length === 0) {
+      lastMissingSignatureRef.current = ''
+      return
+    }
+
+    const signature = [...missingIds].sort().join('|')
+    if (signature === lastMissingSignatureRef.current) return
+
+    lastMissingSignatureRef.current = signature
+    refreshBankCards()
+    refreshPersonalCards()
+  }, [
+    slots,
+    bankCards,
+    personalCards,
+    refreshBankCards,
+    refreshPersonalCards,
+  ])
 
   /** Traduction des refus DB en message UX neutre */
   function dbErrorToMessage(err: Error | null): string {
