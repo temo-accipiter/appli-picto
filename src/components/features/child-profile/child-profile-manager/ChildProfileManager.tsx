@@ -49,41 +49,9 @@ export function ChildProfileManager() {
     loading: false,
   })
 
-  // ── Guards ──────────────────────────────────────────────────────────────────
-
-  const canDelete = (_profile: ChildProfile): boolean => {
-    // Offline → interdire
-    if (!isOnline) {
-      showToast('Indisponible hors connexion', 'warning')
-      return false
-    }
-
-    // Execution-only → interdire
-    if (isExecutionOnly) {
-      showToast(
-        "Mode exécution uniquement — l'édition de structure est désactivée",
-        'warning'
-      )
-      return false
-    }
-
-    // Dernier profil → interdire (invariant PLATFORM.md §2.7.2)
-    if (childProfiles.length <= 1) {
-      showToast(
-        'Impossible de supprimer le dernier profil enfant. Supprimez votre compte entier si vous souhaitez effacer toutes vos données.',
-        'warning'
-      )
-      return false
-    }
-
-    return true
-  }
-
   // ── Ouvrir modale confirmation ──────────────────────────────────────────────
 
   const handleOpenDeleteModal = (profile: ChildProfile) => {
-    if (!canDelete(profile)) return
-
     setDeleteState({
       isOpen: true,
       profile,
@@ -113,6 +81,33 @@ export function ChildProfileManager() {
     setDeleteState(prev => ({ ...prev, loading: true }))
 
     try {
+      // Offline → interdire (modale déjà ouverte, feedback immédiat)
+      if (!isOnline) {
+        showToast('Indisponible hors connexion', 'warning')
+        setDeleteState(prev => ({ ...prev, loading: false }))
+        return
+      }
+
+      // Execution-only → interdire (modale déjà ouverte)
+      if (isExecutionOnly) {
+        showToast(
+          "Mode exécution uniquement — l'édition de structure est désactivée",
+          'warning'
+        )
+        setDeleteState(prev => ({ ...prev, loading: false }))
+        return
+      }
+
+      // Dernier profil → guard UX + sécurité trigger DB
+      if (childProfiles.length <= 1) {
+        showToast(
+          'Impossible de supprimer le dernier profil enfant. Supprimez votre compte entier si vous souhaitez effacer toutes vos données.',
+          'warning'
+        )
+        setDeleteState(prev => ({ ...prev, loading: false }))
+        return
+      }
+
       // DELETE child_profiles (CASCADE: timelines → slots → sessions)
       // .select('id') pour vérifier qu'une ligne a été supprimée (éviter succès fantômes RLS)
       const { data, error } = await supabase
@@ -265,6 +260,8 @@ export function ChildProfileManager() {
           onClose={handleCloseDeleteModal}
           onConfirm={handleConfirmDelete}
           confirmLabel="Supprimer définitivement"
+          confirmDisabled={deleteState.loading}
+          closeOnConfirm={false}
         >
           <h3 style={{ marginBottom: '1rem' }}>
             Supprimer le profil &quot;{deleteState.profile.name}&quot; ?

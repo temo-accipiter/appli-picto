@@ -196,32 +196,6 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     if (userId) prevUserIdRef.current = userId
   }, [userId])
 
-  // ── AUTH : Sélection automatique du profil actif ────────────────────────────
-  useEffect(() => {
-    // Seulement pour auth (pas visitor)
-    if (isVisitor || !authReady || !userId) return
-    if (dbLoading || dbProfiles.length === 0) return
-
-    const activeProfiles = dbProfiles.filter(p => p.status === 'active')
-    if (activeProfiles.length === 0) return
-
-    const storedIsValid =
-      activeChildId !== null && activeProfiles.some(p => p.id === activeChildId)
-
-    const firstActive = activeProfiles[0]
-    if (!storedIsValid && firstActive !== undefined) {
-      setActiveChildId(firstActive.id)
-    }
-  }, [
-    isVisitor,
-    authReady,
-    userId,
-    dbProfiles,
-    dbLoading,
-    activeChildId,
-    setActiveChildId,
-  ])
-
   // ── Réinitialiser au logout (transition auth → visitor) ─────────────────────
   useEffect(() => {
     if (authReady && !user) {
@@ -237,6 +211,40 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
   }, [user, authReady])
 
   // ── Profil actif résolu (UI shape) ──────────────────────────────────────────
+  const resolvedState = useMemo<{
+    effectiveChildId: string | null
+    reason: 'visitor' | 'loading_or_empty' | 'valid' | 'null' | 'invalid'
+  }>(() => {
+    if (isVisitor) {
+      return {
+        effectiveChildId: VISITOR_PROFILE.id,
+        reason: 'visitor',
+      }
+    }
+    if (dbLoading || dbProfiles.length === 0) {
+      return {
+        effectiveChildId: activeChildId,
+        reason: 'loading_or_empty',
+      }
+    }
+
+    const idIsValid =
+      activeChildId !== null && dbProfiles.some(p => p.id === activeChildId)
+    if (idIsValid) {
+      return {
+        effectiveChildId: activeChildId,
+        reason: 'valid',
+      }
+    }
+
+    // Fallback déterministe : premier profil de la liste retournée (created_at ASC)
+    const fallbackProfile = dbProfiles[0]
+    return {
+      effectiveChildId: fallbackProfile?.id ?? null,
+      reason: activeChildId === null ? 'null' : 'invalid',
+    }
+  }, [isVisitor, dbLoading, dbProfiles, activeChildId])
+
   const activeChildProfile = useMemo<ChildProfileUI | null>(() => {
     if (isVisitor) {
       // Visitor : profil local constant
@@ -244,8 +252,10 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     }
 
     // Auth : mapper profil DB vers UI shape
-    if (!activeChildId || dbProfiles.length === 0) return null
-    const dbProfile = dbProfiles.find(p => p.id === activeChildId)
+    if (!resolvedState.effectiveChildId || dbProfiles.length === 0) return null
+    const dbProfile = dbProfiles.find(
+      p => p.id === resolvedState.effectiveChildId
+    )
     if (!dbProfile) return null
 
     return {
@@ -253,7 +263,46 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       name: dbProfile.name,
       status: dbProfile.status,
     }
-  }, [isVisitor, activeChildId, dbProfiles])
+  }, [isVisitor, resolvedState.effectiveChildId, dbProfiles])
+
+  // Synchroniser le fallback en state/localStorage et purger les IDs invalides
+  useEffect(() => {
+    if (isVisitor || !authReady || !userId) return
+    if (resolvedState.reason === 'loading_or_empty') return
+    if (!resolvedState.effectiveChildId) return
+
+    if (
+      resolvedState.reason === 'invalid' &&
+      typeof window !== 'undefined' &&
+      userId
+    ) {
+      localStorage.removeItem(storageKey(userId))
+    }
+
+    if (resolvedState.effectiveChildId !== activeChildId) {
+      setActiveChildId(resolvedState.effectiveChildId)
+    }
+  }, [
+    isVisitor,
+    authReady,
+    userId,
+    resolvedState,
+    activeChildId,
+    setActiveChildId,
+  ])
+
+  // Instrumentation dev pour diagnostiquer les IDs persistés invalides
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+    if (isVisitor || !authReady || !userId) return
+
+    console.log('[ChildProfileContext] activeChild resolution', {
+      persistedActiveChildId: activeChildId,
+      childProfileIds: dbProfiles.map(p => p.id),
+      effectiveChildId: resolvedState.effectiveChildId,
+      reason: resolvedState.reason,
+    })
+  }, [isVisitor, authReady, userId, activeChildId, dbProfiles, resolvedState])
 
   // ── Wrapping createProfile (no-op pour visitor) ─────────────────────────────
   const createChildProfile = useCallback(
@@ -289,7 +338,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     () => ({
       childProfiles: isVisitor ? [] : dbProfiles,
       activeChildProfile,
-      activeChildId,
+      activeChildId: resolvedState.effectiveChildId,
       setActiveChildId,
       loading: isVisitor ? false : dbLoading,
       error: isVisitor ? null : dbError,
@@ -301,7 +350,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       isVisitor,
       dbProfiles,
       activeChildProfile,
-      activeChildId,
+      resolvedState.effectiveChildId,
       setActiveChildId,
       dbLoading,
       dbError,

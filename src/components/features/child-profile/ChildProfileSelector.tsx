@@ -162,10 +162,13 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
 interface ChildProfileSelectorProps {
   /** Afficher le bouton "+" pour créer un nouveau profil (adulte uniquement) */
   showCreateButton?: boolean
+  /** Afficher la liste de sélection des profils (false = création seule) */
+  showProfilesList?: boolean
 }
 
 export function ChildProfileSelector({
   showCreateButton = true,
+  showProfilesList = true,
 }: ChildProfileSelectorProps) {
   const { childProfiles, activeChildId, setActiveChildId, loading } =
     useChildProfile()
@@ -202,6 +205,29 @@ export function ChildProfileSelector({
           >
             + Ajouter un enfant
           </button>
+        )}
+      </div>
+    )
+  }
+
+  if (!showProfilesList) {
+    return (
+      <div
+        className="child-profile-selector"
+        aria-label="Créer un profil enfant"
+      >
+        {showCreateButton && !showCreateForm && (
+          <button
+            type="button"
+            className="child-profile-selector__add-btn"
+            onClick={() => setShowCreateForm(true)}
+            aria-label="Ajouter un profil enfant"
+          >
+            + Ajouter un enfant
+          </button>
+        )}
+        {showCreateForm && (
+          <CreateProfileForm onClose={() => setShowCreateForm(false)} />
         )}
       </div>
     )

@@ -144,13 +144,7 @@ export function SlotsEditor({
     lastMissingSignatureRef.current = signature
     refreshBankCards()
     refreshPersonalCards()
-  }, [
-    slots,
-    bankCards,
-    personalCards,
-    refreshBankCards,
-    refreshPersonalCards,
-  ])
+  }, [slots, bankCards, personalCards, refreshBankCards, refreshPersonalCards])
 
   /** Traduction des refus DB en message UX neutre */
   function dbErrorToMessage(err: Error | null): string {
@@ -162,8 +156,11 @@ export function SlotsEditor({
     if (msg.includes('reward') && msg.includes('min')) {
       return 'La timeline doit avoir au moins une récompense.'
     }
-    if (msg.includes('timeline') || msg.includes('pas de timeline')) {
-      return 'Aucun profil enfant sélectionné. Sélectionne un profil dans la barre de navigation.'
+    if (msg.includes('pas de timeline') || msg.includes('timeline active')) {
+      return 'Chargement du profil enfant en cours. Réessaie dans un instant.'
+    }
+    if (msg.includes('aucun profil')) {
+      return 'Aucun profil enfant disponible.'
     }
     return 'Une erreur est survenue. Réessaie.'
   }

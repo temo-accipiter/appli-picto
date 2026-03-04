@@ -2,6 +2,7 @@
 
 // src/pages/profil/Profil.tsx
 import {
+  ChildProfileSelector,
   AvatarProfil,
   Button,
   DeleteAccountModal,
@@ -376,6 +377,10 @@ export default function Profil() {
           Profils enfants
         </h2>
         <div className="profil-card__content">
+          <ChildProfileSelector
+            showCreateButton={true}
+            showProfilesList={false}
+          />
           <ChildProfileManager />
         </div>
       </section>
