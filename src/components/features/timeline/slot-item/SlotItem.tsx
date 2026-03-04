@@ -28,6 +28,7 @@
  */
 
 import { useState, type ChangeEvent } from 'react'
+import { useDraggable, useDroppable } from '@dnd-kit/core'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
 import type { BankCard } from '@/hooks/useBankCards'
@@ -93,6 +94,14 @@ interface SlotItemProps {
    * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
    */
   isExecutionOnly?: boolean
+  /** ID DnD du slot (même valeur que slot.id) */
+  dndSlotId?: string
+  /** Indique si ce slot est la source active du drag */
+  isDragActive?: boolean
+  /** Fallback clavier/mobile : échanger avec slot précédent */
+  onMovePrevious?: () => void
+  /** Fallback clavier/mobile : échanger avec slot suivant */
+  onMoveNext?: () => void
 }
 
 /** Icône selon le kind du slot */
@@ -122,6 +131,10 @@ export function SlotItem({
   onDeleteSequence,
   isOffline = false,
   isExecutionOnly = false,
+  dndSlotId,
+  isDragActive = false,
+  onMovePrevious,
+  onMoveNext,
 }: SlotItemProps) {
   const isStep = slot.kind === 'step'
 
@@ -138,6 +151,27 @@ export function SlotItem({
   // (même sur slot non validé — exception : nouveau slot lors de l'ajout,
   //  mais on ne peut pas distinguer ici → restriction conservatrice)
   const tokensLocked = isSessionStarted || isOffline || isExecutionOnly
+  const canDragCard = !isFullyLocked && !busy && slot.card_id !== null
+  const canDropCard = !isFullyLocked && !busy
+
+  const {
+    setNodeRef: setDraggableRef,
+    attributes,
+    listeners,
+    isDragging,
+  } = useDraggable({
+    id: dndSlotId ?? slot.id,
+    disabled: !canDragCard,
+  })
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: dndSlotId ?? slot.id,
+    disabled: !canDropCard,
+  })
+
+  const setCombinedRef = (node: HTMLLIElement | null) => {
+    setDraggableRef(node)
+    setDroppableRef(node)
+  }
 
   // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)
@@ -184,8 +218,17 @@ export function SlotItem({
 
   return (
     <li
+      ref={setCombinedRef}
+      {...attributes}
+      {...listeners}
       className={`slot-item slot-item--${slot.kind}${isFullyLocked ? ' slot-item--locked' : ''}`}
       aria-label={`Position ${positionLabel} — ${SLOT_LABELS[slot.kind]}${isFullyLocked ? ' (validé)' : ''}`}
+      aria-grabbed={canDragCard ? isDragging : undefined}
+      aria-busy={busy || undefined}
+      tabIndex={canDragCard ? 0 : undefined}
+      data-drag-active={isDragActive || undefined}
+      data-drag-over={isOver || undefined}
+      data-dragging={isDragging || undefined}
     >
       {/* ── Bouton supprimer en haut à droite (PHASE 1) ──────────────────────── */}
       <div className="slot-item__header">
@@ -302,6 +345,32 @@ export function SlotItem({
               onCreateSequence={onCreateSequence!}
               onDeleteSequence={onDeleteSequence!}
             />
+          )}
+        </div>
+      )}
+
+      {/* Fallback clavier / non-drag : même action de swap par boutons */}
+      {(onMovePrevious || onMoveNext) && (
+        <div className="slot-item__move-fallback">
+          {onMovePrevious && (
+            <button
+              type="button"
+              onClick={onMovePrevious}
+              disabled={busy || isFullyLocked || slot.card_id === null}
+              aria-label={`Échanger la carte de ${SLOT_LABELS[slot.kind]} #${positionLabel} avec le slot précédent`}
+            >
+              Déplacer vers le précédent
+            </button>
+          )}
+          {onMoveNext && (
+            <button
+              type="button"
+              onClick={onMoveNext}
+              disabled={busy || isFullyLocked || slot.card_id === null}
+              aria-label={`Échanger la carte de ${SLOT_LABELS[slot.kind]} #${positionLabel} avec le slot suivant`}
+            >
+              Déplacer vers le suivant
+            </button>
           )}
         </div>
       )}

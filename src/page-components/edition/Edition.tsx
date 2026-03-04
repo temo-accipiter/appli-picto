@@ -268,7 +268,17 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
   }
 
   const handleUpdateLabel = async (id: string | number, label: string) => {
-    await updateCard(String(id), { name: label })
+    const { error } = await updateCard(String(id), { name: label })
+    if (error) {
+      show('Impossible de renommer la carte', 'error')
+      return
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('cards:changed', { detail: { cardId: String(id) } })
+      )
+    }
   }
 
   /**

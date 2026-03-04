@@ -30,7 +30,17 @@
  * - Le verrouillage est appliqué dans SlotItem, pas ici.
  */
 
-import { useEffect, useRef, useState } from 'react'
+import {
+  DndContext,
+  type DragEndEvent,
+  type DragStartEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
 import useBankCards from '@/hooks/useBankCards'
@@ -102,7 +112,12 @@ export function SlotsEditor({
   isOffline = false,
   isExecutionOnly = false,
 }: SlotsEditorProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor)
+  )
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [swappingCards, setSwappingCards] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
   const [addingReward, setAddingReward] = useState(false)
   const [clearingCards, setClearingCards] = useState(false)
@@ -110,6 +125,8 @@ export function SlotsEditor({
   const [resettingSession, setResettingSession] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [optimisticSlots, setOptimisticSlots] = useState<Slot[] | null>(null)
+  const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null)
 
   // Chargement des cartes une seule fois, transmises à chaque SlotItem
   const { cards: bankCards, refresh: refreshBankCards } = useBankCards()
@@ -119,6 +136,22 @@ export function SlotsEditor({
 
   // Chargement des séquences du compte (S7 — pour les étapes avec carte assignée)
   const { sequences, createSequence, deleteSequence } = useSequences()
+
+  useEffect(() => {
+    setOptimisticSlots(null)
+  }, [slots])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleCardsChanged = () => {
+      refreshBankCards()
+      refreshPersonalCards()
+    }
+
+    window.addEventListener('cards:changed', handleCardsChanged)
+    return () => window.removeEventListener('cards:changed', handleCardsChanged)
+  }, [refreshBankCards, refreshPersonalCards])
 
   // Après création/assignation d'une nouvelle carte, ce composant peut avoir
   // un cache local périmé (hook distinct de l'édition des cartes).
@@ -225,11 +258,87 @@ export function SlotsEditor({
   const isActionBusy =
     addingStep ||
     addingReward ||
+    swappingCards ||
     !!busyId ||
     clearingCards ||
     resettingSession ||
     isOffline ||
     isExecutionOnly
+
+  const displayedSlots = optimisticSlots ?? slots
+
+  const swapCardsBetweenSlots = useCallback(
+    async (sourceId: string, targetId: string) => {
+      if (sourceId === targetId) return
+
+      const sourceSlot = displayedSlots.find(slot => slot.id === sourceId)
+      const targetSlot = displayedSlots.find(slot => slot.id === targetId)
+      if (!sourceSlot || !targetSlot) return
+
+      // Source vide : aucune action (contrat UX explicite)
+      if (!sourceSlot.card_id) return
+
+      // Aucun changement effectif
+      if (sourceSlot.card_id === targetSlot.card_id) return
+
+      setActionError(null)
+      setSwappingCards(true)
+
+      const previousSlots = displayedSlots
+      const swappedSlots = previousSlots.map(slot => {
+        if (slot.id === sourceSlot.id) {
+          return { ...slot, card_id: targetSlot.card_id }
+        }
+        if (slot.id === targetSlot.id) {
+          return { ...slot, card_id: sourceSlot.card_id }
+        }
+        return slot
+      })
+      setOptimisticSlots(swappedSlots)
+
+      const { error: targetUpdateError } = await onUpdateSlot(targetSlot.id, {
+        card_id: sourceSlot.card_id,
+      })
+
+      if (targetUpdateError) {
+        setOptimisticSlots(previousSlots)
+        setSwappingCards(false)
+        setActionError('Impossible de réorganiser la timeline. Réessaie.')
+        return
+      }
+
+      const { error: sourceUpdateError } = await onUpdateSlot(sourceSlot.id, {
+        card_id: targetSlot.card_id,
+      })
+
+      if (sourceUpdateError) {
+        // Rollback DB best-effort pour revenir à l'état initial
+        await onUpdateSlot(targetSlot.id, { card_id: targetSlot.card_id })
+        setOptimisticSlots(previousSlots)
+        setSwappingCards(false)
+        setActionError('Impossible de réorganiser la timeline. Réessaie.')
+        return
+      }
+
+      setSwappingCards(false)
+      setOptimisticSlots(null)
+    },
+    [displayedSlots, onUpdateSlot]
+  )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveDragSlotId(String(event.active.id))
+  }, [])
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      setActiveDragSlotId(null)
+      const overId = event.over?.id
+      if (!overId) return
+      await swapCardsBetweenSlots(String(event.active.id), String(overId))
+    },
+    [swapCardsBetweenSlots]
+  )
 
   // ── État chargement ──────────────────────────────────────────────────────────
   if (loading) {
@@ -261,46 +370,76 @@ export function SlotsEditor({
   }
 
   // Afficher le bouton "Retirer les cartes" uniquement si au moins un slot a une carte
-  const hasSomeCard = slots.some(s => s.card_id !== null)
+  const hasSomeCard = displayedSlots.some(s => s.card_id !== null)
 
   // ✅ Récompenses en premier, puis étapes (ordre position ASC dans chaque groupe)
   const sortedSlots = [
-    ...slots.filter(s => s.kind === 'reward'),
-    ...slots.filter(s => s.kind === 'step'),
+    ...displayedSlots.filter(s => s.kind === 'reward'),
+    ...displayedSlots.filter(s => s.kind === 'step'),
   ]
 
   return (
     <div className="slots-editor">
       {/* ── Liste des slots ──────────────────────────────────────────────────── */}
       {slots.length > 0 ? (
-        <ul className="slots-editor__list" aria-label="Slots de la timeline">
-          {sortedSlots.map((slot, idx) => {
-            // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
-            const sequence = slot.card_id
-              ? (sequences.find(s => s.mother_card_id === slot.card_id) ?? null)
-              : null
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={event => {
+            void handleDragEnd(event)
+          }}
+        >
+          <ul className="slots-editor__list" aria-label="Slots de la timeline">
+            {sortedSlots.map((slot, idx) => {
+              // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
+              const sequence = slot.card_id
+                ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
+                  null)
+                : null
 
-            return (
-              <SlotItem
-                key={slot.id}
-                slot={slot}
-                positionLabel={idx + 1}
-                onUpdate={onUpdateSlot}
-                onRemove={handleRemove}
-                bankCards={bankCards}
-                personalCards={personalCards}
-                busy={busyId === slot.id}
-                sessionState={sessionState}
-                isValidated={validatedSlotIds?.has(slot.id) ?? false}
-                sequence={sequence}
-                onCreateSequence={createSequence}
-                onDeleteSequence={deleteSequence}
-                isOffline={isOffline}
-                isExecutionOnly={isExecutionOnly}
-              />
-            )
-          })}
-        </ul>
+              return (
+                <SlotItem
+                  key={slot.id}
+                  slot={slot}
+                  positionLabel={idx + 1}
+                  onUpdate={onUpdateSlot}
+                  onRemove={handleRemove}
+                  bankCards={bankCards}
+                  personalCards={personalCards}
+                  busy={busyId === slot.id || swappingCards}
+                  sessionState={sessionState}
+                  isValidated={validatedSlotIds?.has(slot.id) ?? false}
+                  sequence={sequence}
+                  onCreateSequence={createSequence}
+                  onDeleteSequence={deleteSequence}
+                  isOffline={isOffline}
+                  isExecutionOnly={isExecutionOnly}
+                  dndSlotId={slot.id}
+                  isDragActive={activeDragSlotId === slot.id}
+                  onMovePrevious={
+                    idx > 0
+                      ? () =>
+                          void swapCardsBetweenSlots(
+                            slot.id,
+                            sortedSlots[idx - 1]!.id
+                          )
+                      : undefined
+                  }
+                  onMoveNext={
+                    idx < sortedSlots.length - 1
+                      ? () =>
+                          void swapCardsBetweenSlots(
+                            slot.id,
+                            sortedSlots[idx + 1]!.id
+                          )
+                      : undefined
+                  }
+                />
+              )
+            })}
+          </ul>
+        </DndContext>
       ) : (
         <p className="slots-editor__empty">Aucun slot dans cette timeline.</p>
       )}
@@ -309,6 +448,11 @@ export function SlotsEditor({
       {actionError && (
         <p className="slots-editor__error" role="alert">
           {actionError}
+        </p>
+      )}
+      {swappingCards && (
+        <p className="slots-editor__empty" role="status">
+          Mise à jour de la timeline…
         </p>
       )}
 
