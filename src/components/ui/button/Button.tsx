@@ -16,6 +16,7 @@ interface ButtonProps {
   type?: ButtonType
   className?: string
   'aria-expanded'?: boolean
+  'aria-label'?: string
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -30,6 +31,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       type = 'button',
       className = '',
       'aria-expanded': ariaExpanded,
+      'aria-label': ariaLabel,
     },
     ref
   ) => {
@@ -45,6 +47,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={isDisabled}
         aria-disabled={isDisabled}
         aria-expanded={ariaExpanded}
+        aria-label={ariaLabel}
         aria-busy={isLoading}
       >
         {isLoading && (

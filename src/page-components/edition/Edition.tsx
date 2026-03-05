@@ -13,6 +13,7 @@ import {
   useExecutionOnly,
 } from '@/hooks'
 import type { Timeline, Slot } from '@/types/supabase'
+import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import React, {
   lazy,
@@ -114,7 +115,7 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
     return categories
       .map(cat => ({
         value: cat.id, // ✅ Utiliser id comme value (unique garanti)
-        label: cat.name, // ✅ Nom de la catégorie
+        label: getCategoryDisplayLabel(cat),
       }))
       .filter(cat => {
         if (seen.has(cat.value as string)) return false
@@ -122,6 +123,10 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
         return true
       })
   }, [categories])
+  const systemCategoryId = useMemo(
+    () => categories.find(cat => cat.is_system)?.id ?? null,
+    [categories]
+  )
 
   const handleCardAjoutee = () => triggerReload()
 
@@ -253,8 +258,14 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
     id: string | number,
     categoryId: string
   ) => {
+    const effectiveCategoryId = categoryId || systemCategoryId || null
+    if (!effectiveCategoryId) {
+      show('Aucune catégorie disponible', 'error')
+      return
+    }
+
     // ✅ DB-first : UPSERT dans user_card_categories (mapping user ↔ card ↔ category)
-    const { error } = await updateCardCategory(String(id), categoryId)
+    const { error } = await updateCardCategory(String(id), effectiveCategoryId)
 
     if (error) {
       console.error('[Edition] Erreur update catégorie:', error)
@@ -375,6 +386,7 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
             onUpdateCategorie={handleUpdateCategorie}
             onDelete={c => setCardASupprimer(c)}
             isSubmittingCategory={isSubmittingCategory}
+            systemCategoryId={systemCategoryId}
             timelineSlots={slots}
             onToggleCardInTimeline={handleToggleCardInTimeline}
             checkboxDisabled={checkboxDisabled}

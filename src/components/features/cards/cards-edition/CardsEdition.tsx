@@ -47,6 +47,7 @@ interface CardsEditionProps {
   onChangeFilterCategory: (value: string) => void
   onReorder?: (ids: (string | number)[]) => void
   isSubmittingCategory?: boolean
+  systemCategoryId?: string | null
   // ── PHASE 1 : Checkbox bibliothèque contrôlée par timeline ────────────────
   /**
    * Slots de la timeline active (pour calculer checked).
@@ -85,6 +86,7 @@ export default function CardsEdition({
   onChangeFilterCategory,
   onReorder,
   isSubmittingCategory = false,
+  systemCategoryId = null,
   timelineSlots,
   onToggleCardInTimeline,
   checkboxDisabled = false,
@@ -259,6 +261,7 @@ export default function CardsEdition({
               onToggleCheck={() => handleToggleCheckbox(item.id)}
               disabled={checkboxDisabled}
               categorie={item.categorie || ''}
+              defaultCategoryId={systemCategoryId ?? undefined}
               onCategorieChange={val => onUpdateCategorie(item.id, val)}
               categorieOptions={categories}
               className={[

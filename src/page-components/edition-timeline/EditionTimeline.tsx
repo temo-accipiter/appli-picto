@@ -235,6 +235,10 @@ export default function EditionTimeline({
   return (
     <RootTag className="edition-timeline" aria-label="Édition de la timeline">
       <div className="edition-timeline__top-bar">
+        <p className="edition-timeline__subtitle">
+          Glisse l&apos;image d&apos;un slot sur un autre pour échanger. Glisse
+          sur Récompense pour la remplir.
+        </p>
         {childProfilesLoading || childProfiles.length === 0 ? (
           <div className="edition-timeline__profile-placeholder">
             <span className="avatar-circle" aria-hidden="true">

@@ -9,7 +9,7 @@ import {
   useTimerSvgPath,
   useAudioContext,
   getNumberPosition,
-  useRBAC,
+  useIsVisitor,
 } from '@/hooks'
 import type { DiskColor } from '@/hooks/useTimerPreferences'
 import { Modal } from '@/components'
@@ -144,7 +144,7 @@ export default function TimeTimer({
 }: TimeTimerProps) {
   const { t } = useI18n()
   const { playSound } = useAudioContext()
-  const { isVisitor } = useRBAC()
+  const { isVisitor } = useIsVisitor()
 
   // Hook préférences (localStorage centralisé)
   // ⚠️ IMPORTANT : Tous les hooks DOIVENT être appelés AVANT tout return conditionnel

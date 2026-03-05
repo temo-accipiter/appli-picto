@@ -417,24 +417,6 @@ export function SlotsEditor({
                   isExecutionOnly={isExecutionOnly}
                   dndSlotId={slot.id}
                   isDragActive={activeDragSlotId === slot.id}
-                  onMovePrevious={
-                    idx > 0
-                      ? () =>
-                          void swapCardsBetweenSlots(
-                            slot.id,
-                            sortedSlots[idx - 1]!.id
-                          )
-                      : undefined
-                  }
-                  onMoveNext={
-                    idx < sortedSlots.length - 1
-                      ? () =>
-                          void swapCardsBetweenSlots(
-                            slot.id,
-                            sortedSlots[idx + 1]!.id
-                          )
-                      : undefined
-                  }
                 />
               )
             })}

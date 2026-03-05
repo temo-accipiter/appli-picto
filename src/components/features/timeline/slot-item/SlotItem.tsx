@@ -34,8 +34,9 @@ import type { SessionState } from '@/hooks/useSessions'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { Sequence } from '@/hooks/useSequences'
-import { ButtonDelete, SignedImage } from '@/components'
+import { Button, ButtonDelete, SignedImage } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
+import '@/components/shared/dnd/DndCard/DndCard.scss'
 import './SlotItem.scss'
 
 interface SlotItemProps {
@@ -98,10 +99,6 @@ interface SlotItemProps {
   dndSlotId?: string
   /** Indique si ce slot est la source active du drag */
   isDragActive?: boolean
-  /** Fallback clavier/mobile : échanger avec slot précédent */
-  onMovePrevious?: () => void
-  /** Fallback clavier/mobile : échanger avec slot suivant */
-  onMoveNext?: () => void
 }
 
 /** Icône selon le kind du slot */
@@ -133,8 +130,6 @@ export function SlotItem({
   isExecutionOnly = false,
   dndSlotId,
   isDragActive = false,
-  onMovePrevious,
-  onMoveNext,
 }: SlotItemProps) {
   const isStep = slot.kind === 'step'
 
@@ -167,11 +162,6 @@ export function SlotItem({
     id: dndSlotId ?? slot.id,
     disabled: !canDropCard,
   })
-
-  const setCombinedRef = (node: HTMLLIElement | null) => {
-    setDraggableRef(node)
-    setDroppableRef(node)
-  }
 
   // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)
@@ -218,14 +208,10 @@ export function SlotItem({
 
   return (
     <li
-      ref={setCombinedRef}
-      {...attributes}
-      {...listeners}
+      ref={setDroppableRef}
       className={`slot-item slot-item--${slot.kind}${isFullyLocked ? ' slot-item--locked' : ''}`}
       aria-label={`Position ${positionLabel} — ${SLOT_LABELS[slot.kind]}${isFullyLocked ? ' (validé)' : ''}`}
-      aria-grabbed={canDragCard ? isDragging : undefined}
       aria-busy={busy || undefined}
-      tabIndex={canDragCard ? 0 : undefined}
       data-drag-active={isDragActive || undefined}
       data-drag-over={isOver || undefined}
       data-dragging={isDragging || undefined}
@@ -266,23 +252,41 @@ export function SlotItem({
             <span className="slot-item__card-name">{assignedCard.name}</span>
           )}
 
-          {/* Image de la carte */}
-          {assignedCard?.image_url ? (
-            <SignedImage
-              filePath={assignedCard.image_url}
-              alt={assignedCard.name}
-              bucket={
-                bankCards.some(c => c.id === slot.card_id)
-                  ? 'bank-images'
-                  : 'personal-images'
-              }
-              className="slot-item__card-image"
-            />
-          ) : (
-            <div className="slot-item__card-fallback">
-              <span>Image indisponible</span>
-            </div>
-          )}
+          {/* Image de la carte = handle DnD (focusable clavier) */}
+          <div
+            ref={setDraggableRef}
+            {...attributes}
+            {...listeners}
+            className={
+              canDragCard
+                ? `dnd-card${isDragging ? ' dnd-card--dragging' : ''}`
+                : ''
+            }
+            tabIndex={canDragCard ? 0 : undefined}
+            aria-label={
+              canDragCard
+                ? 'Glisser l’image pour réorganiser la timeline'
+                : undefined
+            }
+            aria-grabbed={canDragCard ? isDragging : undefined}
+          >
+            {assignedCard?.image_url ? (
+              <SignedImage
+                filePath={assignedCard.image_url}
+                alt={assignedCard.name}
+                bucket={
+                  bankCards.some(c => c.id === slot.card_id)
+                    ? 'bank-images'
+                    : 'personal-images'
+                }
+                className="slot-item__card-image"
+              />
+            ) : (
+              <div className="slot-item__card-fallback">
+                <span>Image indisponible</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -319,8 +323,8 @@ export function SlotItem({
       {/* ── Gestion séquence (S7 — étapes uniquement, carte assignée) ─────────── */}
       {canManageSequence && (
         <div className="slot-item__sequence">
-          <button
-            type="button"
+          <Button
+            variant="default"
             className={`slot-item__sequence-toggle${sequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
             onClick={() => setSequenceEditorOpen(o => !o)}
             aria-expanded={sequenceEditorOpen}
@@ -331,9 +335,8 @@ export function SlotItem({
                   ? 'Modifier la séquence'
                   : 'Créer une séquence'
             }
-          >
-            {sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
-          </button>
+            label={sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
+          />
 
           {sequenceEditorOpen && (
             <SequenceEditor
@@ -345,32 +348,6 @@ export function SlotItem({
               onCreateSequence={onCreateSequence!}
               onDeleteSequence={onDeleteSequence!}
             />
-          )}
-        </div>
-      )}
-
-      {/* Fallback clavier / non-drag : même action de swap par boutons */}
-      {(onMovePrevious || onMoveNext) && (
-        <div className="slot-item__move-fallback">
-          {onMovePrevious && (
-            <button
-              type="button"
-              onClick={onMovePrevious}
-              disabled={busy || isFullyLocked || slot.card_id === null}
-              aria-label={`Échanger la carte de ${SLOT_LABELS[slot.kind]} #${positionLabel} avec le slot précédent`}
-            >
-              Déplacer vers le précédent
-            </button>
-          )}
-          {onMoveNext && (
-            <button
-              type="button"
-              onClick={onMoveNext}
-              disabled={busy || isFullyLocked || slot.card_id === null}
-              aria-label={`Échanger la carte de ${SLOT_LABELS[slot.kind]} #${positionLabel} avec le slot suivant`}
-            >
-              Déplacer vers le suivant
-            </button>
           )}
         </div>
       )}
