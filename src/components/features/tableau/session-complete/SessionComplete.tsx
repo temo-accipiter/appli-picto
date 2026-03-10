@@ -10,10 +10,16 @@
 // - Interface calme, apaisante, TSA-friendly
 // - ZÉRO message technique
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Confetti from 'react-confetti'
+import { useWindowSize } from 'react-use'
 import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
+import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
+import { useAccountPreferences } from '@/hooks'
+import { TrainProgressBar } from '@/components'
 import './SessionComplete.scss'
 
 interface SessionCompleteProps {
@@ -21,17 +27,92 @@ interface SessionCompleteProps {
   rewardSlot: Slot | null
   /** Carte associée au slot récompense */
   rewardCard: BankCard | PersonalCard | null
+  /** Afficher la barre de progression (train) */
+  showTrain: boolean
+  /** Nombre total d'étapes (pour afficher le train à 100%) */
+  totalSteps: number
 }
 
 export function SessionComplete({
   rewardSlot,
   rewardCard,
+  showTrain,
+  totalSteps,
 }: SessionCompleteProps) {
   const hasReward =
     rewardSlot !== null && rewardSlot.card_id !== null && rewardCard !== null
 
+  // Préférences utilisateur (confettis)
+  const { preferences } = useAccountPreferences()
+  const confettiEnabled = preferences?.confetti_enabled ?? true
+
+  // État confettis (affichés pendant 10 secondes)
+  const [showConfetti, setShowConfetti] = useState(true)
+  const { width, height } = useWindowSize()
+
+  useEffect(() => {
+    if (!confettiEnabled) return
+
+    const timer = setTimeout(() => {
+      setShowConfetti(false)
+    }, 10000) // 10 secondes
+
+    return () => clearTimeout(timer)
+  }, [confettiEnabled])
+
+  // Résoudre URL signée pour l'image de récompense
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!rewardCard?.image_url) {
+      setSignedImageUrl(null)
+      return
+    }
+
+    const loadSignedUrl = async () => {
+      try {
+        const bucket =
+          rewardCard.type === 'bank' ? 'bank-images' : 'personal-images'
+        const url = await resolveStorageImageUrl(rewardCard.image_url, {
+          bucket,
+        })
+        setSignedImageUrl(url)
+      } catch (error) {
+        console.error('[SessionComplete] Erreur résolution URL image:', error)
+        setSignedImageUrl(null)
+      }
+    }
+
+    void loadSignedUrl()
+  }, [rewardCard?.image_url, rewardCard?.type])
+
   return (
     <div className="session-complete" role="status" aria-live="polite">
+      {/* Confettis (si activés) */}
+      {showConfetti && confettiEnabled && (
+        <Confetti
+          width={width}
+          height={height}
+          numberOfPieces={200}
+          recycle={false}
+          colors={['#FFE5E5', '#E5F3FF', '#FFF5E5', '#F0E5FF', '#E5FFE5']}
+          gravity={0.15}
+        />
+      )}
+
+      {/* Barre de progression (train) - montrant 100% */}
+      {showTrain && (
+        <section
+          className="session-complete__train"
+          aria-labelledby="progress-complete-heading"
+        >
+          <h2 id="progress-complete-heading" className="sr-only">
+            Progression complète
+          </h2>
+          <TrainProgressBar total={totalSteps} done={totalSteps} />
+        </section>
+      )}
+
       {/* Message de félicitation — toujours positif */}
       <div className="session-complete__message">
         <span className="session-complete__icon" aria-hidden="true">
@@ -49,14 +130,18 @@ export function SessionComplete({
           <p className="session-complete__reward-label">Ta récompense :</p>
 
           <div className="session-complete__reward-card">
-            {rewardCard.image_url ? (
+            {signedImageUrl ? (
               <Image
-                src={rewardCard.image_url}
-                alt={rewardCard.label}
+                src={signedImageUrl}
+                alt={rewardCard.name ?? 'Récompense'}
                 className="session-complete__reward-image"
                 width={200}
                 height={200}
                 draggable={false}
+                onError={() => {
+                  console.log('[SessionComplete] Erreur chargement image')
+                  setSignedImageUrl(null)
+                }}
               />
             ) : (
               <div
@@ -66,7 +151,7 @@ export function SessionComplete({
                 🎁
               </div>
             )}
-            <p className="session-complete__reward-name">{rewardCard.label}</p>
+            <p className="session-complete__reward-name">{rewardCard.name}</p>
           </div>
         </div>
       )}

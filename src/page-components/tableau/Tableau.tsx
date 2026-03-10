@@ -105,7 +105,7 @@ function findCard(
 
 export default function Tableau() {
   const { activeChildId } = useChildProfile()
-  const { showTrain, showTimeTimer } = useDisplay()
+  const { showTrain, showTimeTimer, showRecompense } = useDisplay()
   // ── Chargement des données de base ─────────────────────────────────────────
   const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
   const { slots, loading: slotsLoading } = useSlots(timeline?.id ?? null)
@@ -254,9 +254,13 @@ export default function Tableau() {
   )
 
   // Slot récompense (1 seul, kind='reward', avec carte assignée)
+  // Masqué si showRecompense=false (préférence utilisateur)
   const rewardSlot = useMemo<Slot | null>(
-    () => slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null,
-    [slots]
+    () =>
+      showRecompense
+        ? slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null
+        : null,
+    [slots, showRecompense]
   )
 
   // ── Progression ─────────────────────────────────────────────────────────────
@@ -351,7 +355,12 @@ export default function Tableau() {
     return (
       <div className="tableau-magique">
         <h1 className="sr-only">Tableau de la journée</h1>
-        <SessionComplete rewardSlot={rewardSlot} rewardCard={rewardCard} />
+        <SessionComplete
+          rewardSlot={rewardSlot}
+          rewardCard={rewardCard}
+          showTrain={showTrain}
+          totalSteps={totalForProgress}
+        />
       </div>
     )
   }

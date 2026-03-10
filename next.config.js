@@ -79,6 +79,9 @@ const nextConfig = {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     qualities: [75, 85],
+    // ⚠️ Autorise IPs privées en développement local (Supabase local)
+    // Next.js 16+ bloque les IPs privées (127.0.0.1, localhost) par sécurité
+    dangerouslyAllowLocalIP: true,
   },
 
   // Turbopack configuration (Next.js 16 default)

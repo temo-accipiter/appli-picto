@@ -101,7 +101,7 @@ export function SlotCard({
     [isDisabled, onValidate, slot.id]
   )
 
-  const cardLabel = card?.label ?? 'Étape'
+  const cardLabel = card?.name ?? 'Étape'
   const hasSequence = sequenceSteps.length > 0
 
   return (

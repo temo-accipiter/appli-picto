@@ -98,19 +98,15 @@
     display: flex;
     flex-direction: row;
     gap: spacing('md');
-    padding: spacing('xs') spacing('xs') spacing('md');
+    // Padding latéral pour centrer visuellement la première carte (effet carrousel)
+    padding: spacing('xs') 10vw spacing('md');
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    scroll-padding: 10vw;
     -webkit-overflow-scrolling: touch;
     list-style: none;
     margin: 0;
-
-    @include respond-to('md') {
-      flex-wrap: wrap;
-      overflow-x: visible;
-      scroll-snap-type: none;
-      justify-content: center;
-    }
+    // Carrousel horizontal permanent sur toutes tailles (pas de wrap)
   }
 
   &__content {

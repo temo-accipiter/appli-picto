@@ -55,9 +55,14 @@ export default function SettingsMenu() {
             id="settings-confettis"
             label={t('edition.confetti')}
             checked={!!preferences.confetti_enabled}
-            onChange={e =>
-              updatePreferences({ confetti_enabled: e.target.checked })
-            }
+            onChange={async e => {
+              const result = await updatePreferences({
+                confetti_enabled: e.target.checked,
+              })
+              if (!result.ok) {
+                show(t('errors.generic'), 'error')
+              }
+            }}
           />
         )}
 

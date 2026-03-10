@@ -81,6 +81,14 @@
 
     // Focus ring WCAG 2.2 AA
     @include focus-ring;
+
+    // State: Disabled
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background-color: surface('card');
+      border-color: surface('border');
+    }
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -115,6 +123,12 @@
     font-size: font-size('base');
     color: text();
     cursor: pointer;
+  }
+
+  // Label disabled (when input is disabled)
+  &__input:disabled ~ &__label {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
