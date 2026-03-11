@@ -80,17 +80,17 @@ WHERE u.email='platform-smoke-free@example.com';
     RAISE EXCEPTION 'account_preferences row missing for account %', v_account;
   END IF;
 
-  -- Defaults
+  -- Defaults (après migration 20260310: adult_control — reduced_motion=false, confetti_enabled=true)
   IF EXISTS (
     SELECT 1
     FROM public.account_preferences p
     WHERE p.account_id = v_account
-      AND NOT (p.reduced_motion = true AND p.toasts_enabled = true AND p.confetti_enabled = false)
+      AND NOT (p.reduced_motion = false AND p.toasts_enabled = true AND p.confetti_enabled = true)
   ) THEN
     RAISE EXCEPTION 'account_preferences defaults not as expected';
   END IF;
 
-  RAISE NOTICE 'OK: account_preferences created + defaults ok';
+  RAISE NOTICE 'OK: account_preferences created + defaults ok (adult_control: reduced_motion=false, confetti_enabled=true)';
 END $$;
 
 SAVEPOINT s2;

@@ -13,7 +13,9 @@
  * - CRUD via useSequences + useSequenceSteps (jamais de query directe)
  * - Min 2 étapes imposé par trigger DB (DEFERRABLE) — le front anticipe pour UX
  * - UNIQUE(sequence_id, step_card_id) → doublon rejeté par DB
- * - RLS : Subscriber/Admin uniquement → Free voit un message d'information
+ * - RLS : can_write_sequences() (subscriber/admin) est la GARDE PRINCIPALE côté SQL
+ * - isReadOnly (Free) : mitigation UX uniquement — masque les contrôles d'écriture
+ *   pour éviter des erreurs silencieuses. La règle métier reste enforcement SQL.
  *
  * ⚠️ RÈGLES TSA
  * - Interface simple, prévisible, sans surprise.
@@ -51,6 +53,13 @@ interface SequenceEditorProps {
   ) => Promise<{ id: string | null; error: Error | null }>
   /** Supprimer la séquence entière */
   onDeleteSequence: (sequenceId: string) => Promise<{ error: Error | null }>
+  /**
+   * Lecture seule — mitigation UX pure.
+   * La garde principale reste can_write_sequences() côté SQL/RLS.
+   * Le parent fournit ce booléen dérivé de l'état applicatif déjà disponible.
+   * Ne jamais fusionner Visitor (local-only) avec Free dans cette prop.
+   */
+  isReadOnly?: boolean
 }
 
 /** Traduit une erreur DB en message UX neutre */
@@ -74,6 +83,7 @@ export function SequenceEditor({
   personalCards,
   onCreateSequence,
   onDeleteSequence,
+  isReadOnly = false,
 }: SequenceEditorProps) {
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -161,6 +171,19 @@ export function SequenceEditor({
 
   // ── Cas : séquence pas encore créée ────────────────────────────────────────
   if (!sequence) {
+    if (isReadOnly) {
+      return (
+        <div className="sequence-editor sequence-editor--empty sequence-editor--readonly">
+          <p className="sequence-editor__hint">
+            Aucune séquence pour &quot;{motherCardLabel}&quot;.
+          </p>
+          <p className="sequence-editor__readonly-notice">
+            La création de séquences est réservée aux abonnés.
+          </p>
+        </div>
+      )
+    }
+
     return (
       <div className="sequence-editor sequence-editor--empty">
         <p className="sequence-editor__hint">
@@ -186,42 +209,56 @@ export function SequenceEditor({
 
   // ── Cas : séquence existante ────────────────────────────────────────────────
   return (
-    <div className="sequence-editor">
+    <div
+      className={`sequence-editor${isReadOnly ? ' sequence-editor--readonly' : ''}`}
+    >
       {/* En-tête */}
       <div className="sequence-editor__header">
         <h3 className="sequence-editor__title">
           Séquence de &quot;{motherCardLabel}&quot;
         </h3>
 
-        {/* Bouton supprimer séquence */}
-        <button
-          type="button"
-          className={`sequence-editor__btn sequence-editor__btn--delete${confirmDelete ? ' sequence-editor__btn--delete-confirm' : ''}`}
-          onClick={handleDelete}
-          disabled={isBusy}
-          aria-busy={deleting}
-          aria-label={
-            confirmDelete
-              ? 'Confirmer la suppression de la séquence'
-              : 'Supprimer cette séquence'
-          }
-        >
-          {deleting
-            ? 'Suppression…'
-            : confirmDelete
-              ? 'Confirmer la suppression ?'
-              : 'Supprimer la séquence'}
-        </button>
-        {confirmDelete && (
-          <button
-            type="button"
-            className="sequence-editor__btn sequence-editor__btn--cancel"
-            onClick={() => setConfirmDelete(false)}
-          >
-            Annuler
-          </button>
+        {/* Bouton supprimer séquence — masqué en lecture seule */}
+        {!isReadOnly && (
+          <>
+            <button
+              type="button"
+              className={`sequence-editor__btn sequence-editor__btn--delete${confirmDelete ? ' sequence-editor__btn--delete-confirm' : ''}`}
+              onClick={handleDelete}
+              disabled={isBusy}
+              aria-busy={deleting}
+              aria-label={
+                confirmDelete
+                  ? 'Confirmer la suppression de la séquence'
+                  : 'Supprimer cette séquence'
+              }
+            >
+              {deleting
+                ? 'Suppression…'
+                : confirmDelete
+                  ? 'Confirmer la suppression ?'
+                  : 'Supprimer la séquence'}
+            </button>
+            {confirmDelete && (
+              <button
+                type="button"
+                className="sequence-editor__btn sequence-editor__btn--cancel"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Annuler
+              </button>
+            )}
+          </>
         )}
       </div>
+
+      {/* Bandeau lecture seule — visible uniquement pour Free */}
+      {isReadOnly && (
+        <p className="sequence-editor__readonly-notice">
+          Lecture seule — la modification des séquences est réservée aux
+          abonnés.
+        </p>
+      )}
 
       {/* Message d'erreur */}
       {actionError && (
@@ -279,44 +316,46 @@ export function SequenceEditor({
                   </span>
                 </div>
 
-                {/* Contrôles ordre + suppression */}
-                <div className="sequence-editor__step-controls">
-                  <button
-                    type="button"
-                    className="sequence-editor__step-btn"
-                    onClick={() => handleMoveUp(step.id, step.position)}
-                    disabled={idx === 0 || isBusy}
-                    aria-label={`Monter l'étape ${idx + 1}`}
-                  >
-                    ▲
-                  </button>
-                  <button
-                    type="button"
-                    className="sequence-editor__step-btn"
-                    onClick={() => handleMoveDown(step.id, step.position)}
-                    disabled={idx === steps.length - 1 || isBusy}
-                    aria-label={`Descendre l'étape ${idx + 1}`}
-                  >
-                    ▼
-                  </button>
-                  <button
-                    type="button"
-                    className="sequence-editor__step-btn sequence-editor__step-btn--remove"
-                    onClick={() => handleRemoveStep(step.id)}
-                    disabled={isBusy}
-                    aria-label={`Supprimer l'étape ${idx + 1} — ${card?.label ?? ''}`}
-                  >
-                    ✕
-                  </button>
-                </div>
+                {/* Contrôles ordre + suppression — masqués en lecture seule */}
+                {!isReadOnly && (
+                  <div className="sequence-editor__step-controls">
+                    <button
+                      type="button"
+                      className="sequence-editor__step-btn"
+                      onClick={() => handleMoveUp(step.id, step.position)}
+                      disabled={idx === 0 || isBusy}
+                      aria-label={`Monter l'étape ${idx + 1}`}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      className="sequence-editor__step-btn"
+                      onClick={() => handleMoveDown(step.id, step.position)}
+                      disabled={idx === steps.length - 1 || isBusy}
+                      aria-label={`Descendre l'étape ${idx + 1}`}
+                    >
+                      ▼
+                    </button>
+                    <button
+                      type="button"
+                      className="sequence-editor__step-btn sequence-editor__step-btn--remove"
+                      onClick={() => handleRemoveStep(step.id)}
+                      disabled={isBusy}
+                      aria-label={`Supprimer l'étape ${idx + 1} — ${card?.label ?? ''}`}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
               </li>
             )
           })}
         </ol>
       )}
 
-      {/* Ajout d'une étape */}
-      {hasAvailableCards && (
+      {/* Ajout d'une étape — masqué en lecture seule */}
+      {!isReadOnly && hasAvailableCards && (
         <div className="sequence-editor__add-step">
           <label
             className="sequence-editor__add-label"
@@ -365,8 +404,8 @@ export function SequenceEditor({
         </div>
       )}
 
-      {/* Message si toutes les cartes sont déjà utilisées */}
-      {!hasAvailableCards && steps.length > 0 && (
+      {/* Message si toutes les cartes sont déjà utilisées — uniquement pour Subscriber/Admin */}
+      {!isReadOnly && !hasAvailableCards && steps.length > 0 && (
         <p className="sequence-editor__hint">
           Toutes les cartes disponibles sont déjà dans la séquence.
         </p>

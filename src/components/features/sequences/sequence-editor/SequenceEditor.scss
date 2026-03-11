@@ -21,6 +21,12 @@
     background: surface('soft');
   }
 
+  // ── Variante lecture seule (Free) ──
+  &--readonly {
+    border-left-color: surface('border');
+    background: surface('soft');
+  }
+
   // ── En-tête ──
   &__header {
     display: flex;
@@ -43,6 +49,14 @@
     font-size: font-size('sm');
     color: text('muted');
     margin: 0;
+  }
+
+  // ── Notice lecture seule (Free) ──
+  &__readonly-notice {
+    font-size: font-size('sm');
+    color: text('muted');
+    margin: 0;
+    font-style: italic;
   }
 
   &__empty {

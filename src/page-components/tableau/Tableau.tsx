@@ -258,7 +258,7 @@ export default function Tableau() {
   const rewardSlot = useMemo<Slot | null>(
     () =>
       showRecompense
-        ? slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null
+        ? (slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null)
         : null,
     [slots, showRecompense]
   )
