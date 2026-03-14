@@ -3,7 +3,7 @@
  * 🧪 Test Utilities - Helpers pour tests React
  *
  * Wrapper avec tous les providers nécessaires pour tester les composants
- * qui dépendent de contexts (Auth, Permissions, Toast, etc.)
+ * qui dépendent de contexts (Auth, Toast, etc.)
  *
  * Usage :
  * import { renderWithProviders, renderHookWithProviders } from '@/test/test-utils'
@@ -17,7 +17,6 @@ import { type ReactElement, type ReactNode } from 'react'
 import {
   AuthProvider,
   ToastProvider,
-  PermissionsProvider,
   DisplayProvider,
   LoadingProvider,
   OfflineProvider,
@@ -45,13 +44,11 @@ export function AllTheProviders({ children }: AllTheProvidersProps) {
     <OfflineProvider>
       <AuthProvider>
         <ChildProfileProvider>
-          <PermissionsProvider>
-            <DisplayProvider>
-              <LoadingProvider>
-                <ToastProvider>{children}</ToastProvider>
-              </LoadingProvider>
-            </DisplayProvider>
-          </PermissionsProvider>
+          <DisplayProvider>
+            <LoadingProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </LoadingProvider>
+          </DisplayProvider>
         </ChildProfileProvider>
       </AuthProvider>
     </OfflineProvider>

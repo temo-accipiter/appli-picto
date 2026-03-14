@@ -16,7 +16,7 @@ export default function AdminMenuItem() {
   return (
     <button
       className="user-menu-item admin"
-      onClick={() => router.push('/admin/permissions')}
+      onClick={() => router.push('/admin/logs')}
     >
       <Shield className="icon" aria-hidden />
       <span>{t('nav.admin')}</span>
