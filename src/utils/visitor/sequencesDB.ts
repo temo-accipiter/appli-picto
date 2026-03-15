@@ -344,7 +344,7 @@ export async function removeSequenceStep(stepId: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_STEPS, 'readwrite')
     const store = tx.objectStore(STORE_STEPS)
-    const request = store.delete(stepId)
+    store.delete(stepId)
 
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)
