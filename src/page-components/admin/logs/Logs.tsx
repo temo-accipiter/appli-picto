@@ -11,6 +11,7 @@
  */
 import { Button, FloatingPencil } from '@/components'
 import { useToast } from '@/contexts'
+import formatErr from '@/utils/logs/formatErr'
 import { supabase } from '@/utils/supabaseClient'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -18,13 +19,27 @@ import './Logs.scss'
 
 interface SubscriptionLog {
   id: string
-  timestamp: string
-  user_id: string | null
+  account_id: string | null
   event_type: string
   details: Record<string, unknown>
+  created_at: string
 }
 
 type FilterType = 'all' | 'user' | 'system' | 'event:webhook' | 'event:checkout'
+
+function getLoadLogsErrorMessage(error: unknown): string {
+  const normalizedError = formatErr(error).toLowerCase()
+
+  if (
+    normalizedError.includes('failed to fetch') ||
+    normalizedError.includes('network') ||
+    normalizedError.includes('fetch')
+  ) {
+    return 'Impossible de charger les logs. Verifiez la connexion puis reessayez.'
+  }
+
+  return 'Impossible de charger les logs pour le moment. Reessayez.'
+}
 
 export default function Logs() {
   const { show: showToast } = useToast()
@@ -36,6 +51,7 @@ export default function Logs() {
   const [page, setPage] = useState(0)
   const [hasMore, setHasMore] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const ITEMS_PER_PAGE = 50
 
@@ -44,24 +60,31 @@ export default function Logs() {
     async (reset = false) => {
       try {
         setLoading(true)
+        setErrorMessage(null)
         const currentPage = reset ? 0 : page
 
         // RLS is_admin() enforced côté DB — pas besoin de guard front
         const { data, error, count } = await supabase
           .from('subscription_logs')
-          .select('*', { count: 'exact' })
-          .order('timestamp', { ascending: false })
+          .select('id, account_id, event_type, details, created_at', {
+            count: 'exact',
+          })
+          .order('created_at', { ascending: false })
           .range(
             currentPage * ITEMS_PER_PAGE,
             (currentPage + 1) * ITEMS_PER_PAGE - 1
           )
 
         if (error) {
-          console.error('Erreur chargement logs:', error)
-          showToast(
-            `Erreur lors du chargement des logs: ${error.message}`,
-            'error'
-          )
+          const message = getLoadLogsErrorMessage(error)
+          console.error('Erreur chargement logs:', formatErr(error))
+          if (reset) {
+            setLogs([])
+            setTotalCount(0)
+          }
+          setHasMore(false)
+          setErrorMessage(message)
+          showToast(message, 'error')
           return
         }
 
@@ -77,8 +100,15 @@ export default function Logs() {
           ((data as SubscriptionLog[]) || []).length === ITEMS_PER_PAGE
         )
       } catch (error) {
-        console.error('Erreur chargement logs:', error)
-        showToast('Erreur lors du chargement des logs', 'error')
+        const message = getLoadLogsErrorMessage(error)
+        console.error('Erreur chargement logs:', formatErr(error))
+        if (reset) {
+          setLogs([])
+          setTotalCount(0)
+        }
+        setHasMore(false)
+        setErrorMessage(message)
+        showToast(message, 'error')
       } finally {
         setLoading(false)
       }
@@ -182,9 +212,11 @@ export default function Logs() {
       <div className="logs-list">
         <h3>Logs récents</h3>
 
-        {logs.length === 0 && !loading ? (
+        {errorMessage && !loading && <p className="no-logs">{errorMessage}</p>}
+
+        {logs.length === 0 && !loading && !errorMessage ? (
           <p className="no-logs">Aucun log trouvé</p>
-        ) : (
+        ) : logs.length > 0 ? (
           <div className="logs-table">
             <div className="logs-header">
               <span>Timestamp</span>
@@ -196,9 +228,9 @@ export default function Logs() {
             {logs.map(log => (
               <div key={log.id} className="log-row">
                 <span className="log-timestamp">
-                  {formatTimestamp(log.timestamp)}
+                  {formatTimestamp(log.created_at)}
                 </span>
-                <span className="log-user">{getUserInfo(log.user_id)}</span>
+                <span className="log-user">{getUserInfo(log.account_id)}</span>
                 <span className="log-event">
                   {formatEventType(log.event_type)}
                 </span>
@@ -208,7 +240,7 @@ export default function Logs() {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         {hasMore && (
           <div className="load-more">

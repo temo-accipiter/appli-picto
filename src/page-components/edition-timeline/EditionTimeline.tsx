@@ -4,7 +4,7 @@
  * EditionTimeline — Page d'édition de la timeline du profil enfant actif.
  *
  * Architecture S4 + S6 :
- * - Sélecteur de profil enfant en haut (ChildProfileSelector)
+ * - Badge/sélecteur de profil enfant actif en haut à droite (popover)
  * - Récupération automatique de la timeline (1:1 avec child_profile)
  * - Éditeur de slots (SlotsEditor) en dessous
  * - Verrouillage selon état de session (S6 — matrice §3.2.2bis)
@@ -21,28 +21,62 @@
  * - Sélection de profil = rechargement propre (reloadKey pattern).
  */
 
-import { useEffect, useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
 import { useToast } from '@/contexts'
-import useTimelines from '@/hooks/useTimelines'
-import useSlots from '@/hooks/useSlots'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
+import type { Timeline, Slot } from '@/types/supabase'
 import './EditionTimeline.scss'
 
 interface EditionTimelineProps {
   embedded?: boolean
+  timeline: Timeline | null
+  slots: Slot[]
+  slotsLoading: boolean
+  slotsError: Error | null
+  addStep: () => Promise<{ error: Error | null }>
+  addReward: () => Promise<{ error: Error | null }>
+  updateSlot: (
+    id: string,
+    updates: { card_id?: string | null; tokens?: number | null }
+  ) => Promise<{ error: Error | null }>
+  removeSlot: (id: string) => Promise<{ error: Error | null }>
+  clearAllCards: () => Promise<{ error: Error | null }>
 }
 
 export default function EditionTimeline({
   embedded = false,
+  timeline,
+  slots,
+  slotsLoading,
+  slotsError,
+  addStep,
+  addReward,
+  updateSlot,
+  removeSlot,
+  clearAllCards,
 }: EditionTimelineProps) {
-  const { activeChildId } = useChildProfile()
+  const {
+    activeChildId,
+    activeChildProfile,
+    childProfiles,
+    loading: childProfilesLoading,
+    setActiveChildId,
+  } = useChildProfile()
+  const selectorRef = useRef<HTMLDivElement | null>(null)
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
 
   // ── S8 : Offline guard (§4.4) ───────────────────────────────────────────────
   // isOnline : détermine si les actions structurelles sont autorisées
@@ -70,20 +104,47 @@ export default function EditionTimeline({
     setReloadKey(k => k + 1)
   }, [activeChildId])
 
-  // Lecture de la timeline pour l'enfant actif (1:1)
-  const { timeline } = useTimelines(activeChildId)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
 
-  // CRUD slots de la timeline
-  const {
-    slots,
-    loading: slotsLoading,
-    error: slotsError,
-    addStep,
-    addReward,
-    updateSlot,
-    removeSlot,
-    clearAllCards,
-  } = useSlots(timeline?.id ?? null)
+    const mediaQuery = window.matchMedia('(min-width: 768px)')
+    const syncViewport = () => setIsDesktop(mediaQuery.matches)
+
+    syncViewport()
+    mediaQuery.addEventListener('change', syncViewport)
+    return () => mediaQuery.removeEventListener('change', syncViewport)
+  }, [])
+
+  useEffect(() => {
+    if (!isProfilePopoverOpen) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        selectorRef.current &&
+        !selectorRef.current.contains(event.target as Node)
+      ) {
+        setIsProfilePopoverOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsProfilePopoverOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isProfilePopoverOpen])
+
+  // ── SLOTS : Reçus en props depuis page.tsx (source unique partagée) ─────────
+  // Plus de useSlots local → désync Timeline ↔ Bibliothèque résolu
+  // Toutes les fonctions CRUD (addStep, updateSlot, etc.) proviennent du parent
 
   // ── S6 : Session active pour verrouillage et réinitialisation ──────────────
   // On charge la session uniquement si on a un profil + une timeline.
@@ -157,9 +218,109 @@ export default function EditionTimeline({
     : undefined
 
   const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
+  const activeInitial = activeChildProfile?.name?.charAt(0).toUpperCase() || '?'
+
+  const handleProfileTriggerKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      setIsProfilePopoverOpen(prev => !prev)
+    }
+    if (event.key === 'Escape') {
+      setIsProfilePopoverOpen(false)
+    }
+  }
 
   return (
     <RootTag className="edition-timeline" aria-label="Édition de la timeline">
+      <div className="edition-timeline__top-bar">
+        <p className="edition-timeline__subtitle">
+          Glisse l&apos;image d&apos;un slot sur un autre pour échanger. Glisse
+          sur Récompense pour la remplir.
+        </p>
+        {childProfilesLoading || childProfiles.length === 0 ? (
+          <div className="edition-timeline__profile-placeholder">
+            <span className="avatar-circle" aria-hidden="true">
+              ?
+            </span>
+            <span className="sr-only">Aucun profil enfant</span>
+          </div>
+        ) : (
+          <div
+            className="edition-timeline__profile-selector"
+            ref={selectorRef}
+            onMouseEnter={() => {
+              if (isDesktop) setIsProfilePopoverOpen(true)
+            }}
+            onMouseLeave={() => {
+              if (isDesktop) setIsProfilePopoverOpen(false)
+            }}
+          >
+            <button
+              type="button"
+              className="edition-timeline__profile-trigger"
+              aria-haspopup="menu"
+              aria-expanded={isProfilePopoverOpen}
+              aria-label={
+                activeChildProfile
+                  ? `Profil enfant actif : ${activeChildProfile.name}`
+                  : 'Aucun profil enfant'
+              }
+              onClick={() => setIsProfilePopoverOpen(prev => !prev)}
+              onFocus={() => setIsProfilePopoverOpen(true)}
+              onKeyDown={handleProfileTriggerKeyDown}
+            >
+              <span className="avatar-circle" aria-hidden="true">
+                {activeInitial}
+              </span>
+            </button>
+
+            {isProfilePopoverOpen && (
+              <div
+                className="edition-timeline__profile-popover"
+                role="menu"
+                aria-label="Sélectionner un profil enfant"
+              >
+                {childProfiles.map(profile => {
+                  const isActive = profile.id === activeChildId
+                  const isLocked = profile.status === 'locked'
+                  const initial = profile.name.charAt(0).toUpperCase()
+
+                  return (
+                    <button
+                      key={profile.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={isActive}
+                      aria-label={
+                        isLocked
+                          ? `${profile.name} — verrouillé (lecture seule)`
+                          : `Sélectionner ${profile.name}`
+                      }
+                      className={`edition-timeline__profile-item ${
+                        isActive ? 'edition-timeline__profile-item--active' : ''
+                      }`}
+                      disabled={isLocked}
+                      onClick={() => {
+                        if (isLocked) return
+                        setActiveChildId(profile.id)
+                        setIsProfilePopoverOpen(false)
+                      }}
+                    >
+                      <span className="avatar-circle" aria-hidden="true">
+                        {initial}
+                      </span>
+                      <span className="sr-only">{profile.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* ── S8 : Bandeau offline (§4.4.1) ──────────────────────────────────────
            Affiché uniquement quand le navigateur est hors connexion.
            Non modal, non bloquant, discret pour l'adulte.
@@ -174,6 +335,16 @@ export default function EditionTimeline({
            ⚠️ L'exécution (sessions, validations) reste autorisée même en execution-only.
       ── */}
       {isExecutionOnly && <ExecutionOnlyBanner />}
+
+      {!timeline && (
+        <p className="edition-timeline__no-timeline" role="status">
+          {childProfilesLoading
+            ? 'Chargement du profil enfant...'
+            : childProfiles.length === 0
+              ? 'Aucun profil enfant disponible.'
+              : 'Chargement de la timeline...'}
+        </p>
+      )}
 
       {/* ── Éditeur de slots — rendu uniquement si la timeline est chargée ──────
            ⚠️ GUARD CRITIQUE : sans timeline, SlotsEditor ne peut pas créer de slots

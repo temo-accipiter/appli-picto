@@ -28,7 +28,7 @@ interface UseSlotReturn {
   loading: boolean
   /** Erreur de lecture */
   error: Error | null
-  /** Ajouter un slot "étape" (position = max actuel + 1, tokens = 1 par défaut) */
+  /** Ajouter un slot "étape" (position = max actuel + 1, tokens = 0 par défaut) */
   addStep: () => Promise<ActionResult>
   /** Ajouter un slot "récompense" (position = max actuel + 1, tokens = null) */
   addReward: () => Promise<ActionResult>
@@ -122,23 +122,28 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
     async (kind: SlotKind): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
-      // Position = nombre de slots actuels (0-indexed)
-      // La DB gère UNIQUE(timeline_id, position) — en cas de conflit, elle retourne une erreur
-      const nextPosition = slots.length
+      // Position = max(position) + 1.
+      // Plus robuste que slots.length si l'historique contient des positions non contiguës.
+      // La DB reste autorité finale via UNIQUE(timeline_id, position).
+      const maxPosition = slots.reduce(
+        (max, slot) => (slot.position > max ? slot.position : max),
+        -1
+      )
+      const nextPosition = maxPosition + 1
 
       const { error: insertError } = await supabase.from('slots').insert({
         timeline_id: timelineId,
         kind,
         position: nextPosition,
         card_id: null,
-        // Valeur par défaut tokens : 1 jeton pour une étape, null pour une récompense
-        tokens: kind === 'step' ? 1 : null,
+        // Valeur par défaut tokens : 0 jeton pour une étape, null pour une récompense
+        tokens: kind === 'step' ? 0 : null,
       })
 
       if (!insertError) refresh()
       return { error: insertError as Error | null }
     },
-    [timelineId, slots.length, refresh]
+    [timelineId, slots, refresh]
   )
 
   const addStep = useCallback(() => addSlot('step'), [addSlot])

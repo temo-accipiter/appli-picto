@@ -32,6 +32,15 @@ export { default as useSequences } from './useSequences'
 export type { Sequence } from './useSequences'
 export { default as useSequenceSteps } from './useSequenceSteps'
 export type { SequenceStep } from './useSequenceSteps'
+// Ticket 3 — Visitor local-only séquençage
+export { default as useSequencesLocal } from './useSequencesLocal'
+export type { VisitorSequence } from './useSequencesLocal'
+export { default as useSequenceStepsLocal } from './useSequenceStepsLocal'
+export type { VisitorSequenceStep } from './useSequenceStepsLocal'
+export { default as useSequencesWithVisitor } from './useSequencesWithVisitor'
+export type { UnifiedSequence } from './useSequencesWithVisitor'
+export { default as useSequenceStepsWithVisitor } from './useSequenceStepsWithVisitor'
+export type { UnifiedSequenceStep } from './useSequenceStepsWithVisitor'
 export { default as useCategories } from './useCategories'
 export { default as useIsVisitor } from './useIsVisitor'
 export { useCategoryValidation } from './useCategoryValidation'
@@ -68,9 +77,8 @@ export type {
   AdminSupportChildProfile,
 } from './useAdminSupportInfo'
 export { default as useParametres } from './useParametres' // ⚠️ LEGACY — Remplacé par useAccountPreferences (S11)
-export { default as useRBAC } from './useRBAC' // ⚠️ Quota logic deferred to S2+
 export { default as useStations } from './useStations'
 export { default as useSubscriptionStatus } from './useSubscriptionStatus'
 
 // Re-export hooks from contexts
-export { useLoading, useToast, usePermissions } from '@/contexts' // ⚠️ usePermissions stub for S2+
+export { useLoading, useToast } from '@/contexts'

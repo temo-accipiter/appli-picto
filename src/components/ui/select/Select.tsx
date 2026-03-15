@@ -21,6 +21,8 @@ interface SelectProps
   options?: SelectOption[]
   error?: string
   placeholder?: string
+  includePlaceholder?: boolean
+  placeholderSelectable?: boolean
 }
 
 const Select = forwardRef<HTMLSelectElement, SelectProps>(
@@ -33,6 +35,8 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       options = [],
       error = '',
       placeholder,
+      includePlaceholder = true,
+      placeholderSelectable = false,
       ...rest
     },
     ref
@@ -57,7 +61,15 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           aria-describedby={error ? `${id}-error` : undefined}
           {...rest}
         >
-          <option value="">{defaultPlaceholder}</option>
+          {includePlaceholder && (
+            <option
+              value=""
+              disabled={!placeholderSelectable}
+              hidden={!placeholderSelectable}
+            >
+              {defaultPlaceholder}
+            </option>
+          )}
           {options.map(opt => (
             <option key={opt.value} value={opt.value}>
               {opt.label}

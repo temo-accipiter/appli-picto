@@ -837,6 +837,10 @@ export type Database = {
         Args: { p_account_id: string; p_revoked_at: string }
         Returns: undefined
       }
+      create_sequence_with_steps: {
+        Args: { p_mother_card_id: string; p_step_card_ids: string[] }
+        Returns: string
+      }
       enforce_child_profile_limit_after_session_completion: {
         Args: { p_child_profile_id: string }
         Returns: undefined
@@ -872,6 +876,10 @@ export type Database = {
       quota_profiles_limit: {
         Args: { p_status: Database['public']['Enums']['account_status'] }
         Returns: number
+      }
+      replace_sequence_steps: {
+        Args: { p_sequence_id: string; p_step_card_ids: string[] }
+        Returns: undefined
       }
       reset_active_started_session_for_timeline: {
         Args: { p_reason?: string; p_timeline_id: string }

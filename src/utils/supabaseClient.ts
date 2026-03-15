@@ -164,18 +164,17 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
       // Ignore errors
     }
 
-    // Détruire référence
-    supabase = undefined as unknown as SupabaseClientType
-
-    // Court délai
+    // Court délai pour éviter les collisions de lifecycle,
+    // tout en gardant le client existant disponible.
     await new Promise(resolve => setTimeout(resolve, 100))
 
-    // Créer nouveau client
-    supabase = createClient<Database>(
+    // Créer nouveau client puis swap atomique
+    const nextClient = createClient<Database>(
       url,
       key,
       clientConfig
     ) as SupabaseClientType
+    supabase = nextClient
 
     // Exposer
     if (typeof window !== 'undefined') {

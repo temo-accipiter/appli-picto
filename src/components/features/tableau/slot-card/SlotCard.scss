@@ -13,16 +13,12 @@
   background: surface('card');
   border-radius: radius('lg');
   border: border-width('thin') solid surface('border');
-  width: size('card-max-width');
+  // Carrousel horizontal : largeur adaptative sur toutes tailles (80vw max 400px)
+  width: 80vw;
+  max-width: size('card-max-width');
   flex-shrink: 0;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   @include safe-transition(background border-color opacity);
-
-  // Tablette : taille fixe dans une grille
-  @include respond-to('md') {
-    width: auto;
-    scroll-snap-align: none;
-  }
 
   // ── État validé ──
   &--validated {

@@ -26,6 +26,9 @@ export default defineConfig([
       '**/projet-drag&drop/**',
       '**/blueprint-archive/**',
       '**/scripts/**', // Exclude scripts (ESM modules with different config)
+      '**/public/sw.js', // PWA Service Worker généré automatiquement
+      '**/public/workbox-*.js', // PWA Workbox générés automatiquement
+      '**/public/swe-worker-*.js', // PWA worker générés automatiquement
     ],
   },
   {

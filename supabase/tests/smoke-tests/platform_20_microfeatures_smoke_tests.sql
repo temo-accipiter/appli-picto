@@ -93,8 +93,9 @@ BEGIN
     RAISE EXCEPTION 'account_preferences row missing';
   END IF;
 
-  -- Attempt to set reduced_motion=true AND confetti_enabled=true
-  -- DB must FORCE confetti OFF (trigger) and must never allow the invalid state (check)
+  -- Depuis migration 20260310 (adult_control): l'adulte décide librement.
+  -- Plus de trigger correcteur, plus de CHECK constraint.
+  -- reduced_motion=true ET confetti_enabled=true doit être accepté sans correction.
   UPDATE public.account_preferences
   SET reduced_motion = true, confetti_enabled = true
   WHERE account_id = v_account;
@@ -107,11 +108,11 @@ BEGIN
     RAISE EXCEPTION 'Expected reduced_motion=true, got %', v_rm;
   END IF;
 
-  IF v_confetti IS DISTINCT FROM false THEN
-    RAISE EXCEPTION 'Invariant broken: confetti must be forced OFF when reduced_motion=true (got %)', v_confetti;
+  IF v_confetti IS DISTINCT FROM true THEN
+    RAISE EXCEPTION 'Adult control: confetti_enabled must remain true when set by adult (got %)', v_confetti;
   END IF;
 
-  RAISE NOTICE 'OK: reduced_motion forces confetti OFF (trigger + check)';
+  RAISE NOTICE 'OK: adult controls both reduced_motion and confetti independently (no auto-correction)';
 END $$;
 
 SAVEPOINT s2;

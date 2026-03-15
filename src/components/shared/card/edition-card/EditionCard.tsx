@@ -38,6 +38,7 @@ interface EditionCardProps {
   image?: string
   label: string
   categorie?: string
+  defaultCategoryId?: string
   checked: boolean
 
   // Callbacks métier
@@ -62,6 +63,7 @@ const CardEdition = memo(function CardEdition({
   image,
   label,
   categorie,
+  defaultCategoryId,
   checked,
   onLabelChange,
   onBlur,
@@ -82,6 +84,8 @@ const CardEdition = memo(function CardEdition({
     () => [makeValidateNotEmpty(t), makeNoEdgeSpaces(t), makeNoDoubleSpaces(t)],
     [t]
   )
+  const selectedCategoryValue =
+    categorie || defaultCategoryId || String(categorieOptions[0]?.value ?? '')
 
   return (
     <BaseCard
@@ -118,8 +122,9 @@ const CardEdition = memo(function CardEdition({
           {categorieOptions.length > 0 && (
             <Select
               id={`select-categorie-${labelId}`}
-              value={categorie || ''}
+              value={selectedCategoryValue}
               onChange={e => !disabled && onCategorieChange?.(e.target.value)}
+              includePlaceholder={false}
               options={
                 Array.isArray(categorieOptions) && categorieOptions.length > 0
                   ? categorieOptions

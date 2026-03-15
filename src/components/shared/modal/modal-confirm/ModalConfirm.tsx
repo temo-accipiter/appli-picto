@@ -10,6 +10,8 @@ interface ModalConfirmProps {
   onClose: () => void
   onConfirm: () => void
   confirmLabel?: string
+  confirmDisabled?: boolean
+  closeOnConfirm?: boolean
   cancelLabel?: string
   children: ReactNode
 }
@@ -19,6 +21,8 @@ export default function ModalConfirm({
   onClose,
   onConfirm,
   confirmLabel,
+  confirmDisabled = false,
+  closeOnConfirm = true,
   cancelLabel: _cancelLabel,
   children,
 }: ModalConfirmProps) {
@@ -32,10 +36,11 @@ export default function ModalConfirm({
         {
           label: confirmLabel || t('actions.confirm'),
           onClick: () => {
-            onClose()
+            if (closeOnConfirm) onClose()
             onConfirm()
           },
           variant: 'primary',
+          disabled: confirmDisabled,
         },
       ]}
     >

@@ -8,13 +8,23 @@ interface ErrorLike {
 }
 
 export default function formatErr(e: unknown): string {
+  if (typeof e === 'string' && e.trim()) return e
+
+  if (e instanceof Error && e.message.trim()) {
+    return e.message
+  }
+
   const err = e as ErrorLike
-  const m = String(err?.message ?? e)
   const parts = [
-    m,
+    typeof err?.message === 'string' && err.message.trim() ? err.message : '',
     err?.code ? `[${err.code}]` : '',
     err?.details ? `— ${err.details}` : '',
     err?.hint ? `(hint: ${err.hint})` : '',
   ].filter(Boolean)
-  return parts.join(' ')
+
+  if (parts.length > 0) {
+    return parts.join(' ')
+  }
+
+  return 'Erreur inconnue'
 }

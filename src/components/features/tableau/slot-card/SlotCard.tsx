@@ -20,12 +20,13 @@
 // - L'état "fait" des étapes est LOCAL-ONLY — jamais persisté en DB
 
 import Image from 'next/image'
-import { useCallback, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useState, type MouseEvent } from 'react'
 import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import { SequenceMiniTimeline } from '@/components/features/sequences'
+import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
 import './SlotCard.scss'
 
 interface SlotCardProps {
@@ -64,6 +65,30 @@ export function SlotCard({
 
   // État local : mini-timeline ouverte ou non (local-only)
   const [miniTimelineOpen, setMiniTimelineOpen] = useState(false)
+  const [resolvedImageSrc, setResolvedImageSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    const run = async () => {
+      if (!card?.image_url) {
+        if (active) setResolvedImageSrc(null)
+        return
+      }
+
+      const src = await resolveStorageImageUrl(card.image_url, {
+        bucket: card.type === 'bank' ? 'bank-images' : 'personal-images',
+      })
+
+      if (active) setResolvedImageSrc(src)
+    }
+
+    void run()
+
+    return () => {
+      active = false
+    }
+  }, [card?.image_url, card?.type])
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
@@ -76,7 +101,7 @@ export function SlotCard({
     [isDisabled, onValidate, slot.id]
   )
 
-  const cardLabel = card?.label ?? 'Étape'
+  const cardLabel = card?.name ?? 'Étape'
   const hasSequence = sequenceSteps.length > 0
 
   return (
@@ -86,13 +111,16 @@ export function SlotCard({
     >
       {/* Image de la carte */}
       <div className="slot-card__image-wrapper">
-        {card?.image_url ? (
+        {resolvedImageSrc ? (
           <Image
-            src={card.image_url}
+            src={resolvedImageSrc}
             alt={cardLabel}
             className="slot-card__image"
             width={200}
             height={200}
+            sizes="(max-width: 768px) 120px, 160px"
+            placeholder="empty"
+            unoptimized
             draggable={false}
           />
         ) : (

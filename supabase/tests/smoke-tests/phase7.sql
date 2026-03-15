@@ -866,6 +866,375 @@ END $$;
 
 
 -- ============================================================
+-- TEST 21: can_write_sequences() — helper feature gate par statut
+-- Phase 7.9: vérifier que le helper retourne le bon résultat
+-- ============================================================
+DO $$
+DECLARE
+  v_result BOOLEAN;
+BEGIN
+  -- Bob (free) → FALSE
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+  SELECT public.can_write_sequences() INTO v_result;
+  IF v_result IS DISTINCT FROM FALSE THEN
+    RAISE EXCEPTION 'TEST 21 FAILED: can_write_sequences() retourne TRUE pour Free (attendu FALSE)';
+  END IF;
+
+  -- Alice (subscriber) → TRUE
+  PERFORM _test_set_auth_uid('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+  SELECT public.can_write_sequences() INTO v_result;
+  IF v_result IS DISTINCT FROM TRUE THEN
+    RAISE EXCEPTION 'TEST 21 FAILED: can_write_sequences() retourne FALSE pour Subscriber (attendu TRUE)';
+  END IF;
+
+  -- Charlie (admin) → TRUE
+  PERFORM _test_set_auth_uid('cccccccc-cccc-cccc-cccc-cccccccccccc');
+  SELECT public.can_write_sequences() INTO v_result;
+  IF v_result IS DISTINCT FROM TRUE THEN
+    RAISE EXCEPTION 'TEST 21 FAILED: can_write_sequences() retourne FALSE pour Admin (attendu TRUE)';
+  END IF;
+
+  PERFORM _test_reset_role();
+  RAISE NOTICE '✅ TEST 21 PASS — can_write_sequences(): Free=FALSE, Subscriber=TRUE, Admin=TRUE';
+END $$;
+
+
+-- ============================================================
+-- TEST 22: Free (1 profil) bloqué en INSERT sequences
+-- Phase 7.9: sequences_insert_owner requiert can_write_sequences()
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+BEGIN
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  BEGIN
+    INSERT INTO sequences (account_id, mother_card_id)
+    VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card);
+    RAISE EXCEPTION 'TEST 22 FAILED: Free a pu insérer une séquence (RLS WITH CHECK devrait bloquer)';
+  EXCEPTION
+    WHEN others THEN
+      IF SQLERRM LIKE 'TEST 22 FAILED%' THEN RAISE; END IF;
+      NULL; -- Bloqué = attendu
+  END;
+
+  PERFORM _test_reset_role();
+  RAISE NOTICE '✅ TEST 22 PASS — Free bloqué en INSERT sequences';
+END $$;
+
+
+-- ============================================================
+-- TEST 23: Free (1 profil) bloqué en UPDATE/DELETE sequences
+-- Phase 7.9: policies UPDATE/DELETE requièrent can_write_sequences()
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+  v_count int;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer une séquence pour Bob en mode postgres (bypass RLS pour setup)
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  -- En tant que Bob (free), tenter UPDATE → doit retourner 0 rows (USING filtre)
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  UPDATE sequences SET updated_at = NOW() WHERE id = v_bob_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 0 THEN
+    RAISE EXCEPTION 'TEST 23 FAILED: Free a pu modifier une séquence (% row(s) affectée(s))', v_count;
+  END IF;
+
+  -- Tenter DELETE → doit retourner 0 rows (USING filtre)
+  DELETE FROM sequences WHERE id = v_bob_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 0 THEN
+    RAISE EXCEPTION 'TEST 23 FAILED: Free a pu supprimer une séquence (% row(s) affectée(s))', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 23 PASS — Free bloqué en UPDATE/DELETE sequences';
+END $$;
+
+
+-- ============================================================
+-- TEST 24: Free peut SELECT ses séquences (lecture autorisée)
+-- Phase 7.8 SELECT = KEEP. Free = lecture selon contrat.
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+  v_count int;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer séquence pour Bob en mode postgres
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  -- En tant que Bob, SELECT sur sa propre séquence
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  SELECT COUNT(*) INTO v_count FROM sequences WHERE id = v_bob_seq;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 24 FAILED: Free ne peut pas lire sa propre séquence (attendu 1, obtenu %)', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 24 PASS — Free peut SELECT ses séquences (lecture autorisée)';
+END $$;
+
+
+-- ============================================================
+-- TEST 25: Subscriber peut CRUD sequences
+-- Phase 7.9: can_write_sequences() = TRUE pour subscriber
+-- ============================================================
+DO $$
+DECLARE
+  v_alice_card uuid := (SELECT val FROM _rls_ids WHERE key = 'alice_card');
+  v_alice_seq uuid;
+  v_count int;
+BEGIN
+  -- En tant qu'Alice (subscriber), INSERT
+  PERFORM _test_set_auth_uid('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', v_alice_card)
+  RETURNING id INTO v_alice_seq;
+
+  IF v_alice_seq IS NULL THEN
+    RAISE EXCEPTION 'TEST 25 FAILED: Subscriber n''a pas pu créer une séquence';
+  END IF;
+
+  -- SELECT
+  SELECT COUNT(*) INTO v_count FROM sequences WHERE id = v_alice_seq;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 25 FAILED: Subscriber ne voit pas sa séquence créée';
+  END IF;
+
+  -- UPDATE
+  UPDATE sequences SET updated_at = NOW() WHERE id = v_alice_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 25 FAILED: Subscriber n''a pas pu modifier sa séquence';
+  END IF;
+
+  -- DELETE
+  DELETE FROM sequences WHERE id = v_alice_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 25 FAILED: Subscriber n''a pas pu supprimer sa séquence';
+  END IF;
+
+  PERFORM _test_reset_role();
+  RAISE NOTICE '✅ TEST 25 PASS — Subscriber CRUD sequences (INSERT/SELECT/UPDATE/DELETE)';
+END $$;
+
+
+-- ============================================================
+-- TEST 26: Admin peut INSERT sequences
+-- Phase 7.9: can_write_sequences() = TRUE pour admin
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_charlie_seq uuid;
+  v_count int;
+BEGIN
+  -- En tant que Charlie (admin), INSERT
+  PERFORM _test_set_auth_uid('cccccccc-cccc-cccc-cccc-cccccccccccc');
+
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('cccccccc-cccc-cccc-cccc-cccccccccccc', v_bank_card)
+  RETURNING id INTO v_charlie_seq;
+
+  IF v_charlie_seq IS NULL THEN
+    RAISE EXCEPTION 'TEST 26 FAILED: Admin n''a pas pu créer une séquence';
+  END IF;
+
+  -- DELETE
+  DELETE FROM sequences WHERE id = v_charlie_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 26 FAILED: Admin n''a pas pu supprimer sa séquence';
+  END IF;
+
+  PERFORM _test_reset_role();
+  RAISE NOTICE '✅ TEST 26 PASS — Admin peut INSERT/DELETE sequences';
+END $$;
+
+
+-- ============================================================
+-- TEST 27: Free bloqué en INSERT sequence_steps sur sa propre séquence
+-- Phase 7.9: sequence_steps_insert_owner requiert can_write_sequences()
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer séquence pour Bob en mode postgres (bypass RLS)
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  -- En tant que Bob (free), tenter INSERT sequence_steps sur sa propre séquence
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  BEGIN
+    INSERT INTO sequence_steps (sequence_id, step_card_id, position)
+    VALUES (v_bob_seq, v_bank_card, 0);
+    RAISE EXCEPTION 'TEST 27 FAILED: Free a pu insérer une sequence_step (RLS devrait bloquer)';
+  EXCEPTION
+    WHEN others THEN
+      IF SQLERRM LIKE 'TEST 27 FAILED%' THEN RAISE; END IF;
+      NULL; -- Bloqué = attendu
+  END;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 27 PASS — Free bloqué en INSERT sequence_steps';
+END $$;
+
+
+-- ============================================================
+-- TEST 28: Free peut SELECT sequence_steps de ses séquences
+-- Phase 7.8 SELECT = KEEP. sequence_steps_select_owner inchangée.
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+  v_count int;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer séquence + step pour Bob en mode postgres
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  INSERT INTO sequence_steps (sequence_id, step_card_id, position)
+  VALUES (v_bob_seq, v_bank_card, 0);
+
+  -- En tant que Bob (free), SELECT sequence_steps
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  SELECT COUNT(*) INTO v_count FROM sequence_steps WHERE sequence_id = v_bob_seq;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 28 FAILED: Free ne peut pas lire ses sequence_steps (attendu 1, obtenu %)', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup (séquence CASCADE supprime les steps)
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 28 PASS — Free peut SELECT sequence_steps (lecture autorisée)';
+END $$;
+
+
+-- ============================================================
+-- TEST 29: Free bloqué en UPDATE sequence_steps sur sa propre séquence
+-- Phase 7.9: sequence_steps_update_owner requiert can_write_sequences()
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+  v_bob_step uuid;
+  v_count int;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer séquence + step pour Bob en mode postgres
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  INSERT INTO sequence_steps (sequence_id, step_card_id, position)
+  VALUES (v_bob_seq, v_bank_card, 0)
+  RETURNING id INTO v_bob_step;
+
+  -- En tant que Bob (free), tenter UPDATE → doit retourner 0 rows (USING filtre)
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  UPDATE sequence_steps SET position = 0 WHERE id = v_bob_step;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 0 THEN
+    RAISE EXCEPTION 'TEST 29 FAILED: Free a pu modifier une sequence_step (% row(s) affectée(s))', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup (CASCADE depuis séquence)
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 29 PASS — Free bloqué en UPDATE sequence_steps';
+END $$;
+
+
+-- ============================================================
+-- TEST 30: Free bloqué en DELETE sequence_steps sur sa propre séquence
+-- Phase 7.9: sequence_steps_delete_owner requiert can_write_sequences()
+-- ============================================================
+DO $$
+DECLARE
+  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
+  v_bob_seq uuid;
+  v_bob_step uuid;
+  v_count int;
+BEGIN
+  PERFORM _test_reset_role();
+
+  -- Créer séquence + step pour Bob en mode postgres
+  INSERT INTO sequences (account_id, mother_card_id)
+  VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
+  RETURNING id INTO v_bob_seq;
+
+  INSERT INTO sequence_steps (sequence_id, step_card_id, position)
+  VALUES (v_bob_seq, v_bank_card, 0)
+  RETURNING id INTO v_bob_step;
+
+  -- En tant que Bob (free), tenter DELETE → doit retourner 0 rows (USING filtre)
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  DELETE FROM sequence_steps WHERE id = v_bob_step;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 0 THEN
+    RAISE EXCEPTION 'TEST 30 FAILED: Free a pu supprimer une sequence_step (% row(s) affectée(s))', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+
+  -- Cleanup (CASCADE depuis séquence)
+  DELETE FROM sequences WHERE id = v_bob_seq;
+
+  RAISE NOTICE '✅ TEST 30 PASS — Free bloqué en DELETE sequence_steps';
+END $$;
+
+
+-- ============================================================
 -- CLEANUP
 -- ============================================================
 -- Supprimer les sessions de test (cleanup avant rollback)

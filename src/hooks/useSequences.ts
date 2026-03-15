@@ -35,12 +35,12 @@ interface UseSequencesReturn {
   /** Erreur de lecture (DB ou réseau) */
   error: Error | null
   /**
-   * Créer une séquence pour une carte mère.
-   * ⚠️ La DB bloque si une séquence existe déjà pour cette carte (UNIQUE).
-   * ⚠️ La séquence doit recevoir ≥2 étapes avant d'être validée (trigger DEFERRABLE).
+   * Créer atomiquement une séquence pour une carte mère avec ses étapes initiales.
+   * ⚠️ La DB reste la source de vérité pour le min 2 étapes, les doublons et l'ownership.
    */
   createSequence: (
-    motherCardId: string
+    motherCardId: string,
+    stepCardIds: string[]
   ) => Promise<ActionResult & { id: string | null }>
   /**
    * Supprimer une séquence (CASCADE supprime aussi les sequence_steps).
@@ -57,6 +57,8 @@ interface UseSequencesReturn {
  * Charge toutes les séquences du compte, avec leur mother_card_id.
  * Chaque séquence est associée à exactement une carte mère (0..1 par carte).
  *
+ * @param enabled - Si false, skip toute exécution (pattern adapter routing)
+ *
  * @example
  * ```tsx
  * const { sequences, createSequence, deleteSequence } = useSequences()
@@ -64,13 +66,22 @@ interface UseSequencesReturn {
  * const seq = sequences.find(s => s.mother_card_id === cardId)
  * ```
  */
-export default function useSequences(): UseSequencesReturn {
+export default function useSequences(
+  enabled: boolean = true
+): UseSequencesReturn {
   const [sequences, setSequences] = useState<Sequence[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
+    // ⚠️ GUARD Ticket 3 : Pattern enabled pour adapter routing
+    // Si enabled = false → hook inactif (utilisé par adapter Visitor/cloud)
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+
     const controller = new AbortController()
     setLoading(true)
     setError(null)
@@ -101,30 +112,30 @@ export default function useSequences(): UseSequencesReturn {
     return () => {
       controller.abort()
     }
-  }, [refreshKey])
+  }, [refreshKey, enabled])
 
   const refresh = useCallback(() => {
     setRefreshKey(k => k + 1)
   }, [])
 
-  /**
-   * Crée une nouvelle séquence pour une carte mère.
-   * Retourne l'id de la séquence créée (nécessaire pour y ajouter des étapes).
-   */
+  /** Crée une nouvelle séquence via RPC atomique. */
   const createSequence = useCallback(
     async (
-      motherCardId: string
+      motherCardId: string,
+      stepCardIds: string[]
     ): Promise<ActionResult & { id: string | null }> => {
-      const { data, error: insertError } = await supabase
-        .from('sequences')
-        .insert({ mother_card_id: motherCardId })
-        .select('id')
-        .single()
+      const { data, error: createError } = await supabase.rpc(
+        'create_sequence_with_steps',
+        {
+          p_mother_card_id: motherCardId,
+          p_step_card_ids: stepCardIds,
+        }
+      )
 
-      if (!insertError) refresh()
+      if (!createError) refresh()
       return {
-        id: data?.id ?? null,
-        error: insertError as Error | null,
+        id: data ?? null,
+        error: createError as Error | null,
       }
     },
     [refresh]

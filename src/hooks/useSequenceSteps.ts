@@ -32,19 +32,17 @@ interface UseSequenceStepsReturn {
   error: Error | null
   /**
    * Ajouter une étape à la séquence.
-   * Position = max actuel + 1 (la DB gère UNIQUE DEFERRABLE pour le reorder).
-   * ⚠️ La DB bloque si la carte est déjà dans la séquence (UNIQUE step_card_id).
+   * Le backend remplace atomiquement la liste complète des étapes.
    */
   addStep: (stepCardId: string) => Promise<ActionResult>
   /**
    * Supprimer une étape.
-   * ⚠️ La DB bloque si c'est la 2ème étape et qu'il en resterait <2 (trigger min).
+   * Le backend remplace atomiquement la liste complète des étapes.
    */
   removeStep: (stepId: string) => Promise<ActionResult>
   /**
    * Déplacer une étape à une nouvelle position.
-   * Stratégie : échange des positions (A↔B) en 2 UPDATE séquentiels.
-   * Le UNIQUE DEFERRABLE permet des positions temporairement identiques dans une transaction.
+   * Le backend remplace atomiquement la liste complète des étapes.
    */
   moveStep: (stepId: string, newPosition: number) => Promise<ActionResult>
   /** Rafraîchir depuis la DB */
@@ -55,6 +53,7 @@ interface UseSequenceStepsReturn {
  * CRUD étapes pour une séquence.
  *
  * @param sequenceId - ID de la séquence (null = pas d'appel DB)
+ * @param enabled - Si false, skip toute exécution (pattern adapter routing)
  *
  * @example
  * ```tsx
@@ -62,7 +61,8 @@ interface UseSequenceStepsReturn {
  * ```
  */
 export default function useSequenceSteps(
-  sequenceId: string | null
+  sequenceId: string | null,
+  enabled: boolean = true
 ): UseSequenceStepsReturn {
   const [steps, setSteps] = useState<SequenceStep[]>([])
   const [loading, setLoading] = useState(false)
@@ -70,6 +70,13 @@ export default function useSequenceSteps(
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
+    // ⚠️ GUARD Ticket 3 : Pattern enabled pour adapter routing
+    // Si enabled = false → hook inactif (utilisé par adapter Visitor/cloud)
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+
     // Pas de séquence → état vide immédiat
     if (!sequenceId) {
       setSteps([])
@@ -109,112 +116,74 @@ export default function useSequenceSteps(
     return () => {
       controller.abort()
     }
-  }, [sequenceId, refreshKey])
+  }, [sequenceId, refreshKey, enabled])
 
   const refresh = useCallback(() => {
     setRefreshKey(k => k + 1)
   }, [])
+
+  const replaceSteps = useCallback(
+    async (nextStepCardIds: string[]): Promise<ActionResult> => {
+      if (!sequenceId) return { error: new Error('Pas de séquence active') }
+
+      const { error: replaceError } = await supabase.rpc(
+        'replace_sequence_steps',
+        {
+          p_sequence_id: sequenceId,
+          p_step_card_ids: nextStepCardIds,
+        }
+      )
+
+      if (!replaceError) refresh()
+      return { error: replaceError as Error | null }
+    },
+    [sequenceId, refresh]
+  )
 
   /** Ajoute une étape en dernière position */
   const addStep = useCallback(
     async (stepCardId: string): Promise<ActionResult> => {
       if (!sequenceId) return { error: new Error('Pas de séquence active') }
 
-      // Position = nombre d'étapes actuelles (0-indexed)
-      const nextPosition = steps.length
-
-      const { error: insertError } = await supabase
-        .from('sequence_steps')
-        .insert({
-          sequence_id: sequenceId,
-          step_card_id: stepCardId,
-          position: nextPosition,
-        })
-
-      if (!insertError) refresh()
-      return { error: insertError as Error | null }
+      return replaceSteps([...steps.map(step => step.step_card_id), stepCardId])
     },
-    [sequenceId, steps.length, refresh]
+    [sequenceId, steps, replaceSteps]
   )
 
   const removeStep = useCallback(
     async (stepId: string): Promise<ActionResult> => {
       if (!sequenceId) return { error: new Error('Pas de séquence active') }
 
-      const { error: deleteError } = await supabase
-        .from('sequence_steps')
-        .delete()
-        .eq('id', stepId)
-        .eq('sequence_id', sequenceId)
+      const nextStepCardIds = steps
+        .filter(step => step.id !== stepId)
+        .map(step => step.step_card_id)
 
-      if (!deleteError) refresh()
-      return { error: deleteError as Error | null }
+      if (nextStepCardIds.length < 2) {
+        return { error: new Error('La séquence doit avoir au moins 2 étapes.') }
+      }
+
+      return replaceSteps(nextStepCardIds)
     },
-    [sequenceId, refresh]
+    [sequenceId, steps, replaceSteps]
   )
 
-  /**
-   * Échange les positions de l'étape visée avec celle qui occupe newPosition.
-   * Si aucune étape n'occupe newPosition, met à jour directement.
-   */
   const moveStep = useCallback(
     async (stepId: string, newPosition: number): Promise<ActionResult> => {
       if (!sequenceId) return { error: new Error('Pas de séquence active') }
 
-      const movingStep = steps.find(s => s.id === stepId)
-      if (!movingStep) return { error: new Error('Étape introuvable') }
-
-      const targetStep = steps.find(s => s.position === newPosition)
-
-      if (!targetStep) {
-        // Pas d'étape à cet endroit — simple UPDATE de position
-        const { error: updateError } = await supabase
-          .from('sequence_steps')
-          .update({
-            position: newPosition,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', stepId)
-
-        if (!updateError) refresh()
-        return { error: updateError as Error | null }
+      const currentIndex = steps.findIndex(step => step.id === stepId)
+      if (currentIndex === -1) return { error: new Error('Étape introuvable') }
+      if (newPosition < 0 || newPosition >= steps.length) {
+        return { error: new Error('Position cible invalide.') }
       }
 
-      // Échange : on assigne temporairement une position hors-plage (DEFERRABLE tolère)
-      // puis on fait l'échange en 2 UPDATE
-      const tempPosition = -1
+      const reorderedSteps = [...steps]
+      const [movedStep] = reorderedSteps.splice(currentIndex, 1)
+      reorderedSteps.splice(newPosition, 0, movedStep)
 
-      // 1. Déplacer l'étape visée hors-plage (position temporaire invalide mais différente)
-      const { error: e1 } = await supabase
-        .from('sequence_steps')
-        .update({
-          position: tempPosition,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', stepId)
-      if (e1) return { error: e1 as Error }
-
-      // 2. Déplacer l'étape cible à l'ancienne position de l'étape visée
-      const { error: e2 } = await supabase
-        .from('sequence_steps')
-        .update({
-          position: movingStep.position,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', targetStep.id)
-      if (e2) return { error: e2 as Error }
-
-      // 3. Déplacer l'étape visée à sa nouvelle position
-      const { error: e3 } = await supabase
-        .from('sequence_steps')
-        .update({ position: newPosition, updated_at: new Date().toISOString() })
-        .eq('id', stepId)
-      if (e3) return { error: e3 as Error }
-
-      refresh()
-      return { error: null }
+      return replaceSteps(reorderedSteps.map(step => step.step_card_id))
     },
-    [sequenceId, steps, refresh]
+    [sequenceId, steps, replaceSteps]
   )
 
   return {

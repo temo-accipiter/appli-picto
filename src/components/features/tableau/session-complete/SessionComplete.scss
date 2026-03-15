@@ -12,6 +12,13 @@
   padding: spacing('xl') spacing('md');
   text-align: center;
 
+  // ── Barre de progression (train) ──
+  &__train {
+    width: 100%;
+    max-width: size('container-md');
+    margin-bottom: spacing('md');
+  }
+
   // ── Message de félicitation ──
   &__message {
     display: flex;

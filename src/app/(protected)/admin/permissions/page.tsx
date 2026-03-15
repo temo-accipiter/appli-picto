@@ -1,18 +1,17 @@
 'use client'
 
 import AdminRoute from '@/components/shared/admin-route/AdminRoute'
-import dynamic from 'next/dynamic'
-
-// Chargement différé : le code admin n'est PAS inclus dans le bundle non-admin
-const AdminPermissions = dynamic(
-  () => import('@/page-components/admin-permissions/AdminPermissions'),
-  { ssr: false }
-)
+import MigrationPlaceholder from '@/components/shared/migration-placeholder/MigrationPlaceholder'
 
 export default function AdminPermissionsPage() {
   return (
     <AdminRoute>
-      <AdminPermissions />
+      <MigrationPlaceholder
+        title="Administration"
+        description="Cette section est en cours de migration."
+        linkHref="/admin/logs"
+        linkLabel="Voir les journaux"
+      />
     </AdminRoute>
   )
 }

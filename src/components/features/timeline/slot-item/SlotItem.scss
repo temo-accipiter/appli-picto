@@ -12,28 +12,47 @@
   background: surface('card');
   border-radius: radius('md');
   list-style: none;
-  // ✅ Largeur fixe sur tous les écrans — permet le scroll horizontal
   flex-shrink: 0;
-  width: size('modal-width-sm'); // 320px — lisible sur tous les écrans
-  scroll-snap-align: start; // TSA : snap prévisible à chaque slot
+  width: size('modal-width-sm');
+  scroll-snap-align: start;
+  position: relative;
+
+  // ── Bordure complète autour du slot ──
+  border: border-width('thin') solid surface('border');
 
   @include safe-transition(background opacity);
 
   // ── Variante Étape ──
   &--step {
-    border-left: border-width('thick') solid semantic('info');
+    border-color: semantic('info');
   }
 
   // ── Variante Récompense ──
   &--reward {
-    border-left: border-width('thick') solid semantic('warning');
+    border-color: semantic('warning');
   }
 
-  // ── En-tête : icône + meta + bouton suppression ──
+  // ── En-tête : contient le bouton supprimer → positionné en bas à droite ──
   &__header {
     display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    position: absolute;
+    bottom: spacing('sm');
+    right: spacing('sm');
+    z-index: 1;
+  }
+
+  // ── Placeholder : icône centrée en haut + meta centrée en dessous ──
+  &__placeholder {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: spacing('md');
+    justify-content: center;
+    gap: spacing('sm');
+    flex: 1;
+    padding-top: spacing('md');
+    padding-bottom: spacing('xl');
   }
 
   // ── Icône ──
@@ -45,12 +64,12 @@
     text-align: center;
   }
 
-  // ── Meta (position + kind) ──
+  // ── Meta (position + kind) — côte à côte ──
   &__meta {
     display: flex;
-    flex-direction: column;
-    gap: spacing('xs');
-    flex: 1;
+    flex-direction: row;
+    align-items: center;
+    gap: spacing('sm');
     min-width: 0;
   }
 
@@ -66,13 +85,52 @@
     color: text('dark');
   }
 
+  // ── Affichage carte (quand une carte est assignée) ──
+  &__card-display {
+    display: flex;
+    flex-direction: column; // Empile nom au-dessus de l'image
+    align-items: center;
+    justify-content: center;
+    gap: spacing('sm'); // Espace entre nom et image
+    flex: 1;
+    padding-top: spacing('md');
+    padding-bottom: spacing('xl');
+  }
+
+  &__card-name {
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__card-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: radius('sm');
+    object-fit: contain;
+  }
+
+  &__card-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 6rem;
+    background: surface('soft');
+    border-radius: radius('sm');
+  }
+
   // ── Corps : contrôles carte + jetons ──
   &__body {
     display: flex;
     flex-direction: column;
     gap: spacing('sm');
 
-    // Sur tablette : côte à côte
     @include respond-to('md') {
       flex-direction: row;
       align-items: flex-start;
@@ -80,11 +138,14 @@
     }
   }
 
-  // ── Contrôle tokens ──
+  // ── Contrôle tokens — positionné en bas à gauche ──
   &__tokens-control {
     display: flex;
     flex-direction: column;
     gap: spacing('xs');
+    position: absolute;
+    bottom: spacing('sm');
+    left: spacing('sm');
   }
 
   &__tokens-label {

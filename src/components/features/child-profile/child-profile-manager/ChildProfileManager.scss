@@ -1,0 +1,77 @@
+// ChildProfileManager.scss
+// Gestion profils enfants avec suppression — Mobile-first, TSA-friendly
+// Tokens exclusivement (voir src/styles/abstracts/)
+
+@import '@/styles/abstracts/index';
+
+.child-profile-manager {
+  &__empty {
+    padding: spacing('4');
+    text-align: center;
+    font-size: font-size('sm');
+    color: text('secondary');
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: spacing('3');
+  }
+
+  &__item {
+    // Pas de style spécifique (listitem sémantique)
+  }
+
+  &__card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('3');
+    padding: spacing('3') spacing('4');
+    background: surface('card');
+    border-radius: radius('md');
+    border: border-width('thin') solid surface('border');
+    @include safe-transition(box-shadow border-color);
+
+    &:hover {
+      box-shadow: shadow('elevation-raised');
+      border-color: surface('border');
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: spacing('2');
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  &__name {
+    font-size: font-size('md');
+    font-weight: font-weight('medium');
+    color: text('primary');
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing('1');
+    padding: spacing('1') spacing('2');
+    font-size: font-size('xs');
+    font-weight: font-weight('semibold');
+    background: semantic('success', 'bg');
+    color: semantic('success');
+    border-radius: radius('sm');
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+
+    &--locked {
+      background: surface('hover');
+      color: text('muted');
+    }
+  }
+}
