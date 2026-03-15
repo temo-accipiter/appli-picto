@@ -78,13 +78,21 @@ interface SlotItemProps {
    * Fourni par le parent (SlotsEditor → useSequences).
    */
   onCreateSequence?: (
-    motherCardId: string
+    motherCardId: string,
+    stepCardIds: string[]
   ) => Promise<{ id: string | null; error: Error | null }>
   /**
    * Supprimer la séquence liée à ce slot.
    * Fourni par le parent (SlotsEditor → useSequences).
    */
   onDeleteSequence?: (sequenceId: string) => Promise<{ error: Error | null }>
+  /**
+   * Création possible uniquement si la source active sait réellement créer
+   * une séquence dans le contrat courant.
+   */
+  canCreateSequence?: boolean
+  /** Chargement de la capacité d'écriture séquençage côté compte cloud. */
+  sequenceCreationAvailabilityLoading?: boolean
   /**
    * S8 : Désactiver les actions structurelles si le navigateur est offline.
    * §4.4 : CRUD structure interdit offline (guard UX).
@@ -95,6 +103,11 @@ interface SlotItemProps {
    * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
    */
   isExecutionOnly?: boolean
+  /**
+   * Ticket 3 : Séquençage en lecture seule.
+   * Free cloud → readonly, Visitor local → éditable, Subscriber/Admin cloud → éditable.
+   */
+  isSequenceReadOnly?: boolean
   /** ID DnD du slot (même valeur que slot.id) */
   dndSlotId?: string
   /** Indique si ce slot est la source active du drag */
@@ -126,8 +139,11 @@ export function SlotItem({
   sequence = null,
   onCreateSequence,
   onDeleteSequence,
+  canCreateSequence = false,
+  sequenceCreationAvailabilityLoading = false,
   isOffline = false,
   isExecutionOnly = false,
+  isSequenceReadOnly = false,
   dndSlotId,
   isDragActive = false,
 }: SlotItemProps) {
@@ -333,9 +349,17 @@ export function SlotItem({
                 ? "Masquer l'éditeur de séquence"
                 : sequence
                   ? 'Modifier la séquence'
-                  : 'Créer une séquence'
+                  : canCreateSequence
+                    ? 'Créer une séquence'
+                    : 'Voir les informations de séquence'
             }
-            label={sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
+            label={
+              sequence
+                ? '📋 Séquence'
+                : canCreateSequence
+                  ? '📋 Ajouter une séquence'
+                  : '📋 Séquence'
+            }
           />
 
           {sequenceEditorOpen && (
@@ -347,6 +371,9 @@ export function SlotItem({
               personalCards={personalCards}
               onCreateSequence={onCreateSequence!}
               onDeleteSequence={onDeleteSequence!}
+              canCreateSequence={canCreateSequence}
+              creationAvailabilityLoading={sequenceCreationAvailabilityLoading}
+              isReadOnly={isSequenceReadOnly}
             />
           )}
         </div>

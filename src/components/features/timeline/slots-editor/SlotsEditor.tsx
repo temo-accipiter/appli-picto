@@ -41,11 +41,12 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import useAccountStatus from '@/hooks/useAccountStatus'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
 import useBankCards from '@/hooks/useBankCards'
 import usePersonalCards from '@/hooks/usePersonalCards'
-import useSequences from '@/hooks/useSequences'
+import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import { SlotItem } from '../slot-item/SlotItem'
 import './SlotsEditor.scss'
 
@@ -132,10 +133,22 @@ export function SlotsEditor({
   const { cards: bankCards, refresh: refreshBankCards } = useBankCards()
   const { cards: personalCards, refresh: refreshPersonalCards } =
     usePersonalCards()
+  const {
+    loading: accountStatusLoading,
+    isSubscriber,
+    isAdmin,
+  } = useAccountStatus()
   const lastMissingSignatureRef = useRef('')
 
-  // Chargement des séquences du compte (S7 — pour les étapes avec carte assignée)
-  const { sequences, createSequence, deleteSequence } = useSequences()
+  // Chargement des séquences (S7 — cloud ou local selon Visitor)
+  // Visitor → IndexedDB local-only, Auth → Supabase cloud
+  const { sequences, createSequence, deleteSequence, isVisitorSource } =
+    useSequencesWithVisitor()
+  const canWriteCloudSequences = (isSubscriber || isAdmin) && !isExecutionOnly
+  const canCreateSequence = isVisitorSource || canWriteCloudSequences
+  const isSequenceReadOnly = !isVisitorSource && !canWriteCloudSequences
+  const sequenceCreationAvailabilityLoading =
+    !isVisitorSource && accountStatusLoading
 
   useEffect(() => {
     setOptimisticSlots(null)
@@ -413,8 +426,13 @@ export function SlotsEditor({
                   sequence={sequence}
                   onCreateSequence={createSequence}
                   onDeleteSequence={deleteSequence}
+                  canCreateSequence={canCreateSequence}
+                  sequenceCreationAvailabilityLoading={
+                    sequenceCreationAvailabilityLoading
+                  }
                   isOffline={isOffline}
                   isExecutionOnly={isExecutionOnly}
+                  isSequenceReadOnly={isSequenceReadOnly}
                   dndSlotId={slot.id}
                   isDragActive={activeDragSlotId === slot.id}
                 />

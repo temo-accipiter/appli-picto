@@ -27,8 +27,8 @@ import useTimelines from '@/hooks/useTimelines'
 import useSlots from '@/hooks/useSlots'
 import useBankCards from '@/hooks/useBankCards'
 import usePersonalCards from '@/hooks/usePersonalCards'
-import useSequences from '@/hooks/useSequences'
-import useSequenceSteps from '@/hooks/useSequenceSteps'
+import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
+import useSequenceStepsWithVisitor from '@/hooks/useSequenceStepsWithVisitor'
 import { TrainProgressBar, FloatingTimeTimer } from '@/components'
 import {
   SlotCard,
@@ -68,7 +68,10 @@ function SlotCardWithSequence({
   personalCards,
   onValidate,
 }: SlotCardWithSequenceProps) {
-  const { steps: sequenceSteps } = useSequenceSteps(sequence?.id ?? null)
+  // Visitor → IndexedDB local-only, Auth → Supabase cloud
+  const { steps: sequenceSteps } = useSequenceStepsWithVisitor(
+    sequence?.id ?? null
+  )
 
   return (
     <SlotCard
@@ -276,9 +279,10 @@ export default function Tableau() {
   const totalForProgress = snapshot ?? visibleStepSlots.length
 
   // ── Séquences (S7) ─────────────────────────────────────────────────────────
-  // Chargement de toutes les séquences du compte.
+  // Chargement de toutes les séquences (cloud ou local selon Visitor).
+  // Visitor → IndexedDB local-only, Auth → Supabase cloud
   // Chaque slot peut avoir une séquence liée à sa carte mère (via mother_card_id).
-  const { sequences } = useSequences()
+  const { sequences } = useSequencesWithVisitor()
 
   // La carte "active" = le premier slot visible non encore validé (§3.1.4).
   // C'est uniquement sur cette carte que le bouton "Voir étapes" est affiché.

@@ -26,7 +26,7 @@
  * ⚠️ SYSTÈME SÉQUENÇAGE — DISTINCT DU PLANNING ET DES JETONS
  */
 
-import Image from 'next/image'
+import { SignedImage } from '@/components'
 import { useState, useCallback } from 'react'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import type { BankCard } from '@/hooks/useBankCards'
@@ -96,7 +96,10 @@ export function SequenceMiniTimeline({
         {steps.map((step, idx) => {
           const card = findCard(step.step_card_id)
           const isDone = doneStepIds.has(step.id)
-          const label = card?.label ?? `Étape ${idx + 1}`
+          const imageBucket = bankCards.some(c => c.id === step.step_card_id)
+            ? 'bank-images'
+            : 'personal-images'
+          const label = card?.name ?? `Étape ${idx + 1}`
 
           return (
             <li
@@ -114,13 +117,12 @@ export function SequenceMiniTimeline({
                 {/* Image */}
                 <div className="sequence-mini-timeline__step-image-wrapper">
                   {card?.image_url ? (
-                    <Image
-                      src={card.image_url}
+                    <SignedImage
+                      filePath={card.image_url}
                       alt={label}
+                      bucket={imageBucket}
                       className="sequence-mini-timeline__step-image"
-                      width={80}
-                      height={80}
-                      draggable={false}
+                      size={80}
                     />
                   ) : (
                     <div
