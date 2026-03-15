@@ -317,10 +317,10 @@ function ProfilePage() {
 
 ---
 
-#### **useRBAC()** - Permissions Rôles (Role-Based Access Control)
+#### **useRBAC()** - Legacy documenté
 
 **Localisation** : `src/hooks/useRBAC.ts`
-**Documentation** : `src/hooks/RBAC_GUIDE.md` (guide complet)
+**Statut** : guide RBAC legacy retiré du repo
 
 **Usage** :
 
@@ -347,7 +347,7 @@ function EditionPage() {
 - `canEdit: boolean` - Peut éditer tâches/récompenses
 - `canView: boolean` - Peut voir tableau
 
-**Référence** : Consulter `RBAC_GUIDE.md` pour usage avancé (quotas, entitlements)
+**Référence** : aucune documentation dédiée conservée, section laissée à titre d'archive
 
 ---
 
@@ -1262,7 +1262,6 @@ catch (error) {
 
 ### Documentation Interne
 
-- **RBAC_GUIDE.md** : Guide complet `useRBAC()` (rôles, quotas, permissions)
 - **CLAUDE.md global** : Section "Patterns CRITIQUES" (règles hooks custom)
 - **Tests** : Tous hooks ont fichiers `.test.ts` (exemples référence)
 
