@@ -305,5 +305,55 @@ describe('useScrollLock', () => {
       rerender({ active: false })
       expect(document.body.style.overflow).toBe('')
     })
+
+    it('doit restaurer scroll au démontage si le composant disparaît alors qu’il est actif', () => {
+      const ref = createRef<HTMLDivElement>()
+      Object.defineProperty(ref, 'current', {
+        value: container,
+        writable: true,
+      })
+
+      const { unmount } = renderHook(() =>
+        useScrollLock({
+          isActive: true,
+          containerRef: ref,
+        })
+      )
+
+      expect(document.body.style.overflow).toBe('hidden')
+
+      unmount()
+
+      expect(document.body.style.overflow).toBe('')
+    })
+
+    it('doit préserver un lock existant tant qu’un autre composant est encore actif', () => {
+      const ref = createRef<HTMLDivElement>()
+      Object.defineProperty(ref, 'current', {
+        value: container,
+        writable: true,
+      })
+
+      const first = renderHook(() =>
+        useScrollLock({
+          isActive: true,
+          containerRef: ref,
+        })
+      )
+      const second = renderHook(() =>
+        useScrollLock({
+          isActive: true,
+          containerRef: ref,
+        })
+      )
+
+      expect(document.body.style.overflow).toBe('hidden')
+
+      first.unmount()
+      expect(document.body.style.overflow).toBe('hidden')
+
+      second.unmount()
+      expect(document.body.style.overflow).toBe('')
+    })
   })
 })

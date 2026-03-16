@@ -1,7 +1,7 @@
 'use client'
 
 // src/components/modal/Modal.tsx
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 import { Button, ButtonClose } from '@/components'
@@ -45,12 +45,12 @@ export default function Modal({
   showCloseButton = true,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
-  const modalRoot = useRef<HTMLElement | null>(null)
+  const [portalRoot, setPortalRoot] = useState<HTMLElement | null>(null)
 
   // Initialize portal root on client side
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      modalRoot.current = document.body
+      setPortalRoot(document.body)
     }
   }, [])
 
@@ -70,7 +70,7 @@ export default function Modal({
 
   useFocusTrap(modalRef, isOpen)
 
-  if (!isOpen || !modalRoot.current) return null
+  if (!isOpen || !portalRoot) return null
 
   const sizeClass = size !== 'medium' ? `modal--${size}` : ''
   const modalClasses = `modal ${sizeClass} ${className}`.trim()
@@ -123,5 +123,5 @@ export default function Modal({
     </div>
   )
 
-  return createPortal(content, modalRoot.current)
+  return createPortal(content, portalRoot)
 }

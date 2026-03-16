@@ -1,6 +1,9 @@
 import { useEffect } from 'react'
 import type { RefObject } from 'react'
 
+let activeScrollLocks = 0
+let previousBodyOverflow = ''
+
 interface UseScrollLockOptions {
   /** Activer/désactiver le lock scroll (généralement isOpen) */
   isActive: boolean
@@ -14,17 +17,8 @@ interface UseScrollLockOptions {
  * Hook personnalisé pour verrouiller le scroll du body et gérer le focus initial
  * - Lock overflow:hidden sur body quand actif
  * - Auto-focus sur élément spécifié (défaut: dernier bouton footer)
- * - Restore overflow quand inactif
- *
- * @param options - Options de configuration du hook
- *
- * @example
- * const modalRef = useRef<HTMLDivElement>(null)
- * useScrollLock({
- *   isActive: isOpen,
- *   containerRef: modalRef,
- *   focusSelector: '.modal__footer button:last-of-type'
- * })
+ * - Restore overflow quand inactif ou au démontage
+ * - Supporte plusieurs locks imbriqués sans restaurer trop tôt
  */
 export function useScrollLock({
   isActive,
@@ -32,23 +26,30 @@ export function useScrollLock({
   focusSelector = '.modal__footer button:last-of-type',
 }: UseScrollLockOptions) {
   useEffect(() => {
-    if (isActive) {
-      // Lock scroll
-      document.body.style.overflow = 'hidden'
+    if (!isActive) return
 
-      // Auto-focus sur élément spécifié
-      if (containerRef) {
-        const targetElement = containerRef.current?.querySelector(focusSelector)
-        if (targetElement instanceof HTMLElement) {
-          targetElement.focus()
-        } else {
-          // Fallback : focus sur le conteneur lui-même
-          containerRef.current?.focus()
-        }
+    if (activeScrollLocks === 0) {
+      previousBodyOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+    }
+    activeScrollLocks += 1
+
+    if (containerRef) {
+      const targetElement = containerRef.current?.querySelector(focusSelector)
+      if (targetElement instanceof HTMLElement) {
+        targetElement.focus()
+      } else {
+        // Fallback : focus sur le conteneur lui-même
+        containerRef.current?.focus()
       }
-    } else {
-      // Restore scroll
-      document.body.style.overflow = ''
+    }
+
+    return () => {
+      activeScrollLocks = Math.max(0, activeScrollLocks - 1)
+
+      if (activeScrollLocks === 0) {
+        document.body.style.overflow = previousBodyOverflow
+      }
     }
   }, [isActive, containerRef, focusSelector])
 }

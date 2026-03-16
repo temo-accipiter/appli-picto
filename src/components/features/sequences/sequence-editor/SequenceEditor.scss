@@ -1,7 +1,3 @@
-// src/components/features/sequences/sequence-editor/SequenceEditor.scss
-// ✅ Tokens validés — aucune valeur hardcodée
-// Mobile-first TSA : interface simple, cibles tactiles ≥ 44px
-
 @use '@styles/abstracts' as *;
 
 .sequence-editor {
@@ -13,242 +9,251 @@
   border-radius: radius('md');
   border-left: border-width('thick') solid semantic('info');
 
-  @include safe-transition(background);
+  @include safe-transition(background border-color);
 
-  // ── Variante vide (pas encore de séquence) ──
-  &--empty {
-    border-left-color: surface('border');
-    background: surface('soft');
-  }
-
-  // ── Variante lecture seule (Free) ──
+  &--empty,
   &--readonly {
-    border-left-color: surface('border');
     background: surface('soft');
+    border-left-color: surface('border');
   }
 
-  // ── En-tête ──
-  &__header {
+  &__header,
+  &__section {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: spacing('sm');
-    flex-wrap: wrap;
+  }
+
+  &__header {
+    padding-bottom: spacing('sm');
+    border-bottom: border-width('thin') solid surface('border');
+  }
+
+  &__header-content,
+  &__section-header,
+  &__header-actions,
+  &__footer,
+  &__library-sections,
+  &__library-group {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+  }
+
+  &__title,
+  &__section-title,
+  &__library-title {
+    margin: 0;
+    color: text('dark');
   }
 
   &__title {
     font-size: font-size('base');
     font-weight: font-weight('semibold');
-    color: text('dark');
-    margin: 0;
-    flex: 1;
-    min-width: 0;
   }
 
-  // ── Message informatif ──
-  &__hint {
+  &__section-title,
+  &__library-title {
     font-size: font-size('sm');
-    color: text('muted');
-    margin: 0;
+    font-weight: font-weight('medium');
   }
 
-  // ── Notice lecture seule (Free) ──
-  &__readonly-notice {
-    font-size: font-size('sm');
-    color: text('muted');
-    margin: 0;
-    font-style: italic;
-  }
-
+  &__hint,
+  &__section-hint,
+  &__readonly-notice,
   &__empty {
+    margin: 0;
     font-size: font-size('sm');
     color: text('muted');
-    margin: 0;
+  }
+
+  &__readonly-notice,
+  &__empty {
     font-style: italic;
   }
 
-  // ── Erreur ──
   &__error {
+    margin: 0;
     font-size: font-size('sm');
     color: semantic('error');
-    margin: 0;
   }
 
-  // ── Chargement ──
   &__loading {
-    height: size('touch-target-min');
+    min-height: size('touch-target-min');
     display: flex;
     align-items: center;
     justify-content: center;
     color: text('muted');
   }
 
-  // ── Liste des étapes ──
-  &__steps {
+  &__composer {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
     display: flex;
-    flex-direction: column;
-    gap: spacing('xs');
-  }
-
-  // ── Étape individuelle ──
-  &__step {
-    display: flex;
-    align-items: center;
+    flex-wrap: nowrap;
     gap: spacing('sm');
-    padding: spacing('xs') spacing('sm');
-    background: surface('soft');
-    border-radius: radius('sm');
-    min-height: size('touch-target-min');
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
   }
 
-  &__step-card {
-    display: flex;
-    align-items: center;
-    gap: spacing('xs');
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__step-image {
-    width: size('icon-lg');
-    height: size('icon-lg');
-    object-fit: cover;
-    border-radius: radius('xs');
-    flex-shrink: 0;
-  }
-
-  &__step-placeholder {
-    width: size('icon-lg');
-    height: size('icon-lg');
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: surface('hover');
-    border-radius: radius('xs');
-    font-size: font-size('base');
-    flex-shrink: 0;
-  }
-
-  &__step-label {
-    font-size: font-size('sm');
-    color: text('dark');
-    font-weight: font-weight('medium');
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  // ── Contrôles d'étape (flèches + suppression) ──
-  &__step-controls {
-    display: flex;
-    gap: spacing('xs');
-    flex-shrink: 0;
-  }
-
-  &__step-btn {
-    min-width: size('touch-target-min');
-    min-height: size('touch-target-min');
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    color: text('muted');
-    font-size: font-size('sm');
-    border-radius: radius('sm');
-    cursor: pointer;
-    @include safe-transition(background color);
-
-    &:hover:not(:disabled) {
-      background: surface('hover');
-      color: text('dark');
-    }
-
-    &:disabled {
-      opacity: opacity('half');
-      cursor: not-allowed;
-    }
-
-    &--remove:hover:not(:disabled) {
-      background: surface('hover');
-      color: semantic('error');
-    }
-  }
-
-  // ── Zone d'ajout d'étape ──
-  &__add-step {
+  &__composer-slot {
     display: flex;
     flex-direction: column;
-    gap: spacing('xs');
-    padding-top: spacing('sm');
-    border-top: border-width('thin') solid surface('border');
+    gap: spacing('sm');
+    flex: 0 0 auto;
+    padding: spacing('sm');
+    min-height: size('touch-target-min');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    background: surface('soft');
+
+    @include safe-transition(border-color background);
+
+    &[data-drag-over='true'] {
+      border-color: semantic('info');
+      background: surface('card');
+    }
+
+    &[data-dragging='true'] {
+      opacity: opacity('half');
+    }
   }
 
-  &__add-label {
+  &__composer-slot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('sm');
+  }
+
+  &__composer-slot-label {
     font-size: font-size('xs');
     font-weight: font-weight('medium');
     color: text('muted');
   }
 
-  &__add-row {
-    display: flex;
-    gap: spacing('xs');
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  &__picker {
-    display: flex;
-    flex-direction: column;
-    gap: spacing('xs');
-  }
-
-  &__section-title {
-    font-size: font-size('sm');
-    font-weight: font-weight('medium');
-    color: text('dark');
-    margin: 0;
-  }
-
-  &__library {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: spacing('xs');
-  }
-
-  &__library-card {
+  &__slot-action {
     min-height: size('touch-target-min');
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: spacing('xs');
-    padding: spacing('xs');
-    border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
-    background: surface('card');
-    color: text('dark');
-    text-align: left;
+    border: none;
+    background: transparent;
+    color: semantic('error');
+    font-size: font-size('sm');
     cursor: pointer;
-    @include safe-transition(border-color background opacity);
+    padding: 0;
 
-    &:hover:not(:disabled),
-    &:focus-visible:not(:disabled) {
-      border-color: semantic('info');
-      background: surface('soft');
-      outline: none;
-    }
+    @include safe-transition(color opacity);
 
     &:disabled {
       opacity: opacity('half');
       cursor: not-allowed;
+    }
+  }
+
+  &__composer-card,
+  &__composer-empty {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+    min-height: size('touch-target-min');
+    border-radius: radius('sm');
+  }
+
+  &__composer-card {
+    cursor: grab;
+  }
+
+  &__composer-image,
+  &__composer-placeholder {
+    width: size('icon-lg');
+    height: size('icon-lg');
+    border-radius: radius('xs');
+    flex-shrink: 0;
+  }
+
+  &__composer-image {
+    object-fit: cover;
+  }
+
+  &__composer-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: surface('hover');
+    font-size: font-size('base');
+  }
+
+  &__composer-name,
+  &__composer-empty-text {
+    font-size: font-size('sm');
+    color: text('dark');
+    font-weight: font-weight('medium');
+    line-height: line-height('tight');
+  }
+
+  &__composer-empty {
+    color: text('muted');
+  }
+
+  &__composer-empty-icon {
+    width: size('icon-lg');
+    height: size('icon-lg');
+    border-radius: radius('xs');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: surface('hover');
+    color: text('muted');
+    font-size: font-size('base');
+    flex-shrink: 0;
+  }
+
+  &__library {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: spacing('sm');
+  }
+
+  &__library-card {
+    display: flex;
+    align-items: flex-start;
+    gap: spacing('sm');
+    padding: spacing('sm');
+    min-height: size('touch-target-min');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    background: surface('card');
+    cursor: pointer;
+
+    @include safe-transition(border-color background opacity);
+
+    &:focus-within {
+      border-color: semantic('info');
+      background: surface('soft');
     }
 
     &--selected {
       border-color: semantic('info');
       background: surface('soft');
     }
+
+    &--disabled {
+      opacity: opacity('half');
+      cursor: not-allowed;
+    }
+  }
+
+  &__library-checkbox {
+    flex-shrink: 0;
+  }
+
+  &__library-visual {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xs');
+    min-width: 0;
+    flex: 1;
   }
 
   &__library-image,
@@ -256,7 +261,6 @@
     width: 100%;
     aspect-ratio: 1 / 1;
     border-radius: radius('xs');
-    flex-shrink: 0;
   }
 
   &__library-image {
@@ -279,67 +283,35 @@
     word-break: break-word;
   }
 
-  // ── Boutons généraux ──
-  &__btn {
-    min-height: size('touch-target-min');
-    padding: spacing('xs') spacing('md');
-    border: none;
-    border-radius: radius('sm');
-    font-size: font-size('sm');
-    font-weight: font-weight('medium');
-    cursor: pointer;
-    @include safe-transition(background opacity);
+  &__delete-confirm {
+    width: 100%;
+  }
 
-    &:disabled {
-      opacity: opacity('half');
-      cursor: not-allowed;
+  @include respond-to('md') {
+    &__section-header,
+    &__header {
+      flex-direction: row;
+      align-items: flex-start;
+      justify-content: space-between;
     }
 
-    &--create {
-      background: semantic('info');
-      color: text('invert');
-      align-self: flex-start;
-
-      &:hover:not(:disabled) {
-        background: semantic('info');
-      }
+    &__header-content {
+      flex: 1;
+      min-width: 0;
     }
 
-    &--add {
-      background: semantic('success');
-      color: text('invert');
-      white-space: nowrap;
-
-      &:hover:not(:disabled) {
-        background: semantic('success');
-      }
+    &__header-actions {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
     }
 
-    &--delete {
-      background: transparent;
-      color: semantic('error');
-      border: border-width('thin') solid semantic('error');
-
-      &:hover:not(:disabled) {
-        background: surface('hover');
-      }
+    &__library {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    &--delete-confirm {
-      background: semantic('error');
-      color: text('invert');
-      border-color: semantic('error');
-    }
-
-    &--cancel {
-      background: transparent;
-      color: text('muted');
-      border: border-width('thin') solid surface('border');
-
-      &:hover:not(:disabled) {
-        background: surface('hover');
-        color: text('dark');
-      }
+    &__delete-confirm {
+      width: auto;
     }
   }
 }
