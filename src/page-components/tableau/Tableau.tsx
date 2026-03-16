@@ -69,9 +69,8 @@ function SlotCardWithSequence({
   onValidate,
 }: SlotCardWithSequenceProps) {
   // Visitor → IndexedDB local-only, Auth → Supabase cloud
-  const { steps: sequenceSteps } = useSequenceStepsWithVisitor(
-    sequence?.id ?? null
-  )
+  const { steps: sequenceSteps, loading: sequenceStepsLoading } =
+    useSequenceStepsWithVisitor(sequence?.id ?? null)
 
   return (
     <SlotCard
@@ -81,7 +80,9 @@ function SlotCardWithSequence({
       sessionCompleted={sessionCompleted}
       onValidate={onValidate}
       isActive={isActive}
+      hasSequence={sequence !== null}
       sequenceSteps={sequenceSteps}
+      sequenceStepsLoading={sequenceStepsLoading}
       bankCards={bankCards}
       personalCards={personalCards}
     />

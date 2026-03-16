@@ -42,8 +42,12 @@ interface SlotCardProps {
   // ── S7 : Séquence (optionnel) ──────────────────────────────────────────────
   /** Cette carte est-elle la carte "active" (focus) ? Détermine si "Voir étapes" est visible */
   isActive?: boolean
+  /** Une séquence existe pour cette carte, même si ses étapes chargent encore */
+  hasSequence?: boolean
   /** Étapes de la séquence associée à cette carte (vide = pas de séquence) */
   sequenceSteps?: SequenceStep[]
+  /** Chargement des étapes de la séquence */
+  sequenceStepsLoading?: boolean
   /** Cartes banque pour affichage dans la mini-timeline */
   bankCards?: BankCard[]
   /** Cartes personnelles pour affichage dans la mini-timeline */
@@ -57,7 +61,9 @@ export function SlotCard({
   sessionCompleted,
   onValidate,
   isActive = false,
+  hasSequence = false,
   sequenceSteps = [],
+  sequenceStepsLoading = false,
   bankCards = [],
   personalCards = [],
 }: SlotCardProps) {
@@ -65,6 +71,7 @@ export function SlotCard({
 
   // État local : mini-timeline ouverte ou non (local-only)
   const [miniTimelineOpen, setMiniTimelineOpen] = useState(false)
+  const [doneStepIds, setDoneStepIds] = useState<Set<string>>(() => new Set())
   const [resolvedImageSrc, setResolvedImageSrc] = useState<string | null>(null)
 
   useEffect(() => {
@@ -90,20 +97,37 @@ export function SlotCard({
     }
   }, [card?.image_url, card?.type])
 
+  useEffect(() => {
+    if (validated) {
+      setDoneStepIds(new Set())
+    }
+  }, [validated])
+
+  const handleToggleDone = useCallback((stepId: string) => {
+    setDoneStepIds(prev => {
+      const next = new Set(prev)
+      if (next.has(stepId)) {
+        next.delete(stepId)
+      } else {
+        next.add(stepId)
+      }
+      return next
+    })
+  }, [])
+
   const handleClick = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
       if (isDisabled) return
       // Fermer la mini-timeline quand la carte est validée (§3.1.4)
       setMiniTimelineOpen(false)
+      setDoneStepIds(new Set())
       onValidate(slot.id)
     },
     [isDisabled, onValidate, slot.id]
   )
 
   const cardLabel = card?.name ?? 'Étape'
-  const hasSequence = sequenceSteps.length > 0
-
   return (
     <article
       className={`slot-card${validated ? ' slot-card--validated' : ''}`}
@@ -160,7 +184,10 @@ export function SlotCard({
       {miniTimelineOpen && hasSequence && (
         <div id={`sequence-${slot.id}`}>
           <SequenceMiniTimeline
+            loading={sequenceStepsLoading}
             steps={sequenceSteps}
+            doneStepIds={doneStepIds}
+            onToggleDone={handleToggleDone}
             bankCards={bankCards}
             personalCards={personalCards}
             onClose={() => setMiniTimelineOpen(false)}

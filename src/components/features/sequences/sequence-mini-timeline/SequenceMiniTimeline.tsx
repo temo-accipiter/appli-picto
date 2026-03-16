@@ -27,15 +27,20 @@
  */
 
 import { SignedImage } from '@/components'
-import { useState, useCallback } from 'react'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import './SequenceMiniTimeline.scss'
 
 interface SequenceMiniTimelineProps {
+  /** Chargement en cours des étapes de séquence */
+  loading?: boolean
   /** Étapes de la séquence (triées par position ASC) */
   steps: SequenceStep[]
+  /** État local "fait" conservé par le parent tant que le slot vit */
+  doneStepIds: Set<string>
+  /** Toggle local d'une étape */
+  onToggleDone: (stepId: string) => void
   /** Cartes banque disponibles (pour afficher l'image + le nom) */
   bankCards: BankCard[]
   /** Cartes personnelles disponibles */
@@ -45,27 +50,14 @@ interface SequenceMiniTimelineProps {
 }
 
 export function SequenceMiniTimeline({
+  loading = false,
   steps,
+  doneStepIds,
+  onToggleDone,
   bankCards,
   personalCards,
   onClose,
 }: SequenceMiniTimelineProps) {
-  // État local "fait" par step_id — local-only, jamais persisté
-  const [doneStepIds, setDoneStepIds] = useState<Set<string>>(new Set())
-
-  const toggleDone = useCallback((stepId: string) => {
-    setDoneStepIds(prev => {
-      const next = new Set(prev)
-      if (next.has(stepId)) {
-        // On autorise de "décocher" une étape locale (aide à l'enfant, pas contrainte)
-        next.delete(stepId)
-      } else {
-        next.add(stepId)
-      }
-      return next
-    })
-  }, [])
-
   /** Cherche la carte dans banque + perso */
   const findCard = (cardId: string): BankCard | PersonalCard | null => {
     return (
@@ -91,68 +83,77 @@ export function SequenceMiniTimeline({
         ✕
       </button>
 
-      {/* Liste horizontale scrollable */}
-      <ol className="sequence-mini-timeline__list" aria-label="Étapes à faire">
-        {steps.map((step, idx) => {
-          const card = findCard(step.step_card_id)
-          const isDone = doneStepIds.has(step.id)
-          const imageBucket = bankCards.some(c => c.id === step.step_card_id)
-            ? 'bank-images'
-            : 'personal-images'
-          const label = card?.name ?? `Étape ${idx + 1}`
+      {loading ? (
+        <div aria-busy="true" aria-label="Préparation des étapes">
+          <p>Préparation des étapes…</p>
+        </div>
+      ) : (
+        /* Liste horizontale scrollable */
+        <ol
+          className="sequence-mini-timeline__list"
+          aria-label="Étapes à faire"
+        >
+          {steps.map((step, idx) => {
+            const card = findCard(step.step_card_id)
+            const isDone = doneStepIds.has(step.id)
+            const imageBucket = bankCards.some(c => c.id === step.step_card_id)
+              ? 'bank-images'
+              : 'personal-images'
+            const label = card?.name ?? `Étape ${idx + 1}`
 
-          return (
-            <li
-              key={step.id}
-              className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
-            >
-              {/* Bouton "fait" : tap sur toute la carte */}
-              <button
-                type="button"
-                className="sequence-mini-timeline__step-btn"
-                onClick={() => toggleDone(step.id)}
-                aria-pressed={isDone}
-                aria-label={isDone ? `${label} — fait` : label}
+            return (
+              <li
+                key={step.id}
+                className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
               >
-                {/* Image */}
-                <div className="sequence-mini-timeline__step-image-wrapper">
-                  {card?.image_url ? (
-                    <SignedImage
-                      filePath={card.image_url}
-                      alt={label}
-                      bucket={imageBucket}
-                      className="sequence-mini-timeline__step-image"
-                      size={80}
-                    />
-                  ) : (
-                    <div
-                      className="sequence-mini-timeline__step-placeholder"
-                      aria-hidden="true"
-                    >
-                      📋
-                    </div>
-                  )}
+                {/* Bouton "fait" : tap sur toute la carte */}
+                <button
+                  type="button"
+                  className="sequence-mini-timeline__step-btn"
+                  onClick={() => onToggleDone(step.id)}
+                  aria-pressed={isDone}
+                  aria-label={isDone ? `${label} — fait` : label}
+                >
+                  {/* Image */}
+                  <div className="sequence-mini-timeline__step-image-wrapper">
+                    {card?.image_url ? (
+                      <SignedImage
+                        filePath={card.image_url}
+                        alt={label}
+                        bucket={imageBucket}
+                        className="sequence-mini-timeline__step-image"
+                        size={80}
+                      />
+                    ) : (
+                      <div
+                        className="sequence-mini-timeline__step-placeholder"
+                        aria-hidden="true"
+                      >
+                        📋
+                      </div>
+                    )}
 
-                  {/* Overlay "fait" */}
-                  {isDone && (
-                    <div
-                      className="sequence-mini-timeline__done-overlay"
-                      aria-hidden="true"
-                    >
-                      ✓
-                    </div>
-                  )}
-                </div>
+                    {/* Overlay "fait" */}
+                    {isDone && (
+                      <div
+                        className="sequence-mini-timeline__done-overlay"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </div>
+                    )}
+                  </div>
 
-                {/* Nom */}
-                <span className="sequence-mini-timeline__step-label">
-                  {label}
-                </span>
-              </button>
-            </li>
-          )
-        })}
-      </ol>
+                  {/* Nom */}
+                  <span className="sequence-mini-timeline__step-label">
+                    {label}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+      )}
     </div>
   )
 }

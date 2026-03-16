@@ -125,6 +125,7 @@ export function SequenceEditor({
 }: SequenceEditorProps) {
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [mutatingSteps, setMutatingSteps] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
   const [selectedCardId, setSelectedCardId] = useState<string>('')
@@ -188,36 +189,57 @@ export function SequenceEditor({
 
   // ── Ajout d'une étape ───────────────────────────────────────────────────────
   const handleAddStep = async () => {
-    if (!selectedCardId || !sequence) return
+    if (!selectedCardId || !sequence || mutatingSteps) return
     setActionError(null)
-    const { error } = await addStep(selectedCardId)
-    if (error) {
-      setActionError(dbErrorToMessage(error))
-    } else {
-      setSelectedCardId('')
+    setMutatingSteps(true)
+    try {
+      const { error } = await addStep(selectedCardId)
+      if (error) {
+        setActionError(dbErrorToMessage(error))
+      } else {
+        setSelectedCardId('')
+      }
+    } finally {
+      setMutatingSteps(false)
     }
   }
 
   // ── Suppression d'une étape ─────────────────────────────────────────────────
   const handleRemoveStep = async (stepId: string) => {
+    if (mutatingSteps) return
     setActionError(null)
-    const { error } = await removeStep(stepId)
-    if (error) setActionError(dbErrorToMessage(error))
+    setMutatingSteps(true)
+    try {
+      const { error } = await removeStep(stepId)
+      if (error) setActionError(dbErrorToMessage(error))
+    } finally {
+      setMutatingSteps(false)
+    }
   }
 
   // ── Déplacement d'une étape ─────────────────────────────────────────────────
   const handleMoveUp = async (stepId: string, currentPosition: number) => {
-    if (currentPosition === 0) return
+    if (currentPosition === 0 || mutatingSteps) return
     setActionError(null)
-    const { error } = await moveStep(stepId, currentPosition - 1)
-    if (error) setActionError("Impossible de déplacer l'étape. Réessaie.")
+    setMutatingSteps(true)
+    try {
+      const { error } = await moveStep(stepId, currentPosition - 1)
+      if (error) setActionError("Impossible de déplacer l'étape. Réessaie.")
+    } finally {
+      setMutatingSteps(false)
+    }
   }
 
   const handleMoveDown = async (stepId: string, currentPosition: number) => {
-    if (currentPosition >= steps.length - 1) return
+    if (currentPosition >= steps.length - 1 || mutatingSteps) return
     setActionError(null)
-    const { error } = await moveStep(stepId, currentPosition + 1)
-    if (error) setActionError("Impossible de déplacer l'étape. Réessaie.")
+    setMutatingSteps(true)
+    try {
+      const { error } = await moveStep(stepId, currentPosition + 1)
+      if (error) setActionError("Impossible de déplacer l'étape. Réessaie.")
+    } finally {
+      setMutatingSteps(false)
+    }
   }
 
   // Toutes les cartes disponibles (banque + perso) sauf celles déjà dans la séquence
@@ -230,7 +252,7 @@ export function SequenceEditor({
   const hasAvailableCards =
     availableBankCards.length > 0 || availablePersonalCards.length > 0
 
-  const isBusy = creating || deleting
+  const isBusy = creating || deleting || mutatingSteps
   const selectedInitialStepIds = initialStepCardIds.filter(Boolean)
   const canSubmitInitialSequence =
     selectedInitialStepIds.length >= 2 &&
