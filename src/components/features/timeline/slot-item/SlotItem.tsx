@@ -35,7 +35,6 @@ import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { Sequence } from '@/hooks/useSequences'
 import { Button, ButtonDelete, SignedImage } from '@/components'
-import { SequenceEditor } from '@/components/features/sequences'
 import '@/components/shared/dnd/DndCard/DndCard.scss'
 import './SlotItem.scss'
 
@@ -91,8 +90,10 @@ interface SlotItemProps {
    * une séquence dans le contrat courant.
    */
   canCreateSequence?: boolean
-  /** Chargement de la capacité d'écriture séquençage côté compte cloud. */
-  sequenceCreationAvailabilityLoading?: boolean
+  /** Ouvrir l'éditeur de séquence hors de la carte (piloté par le parent). */
+  onOpenSequenceEditor?: (slot: Slot) => void
+  /** Le modal séquence est-il actuellement ouvert pour ce slot ? */
+  isSequenceEditorOpen?: boolean
   /**
    * S8 : Désactiver les actions structurelles si le navigateur est offline.
    * §4.4 : CRUD structure interdit offline (guard UX).
@@ -140,10 +141,10 @@ export function SlotItem({
   onCreateSequence,
   onDeleteSequence,
   canCreateSequence = false,
-  sequenceCreationAvailabilityLoading = false,
+  onOpenSequenceEditor,
+  isSequenceEditorOpen = false,
   isOffline = false,
   isExecutionOnly = false,
-  isSequenceReadOnly = false,
   dndSlotId,
   isDragActive = false,
 }: SlotItemProps) {
@@ -182,9 +183,6 @@ export function SlotItem({
   // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)
   const [tokensError, setTokensError] = useState<string | null>(null)
-
-  // État local pour afficher/masquer le SequenceEditor
-  const [sequenceEditorOpen, setSequenceEditorOpen] = useState(false)
 
   // Séquençage disponible : uniquement pour les étapes avec une carte assignée
   const canManageSequence =
@@ -341,17 +339,16 @@ export function SlotItem({
         <div className="slot-item__sequence">
           <Button
             variant="default"
-            className={`slot-item__sequence-toggle${sequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
-            onClick={() => setSequenceEditorOpen(o => !o)}
-            aria-expanded={sequenceEditorOpen}
+            className={`slot-item__sequence-toggle${isSequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
+            onClick={() => onOpenSequenceEditor?.(slot)}
+            aria-expanded={isSequenceEditorOpen}
+            aria-haspopup="dialog"
             aria-label={
-              sequenceEditorOpen
-                ? "Masquer l'éditeur de séquence"
-                : sequence
-                  ? 'Modifier la séquence'
-                  : canCreateSequence
-                    ? 'Créer une séquence'
-                    : 'Voir les informations de séquence'
+              sequence
+                ? 'Modifier la séquence'
+                : canCreateSequence
+                  ? 'Créer une séquence'
+                  : 'Voir les informations de séquence'
             }
             label={
               sequence
@@ -361,21 +358,6 @@ export function SlotItem({
                   : '📋 Séquence'
             }
           />
-
-          {sequenceEditorOpen && (
-            <SequenceEditor
-              motherCardId={slot.card_id!}
-              motherCardLabel={assignedCard?.name ?? 'Carte'}
-              sequence={sequence}
-              bankCards={bankCards}
-              personalCards={personalCards}
-              onCreateSequence={onCreateSequence!}
-              onDeleteSequence={onDeleteSequence!}
-              canCreateSequence={canCreateSequence}
-              creationAvailabilityLoading={sequenceCreationAvailabilityLoading}
-              isReadOnly={isSequenceReadOnly}
-            />
-          )}
         </div>
       )}
     </li>

@@ -47,6 +47,8 @@ import type { SessionState } from '@/hooks/useSessions'
 import useBankCards from '@/hooks/useBankCards'
 import usePersonalCards from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
+import { Modal } from '@/components'
+import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
 import './SlotsEditor.scss'
 
@@ -128,6 +130,9 @@ export function SlotsEditor({
   const [actionError, setActionError] = useState<string | null>(null)
   const [optimisticSlots, setOptimisticSlots] = useState<Slot[] | null>(null)
   const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null)
+  const [activeSequenceSlot, setActiveSequenceSlot] = useState<Slot | null>(
+    null
+  )
 
   // Chargement des cartes une seule fois, transmises à chaque SlotItem
   const { cards: bankCards, refresh: refreshBankCards } = useBankCards()
@@ -153,6 +158,21 @@ export function SlotsEditor({
   useEffect(() => {
     setOptimisticSlots(null)
   }, [slots])
+
+  useEffect(() => {
+    if (!activeSequenceSlot) return
+
+    const currentActiveSlot = slots.find(
+      slot => slot.id === activeSequenceSlot.id
+    )
+    if (
+      !currentActiveSlot ||
+      currentActiveSlot.kind !== 'step' ||
+      !currentActiveSlot.card_id
+    ) {
+      setActiveSequenceSlot(null)
+    }
+  }, [activeSequenceSlot, slots])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -353,6 +373,15 @@ export function SlotsEditor({
     [swapCardsBetweenSlots]
   )
 
+  const openSequenceEditor = useCallback((slot: Slot) => {
+    if (slot.kind !== 'step' || !slot.card_id) return
+    setActiveSequenceSlot(slot)
+  }, [])
+
+  const closeSequenceEditor = useCallback(() => {
+    setActiveSequenceSlot(null)
+  }, [])
+
   // ── État chargement ──────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -391,6 +420,23 @@ export function SlotsEditor({
     ...displayedSlots.filter(s => s.kind === 'step'),
   ]
 
+  const resolvedActiveSequenceSlot = activeSequenceSlot
+    ? (displayedSlots.find(slot => slot.id === activeSequenceSlot.id) ?? null)
+    : null
+  const activeSequence = resolvedActiveSequenceSlot?.card_id
+    ? (sequences.find(
+        sequence =>
+          sequence.mother_card_id === resolvedActiveSequenceSlot.card_id
+      ) ?? null)
+    : null
+  const activeMotherCard = resolvedActiveSequenceSlot?.card_id
+    ? (bankCards.find(card => card.id === resolvedActiveSequenceSlot.card_id) ??
+      personalCards.find(
+        card => card.id === resolvedActiveSequenceSlot.card_id
+      ) ??
+      null)
+    : null
+
   return (
     <div className="slots-editor">
       {/* ── Liste des slots ──────────────────────────────────────────────────── */}
@@ -427,12 +473,10 @@ export function SlotsEditor({
                   onCreateSequence={createSequence}
                   onDeleteSequence={deleteSequence}
                   canCreateSequence={canCreateSequence}
-                  sequenceCreationAvailabilityLoading={
-                    sequenceCreationAvailabilityLoading
-                  }
+                  onOpenSequenceEditor={openSequenceEditor}
+                  isSequenceEditorOpen={activeSequenceSlot?.id === slot.id}
                   isOffline={isOffline}
                   isExecutionOnly={isExecutionOnly}
-                  isSequenceReadOnly={isSequenceReadOnly}
                   dndSlotId={slot.id}
                   isDragActive={activeDragSlotId === slot.id}
                 />
@@ -541,6 +585,23 @@ export function SlotsEditor({
             </button>
           )}
         </div>
+      )}
+
+      {resolvedActiveSequenceSlot?.card_id && (
+        <Modal isOpen onClose={closeSequenceEditor} size="large">
+          <SequenceEditor
+            motherCardId={resolvedActiveSequenceSlot.card_id}
+            motherCardLabel={activeMotherCard?.name ?? 'Carte'}
+            sequence={activeSequence}
+            bankCards={bankCards}
+            personalCards={personalCards}
+            onCreateSequence={createSequence}
+            onDeleteSequence={deleteSequence}
+            canCreateSequence={canCreateSequence}
+            creationAvailabilityLoading={sequenceCreationAvailabilityLoading}
+            isReadOnly={isSequenceReadOnly}
+          />
+        </Modal>
       )}
     </div>
   )
