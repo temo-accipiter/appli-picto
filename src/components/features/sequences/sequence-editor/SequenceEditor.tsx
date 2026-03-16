@@ -70,6 +70,10 @@ interface SequenceEditorProps {
   isReadOnly?: boolean
 }
 
+type SequenceSelectableCard = (BankCard | PersonalCard) & {
+  imageBucket: 'bank-images' | 'personal-images'
+}
+
 /** Traduit une erreur DB en message UX neutre */
 function dbErrorToMessage(
   err: Error | null,
@@ -128,7 +132,6 @@ export function SequenceEditor({
   const [mutatingSteps, setMutatingSteps] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
-  const [selectedCardId, setSelectedCardId] = useState<string>('')
   const [initialStepCardIds, setInitialStepCardIds] = useState<string[]>([
     '',
     '',
@@ -150,7 +153,6 @@ export function SequenceEditor({
   // ou quand une séquence est créée/supprimée (sequence?.id change)
   useEffect(() => {
     setActionError(null)
-    setSelectedCardId('')
     setInitialStepCardIds(['', ''])
   }, [motherCardId, sequence?.id])
 
@@ -188,17 +190,13 @@ export function SequenceEditor({
   }
 
   // ── Ajout d'une étape ───────────────────────────────────────────────────────
-  const handleAddStep = async () => {
-    if (!selectedCardId || !sequence || mutatingSteps) return
+  const handleAddStep = async (stepCardId: string) => {
+    if (!stepCardId || !sequence || mutatingSteps) return
     setActionError(null)
     setMutatingSteps(true)
     try {
-      const { error } = await addStep(selectedCardId)
-      if (error) {
-        setActionError(dbErrorToMessage(error))
-      } else {
-        setSelectedCardId('')
-      }
+      const { error } = await addStep(stepCardId)
+      if (error) setActionError(dbErrorToMessage(error))
     } finally {
       setMutatingSteps(false)
     }
@@ -243,12 +241,23 @@ export function SequenceEditor({
   }
 
   // Toutes les cartes disponibles (banque + perso) sauf celles déjà dans la séquence
-  const allCards = [...bankCards, ...personalCards]
+  const allCards: SequenceSelectableCard[] = [
+    ...bankCards.map(card => ({
+      ...card,
+      imageBucket: 'bank-images' as const,
+    })),
+    ...personalCards.map(card => ({
+      ...card,
+      imageBucket: 'personal-images' as const,
+    })),
+  ]
   const usedCardIds = new Set(steps.map(s => s.step_card_id))
-  const availableBankCards = bankCards.filter(c => !usedCardIds.has(c.id))
-  const availablePersonalCards = personalCards.filter(
-    c => !usedCardIds.has(c.id)
-  )
+  const availableBankCards: SequenceSelectableCard[] = bankCards
+    .filter(c => !usedCardIds.has(c.id))
+    .map(card => ({ ...card, imageBucket: 'bank-images' as const }))
+  const availablePersonalCards: SequenceSelectableCard[] = personalCards
+    .filter(c => !usedCardIds.has(c.id))
+    .map(card => ({ ...card, imageBucket: 'personal-images' as const }))
   const hasAvailableCards =
     availableBankCards.length > 0 || availablePersonalCards.length > 0
 
@@ -276,6 +285,47 @@ export function SequenceEditor({
       )
     )
   }
+
+  const renderCardButton = ({
+    card,
+    onClick,
+    disabled = false,
+    isSelected = false,
+    actionLabel,
+  }: {
+    card: SequenceSelectableCard
+    onClick: () => void
+    disabled?: boolean
+    isSelected?: boolean
+    actionLabel: string
+  }) => (
+    <button
+      key={card.id}
+      type="button"
+      className={`sequence-editor__library-card${isSelected ? ' sequence-editor__library-card--selected' : ''}`}
+      onClick={onClick}
+      disabled={disabled}
+      aria-pressed={isSelected}
+      aria-label={actionLabel}
+    >
+      {card.image_url ? (
+        <SignedImage
+          filePath={card.image_url}
+          alt={card.name}
+          bucket={card.imageBucket}
+          className="sequence-editor__library-image"
+        />
+      ) : (
+        <div
+          className="sequence-editor__library-placeholder"
+          aria-hidden="true"
+        >
+          📋
+        </div>
+      )}
+      <span className="sequence-editor__library-name">{card.name}</span>
+    </button>
+  )
 
   // ── Cas : séquence pas encore créée ────────────────────────────────────────
   if (!sequence) {
@@ -314,62 +364,41 @@ export function SequenceEditor({
           Choisis 2 étapes pour créer la séquence.
         </p>
         <div className="sequence-editor__add-step">
-          <label
-            className="sequence-editor__add-label"
-            htmlFor={`seq-create-step-${motherCardId}-0`}
-          >
-            Étape 1
-          </label>
+          {[0, 1].map(index => (
+            <div key={index} className="sequence-editor__picker">
+              <p className="sequence-editor__add-label">
+                Étape {index + 1}
+                {initialStepCardIds[index] ? ' sélectionnée' : ' à choisir'}
+              </p>
+              <div
+                className="sequence-editor__library"
+                role="list"
+                aria-label={`Cartes disponibles pour l'étape ${index + 1}`}
+              >
+                {getInitialOptions(index).map(card =>
+                  renderCardButton({
+                    card,
+                    onClick: () => handleInitialStepChange(index, card.id),
+                    disabled: isBusy,
+                    isSelected: initialStepCardIds[index] === card.id,
+                    actionLabel: `Choisir ${card.name} pour l'étape ${index + 1}`,
+                  })
+                )}
+              </div>
+            </div>
+          ))}
           <div className="sequence-editor__add-row">
-            <select
-              id={`seq-create-step-${motherCardId}-0`}
-              className="sequence-editor__add-select"
-              value={initialStepCardIds[0]}
-              onChange={e => handleInitialStepChange(0, e.target.value)}
-              disabled={isBusy}
-              aria-label="Choisir la première étape de la séquence"
+            <button
+              type="button"
+              className="sequence-editor__btn sequence-editor__btn--create"
+              onClick={handleCreate}
+              disabled={isBusy || !canSubmitInitialSequence}
+              aria-busy={creating}
             >
-              <option value="">— Choisir une carte —</option>
-              {getInitialOptions(0).map(card => (
-                <option key={card.id} value={card.id}>
-                  {card.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <label
-            className="sequence-editor__add-label"
-            htmlFor={`seq-create-step-${motherCardId}-1`}
-          >
-            Étape 2
-          </label>
-          <div className="sequence-editor__add-row">
-            <select
-              id={`seq-create-step-${motherCardId}-1`}
-              className="sequence-editor__add-select"
-              value={initialStepCardIds[1]}
-              onChange={e => handleInitialStepChange(1, e.target.value)}
-              disabled={isBusy}
-              aria-label="Choisir la deuxième étape de la séquence"
-            >
-              <option value="">— Choisir une carte —</option>
-              {getInitialOptions(1).map(card => (
-                <option key={card.id} value={card.id}>
-                  {card.name}
-                </option>
-              ))}
-            </select>
+              {creating ? 'Création…' : '+ Créer une séquence'}
+            </button>
           </div>
         </div>
-        <button
-          type="button"
-          className="sequence-editor__btn sequence-editor__btn--create"
-          onClick={handleCreate}
-          disabled={isBusy || !canSubmitInitialSequence}
-          aria-busy={creating}
-        >
-          {creating ? 'Création…' : '+ Créer une séquence'}
-        </button>
         {actionError && (
           <p className="sequence-editor__error" role="alert">
             {actionError}
@@ -529,49 +558,54 @@ export function SequenceEditor({
       {/* Ajout d'une étape — masqué en lecture seule */}
       {!isReadOnly && hasAvailableCards && (
         <div className="sequence-editor__add-step">
-          <label
+          <p
             className="sequence-editor__add-label"
-            htmlFor={`seq-add-step-${sequence.id}`}
+            id={`seq-add-step-${sequence.id}`}
           >
             Ajouter une étape
-          </label>
+          </p>
+          {availableBankCards.length > 0 && (
+            <div className="sequence-editor__picker">
+              <p className="sequence-editor__section-title">Cartes banque</p>
+              <div
+                className="sequence-editor__library"
+                role="list"
+                aria-labelledby={`seq-add-step-${sequence.id}`}
+              >
+                {availableBankCards.map(card =>
+                  renderCardButton({
+                    card,
+                    onClick: () => handleAddStep(card.id),
+                    disabled: isBusy,
+                    actionLabel: `Ajouter ${card.name} à la séquence`,
+                  })
+                )}
+              </div>
+            </div>
+          )}
+          {availablePersonalCards.length > 0 && (
+            <div className="sequence-editor__picker">
+              <p className="sequence-editor__section-title">Mes cartes</p>
+              <div
+                className="sequence-editor__library"
+                role="list"
+                aria-labelledby={`seq-add-step-${sequence.id}`}
+              >
+                {availablePersonalCards.map(card =>
+                  renderCardButton({
+                    card,
+                    onClick: () => handleAddStep(card.id),
+                    disabled: isBusy,
+                    actionLabel: `Ajouter ${card.name} à la séquence`,
+                  })
+                )}
+              </div>
+            </div>
+          )}
           <div className="sequence-editor__add-row">
-            <select
-              id={`seq-add-step-${sequence.id}`}
-              className="sequence-editor__add-select"
-              value={selectedCardId}
-              onChange={e => setSelectedCardId(e.target.value)}
-              disabled={isBusy}
-              aria-label="Choisir une carte à ajouter comme étape"
-            >
-              <option value="">— Choisir une carte —</option>
-              {availableBankCards.length > 0 && (
-                <optgroup label="Cartes banque">
-                  {availableBankCards.map(card => (
-                    <option key={card.id} value={card.id}>
-                      {card.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-              {availablePersonalCards.length > 0 && (
-                <optgroup label="Mes cartes">
-                  {availablePersonalCards.map(card => (
-                    <option key={card.id} value={card.id}>
-                      {card.name}
-                    </option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-            <button
-              type="button"
-              className="sequence-editor__btn sequence-editor__btn--add"
-              onClick={handleAddStep}
-              disabled={!selectedCardId || isBusy}
-            >
-              Ajouter
-            </button>
+            <p className="sequence-editor__hint">
+              Choisis directement une carte pour l&apos;ajouter.
+            </p>
           </div>
         </div>
       )}

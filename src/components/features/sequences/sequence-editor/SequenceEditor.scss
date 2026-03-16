@@ -199,27 +199,84 @@
     flex-wrap: wrap;
   }
 
-  &__add-select {
-    flex: 1;
-    min-width: 0;
+  &__picker {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('xs');
+  }
+
+  &__section-title {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('dark');
+    margin: 0;
+  }
+
+  &__library {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: spacing('xs');
+  }
+
+  &__library-card {
     min-height: size('touch-target-min');
-    padding: spacing('xs') spacing('sm');
-    background: surface('soft');
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: spacing('xs');
+    padding: spacing('xs');
     border: border-width('thin') solid surface('border');
     border-radius: radius('sm');
-    font-size: font-size('sm');
+    background: surface('card');
     color: text('dark');
-    @include safe-transition(border-color);
+    text-align: left;
+    cursor: pointer;
+    @include safe-transition(border-color background opacity);
 
-    &:focus {
-      outline: none;
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
       border-color: semantic('info');
+      background: surface('soft');
+      outline: none;
     }
 
     &:disabled {
       opacity: opacity('half');
       cursor: not-allowed;
     }
+
+    &--selected {
+      border-color: semantic('info');
+      background: surface('soft');
+    }
+  }
+
+  &__library-image,
+  &__library-placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: radius('xs');
+    flex-shrink: 0;
+  }
+
+  &__library-image {
+    object-fit: cover;
+  }
+
+  &__library-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: surface('hover');
+    font-size: font-size('lg');
+  }
+
+  &__library-name {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('dark');
+    line-height: line-height('tight');
+    word-break: break-word;
   }
 
   // ── Boutons généraux ──
