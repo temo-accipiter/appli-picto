@@ -15,8 +15,6 @@ interface DisplayContextValue {
   setShowTrain: (value: boolean) => void
   showAutre: boolean
   setShowAutre: (value: boolean) => void
-  showRecompense: boolean
-  setShowRecompense: (value: boolean) => void
   showTimeTimer: boolean
   setShowTimeTimer: (value: boolean) => void
   loading: boolean
@@ -57,19 +55,6 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
       localStorage.setItem('showAutre', showAutre ? 'true' : 'false')
   }, [showAutre, isVisitor])
 
-  const [showRecompense, setShowRecompense] = useState(() => {
-    if (typeof window === 'undefined') return true
-    if (loading) {
-      const v = localStorage.getItem('showRecompense')
-      return v === null ? true : v === 'true'
-    }
-    return isVisitor ? true : localStorage.getItem('showRecompense') === 'true'
-  })
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !isVisitor)
-      localStorage.setItem('showRecompense', showRecompense ? 'true' : 'false')
-  }, [showRecompense, isVisitor])
-
   const [showTimeTimer, setShowTimeTimer] = useState(() => {
     if (typeof window === 'undefined') return false
     if (loading) return localStorage.getItem('showTimeTimer') === 'true'
@@ -87,8 +72,6 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
         setShowTrain,
         showAutre,
         setShowAutre,
-        showRecompense,
-        setShowRecompense,
         showTimeTimer,
         setShowTimeTimer,
         loading, // expose l'alias si d'autres consommateurs l'utilisent

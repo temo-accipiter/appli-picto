@@ -96,4 +96,24 @@
     font-size: font-size('heading-xl');
     margin: 0;
   }
+
+  &--overlay {
+    gap: spacing('lg');
+    padding: spacing('lg') spacing('md');
+    width: 100%;
+    max-width: size('container-md');
+    background: surface('card');
+    border: border-width('thin') solid semantic('warning');
+    border-radius: radius('lg');
+    box-shadow: shadow('elevation-sm');
+
+    .session-complete__message {
+      gap: spacing('xs');
+    }
+
+    .session-complete__reward-card {
+      width: 100%;
+      box-shadow: shadow('elevation-sm');
+    }
+  }
 }

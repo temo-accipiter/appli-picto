@@ -40,6 +40,8 @@
 
 // Layout principal du tableau avec TimeTimer
 .tableau-magique {
+  position: relative;
+
   // ── État de chargement (S5) ──
   // 3 points pulsants — calme, non intrusif (TSA)
   &__loading {
@@ -109,6 +111,35 @@
     // Carrousel horizontal permanent sur toutes tailles (pas de wrap)
   }
 
+  &__completion-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: spacing('md');
+    z-index: z-index('modal');
+    pointer-events: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: surface('bg');
+      opacity: opacity('half');
+      backdrop-filter: blur(size('4'));
+    }
+  }
+
+  &__completion-overlay-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: auto;
+  }
+
   &__content {
     display: flex;
     gap: spacing('xl');
@@ -148,6 +179,12 @@
 
     &__timer-container {
       animation: none;
+    }
+
+    &__completion-overlay {
+      &::before {
+        backdrop-filter: none;
+      }
     }
   }
 }

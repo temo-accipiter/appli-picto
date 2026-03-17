@@ -21,7 +21,7 @@
 // Si epoch_local < epoch_DB : état local obsolète → réalignement au prochain Chargement Tableau.
 // Cette logique est gérée dans le composant consommateur, pas dans ce hook.
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
@@ -81,10 +81,17 @@ export default function useSessions(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const previousContextKeyRef = useRef<string | null>(null)
+  const currentSessionRef = useRef<Session | null>(null)
+
+  useEffect(() => {
+    currentSessionRef.current = session
+  }, [session])
 
   useEffect(() => {
     // Prérequis : les deux IDs doivent être présents
     if (!childProfileId || !timelineId) {
+      previousContextKeyRef.current = null
       setSession(null)
       setLoading(false)
       setError(null)
@@ -93,14 +100,24 @@ export default function useSessions(
 
     // VISITOR mode → ZÉRO appel DB (profil local uniquement)
     if (childProfileId === 'visitor-local') {
+      previousContextKeyRef.current = null
       setSession(null)
       setLoading(false)
       setError(null)
       return
     }
 
+    const contextKey = `${childProfileId}:${timelineId}`
+    const isContextChange = previousContextKeyRef.current !== contextKey
+    previousContextKeyRef.current = contextKey
+
     const controller = new AbortController()
-    setLoading(true)
+    if (isContextChange) {
+      setSession(null)
+      setLoading(true)
+    } else if (currentSessionRef.current === null) {
+      setLoading(true)
+    }
     setError(null)
 
     const fetchSession = async () => {
@@ -145,7 +162,9 @@ export default function useSessions(
         console.error('[useSessions] Erreur lecture session:', err)
         setError(err as Error)
       } finally {
-        if (!controller.signal.aborted) setLoading(false)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 

@@ -9,7 +9,7 @@
 //   - UNIQUE(timeline_id, position)   → DB gère la numérotation
 //   - CASCADE DELETE timelines→slots  → cohérence automatique
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
@@ -70,18 +70,31 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const previousTimelineIdRef = useRef<string | null>(null)
+  const hasResolvedCurrentTimelineRef = useRef(false)
 
   useEffect(() => {
     // Pas de timeline → pas d'appel DB, état vide immédiat
     if (!timelineId) {
+      previousTimelineIdRef.current = null
+      hasResolvedCurrentTimelineRef.current = false
       setSlots([])
       setLoading(false)
       setError(null)
       return
     }
 
+    const isTimelineChange = previousTimelineIdRef.current !== timelineId
+    previousTimelineIdRef.current = timelineId
+
     const controller = new AbortController()
-    setLoading(true)
+    if (isTimelineChange) {
+      hasResolvedCurrentTimelineRef.current = false
+      setSlots([])
+      setLoading(true)
+    } else if (!hasResolvedCurrentTimelineRef.current) {
+      setLoading(true)
+    }
     setError(null)
 
     const fetchSlots = async () => {
@@ -97,6 +110,7 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
         if (fetchError) throw fetchError
 
         setSlots(data ?? [])
+        hasResolvedCurrentTimelineRef.current = true
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
         console.error('[useSlots] Erreur lecture slots:', err)
@@ -156,16 +170,27 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
     ): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+      const currentSlot = slots.find(slot => slot.id === id)
+      const normalizedUpdates =
+        currentSlot?.kind === 'step' &&
+        updates.card_id === null &&
+        updates.tokens === undefined
+          ? { ...updates, tokens: 0 }
+          : updates
+
       const { error: updateError } = await supabase
         .from('slots')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({
+          ...normalizedUpdates,
+          updated_at: new Date().toISOString(),
+        })
         .eq('id', id)
         .eq('timeline_id', timelineId)
 
       if (!updateError) refresh()
       return { error: updateError as Error | null }
     },
-    [timelineId, refresh]
+    [timelineId, slots, refresh]
   )
 
   const removeSlot = useCallback(
@@ -195,13 +220,23 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
   const clearAllCards = useCallback(async (): Promise<ActionResult> => {
     if (!timelineId) return { error: new Error('Pas de timeline active') }
 
-    const { error: updateError } = await supabase
+    const { error: clearCardsError } = await supabase
       .from('slots')
       .update({ card_id: null, updated_at: new Date().toISOString() })
       .eq('timeline_id', timelineId)
 
-    if (!updateError) refresh()
-    return { error: updateError as Error | null }
+    if (clearCardsError) {
+      return { error: clearCardsError as Error | null }
+    }
+
+    const { error: resetStepTokensError } = await supabase
+      .from('slots')
+      .update({ tokens: 0, updated_at: new Date().toISOString() })
+      .eq('timeline_id', timelineId)
+      .eq('kind', 'step')
+
+    if (!resetStepTokensError) refresh()
+    return { error: resetStepTokensError as Error | null }
   }, [timelineId, refresh])
 
   return {

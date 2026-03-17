@@ -9,6 +9,26 @@
   flex-direction: column;
   gap: spacing('lg');
   min-width: 0; // ✅ Empêche l'extension au-delà du parent (flex-item)
+  position: relative;
+
+  &__status-layer {
+    position: absolute;
+    top: spacing('xs');
+    right: spacing('xs');
+    z-index: z-index('dropdown');
+    pointer-events: none;
+  }
+
+  &__status {
+    margin: 0;
+    padding: spacing('xs') spacing('sm');
+    font-size: font-size('sm');
+    color: text('muted');
+    background: surface('bg');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    box-shadow: shadow('elevation-sm');
+  }
 
   // ── Liste de slots — toujours horizontale avec scroll ──
   // Tous les écrans : défilement horizontal si débordement (jamais de wrap)

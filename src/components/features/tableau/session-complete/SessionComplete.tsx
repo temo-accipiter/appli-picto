@@ -31,6 +31,8 @@ interface SessionCompleteProps {
   showTrain: boolean
   /** Nombre total d'étapes (pour afficher le train à 100%) */
   totalSteps: number
+  /** Variante d'affichage : intégrée au Tableau ou écran dédié */
+  variant?: 'overlay' | 'screen'
 }
 
 export function SessionComplete({
@@ -38,6 +40,7 @@ export function SessionComplete({
   rewardCard,
   showTrain,
   totalSteps,
+  variant = 'screen',
 }: SessionCompleteProps) {
   const hasReward =
     rewardSlot !== null && rewardSlot.card_id !== null && rewardCard !== null
@@ -87,7 +90,11 @@ export function SessionComplete({
   }, [rewardCard?.image_url, rewardCard?.type])
 
   return (
-    <div className="session-complete" role="status" aria-live="polite">
+    <div
+      className={`session-complete session-complete--${variant}`}
+      role="status"
+      aria-live="polite"
+    >
       {/* Confettis (si activés) */}
       {showConfetti && confettiEnabled && (
         <Confetti

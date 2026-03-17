@@ -14,6 +14,9 @@
   list-style: none;
   flex-shrink: 0;
   width: size('modal-width-sm');
+  min-height: calc(
+    #{size('card-image-height')} + #{size('touch-target-min')} + #{spacing('2xl')}
+  );
   scroll-snap-align: start;
   position: relative;
 
@@ -51,6 +54,7 @@
     justify-content: center;
     gap: spacing('sm');
     flex: 1;
+    min-height: calc(#{size('card-image-height')} + #{spacing('xl')});
     padding-top: spacing('md');
     padding-bottom: spacing('xl');
   }
@@ -93,6 +97,7 @@
     justify-content: center;
     gap: spacing('sm'); // Espace entre nom et image
     flex: 1;
+    min-height: calc(#{size('card-image-height')} + #{spacing('xl')});
     padding-top: spacing('md');
     padding-bottom: spacing('xl');
   }
@@ -103,14 +108,15 @@
     color: text('dark');
     text-align: center;
     width: 100%;
+    min-height: size('touch-target-min');
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
   &__card-image {
-    max-width: 100%;
-    height: auto;
+    width: 100%;
+    height: size('card-image-height');
     border-radius: radius('sm');
     object-fit: contain;
   }
@@ -120,9 +126,15 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 6rem;
+    min-height: size('card-image-height');
     background: surface('soft');
     border-radius: radius('sm');
+  }
+
+  &__sequence {
+    min-height: size('touch-target-min');
+    display: flex;
+    align-items: flex-start;
   }
 
   // ── Corps : contrôles carte + jetons ──

@@ -55,6 +55,8 @@ interface SlotItemProps {
   personalCards: PersonalCard[]
   /** Opération de suppression en cours */
   busy?: boolean
+  /** Afficher l'action de suppression pour ce slot */
+  canRemove?: boolean
   // ── S6 : Verrouillage selon état session ──────────────────────────────────
   /**
    * État de la session active pour ce profil+timeline.
@@ -135,6 +137,7 @@ export function SlotItem({
   bankCards,
   personalCards,
   busy = false,
+  canRemove = true,
   sessionState = null,
   isValidated = false,
   sequence = null,
@@ -163,6 +166,8 @@ export function SlotItem({
   // (même sur slot non validé — exception : nouveau slot lors de l'ajout,
   //  mais on ne peut pas distinguer ici → restriction conservatrice)
   const tokensLocked = isSessionStarted || isOffline || isExecutionOnly
+  const isEmptyStep = isStep && slot.card_id === null
+  const areTokensEditable = !tokensLocked && !isEmptyStep
   const canDragCard = !isFullyLocked && !busy && slot.card_id !== null
   const canDropCard = !isFullyLocked && !busy
 
@@ -187,8 +192,11 @@ export function SlotItem({
   // Séquençage disponible : uniquement pour les étapes avec une carte assignée
   const canManageSequence =
     isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
+  const isSequenceActionDisabled = !canManageSequence
 
   const handleTokensChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!areTokensEditable) return
+
     const value = parseInt(e.target.value, 10)
     // Validation côté client (double filet — la DB a aussi le CHECK)
     if (isNaN(value) || value < 0 || value > 5) return
@@ -235,12 +243,14 @@ export function SlotItem({
         {/* Indicateur de verrou (slot validé) */}
         {lockBadge}
 
-        {/* Bouton supprimer — désactivé si slot validé pendant session démarrée */}
-        <ButtonDelete
-          onClick={() => onRemove(slot.id)}
-          disabled={busy || isFullyLocked}
-          title={`Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`}
-        />
+        {/* Bouton supprimer — affiché uniquement si ce slot est réellement supprimable */}
+        {canRemove && (
+          <ButtonDelete
+            onClick={() => onRemove(slot.id)}
+            disabled={busy || isFullyLocked}
+            title={`Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`}
+          />
+        )}
       </div>
 
       {/* ── Centre : placeholder (vide) vs image carte (rempli) ─────────────── */}
@@ -321,10 +331,16 @@ export function SlotItem({
             max={5}
             value={slot.tokens ?? 0}
             onChange={handleTokensChange}
-            disabled={busy || updatingTokens || tokensLocked}
+            disabled={busy || updatingTokens || !areTokensEditable}
             aria-busy={updatingTokens}
-            aria-disabled={tokensLocked}
-            aria-label={`Nombre de jetons pour l'étape #${positionLabel} (0 à 5)${tokensLocked ? ' — verrouillé pendant la session' : ''}`}
+            aria-disabled={!areTokensEditable}
+            aria-label={`Nombre de jetons pour l'étape #${positionLabel} (0 à 5)${
+              tokensLocked
+                ? ' — verrouillé pendant la session'
+                : isEmptyStep
+                  ? ' — ajoute une carte pour modifier les jetons'
+                  : ''
+            }`}
           />
           {tokensError && (
             <p className="slot-item__tokens-error" role="alert">
@@ -334,29 +350,26 @@ export function SlotItem({
         </div>
       )}
 
-      {/* ── Gestion séquence (S7 — étapes uniquement, carte assignée) ─────────── */}
-      {canManageSequence && (
+      {/* ── Gestion séquence (S7 — hauteur réservée sur les étapes) ─────────── */}
+      {isStep && (
         <div className="slot-item__sequence">
           <Button
             variant="default"
             className={`slot-item__sequence-toggle${isSequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
             onClick={() => onOpenSequenceEditor?.(slot)}
+            disabled={isSequenceActionDisabled}
             aria-expanded={isSequenceEditorOpen}
             aria-haspopup="dialog"
             aria-label={
-              sequence
-                ? 'Modifier la séquence'
-                : canCreateSequence
-                  ? 'Créer une séquence'
-                  : 'Voir les informations de séquence'
+              isEmptyStep
+                ? 'Ajoute une carte pour créer une séquence'
+                : sequence
+                  ? 'Modifier la séquence'
+                  : canCreateSequence
+                    ? 'Créer une séquence'
+                    : 'Voir les informations de séquence'
             }
-            label={
-              sequence
-                ? '📋 Séquence'
-                : canCreateSequence
-                  ? '📋 Ajouter une séquence'
-                  : '📋 Séquence'
-            }
+            label={sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
           />
         </div>
       )}

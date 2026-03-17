@@ -413,6 +413,8 @@ export function SlotsEditor({
 
   // Afficher le bouton "Retirer les cartes" uniquement si au moins un slot a une carte
   const hasSomeCard = displayedSlots.some(s => s.card_id !== null)
+  const hasRewardSlot = displayedSlots.some(s => s.kind === 'reward')
+  const stepSlotsCount = displayedSlots.filter(s => s.kind === 'step').length
 
   // ✅ Récompenses en premier, puis étapes (ordre position ASC dans chaque groupe)
   const sortedSlots = [
@@ -439,6 +441,14 @@ export function SlotsEditor({
 
   return (
     <div className="slots-editor">
+      {swappingCards && (
+        <div className="slots-editor__status-layer">
+          <p className="slots-editor__status" role="status">
+            Mise à jour de la timeline…
+          </p>
+        </div>
+      )}
+
       {/* ── Liste des slots ──────────────────────────────────────────────────── */}
       {slots.length > 0 ? (
         <DndContext
@@ -467,6 +477,7 @@ export function SlotsEditor({
                   bankCards={bankCards}
                   personalCards={personalCards}
                   busy={busyId === slot.id || swappingCards}
+                  canRemove={slot.kind === 'step' && stepSlotsCount > 1}
                   sessionState={sessionState}
                   isValidated={validatedSlotIds?.has(slot.id) ?? false}
                   sequence={sequence}
@@ -494,11 +505,6 @@ export function SlotsEditor({
           {actionError}
         </p>
       )}
-      {swappingCards && (
-        <p className="slots-editor__empty" role="status">
-          Mise à jour de la timeline…
-        </p>
-      )}
 
       {/* ── Boutons d'ajout ──────────────────────────────────────────────────── */}
       <div className="slots-editor__actions">
@@ -512,15 +518,17 @@ export function SlotsEditor({
           {addingStep ? 'Ajout…' : '+ Étape 🎯'}
         </button>
 
-        <button
-          type="button"
-          className="slots-editor__btn slots-editor__btn--reward"
-          onClick={handleAddReward}
-          disabled={isActionBusy}
-          aria-busy={addingReward}
-        >
-          {addingReward ? 'Ajout…' : '+ Récompense 🏆'}
-        </button>
+        {!hasRewardSlot && (
+          <button
+            type="button"
+            className="slots-editor__btn slots-editor__btn--reward"
+            onClick={handleAddReward}
+            disabled={isActionBusy}
+            aria-busy={addingReward}
+          >
+            {addingReward ? 'Ajout…' : '+ Récompense 🏆'}
+          </button>
+        )}
       </div>
 
       {/* ── Bouton "Retirer toutes les cartes" ──────────────────────────────── */}

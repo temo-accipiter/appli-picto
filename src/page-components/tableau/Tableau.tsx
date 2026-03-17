@@ -29,6 +29,7 @@ import useBankCards from '@/hooks/useBankCards'
 import usePersonalCards from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import useSequenceStepsWithVisitor from '@/hooks/useSequenceStepsWithVisitor'
+import { useReducedMotion } from '@/hooks'
 import { TrainProgressBar, FloatingTimeTimer } from '@/components'
 import {
   SlotCard,
@@ -40,6 +41,9 @@ import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { Sequence } from '@/hooks/useSequences'
 import './Tableau.scss'
+
+const COMPLETION_REVEAL_DELAY_MS = 1200
+const COMPLETION_REVEAL_DELAY_REDUCED_MOTION_MS = 400
 
 // ─── SlotCardWithSequence ────────────────────────────────────────────────────
 // Wrapper qui charge les étapes de la séquence pour une carte donnée.
@@ -109,7 +113,8 @@ function findCard(
 
 export default function Tableau() {
   const { activeChildId } = useChildProfile()
-  const { showTrain, showTimeTimer, showRecompense } = useDisplay()
+  const { showTrain, showTimeTimer } = useDisplay()
+  const prefersReducedMotion = useReducedMotion()
   // ── Chargement des données de base ─────────────────────────────────────────
   const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
   const { slots, loading: slotsLoading } = useSlots(timeline?.id ?? null)
@@ -258,13 +263,9 @@ export default function Tableau() {
   )
 
   // Slot récompense (1 seul, kind='reward', avec carte assignée)
-  // Masqué si showRecompense=false (préférence utilisateur)
   const rewardSlot = useMemo<Slot | null>(
-    () =>
-      showRecompense
-        ? (slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null)
-        : null,
-    [slots, showRecompense]
+    () => slots.find(s => s.kind === 'reward' && s.card_id !== null) ?? null,
+    [slots]
   )
 
   // ── Progression ─────────────────────────────────────────────────────────────
@@ -274,10 +275,45 @@ export default function Tableau() {
   // §4.2 : la progression affichée utilise l'ensemble effectif (DB + optimiste offline)
   const validatedCount = effectiveValidatedSlotIds.size
   const isSessionCompleted = session?.state === 'completed'
+  const [isCompletionRewardRevealed, setIsCompletionRewardRevealed] =
+    useState(isSessionCompleted)
+  const previousSessionCompletedRef = useRef(isSessionCompleted)
 
   // Si snapshot non encore fixé (active_preview) → utiliser les slots visibles comme estimation
   // (sera remplacé par le snapshot DB dès la 1ère validation)
   const totalForProgress = snapshot ?? visibleStepSlots.length
+
+  useEffect(() => {
+    const wasCompleted = previousSessionCompletedRef.current
+    previousSessionCompletedRef.current = isSessionCompleted
+
+    if (!isSessionCompleted) {
+      setIsCompletionRewardRevealed(false)
+      return
+    }
+
+    if (!wasCompleted) {
+      setIsCompletionRewardRevealed(false)
+
+      const delay = prefersReducedMotion
+        ? COMPLETION_REVEAL_DELAY_REDUCED_MOTION_MS
+        : COMPLETION_REVEAL_DELAY_MS
+
+      const timer = window.setTimeout(() => {
+        setIsCompletionRewardRevealed(true)
+      }, delay)
+
+      return () => window.clearTimeout(timer)
+    }
+
+    setIsCompletionRewardRevealed(true)
+  }, [isSessionCompleted, prefersReducedMotion])
+
+  const shouldShowSessionComplete =
+    isSessionCompleted && isCompletionRewardRevealed
+  const rewardCard = rewardSlot
+    ? findCard(rewardSlot.card_id, bankCards, personalCards)
+    : null
 
   // ── Séquences (S7) ─────────────────────────────────────────────────────────
   // Chargement de toutes les séquences (cloud ou local selon Visitor).
@@ -351,25 +387,6 @@ export default function Tableau() {
     )
   }
 
-  // ── Rendu : session terminée ────────────────────────────────────────────────
-  if (isSessionCompleted) {
-    const rewardCard = rewardSlot
-      ? findCard(rewardSlot.card_id, bankCards, personalCards)
-      : null
-
-    return (
-      <div className="tableau-magique">
-        <h1 className="sr-only">Tableau de la journée</h1>
-        <SessionComplete
-          rewardSlot={rewardSlot}
-          rewardCard={rewardCard}
-          showTrain={showTrain}
-          totalSteps={totalForProgress}
-        />
-      </div>
-    )
-  }
-
   // ── Rendu principal ─────────────────────────────────────────────────────────
   return (
     <div className="tableau-magique">
@@ -419,8 +436,8 @@ export default function Tableau() {
                 slot={slot}
                 card={card}
                 validated={isValidated}
-                sessionCompleted={false}
-                isActive={slot.id === activeSlotId}
+                sessionCompleted={isSessionCompleted}
+                isActive={!isSessionCompleted && slot.id === activeSlotId}
                 sequence={sequence}
                 bankCards={bankCards}
                 personalCards={personalCards}
@@ -431,8 +448,31 @@ export default function Tableau() {
         </div>
       </section>
 
+      {shouldShowSessionComplete && (
+        <div
+          className="tableau-magique__completion-overlay"
+          data-testid="completion-overlay"
+        >
+          <section
+            className="tableau-magique__completion-overlay-content"
+            aria-labelledby="completion-heading"
+          >
+            <h2 id="completion-heading" className="sr-only">
+              Fin de parcours
+            </h2>
+            <SessionComplete
+              rewardSlot={rewardSlot}
+              rewardCard={rewardCard}
+              showTrain={false}
+              totalSteps={totalForProgress}
+              variant="overlay"
+            />
+          </section>
+        </div>
+      )}
+
       {/* Time Timer flottant */}
-      {showTimeTimer && <FloatingTimeTimer />}
+      {!isSessionCompleted && showTimeTimer && <FloatingTimeTimer />}
     </div>
   )
 }
