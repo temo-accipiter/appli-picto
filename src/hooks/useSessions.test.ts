@@ -3,10 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import useSessions from './useSessions'
 
 const fromMock = vi.fn()
+const rpcMock = vi.fn()
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
+    rpc: (...args: unknown[]) => rpcMock(...args),
   },
 }))
 
@@ -46,6 +48,7 @@ function createQueryBuilder(
 describe('useSessions', () => {
   beforeEach(() => {
     fromMock.mockReset()
+    rpcMock.mockReset()
   })
 
   it('garde loading=false pendant un refresh sur le meme contexte quand une session existe deja', async () => {
@@ -119,5 +122,46 @@ describe('useSessions', () => {
     })
 
     expect(seenLoadingStates).not.toContain(true)
+  })
+
+  it('utilise la fonction DB de reset uniquement pour une session active_started', async () => {
+    const initialFetch = createDeferred<{ data: unknown; error: unknown }>()
+    const responses = [initialFetch.promise]
+
+    fromMock.mockImplementation(() => createQueryBuilder(responses))
+    rpcMock.mockResolvedValue({ error: null })
+
+    const { result } = renderHook(() => useSessions('child-1', 'timeline-1'))
+
+    await act(async () => {
+      initialFetch.resolve({
+        data: {
+          id: 'session-1',
+          child_profile_id: 'child-1',
+          timeline_id: 'timeline-1',
+          state: 'active_started',
+          steps_total_snapshot: 3,
+          epoch: 1,
+        },
+        error: null,
+      })
+      await initialFetch.promise
+    })
+
+    await waitFor(() => {
+      expect(result.current.session?.state).toBe('active_started')
+    })
+
+    await act(async () => {
+      await result.current.resetSession()
+    })
+
+    expect(rpcMock).toHaveBeenCalledWith(
+      'reset_active_started_session_for_timeline',
+      {
+        p_timeline_id: 'timeline-1',
+        p_reason: 'manual_reset_from_edition',
+      }
+    )
   })
 })

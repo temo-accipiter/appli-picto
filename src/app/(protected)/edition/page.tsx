@@ -25,7 +25,7 @@ export default function EditionPage() {
     addReward,
     updateSlot,
     removeSlot,
-    clearAllCards,
+    refresh: refreshSlots,
   } = useSlots(timeline?.id ?? null)
 
   return (
@@ -40,9 +40,13 @@ export default function EditionPage() {
         addReward={addReward}
         updateSlot={updateSlot}
         removeSlot={removeSlot}
-        clearAllCards={clearAllCards}
       />
-      <Edition timeline={timeline} slots={slots} updateSlot={updateSlot} />
+      <Edition
+        timeline={timeline}
+        slots={slots}
+        updateSlot={updateSlot}
+        refreshSlots={refreshSlots}
+      />
     </>
   )
 }

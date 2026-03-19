@@ -166,23 +166,38 @@ export default function Tableau() {
     }
   }, [isOnline, refreshValidations])
 
-  // ── Epoch : suivi local pour détection de réinitialisation ─────────────────
+  // ── Epoch : suivi local pour détection de changements structurants ────────
   // Si l'epoch de la DB est supérieure à l'epoch connu localement,
-  // la session a été réinitialisée par l'adulte → réalignement au prochain Chargement.
+  // un changement structurant a eu lieu (suppression carte, réinitialisation, etc.)
+  // → refetch validations pour synchroniser l'état avec la structure DB actuelle
   const localEpochRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!session) return
-    if (localEpochRef.current === null) {
-      // Premier chargement → mémoriser l'epoch initial
+
+    const isFirstLoad = localEpochRef.current === null
+    const hasEpochChanged =
+      !isFirstLoad && session.epoch > localEpochRef.current
+
+    // ✅ CORRECTIF : Rafraîchir validations AU PREMIER CHARGEMENT (F5) ET lors changement epoch
+    // Raison : Au F5, localEpochRef.current est réinitialisé à null (useRef non persistant entre pages).
+    // Sans ce refresh explicite au premier chargement, les validations peuvent ne pas être
+    // synchronisées correctement avec la structure DB après un changement structurant
+    // (ex: suppression carte → epoch++ → F5).
+    if (isFirstLoad || hasEpochChanged) {
+      if (hasEpochChanged) {
+        console.log(
+          '[Tableau] Epoch changé:',
+          localEpochRef.current,
+          '→',
+          session.epoch,
+          '— refetch validations'
+        )
+      }
       localEpochRef.current = session.epoch
-    } else if (session.epoch > localEpochRef.current) {
-      // L'epoch a augmenté : session réinitialisée par l'adulte
-      // Anti-choc : on met à jour le ref local mais on ne "choque" pas l'UI
-      // → le prochain Chargement du Contexte Tableau affichera la session fraîche
-      localEpochRef.current = session.epoch
+      refreshValidations()
     }
-  }, [session])
+  }, [session, refreshValidations])
 
   // ── Création automatique de session ────────────────────────────────────────
   // Si la timeline est chargée, que la session est absente et que les données sont prêtes

@@ -11,6 +11,8 @@ import {
   useI18n,
   usePersonalCards,
   useExecutionOnly,
+  useSessions,
+  useSessionValidations,
 } from '@/hooks'
 import type { Timeline, Slot } from '@/types/supabase'
 import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
@@ -57,9 +59,16 @@ interface EditionProps {
     id: string,
     updates: { card_id?: string | null; tokens?: number | null }
   ) => Promise<{ error: Error | null }>
+  /** Rafraîchir les slots depuis la DB (TICKET #3 : Sync UI post-suppression carte) */
+  refreshSlots: () => void
 }
 
-export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
+export default function Edition({
+  timeline,
+  slots,
+  updateSlot,
+  refreshSlots,
+}: EditionProps) {
   const { t } = useI18n()
   const { show } = useToast()
   const { user } = useAuth()
@@ -105,6 +114,8 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
   // ── Guards : offline + execution-only ────────────────────────────────────
   const { isOnline } = useOffline()
   const { isExecutionOnly } = useExecutionOnly()
+  const { session } = useSessions(activeChildId, timeline?.id ?? null)
+  const { validatedSlotIds } = useSessionValidations(session?.id ?? null)
 
   // Checkbox disabled si offline ou execution-only
   const checkboxDisabled = !isOnline || isExecutionOnly
@@ -246,6 +257,22 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
       filterCategory === 'all' || (c.category_id || 'none') === filterCategory
     return catMatch
   })
+  const lockedCardIds = useMemo(() => {
+    if (session?.state !== 'active_started') {
+      return new Set<string>()
+    }
+
+    return new Set(
+      slots
+        .filter(
+          slot =>
+            slot.kind === 'step' &&
+            slot.card_id !== null &&
+            validatedSlotIds.has(slot.id)
+        )
+        .map(slot => slot.card_id as string)
+    )
+  }, [session?.state, slots, validatedSlotIds])
 
   // Wrappers pour adapter les signatures
   const handleDeleteCategory = async (
@@ -306,6 +333,10 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
         return
       }
 
+      if (lockedCardIds.has(cardId)) {
+        return
+      }
+
       if (currentlyChecked) {
         // Retirer la carte de TOUS les slots où elle est présente
         const slotsWithCard = slots.filter(s => s.card_id === cardId)
@@ -356,7 +387,7 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
         show("Carte ajoutée à l'étape", 'success')
       }
     },
-    [timeline, slots, updateSlot, show]
+    [timeline, slots, updateSlot, show, lockedCardIds]
   )
 
   return (
@@ -364,10 +395,10 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
       {/* WCAG 2.4.6 - Structure sémantique avec h1 */}
       <h1 className="sr-only">{t('edition.title')}</h1>
 
-      <div className="edition-sections">
+      <section className="edition-sections">
         <Separator />
 
-        <div className="taches-edition">
+        <section className="taches-edition" aria-label="Bibliothèque de cartes">
           {/* ✅ Nouveau système : Cards uniquement */}
           <CardsEdition
             items={visibleCards.map(c => ({
@@ -390,9 +421,10 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
             timelineSlots={slots}
             onToggleCardInTimeline={handleToggleCardInTimeline}
             checkboxDisabled={checkboxDisabled}
+            lockedCardIds={lockedCardIds}
           />
-        </div>
-      </div>
+        </section>
+      </section>
 
       <Suspense fallback={null}>
         <ModalConfirm
@@ -401,8 +433,16 @@ export default function Edition({ timeline, slots, updateSlot }: EditionProps) {
           confirmLabel={t('edition.confirmDeleteTask')}
           onConfirm={async () => {
             if (cardASupprimer) {
-              await deleteCard(cardASupprimer.id)
-              show('Carte supprimée', 'error')
+              const { error } = await deleteCard(cardASupprimer.id)
+              if (!error) {
+                // ✅ DB-first : ON DELETE SET NULL a vidé les slots concernés
+                // Rafraîchir l'UI de la timeline pour refléter changements DB
+                refreshSlots()
+                show('Carte supprimée avec succès', 'success')
+              } else {
+                // ✅ DB-first : Afficher erreur DB (trigger RAISE EXCEPTION ou RLS)
+                show(error.message || 'Erreur lors de la suppression', 'error')
+              }
               setCardASupprimer(null)
             }
           }}

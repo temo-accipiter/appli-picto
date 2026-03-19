@@ -47,7 +47,8 @@ interface UseSessionsReturn {
    */
   createSession: () => Promise<ActionResult>
   /**
-   * Réinitialiser la session courante (epoch++, state revient à active_preview, validations effacées).
+   * Réinitialiser la progression de la session démarrée via la fonction DB dédiée.
+   * ⚠️ Disponible uniquement pour une session active_started.
    * ⚠️ Le changement ne s'applique qu'au prochain Chargement du Contexte Tableau (anti-choc).
    * Cette action est réservée à l'adulte en Édition.
    */
@@ -199,33 +200,30 @@ export default function useSessions(
   }, [childProfileId, timelineId, refresh])
 
   /**
-   * Réinitialiser la session courante.
+   * Réinitialiser la progression d'une session active_started.
    * ⚠️ Action réservée à l'adulte (depuis l'Édition).
-   * La réinitialisation passe par la suppression et la recréation (epoch++ géré par DB trigger).
+   * ⚠️ La DB reste source de vérité via reset_active_started_session_for_timeline().
    */
   const resetSession = useCallback(async (): Promise<ActionResult> => {
-    if (!session) {
-      return { error: new Error('Aucune session à réinitialiser') }
+    if (!timelineId || !session || session.state !== 'active_started') {
+      return { error: new Error('Aucune progression à réinitialiser') }
     }
 
-    // Supprimer la session courante (CASCADE supprime aussi les session_validations)
-    const { error: deleteError } = await supabase
-      .from('sessions')
-      .delete()
-      .eq('id', session.id)
+    const { error: resetError } = await supabase.rpc(
+      'reset_active_started_session_for_timeline',
+      {
+        p_timeline_id: timelineId,
+        p_reason: 'manual_reset_from_edition',
+      }
+    )
 
-    if (deleteError) return { error: deleteError as Error | null }
+    if (resetError) {
+      return { error: resetError as Error | null }
+    }
 
-    // Recréer une session fraîche — la DB fixe epoch = MAX(ancien) + 1 via trigger
-    const { error: insertError } = await supabase.from('sessions').insert({
-      child_profile_id: session.child_profile_id,
-      timeline_id: session.timeline_id,
-      state: 'active_preview',
-    })
-
-    if (!insertError) refresh()
-    return { error: insertError as Error | null }
-  }, [session, refresh])
+    refresh()
+    return { error: null }
+  }, [session, timelineId, refresh])
 
   return {
     session,

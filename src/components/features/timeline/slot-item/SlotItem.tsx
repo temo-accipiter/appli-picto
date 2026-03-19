@@ -27,7 +27,7 @@
  * - Récompenses : pas de modification dans cette phase
  */
 
-import { useState, type ChangeEvent } from 'react'
+import { useState, useCallback, type ChangeEvent } from 'react'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
@@ -115,6 +115,11 @@ interface SlotItemProps {
   dndSlotId?: string
   /** Indique si ce slot est la source active du drag */
   isDragActive?: boolean
+  /**
+   * Callback pour exposer le ref DOM au parent (gestion focus post-suppression).
+   * Permet au SlotsEditor de gérer le focus programmatique après suppression.
+   */
+  setSlotRef?: (node: HTMLLIElement | null) => void
 }
 
 /** Icône selon le kind du slot */
@@ -150,6 +155,7 @@ export function SlotItem({
   isExecutionOnly = false,
   dndSlotId,
   isDragActive = false,
+  setSlotRef,
 }: SlotItemProps) {
   const isStep = slot.kind === 'step'
 
@@ -185,6 +191,16 @@ export function SlotItem({
     disabled: !canDropCard,
   })
 
+  // ── Composition ref : DnD + focus programmatique (§3.2.2bis) ─────────────
+  // Permet au parent (SlotsEditor) de gérer le focus après suppression
+  const composedRef = useCallback(
+    (node: HTMLLIElement | null) => {
+      setDroppableRef(node)
+      setSlotRef?.(node)
+    },
+    [setDroppableRef, setSlotRef]
+  )
+
   // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)
   const [tokensError, setTokensError] = useState<string | null>(null)
@@ -192,7 +208,7 @@ export function SlotItem({
   // Séquençage disponible : uniquement pour les étapes avec une carte assignée
   const canManageSequence =
     isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
-  const isSequenceActionDisabled = !canManageSequence
+  const isSequenceActionDisabled = isFullyLocked || !canManageSequence
 
   const handleTokensChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!areTokensEditable) return
@@ -230,7 +246,8 @@ export function SlotItem({
 
   return (
     <li
-      ref={setDroppableRef}
+      ref={composedRef}
+      tabIndex={-1}
       className={`slot-item slot-item--${slot.kind}${isFullyLocked ? ' slot-item--locked' : ''}`}
       aria-label={`Position ${positionLabel} — ${SLOT_LABELS[slot.kind]}${isFullyLocked ? ' (validé)' : ''}`}
       aria-busy={busy || undefined}
@@ -363,11 +380,13 @@ export function SlotItem({
             aria-label={
               isEmptyStep
                 ? 'Ajoute une carte pour créer une séquence'
-                : sequence
-                  ? 'Modifier la séquence'
-                  : canCreateSequence
-                    ? 'Créer une séquence'
-                    : 'Voir les informations de séquence'
+                : isFullyLocked
+                  ? 'Étape validée — séquence non modifiable'
+                  : sequence
+                    ? 'Modifier la séquence'
+                    : canCreateSequence
+                      ? 'Créer une séquence'
+                      : 'Voir les informations de séquence'
             }
             label={sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
           />

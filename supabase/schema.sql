@@ -439,6 +439,36 @@ $$;
 ALTER FUNCTION "public"."auto_transition_session_on_validation"() OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."can_write_sequences"() RETURNS boolean
+    LANGUAGE "plpgsql" STABLE SECURITY DEFINER
+    SET "search_path" TO 'public', 'pg_temp'
+    AS $$
+DECLARE
+  v_status account_status;
+BEGIN
+  SELECT status INTO v_status
+  FROM public.accounts
+  WHERE id = auth.uid();
+
+  -- NULL si non authentifié ou compte inexistant
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Subscriber et Admin peuvent écrire des séquences.
+  -- Free = lecture seule (contrat FRONTEND_CONTRACT.md §3.2.5).
+  RETURN v_status IN ('subscriber', 'admin');
+END;
+$$;
+
+
+ALTER FUNCTION "public"."can_write_sequences"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."can_write_sequences"() IS 'Feature gate séquençage: retourne TRUE si le compte courant peut créer/modifier/supprimer des séquences (subscriber ou admin). Free = lecture seule. SECURITY DEFINER minimal, search_path hardened.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."cards_normalize_published"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
@@ -761,6 +791,120 @@ $$;
 ALTER FUNCTION "public"."check_can_register_device"("p_account_id" "uuid", "p_revoked_at" timestamp with time zone) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."check_card_delete_guardrails"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+  v_session RECORD;
+  v_slot_id UUID;
+  v_is_validated BOOLEAN;
+  v_affected_sessions UUID[];
+BEGIN
+  v_affected_sessions := ARRAY[]::UUID[];
+
+  -- ══════════════════════════════════════════════════════════════════
+  -- CAS 1 : Carte utilisée DIRECTEMENT dans des slots (card_id)
+  -- ══════════════════════════════════════════════════════════════════
+  FOR v_session IN
+    SELECT DISTINCT s.id, s.timeline_id
+    FROM sessions s
+    WHERE s.state IN ('active_preview', 'active_started')
+      AND EXISTS (
+        SELECT 1 FROM slots sl
+        WHERE sl.timeline_id = s.timeline_id
+          AND sl.card_id = OLD.id
+      )
+  LOOP
+    -- Vérifier chaque slot de cette timeline contenant la carte
+    FOR v_slot_id IN
+      SELECT sl.id
+      FROM slots sl
+      WHERE sl.timeline_id = v_session.timeline_id
+        AND sl.card_id = OLD.id
+    LOOP
+      -- Ce slot est-il validé dans cette session ?
+      SELECT EXISTS (
+        SELECT 1
+        FROM session_validations sv
+        WHERE sv.session_id = v_session.id
+          AND sv.slot_id = v_slot_id
+      ) INTO v_is_validated;
+
+      -- 🛑 Si validé → BLOQUER suppression (RAISE EXCEPTION)
+      IF v_is_validated THEN
+        RAISE EXCEPTION 'Cette carte est actuellement utilisée dans une session active (étape déjà validée). Réinitialisez la session avant de supprimer la carte.';
+      END IF;
+    END LOOP;
+
+    -- ✅ Session active mais carte non validée → marquer pour epoch++
+    v_affected_sessions := array_append(v_affected_sessions, v_session.id);
+  END LOOP;
+
+  -- ══════════════════════════════════════════════════════════════════
+  -- CAS 2 : Carte utilisée comme STEP dans une séquence (step_card_id)
+  -- ══════════════════════════════════════════════════════════════════
+  FOR v_session IN
+    SELECT DISTINCT s.id, s.timeline_id
+    FROM sessions s
+    WHERE s.state IN ('active_preview', 'active_started')
+      AND EXISTS (
+        SELECT 1
+        FROM slots sl
+        INNER JOIN sequences seq ON seq.mother_card_id = sl.card_id
+        INNER JOIN sequence_steps ss ON ss.sequence_id = seq.id
+        WHERE sl.timeline_id = s.timeline_id
+          AND ss.step_card_id = OLD.id
+      )
+  LOOP
+    -- Trouver les slots contenant des cartes mères dont les séquences utilisent cette carte
+    FOR v_slot_id IN
+      SELECT sl.id
+      FROM slots sl
+      INNER JOIN sequences seq ON seq.mother_card_id = sl.card_id
+      INNER JOIN sequence_steps ss ON ss.sequence_id = seq.id
+      WHERE sl.timeline_id = v_session.timeline_id
+        AND ss.step_card_id = OLD.id
+    LOOP
+      -- Le slot carte mère est-il validé ?
+      SELECT EXISTS (
+        SELECT 1
+        FROM session_validations sv
+        WHERE sv.session_id = v_session.id
+          AND sv.slot_id = v_slot_id
+      ) INTO v_is_validated;
+
+      -- 🛑 Si carte mère validée → BLOQUER suppression step
+      IF v_is_validated THEN
+        RAISE EXCEPTION 'Cette carte est utilisée dans une séquence dont la carte mère a été validée. Réinitialisez la session avant de supprimer.';
+      END IF;
+    END LOOP;
+
+    -- ✅ Session active mais carte mère non validée → marquer pour epoch++
+    v_affected_sessions := array_append(v_affected_sessions, v_session.id);
+  END LOOP;
+
+  -- ══════════════════════════════════════════════════════════════════
+  -- 🔄 Incrémenter epoch pour toutes les sessions affectées (non bloquées)
+  -- ══════════════════════════════════════════════════════════════════
+  IF array_length(v_affected_sessions, 1) > 0 THEN
+    UPDATE sessions
+    SET epoch = epoch + 1,
+        updated_at = NOW()
+    WHERE id = ANY(v_affected_sessions);
+  END IF;
+
+  RETURN OLD;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."check_card_delete_guardrails"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."check_card_delete_guardrails"() IS 'Garde-fous suppression carte : bloque si carte validée en session active (RAISE EXCEPTION), incrémente epoch sinon (anti-choc TSA)';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."child_profiles_auto_create_timeline"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -814,6 +958,128 @@ $$;
 
 
 ALTER FUNCTION "public"."create_default_account_preferences"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) RETURNS "uuid"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'pg_temp'
+    AS $$
+DECLARE
+  v_account_id UUID;
+  v_sequence_id UUID;
+  v_constraint_name TEXT;
+  v_step_count INTEGER;
+  v_distinct_step_count INTEGER;
+  v_has_null BOOLEAN;
+BEGIN
+  v_account_id := auth.uid();
+
+  IF v_account_id IS NULL THEN
+    RAISE EXCEPTION
+      'Authentication required: create_sequence_with_steps'
+      USING ERRCODE = '42501',
+            HINT = 'Sign in with an authenticated account.';
+  END IF;
+
+  IF p_mother_card_id IS NULL THEN
+    RAISE EXCEPTION
+      'Sequence invalid: mother_card_id is required'
+      USING ERRCODE = '23514',
+            HINT = 'Provide the mother card id.';
+  END IF;
+
+  IF NOT public.can_write_sequences() THEN
+    RAISE EXCEPTION
+      'Access denied: sequence creation is not allowed for current account'
+      USING ERRCODE = '42501',
+            HINT = 'Sequence write is reserved to subscriber/admin accounts.';
+  END IF;
+
+  IF public.is_execution_only() THEN
+    RAISE EXCEPTION
+      'Access denied: sequence creation is unavailable in execution-only mode'
+      USING ERRCODE = '42501',
+            HINT = 'Upgrade or reduce locked structure before editing sequences.';
+  END IF;
+
+  IF p_step_card_ids IS NULL THEN
+    RAISE EXCEPTION
+      'Sequence invalid: step_card_ids is required'
+      USING ERRCODE = '23514',
+            HINT = 'Provide at least 2 step card ids.';
+  END IF;
+
+  SELECT
+    COUNT(*),
+    COUNT(DISTINCT step_card_id),
+    COALESCE(BOOL_OR(step_card_id IS NULL), FALSE)
+  INTO v_step_count, v_distinct_step_count, v_has_null
+  FROM unnest(p_step_card_ids) AS input(step_card_id);
+
+  IF v_has_null THEN
+    RAISE EXCEPTION
+      'Sequence invalid: step_card_ids cannot contain null values'
+      USING ERRCODE = '23514',
+            HINT = 'Remove empty steps before saving.';
+  END IF;
+
+  IF v_step_count < 2 THEN
+    RAISE EXCEPTION
+      'Sequence invalid: at least 2 steps are required (current=%)',
+      v_step_count
+      USING ERRCODE = '23514',
+            HINT = 'Provide at least 2 distinct step cards.';
+  END IF;
+
+  IF v_distinct_step_count <> v_step_count THEN
+    RAISE EXCEPTION
+      'Sequence invalid: duplicate step_card_id detected'
+      USING ERRCODE = '23505',
+            HINT = 'Each card can appear only once in a sequence.';
+  END IF;
+
+  INSERT INTO public.sequences (account_id, mother_card_id)
+  VALUES (v_account_id, p_mother_card_id)
+  RETURNING id INTO v_sequence_id;
+
+  INSERT INTO public.sequence_steps (sequence_id, step_card_id, position)
+  SELECT
+    v_sequence_id,
+    input.step_card_id,
+    input.ordinality - 1
+  FROM unnest(p_step_card_ids) WITH ORDINALITY AS input(step_card_id, ordinality)
+  ORDER BY input.ordinality;
+
+  RETURN v_sequence_id;
+EXCEPTION
+  WHEN unique_violation THEN
+    GET STACKED DIAGNOSTICS v_constraint_name = CONSTRAINT_NAME;
+
+    IF v_constraint_name = 'unique_sequence_per_account_mother' THEN
+      RAISE EXCEPTION
+        'Sequence already exists for mother_card_id %',
+        p_mother_card_id
+        USING ERRCODE = '23505',
+              HINT = 'Use replace_sequence_steps(...) to update the existing sequence.';
+    END IF;
+
+    IF v_constraint_name = 'unique_sequence_step_card' THEN
+      RAISE EXCEPTION
+        'Sequence invalid: duplicate step_card_id detected during creation'
+        USING ERRCODE = '23505',
+              HINT = 'Each card can appear only once in a sequence.';
+    END IF;
+
+    RAISE;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) IS 'Atomic sequencing RPC: creates one sequence for auth.uid() and inserts all initial steps in stable order. RLS and triggers remain enforced.';
+
 
 
 CREATE OR REPLACE FUNCTION "public"."enforce_child_profile_limit_after_session_completion"("p_child_profile_id" "uuid") RETURNS "void"
@@ -1398,47 +1664,167 @@ $$;
 ALTER FUNCTION "public"."quota_profiles_limit"("p_status" "public"."account_status") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) RETURNS "void"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'pg_temp'
+    AS $$
+DECLARE
+  v_account_id UUID;
+  v_locked_sequence_id UUID;
+  v_constraint_name TEXT;
+  v_step_count INTEGER;
+  v_distinct_step_count INTEGER;
+  v_has_null BOOLEAN;
+BEGIN
+  v_account_id := auth.uid();
+
+  IF v_account_id IS NULL THEN
+    RAISE EXCEPTION
+      'Authentication required: replace_sequence_steps'
+      USING ERRCODE = '42501',
+            HINT = 'Sign in with an authenticated account.';
+  END IF;
+
+  IF p_sequence_id IS NULL THEN
+    RAISE EXCEPTION
+      'Sequence invalid: sequence_id is required'
+      USING ERRCODE = '23514',
+            HINT = 'Provide the sequence id to update.';
+  END IF;
+
+  IF NOT public.can_write_sequences() THEN
+    RAISE EXCEPTION
+      'Access denied: sequence update is not allowed for current account'
+      USING ERRCODE = '42501',
+            HINT = 'Sequence write is reserved to subscriber/admin accounts.';
+  END IF;
+
+  IF public.is_execution_only() THEN
+    RAISE EXCEPTION
+      'Access denied: sequence update is unavailable in execution-only mode'
+      USING ERRCODE = '42501',
+            HINT = 'Upgrade or reduce locked structure before editing sequences.';
+  END IF;
+
+  IF p_step_card_ids IS NULL THEN
+    RAISE EXCEPTION
+      'Sequence invalid: step_card_ids is required'
+      USING ERRCODE = '23514',
+            HINT = 'Provide at least 2 step card ids.';
+  END IF;
+
+  SELECT
+    COUNT(*),
+    COUNT(DISTINCT step_card_id),
+    COALESCE(BOOL_OR(step_card_id IS NULL), FALSE)
+  INTO v_step_count, v_distinct_step_count, v_has_null
+  FROM unnest(p_step_card_ids) AS input(step_card_id);
+
+  IF v_has_null THEN
+    RAISE EXCEPTION
+      'Sequence invalid: step_card_ids cannot contain null values'
+      USING ERRCODE = '23514',
+            HINT = 'Remove empty steps before saving.';
+  END IF;
+
+  IF v_step_count < 2 THEN
+    RAISE EXCEPTION
+      'Sequence invalid: at least 2 steps are required (current=%)',
+      v_step_count
+      USING ERRCODE = '23514',
+            HINT = 'Provide at least 2 distinct step cards.';
+  END IF;
+
+  IF v_distinct_step_count <> v_step_count THEN
+    RAISE EXCEPTION
+      'Sequence invalid: duplicate step_card_id detected'
+      USING ERRCODE = '23505',
+            HINT = 'Each card can appear only once in a sequence.';
+  END IF;
+
+  SELECT s.id
+  INTO v_locked_sequence_id
+  FROM public.sequences s
+  WHERE s.id = p_sequence_id
+    AND s.account_id = v_account_id
+  FOR UPDATE;
+
+  IF v_locked_sequence_id IS NULL THEN
+    RAISE EXCEPTION
+      'Sequence not found or inaccessible: %',
+      p_sequence_id
+      USING ERRCODE = '42501',
+            HINT = 'You can only update your own sequences.';
+  END IF;
+
+  DELETE FROM public.sequence_steps
+  WHERE sequence_id = p_sequence_id;
+
+  INSERT INTO public.sequence_steps (sequence_id, step_card_id, position)
+  SELECT
+    p_sequence_id,
+    input.step_card_id,
+    input.ordinality - 1
+  FROM unnest(p_step_card_ids) WITH ORDINALITY AS input(step_card_id, ordinality)
+  ORDER BY input.ordinality;
+
+  UPDATE public.sequences
+  SET updated_at = NOW()
+  WHERE id = p_sequence_id;
+EXCEPTION
+  WHEN unique_violation THEN
+    GET STACKED DIAGNOSTICS v_constraint_name = CONSTRAINT_NAME;
+
+    IF v_constraint_name = 'unique_sequence_step_card' THEN
+      RAISE EXCEPTION
+        'Sequence invalid: duplicate step_card_id detected during replacement'
+        USING ERRCODE = '23505',
+              HINT = 'Each card can appear only once in a sequence.';
+    END IF;
+
+    RAISE;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) IS 'Atomic sequencing RPC: replaces the full ordered step list of one owned sequence in a single transaction-safe call. RLS and triggers remain enforced.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text" DEFAULT NULL::"text") RETURNS "void"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
   v_session_id UUID;
-  v_child_profile_id UUID;
-  v_new_epoch INTEGER;
 BEGIN
-  -- Verrouiller la session active_started si elle existe (anti race condition)
-  SELECT s.id, s.child_profile_id
-    INTO v_session_id, v_child_profile_id
+  -- Trouver la session active (active_preview ou active_started) pour cette timeline
+  -- FOR UPDATE : verrouillage anti-race-condition
+  SELECT s.id
+    INTO v_session_id
   FROM sessions s
   WHERE s.timeline_id = p_timeline_id
-    AND s.state = 'active_started'
+    AND s.state IN ('active_preview', 'active_started')
   LIMIT 1
   FOR UPDATE;
 
+  -- Si aucune session active, rien à faire
   IF v_session_id IS NULL THEN
     RETURN;
   END IF;
 
-  -- Clôturer la session courante (on libère l’unicité "active")
-  -- Note: on utilise l’état 'completed' faute d’état contractuel 'aborted'.
+  -- ✅ SOFT SYNC : Incrémenter epoch in-place
+  -- Préserve session_id → préserve validations (FK session_validations.session_id)
+  -- Le frontend détecte epoch++ et rafraîchit les validations existantes
   UPDATE sessions
-  SET state = 'completed',
-      completed_at = COALESCE(completed_at, NOW()),
+  SET epoch = epoch + 1,
       updated_at = NOW()
   WHERE id = v_session_id;
 
-  -- Calcul epoch = MAX(epoch historique)+1 (par profil + timeline)
-  SELECT COALESCE(MAX(epoch), 0) + 1
-    INTO v_new_epoch
-  FROM sessions
-  WHERE child_profile_id = v_child_profile_id
-    AND timeline_id = p_timeline_id;
-
-  -- Nouvelle session en prévisualisation
-  INSERT INTO sessions (child_profile_id, timeline_id, state, epoch, created_at, updated_at)
-  VALUES (v_child_profile_id, p_timeline_id, 'active_preview', v_new_epoch, NOW(), NOW());
-
-  -- (Optionnel) p_reason ignoré côté DB (pas de colonne dédiée dans le contrat)
+  -- Note : p_reason ignoré côté DB (pas de colonne dédiée dans le contrat)
+  -- Peut être loggé côté application si nécessaire
 END;
 $$;
 
@@ -1446,7 +1832,7 @@ $$;
 ALTER FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Réinitialise une session active_started (epoch++) lors d’une modification structurelle après démarrage';
+COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Incrémente epoch de la session active lors modification structurelle (Soft Sync) - préserve validations existantes';
 
 
 
@@ -4112,6 +4498,14 @@ CREATE UNIQUE INDEX "vector_indexes_name_bucket_id_idx" ON "storage"."vector_ind
 
 
 
+CREATE OR REPLACE TRIGGER "guard_card_delete_active_sessions" BEFORE DELETE ON "public"."cards" FOR EACH ROW EXECUTE FUNCTION "public"."check_card_delete_guardrails"();
+
+
+
+COMMENT ON TRIGGER "guard_card_delete_active_sessions" ON "public"."cards" IS 'Déclenché AVANT suppression carte pour vérifier sessions actives et protéger cohérence Tableau enfant';
+
+
+
 CREATE OR REPLACE TRIGGER "session_validations_auto_transition" AFTER INSERT ON "public"."session_validations" FOR EACH ROW EXECUTE FUNCTION "public"."auto_transition_session_on_validation"();
 
 
@@ -4764,21 +5158,21 @@ ALTER TABLE "public"."sequence_steps" ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" FOR DELETE TO "authenticated" USING ((("sequence_id" IN ( SELECT "sequences"."id"
    FROM "public"."sequences"
-  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND (NOT "public"."is_execution_only"())));
+  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" IS 'Owner via sequence: user can delete step (not execution-only, min 2 steps by trigger)';
+COMMENT ON POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en suppression étape';
 
 
 
 CREATE POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" FOR INSERT TO "authenticated" WITH CHECK ((("sequence_id" IN ( SELECT "sequences"."id"
    FROM "public"."sequences"
-  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND (NOT "public"."is_execution_only"())));
+  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" IS 'Owner via sequence: user can create step (not execution-only, ownership checks by trigger)';
+COMMENT ON POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en création étape';
 
 
 
@@ -4794,32 +5188,32 @@ COMMENT ON POLICY "sequence_steps_select_owner" ON "public"."sequence_steps" IS 
 
 CREATE POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" FOR UPDATE TO "authenticated" USING ((("sequence_id" IN ( SELECT "sequences"."id"
    FROM "public"."sequences"
-  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND (NOT "public"."is_execution_only"()))) WITH CHECK ((("sequence_id" IN ( SELECT "sequences"."id"
+  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"()))) WITH CHECK ((("sequence_id" IN ( SELECT "sequences"."id"
    FROM "public"."sequences"
-  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND (NOT "public"."is_execution_only"())));
+  WHERE ("sequences"."account_id" = "auth"."uid"()))) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" IS 'Owner via sequence: user can update step (not execution-only, DnD position)';
+COMMENT ON POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en modification étape';
 
 
 
 ALTER TABLE "public"."sequences" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "sequences_delete_owner" ON "public"."sequences" FOR DELETE TO "authenticated" USING ((("account_id" = "auth"."uid"()) AND (NOT "public"."is_execution_only"())));
+CREATE POLICY "sequences_delete_owner" ON "public"."sequences" FOR DELETE TO "authenticated" USING ((("account_id" = "auth"."uid"()) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequences_delete_owner" ON "public"."sequences" IS 'Owner-only: user can delete sequence (not execution-only)';
+COMMENT ON POLICY "sequences_delete_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en suppression séquence';
 
 
 
-CREATE POLICY "sequences_insert_owner" ON "public"."sequences" FOR INSERT TO "authenticated" WITH CHECK ((("account_id" = "auth"."uid"()) AND (NOT "public"."is_execution_only"())));
+CREATE POLICY "sequences_insert_owner" ON "public"."sequences" FOR INSERT TO "authenticated" WITH CHECK ((("account_id" = "auth"."uid"()) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequences_insert_owner" ON "public"."sequences" IS 'Owner-only: user can create sequence (not execution-only, ownership checks by trigger)';
+COMMENT ON POLICY "sequences_insert_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en création séquence';
 
 
 
@@ -4831,11 +5225,11 @@ COMMENT ON POLICY "sequences_select_owner" ON "public"."sequences" IS 'Owner-onl
 
 
 
-CREATE POLICY "sequences_update_owner" ON "public"."sequences" FOR UPDATE TO "authenticated" USING ((("account_id" = "auth"."uid"()) AND (NOT "public"."is_execution_only"()))) WITH CHECK ((("account_id" = "auth"."uid"()) AND (NOT "public"."is_execution_only"())));
+CREATE POLICY "sequences_update_owner" ON "public"."sequences" FOR UPDATE TO "authenticated" USING ((("account_id" = "auth"."uid"()) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"()))) WITH CHECK ((("account_id" = "auth"."uid"()) AND "public"."can_write_sequences"() AND (NOT "public"."is_execution_only"())));
 
 
 
-COMMENT ON POLICY "sequences_update_owner" ON "public"."sequences" IS 'Owner-only: user can update sequence (not execution-only)';
+COMMENT ON POLICY "sequences_update_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en modification séquence';
 
 
 
@@ -5180,6 +5574,13 @@ GRANT ALL ON FUNCTION "public"."auto_transition_session_on_validation"() TO "ser
 
 
 
+REVOKE ALL ON FUNCTION "public"."can_write_sequences"() FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."can_write_sequences"() TO "anon";
+GRANT ALL ON FUNCTION "public"."can_write_sequences"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."can_write_sequences"() TO "service_role";
+
+
+
 GRANT ALL ON FUNCTION "public"."cards_normalize_published"() TO "anon";
 GRANT ALL ON FUNCTION "public"."cards_normalize_published"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."cards_normalize_published"() TO "service_role";
@@ -5228,6 +5629,12 @@ GRANT ALL ON FUNCTION "public"."check_can_register_device"("p_account_id" "uuid"
 
 
 
+GRANT ALL ON FUNCTION "public"."check_card_delete_guardrails"() TO "anon";
+GRANT ALL ON FUNCTION "public"."check_card_delete_guardrails"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."check_card_delete_guardrails"() TO "service_role";
+
+
+
 REVOKE ALL ON FUNCTION "public"."child_profiles_auto_create_timeline"() FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."child_profiles_auto_create_timeline"() TO "anon";
 GRANT ALL ON FUNCTION "public"."child_profiles_auto_create_timeline"() TO "authenticated";
@@ -5239,6 +5646,13 @@ REVOKE ALL ON FUNCTION "public"."create_default_account_preferences"() FROM PUBL
 GRANT ALL ON FUNCTION "public"."create_default_account_preferences"() TO "anon";
 GRANT ALL ON FUNCTION "public"."create_default_account_preferences"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."create_default_account_preferences"() TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."create_sequence_with_steps"("p_mother_card_id" "uuid", "p_step_card_ids" "uuid"[]) TO "service_role";
 
 
 
@@ -5350,6 +5764,13 @@ GRANT ALL ON FUNCTION "public"."quota_devices_limit"("p_status" "public"."accoun
 GRANT ALL ON FUNCTION "public"."quota_profiles_limit"("p_status" "public"."account_status") TO "anon";
 GRANT ALL ON FUNCTION "public"."quota_profiles_limit"("p_status" "public"."account_status") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."quota_profiles_limit"("p_status" "public"."account_status") TO "service_role";
+
+
+
+REVOKE ALL ON FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) FROM PUBLIC;
+GRANT ALL ON FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) TO "anon";
+GRANT ALL ON FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."replace_sequence_steps"("p_sequence_id" "uuid", "p_step_card_ids" "uuid"[]) TO "service_role";
 
 
 

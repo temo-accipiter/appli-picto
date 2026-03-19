@@ -13,7 +13,7 @@
  * - Pas de logique quota côté client.
  * - Les triggers DB gèrent les invariants (min 1 step + 1 reward).
  * - Les refus DB sont traduits en messages UX neutres.
- * - "Réinitialiser la session" = DELETE + INSERT (epoch++ via trigger DB).
+ * - "Réinitialiser la session" = reset progression via fonction DB dédiée.
  *
  * ⚠️ RÈGLES TSA
  * - showCreateButton=false : page focalisée sur la tâche (moins de charge cognitive).
@@ -52,7 +52,6 @@ interface EditionTimelineProps {
     updates: { card_id?: string | null; tokens?: number | null }
   ) => Promise<{ error: Error | null }>
   removeSlot: (id: string) => Promise<{ error: Error | null }>
-  clearAllCards: () => Promise<{ error: Error | null }>
 }
 
 export default function EditionTimeline({
@@ -65,7 +64,6 @@ export default function EditionTimeline({
   addReward,
   updateSlot,
   removeSlot,
-  clearAllCards,
 }: EditionTimelineProps) {
   const {
     activeChildId,
@@ -192,11 +190,6 @@ export default function EditionTimeline({
     return addReward()
   }
 
-  const safeClearAllCards = async () => {
-    if (guardStructural()) return { error: null }
-    return clearAllCards()
-  }
-
   const safeUpdateSlot = async (
     id: string,
     updates: { card_id?: string | null; tokens?: number | null }
@@ -210,12 +203,11 @@ export default function EditionTimeline({
     return removeSlot(id)
   }
 
-  const safeResetSession = session
-    ? async () => {
-        if (guardStructural()) return { error: null }
-        return resetSession()
-      }
-    : undefined
+  const safeResetSession = async () => {
+    if (guardStructural()) return { error: null }
+    return resetSession()
+  }
+  const canResetSession = session?.state === 'active_started'
 
   const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
   const activeInitial = activeChildProfile?.name?.charAt(0).toUpperCase() || '?'
@@ -361,10 +353,10 @@ export default function EditionTimeline({
           onAddReward={safeAddReward}
           onUpdateSlot={safeUpdateSlot}
           onRemoveSlot={safeRemoveSlot}
-          onClearAllCards={safeClearAllCards}
           sessionState={session?.state ?? null}
           validatedSlotIds={validatedSlotIds}
           onResetSession={safeResetSession}
+          canResetSession={canResetSession}
           isOffline={!isOnline}
           isExecutionOnly={isExecutionOnly}
         />

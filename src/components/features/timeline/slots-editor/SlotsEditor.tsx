@@ -6,7 +6,6 @@
  * Affiche :
  * - La liste ordonnée des slots (étapes + récompenses)
  * - Des boutons pour ajouter une étape ou une récompense
- * - Un bouton "Retirer toutes les cartes" avec confirmation 1-clic
  * - Un bouton "Réinitialiser la session" avec confirmation 1-clic (S6)
  * - Un état vide si aucun slot
  * - Les erreurs DB (refus de suppression du dernier slot, etc.)
@@ -19,9 +18,7 @@
  * - Toutes les confirmations : inline 1 clic (pas de modale).
  *
  * ⚠️ RÈGLES DB-FIRST
- * - "Retirer toutes les cartes" = UPDATE card_id=NULL (pas DELETE)
- *   Les triggers DB interdisent la suppression du dernier step/reward.
- * - "Réinitialiser la session" = DELETE + INSERT (epoch++ géré par trigger DB)
+ * - "Réinitialiser la session" = reset progression via fonction DB existante
  * - Les cartes banque/perso sont chargées ici (une seule requête) et transmises
  *   à chaque SlotItem (évite N requêtes parallèles).
  *
@@ -69,8 +66,6 @@ interface SlotsEditorProps {
   ) => Promise<{ error: Error | null }>
   /** Supprimer un slot */
   onRemoveSlot: (id: string) => Promise<{ error: Error | null }>
-  /** Retirer toutes les cartes (UPDATE card_id=NULL sur tous les slots) */
-  onClearAllCards: () => Promise<{ error: Error | null }>
   // ── S6 : Verrouillage + Réinitialisation ─────────────────────────────────
   /**
    * État de la session active pour ce profil+timeline.
@@ -83,10 +78,11 @@ interface SlotsEditorProps {
    */
   validatedSlotIds?: Set<string>
   /**
-   * Réinitialiser la session (DELETE + INSERT, epoch++ côté DB).
-   * Réservé à l'adulte. Si undefined → bouton masqué.
+   * Réinitialiser la progression de session via la fonction DB dédiée.
    */
-  onResetSession?: () => Promise<{ error: Error | null }>
+  onResetSession: () => Promise<{ error: Error | null }>
+  /** Le reset est-il actuellement autorisé ? */
+  canResetSession?: boolean
   /**
    * S8 : Désactiver toutes les actions structurelles si le navigateur est offline.
    * §4.4 : CRUD structure interdit offline (guard UX).
@@ -108,10 +104,10 @@ export function SlotsEditor({
   onAddReward,
   onUpdateSlot,
   onRemoveSlot,
-  onClearAllCards,
   sessionState = null,
   validatedSlotIds,
   onResetSession,
+  canResetSession = false,
   isOffline = false,
   isExecutionOnly = false,
 }: SlotsEditorProps) {
@@ -123,8 +119,6 @@ export function SlotsEditor({
   const [swappingCards, setSwappingCards] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
   const [addingReward, setAddingReward] = useState(false)
-  const [clearingCards, setClearingCards] = useState(false)
-  const [confirmClear, setConfirmClear] = useState(false)
   const [resettingSession, setResettingSession] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -145,6 +139,19 @@ export function SlotsEditor({
   } = useAccountStatus()
   const lastMissingSignatureRef = useRef('')
 
+  // ── S6 : Map de refs pour gestion focus post-suppression (§3.2.2bis) ──────
+  // Stocke les refs DOM des SlotItem pour permettre le focus programmatique
+  const slotRefsMap = useRef<Map<string, HTMLLIElement>>(new Map())
+
+  // Callback pour enregistrer/dés-enregistrer les refs des SlotItem
+  const setSlotRef = useCallback((id: string, node: HTMLLIElement | null) => {
+    if (node) {
+      slotRefsMap.current.set(id, node)
+    } else {
+      slotRefsMap.current.delete(id)
+    }
+  }, [])
+
   // Chargement des séquences (S7 — cloud ou local selon Visitor)
   // Visitor → IndexedDB local-only, Auth → Supabase cloud
   const { sequences, createSequence, deleteSequence, isVisitorSource } =
@@ -158,6 +165,12 @@ export function SlotsEditor({
   useEffect(() => {
     setOptimisticSlots(null)
   }, [slots])
+
+  useEffect(() => {
+    if (!canResetSession) {
+      setConfirmReset(false)
+    }
+  }, [canResetSession])
 
   useEffect(() => {
     if (!activeSequenceSlot) return
@@ -248,30 +261,43 @@ export function SlotsEditor({
   }
 
   const handleRemove = async (id: string) => {
+    // ── S6 : Focus post-suppression (§3.2.2bis — UX TSA anti-choc) ────────────
+    // AVANT suppression : calculer prochain slot à focus
+    const remainingSlots = displayedSlots.filter(s => s.id !== id)
+
+    // Trouver prochaine étape non validée
+    const nextSlot =
+      remainingSlots.find(
+        s => s.kind === 'step' && !validatedSlotIds?.has(s.id)
+      ) ?? remainingSlots.find(s => s.kind === 'reward') // fallback récompense
+
     setBusyId(id)
     setActionError(null)
     const { error: err } = await onRemoveSlot(id)
     setBusyId(null)
-    if (err) setActionError(dbErrorToMessage(err))
-  }
 
-  const handleClearAllCards = async () => {
-    // Premier clic → demande confirmation
-    if (!confirmClear) {
-      setConfirmClear(true)
+    if (err) {
+      setActionError(dbErrorToMessage(err))
       return
     }
-    // Deuxième clic → exécute
-    setConfirmClear(false)
-    setClearingCards(true)
-    setActionError(null)
-    const { error: err } = await onClearAllCards()
-    setClearingCards(false)
-    if (err) setActionError('Impossible de retirer les cartes. Réessaie.')
+
+    // APRÈS suppression réussie : focus prochain slot
+    // Timeout 100ms laisse le DOM se stabiliser après suppression
+    if (nextSlot) {
+      setTimeout(() => {
+        const element = slotRefsMap.current.get(nextSlot.id)
+        element?.focus()
+        element?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center',
+        })
+      }, 100)
+    }
   }
 
   const handleResetSession = async () => {
-    if (!onResetSession) return
+    if (!canResetSession) return
     // Premier clic → demande confirmation
     if (!confirmReset) {
       setConfirmReset(true)
@@ -293,7 +319,6 @@ export function SlotsEditor({
     addingReward ||
     swappingCards ||
     !!busyId ||
-    clearingCards ||
     resettingSession ||
     isOffline ||
     isExecutionOnly
@@ -411,8 +436,6 @@ export function SlotsEditor({
     )
   }
 
-  // Afficher le bouton "Retirer les cartes" uniquement si au moins un slot a une carte
-  const hasSomeCard = displayedSlots.some(s => s.card_id !== null)
   const hasRewardSlot = displayedSlots.some(s => s.kind === 'reward')
   const stepSlotsCount = displayedSlots.filter(s => s.kind === 'step').length
 
@@ -490,6 +513,7 @@ export function SlotsEditor({
                   isExecutionOnly={isExecutionOnly}
                   dndSlotId={slot.id}
                   isDragActive={activeDragSlotId === slot.id}
+                  setSlotRef={node => setSlotRef(slot.id, node)}
                 />
               )
             })}
@@ -531,69 +555,44 @@ export function SlotsEditor({
         )}
       </div>
 
-      {/* ── Bouton "Retirer toutes les cartes" ──────────────────────────────── */}
-      {hasSomeCard && (
-        <div className="slots-editor__clear">
+      {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}
+      <div className="slots-editor__reset-session">
+        <button
+          type="button"
+          className={`slots-editor__btn slots-editor__btn--reset${confirmReset ? ' slots-editor__btn--reset-confirm' : ''}`}
+          onClick={handleResetSession}
+          disabled={isActionBusy || !canResetSession}
+          aria-busy={resettingSession}
+          aria-label={
+            confirmReset
+              ? 'Confirmer la réinitialisation de la session'
+              : canResetSession
+                ? 'Réinitialiser la session (recommencer depuis le début)'
+                : 'La réinitialisation devient disponible après le début de la progression'
+          }
+          title={
+            canResetSession
+              ? undefined
+              : 'Disponible après le début de la progression'
+          }
+        >
+          {resettingSession
+            ? 'Réinitialisation…'
+            : confirmReset
+              ? 'Confirmer la réinitialisation ?'
+              : 'Réinitialiser la session 🔄'}
+        </button>
+        {/* Annuler la confirmation */}
+        {confirmReset && canResetSession && (
           <button
             type="button"
-            className={`slots-editor__btn slots-editor__btn--clear${confirmClear ? ' slots-editor__btn--clear-confirm' : ''}`}
-            onClick={handleClearAllCards}
-            disabled={isActionBusy}
-            aria-busy={clearingCards}
+            className="slots-editor__btn slots-editor__btn--cancel"
+            onClick={() => setConfirmReset(false)}
           >
-            {clearingCards
-              ? 'Retrait en cours…'
-              : confirmClear
-                ? 'Confirmer le retrait de toutes les cartes ?'
-                : 'Retirer toutes les cartes'}
+            Annuler
           </button>
-          {/* Annuler la confirmation */}
-          {confirmClear && (
-            <button
-              type="button"
-              className="slots-editor__btn slots-editor__btn--cancel"
-              onClick={() => setConfirmClear(false)}
-            >
-              Annuler
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Bouton "Réinitialiser la session" (S6 — adulte uniquement) ──────── */}
-      {/* Affiché uniquement si onResetSession est fourni (session existante) */}
-      {onResetSession && (
-        <div className="slots-editor__reset-session">
-          <button
-            type="button"
-            className={`slots-editor__btn slots-editor__btn--reset${confirmReset ? ' slots-editor__btn--reset-confirm' : ''}`}
-            onClick={handleResetSession}
-            disabled={isActionBusy}
-            aria-busy={resettingSession}
-            aria-label={
-              confirmReset
-                ? 'Confirmer la réinitialisation de la session'
-                : 'Réinitialiser la session (recommencer depuis le début)'
-            }
-          >
-            {resettingSession
-              ? 'Réinitialisation…'
-              : confirmReset
-                ? 'Confirmer la réinitialisation ?'
-                : 'Réinitialiser la session 🔄'}
-          </button>
-          {/* Annuler la confirmation */}
-          {confirmReset && (
-            <button
-              type="button"
-              className="slots-editor__btn slots-editor__btn--cancel"
-              onClick={() => setConfirmReset(false)}
-            >
-              Annuler
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {resolvedActiveSequenceSlot?.card_id && (
         <Modal isOpen onClose={closeSequenceEditor} size="large">

@@ -71,6 +71,8 @@ interface CardsEditionProps {
    * Guards : checkbox disabled si offline/execution-only/session locked.
    */
   checkboxDisabled?: boolean
+  /** Cartes verrouillées car déjà validées dans la session active. */
+  lockedCardIds?: Set<string>
 }
 
 export default function CardsEdition({
@@ -90,6 +92,7 @@ export default function CardsEdition({
   timelineSlots,
   onToggleCardInTimeline,
   checkboxDisabled = false,
+  lockedCardIds,
 }: CardsEditionProps) {
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [drafts, setDrafts] = useState<Record<string | number, string>>({})
@@ -260,6 +263,7 @@ export default function CardsEdition({
               checked={isCardInTimeline(item.id)}
               onToggleCheck={() => handleToggleCheckbox(item.id)}
               disabled={checkboxDisabled}
+              checkboxDisabled={lockedCardIds?.has(String(item.id)) ?? false}
               categorie={item.categorie || ''}
               defaultCategoryId={systemCategoryId ?? undefined}
               onCategorieChange={val => onUpdateCategorie(item.id, val)}

@@ -15,7 +15,8 @@
   flex-shrink: 0;
   width: size('modal-width-sm');
   min-height: calc(
-    #{size('card-image-height')} + #{size('touch-target-min')} + #{spacing('2xl')}
+    #{size('card-image-height')} + #{size('touch-target-min')} +
+      #{spacing('2xl')}
   );
   scroll-snap-align: start;
   position: relative;

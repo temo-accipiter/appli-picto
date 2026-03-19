@@ -57,6 +57,7 @@ interface EditionCardProps {
   imageComponent?: ReactNode
   editable?: boolean
   disabled?: boolean
+  checkboxDisabled?: boolean
 }
 
 const CardEdition = memo(function CardEdition({
@@ -76,6 +77,7 @@ const CardEdition = memo(function CardEdition({
   imageComponent,
   editable = true,
   disabled = false,
+  checkboxDisabled = false,
 }: EditionCardProps) {
   const { t } = useI18n()
 
@@ -147,9 +149,10 @@ const CardEdition = memo(function CardEdition({
           <Checkbox
             id={`checkbox-${labelId}`}
             checked={checked}
-            onChange={() => !disabled && onToggleCheck()}
+            onChange={() => !disabled && !checkboxDisabled && onToggleCheck()}
             aria-label={checked ? t('card.visible') : t('card.hidden')}
             size="md"
+            disabled={disabled || checkboxDisabled}
           />
         </>
       }

@@ -236,23 +236,53 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
 
   /**
    * Supprimer une carte personnelle
-   * - DB gère les cascades (slots, sequences, pivot)
-   * - Si carte utilisée en session active → Réinitialisation session (epoch++)
+   *
+   * DB-first strict :
+   * - Trigger `guard_card_delete_active_sessions` gère les guardrails :
+   *   → RAISE EXCEPTION si carte validée en session active
+   *   → epoch++ automatique si session active non validée
+   * - ON DELETE CASCADE/SET NULL gèrent les dépendances :
+   *   → `slots.card_id` SET NULL (slot devient vide)
+   *   → `sequence_steps.step_card_id` CASCADE (step supprimé)
+   *   → `sequences.mother_card_id` CASCADE (séquence supprimée)
+   * - Le frontend tente DELETE, gère erreur DB proprement
    */
   const deleteCard = useCallback(
     async (id: string): Promise<ActionResult> => {
       if (!user) return { error: new Error('Non connecté') }
 
-      const { error: deleteError } = await supabase
-        .from('cards')
-        .delete()
-        .eq('id', id)
-        .eq('type', 'personal')
-        .eq('account_id', user.id)
+      try {
+        // ✅ DB-first : Suppression carte directe (trigger + FK gèrent tout)
+        const { error: deleteError } = await supabase
+          .from('cards')
+          .delete()
+          .eq('id', id)
+          .eq('type', 'personal')
+          .eq('account_id', user.id)
 
-      if (!deleteError) refresh()
+        if (deleteError) {
+          console.warn(
+            '[usePersonalCards] Suppression refusée par la base de données:',
+            deleteError.message
+          )
+          // Créer Error lisible pour UI (éviter cast `as Error` avec objet Postgrest {})
+          return {
+            error: new Error(
+              deleteError.message || 'Erreur lors de la suppression'
+            ),
+          }
+        }
 
-      return { error: deleteError as Error | null }
+        // ✅ Succès : Rafraîchir cache cartes
+        refresh()
+        return { error: null }
+      } catch (err) {
+        console.error(
+          '[usePersonalCards] Erreur inattendue suppression carte:',
+          err
+        )
+        return { error: err as Error }
+      }
     },
     [user, refresh]
   )
