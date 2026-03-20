@@ -76,6 +76,25 @@ function SlotCardWithSequence({
   const { steps: sequenceSteps, loading: sequenceStepsLoading } =
     useSequenceStepsWithVisitor(sequence?.id ?? null)
 
+  // ✅ CORRECTIF SYMPTÔME A (Séquence fantôme) — Détection optimiste séquence manquante
+  // Si un slot a une card_id MAIS sequence === null → race condition entre refreshSlots() et refreshSequences()
+  // → Rafraîchir une seule fois pour charger la séquence manquante
+  const { refresh: refreshSequences } = useSequencesWithVisitor()
+  const [hasAttemptedRefresh, setHasAttemptedRefresh] = useState(false)
+
+  useEffect(() => {
+    // Si slot.card_id existe MAIS sequence === null → séquence pas encore chargée
+    // → Rafraîchir une seule fois pour éviter loop infini
+    if (slot.card_id && !sequence && !hasAttemptedRefresh) {
+      refreshSequences()
+      setHasAttemptedRefresh(true)
+    }
+    // Reset flag si sequence devient non-null (résolution réussie)
+    if (sequence && hasAttemptedRefresh) {
+      setHasAttemptedRefresh(false)
+    }
+  }, [slot.card_id, sequence, hasAttemptedRefresh, refreshSequences])
+
   return (
     <SlotCard
       slot={slot}
@@ -86,7 +105,10 @@ function SlotCardWithSequence({
       isActive={isActive}
       hasSequence={sequence !== null}
       sequenceSteps={sequenceSteps}
-      sequenceStepsLoading={sequenceStepsLoading}
+      sequenceStepsLoading={
+        sequenceStepsLoading || (!!slot.card_id && !sequence)
+      }
+      // ↑ Loading tant que séquence manquante (détection optimiste)
       bankCards={bankCards}
       personalCards={personalCards}
     />
@@ -117,7 +139,11 @@ export default function Tableau() {
   const prefersReducedMotion = useReducedMotion()
   // ── Chargement des données de base ─────────────────────────────────────────
   const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
-  const { slots, loading: slotsLoading } = useSlots(timeline?.id ?? null)
+  const {
+    slots,
+    loading: slotsLoading,
+    refresh: refreshSlots,
+  } = useSlots(timeline?.id ?? null)
   const { cards: bankCards, loading: bankLoading } = useBankCards()
   const { cards: personalCards, loading: personalLoading } = usePersonalCards(
     activeChildId ?? null
@@ -137,6 +163,13 @@ export default function Tableau() {
     validate,
     refresh: refreshValidations,
   } = useSessionValidations(session?.id ?? null)
+
+  // ── Séquences (S7) ─────────────────────────────────────────────────────────
+  // ⚠️ CRITIQUE : Doit être déclaré AVANT le useEffect epoch (ligne 169+)
+  // Chargement de toutes les séquences (cloud ou local selon Visitor).
+  // Visitor → IndexedDB local-only, Auth → Supabase cloud
+  // Chaque slot peut avoir une séquence liée à sa carte mère (via mother_card_id).
+  const { sequences, refresh: refreshSequences } = useSequencesWithVisitor()
 
   // ── S8 : Gestion offline (§4.4) ─────────────────────────────────────────
   // isOnline : détecté via OfflineContext (propagé depuis navigator.onLine)
@@ -169,7 +202,8 @@ export default function Tableau() {
   // ── Epoch : suivi local pour détection de changements structurants ────────
   // Si l'epoch de la DB est supérieure à l'epoch connu localement,
   // un changement structurant a eu lieu (suppression carte, réinitialisation, etc.)
-  // → refetch validations pour synchroniser l'état avec la structure DB actuelle
+  // → refetch TOUTES les données (validations, slots, séquences) pour synchroniser
+  //   l'état avec la structure DB actuelle
   const localEpochRef = useRef<number | null>(null)
 
   useEffect(() => {
@@ -179,11 +213,16 @@ export default function Tableau() {
     const hasEpochChanged =
       !isFirstLoad && session.epoch > localEpochRef.current
 
-    // ✅ CORRECTIF : Rafraîchir validations AU PREMIER CHARGEMENT (F5) ET lors changement epoch
+    // ✅ CORRECTIF COMPLET : Rafraîchir TOUTES les données au premier chargement (F5) ET lors changement epoch
     // Raison : Au F5, localEpochRef.current est réinitialisé à null (useRef non persistant entre pages).
-    // Sans ce refresh explicite au premier chargement, les validations peuvent ne pas être
+    // Sans ce refresh explicite au premier chargement, les données peuvent ne pas être
     // synchronisées correctement avec la structure DB après un changement structurant
-    // (ex: suppression carte → epoch++ → F5).
+    // (ex: ajout/suppression slot → epoch++ → F5).
+    //
+    // BUG 1 (Séquence fantôme) : Si un slot ajouté en cours de session contient une séquence,
+    //                             celle-ci ne s'affichait pas car sequences n'était pas refetché.
+    // BUG 2 (Complétion têtue)  : Si un slot est ajouté en cours de session (epoch++),
+    //                             visibleStepSlots restait figé → calcul complétion erroné côté UI.
     if (isFirstLoad || hasEpochChanged) {
       if (hasEpochChanged) {
         console.log(
@@ -191,13 +230,17 @@ export default function Tableau() {
           localEpochRef.current,
           '→',
           session.epoch,
-          '— refetch validations'
+          '— refetch validations + slots + séquences'
         )
       }
       localEpochRef.current = session.epoch
-      refreshValidations()
+
+      // Refetch TOUTES les données affectées par les changements structurants
+      refreshValidations() // Validations existantes (préservées par Soft Sync)
+      refreshSlots() // Slots actuels (nouveaux slots ajoutés via Édition)
+      refreshSequences() // Séquences liées aux slots (nouvelles séquences ajoutées)
     }
-  }, [session, refreshValidations])
+  }, [session, refreshValidations, refreshSlots, refreshSequences])
 
   // ── Création automatique de session ────────────────────────────────────────
   // Si la timeline est chargée, que la session est absente et que les données sont prêtes
@@ -294,9 +337,16 @@ export default function Tableau() {
     useState(isSessionCompleted)
   const previousSessionCompletedRef = useRef(isSessionCompleted)
 
-  // Si snapshot non encore fixé (active_preview) → utiliser les slots visibles comme estimation
-  // (sera remplacé par le snapshot DB dès la 1ère validation)
-  const totalForProgress = snapshot ?? visibleStepSlots.length
+  // ✅ CORRECTIF SYMPTÔME B (Complétion prématurée) — Robustesse contre snapshot périmé
+  // Si snapshot DB = 2 (périmé car refetch pas terminé) MAIS visibleStepSlots.length = 3 (à jour)
+  // → Math.max(2, 3) = 3 → on exige 3 validations → complétion correcte
+  // Si snapshot DB = 3 (à jour) MAIS visibleStepSlots.length = 2 (périmé car refetch slots pas terminé)
+  // → Math.max(3, 2) = 3 → on exige 3 validations → complétion correcte
+  // → Le total ne peut JAMAIS être inférieur au nombre de slots actuellement affichés
+  const totalForProgress = Math.max(
+    session?.steps_total_snapshot ?? 0,
+    visibleStepSlots.length
+  )
 
   useEffect(() => {
     const wasCompleted = previousSessionCompletedRef.current
@@ -329,12 +379,6 @@ export default function Tableau() {
   const rewardCard = rewardSlot
     ? findCard(rewardSlot.card_id, bankCards, personalCards)
     : null
-
-  // ── Séquences (S7) ─────────────────────────────────────────────────────────
-  // Chargement de toutes les séquences (cloud ou local selon Visitor).
-  // Visitor → IndexedDB local-only, Auth → Supabase cloud
-  // Chaque slot peut avoir une séquence liée à sa carte mère (via mother_card_id).
-  const { sequences } = useSequencesWithVisitor()
 
   // La carte "active" = le premier slot visible non encore validé (§3.1.4).
   // C'est uniquement sur cette carte que le bouton "Voir étapes" est affiché.
@@ -444,6 +488,20 @@ export default function Tableau() {
             const sequence = slot.card_id
               ? (sequences.find(s => s.mother_card_id === slot.card_id) ?? null)
               : null
+
+            // 🆕 DEBUG LOG
+            if (slot.card_id) {
+              console.log('[Tableau] Slot mapping:', {
+                slot_id: slot.id,
+                card_id: slot.card_id,
+                sequences_length: sequences.length,
+                sequences_ids: sequences.map(s => ({
+                  id: s.id,
+                  mother_card_id: s.mother_card_id,
+                })),
+                sequence_found: sequence?.id ?? 'null',
+              })
+            }
 
             return (
               <SlotCardWithSequence

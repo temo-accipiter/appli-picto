@@ -68,7 +68,7 @@
     "clean:all": "pnpm clean && rm -rf pnpm-lock.yaml",
     "debug:verify": "pnpm type-check && echo '✅ TypeScript passed' && pnpm lint && echo '✅ ESLint passed' && pnpm format:check && echo '✅ Prettier passed' && pnpm test:coverage && echo '✅ Tests passed' && pnpm build:prod && echo '✅ Build passed' && pnpm test:e2e && echo '✅ E2E passed'",
     "db:smoke": "./scripts/db-smoke.sh",
-    "db:reset": "supabase db reset --ignore-health-check && pnpm supabase:apply-storage-policies",
+    "db:reset": "./scripts/db-reset-with-storage.sh",
     "db:reset+smoke": "pnpm db:reset && pnpm db:smoke"
   },
   "dependencies": {

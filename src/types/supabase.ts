@@ -859,6 +859,10 @@ export type Database = {
         Args: { p_account_id: string }
         Returns: Database["public"]["Enums"]["account_status"]
       }
+      hard_reset_timeline_session: {
+        Args: { p_timeline_id: string }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
       is_execution_only: { Args: never; Returns: boolean }
       is_valid_timezone: { Args: { tz: string }; Returns: boolean }

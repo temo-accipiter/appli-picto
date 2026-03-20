@@ -33,10 +33,11 @@ import { useToast } from '@/contexts'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
+import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
-import type { Timeline, Slot } from '@/types/supabase'
+import type { Timeline, Slot, SessionState } from '@/types/supabase'
 import './EditionTimeline.scss'
 
 interface EditionTimelineProps {
@@ -147,13 +148,50 @@ export default function EditionTimeline({
   // ── S6 : Session active pour verrouillage et réinitialisation ──────────────
   // On charge la session uniquement si on a un profil + une timeline.
   // Cela permet d'afficher l'état de verrouillage à l'adulte en édition.
-  const { session, resetSession } = useSessions(
+  const { session, resetSession, refresh: refreshSession } = useSessions(
     activeChildId,
     timeline?.id ?? null
   )
 
   // Validations de la session (pour savoir quels slots sont verrouillés)
-  const { validatedSlotIds } = useSessionValidations(session?.id ?? null)
+  const { validatedSlotIds, refresh: refreshValidations } = useSessionValidations(
+    session?.id ?? null
+  )
+
+  // ── S7 : Séquences (refresh pour Bug A — séquence fantôme) ─────────────────
+  // Rafraîchir séquences après updateSlot pour synchroniser avec les slots modifiés
+  const { refresh: refreshSequences } = useSequencesWithVisitor()
+
+  // ── Détection automatique de fin de session (Victory Check) ────────────────
+  // Quand une session passe de 'active_started' à 'completed' suite à une
+  // réduction de timeline (suppression de cartes non-validées), on informe
+  // l'adulte et on rafraîchit les cadenas immédiatement.
+  const prevSessionStateRef = useRef<SessionState | null>(null)
+
+  useEffect(() => {
+    const prevState = prevSessionStateRef.current
+    const currentState = session?.state ?? null
+
+    console.log('[EditionTimeline] Session state check:', {
+      prev: prevState,
+      current: currentState,
+      transition: prevState === 'active_started' && currentState === 'completed',
+    })
+
+    if (prevState === 'active_started' && currentState === 'completed') {
+      console.log('[EditionTimeline] Victory Check détecté → Rafraîchissement cadenas + toast')
+      // Transition détectée : active_started → completed (Victory Check)
+      // Rafraîchir les validations pour enlever les cadenas
+      refreshValidations()
+      // Toast informatif (adulte en édition)
+      showToast(
+        'Session terminée automatiquement — toutes les cartes restantes étaient validées',
+        'info'
+      )
+    }
+
+    prevSessionStateRef.current = currentState
+  }, [session?.state, refreshValidations, showToast])
 
   // ── S8 : Wrappers offline pour les handlers de SlotsEditor ─────────────────
   // §4.4 : CRUD structure interdit offline → guard UX (toast + désactivation)
@@ -195,17 +233,46 @@ export default function EditionTimeline({
     updates: { card_id?: string | null; tokens?: number | null }
   ) => {
     if (guardStructural()) return { error: null }
-    return updateSlot(id, updates)
+
+    const result = await updateSlot(id, updates)
+
+    // 🆕 CORRECTIF BUG A (Séquence fantôme) : Rafraîchir séquences si carte assignée/retirée
+    // Rationale : updateSlot() rafraîchit uniquement les slots, pas les séquences.
+    // Si une carte avec séquence est assignée, le tableau sequences[] doit être resync.
+    if (!result.error && updates.card_id !== undefined) {
+      refreshSequences()
+    }
+
+    return result
   }
 
   const safeRemoveSlot = async (id: string) => {
     if (guardStructural()) return { error: null }
-    return removeSlot(id)
+
+    const result = await removeSlot(id)
+
+    if (!result.error) {
+      // Rafraîchir la session immédiatement après suppression
+      // pour détecter si le Victory Check a complété la session
+      refreshSession()
+    }
+
+    return result
   }
 
   const safeResetSession = async () => {
     if (guardStructural()) return { error: null }
-    return resetSession()
+
+    const result = await resetSession()
+
+    if (!result.error) {
+      // Rafraîchir les validations pour mettre à jour les cadenas immédiatement
+      refreshValidations()
+      // Toast de confirmation
+      showToast('Session réinitialisée avec succès', 'success')
+    }
+
+    return result
   }
   const canResetSession = session?.state === 'active_started'
 

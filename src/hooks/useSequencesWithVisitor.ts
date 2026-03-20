@@ -18,6 +18,7 @@
  */
 
 import { useIsVisitor } from '@/hooks'
+import { useMemo } from 'react'
 import useSequences from '@/hooks/useSequences'
 import useSequencesLocal from '@/hooks/useSequencesLocal'
 import type { Sequence } from '@/hooks/useSequences'
@@ -77,31 +78,35 @@ export default function useSequencesWithVisitor(): UseSequencesWithVisitorReturn
   const cloudResult = useSequences(!isVisitor && authReady)
   const localResult = useSequencesLocal(isVisitor && authReady)
 
-  // Attendre que authReady soit true pour éviter flickering
-  if (!authReady) {
+  // 🆕 CORRECTIF : Mémoriser le résultat pour éviter boucle infinie de re-renders
+  // Les fonctions createSequence, deleteSequence, refresh doivent avoir des références stables
+  return useMemo(() => {
+    // Attendre que authReady soit true pour éviter flickering
+    if (!authReady) {
+      return {
+        sequences: [],
+        loading: true,
+        error: null,
+        createSequence: async () => ({ id: null, error: null }),
+        deleteSequence: async () => ({ error: null }),
+        refresh: () => {},
+        isVisitorSource: false,
+      }
+    }
+
+    // Router vers la bonne source
+    if (isVisitor) {
+      return {
+        ...localResult,
+        sequences: localResult.sequences as UnifiedSequence[],
+        isVisitorSource: true,
+      }
+    }
+
     return {
-      sequences: [],
-      loading: true,
-      error: null,
-      createSequence: async () => ({ id: null, error: null }),
-      deleteSequence: async () => ({ error: null }),
-      refresh: () => {},
+      ...cloudResult,
+      sequences: cloudResult.sequences as UnifiedSequence[],
       isVisitorSource: false,
     }
-  }
-
-  // Router vers la bonne source
-  if (isVisitor) {
-    return {
-      ...localResult,
-      sequences: localResult.sequences as UnifiedSequence[],
-      isVisitorSource: true,
-    }
-  }
-
-  return {
-    ...cloudResult,
-    sequences: cloudResult.sequences as UnifiedSequence[],
-    isVisitorSource: false,
-  }
+  }, [authReady, isVisitor, cloudResult, localResult])
 }

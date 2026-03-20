@@ -47,9 +47,11 @@ interface UseSessionsReturn {
    */
   createSession: () => Promise<ActionResult>
   /**
-   * Réinitialiser la progression de la session démarrée via la fonction DB dédiée.
+   * Hard Reset : Supprime TOUTES les validations et reset le snapshot.
    * ⚠️ Disponible uniquement pour une session active_started.
    * ⚠️ Le changement ne s'applique qu'au prochain Chargement du Contexte Tableau (anti-choc).
+   * ⚠️ L'enfant repartira de zéro (toutes les cartes décochées).
+   * ⚠️ La session reste 'active_started' mais avec 0 validations.
    * Cette action est réservée à l'adulte en Édition.
    */
   resetSession: () => Promise<ActionResult>
@@ -171,8 +173,47 @@ export default function useSessions(
 
     void fetchSession()
 
+    // 🆕 REALTIME : Abonnement aux changements de session (epoch++, snapshot, state)
+    // Propagation automatique DB → Frontend sans F5 (Soft Sync temps réel)
+    const channel = supabase
+      .channel(`session:${childProfileId}:${timelineId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'sessions',
+          filter: `child_profile_id=eq.${childProfileId}`,
+        },
+        payload => {
+          const updatedSession = payload.new as Session
+
+          // Vérifier que c'est bien la session de cette timeline
+          if (updatedSession.timeline_id === timelineId) {
+            console.log(
+              '[useSessions] Realtime UPDATE détecté:',
+              'epoch',
+              currentSessionRef.current?.epoch,
+              '→',
+              updatedSession.epoch,
+              '| snapshot',
+              currentSessionRef.current?.steps_total_snapshot,
+              '→',
+              updatedSession.steps_total_snapshot
+            )
+
+            // Mise à jour immédiate du state React
+            // → Déclenche useEffect epoch detection dans Tableau.tsx
+            setSession(updatedSession)
+          }
+        }
+      )
+      .subscribe()
+
     return () => {
       controller.abort()
+      // Cleanup Realtime : unsubscribe au démontage
+      void supabase.removeChannel(channel)
     }
   }, [childProfileId, timelineId, refreshKey])
 
@@ -200,22 +241,22 @@ export default function useSessions(
   }, [childProfileId, timelineId, refresh])
 
   /**
-   * Réinitialiser la progression d'une session active_started.
+   * Réinitialiser la progression d'une session active (Hard Reset).
    * ⚠️ Action réservée à l'adulte (depuis l'Édition).
-   * ⚠️ La DB reste source de vérité via reset_active_started_session_for_timeline().
+   * ⚠️ La DB reste source de vérité via hard_reset_timeline_session().
+   *
+   * Cette fonction supprime TOUTES les validations et reset le snapshot.
+   * La session reste 'active_started' mais avec 0 validations.
+   * L'enfant repartira de zéro au prochain chargement du Contexte Tableau.
    */
   const resetSession = useCallback(async (): Promise<ActionResult> => {
     if (!timelineId || !session || session.state !== 'active_started') {
       return { error: new Error('Aucune progression à réinitialiser') }
     }
 
-    const { error: resetError } = await supabase.rpc(
-      'reset_active_started_session_for_timeline',
-      {
-        p_timeline_id: timelineId,
-        p_reason: 'manual_reset_from_edition',
-      }
-    )
+    const { error: resetError } = await supabase.rpc('hard_reset_timeline_session', {
+      p_timeline_id: timelineId,
+    })
 
     if (resetError) {
       return { error: resetError as Error | null }

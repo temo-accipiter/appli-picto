@@ -1480,6 +1480,72 @@ $$;
 ALTER FUNCTION "public"."get_account_status"("p_account_id" "uuid") OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") RETURNS "void"
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+  v_session_id UUID;
+  v_session_state session_state;
+BEGIN
+  -- ============================================================================
+  -- 1. Trouver la session active pour cette timeline
+  -- ============================================================================
+
+  SELECT s.id, s.state
+    INTO v_session_id, v_session_state
+  FROM sessions s
+  WHERE s.timeline_id = p_timeline_id
+    AND s.state IN ('active_preview', 'active_started')
+  LIMIT 1
+  FOR UPDATE;  -- Verrouillage anti-race-condition
+
+  -- Si aucune session active, rien à faire
+  IF v_session_id IS NULL THEN
+    RETURN;
+  END IF;
+
+  -- ============================================================================
+  -- 2. Supprimer TOUTES les validations
+  -- ============================================================================
+
+  -- Cela "décoche" toutes les cartes validées
+  -- La FK session_validations(session_id) ON DELETE CASCADE gère la suppression proprement
+  DELETE FROM session_validations
+  WHERE session_id = v_session_id;
+
+  -- ============================================================================
+  -- 3. Réinitialiser le snapshot et incrémenter epoch
+  -- ============================================================================
+
+  -- ⚠️ IMPORTANT : On ne change PAS le state (active_started → active_preview bloqué par trigger)
+  -- À la place :
+  -- - On supprime le snapshot (sera recapturé à la prochaine validation)
+  -- - On incrémente epoch pour notifier le frontend via Realtime
+  -- - La session reste 'active_started' MAIS avec 0 validations
+  -- - Le trigger auto_transition_session_on_validation fera active_started → active_started
+  --   à la prochaine validation (car snapshot sera recalculé à ce moment)
+
+  -- NOTE : Si state = 'active_preview', on le garde tel quel (pas de validations à supprimer)
+  UPDATE sessions
+  SET steps_total_snapshot = NULL,
+      epoch = epoch + 1,
+      updated_at = NOW()
+  WHERE id = v_session_id;
+
+  -- ============================================================================
+  -- Note : Pas de completed_at car session non terminée
+  -- ============================================================================
+END;
+$$;
+
+
+ALTER FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") IS 'Hard Reset : Supprime toutes les validations et reset snapshot (action adulte Édition, session reste active_started avec 0 validations)';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."is_admin"() RETURNS boolean
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -1799,11 +1865,14 @@ CREATE OR REPLACE FUNCTION "public"."reset_active_started_session_for_timeline"(
     AS $$
 DECLARE
   v_session_id UUID;
+  v_session_state session_state;
+  v_new_steps_snapshot INTEGER;
+  v_current_validations INTEGER;  -- 🆕 Compteur validations pour Victory Check
 BEGIN
   -- Trouver la session active (active_preview ou active_started) pour cette timeline
   -- FOR UPDATE : verrouillage anti-race-condition
-  SELECT s.id
-    INTO v_session_id
+  SELECT s.id, s.state
+    INTO v_session_id, v_session_state
   FROM sessions s
   WHERE s.timeline_id = p_timeline_id
     AND s.state IN ('active_preview', 'active_started')
@@ -1817,11 +1886,61 @@ BEGIN
 
   -- ✅ SOFT SYNC : Incrémenter epoch in-place
   -- Préserve session_id → préserve validations (FK session_validations.session_id)
-  -- Le frontend détecte epoch++ et rafraîchit les validations existantes
-  UPDATE sessions
-  SET epoch = epoch + 1,
-      updated_at = NOW()
-  WHERE id = v_session_id;
+
+  -- 🆕 SNAPSHOT SYNC + VICTORY CHECK : Recalculer snapshot ET vérifier complétion
+  -- Rationale :
+  -- - Si state = 'active_preview' → pas encore de snapshot (sera fait à la 1ère validation)
+  -- - Si state = 'active_started' → snapshot existe, DOIT être mis à jour ET vérifié
+  IF v_session_state = 'active_started' THEN
+    -- Recalculer steps_total_snapshot (nombre actuel de slots step avec card_id NOT NULL)
+    SELECT COUNT(*)
+      INTO v_new_steps_snapshot
+      FROM slots
+      WHERE timeline_id = p_timeline_id
+        AND kind = 'step'
+        AND card_id IS NOT NULL;
+
+    -- 🆕 VICTORY CHECK : Compter validations existantes
+    -- Note : COUNT(*) = nombre de validations pour cette session
+    -- (pas de DISTINCT car UNIQUE constraint sur (session_id, slot_id))
+    SELECT COUNT(*)
+      INTO v_current_validations
+      FROM session_validations
+      WHERE session_id = v_session_id;
+
+    -- 🆕 LOGIQUE CONDITIONNELLE : Complétion immédiate OU Update classique
+    --
+    -- CAS 1 : VICTORY (validations >= nouveau snapshot)
+    -- → La réduction de timeline entraîne une complétion immédiate
+    -- → Transition vers 'completed' (UX TSA : fin claire, prévisible)
+    --
+    -- CAS 2 : EN COURS (validations < nouveau snapshot)
+    -- → La session continue avec le nouveau snapshot
+    -- → Update classique (epoch++, snapshot)
+    IF v_current_validations >= v_new_steps_snapshot THEN
+      -- 🎉 VICTORY : Session complète après réduction de timeline
+      UPDATE sessions
+      SET state = 'completed',
+          completed_at = NOW(),
+          epoch = epoch + 1,
+          steps_total_snapshot = v_new_steps_snapshot,
+          updated_at = NOW()
+      WHERE id = v_session_id;
+    ELSE
+      -- ⏳ EN COURS : Session continue avec nouveau snapshot
+      UPDATE sessions
+      SET epoch = epoch + 1,
+          steps_total_snapshot = v_new_steps_snapshot,
+          updated_at = NOW()
+      WHERE id = v_session_id;
+    END IF;
+  ELSE
+    -- Session en preview → juste epoch++ (snapshot sera fait à la 1ère validation)
+    UPDATE sessions
+    SET epoch = epoch + 1,
+        updated_at = NOW()
+    WHERE id = v_session_id;
+  END IF;
 
   -- Note : p_reason ignoré côté DB (pas de colonne dédiée dans le contrat)
   -- Peut être loggé côté application si nécessaire
@@ -1832,7 +1951,7 @@ $$;
 ALTER FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Incrémente epoch de la session active lors modification structurelle (Soft Sync) - préserve validations existantes';
+COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Incrémente epoch + resync steps_total_snapshot + Victory Check lors modification structurelle (Soft Sync + Snapshot Sync + Complétion) - préserve validations existantes';
 
 
 
@@ -2270,6 +2389,148 @@ ALTER FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"()
 
 
 COMMENT ON FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"() IS 'Pendant active_started: bloque mutations des slots validés + reset epoch++ sur changements structurels';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."slots_guard_validated_on_structural_change"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+  v_active_session_id UUID;
+  v_is_validated BOOLEAN;
+BEGIN
+  -- On ne s'intéresse qu'aux slots Étape
+  IF (TG_OP = 'DELETE' AND OLD.kind <> 'step')
+     OR (TG_OP IN ('UPDATE','INSERT') AND NEW.kind <> 'step') THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- Session active_started ?
+  SELECT s.id INTO v_active_session_id
+  FROM sessions s
+  WHERE s.timeline_id = COALESCE(NEW.timeline_id, OLD.timeline_id)
+    AND s.state = 'active_started'
+  LIMIT 1;
+
+  IF v_active_session_id IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- GUARD DELETE : Bloquer suppression slot validé
+  IF TG_OP = 'DELETE' THEN
+    SELECT EXISTS (
+      SELECT 1 FROM session_validations sv
+      WHERE sv.session_id = v_active_session_id
+        AND sv.slot_id = OLD.id
+    ) INTO v_is_validated;
+
+    IF v_is_validated THEN
+      RAISE EXCEPTION
+        'Action interdite: suppression d''un slot étape déjà validé (slot_id=%) pendant une session démarrée',
+        OLD.id;
+    END IF;
+
+    RETURN OLD;
+  END IF;
+
+  -- GUARD UPDATE : Bloquer modification slot validé
+  IF TG_OP = 'UPDATE' THEN
+    SELECT EXISTS (
+      SELECT 1 FROM session_validations sv
+      WHERE sv.session_id = v_active_session_id
+        AND sv.slot_id = OLD.id
+    ) INTO v_is_validated;
+
+    IF v_is_validated THEN
+      IF NEW.position IS DISTINCT FROM OLD.position
+         OR NEW.card_id IS DISTINCT FROM OLD.card_id
+         OR NEW.tokens IS DISTINCT FROM OLD.tokens
+         OR NEW.kind IS DISTINCT FROM OLD.kind THEN
+        RAISE EXCEPTION
+          'Action interdite: modification d''un slot étape déjà validé (slot_id=%) pendant une session démarrée',
+          OLD.id;
+      END IF;
+    END IF;
+
+    RETURN NEW;
+  END IF;
+
+  -- INSERT : Pas de guard (toujours autorisé)
+  RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."slots_guard_validated_on_structural_change"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."slots_guard_validated_on_structural_change"() IS 'BEFORE trigger GUARD : Bloque modifications/suppressions de slots validés pendant active_started';
+
+
+
+CREATE OR REPLACE FUNCTION "public"."slots_trigger_epoch_increment_after_change"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    AS $$
+DECLARE
+  v_active_session_id UUID;
+  v_affects_steps_count BOOLEAN;
+BEGIN
+  -- On ne s'intéresse qu'aux slots Étape
+  IF (TG_OP = 'DELETE' AND OLD.kind <> 'step')
+     OR (TG_OP IN ('UPDATE','INSERT') AND NEW.kind <> 'step') THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- Session active_started ?
+  SELECT s.id INTO v_active_session_id
+  FROM sessions s
+  WHERE s.timeline_id = COALESCE(NEW.timeline_id, OLD.timeline_id)
+    AND s.state = 'active_started'
+  LIMIT 1;
+
+  IF v_active_session_id IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- AFTER DELETE : Suppression d'un slot step (non validé car guard a déjà bloqué si validé)
+  IF TG_OP = 'DELETE' THEN
+    -- Si le slot supprimé avait une card_id, cela impacte le COUNT(*)
+    IF OLD.card_id IS NOT NULL THEN
+      PERFORM reset_active_started_session_for_timeline(OLD.timeline_id, 'delete_step_slot');
+    END IF;
+    RETURN OLD;
+  END IF;
+
+  -- AFTER UPDATE : Mutation card_id (NULL ↔ NOT NULL) ou kind
+  IF TG_OP = 'UPDATE' THEN
+    v_affects_steps_count :=
+      (OLD.card_id IS NULL) IS DISTINCT FROM (NEW.card_id IS NULL)
+      OR (NEW.kind IS DISTINCT FROM OLD.kind);
+
+    IF v_affects_steps_count THEN
+      PERFORM reset_active_started_session_for_timeline(NEW.timeline_id, 'update_step_slot_affects_count');
+    END IF;
+
+    RETURN NEW;
+  END IF;
+
+  -- AFTER INSERT : Ajout slot step avec card_id non vide
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.card_id IS NOT NULL THEN
+      PERFORM reset_active_started_session_for_timeline(NEW.timeline_id, 'insert_nonempty_step_slot');
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+
+ALTER FUNCTION "public"."slots_trigger_epoch_increment_after_change"() OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."slots_trigger_epoch_increment_after_change"() IS 'AFTER trigger SIDE EFFECT : Epoch++ et recalcul snapshot APRÈS mutation (fix timing bug)';
 
 
 
@@ -3735,7 +3996,7 @@ CREATE TABLE IF NOT EXISTS "public"."sessions" (
 ALTER TABLE "public"."sessions" OWNER TO "postgres";
 
 
-COMMENT ON TABLE "public"."sessions" IS 'RLS enabled: owner via child_profile, epoch protected by trigger';
+COMMENT ON TABLE "public"."sessions" IS 'Table sessions avec Realtime activé pour propagation epoch++ automatique vers frontend (WebSocket)';
 
 
 
@@ -4646,15 +4907,27 @@ CREATE OR REPLACE TRIGGER "trigger_sequences_mother_card_ownership" BEFORE INSER
 
 
 
-CREATE OR REPLACE TRIGGER "trigger_slots_after_insert_guard_reset" AFTER INSERT ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"();
+CREATE OR REPLACE TRIGGER "trigger_slots_after_delete_epoch" AFTER DELETE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_trigger_epoch_increment_after_change"();
 
 
 
-CREATE OR REPLACE TRIGGER "trigger_slots_before_delete_guard_reset" BEFORE DELETE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"();
+CREATE OR REPLACE TRIGGER "trigger_slots_after_insert_epoch" AFTER INSERT ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_trigger_epoch_increment_after_change"();
 
 
 
-CREATE OR REPLACE TRIGGER "trigger_slots_before_update_guard_reset" BEFORE UPDATE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"();
+CREATE OR REPLACE TRIGGER "trigger_slots_after_update_epoch" AFTER UPDATE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_trigger_epoch_increment_after_change"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_slots_before_delete_guard" BEFORE DELETE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_on_structural_change"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_slots_before_insert_guard" BEFORE INSERT ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_on_structural_change"();
+
+
+
+CREATE OR REPLACE TRIGGER "trigger_slots_before_update_guard" BEFORE UPDATE ON "public"."slots" FOR EACH ROW EXECUTE FUNCTION "public"."slots_guard_validated_on_structural_change"();
 
 
 
@@ -5502,15 +5775,17 @@ ALTER TABLE "storage"."migrations" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "storage"."objects" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "personal_images_delete_owner" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_delete_owner" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
 
 
 
-CREATE POLICY "personal_images_insert_owner" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_insert_owner" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text") AND (EXISTS ( SELECT 1
+   FROM "public"."accounts"
+  WHERE (("accounts"."id" = "auth"."uid"()) AND ("accounts"."status" = ANY (ARRAY['subscriber'::"public"."account_status", 'admin'::"public"."account_status"])))))));
 
 
 
-CREATE POLICY "personal_images_select_owner" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_select_owner" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
 
 
 
@@ -5705,6 +5980,12 @@ GRANT ALL ON FUNCTION "public"."get_account_status"("p_account_id" "uuid") TO "s
 
 
 
+GRANT ALL ON FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") TO "anon";
+GRANT ALL ON FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uuid") TO "service_role";
+
+
+
 REVOKE ALL ON FUNCTION "public"."is_admin"() FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."is_admin"() TO "anon";
 GRANT ALL ON FUNCTION "public"."is_admin"() TO "authenticated";
@@ -5831,6 +6112,18 @@ GRANT ALL ON FUNCTION "public"."slots_enforce_single_reward"() TO "service_role"
 GRANT ALL ON FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"() TO "anon";
 GRANT ALL ON FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."slots_guard_validated_and_reset_on_structural_change"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."slots_guard_validated_on_structural_change"() TO "anon";
+GRANT ALL ON FUNCTION "public"."slots_guard_validated_on_structural_change"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."slots_guard_validated_on_structural_change"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."slots_trigger_epoch_increment_after_change"() TO "anon";
+GRANT ALL ON FUNCTION "public"."slots_trigger_epoch_increment_after_change"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."slots_trigger_epoch_increment_after_change"() TO "service_role";
 
 
 

@@ -29,7 +29,7 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-enabled = false
+enabled = true
 sql_paths = ["./seed.sql"]
 
 [db.network_restrictions]
