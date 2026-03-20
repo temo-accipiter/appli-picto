@@ -216,7 +216,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: z-index('overlay');
+  z-index: z-index('modal-backdrop');
 
   .loader {
     width: spacing('40');
