@@ -16,6 +16,7 @@ UUID     : aaaaaaaa-aaaa-aaaa-aaaa-000000000001
 ```
 
 **Droits** :
+
 - ✅ Accès illimité (quotas désactivés)
 - ✅ Accès routes `/admin/*`
 - ✅ Accès panel administration
@@ -34,6 +35,7 @@ UUID     : bbbbbbbb-bbbb-bbbb-bbbb-000000000001
 ```
 
 **Quotas** :
+
 - 40 cartes personnelles max
 - 50 catégories personnelles max
 - 10 profils enfants max
@@ -53,6 +55,7 @@ UUID     : ffffffff-ffff-ffff-ffff-000000000001
 ```
 
 **Quotas** :
+
 - 5 cartes personnelles max
 - 2 catégories personnelles max
 - 2 profils enfants max
@@ -96,6 +99,7 @@ sql_paths = ["./seed.sql"]  # Chemin vers le script
 ```
 
 Pour désactiver le seed :
+
 ```toml
 [db.seed]
 enabled = false  # ❌ Seed désactivé
@@ -106,6 +110,7 @@ enabled = false  # ❌ Seed désactivé
 Fichier : `supabase/seed.sql`
 
 Le script est **idempotent** :
+
 - ✅ Peut être exécuté plusieurs fois sans erreur
 - ✅ Détecte si les comptes existent déjà
 - ✅ Affiche un message clair ("✅ créé" ou "⏭️ existe déjà")
@@ -129,6 +134,7 @@ await loginAs(page, 'free')
 ```
 
 **Note** : Les tests E2E utilisent des comptes différents :
+
 - `test-admin@appli-picto.test`
 - `test-free@appli-picto.test`
 
@@ -145,6 +151,7 @@ Ces comptes sont **UNIQUEMENT pour le développement local (Docker)**.
 **Ils NE DOIVENT JAMAIS être utilisés en production.**
 
 Protections :
+
 - ✅ `seed.sql` commenté "DÉVELOPPEMENT LOCAL UNIQUEMENT"
 - ✅ UUID fixes facilement identifiables :
   - Admin : `aaaaaaaa-aaaa-aaaa-aaaa-000000000001`
@@ -178,6 +185,7 @@ END $$;
 ⚠️ Les mots de passe sont hashés avec `bcrypt` via `crypt(password, gen_salt('bf'))`.
 
 Pour changer un mot de passe :
+
 1. Éditer `supabase/seed.sql`
 2. Modifier la variable `v_admin_password` ou `v_free_password`
 3. Relancer `pnpm db:reset`

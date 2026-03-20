@@ -254,9 +254,12 @@ export default function useSessions(
       return { error: new Error('Aucune progression à réinitialiser') }
     }
 
-    const { error: resetError } = await supabase.rpc('hard_reset_timeline_session', {
-      p_timeline_id: timelineId,
-    })
+    const { error: resetError } = await supabase.rpc(
+      'hard_reset_timeline_session',
+      {
+        p_timeline_id: timelineId,
+      }
+    )
 
     if (resetError) {
       return { error: resetError as Error | null }

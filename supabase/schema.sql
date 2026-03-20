@@ -5738,19 +5738,27 @@ COMMENT ON POLICY "user_card_categories_update_owner" ON "public"."user_card_cat
 
 
 
-CREATE POLICY "bank_images_delete_admin" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND "public"."is_admin"() AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text")));
+CREATE POLICY "bank_images_delete_admin" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
+   FROM "public"."accounts"
+  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
 
 
 
-CREATE POLICY "bank_images_insert_admin" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND "public"."is_admin"() AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text")));
+CREATE POLICY "bank_images_insert_admin" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
+   FROM "public"."accounts"
+  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
 
 
 
-CREATE POLICY "bank_images_select_public" ON "storage"."objects" FOR SELECT TO "authenticated", "anon" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text")));
+CREATE POLICY "bank_images_select_public" ON "storage"."objects" FOR SELECT TO "authenticated", "anon" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text")));
 
 
 
-CREATE POLICY "bank_images_update_admin" ON "storage"."objects" FOR UPDATE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND "public"."is_admin"() AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))) WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND "public"."is_admin"() AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text")));
+CREATE POLICY "bank_images_update_admin" ON "storage"."objects" FOR UPDATE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
+   FROM "public"."accounts"
+  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status"))) WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
+   FROM "public"."accounts"
+  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
 
 
 

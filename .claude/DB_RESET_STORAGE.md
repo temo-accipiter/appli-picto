@@ -15,6 +15,7 @@ Après chaque `pnpm db:reset`, l'upload d'images et la création de cartes perso
 La migration `20260226071400_fix_personal_images_policies_for_cards.sql` nécessite des **privilèges spéciaux** pour modifier les RLS policies sur `storage.objects`.
 
 **En environnement local Docker** :
+
 - `storage.objects` appartient à `supabase_storage_admin`
 - Les migrations s'exécutent avec `postgres` (non propriétaire)
 - ❌ **Erreur de privilèges** → La migration skip gracieusement (RAISE NOTICE)
@@ -30,6 +31,7 @@ La migration `20260226071400_fix_personal_images_policies_for_cards.sql` nécess
 Un script bash robuste a été créé : `scripts/db-reset-with-storage.sh`
 
 **Ce qu'il fait** :
+
 1. ✅ Exécute `supabase db reset` (migrations + seed)
 2. ✅ Gère l'erreur 502 de restart containers (non-critique)
 3. ✅ Applique les storage policies avec `supabase_admin`
@@ -43,6 +45,7 @@ pnpm db:reset
 ```
 
 **Cette commande exécute maintenant automatiquement** :
+
 - Reset DB (migrations + seed)
 - Application storage policies
 - Vérification policies actives
@@ -85,6 +88,7 @@ WHERE schemaname = 'storage'
 ```
 
 **Résultat attendu** :
+
 ```
           policyname          | cmd
 ------------------------------+--------
@@ -108,6 +112,7 @@ pnpm db:reset
 ```
 
 **Exécute automatiquement** :
+
 - `supabase db reset` (migrations + seed)
 - `pnpm supabase:apply-storage-policies` (storage RLS)
 
@@ -122,6 +127,7 @@ pnpm supabase:apply-storage-policies
 ```
 
 **Exécute** :
+
 ```bash
 PGPASSWORD=postgres psql -h 127.0.0.1 -U supabase_admin -d postgres \
   -f supabase/migrations/20260226071400_fix_personal_images_policies_for_cards.sql
@@ -154,6 +160,7 @@ PGPASSWORD=postgres psql -h 127.0.0.1 -U supabase_admin -d postgres \
 ### Upload image échoue après `pnpm db:reset`
 
 **Diagnostic** :
+
 ```bash
 # Vérifier policies actives
 pnpm supabase:apply-storage-policies
@@ -168,11 +175,13 @@ WHERE schemaname = 'storage'
 ```
 
 **Si count = 0** :
+
 ```bash
 pnpm supabase:apply-storage-policies
 ```
 
 **Si count = 3** :
+
 - Vérifier que l'utilisateur a le statut `subscriber` ou `admin` (pas `free`)
 - Les comptes seed (`admin@local.dev`, `test-free@local.dev`) sont déjà créés
 
@@ -183,12 +192,14 @@ pnpm supabase:apply-storage-policies
 **C'est normal** : Erreur de restart containers (non-critique).
 
 Le script robuste **gère cette erreur automatiquement** :
+
 - ✅ Migrations appliquées
 - ✅ Seed exécuté
 - ✅ Storage policies appliquées
 - ⚠️ Restart containers échoué (peut être ignoré)
 
 **Message du script** :
+
 ```
 ⚠️  Erreur 502/500 détectée lors du restart containers (non-critique)
 ✅ Migrations et seed appliqués avec succès
@@ -200,6 +211,7 @@ Le script robuste **gère cette erreur automatiquement** :
 ## 🎉 Résumé
 
 **Avant** :
+
 ```bash
 pnpm db:reset
 # ❌ Upload images échoue
@@ -208,6 +220,7 @@ pnpm supabase:apply-storage-policies  # ⚠️ Oublié → bug
 ```
 
 **Maintenant** :
+
 ```bash
 pnpm db:reset
 # ✅ Storage policies appliquées automatiquement

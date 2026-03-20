@@ -15,7 +15,7 @@
 // - Session terminée → tous les slots sont en lecture seule
 //
 // ⚠️ Mini-timeline séquence (S7 — §3.1.4)
-// - Bouton "Voir étapes" visible sur TOUTES les cartes avec séquence (flexibilité ordre validation)
+// - Bouton "Voir étapes" visible uniquement sur la carte active (au focus)
 // - La mini-timeline se referme quand la carte est validée
 // - L'état "fait" des étapes est LOCAL-ONLY — jamais persisté en DB
 
@@ -40,7 +40,7 @@ interface SlotCardProps {
   /** Callback de validation — appelé quand l'enfant coche la case */
   onValidate: (slotId: string) => void
   // ── S7 : Séquence (optionnel) ──────────────────────────────────────────────
-  /** Cette carte est-elle la carte "active" (focus) ? Conservé pour usage futur (actuellement non utilisé) */
+  /** Cette carte est-elle la carte "active" (focus) ? Utilisé pour afficher le bouton "Voir étapes" (§3.1.4) */
   isActive?: boolean
   /** Une séquence existe pour cette carte, même si ses étapes chargent encore */
   hasSequence?: boolean
@@ -164,9 +164,9 @@ export function SlotCard({
       {/* Nom de la carte */}
       <p className="slot-card__label">{cardLabel}</p>
 
-      {/* Bouton "Voir étapes" — visible si séquence présente ET non validée (§3.1.4) */}
-      {/* 🆕 FLEXIBILITÉ ORDRE : L'enfant peut valider dans le désordre → afficher TOUTES les séquences */}
-      {hasSequence && !validated && (
+      {/* Bouton "Voir étapes" — visible uniquement sur la carte active (§3.1.4) */}
+      {/* §3.1.4 : bouton visible uniquement quand la carte mère est au focus (étape en cours) */}
+      {hasSequence && !validated && isActive && (
         <button
           type="button"
           className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}

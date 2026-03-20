@@ -76,6 +76,8 @@ export type {
   AdminSupportAccountInfo,
   AdminSupportChildProfile,
 } from './useAdminSupportInfo'
+export { default as useAdminBankCards } from './useAdminBankCards'
+export type { AdminBankCard } from './useAdminBankCards'
 export { default as useParametres } from './useParametres' // ⚠️ LEGACY — Remplacé par useAccountPreferences (S11)
 export { default as useStations } from './useStations'
 export { default as useSubscriptionStatus } from './useSubscriptionStatus'

@@ -1,0 +1,246 @@
+// src/page-components/admin/bank-cards/CreateBankCardModal.scss
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// CREATE BANK CARD MODAL (ADMIN)
+// ============================================================================
+// ✅ Tokens Phase 6 : spacing/surface/radius/text/shadow/semantic
+// ✅ Mobile-first responsive
+// ✅ Accessibilité TSA : cibles 44px min, focus visible, animations douces
+// ============================================================================
+
+.create-bank-card-modal {
+  .create-bank-card-form {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('lg');
+  }
+}
+
+// Champs formulaire
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+
+  label {
+    font-size: font-size('base');
+    font-weight: font-weight('semibold');
+    color: text('default');
+
+    .required {
+      color: semantic('error', 'dark');
+      margin-left: spacing('xs');
+    }
+  }
+
+  input[type='text'] {
+    padding: spacing('sm') spacing('md');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md');
+    font-size: font-size('base');
+    color: text('default');
+    background: surface('bg');
+    @include safe-transition(border-color);
+
+    &:focus {
+      outline: none;
+      border-color: semantic('info', 'border');
+      box-shadow: 0 0 0 3px semantic('info', 'bg');
+    }
+
+    &::placeholder {
+      color: text('muted');
+    }
+
+    &:disabled {
+      opacity: opacity('0-6');
+      cursor: not-allowed;
+    }
+
+    // ✅ Mobile : min-height 44px (WCAG touch target)
+    @include touch-target('min');
+  }
+
+  .field-hint {
+    font-size: font-size('sm');
+    color: text('light');
+    font-style: italic;
+  }
+}
+
+// Upload image
+.image-upload {
+  .upload-button {
+    width: 100%;
+    padding: spacing('md');
+    border: border-width('medium') dashed surface('border');
+    border-radius: radius('md');
+    background: surface('soft');
+    color: text('default');
+    font-size: font-size('base');
+    font-weight: font-weight('medium');
+    cursor: pointer;
+    @include safe-transition(all);
+
+    // ✅ Mobile : min-height 44px (WCAG touch target)
+    @include touch-target('min');
+
+    &:hover:not(:disabled) {
+      background: surface('hover');
+      border-color: semantic('info', 'border');
+    }
+
+    &:focus-visible {
+      outline: 2px solid semantic('info', 'border');
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: opacity('0-6');
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Preview image
+.image-preview {
+  position: relative;
+  width: 100%;
+  max-width: size('300');
+  margin: 0 auto;
+  border-radius: radius('md');
+  overflow: hidden;
+  border: border-width('base') solid surface('border');
+  background: surface('soft');
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .remove-image {
+    position: absolute;
+    top: spacing('sm');
+    right: spacing('sm');
+    padding: spacing('xs') spacing('sm');
+    background: semantic('error', 'bg');
+    color: semantic('error', 'dark');
+    border: border-width('base') solid semantic('error', 'border');
+    border-radius: radius('sm');
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    cursor: pointer;
+    @include safe-transition(all);
+
+    // ✅ Mobile : min-height 44px (WCAG touch target)
+    @include touch-target('min');
+    min-width: spacing('44');
+
+    &:hover:not(:disabled) {
+      background: semantic('error', 'light');
+    }
+
+    &:focus-visible {
+      outline: 2px solid semantic('error', 'border');
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: opacity('0-6');
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Checkbox published
+.form-field--checkbox {
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: spacing('sm');
+    cursor: pointer;
+    padding: spacing('md');
+    border-radius: radius('md');
+    background: surface('soft');
+    @include safe-transition(background);
+
+    &:hover {
+      background: surface('hover');
+    }
+
+    input[type='checkbox'] {
+      // ✅ Mobile : min 44px (WCAG touch target)
+      min-width: spacing('24');
+      min-height: spacing('24');
+      cursor: pointer;
+      margin-top: spacing('2');
+
+      &:focus-visible {
+        outline: 2px solid semantic('info', 'border');
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+      }
+    }
+
+    .checkbox-text {
+      flex: 1;
+      font-size: font-size('base');
+      color: text('default');
+      line-height: 1.5;
+    }
+  }
+}
+
+// Progress bar upload
+.upload-progress {
+  margin-top: spacing('md');
+
+  .progress-bar {
+    width: 100%;
+    height: spacing('8');
+    background: surface('soft');
+    border-radius: radius('full');
+    overflow: hidden;
+    margin-bottom: spacing('sm');
+
+    .progress-fill {
+      height: 100%;
+      background: semantic('success', 'bg');
+      @include safe-transition(width);
+      border-radius: radius('full');
+    }
+  }
+
+  .progress-text {
+    display: block;
+    text-align: center;
+    font-size: font-size('sm');
+    color: text('light');
+    font-weight: font-weight('medium');
+  }
+}
+
+// ============================================================================
+// RESPONSIVE : Mobile-first
+// ============================================================================
+
+// [Mobile] Base = mobile (< 576px)
+.create-bank-card-modal {
+  .image-preview {
+    max-width: 100%;
+  }
+}
+
+// [Tablet] 576px+
+@include respond-to(sm) {
+  .create-bank-card-modal {
+    .image-preview {
+      max-width: size('300');
+    }
+  }
+}

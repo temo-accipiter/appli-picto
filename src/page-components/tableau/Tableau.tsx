@@ -329,7 +329,6 @@ export default function Tableau() {
   // ── Progression ─────────────────────────────────────────────────────────────
   // §4.5 : La progression utilise steps_total_snapshot (immuable).
   // JAMAIS de recomptage live des slots.
-  const snapshot = session?.steps_total_snapshot ?? null
   // §4.2 : la progression affichée utilise l'ensemble effectif (DB + optimiste offline)
   const validatedCount = effectiveValidatedSlotIds.size
   const isSessionCompleted = session?.state === 'completed'

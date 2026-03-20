@@ -63,9 +63,9 @@ echo ""
 echo "🔐 Étape 2/3 : Application Storage Policies (supabase_admin)..."
 echo ""
 
-if pnpm supabase:apply-storage-policies; then
+if pnpm supabase:apply-all-storage-policies; then
   echo ""
-  echo "✅ Storage Policies appliquées avec succès"
+  echo "✅ Storage Policies appliquées avec succès (personal-images + bank-images)"
 else
   echo ""
   echo "❌ Erreur lors de l'application des Storage Policies"
@@ -82,7 +82,7 @@ echo "🧪 Étape 3/3 : Vérification..."
 echo ""
 
 # Vérifier que les policies existent
-POLICIES_COUNT=$(PGPASSWORD=postgres psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -tAc "
+PERSONAL_POLICIES_COUNT=$(PGPASSWORD=postgres psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -tAc "
   SELECT COUNT(*)
   FROM pg_policies
   WHERE schemaname = 'storage'
@@ -90,11 +90,23 @@ POLICIES_COUNT=$(PGPASSWORD=postgres psql -h 127.0.0.1 -p 5432 -U postgres -d po
     AND policyname LIKE 'personal_images_%'
 " 2>/dev/null || echo "0")
 
-if [ "$POLICIES_COUNT" -ge 3 ]; then
-  echo "✅ Storage Policies vérifiées : $POLICIES_COUNT policies actives"
+BANK_POLICIES_COUNT=$(PGPASSWORD=postgres psql -h 127.0.0.1 -p 5432 -U postgres -d postgres -tAc "
+  SELECT COUNT(*)
+  FROM pg_policies
+  WHERE schemaname = 'storage'
+    AND tablename = 'objects'
+    AND policyname LIKE 'bank_images_%'
+" 2>/dev/null || echo "0")
+
+if [ "$PERSONAL_POLICIES_COUNT" -ge 3 ] && [ "$BANK_POLICIES_COUNT" -ge 4 ]; then
+  echo "✅ Storage Policies vérifiées :"
+  echo "   • personal-images : $PERSONAL_POLICIES_COUNT policies"
+  echo "   • bank-images     : $BANK_POLICIES_COUNT policies"
 else
-  echo "⚠️  Nombre de policies détecté : $POLICIES_COUNT (attendu : 3+)"
-  echo "   → Relancer : pnpm supabase:apply-storage-policies"
+  echo "⚠️  Policies détectées :"
+  echo "   • personal-images : $PERSONAL_POLICIES_COUNT (attendu : 3+)"
+  echo "   • bank-images     : $BANK_POLICIES_COUNT (attendu : 4+)"
+  echo "   → Relancer : pnpm supabase:apply-all-storage-policies"
 fi
 
 echo ""
@@ -107,9 +119,9 @@ echo "🎉 ============================================"
 echo "🎉 Reset DB Complet !"
 echo "🎉 ============================================"
 echo ""
-echo "✅ Migrations appliquées (42 migrations)"
+echo "✅ Migrations appliquées (55+ migrations)"
 echo "✅ Seed exécuté (3 comptes de test créés)"
-echo "✅ Storage Policies appliquées (upload images OK)"
+echo "✅ Storage Policies appliquées (personal-images + bank-images)"
 echo ""
 echo "🔐 Comptes de test disponibles :"
 echo "   👤 Admin      : admin@local.dev / Admin1234x"

@@ -1,0 +1,296 @@
+'use client'
+
+// src/page-components/admin/bank-cards/CreateBankCardModal.tsx
+/**
+ * Modal de création d'une Carte de Banque (Admin uniquement)
+ *
+ * Règles DB-First strict :
+ * - Création directe avec type='bank', account_id=null
+ * - Upload vers bucket bank-images (admin-only, public read)
+ * - Path strict flat : {cardId}.jpg (pas de sous-dossiers)
+ * - published : true (publiée) ou false (dépubliée) - choix utilisateur
+ * - RLS is_admin() enforced côté DB (Storage + table cards)
+ *
+ * UX TSA :
+ * - Étapes claires : nom → image → published → créer
+ * - Preview immédiat de l'image
+ * - Validation avant soumission
+ * - Feedback clair (loading, erreurs)
+ * - Pas de surprises visuelles
+ */
+
+import React, { useState, useRef } from 'react'
+import Modal from '@/components/shared/modal/Modal'
+import { useAdminBankCards } from '@/hooks'
+import { useToast } from '@/contexts'
+import { uploadBankCardImage } from '@/utils/storage/uploadBankCardImage'
+import { compressImageIfNeeded } from '@/utils/validationRules'
+import formatErr from '@/utils/logs/formatErr'
+import './CreateBankCardModal.scss'
+
+interface CreateBankCardModalProps {
+  onClose: () => void
+  onSuccess: () => void
+}
+
+export default function CreateBankCardModal({
+  onClose,
+  onSuccess,
+}: CreateBankCardModalProps) {
+  const { show: showToast } = useToast()
+  const { createCard } = useAdminBankCards()
+
+  // État formulaire
+  const [name, setName] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [published, setPublished] = useState(true) // Défaut : publiée
+
+  // État upload/création
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+
+  // Ref input file
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Validation formulaire
+  const isValid = name.trim() !== '' && imageFile !== null
+
+  // Gestion sélection image
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Vérification type
+    if (!file.type.startsWith('image/')) {
+      showToast('Le fichier sélectionné doit être une image', 'error')
+      return
+    }
+
+    // Compression immédiate (max 100KB)
+    try {
+      const compressedFile = await compressImageIfNeeded(file)
+
+      if (!compressedFile) {
+        showToast("Impossible de traiter l'image", 'error')
+        return
+      }
+
+      setImageFile(compressedFile)
+
+      // Preview
+      const reader = new FileReader()
+      reader.onload = e => {
+        setImagePreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(compressedFile)
+    } catch (err) {
+      console.error('[CreateBankCardModal] Erreur compression:', formatErr(err))
+      showToast("Erreur lors du traitement de l'image", 'error')
+    }
+  }
+
+  // Supprimer image sélectionnée
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  // Création carte (upload + DB insert)
+  const handleCreate = async () => {
+    if (!isValid) return
+
+    setIsUploading(true)
+    setUploadProgress(0)
+
+    try {
+      // Étape 1/3 : Générer UUID v4 pour la carte
+      const cardId = crypto.randomUUID()
+      setUploadProgress(33)
+
+      // Étape 2/3 : Upload image vers Storage bank-images
+      const { path, error: uploadError } = await uploadBankCardImage(
+        imageFile,
+        {
+          cardId,
+        }
+      )
+
+      if (uploadError || !path) {
+        console.error(
+          '[CreateBankCardModal] Erreur upload Storage:',
+          formatErr(uploadError)
+        )
+        showToast(
+          uploadError?.message || "Erreur lors de l'upload de l'image",
+          'error'
+        )
+        setIsUploading(false)
+        return
+      }
+
+      setUploadProgress(66)
+
+      // Étape 3/3 : Créer carte en DB
+      const { error: createError } = await createCard({
+        id: cardId, // Même UUID que Storage
+        name: name.trim(),
+        image_url: path, // Path strict : {cardId}.jpg
+        published,
+      })
+
+      if (createError) {
+        console.error(
+          '[CreateBankCardModal] Erreur création carte DB:',
+          formatErr(createError)
+        )
+        showToast(
+          createError.message || 'Erreur lors de la création de la carte',
+          'error'
+        )
+        setIsUploading(false)
+        return
+      }
+
+      setUploadProgress(100)
+
+      // ✅ Succès : fermer modal + callback parent (refresh + toast)
+      onSuccess()
+    } catch (err) {
+      console.error('[CreateBankCardModal] Erreur inattendue:', formatErr(err))
+      showToast('Une erreur inattendue est survenue', 'error')
+      setIsUploading(false)
+    }
+  }
+
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Créer une carte de banque"
+      size="medium"
+      closeOnOverlay={!isUploading}
+      closeOnEscape={!isUploading}
+      showCloseButton={!isUploading}
+      actions={[
+        {
+          label: isUploading ? 'Création...' : 'Créer',
+          onClick: handleCreate,
+          variant: 'primary',
+          disabled: !isValid || isUploading,
+        },
+      ]}
+      className="create-bank-card-modal"
+    >
+      <div className="create-bank-card-form">
+        {/* Champ nom */}
+        <div className="form-field">
+          <label htmlFor="card-name">
+            Nom de la carte <span className="required">*</span>
+          </label>
+          <input
+            id="card-name"
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Ex: Se brosser les dents"
+            disabled={isUploading}
+            maxLength={100}
+            autoFocus
+          />
+          <span className="field-hint">Maximum 100 caractères</span>
+        </div>
+
+        {/* Champ image */}
+        <div className="form-field">
+          <label htmlFor="card-image">
+            Image <span className="required">*</span>
+          </label>
+
+          {!imagePreview ? (
+            <div className="image-upload">
+              <input
+                ref={fileInputRef}
+                id="card-image"
+                type="file"
+                accept="image/*"
+                onChange={handleImageSelect}
+                disabled={isUploading}
+                style={{ display: 'none' }}
+              />
+              <button
+                type="button"
+                className="upload-button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+              >
+                📷 Choisir une image
+              </button>
+              <span className="field-hint">
+                Formats acceptés : JPEG, PNG, WebP (max 100 Ko après
+                compression)
+              </span>
+            </div>
+          ) : (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Aperçu de la carte" />
+              <button
+                type="button"
+                className="remove-image"
+                onClick={handleRemoveImage}
+                disabled={isUploading}
+              >
+                ✕ Supprimer
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Champ published */}
+        <div className="form-field form-field--checkbox">
+          <label htmlFor="card-published" className="checkbox-label">
+            <input
+              id="card-published"
+              type="checkbox"
+              checked={published}
+              onChange={e => setPublished(e.target.checked)}
+              disabled={isUploading}
+            />
+            <span className="checkbox-text">
+              Publier immédiatement (visible par tous les utilisateurs)
+            </span>
+          </label>
+          <span className="field-hint">
+            {published
+              ? 'La carte sera visible dans le catalogue public'
+              : 'La carte sera dépubliée (visible uniquement par les admins)'}
+          </span>
+        </div>
+
+        {/* Progress bar upload */}
+        {isUploading && (
+          <div className="upload-progress">
+            <div className="progress-bar">
+              <div
+                className="progress-fill"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <span className="progress-text">
+              {uploadProgress < 33
+                ? 'Préparation...'
+                : uploadProgress < 66
+                  ? "Upload de l'image..."
+                  : uploadProgress < 100
+                    ? 'Création de la carte...'
+                    : 'Terminé !'}
+            </span>
+          </div>
+        )}
+      </div>
+    </Modal>
+  )
+}

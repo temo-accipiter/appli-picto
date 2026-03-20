@@ -148,15 +148,15 @@ export default function EditionTimeline({
   // ── S6 : Session active pour verrouillage et réinitialisation ──────────────
   // On charge la session uniquement si on a un profil + une timeline.
   // Cela permet d'afficher l'état de verrouillage à l'adulte en édition.
-  const { session, resetSession, refresh: refreshSession } = useSessions(
-    activeChildId,
-    timeline?.id ?? null
-  )
+  const {
+    session,
+    resetSession,
+    refresh: refreshSession,
+  } = useSessions(activeChildId, timeline?.id ?? null)
 
   // Validations de la session (pour savoir quels slots sont verrouillés)
-  const { validatedSlotIds, refresh: refreshValidations } = useSessionValidations(
-    session?.id ?? null
-  )
+  const { validatedSlotIds, refresh: refreshValidations } =
+    useSessionValidations(session?.id ?? null)
 
   // ── S7 : Séquences (refresh pour Bug A — séquence fantôme) ─────────────────
   // Rafraîchir séquences après updateSlot pour synchroniser avec les slots modifiés
@@ -175,11 +175,14 @@ export default function EditionTimeline({
     console.log('[EditionTimeline] Session state check:', {
       prev: prevState,
       current: currentState,
-      transition: prevState === 'active_started' && currentState === 'completed',
+      transition:
+        prevState === 'active_started' && currentState === 'completed',
     })
 
     if (prevState === 'active_started' && currentState === 'completed') {
-      console.log('[EditionTimeline] Victory Check détecté → Rafraîchissement cadenas + toast')
+      console.log(
+        '[EditionTimeline] Victory Check détecté → Rafraîchissement cadenas + toast'
+      )
       // Transition détectée : active_started → completed (Victory Check)
       // Rafraîchir les validations pour enlever les cadenas
       refreshValidations()
