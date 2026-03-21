@@ -23,15 +23,15 @@
   cursor: pointer;
   user-select: none;
 
-  // Taille tactile minimum (WCAG)
-  min-width: 44px;
-  min-height: 44px;
+  // Taille tactile minimum (WCAG 2.2 AA)
+  min-width: a11y('min-touch-target');
+  min-height: a11y('min-touch-target');
   padding: spacing('xs');
 
   // Focus visible
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: border-width('medium') solid var(--color-primary);
+    outline-offset: spacing('2');
     border-radius: radius('full');
   }
 
@@ -46,10 +46,10 @@
   // Container du toggle (pill)
   position: relative;
   display: block;
-  width: 44px;
-  height: 24px;
+  width: a11y('min-touch-target');
+  height: spacing('24');
   background: var(--color-surface-secondary);
-  border: 2px solid var(--color-border-primary);
+  border: border-width('medium') solid var(--color-border-primary);
   border-radius: radius('full');
   transition:
     background-color var(--motion-duration-quick) var(--motion-easing-default),
@@ -70,19 +70,19 @@
 .toggle__thumb {
   // Bouton rond qui se déplace
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
+  top: spacing('2');
+  left: spacing('2');
+  width: spacing('16');
+  height: spacing('16');
   background: white;
   border-radius: radius('full');
   box-shadow: var(--shadow-sm);
   transition: transform var(--motion-duration-quick)
     var(--motion-easing-default);
 
-  // État checked : déplacement vers la droite
+  // État checked : déplacement vers la droite (44px - 16px - 4px = 24px, mais arrondi à 20px pour centrage visuel)
   .toggle--checked & {
-    transform: translateX(20px);
+    transform: translateX(spacing('20'));
   }
 
   // Pas d'animation si reduced motion
