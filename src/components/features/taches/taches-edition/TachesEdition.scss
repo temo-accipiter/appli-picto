@@ -181,3 +181,33 @@
     line-height: 1;
   }
 }
+
+// ============================================================================
+// CARDS EDITION - DEUX SECTIONS (Banque + Personnelles)
+// ============================================================================
+// 🆕 Styles pour affichage deux sections séparées (pattern SequenceEditor)
+// Utilisé quand bankCards est fourni à CardsEdition
+
+.cards-edition__library-sections {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xl');
+  padding: spacing('md') 0;
+}
+
+.cards-edition__library-group {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+}
+
+.cards-edition__section-title {
+  font-size: font-size('lg');
+  font-weight: 600;
+  color: semantic('info', 'dark');
+  margin: 0;
+  padding: spacing('sm') spacing('md');
+  background: surface('soft');
+  border-radius: radius('md');
+  border-left: border-width('medium') solid semantic('info-primary');
+}

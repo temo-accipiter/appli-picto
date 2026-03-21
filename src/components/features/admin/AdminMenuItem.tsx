@@ -5,7 +5,6 @@ import {
   Shield,
   ChevronDown,
   ChevronUp,
-  CreditCard,
   FileText,
   BarChart3,
   Lock,
@@ -44,17 +43,10 @@ export default function AdminMenuItem() {
         <div className="user-menu-submenu">
           <button
             className="user-menu-item submenu-item"
-            onClick={() => router.push('/admin/bank-cards')}
-          >
-            <CreditCard className="icon" aria-hidden />
-            <span>Cartes de Banque</span>
-          </button>
-          <button
-            className="user-menu-item submenu-item"
             onClick={() => router.push('/admin/logs')}
           >
             <FileText className="icon" aria-hidden />
-            <span>Logs d'abonnement</span>
+            <span>Logs d&apos;abonnement</span>
           </button>
           <button
             className="user-menu-item submenu-item"

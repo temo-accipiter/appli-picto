@@ -1,8 +1,8 @@
 // src/hooks/useBankCards.ts
-// Lecture de la banque de cartes (published = TRUE)
+// Lecture de la banque de cartes (published + fallback unpublished si référencées)
 // Accessible à tous les statuts : Visitor (anon), Free, Subscriber, Admin
-// DB-first : la RLS contrôle les accès, pas le front
-// Contrat §5.2.3 + §3.2.3
+// DB-first : la RLS contrôle les accès ET le fallback unpublished, pas le front
+// Contrat §5.2.3 + §3.2.3 + BLOCKER 5 TSA (pas de disparition soudaine)
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
@@ -11,10 +11,10 @@ import type { Database } from '@/types/supabase'
 
 type Card = Database['public']['Tables']['cards']['Row']
 
-// Cartes banque publiées
+// Cartes banque (published OU unpublished si référencées via RLS fallback)
 export type BankCard = Card & {
   type: 'bank'
-  published: true
+  published: boolean
   account_id: null
 }
 
@@ -26,13 +26,14 @@ interface UseBankCardsReturn {
 }
 
 /**
- * Lecture de la banque de cartes publiques (published = TRUE)
+ * Lecture de la banque de cartes (published + fallback unpublished si référencées)
  *
  * ✅ Accessible à tous : Visitor (anon), Free, Subscriber, Admin
  * ✅ Images dans bucket bank-images (lecture publique)
- * ✅ DB-first : RLS contrôle l'accès (anon SELECT bank published)
+ * ✅ DB-first : RLS contrôle l'accès ET le fallback (BLOCKER 5 TSA)
+ * ✅ RLS retourne published=true OU published=false si carte référencée dans slots/sequences/categories
  *
- * ⚠️ NE PAS filtrer côté front : la RLS retourne uniquement les cartes autorisées
+ * ⚠️ NE PAS filtrer côté front sur published : la RLS gère le fallback
  */
 export default function useBankCards(): UseBankCardsReturn {
   const [cards, setCards] = useState<BankCard[]>([])
@@ -51,7 +52,7 @@ export default function useBankCards(): UseBankCardsReturn {
           .from('cards')
           .select('*')
           .eq('type', 'bank')
-          .eq('published', true)
+          // ✅ PAS de filtre .eq('published', true) : la RLS gère le fallback
           .order('name', { ascending: true })
           .abortSignal(controller.signal)
 

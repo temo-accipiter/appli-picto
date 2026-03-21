@@ -3,7 +3,13 @@
 import Edition from '@/page-components/edition/Edition'
 import EditionTimeline from '@/page-components/edition-timeline/EditionTimeline'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
-import { useTimelines, useSlots } from '@/hooks'
+import {
+  useTimelines,
+  useSlots,
+  useAccountStatus,
+  useBankCards,
+  useAdminBankCards,
+} from '@/hooks'
 
 // Note: metadata déplacé car page devient Client Component
 // SEO géré par layout parent
@@ -28,6 +34,18 @@ export default function EditionPage() {
     refresh: refreshSlots,
   } = useSlots(timeline?.id ?? null)
 
+  // ── SOURCE UNIQUE : Cartes banque au niveau page ─────────────────────────────
+  // Solution bug refresh nom carte : Edition et SlotsEditor partagent les mêmes cartes
+  // - Admin : useAdminBankCards (toutes cartes)
+  // - Autres : useBankCards (cartes publiées uniquement)
+  const { isAdmin } = useAccountStatus()
+  const adminBankCardsHook = useAdminBankCards()
+  const publicBankCardsHook = useBankCards()
+
+  const { cards: bankCards, refresh: refreshBankCards } = isAdmin
+    ? adminBankCardsHook
+    : publicBankCardsHook
+
   return (
     <>
       <EditionTimeline
@@ -40,12 +58,15 @@ export default function EditionPage() {
         addReward={addReward}
         updateSlot={updateSlot}
         removeSlot={removeSlot}
+        bankCards={bankCards}
       />
       <Edition
         timeline={timeline}
         slots={slots}
         updateSlot={updateSlot}
         refreshSlots={refreshSlots}
+        bankCards={bankCards}
+        refreshBankCards={refreshBankCards}
       />
     </>
   )

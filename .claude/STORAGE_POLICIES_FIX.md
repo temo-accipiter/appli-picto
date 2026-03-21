@@ -39,6 +39,7 @@ En environnement local (Docker Supabase), les policies RLS sur `storage.objects`
 ### Pattern qui fonctionne
 
 ❌ **NE PAS FAIRE** : Utiliser fonction `SECURITY DEFINER` dans policy
+
 ```sql
 -- ❌ ÉCHOUE avec Supabase Storage v1.33.0
 CREATE POLICY bank_images_insert_admin
@@ -52,6 +53,7 @@ WITH CHECK (
 ```
 
 ✅ **FAIRE** : Utiliser `EXISTS` inline avec `auth.uid()` directement
+
 ```sql
 -- ✅ FONCTIONNE
 CREATE POLICY bank_images_insert_admin
@@ -152,12 +154,14 @@ ORDER BY policyname;
 ### Tester upload
 
 **Personal-images** (compte free/subscriber/admin) :
+
 1. Se connecter avec n'importe quel compte
 2. Aller sur `/edition/cards`
 3. Créer une carte personnelle avec image
 4. ✅ Upload doit réussir
 
 **Bank-images** (compte admin uniquement) :
+
 1. Se connecter avec `admin@local.dev` / `Admin1234x`
 2. Aller sur `/admin/bank-cards`
 3. Créer une carte de banque avec image
@@ -177,11 +181,13 @@ ORDER BY policyname;
 ## ⚠️ IMPORTANT
 
 **En production (Supabase Cloud)** :
+
 - ✅ Les migrations s'appliquent correctement (pas de problème de privilèges)
 - ✅ Pas besoin d'application manuelle
 - ✅ Les policies sont créées automatiquement
 
 **En local (Docker Supabase)** :
+
 - ⚠️ Application manuelle OBLIGATOIRE après `supabase db reset`
 - ⚠️ Automatisé via `pnpm db:reset` (appelle le script `db-reset-with-storage.sh`)
 - ⚠️ Si oubli → uploads échouent avec HTTP 403

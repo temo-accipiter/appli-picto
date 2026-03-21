@@ -44,7 +44,7 @@ export default function CreateBankCardModal({
   const [name, setName] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [published, setPublished] = useState(true) // Défaut : publiée
+  const [published, setPublished] = useState(false) // Défaut : dépubliée (brouillon)
 
   // État upload/création
   const [isUploading, setIsUploading] = useState(false)

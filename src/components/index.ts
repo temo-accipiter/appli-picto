@@ -106,6 +106,7 @@ export { default as ModalQuota } from './shared/modal/modal-quota/ModalQuota'
 export { default as ModalRecompense } from './shared/modal/modal-recompense/ModalRecompense'
 export { default as PersonalizationModal } from './shared/modal/modal-personalization/PersonalizationModal'
 export type { PersonalizationContext } from './shared/modal/modal-personalization/PersonalizationModal'
+export { default as CreateBankCardModal } from './shared/modal/create-bank-card-modal/CreateBankCardModal'
 
 // ========================================
 // UI - Primitives UI pures
@@ -115,6 +116,7 @@ export { default as Button } from './ui/button/Button'
 export { default as ButtonClose } from './ui/button/button-close/ButtonClose'
 export { default as ButtonDelete } from './ui/button/button-delete/ButtonDelete'
 export { default as Checkbox } from './ui/checkbox/Checkbox'
+export { default as Toggle } from './ui/toggle/Toggle'
 export { default as FloatingPencil } from './ui/floating-pencil/FloatingPencil'
 export { default as ImagePreview } from './ui/image-preview/ImagePreview'
 export { default as Input } from './ui/input/Input'

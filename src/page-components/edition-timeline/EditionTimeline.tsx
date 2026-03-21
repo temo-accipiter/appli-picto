@@ -53,6 +53,12 @@ interface EditionTimelineProps {
     updates: { card_id?: string | null; tokens?: number | null }
   ) => Promise<{ error: Error | null }>
   removeSlot: (id: string) => Promise<{ error: Error | null }>
+  bankCards?: Array<{
+    id: string
+    name: string
+    image_url: string
+    published: boolean
+  }>
 }
 
 export default function EditionTimeline({
@@ -65,6 +71,7 @@ export default function EditionTimeline({
   addReward,
   updateSlot,
   removeSlot,
+  bankCards,
 }: EditionTimelineProps) {
   const {
     activeChildId,
@@ -429,6 +436,7 @@ export default function EditionTimeline({
           canResetSession={canResetSession}
           isOffline={!isOnline}
           isExecutionOnly={isExecutionOnly}
+          bankCards={bankCards}
         />
       )}
     </RootTag>

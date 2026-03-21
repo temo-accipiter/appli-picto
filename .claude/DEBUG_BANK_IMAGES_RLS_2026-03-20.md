@@ -26,6 +26,7 @@
 ✅ **Supabase local running** (port 54321)
 ✅ **Bucket bank-images existe** (public=TRUE)
 ✅ **Compte admin existe** :
+
 - UUID : `aaaaaaaa-aaaa-aaaa-aaaa-000000000001`
 - Email : `admin@local.dev`
 - Status : `admin`
@@ -40,6 +41,7 @@ PGPASSWORD=postgres psql -h 127.0.0.1 -U supabase_admin -d postgres -f <migratio
 ```
 
 ✅ Policies créées :
+
 - `bank_images_select_public` (SELECT pour anon + authenticated)
 - `bank_images_insert_admin` (INSERT pour admin via `is_admin()`)
 - `bank_images_update_admin` (UPDATE pour admin via `is_admin()`)
@@ -104,12 +106,12 @@ HTTP 403: "new row violates row-level security policy"
 
 ## 💡 Hypothèses testées
 
-| # | Hypothèse | Probabilité | Résultat | Preuve |
-|---|-----------|-------------|----------|--------|
-| 1 | Policies manquantes | Basse | ❌ REJETÉE | 4 policies actives vérifiées via pg_policies |
-| 2 | Compte admin invalide | Basse | ❌ REJETÉE | UUID + status='admin' confirmés dans accounts |
-| 3 | is_admin() mal définie | Basse | ❌ REJETÉE | Fonction correcte (SECURITY DEFINER, search_path sécurisé) |
-| 4 | **Bug contexte JWT Storage** | **HAUTE** | ✅ **CONFIRMÉE** | auth.uid() = NULL dans policy avec is_admin() |
+| #   | Hypothèse                    | Probabilité | Résultat         | Preuve                                                     |
+| --- | ---------------------------- | ----------- | ---------------- | ---------------------------------------------------------- |
+| 1   | Policies manquantes          | Basse       | ❌ REJETÉE       | 4 policies actives vérifiées via pg_policies               |
+| 2   | Compte admin invalide        | Basse       | ❌ REJETÉE       | UUID + status='admin' confirmés dans accounts              |
+| 3   | is_admin() mal définie       | Basse       | ❌ REJETÉE       | Fonction correcte (SECURITY DEFINER, search_path sécurisé) |
+| 4   | **Bug contexte JWT Storage** | **HAUTE**   | ✅ **CONFIRMÉE** | auth.uid() = NULL dans policy avec is_admin()              |
 
 ---
 
@@ -118,6 +120,7 @@ HTTP 403: "new row violates row-level security policy"
 ### Pattern identifié
 
 **Fonctionne** : `personal_images_*` policies utilisent `auth.uid()` **inline**
+
 ```sql
 CREATE POLICY personal_images_insert_owner
 ON storage.objects
@@ -130,6 +133,7 @@ WITH CHECK (
 ```
 
 **Échoue** : `bank_images_*` policies utilisaient `is_admin()` (fonction DEFINER)
+
 ```sql
 CREATE POLICY bank_images_insert_admin
 ON storage.objects
@@ -172,6 +176,7 @@ WITH CHECK (
 **Fichier** : `supabase/migrations/20260320100000_fix_bank_images_policies_storage.sql`
 
 **Contenu** :
+
 - Drop policies existantes (idempotent)
 - Recréation avec `EXISTS` inline au lieu de `is_admin()`
 - Gestion gracieuse de l'erreur `insufficient_privilege` (local)
@@ -180,11 +185,12 @@ WITH CHECK (
 ### 2. Scripts npm ajoutés
 
 **package.json** (lignes 55-58) :
+
 ```json
 {
-  "supabase:apply-storage-policies": "...",  // Personal-images
-  "supabase:apply-bank-storage-policies": "...",  // Bank-images (NOUVEAU)
-  "supabase:apply-all-storage-policies": "...",  // Les deux (NOUVEAU)
+  "supabase:apply-storage-policies": "...", // Personal-images
+  "supabase:apply-bank-storage-policies": "...", // Bank-images (NOUVEAU)
+  "supabase:apply-all-storage-policies": "...", // Les deux (NOUVEAU)
   "supabase:reset": "supabase db reset && pnpm supabase:apply-all-storage-policies"
 }
 ```
@@ -192,6 +198,7 @@ WITH CHECK (
 ### 3. Script db-reset-with-storage.sh mis à jour
 
 **Changements** :
+
 - Appelle `pnpm supabase:apply-all-storage-policies` au lieu de `supabase:apply-storage-policies`
 - Vérification des deux sets de policies (personal + bank)
 - Messages mis à jour ("personal-images + bank-images")
@@ -216,6 +223,7 @@ ORDER BY policyname;
 ```
 
 **Résultat** :
+
 ```
           policyname
 -------------------------------
@@ -231,6 +239,7 @@ ORDER BY policyname;
 ### 2. Test upload (à effectuer)
 
 **Prochaines étapes** :
+
 1. Retourner dans l'application
 2. Se connecter avec `admin@local.dev` / `Admin1234x`
 3. Aller sur `/admin/bank-cards`
@@ -242,12 +251,14 @@ ORDER BY policyname;
 ## 🔒 Impact sécurité
 
 **Aucun impact négatif** :
+
 - ✅ La logique de sécurité reste identique (`status = 'admin'`)
 - ✅ Changement uniquement syntaxique (`is_admin()` → `EXISTS` inline)
 - ✅ Personal-images non affectées (utilisent déjà `auth.uid()` inline)
 - ✅ Production non affectée (bug spécifique à Storage local v1.33.0)
 
 **Impact positif** :
+
 - ✅ Upload bank-images fonctionne maintenant en local
 - ✅ Pattern unifié (inline) pour toutes les policies Storage
 - ✅ Automatisation complète via `pnpm db:reset`
@@ -263,22 +274,26 @@ ORDER BY policyname;
 ## 📚 Références
 
 **Migrations** :
+
 - `20260204134000_phase8_1_create_storage_buckets.sql` : Création buckets
 - `20260204134100_phase8_2_storage_rls_policies.sql` : Policies initiales (avec is_admin)
 - `20260226071400_fix_personal_images_policies_for_cards.sql` : Fix personal-images
 - `20260320100000_fix_bank_images_policies_storage.sql` : Fix bank-images (NOUVEAU)
 
 **Scripts** :
+
 - `scripts/db-reset-with-storage.sh` : Reset DB + policies (MIS À JOUR)
 - `package.json` : Scripts npm Storage (MIS À JOUR)
 
 **Documentation** :
+
 - `.claude/STORAGE_POLICIES_FIX.md` : Guide utilisateur
 - `.claude/SEED_ACCOUNTS.md` : Comptes de test (admin credentials)
 
 **Fonction is_admin()** :
+
 - `supabase/schema.sql` : Lignes 1549-1568
-- Utilisée ailleurs : RLS policies sur tables public.* (fonctionne correctement)
+- Utilisée ailleurs : RLS policies sur tables public.\* (fonctionne correctement)
 - **Problème uniquement** : Utilisation dans policies Storage (auth.uid() = NULL)
 
 ---
@@ -288,6 +303,7 @@ ORDER BY policyname;
 ### Pattern Storage RLS
 
 **❌ NE PAS FAIRE** :
+
 ```sql
 -- Utiliser fonction SECURITY DEFINER dans policy Storage
 CREATE POLICY my_policy ON storage.objects
@@ -295,6 +311,7 @@ WITH CHECK (is_admin());  -- ❌ auth.uid() peut retourner NULL
 ```
 
 **✅ FAIRE** :
+
 ```sql
 -- Utiliser auth.uid() directement inline
 CREATE POLICY my_policy ON storage.objects
@@ -309,6 +326,7 @@ WITH CHECK (
 ### Debugging RLS
 
 **Étapes systématiques** :
+
 1. Vérifier que la policy existe (`pg_policies`)
 2. Tester chaque condition **individuellement** (pas seulement la policy complète)
 3. Simuler le contexte JWT (`SET LOCAL request.jwt.claim.sub = '<uuid>'`)
@@ -318,6 +336,7 @@ WITH CHECK (
 ### Local vs Production
 
 **CRITIQUE** : Différences comportementales entre local et production :
+
 - **Privilèges** : Local nécessite `supabase_admin`, production utilise owner correct
 - **Timing** : Bug v1.33.0 spécifique à Storage local
 - **Application** : Local nécessite application manuelle, production automatique

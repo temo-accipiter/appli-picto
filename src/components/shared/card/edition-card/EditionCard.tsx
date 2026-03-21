@@ -6,6 +6,7 @@ import {
   InputWithValidation,
   Select,
   Checkbox,
+  Toggle,
   ImagePreview,
   ButtonDelete,
 } from '@/components'
@@ -52,12 +53,17 @@ interface EditionCardProps {
   categorieOptions?: CategoryOption[]
   labelId: string | number
 
+  // 🆕 Checkbox "publier" (cartes banque admin uniquement)
+  published?: boolean
+  onPublishedChange?: (published: boolean) => void
+
   // UI
   className?: string
   imageComponent?: ReactNode
   editable?: boolean
   disabled?: boolean
   checkboxDisabled?: boolean
+  helpText?: string // 🆕 Texte d'aide sous le champ label
 }
 
 const CardEdition = memo(function CardEdition({
@@ -78,6 +84,9 @@ const CardEdition = memo(function CardEdition({
   editable = true,
   disabled = false,
   checkboxDisabled = false,
+  published,
+  onPublishedChange,
+  helpText,
 }: EditionCardProps) {
   const { t } = useI18n()
 
@@ -99,7 +108,7 @@ const CardEdition = memo(function CardEdition({
       testId={labelId}
       // 🖼️ Slot image
       imageSlot={imageComponent || <ImagePreview url={image || ''} size="sm" />}
-      // 📝 Slot contenu (input label + select catégorie)
+      // 📝 Slot contenu (input label + select catégorie + texte d'aide)
       contentSlot={
         <>
           {editable ? (
@@ -121,6 +130,13 @@ const CardEdition = memo(function CardEdition({
             </span>
           )}
 
+          {/* 🆕 Texte d'aide sous le champ label */}
+          {helpText && (
+            <span className="edition-card__help-text" role="note">
+              {helpText}
+            </span>
+          )}
+
           {categorieOptions.length > 0 && (
             <Select
               id={`select-categorie-${labelId}`}
@@ -136,13 +152,26 @@ const CardEdition = memo(function CardEdition({
           )}
         </>
       }
-      // 🎛️ Slot actions (delete + checkbox)
+      // 🎛️ Slot actions (delete + checkbox publier + checkbox timeline)
       actionsSlot={
         <>
           {onDelete && (
             <ButtonDelete
               onClick={disabled ? () => {} : onDelete}
               aria-label={t('card.delete')}
+            />
+          )}
+
+          {/* 🆕 Toggle "publier" (cartes banque admin uniquement) */}
+          {published !== undefined && onPublishedChange && (
+            <Toggle
+              id={`toggle-published-${labelId}`}
+              checked={published}
+              onChange={newPublished =>
+                !disabled && onPublishedChange(newPublished)
+              }
+              aria-label={published ? 'Carte publiée' : 'Carte dépubliée'}
+              disabled={disabled}
             />
           )}
 

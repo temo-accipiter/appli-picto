@@ -12,3 +12,18 @@
   // avec editable={true} forcé. BaseCard gère le layout, les animations, et les états.
   // Aucune surcharge de style spécifique à EditionCard.
 }
+
+// ============================================================================
+// TEXTE D'AIDE (Help Text)
+// ============================================================================
+// Texte discret affiché sous le champ label (ex: "Dépubliez la carte pour modifier son nom.")
+// Visible uniquement si helpText fourni (cartes banque publiées)
+
+.edition-card__help-text {
+  display: block;
+  margin-top: spacing('xs');
+  font-size: font-size('xs');
+  color: semantic('info', 'dark');
+  font-style: italic;
+  line-height: 1.4;
+}

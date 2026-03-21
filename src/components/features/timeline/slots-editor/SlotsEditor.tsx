@@ -42,6 +42,7 @@ import useAccountStatus from '@/hooks/useAccountStatus'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
 import useBankCards from '@/hooks/useBankCards'
+import useAdminBankCards from '@/hooks/useAdminBankCards'
 import usePersonalCards from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import { Modal } from '@/components'
@@ -94,6 +95,16 @@ interface SlotsEditorProps {
    * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
    */
   isExecutionOnly?: boolean
+  /**
+   * Cartes de banque (source unique depuis page parent).
+   * Si fourni, utilise ces cartes au lieu de les charger via hooks internes.
+   */
+  bankCards?: Array<{
+    id: string
+    name: string
+    image_url: string
+    published: boolean
+  }>
 }
 
 export function SlotsEditor({
@@ -110,6 +121,7 @@ export function SlotsEditor({
   canResetSession = false,
   isOffline = false,
   isExecutionOnly = false,
+  bankCards: bankCardsProp,
 }: SlotsEditorProps) {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -129,14 +141,25 @@ export function SlotsEditor({
   )
 
   // Chargement des cartes une seule fois, transmises à chaque SlotItem
-  const { cards: bankCards, refresh: refreshBankCards } = useBankCards()
-  const { cards: personalCards, refresh: refreshPersonalCards } =
-    usePersonalCards()
   const {
     loading: accountStatusLoading,
     isSubscriber,
     isAdmin,
   } = useAccountStatus()
+
+  // 🆕 Cartes banque : source unique depuis page parent (si fourni), sinon hooks internes
+  const publicBankCardsHook = useBankCards()
+  const adminBankCardsHook = useAdminBankCards()
+
+  const { cards: bankCardsFromHook, refresh: refreshBankCards } = isAdmin
+    ? adminBankCardsHook
+    : publicBankCardsHook
+
+  // Utiliser bankCards depuis prop si fourni, sinon depuis hook
+  const bankCards = bankCardsProp ?? bankCardsFromHook
+
+  const { cards: personalCards, refresh: refreshPersonalCards } =
+    usePersonalCards()
   const lastMissingSignatureRef = useRef('')
 
   // ── S6 : Map de refs pour gestion focus post-suppression (§3.2.2bis) ──────
