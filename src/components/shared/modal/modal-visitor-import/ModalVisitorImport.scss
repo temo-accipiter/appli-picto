@@ -277,12 +277,13 @@
 }
 
 // === SR-ONLY (Screen reader only) ===
+// Pattern d'accessibilité standard (W3C) - hardcode justifié pour masquage visuel
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: 1px; // Exception hardcode : pattern a11y standard
+  height: 1px; // Exception hardcode : pattern a11y standard
   padding: 0;
-  margin: -1px;
+  margin: -1px; // Exception hardcode : pattern a11y standard
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
