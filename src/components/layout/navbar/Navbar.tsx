@@ -43,7 +43,8 @@ export default function Navbar() {
       </a>
       <nav className="navbar" aria-label={t('nav.main')}>
         <div className="navbar-left">
-          {(isTableau || isProfil) && !isVisitor && (
+          {/* ✅ CONTRAT PRODUIT : Visitor DOIT pouvoir accéder à /edition pour tester l'app */}
+          {(isTableau || isProfil) && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

@@ -13,9 +13,13 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
+import * as visitorSlotsDB from '@/utils/visitor/slotsDB'
 
 export type Slot = Database['public']['Tables']['slots']['Row']
 export type SlotKind = Database['public']['Enums']['slot_kind']
+
+// Type unifié : Slot DB ou Slot visitor (structures identiques)
+type UnifiedSlot = Slot | visitorSlotsDB.VisitorSlot
 
 interface ActionResult {
   error: Error | null
@@ -84,6 +88,55 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
       return
     }
 
+    // VISITOR mode → Charger depuis IndexedDB (ZÉRO appel Supabase)
+    // 'visitor-timeline-local' est un ID spécial qui ne doit jamais toucher la DB
+    if (timelineId === 'visitor-timeline-local') {
+      const isTimelineChange = previousTimelineIdRef.current !== timelineId
+      previousTimelineIdRef.current = timelineId
+
+      if (isTimelineChange) {
+        hasResolvedCurrentTimelineRef.current = false
+        setSlots([])
+        setLoading(true)
+      } else if (!hasResolvedCurrentTimelineRef.current) {
+        setLoading(true)
+      }
+      setError(null)
+
+      const loadVisitorSlots = async () => {
+        try {
+          // Initialiser 3 slots par défaut si vide
+          await visitorSlotsDB.initializeDefaultSlots()
+
+          // Charger tous les slots depuis IndexedDB
+          const visitorSlots = await visitorSlotsDB.getAllSlots()
+
+          // Convertir en format Slot (structure identique)
+          const formattedSlots: Slot[] = visitorSlots.map(s => ({
+            id: s.id,
+            timeline_id: s.timeline_id,
+            kind: s.kind,
+            position: s.position,
+            card_id: s.card_id,
+            tokens: s.tokens,
+            created_at: new Date(s.created_at).toISOString(),
+            updated_at: new Date(s.updated_at).toISOString(),
+          }))
+
+          setSlots(formattedSlots)
+          hasResolvedCurrentTimelineRef.current = true
+        } catch (err) {
+          console.error('[useSlots] Erreur chargement slots visitor:', err)
+          setError(err as Error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      void loadVisitorSlots()
+      return
+    }
+
     const isTimelineChange = previousTimelineIdRef.current !== timelineId
     previousTimelineIdRef.current = timelineId
 
@@ -136,6 +189,18 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
     async (kind: SlotKind): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+      // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+      if (timelineId === 'visitor-timeline-local') {
+        try {
+          await visitorSlotsDB.createSlot(kind)
+          refresh()
+          return { error: null }
+        } catch (err) {
+          return { error: err as Error }
+        }
+      }
+
+      // AUTH mode → Utiliser Supabase
       // Position = max(position) + 1.
       // Plus robuste que slots.length si l'historique contient des positions non contiguës.
       // La DB reste autorité finale via UNIQUE(timeline_id, position).
@@ -170,6 +235,26 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
     ): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+      // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+      if (timelineId === 'visitor-timeline-local') {
+        try {
+          const currentSlot = slots.find(slot => slot.id === id)
+          const normalizedUpdates =
+            currentSlot?.kind === 'step' &&
+            updates.card_id === null &&
+            updates.tokens === undefined
+              ? { ...updates, tokens: 0 }
+              : updates
+
+          await visitorSlotsDB.updateSlot(id, normalizedUpdates)
+          refresh()
+          return { error: null }
+        } catch (err) {
+          return { error: err as Error }
+        }
+      }
+
+      // AUTH mode → Utiliser Supabase
       const currentSlot = slots.find(slot => slot.id === id)
       const normalizedUpdates =
         currentSlot?.kind === 'step' &&
@@ -197,6 +282,18 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
     async (id: string): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+      // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+      if (timelineId === 'visitor-timeline-local') {
+        try {
+          await visitorSlotsDB.deleteSlot(id)
+          refresh()
+          return { error: null }
+        } catch (err) {
+          return { error: err as Error }
+        }
+      }
+
+      // AUTH mode → Utiliser Supabase
       const { error: deleteError } = await supabase
         .from('slots')
         .delete()
@@ -220,6 +317,18 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
   const clearAllCards = useCallback(async (): Promise<ActionResult> => {
     if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+    // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+    if (timelineId === 'visitor-timeline-local') {
+      try {
+        await visitorSlotsDB.clearAllCards()
+        refresh()
+        return { error: null }
+      } catch (err) {
+        return { error: err as Error }
+      }
+    }
+
+    // AUTH mode → Utiliser Supabase
     const { error: clearCardsError } = await supabase
       .from('slots')
       .update({ card_id: null, updated_at: new Date().toISOString() })

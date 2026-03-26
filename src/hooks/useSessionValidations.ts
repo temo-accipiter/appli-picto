@@ -23,9 +23,15 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
+import * as visitorSessionsDB from '@/utils/visitor/sessionsDB'
 
 export type SessionValidation =
   Database['public']['Tables']['session_validations']['Row']
+
+// Type unifié : SessionValidation DB ou visitor (structures identiques)
+type UnifiedSessionValidation =
+  | SessionValidation
+  | visitorSessionsDB.VisitorSessionValidation
 
 interface ActionResult {
   error: Error | null
@@ -83,6 +89,44 @@ export default function useSessionValidations(
       return
     }
 
+    // VISITOR mode → Charger depuis IndexedDB (ZÉRO appel Supabase)
+    // Détection : sessionId commence par "visitor-"
+    if (sessionId.startsWith('visitor-')) {
+      setLoading(true)
+      setError(null)
+
+      const loadVisitorValidations = async () => {
+        try {
+          const visitorValidations =
+            await visitorSessionsDB.getSessionValidations(sessionId)
+
+          // Convertir en format SessionValidation (structure identique)
+          const formattedValidations: SessionValidation[] =
+            visitorValidations.map(v => ({
+              id: v.id,
+              session_id: v.session_id,
+              slot_id: v.slot_id,
+              validated_at: new Date(v.validated_at).toISOString(),
+              created_at: new Date(v.validated_at).toISOString(), // Visitor : created_at = validated_at
+            }))
+
+          setValidations(formattedValidations)
+        } catch (err) {
+          console.error(
+            '[useSessionValidations] Erreur chargement validations visitor:',
+            err
+          )
+          setError(err as Error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      void loadVisitorValidations()
+      return
+    }
+
+    // AUTH mode → Charger depuis Supabase
     const controller = new AbortController()
     setLoading(true)
     setError(null)
@@ -136,6 +180,26 @@ export default function useSessionValidations(
         return { error: new Error('Aucune session active') }
       }
 
+      // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+      if (sessionId.startsWith('visitor-')) {
+        try {
+          await visitorSessionsDB.validateSlot(sessionId, slotId)
+          refresh()
+          return { error: null }
+        } catch (err) {
+          // Idempotent : si erreur de doublon, ignorer
+          if (
+            err instanceof Error &&
+            err.message.includes('unique') // IndexedDB unique constraint
+          ) {
+            refresh()
+            return { error: null }
+          }
+          return { error: err as Error }
+        }
+      }
+
+      // AUTH mode → Utiliser Supabase
       const { error: insertError } = await supabase
         .from('session_validations')
         .insert({

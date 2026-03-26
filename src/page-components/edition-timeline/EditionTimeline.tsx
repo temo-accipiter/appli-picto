@@ -79,6 +79,7 @@ export default function EditionTimeline({
     childProfiles,
     loading: childProfilesLoading,
     setActiveChildId,
+    isVisitor,
   } = useChildProfile()
   const selectorRef = useRef<HTMLDivElement | null>(null)
   const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false)
@@ -409,7 +410,7 @@ export default function EditionTimeline({
         <p className="edition-timeline__no-timeline" role="status">
           {childProfilesLoading
             ? 'Chargement du profil enfant...'
-            : childProfiles.length === 0
+            : !activeChildProfile && !isVisitor
               ? 'Aucun profil enfant disponible.'
               : 'Chargement de la timeline...'}
         </p>

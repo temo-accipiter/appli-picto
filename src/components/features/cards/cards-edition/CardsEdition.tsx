@@ -109,6 +109,11 @@ interface CardsEditionProps {
    * Indique si l'utilisateur est admin (pour afficher bouton création banque).
    */
   isAdmin?: boolean
+  /**
+   * Indique si l'utilisateur est Free (pour masquer création carte/catégorie).
+   * Usage cosmétique uniquement (autorisation = DB via RLS).
+   */
+  isFree?: boolean
 }
 
 export default function CardsEdition({
@@ -136,6 +141,7 @@ export default function CardsEdition({
   onDeleteBankCard,
   onUpdateBankCardPublished,
   isAdmin = false,
+  isFree = false,
 }: CardsEditionProps) {
   const [errors, setErrors] = useState<Record<string | number, string>>({})
   const [drafts, setDrafts] = useState<Record<string | number, string>>({})
@@ -234,6 +240,59 @@ export default function CardsEdition({
     await onToggleCardInTimeline(String(cardId), currentlyChecked)
   }
 
+  // ✅ Free : Affichage simplifié (uniquement cartes banque, sans édition)
+  if (isFree) {
+    return (
+      <div className="checklist-edition">
+        {/* Affichage simplifié : uniquement cartes banque (lecture seule) */}
+        {bankCards && bankCards.length > 0 ? (
+          <DndGrid
+            items={bankCards}
+            // 🔒 Cartes banque : pas de réorganisation (lecture seule)
+            onReorder={() => {
+              // No-op : cartes banque non réorganisables
+            }}
+            renderItem={(bankCard: BankCardItem) => (
+              <EditionCard
+                imageComponent={
+                  <SignedImage
+                    filePath={bankCard.image_url || ''}
+                    bucket="bank-images"
+                    alt={bankCard.name}
+                    className="img-size-sm"
+                  />
+                }
+                labelId={bankCard.id}
+                label={bankCard.name}
+                // 🔒 Free : lecture seule (pas d'édition)
+                editable={false}
+                // ✅ Checkbox timeline active
+                checked={isCardInTimeline(bankCard.id)}
+                onToggleCheck={() => handleToggleCheckbox(bankCard.id)}
+                disabled={checkboxDisabled}
+                checkboxDisabled={lockedCardIds?.has(bankCard.id) ?? false}
+              />
+            )}
+            columns={3}
+            gap="medium"
+            layout="custom"
+            className="edition-section__grid"
+            getItemId={(bankCard: BankCardItem) => bankCard.id}
+          />
+        ) : (
+          <div
+            className="edition-section__empty"
+            role="status"
+            aria-live="polite"
+          >
+            💤 Aucune carte de banque disponible
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ✅ Subscriber/Admin : Affichage complet avec toutes les options d'édition
   return (
     <div className="checklist-edition">
       <Button
@@ -253,10 +312,13 @@ export default function CardsEdition({
 
       {showActions && (
         <div className="edition-section__actions">
-          <Button
-            label={`➕ ${t('cards.addCard') || 'Créer carte'}`}
-            onClick={() => setModalCardOpen(true)}
-          />
+          {/* ✅ Bouton création carte : masqué si Free (cosmétique) */}
+          {!isFree && (
+            <Button
+              label={`➕ ${t('cards.addCard') || 'Créer carte'}`}
+              onClick={() => setModalCardOpen(true)}
+            />
+          )}
           {/* 🆕 Bouton création carte banque (admin uniquement) */}
           {isAdmin && onCreateBankCard && (
             <Button
@@ -265,20 +327,26 @@ export default function CardsEdition({
               variant="secondary"
             />
           )}
-          <Button
-            label={`⚙️ ${t('tasks.manageCategories')}`}
-            onClick={() => setManageCatOpen(true)}
-          />
-          <Select
-            id="filter-category"
-            label={t('tasks.filterByCategory')}
-            options={[
-              { value: 'all', label: t('tasks.all') },
-              ...categories.filter(cat => cat.value !== 'all'),
-            ]}
-            value={filterCategory}
-            onChange={e => onChangeFilterCategory(e.target.value)}
-          />
+          {/* ✅ Bouton gestion catégories : masqué si Free (cosmétique) */}
+          {!isFree && (
+            <Button
+              label={`⚙️ ${t('tasks.manageCategories')}`}
+              onClick={() => setManageCatOpen(true)}
+            />
+          )}
+          {/* ✅ Sélecteur filtre catégorie : masqué si Free (cosmétique) */}
+          {!isFree && (
+            <Select
+              id="filter-category"
+              label={t('tasks.filterByCategory')}
+              options={[
+                { value: 'all', label: t('tasks.all') },
+                ...categories.filter(cat => cat.value !== 'all'),
+              ]}
+              value={filterCategory}
+              onChange={e => onChangeFilterCategory(e.target.value)}
+            />
+          )}
         </div>
       )}
 
@@ -340,12 +408,6 @@ export default function CardsEdition({
                         label={drafts[bankCard.id] ?? bankCard.name}
                         // 🔓 Éditable SEULEMENT si admin + handler fourni + carte dépubliée
                         editable={canEditBankCard}
-                        // 🆕 Texte d'aide si carte publiée (verrouillage nom)
-                        helpText={
-                          bankCard.published
-                            ? 'Dépubliez la carte pour modifier son nom.'
-                            : undefined
-                        }
                         onLabelChange={
                           canEditBankCard
                             ? val => handleChange(bankCard.id, val)

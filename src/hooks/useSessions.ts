@@ -25,9 +25,13 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
+import * as visitorSessionsDB from '@/utils/visitor/sessionsDB'
 
 export type Session = Database['public']['Tables']['sessions']['Row']
 export type SessionState = Database['public']['Enums']['session_state']
+
+// Type unifié : Session DB ou Session visitor (structures identiques)
+type UnifiedSession = Session | visitorSessionsDB.VisitorSession
 
 interface ActionResult {
   error: Error | null
@@ -101,12 +105,52 @@ export default function useSessions(
       return
     }
 
-    // VISITOR mode → ZÉRO appel DB (profil local uniquement)
+    // VISITOR mode → Charger depuis IndexedDB (ZÉRO appel Supabase)
     if (childProfileId === 'visitor-local') {
-      previousContextKeyRef.current = null
-      setSession(null)
-      setLoading(false)
+      const contextKey = `${childProfileId}:${timelineId}`
+      const isContextChange = previousContextKeyRef.current !== contextKey
+      previousContextKeyRef.current = contextKey
+
+      if (isContextChange) {
+        setSession(null)
+        setLoading(true)
+      } else if (currentSessionRef.current === null) {
+        setLoading(true)
+      }
       setError(null)
+
+      const loadVisitorSession = async () => {
+        try {
+          // Charger la session active depuis IndexedDB
+          const visitorSession = await visitorSessionsDB.getActiveSession()
+
+          // Convertir en format Session (structure identique)
+          if (visitorSession) {
+            const formattedSession: Session = {
+              id: visitorSession.id,
+              child_profile_id: visitorSession.child_profile_id,
+              timeline_id: visitorSession.timeline_id,
+              state: visitorSession.state,
+              epoch: visitorSession.epoch,
+              steps_total_snapshot: visitorSession.steps_total_snapshot,
+              created_at: new Date(visitorSession.created_at).toISOString(),
+              updated_at: new Date(visitorSession.updated_at).toISOString(),
+              started_at: null, // Visitor : pas de tracking séparé started_at
+              completed_at: null, // Visitor : pas de tracking séparé completed_at
+            }
+            setSession(formattedSession)
+          } else {
+            setSession(null)
+          }
+        } catch (err) {
+          console.error('[useSessions] Erreur chargement session visitor:', err)
+          setError(err as Error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      void loadVisitorSession()
       return
     }
 
@@ -230,6 +274,18 @@ export default function useSessions(
       return { error: new Error('Profil ou timeline manquant') }
     }
 
+    // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+    if (childProfileId === 'visitor-local') {
+      try {
+        await visitorSessionsDB.createSession()
+        refresh()
+        return { error: null }
+      } catch (err) {
+        return { error: err as Error }
+      }
+    }
+
+    // AUTH mode → Utiliser Supabase
     const { error: insertError } = await supabase.from('sessions').insert({
       child_profile_id: childProfileId,
       timeline_id: timelineId,
@@ -254,6 +310,23 @@ export default function useSessions(
       return { error: new Error('Aucune progression à réinitialiser') }
     }
 
+    // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
+    if (timelineId === 'visitor-timeline-local') {
+      try {
+        await visitorSessionsDB.resetSessionValidations(session.id)
+        // Reset le snapshot à null et revenir en preview
+        await visitorSessionsDB.updateSession(session.id, {
+          state: 'active_preview',
+          steps_total_snapshot: null,
+        })
+        refresh()
+        return { error: null }
+      } catch (err) {
+        return { error: err as Error }
+      }
+    }
+
+    // AUTH mode → Utiliser Supabase
     const { error: resetError } = await supabase.rpc(
       'hard_reset_timeline_session',
       {

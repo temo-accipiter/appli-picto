@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import useAuth from './useAuth'
+import { useRealtimeBankCards } from '@/contexts/RealtimeBankCardsContext'
 import type { Database } from '@/types/supabase'
 
 type Card = Database['public']['Tables']['cards']['Row']
@@ -115,10 +116,16 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
     setRefreshKey(k => k + 1)
   }, [])
 
+  // ✅ Utiliser le channel persistant du provider (pas de création/destruction)
+  const { sendBroadcast: sendBroadcastPersistent } = useRealtimeBankCards()
+
   /**
    * Créer une carte de banque
    * - DB refuse si !is_admin() (RLS)
    * - published défaut FALSE si non fourni (trigger cards_normalize_published)
+   *
+   * ✅ CRITIQUE : Envoie un broadcast après création si publiée pour notifier
+   * immédiatement les non-admins (optimisation, évite délai Realtime)
    */
   const createCard = useCallback(
     async (input: CreateBankCardInput): Promise<ActionResult> => {
@@ -137,17 +144,37 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         .from('cards')
         .insert([cardInsert])
 
-      if (!insertError) refresh()
+      if (!insertError) {
+        refresh()
+
+        // 📢 Broadcast : Si publiée, notifier immédiatement
+        if (input.published) {
+          try {
+            await sendBroadcastPersistent('card_published', {
+              card_id: input.id,
+            })
+          } catch (broadcastError) {
+            console.warn(
+              '[useAdminBankCards] Échec broadcast création:',
+              broadcastError
+            )
+          }
+        }
+      }
 
       return { error: insertError as Error | null }
     },
-    [user, refresh]
+    [user, refresh, sendBroadcastPersistent]
   )
 
   /**
    * Modifier le statut published d'une carte bank
    * - true = publiée (visible tous)
    * - false = dépubliée (visible Admin + usages existants)
+   *
+   * ✅ CRITIQUE : Envoie un broadcast après mise à jour pour contourner
+   * limitation RLS + Realtime (les non-admins ne reçoivent PAS l'événement
+   * UPDATE quand published passe de true → false car RLS bloque la lecture)
    */
   const updatePublished = useCallback(
     async (id: string, published: boolean): Promise<ActionResult> => {
@@ -164,11 +191,26 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         .eq('id', id)
         .eq('type', 'bank')
 
-      if (!updateError) refresh()
+      if (!updateError) {
+        refresh()
+
+        // 📢 Broadcast : Notifier tous les clients du changement de publication
+        // Crucial pour les dépublications (published: true → false) car la RLS
+        // empêche les non-admins de recevoir l'événement Realtime UPDATE
+        try {
+          const event = published ? 'card_published' : 'card_unpublished'
+          await sendBroadcastPersistent(event, { card_id: id })
+        } catch (broadcastError) {
+          console.warn(
+            '[useAdminBankCards] Échec broadcast publication:',
+            broadcastError
+          )
+        }
+      }
 
       return { error: updateError as Error | null }
     },
-    [user, refresh]
+    [user, refresh, sendBroadcastPersistent]
   )
 
   /**
@@ -203,6 +245,9 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
    * - Trigger `cards_prevent_delete_bank_if_referenced` bloque si carte référencée
    * - Le frontend tente DELETE, gère erreur DB proprement
    * - Erreur retournée : message contractuel utilisable côté UI
+   *
+   * ✅ CRITIQUE : Envoie un broadcast après suppression pour notifier
+   * immédiatement les non-admins (Realtime DELETE peut avoir un délai)
    */
   const deleteCard = useCallback(
     async (id: string): Promise<ActionResult> => {
@@ -231,6 +276,17 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
 
         // ✅ Succès : Rafraîchir cache cartes
         refresh()
+
+        // 📢 Broadcast : Notifier la suppression immédiatement
+        try {
+          await sendBroadcastPersistent('card_deleted', { card_id: id })
+        } catch (broadcastError) {
+          console.warn(
+            '[useAdminBankCards] Échec broadcast suppression:',
+            broadcastError
+          )
+        }
+
         return { error: null }
       } catch (err) {
         console.error(
@@ -240,7 +296,7 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         return { error: err as Error }
       }
     },
-    [user, refresh]
+    [user, refresh, sendBroadcastPersistent]
   )
 
   return {

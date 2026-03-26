@@ -22,9 +22,10 @@
  */
 
 const DB_NAME = 'appli-picto-visitor'
-const DB_VERSION = 1
+const DB_VERSION = 3 // Version 3 : ajout tables sessions + validations (partagée avec sessionsDB.ts)
 const STORE_SEQUENCES = 'sequences'
 const STORE_STEPS = 'sequence_steps'
+const STORE_SLOTS = 'visitor_slots' // Table slots (créée par slotsDB.ts)
 
 /** Séquence locale Visitor */
 export interface VisitorSequence {
@@ -41,8 +42,51 @@ export interface VisitorSequenceStep {
   position: number // 0, 1, 2...
 }
 
-/** Ouvre ou crée la DB IndexedDB Visitor */
-function openDB(): Promise<IDBDatabase> {
+/**
+ * Ouvre ou crée la DB IndexedDB Visitor (avec fallback robuste).
+ *
+ * ⚠️ GESTION ERREURS ROBUSTE
+ * - Si VersionError : supprime l'ancienne DB et recrée une neuve
+ * - Pour un visitor, mieux vaut perdre les données locales que bloquer l'app
+ */
+async function openDB(): Promise<IDBDatabase> {
+  try {
+    return await openDBInternal()
+  } catch (error) {
+    // Si VersionError ou erreur d'ouverture, supprimer et recréer la DB
+    if (
+      error instanceof Error &&
+      (error.name === 'VersionError' ||
+        error.message.includes('version') ||
+        error.message.includes('existing version'))
+    ) {
+      console.warn(
+        '[sequencesDB] VersionError détectée, suppression et recréation de la DB...'
+      )
+
+      // Supprimer l'ancienne DB
+      await new Promise<void>((resolve, reject) => {
+        const deleteRequest = indexedDB.deleteDatabase(DB_NAME)
+        deleteRequest.onsuccess = () => resolve()
+        deleteRequest.onerror = () => reject(deleteRequest.error)
+        deleteRequest.onblocked = () => {
+          console.warn('[sequencesDB] Suppression DB bloquée, retry...')
+          // Attendre un peu et résoudre quand même
+          setTimeout(() => resolve(), 500)
+        }
+      })
+
+      // Recréer la DB
+      return await openDBInternal()
+    }
+
+    // Autre erreur : propager
+    throw error
+  }
+}
+
+/** Fonction interne d'ouverture DB (sans fallback) */
+function openDBInternal(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
 
@@ -51,35 +95,91 @@ function openDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = event => {
       const db = (event.target as IDBOpenDBRequest).result
+      const oldVersion = event.oldVersion
 
-      // Table sequences
-      if (!db.objectStoreNames.contains(STORE_SEQUENCES)) {
-        const seqStore = db.createObjectStore(STORE_SEQUENCES, {
-          keyPath: 'id',
-        })
-        seqStore.createIndex('mother_card_id', 'mother_card_id', {
-          unique: true,
-        })
+      // Version 1 : Tables sequences + sequence_steps
+      if (oldVersion < 1) {
+        // Table sequences
+        if (!db.objectStoreNames.contains(STORE_SEQUENCES)) {
+          const seqStore = db.createObjectStore(STORE_SEQUENCES, {
+            keyPath: 'id',
+          })
+          seqStore.createIndex('mother_card_id', 'mother_card_id', {
+            unique: true,
+          })
+        }
+
+        // Table sequence_steps
+        if (!db.objectStoreNames.contains(STORE_STEPS)) {
+          const stepsStore = db.createObjectStore(STORE_STEPS, {
+            keyPath: 'id',
+          })
+          stepsStore.createIndex('sequence_id', 'sequence_id', {
+            unique: false,
+          })
+          stepsStore.createIndex(
+            'sequence_step_card',
+            ['sequence_id', 'step_card_id'],
+            { unique: true }
+          )
+          stepsStore.createIndex(
+            'sequence_position',
+            ['sequence_id', 'position'],
+            {
+              unique: true,
+            }
+          )
+        }
       }
 
-      // Table sequence_steps
-      if (!db.objectStoreNames.contains(STORE_STEPS)) {
-        const stepsStore = db.createObjectStore(STORE_STEPS, { keyPath: 'id' })
-        stepsStore.createIndex('sequence_id', 'sequence_id', { unique: false })
-        // Index composite pour UNIQUE(sequence_id, step_card_id)
-        stepsStore.createIndex(
-          'sequence_step_card',
-          ['sequence_id', 'step_card_id'],
-          { unique: true }
-        )
-        // Index composite pour UNIQUE(sequence_id, position)
-        stepsStore.createIndex(
-          'sequence_position',
-          ['sequence_id', 'position'],
-          {
-            unique: true,
-          }
-        )
+      // Version 2 : Ajout table visitor_slots (partagée avec slotsDB.ts)
+      if (oldVersion < 2) {
+        if (!db.objectStoreNames.contains(STORE_SLOTS)) {
+          const slotsStore = db.createObjectStore(STORE_SLOTS, {
+            keyPath: 'id',
+          })
+          slotsStore.createIndex('timeline_id', 'timeline_id', {
+            unique: false,
+          })
+          slotsStore.createIndex(
+            'timeline_position',
+            ['timeline_id', 'position'],
+            {
+              unique: true,
+            }
+          )
+        }
+      }
+
+      // Version 3 : Ajout tables visitor_sessions + visitor_session_validations (partagée avec sessionsDB.ts)
+      if (oldVersion < 3) {
+        // Table sessions
+        if (!db.objectStoreNames.contains('visitor_sessions')) {
+          const sessionsStore = db.createObjectStore('visitor_sessions', {
+            keyPath: 'id',
+          })
+          sessionsStore.createIndex(
+            'child_timeline',
+            ['child_profile_id', 'timeline_id'],
+            { unique: false }
+          )
+          sessionsStore.createIndex('state', 'state', { unique: false })
+        }
+
+        // Table validations
+        if (!db.objectStoreNames.contains('visitor_session_validations')) {
+          const validationsStore = db.createObjectStore('visitor_session_validations', {
+            keyPath: 'id',
+          })
+          validationsStore.createIndex('session_id', 'session_id', {
+            unique: false,
+          })
+          validationsStore.createIndex(
+            'session_slot',
+            ['session_id', 'slot_id'],
+            { unique: true }
+          )
+        }
       }
     }
   })

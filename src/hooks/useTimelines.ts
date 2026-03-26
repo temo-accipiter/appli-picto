@@ -17,6 +17,19 @@ import type { Database } from '@/types/supabase'
 
 export type Timeline = Database['public']['Tables']['timelines']['Row']
 
+// ─── Timeline locale pour visitor (non-DB) ─────────────────────────────────────
+/**
+ * Timeline locale implicite pour visitor (mode non connecté).
+ * Permet au visitor d'utiliser la timeline/slots sans compte.
+ * Conforme à ChildProfileContext.tsx (VISITOR_PROFILE).
+ */
+const VISITOR_TIMELINE: Timeline = {
+  id: 'visitor-timeline-local',
+  child_profile_id: 'visitor-local',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}
+
 interface UseTimelinesReturn {
   /** Timeline du profil enfant actif (null si aucun profil, chargement, ou pas encore créée) */
   timeline: Timeline | null
@@ -56,10 +69,12 @@ export default function useTimelines(
       return
     }
 
-    // VISITOR mode → ZÉRO appel DB (profil local uniquement)
+    // VISITOR mode → Retourner timeline locale (ZÉRO appel DB)
     // 'visitor-local' est un ID spécial qui ne doit jamais toucher la DB
+    // Conformément à ChildProfileContext, visitor a un profil enfant local
+    // → il doit aussi avoir une timeline locale pour pouvoir utiliser les slots
     if (childProfileId === 'visitor-local') {
-      setTimeline(null)
+      setTimeline(VISITOR_TIMELINE)
       setLoading(false)
       setError(null)
       return

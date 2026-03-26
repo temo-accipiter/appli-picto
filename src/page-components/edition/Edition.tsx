@@ -119,7 +119,7 @@ export default function Edition({
   } | null>(null)
 
   // ── Enfant actif : rechargement stable quand l'enfant change (S2) ────────────
-  const { activeChildId } = useChildProfile()
+  const { activeChildId, isVisitor } = useChildProfile()
   const prevChildIdRef = useRef<string | null | undefined>(undefined)
   useEffect(() => {
     if (prevChildIdRef.current === undefined) {
@@ -141,8 +141,8 @@ export default function Edition({
   const { cards, createCard, updateCard, updateCardCategory, deleteCard } =
     usePersonalCards()
 
-  // 🆕 Statut admin (détection cosmétique)
-  const { isAdmin } = useAccountStatus()
+  // 🆕 Statut admin + free (détection cosmétique)
+  const { isAdmin, isFree } = useAccountStatus()
 
   // 🆕 Cartes banque : rawBankCards vient maintenant de la prop (source unique depuis page)
   // On charge les hooks uniquement pour obtenir les méthodes CRUD (admin)
@@ -659,6 +659,7 @@ export default function Edition({
               isAdmin ? handleUpdateBankCardPublished : undefined
             }
             isAdmin={isAdmin}
+            isFree={isVisitor || isFree}
           />
         </section>
       </section>

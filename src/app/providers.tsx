@@ -11,6 +11,7 @@ import { DisplayProvider } from '@/contexts/DisplayContext'
 import { LoadingProvider } from '@/contexts/LoadingContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { OfflineProvider } from '@/contexts/OfflineContext'
+import { RealtimeBankCardsProvider } from '@/contexts/RealtimeBankCardsContext'
 import InitializationLoader from '@/components/shared/initialization-loader/InitializationLoader'
 import Loader from '@/components/ui/loader/Loader'
 
@@ -29,21 +30,24 @@ export function Providers({ children }: { children: ReactNode }) {
       {/* Il se place à l'extérieur de AuthProvider car la queue offline est indépendante */}
       <OfflineProvider>
         <AuthProvider>
-          <ChildProfileProvider>
-            <DisplayProvider>
-              <LoadingProvider>
-                <ToastProvider>
-                  <InitializationLoader>
-                    <Suspense fallback={<Loader />}>
-                      {children}
-                      {/* Bottom Navigation Bar - Mobile only (< 768px) */}
-                      <BottomNav />
-                    </Suspense>
-                  </InitializationLoader>
-                </ToastProvider>
-              </LoadingProvider>
-            </DisplayProvider>
-          </ChildProfileProvider>
+          {/* Realtime Channel Persistant pour synchronisation cartes banque */}
+          <RealtimeBankCardsProvider>
+            <ChildProfileProvider>
+              <DisplayProvider>
+                <LoadingProvider>
+                  <ToastProvider>
+                    <InitializationLoader>
+                      <Suspense fallback={<Loader />}>
+                        {children}
+                        {/* Bottom Navigation Bar - Mobile only (< 768px) */}
+                        <BottomNav />
+                      </Suspense>
+                    </InitializationLoader>
+                  </ToastProvider>
+                </LoadingProvider>
+              </DisplayProvider>
+            </ChildProfileProvider>
+          </RealtimeBankCardsProvider>
         </AuthProvider>
       </OfflineProvider>
     </ErrorBoundary>

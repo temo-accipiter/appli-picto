@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth, useI18n } from '@/hooks'
+import { useAuth, useI18n, useIsVisitor } from '@/hooks'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Pencil } from 'lucide-react'
@@ -10,15 +10,20 @@ import './BottomNav.scss'
 /**
  * BottomNav - Responsive navigation bar with page-specific compositions
  *
+ * ✅ CONTRAT PRODUIT : Visitor DOIT pouvoir naviguer entre /tableau et /edition
+ *
  * /tableau (zen mode TSA-optimized):
- * - Mobile: bottom-right avatar only
+ * - Mobile (User): bottom-right avatar only
+ * - Mobile (Visitor): lien Édition uniquement
  * - Desktop: top-right avatar only
  *
  * /edition (Mobile < 768px):
- * - Fixed bottom: Tableau, Avatar, Settings
+ * - User: Fixed bottom Tableau, Avatar, Settings
+ * - Visitor: Fixed bottom Tableau
  *
  * /profil (Mobile < 768px):
- * - Fixed bottom: Édition, Tableau, Avatar
+ * - User: Fixed bottom Édition, Tableau, Avatar
+ * - Visitor: n/a (PrivateRoute bloque accès)
  *
  * Desktop (≥ 768px):
  * - Hidden (navbar top remains)
@@ -26,6 +31,7 @@ import './BottomNav.scss'
 export default function BottomNav() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { isVisitor } = useIsVisitor()
   const { t } = useI18n()
 
   const isTableau = pathname === '/tableau'
@@ -35,7 +41,9 @@ export default function BottomNav() {
   // Only show BottomNav on specific pages
   const showNav = isTableau || isEdition || isProfil
 
-  if (!showNav || !user) {
+  // ✅ AUTORISER Visitor sur /tableau et /edition (contrat produit)
+  // Bloquer UNIQUEMENT si ni user, ni visitor
+  if (!showNav || (!user && !isVisitor)) {
     return null
   }
 
@@ -47,10 +55,25 @@ export default function BottomNav() {
   return (
     <nav className={navClass} role="navigation" aria-label={t('nav.main')}>
       <div className="bottom-nav__items">
-        {/* /tableau: Avatar only (zen mode) */}
-        {isTableau && <UserMenu />}
+        {/* /tableau: Avatar (user) OU lien Édition (visitor) */}
+        {isTableau && (
+          <>
+            {user ? (
+              <UserMenu />
+            ) : (
+              <Link
+                href="/edition"
+                className="nav-icon-link"
+                aria-label={t('nav.edition')}
+                title={t('nav.edition')}
+              >
+                <Pencil size={24} strokeWidth={2} aria-hidden="true" />
+              </Link>
+            )}
+          </>
+        )}
 
-        {/* /edition: Tableau, Avatar, Settings */}
+        {/* /edition: Tableau (toujours) + Avatar, Settings (user uniquement) */}
         {isEdition && (
           <>
             <Link
@@ -61,13 +84,17 @@ export default function BottomNav() {
             >
               <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
             </Link>
-            <UserMenu />
-            <SettingsMenu />
+            {user && (
+              <>
+                <UserMenu />
+                <SettingsMenu />
+              </>
+            )}
           </>
         )}
 
-        {/* /profil: Édition, Tableau, Avatar */}
-        {isProfil && (
+        {/* /profil: Édition, Tableau, Avatar (user uniquement - visitor bloqué par PrivateRoute) */}
+        {isProfil && user && (
           <>
             <Link
               href="/edition"

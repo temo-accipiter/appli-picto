@@ -63,7 +63,6 @@ interface EditionCardProps {
   editable?: boolean
   disabled?: boolean
   checkboxDisabled?: boolean
-  helpText?: string // 🆕 Texte d'aide sous le champ label
 }
 
 const CardEdition = memo(function CardEdition({
@@ -86,7 +85,6 @@ const CardEdition = memo(function CardEdition({
   checkboxDisabled = false,
   published,
   onPublishedChange,
-  helpText,
 }: EditionCardProps) {
   const { t } = useI18n()
 
@@ -108,7 +106,7 @@ const CardEdition = memo(function CardEdition({
       testId={labelId}
       // 🖼️ Slot image
       imageSlot={imageComponent || <ImagePreview url={image || ''} size="sm" />}
-      // 📝 Slot contenu (input label + select catégorie + texte d'aide)
+      // 📝 Slot contenu (input label + select catégorie)
       contentSlot={
         <>
           {editable ? (
@@ -127,13 +125,6 @@ const CardEdition = memo(function CardEdition({
               role="doc-subtitle"
             >
               {label}
-            </span>
-          )}
-
-          {/* 🆕 Texte d'aide sous le champ label */}
-          {helpText && (
-            <span className="edition-card__help-text" role="note">
-              {helpText}
             </span>
           )}
 
