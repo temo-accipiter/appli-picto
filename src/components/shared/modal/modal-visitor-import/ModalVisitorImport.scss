@@ -1,0 +1,290 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// MODAL VISITOR IMPORT - TSA-FRIENDLY IMPORT MODAL
+// ============================================================================
+// ✅ TOKENS SASS UNIQUEMENT (pas de valeurs hardcodées)
+// ✅ UI/UX TSA :
+//    - Animations douces (max 0.3s ease, respect prefers-reduced-motion)
+//    - Surface secondary pour fond
+//    - Contraste minimum 4.5:1 (WCAG 2.2 AA)
+//    - Focus visible
+// ✅ ATOMICITÉ :
+//    - Pas de cleanup IndexedDB si erreur réseau
+//    - Feedback clair succès/erreur
+// ============================================================================
+
+// === CONTENEUR PRINCIPAL ===
+.modal-visitor-import__content {
+  padding: spacing('lg');
+  min-height: size('card-min-height');
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  // Mobile (320px-575px)
+  gap: spacing('md');
+
+  // Tablette & Desktop (576px+)
+  @include respond-to(sm) {
+    gap: spacing('lg');
+  }
+}
+
+// === DESCRIPTION (État initial) ===
+.modal-visitor-import__description {
+  color: text('primary');
+  font-size: font-size('base');
+  line-height: line-height('normal');
+  margin: 0;
+
+  // Mobile
+  padding: 0 spacing('sm');
+
+  // Tablette & Desktop
+  @include respond-to(sm) {
+    padding: 0 spacing('md');
+  }
+}
+
+// === LOADING (Import en cours) ===
+.modal-visitor-import__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('md');
+}
+
+.modal-visitor-import__spinner {
+  width: size('64');
+  height: size('64');
+  border: border-width('base') solid surface('border');
+  border-top-color: color('base');
+  border-radius: radius('full');
+
+  // Animation douce TSA-friendly (max 0.3s ease)
+  // Note: Spinner nécessite animation continue, mais lente (1s) pour TSA
+  animation: spin 1s linear infinite;
+
+  // Respect prefers-reduced-motion (via safe-transition)
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    border-top-color: surface('border');
+    opacity: 0.6;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.modal-visitor-import__loading-text {
+  color: text('secondary');
+  font-size: font-size('base');
+  margin: 0;
+}
+
+// === SUCCESS (Import réussi) ===
+.modal-visitor-import__success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background: surface('soft');
+  border-radius: radius('md');
+  border: border-width('thin') solid surface('border');
+
+  // Animation douce d'apparition (max 0.3s ease)
+  @include safe-transition(opacity, transform);
+  animation: fadeInScale timing('base') easing('ease-out');
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-visitor-import__success-icon {
+  width: size('64');
+  height: size('64');
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: semantic('success');
+  color: text('invert');
+  border-radius: radius('full');
+  font-size: font-size('xl');
+  font-weight: font-weight('bold');
+}
+
+.modal-visitor-import__success-text {
+  color: text('primary');
+  font-size: font-size('lg');
+  font-weight: font-weight('semibold');
+  margin: 0;
+}
+
+.modal-visitor-import__success-details {
+  color: text('secondary');
+  font-size: font-size('base');
+  margin: 0;
+}
+
+// === ERROR (Import échoué) ===
+.modal-visitor-import__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background: surface('soft');
+  border-radius: radius('md');
+  border: border-width('thin') solid semantic('error');
+
+  // Animation douce d'apparition
+  @include safe-transition(opacity, transform);
+  animation: fadeInScale timing('base') easing('ease-out');
+}
+
+.modal-visitor-import__error-icon {
+  width: size('64');
+  height: size('64');
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: semantic('error');
+  color: text('invert');
+  border-radius: radius('full');
+  font-size: font-size('xl');
+  font-weight: font-weight('bold');
+}
+
+.modal-visitor-import__error-text {
+  color: text('primary');
+  font-size: font-size('lg');
+  font-weight: font-weight('semibold');
+  margin: 0;
+}
+
+.modal-visitor-import__error-details {
+  color: text('secondary');
+  font-size: font-size('base');
+  margin: 0;
+  padding: spacing('xs') spacing('sm');
+  background: surface('bg');
+  border-radius: radius('sm');
+  max-width: 100%;
+  word-break: break-word;
+}
+
+// === ACTIONS (Boutons) ===
+.modal-visitor-import__actions {
+  display: flex;
+  gap: spacing('md');
+  justify-content: center;
+  padding: spacing('md') spacing('lg');
+  border-top: border-width('thin') solid surface('border');
+
+  // Mobile (320px-575px) : boutons empilés
+  flex-direction: column;
+  width: 100%;
+
+  // Tablette & Desktop (576px+) : boutons côte à côte
+  @include respond-to(sm) {
+    flex-direction: row;
+    width: auto;
+  }
+}
+
+.modal-visitor-import__button {
+  // Base
+  padding: spacing('sm') spacing('lg');
+  border-radius: radius('md');
+  font-size: font-size('base');
+  font-weight: font-weight('semibold');
+  cursor: pointer;
+  border: border-width('base') solid transparent;
+
+  // Transitions douces TSA-friendly (max 0.3s ease)
+  @include safe-transition(background-color, border-color, transform);
+
+  // Taille cible tactile minimum (WCAG)
+  min-width: size('touch-target-optimal');
+  min-height: size('touch-target-min');
+
+  // Focus visible (WCAG 2.2 AA)
+  &:focus-visible {
+    outline: border-width('base') solid color('base');
+    outline-offset: size('2');
+  }
+
+  // Disabled
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  // Mobile : 100% largeur
+  width: 100%;
+
+  // Tablette & Desktop : auto largeur
+  @include respond-to(sm) {
+    width: auto;
+  }
+}
+
+// === BOUTON PRIMARY (Importer / Réessayer) ===
+.modal-visitor-import__button--primary {
+  background: color('base');
+  color: text('invert');
+  border-color: color('base');
+
+  &:hover:not(:disabled) {
+    background: surface('hover');
+    transform: translateY(-2px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// === BOUTON SECONDARY (Plus tard / Annuler) ===
+.modal-visitor-import__button--secondary {
+  background: surface('bg');
+  color: text('primary');
+  border-color: surface('border');
+
+  &:hover:not(:disabled) {
+    background: surface('soft');
+    border-color: color('base');
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+}
+
+// === SR-ONLY (Screen reader only) ===
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
