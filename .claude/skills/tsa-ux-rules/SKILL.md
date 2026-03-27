@@ -10,6 +10,7 @@ description: Enforces UX rules specific to children with autism spectrum conditi
 **NO TECHNICAL CONTENT IN TABLEAU CONTEXT**
 
 The Tableau (child-facing interface) MUST NEVER display:
+
 - Error messages (DB, network, validation)
 - System state (loading, syncing, offline)
 - Business logic (quotas, subscription, conflicts)
@@ -84,28 +85,33 @@ What MUST NEVER happen: timeline rearranging live, progress disappearing, steps 
 Before deploying ANY Tableau component, verify:
 
 **Context Detection**
+
 - [ ] Component correctly detects Tableau vs Édition context
 - [ ] Error states render differently per context
 - [ ] Loading states suppressed in Tableau (or use last known state)
 
 **Content Validation**
+
 - [ ] Zero technical terms visible to child
 - [ ] Zero error messages, network state, quotas
 - [ ] All feedback is positive or neutral (never negative)
 - [ ] Text uses child-appropriate language
 
 **Interaction Validation**
+
 - [ ] Touch targets ≥ 44×44px
 - [ ] One-hand usable on tablet/phone
 - [ ] No surprise animations or visual changes
 - [ ] Respects `prefers-reduced-motion`
 
 **Anti-Choc Validation**
+
 - [ ] Structural changes deferred to next Chargement
 - [ ] No live timeline/progress changes while child viewing
 - [ ] No popups about data conflicts or overwrites
 
 **Manual Test**
+
 - [ ] Test with `reduced_motion = true`
 - [ ] Test with `confetti_enabled = false`
 - [ ] Simulate error state → neutral UI shown
@@ -139,15 +145,15 @@ Before deploying ANY Tableau component, verify:
 
 ## 🧠 Rationalization Table (common excuses → counter-arguments)
 
-| Excuse | Why it's wrong | Correct approach |
-|--------|----------------|------------------|
-| "It's just a small error message, won't scare them" | ANY technical content creates anxiety. Non-negotiable. | Show neutral screen or no change. |
-| "I'll hide it with an accordion, they won't see it" | Children explore. Hidden ≠ safe. | Remove completely from Tableau context. |
-| "Parents need to see quotas, I'll add it to Tableau" | Tableau = child context. Parents use Édition. | Add quota UI to Édition only. |
-| "Loading spinner is better than blank screen" | Spinner = "something is wrong". Creates anxiety. | Show last known state or static placeholder. |
-| "I'll use friendly language for errors" | Friendly error = still an error. Still technical. | No errors in Tableau. Silent graceful degradation. |
-| "Just this one animation, it's cute" | Cute to adults ≠ comfortable for TSA children. | Test with `prefers-reduced-motion`. Respect setting. |
-| "They need feedback when validation fails" | Negative feedback = harmful for TSA motivation. | Show neutral state or positive reinforcement for attempts. |
+| Excuse                                               | Why it's wrong                                         | Correct approach                                           |
+| ---------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
+| "It's just a small error message, won't scare them"  | ANY technical content creates anxiety. Non-negotiable. | Show neutral screen or no change.                          |
+| "I'll hide it with an accordion, they won't see it"  | Children explore. Hidden ≠ safe.                       | Remove completely from Tableau context.                    |
+| "Parents need to see quotas, I'll add it to Tableau" | Tableau = child context. Parents use Édition.          | Add quota UI to Édition only.                              |
+| "Loading spinner is better than blank screen"        | Spinner = "something is wrong". Creates anxiety.       | Show last known state or static placeholder.               |
+| "I'll use friendly language for errors"              | Friendly error = still an error. Still technical.      | No errors in Tableau. Silent graceful degradation.         |
+| "Just this one animation, it's cute"                 | Cute to adults ≠ comfortable for TSA children.         | Test with `prefers-reduced-motion`. Respect setting.       |
+| "They need feedback when validation fails"           | Negative feedback = harmful for TSA motivation.        | Show neutral state or positive reinforcement for attempts. |
 
 **Remember**: TSA UX is about **removing noise, not softening it**. If you're debating whether something is "too technical", it is.
 

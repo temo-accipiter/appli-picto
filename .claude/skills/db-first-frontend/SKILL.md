@@ -12,6 +12,7 @@ description: Enforces DB-first architecture rules for Supabase frontend code. Us
 Every database interaction MUST go through a custom hook from `src/hooks/`. Period.
 
 This is not negotiable, has no exceptions, and applies to all contexts:
+
 - Components (Server or Client)
 - API routes
 - Utilities
@@ -123,14 +124,14 @@ Visitor is **local-only** — no DB row exists. No `accounts.status = 'visitor'`
 
 ## 🧠 Rationalization Table (common excuses → counter-arguments)
 
-| Excuse | Why it's wrong | Correct approach |
-|--------|----------------|------------------|
-| "It's just a quick read, no need for a hook" | Bypasses error handling, TypeScript contract, RLS expectations | Always use hook. Create one if missing (5 min) |
-| "I'll check `account.status` first, then query" | Frontend check ≠ authorization. User can bypass. | Let RLS refuse. Handle error gracefully. |
-| "This field is read-only, safe to select" | RLS may hide it. Direct select breaks contract. | Use hook with explicit TypeScript return type. |
-| "I need `service_role` for admin features" | Admin = user with `admin` status. Still uses RLS. | Admin RLS policies grant access. Never bypass. |
-| "Calculating quota client-side is faster" | Creates race conditions, inconsistent state. | DB calculates via RLS or function. Frontend displays. |
-| "Just this once for prototyping" | Prototype becomes production. Technical debt. | Prototype with hooks. Refactor effort = same. |
+| Excuse                                          | Why it's wrong                                                 | Correct approach                                      |
+| ----------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| "It's just a quick read, no need for a hook"    | Bypasses error handling, TypeScript contract, RLS expectations | Always use hook. Create one if missing (5 min)        |
+| "I'll check `account.status` first, then query" | Frontend check ≠ authorization. User can bypass.               | Let RLS refuse. Handle error gracefully.              |
+| "This field is read-only, safe to select"       | RLS may hide it. Direct select breaks contract.                | Use hook with explicit TypeScript return type.        |
+| "I need `service_role` for admin features"      | Admin = user with `admin` status. Still uses RLS.              | Admin RLS policies grant access. Never bypass.        |
+| "Calculating quota client-side is faster"       | Creates race conditions, inconsistent state.                   | DB calculates via RLS or function. Frontend displays. |
+| "Just this once for prototyping"                | Prototype becomes production. Technical debt.                  | Prototype with hooks. Refactor effort = same.         |
 
 **Remember**: Every shortcut creates a future bug, security hole, or architectural violation. DB-first is non-negotiable because it's the ONLY pattern that scales safely.
 

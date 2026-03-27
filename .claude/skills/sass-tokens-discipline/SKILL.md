@@ -12,6 +12,7 @@ description: Enforces strict design system token usage in Sass/SCSS files. Use w
 Every color, spacing, typography, radius, shadow, z-index MUST use a design token from `styles/`. Period.
 
 This applies to:
+
 - New components
 - Component modifications
 - Quick fixes
@@ -62,8 +63,8 @@ box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 z-index: 999;
 
 // ❌ Magic numbers
-width: calc(100% - 48px);  // What is 48px?
-transform: translateY(-3px);  // Why -3px?
+width: calc(100% - 48px); // What is 48px?
+transform: translateY(-3px); // Why -3px?
 ```
 
 **Action**: Replace with appropriate token or mixin from `styles/`. Run `pnpm lint:hardcoded` to detect violations.
@@ -120,14 +121,14 @@ Reuse existing patterns. Adapt components to tokens, never tokens to components.
 
 ## 🧠 Rationalization Table (common excuses → counter-arguments)
 
-| Excuse | Why it's wrong | Correct approach |
-|--------|----------------|------------------|
-| "It's just a temporary value for prototyping" | Prototypes become production. Refactoring = technical debt. | Prototype with tokens. Same effort, zero debt. |
-| "The token is close but not exact (16px vs 18px)" | Creates visual inconsistency. Breaks design system. | Use the existing token. Close = exact. |
-| "I'll add the token later when I have time" | Never happens. Value spreads to other components. | Stop now. Signal needed token. Wait for user. |
-| "This component is unique, doesn't need tokens" | Every "unique" component shares colors, spacing, motion. | Use tokens. Uniqueness = layout, not values. |
-| "Calculating with tokens is harder (calc())" | Hardcoded calc() hides intent. Not maintainable. | Use token-based calc or request new token. |
-| "Nobody will notice this one hardcoded value" | Automated lint WILL catch it. Sets bad precedent. | Use token. Discipline = every value, every time. |
+| Excuse                                            | Why it's wrong                                              | Correct approach                                 |
+| ------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------ |
+| "It's just a temporary value for prototyping"     | Prototypes become production. Refactoring = technical debt. | Prototype with tokens. Same effort, zero debt.   |
+| "The token is close but not exact (16px vs 18px)" | Creates visual inconsistency. Breaks design system.         | Use the existing token. Close = exact.           |
+| "I'll add the token later when I have time"       | Never happens. Value spreads to other components.           | Stop now. Signal needed token. Wait for user.    |
+| "This component is unique, doesn't need tokens"   | Every "unique" component shares colors, spacing, motion.    | Use tokens. Uniqueness = layout, not values.     |
+| "Calculating with tokens is harder (calc())"      | Hardcoded calc() hides intent. Not maintainable.            | Use token-based calc or request new token.       |
+| "Nobody will notice this one hardcoded value"     | Automated lint WILL catch it. Sets bad precedent.           | Use token. Discipline = every value, every time. |
 
 **Remember**: Token discipline is binary. 99% compliant = 100% broken. One exception breaks the system.
 
@@ -136,16 +137,19 @@ Reuse existing patterns. Adapt components to tokens, never tokens to components.
 ## 📚 Progressive Disclosure (learning levels)
 
 ### Level 1: Débutant
+
 - **What**: Always use tokens from `styles/tokens/`
 - **How**: Search existing tokens before writing ANY value
 - **Check**: Run `pnpm lint:hardcoded` before commit
 
 ### Level 2: Intermédiaire
+
 - **What**: Understand token categories (semantic vs primitive)
 - **How**: Use semantic tokens (e.g., `color-text-primary`) over primitives (e.g., `color-gray-900`)
 - **Check**: Verify token usage matches UX intent (not just visual match)
 
 ### Level 3: Avancé
+
 - **What**: Know when to request new tokens vs adapt design
 - **How**: Recognize patterns → micro-variation = use existing, new use case = request token
 - **Check**: Review token impact on entire design system before requesting

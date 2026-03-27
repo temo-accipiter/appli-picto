@@ -82,3 +82,6 @@ supabase/migrations/.DS_Store
 
 # macOS
 .DS_Store
+
+# Captures d'écran Playwright MCP
+.claude/playwright-screenshots/

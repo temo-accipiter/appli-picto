@@ -12,6 +12,7 @@ description: Prevents mixing the three core systems (Planning/Token economy/Sequ
 Planning, Token Economy, and Sequencing are **architecturally separate** and MUST remain so.
 
 This means:
+
 - Separate DB tables
 - Separate hooks
 - Separate UI components
@@ -124,14 +125,14 @@ Before writing code for Planning, Token Economy, or Sequencing, ask:
 
 ## 🧠 Rationalization Table (common excuses → counter-arguments)
 
-| Excuse | Why it's wrong | Correct approach |
-|--------|----------------|------------------|
-| "Steps and slots are similar, I'll reuse the component" | Different persistence, different validation, different UX. | Create separate components. Abstract shared UI only. |
-| "Token count drives progression, makes sense to derive state" | Tokens = reward, not progress. Creates logic coupling. | Planning progression is independent. Tokens are decorative. |
-| "I'll just add a `type` prop to handle both systems" | Type-switching = hidden coupling. Hard to maintain. | Separate components per system. Explicit boundaries. |
-| "Sequences are just sub-timelines, same concept" | Sequences = local-only, single task. Timelines = DB, full day. | Never treat sequences as timelines. Different rules. |
-| "I'll check `if (isSequence)` to branch behavior" | Conditional logic = system leakage. Violates separation. | Use correct hook/component from start. No branching. |
-| "Sharing state saves memory" | Premature optimization. Creates architectural debt. | Each system has its own state. Memory is cheap. |
+| Excuse                                                        | Why it's wrong                                                 | Correct approach                                            |
+| ------------------------------------------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| "Steps and slots are similar, I'll reuse the component"       | Different persistence, different validation, different UX.     | Create separate components. Abstract shared UI only.        |
+| "Token count drives progression, makes sense to derive state" | Tokens = reward, not progress. Creates logic coupling.         | Planning progression is independent. Tokens are decorative. |
+| "I'll just add a `type` prop to handle both systems"          | Type-switching = hidden coupling. Hard to maintain.            | Separate components per system. Explicit boundaries.        |
+| "Sequences are just sub-timelines, same concept"              | Sequences = local-only, single task. Timelines = DB, full day. | Never treat sequences as timelines. Different rules.        |
+| "I'll check `if (isSequence)` to branch behavior"             | Conditional logic = system leakage. Violates separation.       | Use correct hook/component from start. No branching.        |
+| "Sharing state saves memory"                                  | Premature optimization. Creates architectural debt.            | Each system has its own state. Memory is cheap.             |
 
 **Remember**: System separation is architectural integrity. Shortcuts create technical debt that compounds over time.
 
