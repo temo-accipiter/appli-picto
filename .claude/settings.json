@@ -2,12 +2,18 @@
   "model": "sonnet",
   "outputStyle": "appli-picto-guide",
 
-  "statusLine": {
-    "type": "command",
-    "command": "$CLAUDE_PROJECT_DIR/.claude/status-line/tokens.sh"
-  },
-
   "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/session-context.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash(git commit:*|git push:*)",
@@ -15,6 +21,42 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/pre-commit.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/protect-generated-files.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit(*.scss)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-hardcoded-scss.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(src/hooks/*.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-supabase-hooks.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash(yarn *|npm *)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/block-yarn-npm.sh"
           }
         ]
       }

@@ -1,353 +1,1079 @@
-# Agent Skills
+# Agent Skills — Guide complet
 
-Agent Skills are modular capabilities that extend Claude's functionality. Each Skill packages instructions, metadata, and optional resources (scripts, templates) that Claude uses automatically when relevant.
+Guide optimisé pour créer des skills efficaces avec Claude Code et l'API Claude.
 
 ---
 
-## Why use Skills
+## Table des matières
 
-Skills are reusable, filesystem-based resources that provide Claude with domain-specific expertise: workflows, context, and best practices that transform general-purpose agents into specialists. Unlike prompts (conversation-level instructions for one-off tasks), Skills load on-demand and eliminate the need to repeatedly provide the same guidance across multiple conversations.
+1. [Qu'est-ce qu'un Skill ?](#quest-ce-quun-skill)
+2. [Architecture et fonctionnement](#architecture-et-fonctionnement)
+3. [Structure d'un Skill](#structure-dun-skill)
+4. [Best Practices](#best-practices)
+5. [Patterns communs](#patterns-communs)
+6. [Progressive Disclosure](#progressive-disclosure)
+7. [Skills avec code exécutable](#skills-avec-code-exécutable)
+8. [Skills vs autres features](#skills-vs-autres-features)
+9. [Partage et distribution](#partage-et-distribution)
+10. [Troubleshooting](#troubleshooting)
 
-**Key benefits**:
+---
 
-- **Specialize Claude**: Tailor capabilities for domain-specific tasks
-- **Reduce repetition**: Create once, use automatically
-- **Compose capabilities**: Combine Skills to build complex workflows
+## Qu'est-ce qu'un Skill ?
 
-<Note>
-For a deep dive into the architecture and real-world applications of Agent Skills, read our engineering blog: [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills).
-</Note>
+**Agent Skills** sont des capacités modulaires réutilisables qui étendent les fonctionnalités de Claude avec des instructions, métadonnées, et ressources (scripts, templates) que Claude utilise automatiquement quand pertinent.
 
-## Using Skills
+### Pourquoi utiliser des Skills ?
 
-Anthropic provides pre-built Agent Skills for common document tasks (PowerPoint, Excel, Word, PDF), and you can create your own custom Skills. Both work the same way. Claude automatically uses them when relevant to your request.
+- **Spécialiser Claude** : Adapter les capacités pour des tâches spécifiques
+- **Réduire la répétition** : Créer une fois, utiliser automatiquement
+- **Composer des capacités** : Combiner des Skills pour des workflows complexes
 
-**Pre-built Agent Skills** are available to all users on claude.ai and via the Claude API. See the [Available Skills](#available-skills) section below for the complete list.
+### Quand créer un Skill ?
 
-**Custom Skills** let you package domain expertise and organizational knowledge. They're available across Claude's products: create them in Claude Code, upload them via the API, or add them in claude.ai settings.
+**Règle simple** : Si tu répètes la même explication à Claude plusieurs fois → c'est un Skill.
 
-<Note>
-**Get started:**
-- For pre-built Agent Skills: See the [quickstart tutorial](/docs/en/agents-and-tools/agent-skills/quickstart) to start using PowerPoint, Excel, Word, and PDF skills in the API
-- For custom Skills: See the [Agent Skills Cookbook](https://platform.claude.com/cookbook/skills-notebooks-01-skills-introduction) to learn how to create your own Skills
-</Note>
+**Exemples d'usage** :
 
-## How Skills work
+- Standards de code review de ton équipe
+- Formats de commit messages préférés
+- Guidelines de marque organisation
+- Templates de documentation
+- Checklists de debugging pour frameworks spécifiques
 
-Skills leverage Claude's VM environment to provide capabilities beyond what's possible with prompts alone. Claude operates in a virtual machine with filesystem access, allowing Skills to exist as directories containing instructions, executable code, and reference materials, organized like an onboarding guide you'd create for a new team member.
+---
 
-This filesystem-based architecture enables **progressive disclosure**: Claude loads information in stages as needed, rather than consuming context upfront.
+## Architecture et fonctionnement
 
-### Three types of Skill content, three levels of loading
+### Les 3 niveaux de chargement (Progressive Disclosure)
 
-Skills can contain three types of content, each loaded at different times:
+Skills utilisent un chargement progressif pour optimiser le contexte :
 
-### Level 1: Metadata (always loaded)
+| Niveau                     | Quand chargé            | Coût tokens       | Contenu                                   |
+| -------------------------- | ----------------------- | ----------------- | ----------------------------------------- |
+| **Niveau 1: Metadata**     | Toujours (au démarrage) | ~100 tokens/skill | `name` + `description` (YAML frontmatter) |
+| **Niveau 2: Instructions** | Quand skill activé      | <5k tokens        | Corps de SKILL.md                         |
+| **Niveau 3: Resources**    | À la demande            | Illimité          | Fichiers référencés (bash, sans contexte) |
 
-**Content type: Instructions**. The Skill's YAML frontmatter provides discovery information:
+### Comment Claude accède aux Skills
+
+1. **Au démarrage** : Charge uniquement `name` et `description` de tous les skills
+2. **Matching sémantique** : Compare ta requête aux descriptions
+3. **Confirmation** : Te demande confirmation avant de charger le skill complet
+4. **Chargement** : Lit SKILL.md via bash (entre dans le contexte)
+5. **Ressources** : Lit fichiers référencés ou exécute scripts à la demande
+
+**Avantage** : Tu peux avoir 100+ skills installés sans pénalité de contexte.
+
+---
+
+## Structure d'un Skill
+
+### Fichiers requis
+
+```
+ton-skill/
+├── SKILL.md              # Requis : instructions principales
+├── REFERENCE.md          # Optionnel : documentation détaillée
+├── EXAMPLES.md           # Optionnel : exemples
+└── scripts/              # Optionnel : scripts utilitaires
+    └── validate.py
+```
+
+### Format SKILL.md
 
 ```yaml
 ---
-name: pdf-processing
-description: Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.
+name: ton-skill-name
+description: Description concise de ce que fait le skill et quand l'utiliser
+allowed-tools: Read, Grep, Glob, Bash  # Optionnel : restreindre les outils
+model: sonnet  # Optionnel : forcer un modèle
 ---
+
+# Nom du Skill
+
+## Instructions
+
+Instructions claires étape par étape pour Claude.
+
+## Exemples
+
+Exemples concrets d'utilisation.
 ```
 
-Claude loads this metadata at startup and includes it in the system prompt. This lightweight approach means you can install many Skills without context penalty; Claude only knows each Skill exists and when to use it.
+### Champs requis
 
-### Level 2: Instructions (loaded when triggered)
+**`name`** :
 
-**Content type: Instructions**. The main body of SKILL.md contains procedural knowledge: workflows, best practices, and guidance:
+- Maximum 64 caractères
+- Minuscules, chiffres, tirets uniquement
+- Pas de mots réservés : "anthropic", "claude"
+- Pas de XML tags
+
+**`description`** :
+
+- Non vide, maximum 1024 caractères
+- Pas de XML tags
+- **Doit inclure** : ce que fait le skill **ET** quand l'utiliser
+
+---
+
+## Best Practices
+
+### 1. La concision est clé
+
+**Principe par défaut** : Claude est déjà très intelligent.
+
+N'ajoute que le contexte que Claude n'a pas déjà.
+
+**✅ Bon (concis, 50 tokens)** :
+
+````markdown
+## Extraire texte PDF
+
+Utilise pdfplumber pour l'extraction :
+
+```python
+import pdfplumber
+with pdfplumber.open("file.pdf") as pdf:
+    text = pdf.pages[0].extract_text()
+```
+````
+
+````
+
+**❌ Mauvais (verbeux, 150 tokens)** :
+```markdown
+## Extraire texte PDF
+
+Les fichiers PDF (Portable Document Format) sont un format commun qui contient
+du texte, des images et autre contenu. Pour extraire du texte d'un PDF, tu dois
+utiliser une librairie. Il y a beaucoup de librairies disponibles mais pdfplumber
+est recommandé car facile à utiliser et gère la plupart des cas...
+````
+
+### 2. Descriptions efficaces
+
+**Une bonne description répond à 2 questions** :
+
+1. Que fait le skill ?
+2. Quand l'utiliser ?
+
+**✅ Bon** :
+
+```yaml
+description: Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.
+```
+
+**❌ Mauvais** :
+
+```yaml
+description: Helps with documents
+```
+
+**⚠️ Toujours en 3ème personne** (injecté dans system prompt) :
+
+- ✅ "Processes Excel files and generates reports"
+- ❌ "I can help you process Excel files"
+- ❌ "You can use this to process Excel files"
+
+### 3. Degrés de liberté appropriés
+
+**Haute liberté** (instructions textuelles) :
+
+- Plusieurs approches valides
+- Décisions dépendent du contexte
+
+```markdown
+## Code review process
+
+1. Analyze code structure and organization
+2. Check for potential bugs or edge cases
+3. Suggest improvements for readability
+4. Verify adherence to project conventions
+```
+
+**Liberté moyenne** (pseudocode avec paramètres) :
+
+- Pattern préféré existe
+- Variation acceptable
+
+````markdown
+## Generate report
+
+Use this template and customize as needed:
+
+```python
+def generate_report(data, format="markdown", include_charts=True):
+    # Process data
+    # Generate output in specified format
+```
+````
+
+**Basse liberté** (scripts spécifiques) :
+
+- Opérations fragiles
+- Consistance critique
+
+````markdown
+## Database migration
+
+Run exactly this script:
+
+```bash
+python scripts/migrate.py --verify --backup
+```
+````
+
+Do not modify the command or add flags.
+
+### 4. Tester avec tous les modèles cibles
+
+Skills agissent comme des extensions de modèles → l'efficacité dépend du modèle.
+
+- **Claude Haiku** : A-t-il assez de guidance ?
+- **Claude Sonnet** : Instructions claires et efficaces ?
+- **Claude Opus** : Éviter sur-explication ?
+
+### 5. Conventions de nommage
+
+**Forme gérondive recommandée** (verbe + -ing) :
+
+- `processing-pdfs`
+- `analyzing-spreadsheets`
+- `managing-databases`
+- `testing-code`
+
+**Alternatives acceptables** :
+
+- Groupes nominaux : `pdf-processing`, `spreadsheet-analysis`
+- Action-oriented : `process-pdfs`, `analyze-spreadsheets`
+
+**❌ Éviter** :
+
+- Noms vagues : `helper`, `utils`, `tools`
+- Trop générique : `documents`, `data`, `files`
+- Mots réservés : `anthropic-helper`, `claude-tools`
+
+---
+
+## Progressive Disclosure
+
+### Principe
+
+Garde SKILL.md comme overview qui pointe vers matériaux détaillés.
+
+**Règle** : SKILL.md < 500 lignes. Au-delà → fichiers séparés.
+
+### Pattern 1 : Guide avec références
 
 ````markdown
 # PDF Processing
 
 ## Quick start
 
-Use pdfplumber to extract text from PDFs:
+Extract text with pdfplumber:
 
 ```python
 import pdfplumber
-
-with pdfplumber.open("document.pdf") as pdf:
+with pdfplumber.open("file.pdf") as pdf:
     text = pdf.pages[0].extract_text()
 ```
-
-For advanced form filling, see [FORMS.md](FORMS.md).
 ````
 
-When you request something that matches a Skill's description, Claude reads SKILL.md from the filesystem via bash. Only then does this content enter the context window.
+## Advanced features
 
-### Level 3: Resources and code (loaded as needed)
+**Form filling**: See [FORMS.md](FORMS.md) for complete guide
+**API reference**: See [REFERENCE.md](REFERENCE.md) for all methods
+**Examples**: See [EXAMPLES.md](EXAMPLES.md) for common patterns
 
-**Content types: Instructions, code, and resources**. Skills can bundle additional materials:
+Claude charge FORMS.md, REFERENCE.md ou EXAMPLES.md **seulement quand nécessaire**.
 
-```text
-pdf-skill/
-├── SKILL.md (main instructions)
-├── FORMS.md (form-filling guide)
-├── REFERENCE.md (detailed API reference)
-└── scripts/
-    └── fill_form.py (utility script)
+### Pattern 2 : Organisation par domaine
+
+Pour skills multi-domaines, organise par domaine pour éviter chargement contexte non pertinent.
+
+```
+bigquery-skill/
+├── SKILL.md (overview et navigation)
+└── reference/
+    ├── finance.md (revenue, billing)
+    ├── sales.md (opportunities, pipeline)
+    ├── product.md (API usage, features)
+    └── marketing.md (campaigns, attribution)
 ```
 
-**Instructions**: Additional markdown files (FORMS.md, REFERENCE.md) containing specialized guidance and workflows
+````markdown
+# BigQuery Data Analysis
 
-**Code**: Executable scripts (fill_form.py, validate.py) that Claude runs via bash; scripts provide deterministic operations without consuming context
+## Available datasets
 
-**Resources**: Reference materials like database schemas, API documentation, templates, or examples
+**Finance**: Revenue, ARR, billing → See [reference/finance.md](reference/finance.md)
+**Sales**: Opportunities, pipeline → See [reference/sales.md](reference/sales.md)
+**Product**: API usage, features → See [reference/product.md](reference/product.md)
+**Marketing**: Campaigns, attribution → See [reference/marketing.md](reference/marketing.md)
 
-Claude accesses these files only when referenced. The filesystem model means each content type has different strengths: instructions for flexible guidance, code for reliability, resources for factual lookup.
+## Quick search
 
-| Level                     | When Loaded             | Token Cost            | Content                                                               |
-| ------------------------- | ----------------------- | --------------------- | --------------------------------------------------------------------- |
-| **Level 1: Metadata**     | Always (at startup)     | ~100 tokens per Skill | `name` and `description` from YAML frontmatter                        |
-| **Level 2: Instructions** | When Skill is triggered | Under 5k tokens       | SKILL.md body with instructions and guidance                          |
-| **Level 3+: Resources**   | As needed               | Effectively unlimited | Bundled files executed via bash without loading contents into context |
+```bash
+grep -i "revenue" reference/finance.md
+grep -i "pipeline" reference/sales.md
+```
+````
 
-Progressive disclosure ensures only relevant content occupies the context window at any given time.
+### ⚠️ Éviter références imbriquées
 
-### The Skills architecture
+**❌ Mauvais (trop profond)** :
 
-Skills run in a code execution environment where Claude has filesystem access, bash commands, and code execution capabilities. Think of it like this: Skills exist as directories on a virtual machine, and Claude interacts with them using the same bash commands you'd use to navigate files on your computer.
+```
+SKILL.md → advanced.md → details.md → info réelle
+```
 
-![Agent Skills Architecture - showing how Skills integrate with the agent's configuration and virtual machine](./claude-tutorials/images/agent-skills-architecture.png)
+**✅ Bon (1 niveau)** :
 
-**How Claude accesses Skill content:**
+```
+SKILL.md → advanced.md
+SKILL.md → reference.md
+SKILL.md → examples.md
+```
 
-When a Skill is triggered, Claude uses bash to read SKILL.md from the filesystem, bringing its instructions into the context window. If those instructions reference other files (like FORMS.md or a database schema), Claude reads those files too using additional bash commands. When instructions mention executable scripts, Claude runs them via bash and receives only the output (the script code itself never enters context).
+### Table des matières pour gros fichiers
 
-**What this architecture enables:**
+Pour fichiers de référence > 100 lignes, inclure table des matières en haut.
 
-**On-demand file access**: Claude reads only the files needed for each specific task. A Skill can include dozens of reference files, but if your task only needs the sales schema, Claude loads just that one file. The rest remain on the filesystem consuming zero tokens.
+```markdown
+# API Reference
 
-**Efficient script execution**: When Claude runs `validate_form.py`, the script's code never loads into the context window. Only the script's output (like "Validation passed" or specific error messages) consumes tokens. This makes scripts far more efficient than having Claude generate equivalent code on the fly.
+## Contents
 
-**No practical limit on bundled content**: Because files don't consume context until accessed, Skills can include comprehensive API documentation, large datasets, extensive examples, or any reference materials you need. There's no context penalty for bundled content that isn't used.
+- Authentication and setup
+- Core methods (create, read, update, delete)
+- Advanced features (batch operations, webhooks)
+- Error handling patterns
+- Code examples
 
-This filesystem-based model is what makes progressive disclosure work. Claude navigates your Skill like you'd reference specific sections of an onboarding guide, accessing exactly what each task requires.
+## Authentication and setup
 
-### Example: Loading a PDF processing skill
+...
+```
 
-Here's how Claude loads and uses a PDF processing skill:
+---
 
-1. **Startup**: System prompt includes: `PDF Processing - Extract text and tables from PDF files, fill forms, merge documents`
-2. **User request**: "Extract the text from this PDF and summarize it"
-3. **Claude invokes**: `bash: read pdf-skill/SKILL.md` → Instructions loaded into context
-4. **Claude determines**: Form filling is not needed, so FORMS.md is not read
-5. **Claude executes**: Uses instructions from SKILL.md to complete the task
+## Patterns communs
 
-![Skills loading into context window - showing the progressive loading of skill metadata and content](/docs/images/agent-skills-context-window.png)
+### Workflows pour tâches complexes
 
-The diagram shows:
+Décompose opérations complexes en étapes séquentielles claires.
 
-1. Default state with system prompt and skill metadata pre-loaded
-2. Claude triggers the skill by reading SKILL.md via bash
-3. Claude optionally reads additional bundled files like FORMS.md as needed
-4. Claude proceeds with the task
+**Pattern checklist** (pour workflows sans code) :
 
-This dynamic loading ensures only relevant skill content occupies the context window.
+```markdown
+## Research synthesis workflow
 
-## Where Skills work
+Copy this checklist and track your progress:
+```
 
-Skills are available across Claude's agent products:
+Research Progress:
 
-### Claude API
+- [ ] Step 1: Read all source documents
+- [ ] Step 2: Identify key themes
+- [ ] Step 3: Cross-reference claims
+- [ ] Step 4: Create structured summary
+- [ ] Step 5: Verify citations
 
-The Claude API supports both pre-built Agent Skills and custom Skills. Both work identically: specify the relevant `skill_id` in the `container` parameter along with the code execution tool.
+```
 
-**Prerequisites**: Using Skills via the API requires three beta headers:
+**Step 1: Read all source documents**
 
-- `code-execution-2025-08-25` - Skills run in the code execution container
-- `skills-2025-10-02` - Enables Skills functionality
-- `files-api-2025-04-14` - Required for uploading/downloading files to/from the container
+Review each document in sources/ directory. Note main arguments and evidence.
 
-Use pre-built Agent Skills by referencing their `skill_id` (for example, `pptx`, `xlsx`), or create and upload your own via the Skills API (`/v1/skills` endpoints). Custom Skills are shared organization-wide.
+**Step 2: Identify key themes**
 
-To learn more, see [Use Skills with the Claude API](/docs/en/build-with-claude/skills-guide).
+Look for patterns across sources. Where do sources agree or disagree?
 
-### Claude Code
+...
+```
 
-[Claude Code](https://code.claude.com/docs/en/overview) supports only Custom Skills.
+**Pattern checklist** (pour workflows avec code) :
 
-**Custom Skills**: Create Skills as directories with SKILL.md files. Claude discovers and uses them automatically.
+```markdown
+## PDF form filling workflow
 
-Custom Skills in Claude Code are filesystem-based and don't require API uploads.
+Copy this checklist:
+```
 
-To learn more, see [Use Skills in Claude Code](https://code.claude.com/docs/en/skills).
+Task Progress:
 
-### Claude Agent SDK
+- [ ] Step 1: Analyze form (run analyze_form.py)
+- [ ] Step 2: Create field mapping (edit fields.json)
+- [ ] Step 3: Validate mapping (run validate_fields.py)
+- [ ] Step 4: Fill form (run fill_form.py)
+- [ ] Step 5: Verify output (run verify_output.py)
 
-The [Claude Agent SDK](/docs/en/agent-sdk/overview) supports custom Skills through filesystem-based configuration.
+```
 
-**Custom Skills**: Create Skills as directories with SKILL.md files in `.claude/skills/`. Enable Skills by including `"Skill"` in your `allowed_tools` configuration.
+**Step 1: Analyze the form**
 
-Skills in the Agent SDK are then automatically discovered when the SDK runs.
+Run: `python scripts/analyze_form.py input.pdf`
 
-To learn more, see [Agent Skills in the SDK](/docs/en/agent-sdk/skills).
+This extracts form fields and saves to fields.json.
 
-### Claude.ai
+**Step 2: Create field mapping**
 
-[Claude.ai](https://claude.ai) supports both pre-built Agent Skills and custom Skills.
+Edit fields.json to add values for each field.
 
-**Pre-built Agent Skills**: These Skills are already working behind the scenes when you create documents. Claude uses them without requiring any setup.
+...
+```
 
-**Custom Skills**: Upload your own Skills as zip files through Settings > Features. Available on Pro, Max, Team, and Enterprise plans with code execution enabled. Custom Skills are individual to each user; they are not shared organization-wide and cannot be centrally managed by admins.
+### Feedback loops
 
-To learn more about using Skills in Claude.ai, see the following resources in the Claude Help Center:
+**Pattern : Exécute validator → corrige erreurs → répète**
 
-- [What are Skills?](https://support.claude.com/en/articles/12512176-what-are-skills)
-- [Using Skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
-- [How to create custom Skills](https://support.claude.com/en/articles/12512198-creating-custom-skills)
-- [Teach Claude your way of working using Skills](https://support.claude.com/en/articles/12580051-teach-claude-your-way-of-working-using-skills)
+**Exemple (sans code)** :
 
-## Skill structure
+```markdown
+## Content review process
 
-Every Skill requires a `SKILL.md` file with YAML frontmatter:
+1. Draft content following STYLE_GUIDE.md
+2. Review against checklist:
+   - Check terminology consistency
+   - Verify examples follow format
+   - Confirm all required sections present
+3. If issues found:
+   - Note each issue with section reference
+   - Revise content
+   - Review checklist again
+4. Only proceed when all requirements met
+5. Finalize and save document
+```
+
+**Exemple (avec code)** :
+
+```markdown
+## Document editing process
+
+1. Make edits to `word/document.xml`
+2. **Validate immediately**: `python ooxml/scripts/validate.py unpacked_dir/`
+3. If validation fails:
+   - Review error message carefully
+   - Fix issues in XML
+   - Run validation again
+4. **Only proceed when validation passes**
+5. Rebuild: `python ooxml/scripts/pack.py unpacked_dir/ output.docx`
+6. Test output document
+```
+
+### Templates
+
+**Pour exigences strictes** :
+
+````markdown
+## Report structure
+
+ALWAYS use this exact template:
+
+```markdown
+# [Analysis Title]
+
+## Executive summary
+
+[One-paragraph overview]
+
+## Key findings
+
+- Finding 1 with supporting data
+- Finding 2 with supporting data
+
+## Recommendations
+
+1. Specific actionable recommendation
+2. Specific actionable recommendation
+```
+````
+
+````
+
+**Pour guidance flexible** :
+```markdown
+## Report structure
+
+Sensible default format, use judgment:
+
+```markdown
+# [Analysis Title]
+
+## Executive summary
+
+[Overview]
+
+## Key findings
+
+[Adapt sections based on what you discover]
+````
+
+Adjust sections as needed.
+
+````
+
+### Exemples input/output
+
+Pour skills où qualité dépend d'exemples :
+
+```markdown
+## Commit message format
+
+Generate commit messages following these examples:
+
+**Example 1:**
+Input: Added user authentication with JWT tokens
+Output:
+
+````
+
+feat(auth): implement JWT-based authentication
+
+Add login endpoint and token validation middleware
+
+```
+
+**Example 2:**
+Input: Fixed bug where dates displayed incorrectly
+Output:
+
+```
+
+fix(reports): correct date formatting in timezone conversion
+
+Use UTC timestamps consistently across report generation
+
+```
+
+Follow this style: type(scope): brief description, then detailed explanation.
+```
+
+### Workflow conditionnel
+
+```markdown
+## Document modification workflow
+
+1. Determine modification type:
+
+   **Creating new content?** → Follow "Creation workflow" below
+   **Editing existing content?** → Follow "Editing workflow" below
+
+2. Creation workflow:
+   - Use docx-js library
+   - Build document from scratch
+   - Export to .docx format
+
+3. Editing workflow:
+   - Unpack existing document
+   - Modify XML directly
+   - Validate after each change
+   - Repack when complete
+```
+
+---
+
+## Skills avec code exécutable
+
+### Résoudre, ne pas déléguer
+
+**✅ Bon** : Gérer erreurs explicitement
+
+```python
+def process_file(path):
+    """Process file, creating it if doesn't exist."""
+    try:
+        with open(path) as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"File {path} not found, creating default")
+        with open(path, "w") as f:
+            f.write("")
+        return ""
+    except PermissionError:
+        print(f"Cannot access {path}, using default")
+        return ""
+```
+
+**❌ Mauvais** : Déléguer à Claude
+
+```python
+def process_file(path):
+    # Just fail and let Claude figure it out
+    return open(path).read()
+```
+
+### Scripts utilitaires
+
+**Avantages** :
+
+- Plus fiables que code généré
+- Économie de tokens (pas de code en contexte)
+- Économie de temps (pas de génération)
+- Consistance garantie
+
+**Important** : Clarifier dans instructions si Claude doit :
+
+- **Exécuter le script** (le plus commun) : "Run `analyze_form.py` to extract fields"
+- **Le lire comme référence** (pour logique complexe) : "See `analyze_form.py` for extraction algorithm"
+
+**Exemple** :
+
+````markdown
+## Utility scripts
+
+**analyze_form.py**: Extract all form fields from PDF
+
+```bash
+python scripts/analyze_form.py input.pdf > fields.json
+```
+````
+
+Output format:
+
+```json
+{
+  "field_name": { "type": "text", "x": 100, "y": 200 },
+  "signature": { "type": "sig", "x": 150, "y": 500 }
+}
+```
+
+**validate_boxes.py**: Check for overlapping bounding boxes
+
+```bash
+python scripts/validate_boxes.py fields.json
+# Returns: "OK" or lists conflicts
+```
+
+### Analyse visuelle
+
+Quand inputs peuvent être rendus en images :
+
+````markdown
+## Form layout analysis
+
+1. Convert PDF to images:
+
+   ```bash
+   python scripts/pdf_to_images.py form.pdf
+   ```
+````
+
+2. Analyze each page image to identify form fields
+3. Claude can see field locations and types visually
+
+### Outputs intermédiaires vérifiables
+
+Pattern "plan-validate-execute" pour tâches complexes :
+
+**Pourquoi ce pattern marche** :
+
+- Catch errors early : Validation trouve problèmes avant application
+- Machine-verifiable : Scripts fournissent vérification objective
+- Reversible planning : Claude peut itérer sur plan sans toucher originaux
+- Clear debugging : Messages d'erreur pointent problèmes spécifiques
+
+**Quand utiliser** : Batch operations, changements destructifs, règles de validation complexes, opérations high-stakes.
+
+### Dépendances packages
+
+**claude.ai** : Peut installer packages npm/PyPI et pull GitHub repos
+**Claude API** : Pas d'accès réseau, pas d'installation runtime
+
+Liste packages requis dans SKILL.md et vérifie disponibilité dans [documentation code execution tool](https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/code-execution-tool).
+
+### Environnement runtime
+
+**Comment Claude accède aux Skills** :
+
+1. Metadata pre-loaded au démarrage
+2. Fichiers lus à la demande via bash Read tools
+3. Scripts exécutés efficacement via bash (output uniquement en contexte)
+4. Pas de pénalité contexte pour gros fichiers (jusqu'à lecture effective)
+
+**Implications pour authoring** :
+
+- Chemins fichiers importent : utilise forward slashes (`reference/guide.md`)
+- Nomme fichiers descriptifs : `form_validation_rules.md`, pas `doc2.md`
+- Organise pour découverte : structure par domaine/feature
+- Bundle ressources complètes : docs API, exemples, datasets (pas de pénalité)
+- Préfère scripts pour opérations déterministes
+- Clarifie intent d'exécution : "Run X" vs "See X for algorithm"
+
+---
+
+## Skills vs autres features
+
+### CLAUDE.md vs Skills
+
+**CLAUDE.md** :
+
+- Chargé dans **chaque conversation**, toujours
+- Usage : Standards projet always-on, contraintes, préférences framework
+
+**Skills** :
+
+- Chargé **à la demande** quand matching requête
+- Usage : Expertise task-specific, connaissance pertinente parfois, procédures détaillées
+
+### Subagents vs Skills
+
+**Skills** :
+
+- Ajoutent connaissance à **conversation actuelle**
+- Instructions rejoignent contexte existant
+
+**Subagents** :
+
+- Exécutent dans **contexte séparé**
+- Reçoivent tâche, travaillent indépendamment, retournent résultats
+
+**Utilise Subagents quand** :
+
+- Délégation tâche à contexte d'exécution séparé
+- Accès outils différent de conversation principale
+- Isolation entre travail délégué et contexte principal
+
+**Utilise Skills quand** :
+
+- Améliorer connaissance Claude pour tâche actuelle
+- Expertise s'applique tout au long d'une conversation
+
+### Hooks vs Skills
+
+**Hooks** :
+
+- Event-driven : se déclenchent sur événements
+- Usage : Opérations sur chaque save, validation avant tool calls, side effects automatiques
+
+**Skills** :
+
+- Request-driven : activés selon requête
+- Usage : Connaissance informant gestion requêtes, guidelines affectant raisonnement
+
+### Mise en commun
+
+Setup typique :
+
+- **CLAUDE.md** : Standards projet always-on
+- **Skills** : Expertise task-specific chargée à la demande
+- **Hooks** : Opérations automatisées déclenchées par événements
+- **Subagents** : Contextes d'exécution isolés pour travail délégué
+- **MCP servers** : Outils et intégrations externes
+
+Chacun gère sa spécialité — combine-les au lieu de tout forcer dans skills.
+
+---
+
+## Partage et distribution
+
+### 1. Commit dans repository
+
+**Emplacement** : `.claude/skills/`
+
+**Avantage** : Toute personne clonant le repo obtient les skills automatiquement.
+
+**Usage** :
+
+- Standards de code équipe
+- Workflows projet-specific
+- Skills référençant structure codebase
+
+### 2. Plugins
+
+**Création** : Dossier `skills/` dans projet plugin (structure similaire `.claude/`)
+
+**Distribution** : Via marketplace
+
+**Usage** : Skills non project-specific utiles à communauté large
+
+### 3. Enterprise Managed Settings
+
+**Déploiement** : Organization-wide via managed settings
+
+**Priorité** : La plus haute (override personal/project/plugin)
+
+**Configuration** :
+
+```json
+"strictKnownMarketplaces": [
+  {
+    "source": "github",
+    "repo": "acme-corp/approved-plugins"
+  },
+  {
+    "source": "npm",
+    "package": "@acme-corp/compliance-plugins"
+  }
+]
+```
+
+**Usage** : Standards obligatoires, exigences sécurité, compliance, pratiques cohérentes org
+
+### Skills et Subagents ⚠️
+
+**IMPORTANT** : Subagents n'héritent PAS automatiquement des skills.
+
+**Distinctions** :
+
+- **Built-in agents** (Explorer, Plan, Verify) : **NE peuvent PAS accéder aux skills**
+- **Custom subagents** (définis dans `.claude/agents`) : Peuvent utiliser skills **si listés explicitement**
+- Skills chargés au **démarrage** du subagent, pas à la demande
+
+**Créer custom subagent avec skills** :
+
+Utilise `/agents` command dans Claude Code ou crée `.claude/agents/mon-agent.md` :
 
 ```yaml
 ---
-name: your-skill-name
-description: Brief description of what this Skill does and when to use it
+name: frontend-reviewer
+description: 'Review frontend code for accessibility...'
+tools: Bash, Glob, Grep, Read, WebFetch, WebSearch, Skill
+model: sonnet
+color: blue
+skills: accessibility-audit, performance-check
 ---
+# Frontend Reviewer
 
-# Your Skill Name
-
-## Instructions
-[Clear, step-by-step guidance for Claude to follow]
-
-## Examples
-[Concrete examples of using this Skill]
+Instructions pour ce subagent...
 ```
 
-**Required fields**: `name` and `description`
+**Prérequis** : Skills doivent exister dans `.claude/skills/`
 
-**Field requirements**:
+**Pattern efficace quand** :
 
-`name`:
+- Délégation tâche isolée avec expertise spécifique
+- Différents subagents nécessitent différents skills
+- Enforcer standards dans travail délégué sans prompts
 
-- Maximum 64 characters
-- Must contain only lowercase letters, numbers, and hyphens
-- Cannot contain XML tags
-- Cannot contain reserved words: "anthropic", "claude"
+---
 
-`description`:
+## Troubleshooting
 
-- Must be non-empty
-- Maximum 1024 characters
-- Cannot contain XML tags
+### Skills Validator Tool
 
-The `description` should include both what the Skill does and when Claude should use it. For complete authoring guidance, see the [best practices guide](/docs/en/agents-and-tools/agent-skills/best-practices).
+**Première étape** : Utilise [agent skills verifier](https://github.com/anthropics/agent-skills-verifier)
 
-## Security considerations
+```bash
+# Installation (via uv recommandé)
+uv tool install agent-skills-verifier
 
-We strongly recommend using Skills only from trusted sources: those you created yourself or obtained from Anthropic. Skills provide Claude with new capabilities through instructions and code, and while this makes them powerful, it also means a malicious Skill can direct Claude to invoke tools or execute code in ways that don't match the Skill's stated purpose.
+# Utilisation
+agent-skills-verifier ~/.claude/skills/ton-skill
+```
 
-<Warning>
-If you must use a Skill from an untrusted or unknown source, exercise extreme caution and thoroughly audit it before use. Depending on what access Claude has when executing the Skill, malicious Skills could lead to data exfiltration, unauthorized system access, or other security risks.
-</Warning>
+Catch problèmes structurels avant debugging.
 
-**Key security considerations**:
+### Skill ne se déclenche pas
 
-- **Audit thoroughly**: Review all files bundled in the Skill: SKILL.md, scripts, images, and other resources. Look for unusual patterns like unexpected network calls, file access patterns, or operations that don't match the Skill's stated purpose
-- **External sources are risky**: Skills that fetch data from external URLs pose particular risk, as fetched content may contain malicious instructions. Even trustworthy Skills can be compromised if their external dependencies change over time
-- **Tool misuse**: Malicious Skills can invoke tools (file operations, bash commands, code execution) in harmful ways
-- **Data exposure**: Skills with access to sensitive data could be designed to leak information to external systems
-- **Treat like installing software**: Only use Skills from trusted sources. Be especially careful when integrating Skills into production systems with access to sensitive data or critical operations
+**Cause** : Presque toujours la description.
 
-## Available Skills
+**Solutions** :
 
-### Pre-built Agent Skills
+1. Vérifie description vs requêtes réelles
+2. Ajoute trigger phrases utilisées vraiment
+3. Teste variations : "help me profile this", "why is this slow?", "make this faster"
+4. Si variation échoue → ajoute keywords à description
 
-The following pre-built Agent Skills are available for immediate use:
+### Skill ne charge pas
 
-- **PowerPoint (pptx)**: Create presentations, edit slides, analyze presentation content
-- **Excel (xlsx)**: Create spreadsheets, analyze data, generate reports with charts
-- **Word (docx)**: Create documents, edit content, format text
-- **PDF (pdf)**: Generate formatted PDF documents and reports
+**Vérifie structure** :
 
-These Skills are available on the Claude API and claude.ai. See the [quickstart tutorial](/docs/en/agents-and-tools/agent-skills/quickstart) to start using them in the API.
+- ✅ SKILL.md doit être dans dossier nommé (pas à racine skills)
+- ✅ Nom fichier exact : `SKILL.md` (SKILL en majuscules, .md minuscule)
 
-### Custom Skills examples
+**Debug** :
 
-For complete examples of custom Skills, see the [Skills cookbook](https://platform.claude.com/cookbook/skills-notebooks-01-skills-introduction).
+```bash
+claude --debug
+```
 
-## Limitations and constraints
+Regarde messages mentionnant ton skill name.
 
-Understanding these limitations helps you plan your Skills deployment effectively.
+### Mauvais skill utilisé
 
-### Cross-surface availability
+**Cause** : Descriptions trop similaires.
 
-**Custom Skills do not sync across surfaces**. Skills uploaded to one surface are not automatically available on others:
+**Solution** : Rends descriptions distinctes et spécifiques.
 
-- Skills uploaded to Claude.ai must be separately uploaded to the API
-- Skills uploaded via the API are not available on Claude.ai
-- Claude Code Skills are filesystem-based and separate from both Claude.ai and API
+### Conflits de priorité
 
-You'll need to manage and upload Skills separately for each surface where you want to use them.
+**Hiérarchie** : Enterprise > Personal > Project > Plugins
 
-### Sharing scope
+Si skill personnel ignoré, check si enterprise/higher-priority a même nom.
 
-Skills have different sharing models depending on where you use them:
+**Options** :
 
-- **Claude.ai**: Individual user only; each team member must upload separately
-- **Claude API**: Workspace-wide; all workspace members can access uploaded Skills
-- **Claude Code**: Personal (`~/.claude/skills/`) or project-based (`.claude/skills/`); can also be shared via Claude Code Plugins
+1. Renomme ton skill (plus facile)
+2. Parle à admin du skill enterprise
 
-Claude.ai does not currently support centralized admin management or org-wide distribution of custom Skills.
+### Plugin skills n'apparaissent pas
 
-### Runtime environment constraints
+**Fix** :
 
-The exact runtime environment available to your skill depends on the product surface where you use it.
+1. Clear cache
+2. Restart Claude Code
+3. Reinstall plugin
 
-- **Claude.ai**:
-  - **Varying network access**: Depending on user/admin settings, Skills may have full, partial, or no network access. For more details, see the [Create and Edit Files](https://support.claude.com/en/articles/12111783-create-and-edit-files-with-claude#h_6b7e833898) support article.
-- **Claude API**:
-  - **No network access**: Skills cannot make external API calls or access the internet
-  - **No runtime package installation**: Only pre-installed packages are available. You cannot install new packages during execution.
-  - **Pre-configured dependencies only**: Check the [code execution tool documentation](/docs/en/agents-and-tools/tool-use/code-execution-tool) for the list of available packages
-- **Claude Code**:
-  - **Full network access**: Skills have the same network access as any other program on the user's computer
-  - **Global package installation discouraged**: Skills should only install packages locally in order to avoid interfering with the user's computer
+Si toujours absent → structure plugin incorrecte (utilise validator).
 
-Plan your Skills to work within these constraints.
+### Erreurs runtime
 
-## Next steps
+**Causes communes** :
 
-<CardGroup cols={2}>
-  <Card
-    title="Get started with Agent Skills"
-    icon="graduation-cap"
-    href="/docs/en/agents-and-tools/agent-skills/quickstart"
-  >
-    Create your first Skill
-  </Card>
-  <Card
-    title="API Guide"
-    icon="code"
-    href="/docs/en/build-with-claude/skills-guide"
-  >
-    Use Skills with the Claude API
-  </Card>
-  <Card
-    title="Use Skills in Claude Code"
-    icon="terminal"
-    href="https://code.claude.com/docs/en/skills"
-  >
-    Create and manage custom Skills in Claude Code
-  </Card>
-  <Card
-    title="Use Skills in the Agent SDK"
-    icon="cube"
-    href="/docs/en/agent-sdk/skills"
-  >
-    Use Skills programmatically in TypeScript and Python
-  </Card>
-  <Card
-    title="Authoring best practices"
-    icon="lightbulb"
-    href="/docs/en/agents-and-tools/agent-skills/best-practices"
-  >
-    Write Skills that Claude can use effectively
-  </Card>
-</CardGroup>
+- **Dépendances manquantes** : Packages doivent être installés
+- **Problèmes permissions** : Scripts nécessitent execute permission (`chmod +x`)
+- **Path separators** : Utilise forward slashes partout (même Windows)
+
+### Quick Troubleshooting Checklist
+
+- [ ] Pas déclenché ? → Améliore description + ajoute trigger phrases
+- [ ] Pas chargé ? → Vérifie path, nom fichier, syntaxe YAML
+- [ ] Mauvais skill utilisé ? → Rends descriptions plus distinctes
+- [ ] Shadowed ? → Check hiérarchie priorité et renomme si besoin
+- [ ] Plugin skills manquants ? → Clear cache + reinstall
+- [ ] Runtime failure ? → Check dependencies, permissions, paths
+
+---
+
+## Checklist finale
+
+Avant partager un skill, vérifie :
+
+### Qualité core
+
+- [ ] Description spécifique avec termes clés
+- [ ] Description inclut ce que fait le skill **ET** quand l'utiliser
+- [ ] Corps SKILL.md < 500 lignes
+- [ ] Détails additionnels dans fichiers séparés (si nécessaire)
+- [ ] Pas d'info time-sensitive (ou section "old patterns")
+- [ ] Terminologie consistante
+- [ ] Exemples concrets, pas abstraits
+- [ ] Références fichiers 1 niveau profond max
+- [ ] Progressive disclosure utilisée appropriée
+- [ ] Workflows avec étapes claires
+
+### Code et scripts
+
+- [ ] Scripts résolvent problèmes (pas délèguent à Claude)
+- [ ] Gestion erreurs explicite et utile
+- [ ] Pas de "voodoo constants" (valeurs justifiées)
+- [ ] Packages requis listés et vérifiés disponibles
+- [ ] Scripts avec doc claire
+- [ ] Pas de paths Windows-style (forward slashes partout)
+- [ ] Steps validation/vérification pour opérations critiques
+
+---
+
+## Développement itératif avec Claude
+
+**Pattern le plus efficace** : Travailler avec Claude pour créer skills.
+
+### Créer nouveau skill
+
+1. **Complete tâche sans skill** : Travaille problème avec Claude A via prompting normal. Note ce que tu fournis répétitivement.
+
+2. **Identifie pattern réutilisable** : Après tâche, identifie quel contexte serait utile pour tâches similaires futures.
+
+3. **Demande à Claude A de créer skill** : "Create a Skill that captures this pattern we just used."
+
+   💡 Claude comprend format Skill nativement — pas besoin de prompts spéciaux.
+
+4. **Review concision** : Vérifie que Claude A n'a pas ajouté explications inutiles. "Remove explanation about what X means — Claude already knows that."
+
+5. **Améliore architecture info** : "Organize this so table schema is in separate reference file."
+
+6. **Teste sur tâches similaires** : Utilise skill avec Claude B (instance fraîche) sur cas d'usage liés.
+
+7. **Itère selon observations** : Si Claude B struggle → retour Claude A avec spécifiques : "When Claude used this, it forgot to filter by date. Should we add section about date filtering?"
+
+### Itérer sur skills existants
+
+1. **Utilise skill dans workflows réels** : Donne à Claude B tâches réelles
+2. **Observe comportement Claude B** : Note où il struggle, réussit, choix inattendus
+3. **Retour Claude A pour améliorations** : Partage SKILL.md actuel + observations
+4. **Review suggestions Claude A** : Peut suggérer réorganisation, langage plus fort, restructuration workflow
+5. **Applique et teste changements** : Update skill, teste avec Claude B
+6. **Répète selon usage** : Continue observe-refine-test cycle
+
+**Pourquoi ça marche** : Claude A comprend besoins agent, tu fournis expertise domaine, Claude B révèle gaps via usage réel.
+
+---
+
+## Anti-patterns à éviter
+
+### ❌ Paths Windows-style
+
+- ✓ **Bon** : `scripts/helper.py`, `reference/guide.md`
+- ✗ **Évite** : `scripts\\helper.py`, `reference\\guide.md`
+
+### ❌ Trop d'options
+
+**Mauvais** : "You can use pypdf, or pdfplumber, or PyMuPDF, or pdf2image, or..."
+
+**Bon** : "Use pdfplumber for text extraction. For scanned PDFs requiring OCR, use pdf2image with pytesseract instead."
+
+### ❌ Info time-sensitive
+
+**Mauvais** : "If you're doing this before August 2025, use old API."
+
+**Bon** : Section "Old patterns" avec `<details>` collapsed.
+
+### ❌ Terminologie inconsistente
+
+**Bon - Consistent** :
+
+- Toujours "API endpoint"
+- Toujours "field"
+- Toujours "extract"
+
+**Mauvais - Inconsistent** :
+
+- Mix "API endpoint", "URL", "API route", "path"
+- Mix "field", "box", "element", "control"
+
+---
+
+## Évaluation et itération
+
+### Build evaluations first
+
+**Evaluation-driven development** :
+
+1. **Identifie gaps** : Exécute Claude sur tâches représentatives sans skill. Documente échecs spécifiques.
+2. **Crée évaluations** : Build 3 scénarios testant ces gaps.
+3. **Établis baseline** : Mesure performance Claude sans skill.
+4. **Écris instructions minimales** : Crée juste assez pour adresser gaps et passer évaluations.
+5. **Itère** : Exécute évaluations, compare vs baseline, raffine.
+
+**Structure évaluation** :
+
+```json
+{
+  "skills": ["pdf-processing"],
+  "query": "Extract all text from this PDF and save to output.txt",
+  "files": ["test-files/document.pdf"],
+  "expected_behavior": [
+    "Successfully reads PDF using appropriate library",
+    "Extracts text from all pages without missing any",
+    "Saves to output.txt in clear, readable format"
+  ]
+}
+```
+
+### Observe navigation Skills
+
+Pendant itération, attention à comment Claude utilise réellement skills :
+
+- **Exploration paths inattendus** : Lit fichiers dans ordre non anticipé ? Structure pas intuitive.
+- **Connexions manquées** : Échoue à suivre références ? Liens doivent être plus explicites/proéminents.
+- **Sur-reliance sections** : Lit répétitivement même fichier ? Contenu devrait être dans SKILL.md main.
+- **Contenu ignoré** : N'accède jamais fichier bundlé ? Inutile ou mal signalé.
+
+Itère selon observations, pas assumptions.
+
+---
+
+**Ce guide contient tout l'essentiel pour créer des skills efficaces avec Claude.** 🚀

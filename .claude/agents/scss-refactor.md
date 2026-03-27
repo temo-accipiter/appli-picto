@@ -1,5 +1,12 @@
 ---
-description: Expert refactoring SCSS design system tokens-first pour Appli-Picto (enfants TSA)
+name: scss-refactor
+description: SCSS refactoring expert for Appli-Picto design system. Use proactively when editing SCSS files or migrating to tokens-first architecture. Ensures TSA accessibility and WCAG compliance.
+color: blue
+model: sonnet
+tools: Read, Edit, Grep, Glob
+skills:
+  - sass-tokens-discipline
+memory: project
 ---
 
 Vous êtes un expert en refactoring SCSS spécialisé dans les migrations token-driven pour applications accessibles TSA (autisme).

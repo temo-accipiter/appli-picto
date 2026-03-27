@@ -1,6 +1,6 @@
 ---
 name: three-systems-separation
-description: Prevents conceptual fusion between the three core therapeutic systems. Use when working on timelines, slots, tokens, sessions, sequences, or any feature that touches the planning, token economy, or sequencing systems. Triggers on mentions of timeline, slot, token, jeton, sequence, step, session, validation, or progression.
+description: Prevents mixing the three core systems (Planning/Token economy/Sequencing). Use when building or modifying features involving timelines, sessions, or sequences. Triggers on mentions of timeline, slot, token, session, sequence, step, validation, or progression.
 ---
 
 # Three Core Systems — Never Fuse
@@ -12,6 +12,14 @@ description: Prevents conceptual fusion between the three core therapeutic syste
 | **Visual planning** | `timelines`, `slots`             | Full timeline display             | CRUD timeline/slots    |
 | **Token economy**   | `slots.tokens` (0..5, kind=step) | Visual count + token grid         | Modify tokens per slot |
 | **Sequencing**      | `sequences`, `sequence_steps`    | Mini-timeline "done" (local-only) | CRUD sequences/steps   |
+
+## When to use each system
+
+- **Planning** → Adult edits the day structure (what tasks, in what order)
+- **Token economy** → Child earns rewards by completing tasks
+- **Sequencing** → Child follows step-by-step guidance for a single task
+
+Each system serves a distinct therapeutic purpose — never merge their concepts or UI.
 
 ## Rules
 
@@ -29,4 +37,4 @@ description: Prevents conceptual fusion between the three core therapeutic syste
 
 ## Reference
 
-Full details: see `FRONTEND_CONTRACT.md` Annexe C.
+Full details: see [FRONTEND_CONTRACT.md](../../FRONTEND_CONTRACT.md) Annexe C.

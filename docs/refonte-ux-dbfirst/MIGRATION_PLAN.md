@@ -852,7 +852,7 @@
 | **10** — Sync/Offline             | `phase10_sync_smoke.sql` | 9       | ✅     |
 | **Total**                         |                          | **130** | ✅     |
 
-\*Phase 8 : 2 tests PASS (buckets) + 9 tests SKIP gracieux si migration privilégiée non appliquée. Tous PASS avec `scripts/db-reset.sh`.
+\*Phase 8 : 2 tests PASS (buckets) + 9 tests SKIP gracieux si migration privilégiée non appliquée. Tous PASS avec `scripts/db-reset-with-storage.sh`.
 
 ### Commande d'exécution
 
@@ -908,7 +908,7 @@ supabase/
 ├── migrations_privileged/               # Migrations privilégiées (supabase_admin)
 │   └── 20260204102000_phase8_2_storage_rls_policies.sql
 scripts/
-└── db-reset.sh                          # Wrapper pour reset complet
+└── db-reset-with-storage.sh             # Wrapper pour reset complet
 ```
 
 **Raison** : le runner standard (`postgres`) ne peut pas créer de policies sur `storage.objects`. Seul `supabase_admin` a les droits nécessaires.
@@ -917,7 +917,7 @@ scripts/
 
 ```bash
 # Recommandé : script wrapper
-./scripts/db-reset.sh
+./scripts/db-reset-with-storage.sh
 
 # Manuel :
 supabase db reset

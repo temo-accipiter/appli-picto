@@ -1,6 +1,6 @@
 ---
 name: db-first-frontend
-description: Enforces DB-first architecture rules when adapting frontend code to Supabase. Use when writing or modifying any Supabase query, hook, service, component that interacts with the database, or when reviewing code for RLS compliance. Triggers on any mention of Supabase, RLS, accounts.status, queries, mutations, or database interactions in the frontend.
+description: Enforces DB-first architecture rules for Supabase frontend code. Use when writing hooks, queries, or components that interact with the database. Triggers on mentions of Supabase, RLS, hooks, or database operations.
 ---
 
 # DB-First Frontend Rules
@@ -50,4 +50,7 @@ Visitor is **local-only** — no DB row exists. No `accounts.status = 'visitor'`
 
 ## Reference
 
-Full contract details: see `FRONTEND_CONTRACT.md` §0.3, §1.6, §5.1, §5.2, Annexe B.
+For complete contract details and edge cases, see [FRONTEND_CONTRACT.md](../../FRONTEND_CONTRACT.md):
+- **§0.3** : Core principles and architecture
+- **§1.6, §5.1, §5.2** : Authorization patterns and RLS
+- **Annexe B** : Error handling examples
