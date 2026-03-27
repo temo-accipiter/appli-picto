@@ -2,6 +2,10 @@
   "model": "sonnet",
   "outputStyle": "appli-picto-guide",
 
+  "env": {
+    "MAX_THINKING_TOKENS": "20000"
+  },
+
   "hooks": {
     "SessionStart": [
       {
@@ -59,6 +63,26 @@
             "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/block-yarn-npm.sh"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/suggest-compact.sh"
+          }
+        ],
+        "description": "Suggère /compact tous les 15 éditions (optimisation contexte)"
+      },
+      {
+        "matcher": "Write(*.md)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/doc-file-warning.sh"
+          }
+        ],
+        "description": "Avertit si création .md hors répertoires standards"
       }
     ],
     "PostToolUse": [
@@ -70,6 +94,16 @@
             "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-migration.sh"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-edit-typecheck.sh"
+          }
+        ],
+        "description": "TypeScript check rapide après édition fichiers TS/JS"
       }
     ]
   }
