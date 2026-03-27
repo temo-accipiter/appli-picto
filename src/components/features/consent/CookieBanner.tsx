@@ -2,6 +2,7 @@
 
 import { useAuth, useI18n } from '@/hooks'
 import { getConsent, saveConsent, tryLogServerConsent } from '@/utils/consent'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import './CookieBanner.scss'
 
@@ -9,13 +10,22 @@ export default function CookieBanner() {
   const [visible, setVisible] = useState(false)
   const { user } = useAuth()
   const { t } = useI18n()
+  const pathname = usePathname()
   const firstButtonRef = useRef<HTMLButtonElement>(null) // WCAG 2.4.3 - Focus management
   const focusableElementsRef = useRef<HTMLElement[]>([]) // WCAG 2.1.2 - Focus trap
 
   useEffect(() => {
+    // INVARIANT TSA : JAMAIS afficher la bannière en Contexte Tableau (adulte-only)
+    // Référence : FRONTEND_CONTRACT.md § 8.2 + ux.md Contexte Tableau
+    const isTableauContext = pathname?.startsWith('/tableau')
+    if (isTableauContext) {
+      setVisible(false)
+      return
+    }
+
     const existing = getConsent()
     setVisible(!existing)
-  }, [])
+  }, [pathname])
 
   // WCAG 2.1.2 - Focus trap et gestion Escape
   useEffect(() => {

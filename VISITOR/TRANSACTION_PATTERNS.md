@@ -197,6 +197,7 @@ $$;
    - Même ordre quel que soit le réseau / timing
 
 3. **Exception Handling** :
+
    ```sql
    EXCEPTION WHEN unique_violation THEN ... RAISE;
    ```
