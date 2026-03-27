@@ -10,6 +10,7 @@
 ## 📋 Hooks disponibles (par catégorie)
 
 ### Identité & Auth
+
 - `useAuth()` — Authentification (user, authReady, signOut)
 - `useAccountStatus()` — Statut compte (free/subscriber/admin) — COSMÉTIQUE UNIQUEMENT
 - `useAccountPreferences()` — Préférences utilisateur (train_enabled, reduced_motion)
@@ -17,6 +18,7 @@
 - `useIsVisitor()` — Détection mode visitor (local-only)
 
 ### Cartes & Catégories
+
 - `useBankCards()` — Cartes banque (pictos officiels) — READ-ONLY
 - `usePersonalCards()` — Cartes personnelles utilisateur (CRUD)
 - `useCategories()` — Catégories utilisateur (CRUD)
@@ -24,14 +26,17 @@
 - `useChildProfiles()` — Profils enfants (CRUD)
 
 ### Planning (Timelines/Slots)
+
 - `useTimelines()` — Timelines (CRUD)
 - `useSlots()` — Slots (créneaux timeline) (CRUD)
 
 ### Exécution (Sessions)
+
 - `useSessions()` — Sessions (exécution) (CRUD)
 - `useSessionValidations()` — Validations sessions (CRUD)
 
 ### Séquençage (Sequences)
+
 - `useSequences()` — Séquences DB (CRUD)
 - `useSequenceSteps()` — Étapes séquences DB (CRUD)
 - `useSequencesLocal()` — Séquences visitor (IndexedDB local)
@@ -40,15 +45,18 @@
 - `useSequenceStepsWithVisitor()` — Étapes unifiées (DB + local)
 
 ### Devices & Checkout
+
 - `useDevices()` — Liste devices utilisateur
 - `useDeviceRegistration()` — Enregistrement device
 - `useCheckout()` — Checkout Stripe (createCheckoutSession)
 
 ### Admin
+
 - `useAdminSupportInfo()` — Infos support compte (admin uniquement)
 - `useAdminBankCards()` — Gestion cartes banque (admin uniquement)
 
 ### UI Helpers
+
 - `useReducedMotion()` — Détection prefers-reduced-motion
 - `useScrollLock()` — Verrouillage scroll (modals)
 - `useEscapeKey()` — Détection touche Escape

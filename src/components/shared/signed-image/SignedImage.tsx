@@ -53,7 +53,10 @@ export default function SignedImage({
 
       // 1) Buckets publics : URL directe (demo-images + bank-images)
       if (bucket === 'demo-images' || bucket === 'bank-images') {
-        const cleanPath = String(filePath).replace(/^(demo-images|bank-images)\//, '')
+        const cleanPath = String(filePath).replace(
+          /^(demo-images|bank-images)\//,
+          ''
+        )
         const { data } = supabase.storage.from(bucket).getPublicUrl(cleanPath)
         if (!cancelled && mountedRef.current) {
           setUrl(data?.publicUrl || null)

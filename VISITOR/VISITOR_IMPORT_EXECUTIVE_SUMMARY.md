@@ -15,17 +15,20 @@ C'est **volontaire et documenté** comme **"futur Ticket 4"** dans le code sourc
 ### Points Clés
 
 ✅ **Infrastructure prête** :
+
 - Couche Visitor IndexedDB structurée et fonctionnelle
 - RPC atomiques cloud `create_sequence_with_steps()` robustes
 - Hooks adapter pattern pour routing seamless
 
 ❌ **Import function manquante** :
+
 - Aucune RPC migration Visitor → Supabase
 - Aucun hook `useImportVisitor()`
 - Aucun nettoyage localStorage post-signup
 - Données Visitor restent orphelines après login
 
 ⏳ **Planifié pour S4 (Ticket 4)** :
+
 - Architecture prête, implémentation reportée
 - Documentation complète pour futur développement
 
@@ -35,14 +38,15 @@ C'est **volontaire et documenté** comme **"futur Ticket 4"** dans le code sourc
 
 ### 1. Couche Visitor IndexedDB (LOCAL)
 
-| Fichier | Type | But | Lignes |
-|---------|------|-----|--------|
-| `src/utils/visitor/sequencesDB.ts` | Utilitaire | CRUD séquences/étapes Visitor en IndexedDB | 409 |
-| `src/hooks/useSequencesLocal.ts` | Hook React | Wrapper hook pour IndexedDB (API unifiée avec cloud) | 170 |
-| `src/hooks/useSequenceStepsLocal.ts` | Hook React | CRUD étapes Visitor en IndexedDB | ~150 |
-| `src/hooks/useIsVisitor.ts` | Hook React | Détecter mode Visitor (non authentifié) | 46 |
+| Fichier                              | Type       | But                                                  | Lignes |
+| ------------------------------------ | ---------- | ---------------------------------------------------- | ------ |
+| `src/utils/visitor/sequencesDB.ts`   | Utilitaire | CRUD séquences/étapes Visitor en IndexedDB           | 409    |
+| `src/hooks/useSequencesLocal.ts`     | Hook React | Wrapper hook pour IndexedDB (API unifiée avec cloud) | 170    |
+| `src/hooks/useSequenceStepsLocal.ts` | Hook React | CRUD étapes Visitor en IndexedDB                     | ~150   |
+| `src/hooks/useIsVisitor.ts`          | Hook React | Détecter mode Visitor (non authentifié)              | 46     |
 
 **Capacités** :
+
 - ✅ Transactions multi-store atomiques
 - ✅ Contraintes locales (min 2 steps, pas doublons, UNIQUE mother_card_id)
 - ✅ Indices composites (UNIQUE séquence/position)
@@ -50,11 +54,12 @@ C'est **volontaire et documenté** comme **"futur Ticket 4"** dans le code sourc
 
 ### 2. RPC Cloud Atomiques (CLOUD)
 
-| Fichier | Type | But | Fonction |
-|---------|------|-----|----------|
+| Fichier                                                                | Type          | But                     | Fonction                                                   |
+| ---------------------------------------------------------------------- | ------------- | ----------------------- | ---------------------------------------------------------- |
 | `supabase/migrations/20260315113000_phase7_10_atomic_sequence_rpc.sql` | Migration SQL | RPC atomiques séquences | `create_sequence_with_steps()`, `replace_sequence_steps()` |
 
 **RPC `create_sequence_with_steps(p_mother_card_id, p_step_card_ids)`** :
+
 - ✅ Crée séquence + étapes en une seule transaction SQL
 - ✅ Valide auth, permissions, quotas
 - ✅ Gère UNIQUE constraints
@@ -63,23 +68,23 @@ C'est **volontaire et documenté** comme **"futur Ticket 4"** dans le code sourc
 
 ### 3. Hooks Cloud (CLOUD)
 
-| Fichier | Type | But | Lignes |
-|---------|------|-----|--------|
-| `src/hooks/useSequences.ts` | Hook React | CRUD séquences cloud via RPC | 172 |
-| `src/hooks/useSequenceStepsWithVisitor.ts` | Hook React | Adapter routing (Visitor IndexedDB OU Cloud Supabase) | ~150 |
-| `src/hooks/useSequencesWithVisitor.ts` | Hook React | Adapter routing (même pattern) | ~150 |
+| Fichier                                    | Type       | But                                                   | Lignes |
+| ------------------------------------------ | ---------- | ----------------------------------------------------- | ------ |
+| `src/hooks/useSequences.ts`                | Hook React | CRUD séquences cloud via RPC                          | 172    |
+| `src/hooks/useSequenceStepsWithVisitor.ts` | Hook React | Adapter routing (Visitor IndexedDB OU Cloud Supabase) | ~150   |
+| `src/hooks/useSequencesWithVisitor.ts`     | Hook React | Adapter routing (même pattern)                        | ~150   |
 
 ### 4. Auth & Post-Signup
 
-| Fichier | Type | But | Observation |
-|---------|------|-----|-------------|
-| `src/contexts/AuthContext.tsx` | Context | État global auth + lifecycle | ❌ **AUCUN hook post-signup** pour import |
-| `src/page-components/signup/Signup.tsx` | Composant | Formulaire inscription | ❌ **AUCUN appel** vers import function |
+| Fichier                                 | Type      | But                          | Observation                               |
+| --------------------------------------- | --------- | ---------------------------- | ----------------------------------------- |
+| `src/contexts/AuthContext.tsx`          | Context   | État global auth + lifecycle | ❌ **AUCUN hook post-signup** pour import |
+| `src/page-components/signup/Signup.tsx` | Composant | Formulaire inscription       | ❌ **AUCUN appel** vers import function   |
 
 ### 5. Offline Queue Pattern (Inspiration)
 
-| Fichier | Type | But | Pattern |
-|---------|------|-----|---------|
+| Fichier                           | Type    | But                                               | Pattern                             |
+| --------------------------------- | ------- | ------------------------------------------------- | ----------------------------------- |
 | `src/contexts/OfflineContext.tsx` | Context | Queue validations offline + sync au retour réseau | ✅ Modèle robuste pour import futur |
 
 ---
@@ -111,14 +116,16 @@ C'est **volontaire et documenté** comme **"futur Ticket 4"** dans le code sourc
 ## Patterns Transactionnels Découverts
 
 ### IndexedDB (Local)
+
 ```typescript
 const tx = db.transaction([STORE_SEQUENCES, STORE_STEPS], 'readwrite')
 // ... add, update, delete ...
-tx.oncomplete = () => resolve()  // ✅ Tout ou rien
-tx.onerror = () => reject()      // ✅ Rollback auto
+tx.oncomplete = () => resolve() // ✅ Tout ou rien
+tx.onerror = () => reject() // ✅ Rollback auto
 ```
 
 ### PostgreSQL RPC (Cloud)
+
 ```sql
 CREATE FUNCTION create_sequence_with_steps(...) AS $$
 BEGIN
@@ -130,6 +137,7 @@ $$
 ```
 
 ### Application Layer (Hook)
+
 ```typescript
 const { data, error } = await supabase.rpc(...)
 if (!error) refresh()  // ✅ Synchroniser état React
@@ -144,12 +152,12 @@ return { id: data, error }  // ✅ Tuple (id, error)
 
 ### Erreurs Capturées à la DB
 
-| Code | Signification | Exemple |
-|------|--------------|---------|
-| `23514` | NOT NULL / CHECK violation | `mother_card_id IS NULL` |
-| `23505` | UNIQUE violation | Séquence exists pour cette carte |
+| Code    | Signification                 | Exemple                                |
+| ------- | ----------------------------- | -------------------------------------- |
+| `23514` | NOT NULL / CHECK violation    | `mother_card_id IS NULL`               |
+| `23505` | UNIQUE violation              | Séquence exists pour cette carte       |
 | `42501` | RLS violation / Access denied | Free user → can_write_sequences bloque |
-| `42501` | Execution-only mode bloqué | Mode exécution seul, pas édition |
+| `42501` | Execution-only mode bloqué    | Mode exécution seul, pas édition       |
 
 **Pattern** : Tous les contrôles sont **côté DB (RLS, triggers, constraints)**. Frontend ne valide que cosmétiquement.
 
@@ -160,6 +168,7 @@ return { id: data, error }  // ✅ Tuple (id, error)
 ### Preuve 1 : Code Source
 
 `src/utils/visitor/sequencesDB.ts`, lignes 19-22 :
+
 ```typescript
 // ⚠️ IMPORT VISITOR → COMPTE
 // - Hors scope Ticket 3 (futur Ticket 4)
@@ -175,6 +184,7 @@ return { id: data, error }  // ✅ Tuple (id, error)
 ### Preuve 3 : RPC Autorisations
 
 `create_sequence_with_steps()` vérifie `can_write_sequences()` :
+
 - ✅ Subscriber/Admin : Autorisé
 - ❌ **Free/Visitor : Bloqué** (serait problématique si import auto sans modif RLS)
 
@@ -231,6 +241,7 @@ Toast feedback + refresh UI
 ## Checklist Découverte
 
 ### ✅ Infrastructure Prête
+
 - [x] Couche Visitor IndexedDB (S3)
 - [x] RPC atomiques cloud (S4)
 - [x] Hooks adapter pattern (S4)
@@ -238,6 +249,7 @@ Toast feedback + refresh UI
 - [x] Gestion erreurs complète
 
 ### ❌ Fonction Import Absente
+
 - [ ] Hook useImportVisitor()
 - [ ] Modal ModalImportVisitor
 - [ ] Déclenchement post-signup
@@ -245,6 +257,7 @@ Toast feedback + refresh UI
 - [ ] Tests E2E import
 
 ### ⏳ Planifié Ticket 4
+
 - [ ] Implémentation (3-4 jours dev)
 - [ ] QA & testing (2 jours)
 - [ ] Déploiement graduel (monitoring)
@@ -254,17 +267,20 @@ Toast feedback + refresh UI
 ## Recommendations
 
 ### Immédiate
+
 1. **Documenter** : Ajouter note SignUp → "Import à faire en Ticket 4"
 2. **Gérer attentes** : Si user demande pourquoi données perdues après login
 3. **Nettoyage** : Option localStorage "Oublier données Visitor" si user ne s'inscrit pas
 
 ### Court Terme (Ticket 4)
+
 1. Implémenter `useImportVisitor()` hook
 2. Créer modal post-login
 3. Tester tous cas erreur (quotas, auth, réseau)
 4. Monitorer en production (analytics)
 
 ### Long Terme
+
 1. Ajouter retry automatique si import échoue
 2. Afficher quel séquence échoue (debugging user)
 3. Permettre user à réessayer (ui "Retry" button)
@@ -276,16 +292,19 @@ Toast feedback + refresh UI
 Cette enquête a produit **3 documents complets** :
 
 ### 1. `VISITOR_IMPORT_ANALYSIS.md` (Ce repo)
+
 - **But** : Analyse complète fonctionnalité (absente)
 - **Contenu** : 500+ lignes, 8 sections
 - **Lecteurs** : Dev team, product
 
 ### 2. `.claude/TRANSACTION_PATTERNS.md` (Guide technique)
+
 - **But** : Patterns transactionnels découverts
 - **Contenu** : 400+ lignes, exemples code
 - **Lecteurs** : Dev team (futures implémentations)
 
 ### 3. `.claude/TICKET4_IMPLEMENTATION_PLAN.md` (Plan détaillé)
+
 - **But** : Blueprint complet Ticket 4
 - **Contenu** : 600+ lignes, code templates
 - **Lecteurs** : Dev lead assigné Ticket 4
@@ -296,13 +315,13 @@ Cette enquête a produit **3 documents complets** :
 
 ### État Final
 
-| Aspect | Statut | Notes |
-|--------|--------|-------|
-| **Import function** | ❌ N'existe pas | Volontaire, Ticket 4 |
-| **Infrastructure** | ✅ Prête | IndexedDB + RPC cloud |
-| **Robustesse DB** | ✅ Excellent | Transactions atomiques |
-| **Documentation** | ✅ Complète | Code bien commenté |
-| **Plan future** | ✅ Clair | Blueprint Ticket 4 prêt |
+| Aspect              | Statut          | Notes                   |
+| ------------------- | --------------- | ----------------------- |
+| **Import function** | ❌ N'existe pas | Volontaire, Ticket 4    |
+| **Infrastructure**  | ✅ Prête        | IndexedDB + RPC cloud   |
+| **Robustesse DB**   | ✅ Excellent    | Transactions atomiques  |
+| **Documentation**   | ✅ Complète     | Code bien commenté      |
+| **Plan future**     | ✅ Clair        | Blueprint Ticket 4 prêt |
 
 ### Garanties Existantes
 

@@ -12,6 +12,7 @@ Guide technique Claude Code pour **Appli-Picto** (Next.js 16, pnpm, Supabase).
 ## ⚙️ Commandes essentielles
 
 ### Développement
+
 ```bash
 pnpm dev              # Serveur dev (port 3000, Turbopack)
 pnpm build            # Build production
@@ -21,6 +22,7 @@ pnpm test:e2e         # Tests E2E (Playwright)
 ```
 
 ### Base de données (CRITIQUE après modif Supabase)
+
 ```bash
 pnpm context:update   # db:dump + db:types (génère schema.sql + types)
 pnpm db:types         # Générer types TypeScript depuis Supabase
@@ -28,12 +30,14 @@ pnpm supabase:start   # Démarrer Supabase local (Docker)
 ```
 
 ### Vérification (avant commit/deploy)
+
 ```bash
 /verify-quick         # Vérification rapide (lint + build + test)
 /verify-full          # Vérification exhaustive (+ E2E + coverage)
 ```
 
 ### Autres commandes utiles
+
 ```bash
 pnpm lint:hardcoded            # Vérifier valeurs hardcodées SCSS
 pnpm validate:touch-targets    # Vérifier cibles tactiles (44×44px min)
@@ -46,17 +50,17 @@ pnpm validate:touch-targets    # Vérifier cibles tactiles (44×44px min)
 
 ## 🏗️ Stack technique
 
-| Couche | Technologie | Version | Notes |
-|--------|-------------|---------|-------|
-| **Frontend** | React | 19 | Server/Client Components |
-| **Framework** | Next.js | 16 | App Router, Turbopack, Route Groups |
-| **Runtime** | Node.js | 20.19.4 | Géré par Volta |
-| **Package Manager** | **pnpm** | 9.15.0 | ⚠️ JAMAIS yarn/npm |
-| **Styling** | SCSS | - | BEM-lite, design system tokens |
-| **TypeScript** | Strict | 5.x | noImplicitAny: false (temporaire) |
-| **Backend** | Supabase | - | PostgreSQL, Auth, RLS, Storage |
-| **Payment** | Stripe | - | Checkout, webhooks via Edge Functions |
-| **Testing** | Vitest + Playwright | - | Unit + E2E |
+| Couche              | Technologie         | Version | Notes                                 |
+| ------------------- | ------------------- | ------- | ------------------------------------- |
+| **Frontend**        | React               | 19      | Server/Client Components              |
+| **Framework**       | Next.js             | 16      | App Router, Turbopack, Route Groups   |
+| **Runtime**         | Node.js             | 20.19.4 | Géré par Volta                        |
+| **Package Manager** | **pnpm**            | 9.15.0  | ⚠️ JAMAIS yarn/npm                    |
+| **Styling**         | SCSS                | -       | BEM-lite, design system tokens        |
+| **TypeScript**      | Strict              | 5.x     | noImplicitAny: false (temporaire)     |
+| **Backend**         | Supabase            | -       | PostgreSQL, Auth, RLS, Storage        |
+| **Payment**         | Stripe              | -       | Checkout, webhooks via Edge Functions |
+| **Testing**         | Vitest + Playwright | -       | Unit + E2E                            |
 
 ---
 
@@ -94,17 +98,20 @@ appli-picto/
 ## 🚨 Règles d'architecture critiques
 
 ### 1. 🔒 DB-First Architecture (OBLIGATOIRE)
+
 **TOUJOURS utiliser hooks custom, JAMAIS query Supabase directe.**
 
 **→ Voir skill `db-first-frontend` pour règles détaillées**
 
 ### 2. 📱 Next.js App Router (OBLIGATOIRE)
+
 - ✅ `useRouter()` from `'next/navigation'`
 - ❌ Plus de `react-router-dom` (supprimé)
 - ✅ Route Groups : `(public)/` et `(protected)/`
 - ✅ Server Components par défaut, `'use client'` SEULEMENT si interactivité
 
 ### 3. 📂 Imports absolus (OBLIGATOIRE)
+
 **TOUJOURS utiliser alias `@/` (pointe vers `src/`)**
 
 ```typescript
@@ -114,6 +121,7 @@ import Modal from '@/components/shared/modal/Modal'
 ```
 
 ### 4. ♿ Accessibilité TSA (WCAG 2.2 AA)
+
 - Animations douces (max 0.3s ease), respect `prefers-reduced-motion`
 - Cibles tactiles min 44×44px
 - Couleurs pastel (contraste ≥ 4.5:1)
@@ -122,11 +130,13 @@ import Modal from '@/components/shared/modal/Modal'
 **→ Voir skill `tsa-ux-rules` pour règles détaillées**
 
 ### 5. 🎨 SCSS Design System (tokens-first)
+
 **JAMAIS de valeurs hardcodées (px, rem, #hex, rgb) — TOUJOURS utiliser tokens design system.**
 
 **→ Voir skill `sass-tokens-discipline` pour règles détaillées**
 
 ### 6. 🧩 3 Systèmes conceptuels (ne pas fusionner)
+
 1. **Planning** (Timelines/Slots) : `useTimelines()`, `useSlots()`
 2. **Exécution** (Sessions) : `useSessions()`, `useSessionValidations()`
 3. **Séquençage** (Sequences) : `useSequences()`, `useSequenceSteps()`
@@ -138,6 +148,7 @@ import Modal from '@/components/shared/modal/Modal'
 ## 🔄 Workflows critiques
 
 ### AVANT tout commit (OBLIGATOIRE)
+
 ```bash
 pnpm check   # lint:fix + format
 pnpm test    # Tests unitaires
@@ -146,12 +157,15 @@ pnpm test    # Tests unitaires
 ```
 
 ### APRÈS modification Supabase (OBLIGATOIRE)
+
 ```bash
 pnpm context:update  # Dump schema + generate types
 ```
+
 **Déclenche** : Migrations, RLS policies, fonctions PostgreSQL, enums, Edge Functions
 
 ### AVANT déploiement (OBLIGATOIRE)
+
 ```bash
 pnpm build          # DOIT réussir
 pnpm preview        # DOIT tester build production
@@ -164,21 +178,23 @@ pnpm preview        # DOIT tester build production
 ## 🤖 Skills & Agents
 
 ### 🛡️ Skills (règles métier, activés automatiquement)
-| Skill | Trigger | Usage |
-|-------|---------|-------|
-| **db-first-frontend** | Mention Supabase, RLS, hooks, queries | Enforce DB-first (hooks uniquement) |
-| **sass-tokens-discipline** | Édition SCSS/CSS, styling | Enforce tokens design system (pas hardcode) |
-| **three-systems-separation** | Timelines, slots, sessions, sequences | Prevent fusion 3 systèmes |
-| **tsa-ux-rules** | UI components, Tableau, animations | Enforce UX TSA (calme, prévisible) |
+
+| Skill                        | Trigger                               | Usage                                       |
+| ---------------------------- | ------------------------------------- | ------------------------------------------- |
+| **db-first-frontend**        | Mention Supabase, RLS, hooks, queries | Enforce DB-first (hooks uniquement)         |
+| **sass-tokens-discipline**   | Édition SCSS/CSS, styling             | Enforce tokens design system (pas hardcode) |
+| **three-systems-separation** | Timelines, slots, sessions, sequences | Prevent fusion 3 systèmes                   |
+| **tsa-ux-rules**             | UI components, Tableau, animations    | Enforce UX TSA (calme, prévisible)          |
 
 ### 🔧 Agents (tâches complexes, lancés via @mention ou Task)
-| Agent | Quand utiliser | Modèle |
-|-------|----------------|--------|
-| **explore-codebase** | "Où est géré X ?", "Comment fonctionne Y ?" | Haiku |
-| **explore-docs** | "Comment utiliser librairie Z ?" | Haiku |
-| **scss-refactor** | Refactor SCSS vers tokens (`@scss-refactor <file>`) | Sonnet |
-| **websearch** | Recherche web info récente | Haiku |
-| **action** | Exécution conditionnelle | Haiku |
+
+| Agent                | Quand utiliser                                      | Modèle |
+| -------------------- | --------------------------------------------------- | ------ |
+| **explore-codebase** | "Où est géré X ?", "Comment fonctionne Y ?"         | Haiku  |
+| **explore-docs**     | "Comment utiliser librairie Z ?"                    | Haiku  |
+| **scss-refactor**    | Refactor SCSS vers tokens (`@scss-refactor <file>`) | Sonnet |
+| **websearch**        | Recherche web info récente                          | Haiku  |
+| **action**           | Exécution conditionnelle                            | Haiku  |
 
 ---
 

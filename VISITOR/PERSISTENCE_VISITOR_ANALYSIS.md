@@ -10,12 +10,12 @@
 
 Appli-Picto utilise **3 mécanismes de persistance locale distincts** pour le rôle Visitor :
 
-| Mécanisme | Scope | Clé/BD | Structure | Statut |
-|-----------|-------|--------|-----------|--------|
-| **IndexedDB** | Séquences Visitor | `appli-picto-visitor` | 2 stores : `sequences`, `sequence_steps` | Production |
-| **localStorage** | Préférences UI + Profil enfant | `applipicto:visitor:*` | JSON simple | Production |
-| **localStorage** | Queue offline (auth users) | `appli-picto:offline-validation-queue` | JSON array | Production |
-| **localStorage** | Consentement CNIL | `cookie_consent_v2` | JSON + expiry | Production |
+| Mécanisme        | Scope                          | Clé/BD                                 | Structure                                | Statut     |
+| ---------------- | ------------------------------ | -------------------------------------- | ---------------------------------------- | ---------- |
+| **IndexedDB**    | Séquences Visitor              | `appli-picto-visitor`                  | 2 stores : `sequences`, `sequence_steps` | Production |
+| **localStorage** | Préférences UI + Profil enfant | `applipicto:visitor:*`                 | JSON simple                              | Production |
+| **localStorage** | Queue offline (auth users)     | `appli-picto:offline-validation-queue` | JSON array                               | Production |
+| **localStorage** | Consentement CNIL              | `cookie_consent_v2`                    | JSON + expiry                            | Production |
 
 **Status compatibilité schéma local ↔ Supabase** : ✅ COMPATIBLE - Les structures IndexedDB et localStorage sont **pré-conçues pour l'import futur** vers Supabase (Ticket 4).
 
@@ -35,9 +35,9 @@ Appli-Picto utilise **3 mécanismes de persistance locale distincts** pour le r�
 
 ```typescript
 interface VisitorSequence {
-  id: string              // UUID généré localement (v4 simple)
-  mother_card_id: string  // FK vers carte (bank ou personal future)
-  created_at: number      // timestamp Unix (Date.now())
+  id: string // UUID généré localement (v4 simple)
+  mother_card_id: string // FK vers carte (bank ou personal future)
+  created_at: number // timestamp Unix (Date.now())
 }
 
 // KeyPath: 'id'
@@ -50,10 +50,10 @@ interface VisitorSequence {
 
 ```typescript
 interface VisitorSequenceStep {
-  id: string              // UUID généré localement (v4 simple)
-  sequence_id: string     // FK locale vers VisitorSequence
-  step_card_id: string    // FK vers carte
-  position: number        // 0, 1, 2, ... (index séquentiel)
+  id: string // UUID généré localement (v4 simple)
+  sequence_id: string // FK locale vers VisitorSequence
+  step_card_id: string // FK vers carte
+  position: number // 0, 1, 2, ... (index séquentiel)
 }
 
 // KeyPath: 'id'
@@ -67,29 +67,29 @@ interface VisitorSequenceStep {
 
 ### Contraintes enforced locales
 
-| Contrainte | Enforcement | Fichier:lignes |
-|------------|-------------|-----------------|
-| Min 2 étapes par séquence | `createSequenceWithSteps()` ligne 174 | sequencesDB.ts:174-176 |
-| UNIQUE(sequence_id, step_card_id) | `addSequenceStep()` ligne 285 | sequencesDB.ts:285-287 |
-| UNIQUE(sequence_id, position) | IndexedDB composite index | sequencesDB.ts:76-82 |
-| Ownership 1 séquence per mother_card_id | `createSequenceWithSteps()` ligne 182 | sequencesDB.ts:182-185 |
-| Min 2 étapes avant suppression | `removeSequenceStep()` ligne 339 | sequencesDB.ts:339-341 |
-| Position contiguë après delete | Aucune (les positions ne sont pas resquencées) | ⚠️ Gap possible |
+| Contrainte                              | Enforcement                                    | Fichier:lignes         |
+| --------------------------------------- | ---------------------------------------------- | ---------------------- |
+| Min 2 étapes par séquence               | `createSequenceWithSteps()` ligne 174          | sequencesDB.ts:174-176 |
+| UNIQUE(sequence_id, step_card_id)       | `addSequenceStep()` ligne 285                  | sequencesDB.ts:285-287 |
+| UNIQUE(sequence_id, position)           | IndexedDB composite index                      | sequencesDB.ts:76-82   |
+| Ownership 1 séquence per mother_card_id | `createSequenceWithSteps()` ligne 182          | sequencesDB.ts:182-185 |
+| Min 2 étapes avant suppression          | `removeSequenceStep()` ligne 339               | sequencesDB.ts:339-341 |
+| Position contiguë après delete          | Aucune (les positions ne sont pas resquencées) | ⚠️ Gap possible        |
 
 ### Opérations CRUD
 
 **Fichier utilitaire** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/utils/visitor/sequencesDB.ts`
 
-| Opération | Fonction | Signature | Ligne |
-|-----------|----------|-----------|-------|
-| Lecture toutes séquences | `getAllSequences()` | `() → Promise<VisitorSequence[]>` | 104-114 |
-| Lecture par carte mère | `getSequenceByMotherCardId()` | `(motherCardId: string) → Promise<VisitorSequence\|null>` | 119-132 |
-| Créer séquence + étapes | `createSequenceWithSteps()` | `(motherCardId: string, stepCardIds: string[]) → Promise<VisitorSequence>` | 168-212 |
-| Supprimer séquence (CASCADE) | `deleteSequence()` | `(sequenceId: string) → Promise<void>` | 217-242 |
-| Lire étapes d'une séquence | `getSequenceSteps()` | `(sequenceId: string) → Promise<VisitorSequenceStep[]>` | 251-269 |
-| Ajouter étape | `addSequenceStep()` | `(sequenceId: string, stepCardId: string) → Promise<VisitorSequenceStep>` | 277-312 |
-| Supprimer étape | `removeSequenceStep()` | `(stepId: string) → Promise<void>` | 318-352 |
-| Déplacer étape | `moveSequenceStep()` | `(stepId: string, newPosition: number) → Promise<void>` | 358-408 |
+| Opération                    | Fonction                      | Signature                                                                  | Ligne   |
+| ---------------------------- | ----------------------------- | -------------------------------------------------------------------------- | ------- |
+| Lecture toutes séquences     | `getAllSequences()`           | `() → Promise<VisitorSequence[]>`                                          | 104-114 |
+| Lecture par carte mère       | `getSequenceByMotherCardId()` | `(motherCardId: string) → Promise<VisitorSequence\|null>`                  | 119-132 |
+| Créer séquence + étapes      | `createSequenceWithSteps()`   | `(motherCardId: string, stepCardIds: string[]) → Promise<VisitorSequence>` | 168-212 |
+| Supprimer séquence (CASCADE) | `deleteSequence()`            | `(sequenceId: string) → Promise<void>`                                     | 217-242 |
+| Lire étapes d'une séquence   | `getSequenceSteps()`          | `(sequenceId: string) → Promise<VisitorSequenceStep[]>`                    | 251-269 |
+| Ajouter étape                | `addSequenceStep()`           | `(sequenceId: string, stepCardId: string) → Promise<VisitorSequenceStep>`  | 277-312 |
+| Supprimer étape              | `removeSequenceStep()`        | `(stepId: string) → Promise<void>`                                         | 318-352 |
+| Déplacer étape               | `moveSequenceStep()`          | `(stepId: string, newPosition: number) → Promise<void>`                    | 358-408 |
 
 ### Hooks custom (adapters)
 
@@ -168,12 +168,12 @@ export default function useSequenceStepsWithVisitor(
 
 ### Composants consommateurs
 
-| Composant | Fichier | Hook utilisé | Ligne |
-|-----------|---------|--------------|-------|
-| SequenceEditor | `src/components/features/sequences/sequence-editor/SequenceEditor.tsx` | `useSequenceStepsWithVisitor` | 41 |
-| SlotsEditor | `src/components/features/timeline/slots-editor/SlotsEditor.tsx` | `useSequencesWithVisitor` | (adapter parent) |
-| Navbar | `src/components/layout/navbar/Navbar.tsx` | `useIsVisitor` | (état UI seulement) |
-| TimeTimer | `src/components/features/time-timer/TimeTimer.tsx` | `useIsVisitor` | (état UI seulement) |
+| Composant      | Fichier                                                                | Hook utilisé                  | Ligne               |
+| -------------- | ---------------------------------------------------------------------- | ----------------------------- | ------------------- |
+| SequenceEditor | `src/components/features/sequences/sequence-editor/SequenceEditor.tsx` | `useSequenceStepsWithVisitor` | 41                  |
+| SlotsEditor    | `src/components/features/timeline/slots-editor/SlotsEditor.tsx`        | `useSequencesWithVisitor`     | (adapter parent)    |
+| Navbar         | `src/components/layout/navbar/Navbar.tsx`                              | `useIsVisitor`                | (état UI seulement) |
+| TimeTimer      | `src/components/features/time-timer/TimeTimer.tsx`                     | `useIsVisitor`                | (état UI seulement) |
 
 ---
 
@@ -193,9 +193,9 @@ export default function useSequenceStepsWithVisitor(
 const VISITOR_STORAGE_KEY = 'applipicto:visitor:activeChildId'
 
 const VISITOR_PROFILE: ChildProfileUI = {
-  id: 'visitor-local',      // Jamais null
-  name: 'Mon enfant',       // Label fixe
-  status: 'active',         // Toujours actif
+  id: 'visitor-local', // Jamais null
+  name: 'Mon enfant', // Label fixe
+  status: 'active', // Toujours actif
 }
 ```
 
@@ -216,6 +216,7 @@ const storageKey = (userId: string) => `applipicto:activeChild:${userId}`
 **Source** : ChildProfileContext.tsx:76
 
 **Logique de persistance** :
+
 - Chargement (lignes 166-173) : Récupère depuis localStorage namespaced par userId
 - Persistence (lignes 175-191) : Écrit à chaque changement
 - Cleanup logout (lignes 200-211) : Nettoie la clé au logout
@@ -289,16 +290,16 @@ useEffect(() => {
 
 ```typescript
 interface ConsentRecord {
-  version: string                    // "1.0.0"
-  ts: string                        // ISO timestamp (preuve temporelle)
-  mode: string                      // "custom" | "necessary" | etc.
-  choices: ConsentChoices           // Catégories consentie
+  version: string // "1.0.0"
+  ts: string // ISO timestamp (preuve temporelle)
+  mode: string // "custom" | "necessary" | etc.
+  choices: ConsentChoices // Catégories consentie
 }
 
 interface ConsentChoices {
-  necessary: boolean                // TOUJOURS true (non désactivable)
-  analytics: boolean                // GA4, Sentry
-  marketing: boolean                // Publicités futures
+  necessary: boolean // TOUJOURS true (non désactivable)
+  analytics: boolean // GA4, Sentry
+  marketing: boolean // Publicités futures
 }
 ```
 
@@ -306,14 +307,14 @@ interface ConsentChoices {
 
 ### Opérations consentement
 
-| Opération | Fonction | Ligne |
-|-----------|----------|-------|
-| Récupérer | `getConsent()` | 65-76 |
-| Vérifier catégorie | `hasConsent(category)` | 78-86 |
-| Sauvegarder | `saveConsent(choices, mode, extra)` | 88-112 |
-| Révoquer | `revokeConsent()` | 197-225 |
-| Vérifier expiration | `isConsentExpired()` | 228-232 |
-| Statut détaillé | `getConsentStatus()` | 235-264 |
+| Opération           | Fonction                            | Ligne   |
+| ------------------- | ----------------------------------- | ------- |
+| Récupérer           | `getConsent()`                      | 65-76   |
+| Vérifier catégorie  | `hasConsent(category)`              | 78-86   |
+| Sauvegarder         | `saveConsent(choices, mode, extra)` | 88-112  |
+| Révoquer            | `revokeConsent()`                   | 197-225 |
+| Vérifier expiration | `isConsentExpired()`                | 228-232 |
+| Statut détaillé     | `getConsentStatus()`                | 235-264 |
 
 **Callbacks** : `onConsent(category, callback)` (ligne 116-142)
 
@@ -330,10 +331,10 @@ interface ConsentChoices {
 
 ```typescript
 interface PendingValidation {
-  id: string                  // `${sessionId}-${slotId}-${Date.now()}`
-  sessionId: string           // ID session Supabase
-  slotId: string             // ID du slot à valider
-  enqueuedAt: number         // Timestamp d'enregistrement
+  id: string // `${sessionId}-${slotId}-${Date.now()}`
+  sessionId: string // ID session Supabase
+  slotId: string // ID du slot à valider
+  enqueuedAt: number // Timestamp d'enregistrement
 }
 ```
 
@@ -341,15 +342,16 @@ interface PendingValidation {
 
 ### Opérations queue
 
-| Opération | Fonction | Ligne |
-|-----------|----------|-------|
-| Charger depuis storage | `loadQueue()` | 75-84 |
-| Persister en storage | `saveQueue(queue)` | 86-92 |
-| Nettoyer | `clearQueue()` | 94-100 |
-| Ajouter (enqueue) | `enqueueValidation(sessionId, slotId)` | 190-209 |
-| Flush (sync cloud) | `flushQueue()` | 116-161 |
+| Opération              | Fonction                               | Ligne   |
+| ---------------------- | -------------------------------------- | ------- |
+| Charger depuis storage | `loadQueue()`                          | 75-84   |
+| Persister en storage   | `saveQueue(queue)`                     | 86-92   |
+| Nettoyer               | `clearQueue()`                         | 94-100  |
+| Ajouter (enqueue)      | `enqueueValidation(sessionId, slotId)` | 190-209 |
+| Flush (sync cloud)     | `flushQueue()`                         | 116-161 |
 
 **Logique sync** :
+
 - Auto-sync au retour réseau (ligne 167-168)
 - Fusion monotone : UNIQUE(session_id, slot_id) en DB = idempotence (ligne 132)
 - Abandonner si session invalide (RLS 42501 error, ligne 135-141)
@@ -367,7 +369,7 @@ export default function useIsVisitor(): UseIsVisitorReturn {
   const { user, authReady } = useAuth()
 
   return {
-    isVisitor: authReady && !user,  // ✅ Condition stricte
+    isVisitor: authReady && !user, // ✅ Condition stricte
     authReady,
   }
 }
@@ -382,12 +384,14 @@ export default function useIsVisitor(): UseIsVisitorReturn {
 **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/contexts/AuthContext.tsx`
 
 **État** :
+
 - `user: User | null` - Utilisateur Supabase (ou null si Visitor)
 - `authReady: boolean` - Flag d'initialisation (succès ou échec)
 
 **Source** : AuthContext.tsx:21-26
 
 **Détection vidibilité client-side** (ligne 105-106) :
+
 ```typescript
 const [isOnline, setIsOnline] = useState<boolean>(
   typeof navigator !== 'undefined' ? navigator.onLine : true
@@ -402,12 +406,12 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 #### 1. Séquences : VisitorSequence ↔ Supabase `sequences`
 
-| Propriété | Local (IndexedDB) | Supabase | Compatibilité |
-|-----------|-------------------|----------|---------------|
-| `id` | string (UUID v4 local) | UUID (gen_random_uuid) | ✅ Peut être remappé |
-| `mother_card_id` | string | UUID refs cards(id) | ✅ Identique |
-| `created_at` | number (Date.now()) | TIMESTAMPTZ | ⚠️ Conversion needed |
-| (missing) | - | account_id UUID NOT NULL | ⚠️ À ajouter à l'import |
+| Propriété        | Local (IndexedDB)      | Supabase                 | Compatibilité           |
+| ---------------- | ---------------------- | ------------------------ | ----------------------- |
+| `id`             | string (UUID v4 local) | UUID (gen_random_uuid)   | ✅ Peut être remappé    |
+| `mother_card_id` | string                 | UUID refs cards(id)      | ✅ Identique            |
+| `created_at`     | number (Date.now())    | TIMESTAMPTZ              | ⚠️ Conversion needed    |
+| (missing)        | -                      | account_id UUID NOT NULL | ⚠️ À ajouter à l'import |
 
 **Migration future** : ID local remappé lors de l'import (Ticket 4)
 
@@ -415,16 +419,17 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 #### 2. Étapes : VisitorSequenceStep ↔ Supabase `sequence_steps`
 
-| Propriété | Local (IndexedDB) | Supabase | Compatibilité |
-|-----------|-------------------|----------|---------------|
-| `id` | string (UUID v4 local) | UUID (gen_random_uuid) | ✅ Peut être remappé |
-| `sequence_id` | string (local FK) | UUID refs sequences(id) | ⚠️ Remappé avec parent |
-| `step_card_id` | string | UUID refs cards(id) | ✅ Identique |
-| `position` | number | INTEGER NOT NULL CHECK >= 0 | ✅ Identique |
-| (missing) | - | created_at TIMESTAMPTZ | ⚠️ À ajouter à l'import |
-| (missing) | - | updated_at TIMESTAMPTZ | ⚠️ À ajouter à l'import |
+| Propriété      | Local (IndexedDB)      | Supabase                    | Compatibilité           |
+| -------------- | ---------------------- | --------------------------- | ----------------------- |
+| `id`           | string (UUID v4 local) | UUID (gen_random_uuid)      | ✅ Peut être remappé    |
+| `sequence_id`  | string (local FK)      | UUID refs sequences(id)     | ⚠️ Remappé avec parent  |
+| `step_card_id` | string                 | UUID refs cards(id)         | ✅ Identique            |
+| `position`     | number                 | INTEGER NOT NULL CHECK >= 0 | ✅ Identique            |
+| (missing)      | -                      | created_at TIMESTAMPTZ      | ⚠️ À ajouter à l'import |
+| (missing)      | -                      | updated_at TIMESTAMPTZ      | ⚠️ À ajouter à l'import |
 
 **Contraintes** :
+
 - Local : Composite indexes `sequence_step_card` et `sequence_position` (UNIQUE)
 - Supabase : UNIQUE constraints identiques (lignes 18-21, migration 20260202123000)
 - Local : Min 2 étapes enforced en appli (sequencesDB.ts:174-176)
@@ -442,11 +447,11 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 ### Données manquantes pour import
 
-| Données | Raison | Valeur par défaut |
-|---------|--------|-------------------|
-| `account_id` | Visitor n'a pas de compte | À créer lors signup |
+| Données      | Raison                     | Valeur par défaut           |
+| ------------ | -------------------------- | --------------------------- |
+| `account_id` | Visitor n'a pas de compte  | À créer lors signup         |
 | `updated_at` | Timestamp local uniquement | `created_at` = `updated_at` |
-| RLS policy | Visitor local-only | À attacher après import |
+| RLS policy   | Visitor local-only         | À attacher après import     |
 
 ---
 
@@ -454,48 +459,48 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 ### Fichiers cœur (Hooks + Utils)
 
-| Fichier | Rôle | Type | Lignes |
-|---------|------|------|--------|
-| `src/hooks/useIsVisitor.ts` | Détection Visitor | Hook | 38-45 |
-| `src/hooks/useSequencesLocal.ts` | CRUD séquences local | Hook | 70-169 |
-| `src/hooks/useSequenceStepsLocal.ts` | CRUD étapes local | Hook | 69-198 |
-| `src/hooks/useSequencesWithVisitor.ts` | Router Cloud/Local | Hook adapter | 70-112 |
-| `src/hooks/useSequenceStepsWithVisitor.ts` | Router Cloud/Local | Hook adapter | 65-103 |
-| `src/utils/visitor/sequencesDB.ts` | Layer IndexedDB | Util | lignes complètes |
-| `src/utils/consent.ts` | Gestion consentement CNIL | Util | 1-272 |
+| Fichier                                    | Rôle                      | Type         | Lignes           |
+| ------------------------------------------ | ------------------------- | ------------ | ---------------- |
+| `src/hooks/useIsVisitor.ts`                | Détection Visitor         | Hook         | 38-45            |
+| `src/hooks/useSequencesLocal.ts`           | CRUD séquences local      | Hook         | 70-169           |
+| `src/hooks/useSequenceStepsLocal.ts`       | CRUD étapes local         | Hook         | 69-198           |
+| `src/hooks/useSequencesWithVisitor.ts`     | Router Cloud/Local        | Hook adapter | 70-112           |
+| `src/hooks/useSequenceStepsWithVisitor.ts` | Router Cloud/Local        | Hook adapter | 65-103           |
+| `src/utils/visitor/sequencesDB.ts`         | Layer IndexedDB           | Util         | lignes complètes |
+| `src/utils/consent.ts`                     | Gestion consentement CNIL | Util         | 1-272            |
 
 ### Fichiers contexte (State global)
 
-| Fichier | Rôle | Clés localStorage | Scope |
-|---------|------|-------------------|-------|
-| `src/contexts/AuthContext.tsx` | Auth state | `session` (Supabase SDK) | Global |
-| `src/contexts/OfflineContext.tsx` | Queue offline | `appli-picto:offline-validation-queue` | Auth users |
-| `src/contexts/DisplayContext.tsx` | Prefs UI | `showTrain`, `showAutre`, `showTimeTimer` | Auth users |
-| `src/contexts/ChildProfileContext.tsx` | Profil enfant | `applipicto:visitor:activeChildId`, `applipicto:activeChild:{userId}` | Global |
+| Fichier                                | Rôle          | Clés localStorage                                                     | Scope      |
+| -------------------------------------- | ------------- | --------------------------------------------------------------------- | ---------- |
+| `src/contexts/AuthContext.tsx`         | Auth state    | `session` (Supabase SDK)                                              | Global     |
+| `src/contexts/OfflineContext.tsx`      | Queue offline | `appli-picto:offline-validation-queue`                                | Auth users |
+| `src/contexts/DisplayContext.tsx`      | Prefs UI      | `showTrain`, `showAutre`, `showTimeTimer`                             | Auth users |
+| `src/contexts/ChildProfileContext.tsx` | Profil enfant | `applipicto:visitor:activeChildId`, `applipicto:activeChild:{userId}` | Global     |
 
 ### Fichiers composants (Consommateurs)
 
-| Fichier | Hooks utilisés | Usage |
-|---------|-----------------|-------|
+| Fichier                                                                | Hooks utilisés                | Usage                              |
+| ---------------------------------------------------------------------- | ----------------------------- | ---------------------------------- |
 | `src/components/features/sequences/sequence-editor/SequenceEditor.tsx` | `useSequenceStepsWithVisitor` | Éditeur séquences (Visitor + Auth) |
-| `src/components/features/timeline/slots-editor/SlotsEditor.tsx` | `useSequencesWithVisitor` | Parent séquences |
-| `src/components/layout/navbar/Navbar.tsx` | `useIsVisitor` | UI conditionnelle |
-| `src/components/features/time-timer/TimeTimer.tsx` | `useIsVisitor` | UI conditionnelle |
-| `src/components/features/time-timer/FloatingTimeTimer.tsx` | `useIsVisitor` | UI conditionnelle |
+| `src/components/features/timeline/slots-editor/SlotsEditor.tsx`        | `useSequencesWithVisitor`     | Parent séquences                   |
+| `src/components/layout/navbar/Navbar.tsx`                              | `useIsVisitor`                | UI conditionnelle                  |
+| `src/components/features/time-timer/TimeTimer.tsx`                     | `useIsVisitor`                | UI conditionnelle                  |
+| `src/components/features/time-timer/FloatingTimeTimer.tsx`             | `useIsVisitor`                | UI conditionnelle                  |
 
 ### Configuration i18n et thème
 
-| Fichier | Clé localStorage | Scope |
-|---------|------------------|-------|
-| `src/config/i18n/i18n.ts` | `lang` | Global (i18n) |
-| `src/app/layout.tsx` | `theme` | Global (root) |
+| Fichier                   | Clé localStorage | Scope         |
+| ------------------------- | ---------------- | ------------- |
+| `src/config/i18n/i18n.ts` | `lang`           | Global (i18n) |
+| `src/app/layout.tsx`      | `theme`          | Global (root) |
 
 ### Types Supabase (Référence)
 
-| Fichier | Type local | Type cloud |
-|---------|-----------|-----------|
-| `src/types/supabase.ts` | - | `Database['public']['Tables']['sequences']` |
-| `src/types/supabase.ts` | - | `Database['public']['Tables']['sequence_steps']` |
+| Fichier                 | Type local | Type cloud                                       |
+| ----------------------- | ---------- | ------------------------------------------------ |
+| `src/types/supabase.ts` | -          | `Database['public']['Tables']['sequences']`      |
+| `src/types/supabase.ts` | -          | `Database['public']['Tables']['sequence_steps']` |
 
 **Généré via** : `pnpm db:types` (post-migration Supabase)
 
@@ -505,13 +510,13 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 ### Migrations Supabase existantes
 
-| Migration | Phase | Date | Fichier |
-|-----------|-------|------|---------|
-| Créer `sequences` | 6.1 | 2026-02-02 | `20260202122000_phase6_create_sequences.sql` |
-| Créer `sequence_steps` | 6.2 | 2026-02-02 | `20260202123000_phase6_create_sequence_steps.sql` |
-| Invariants séquences | 6.3 | 2026-02-02 | `20260202124000_phase6_add_sequence_invariants.sql` |
-| RLS & Grants | 7.2 | 2026-02-03 | `20260203127000_phase7_2_enable_rls_and_grants.sql` |
-| RLS Séquences | 7.8 | 2026-02-03 | `20260203133000_phase7_8_rls_sequences.sql` |
+| Migration              | Phase | Date       | Fichier                                             |
+| ---------------------- | ----- | ---------- | --------------------------------------------------- |
+| Créer `sequences`      | 6.1   | 2026-02-02 | `20260202122000_phase6_create_sequences.sql`        |
+| Créer `sequence_steps` | 6.2   | 2026-02-02 | `20260202123000_phase6_create_sequence_steps.sql`   |
+| Invariants séquences   | 6.3   | 2026-02-02 | `20260202124000_phase6_add_sequence_invariants.sql` |
+| RLS & Grants           | 7.2   | 2026-02-03 | `20260203127000_phase7_2_enable_rls_and_grants.sql` |
+| RLS Séquences          | 7.8   | 2026-02-03 | `20260203133000_phase7_8_rls_sequences.sql`         |
 
 ### RLS Policies (Production)
 
@@ -529,15 +534,16 @@ const [isOnline, setIsOnline] = useState<boolean>(
 
 ```typescript
 // Parent adapter
-const cloudResult = useSequences(!isVisitor && authReady)     // Inactif si Visitor
+const cloudResult = useSequences(!isVisitor && authReady) // Inactif si Visitor
 const localResult = useSequencesLocal(isVisitor && authReady) // Inactif si Auth
 
 // Enfant choisit branche active
-if (isVisitor) return { ...localResult }  // ✅ Local actif seul
-return { ...cloudResult }                  // ✅ Cloud actif seul
+if (isVisitor) return { ...localResult } // ✅ Local actif seul
+return { ...cloudResult } // ✅ Cloud actif seul
 ```
 
 **Fichiers** :
+
 - `useSequencesWithVisitor.ts:78-79` (sequences)
 - `useSequenceStepsWithVisitor.ts:75-76` (steps)
 
@@ -546,7 +552,7 @@ return { ...cloudResult }                  // ✅ Cloud actif seul
 ```typescript
 // ✅ Gardes SSR
 if (typeof window === 'undefined') return defaultValue
-localStorage.getItem(key)  // Safe
+localStorage.getItem(key) // Safe
 
 // Utilisation en contexte provider
 if (typeof window !== 'undefined') {
@@ -599,24 +605,24 @@ useEffect(() => {
 
 ### ✅ État production actuel
 
-| Système | Mécanisme | État | Ticket |
-|---------|-----------|------|--------|
-| Séquençage (Visitor) | IndexedDB local | ✅ Implémentation complète | Ticket 3 |
-| Séquençage (Auth) | Supabase cloud | ✅ RLS policies activées | Ticket 3 |
-| Profil enfant (Visitor) | localStorage | ✅ Unique implicite | S2 |
-| Profil enfant (Auth) | Supabase | ✅ CRUD via hook | S2 |
-| Offline queue (Auth) | localStorage | ✅ Sync auto au retour réseau | S8 |
-| Consentement | localStorage | ✅ CNIL compliant (6 mois) | CNIL |
+| Système                 | Mécanisme       | État                          | Ticket   |
+| ----------------------- | --------------- | ----------------------------- | -------- |
+| Séquençage (Visitor)    | IndexedDB local | ✅ Implémentation complète    | Ticket 3 |
+| Séquençage (Auth)       | Supabase cloud  | ✅ RLS policies activées      | Ticket 3 |
+| Profil enfant (Visitor) | localStorage    | ✅ Unique implicite           | S2       |
+| Profil enfant (Auth)    | Supabase        | ✅ CRUD via hook              | S2       |
+| Offline queue (Auth)    | localStorage    | ✅ Sync auto au retour réseau | S8       |
+| Consentement            | localStorage    | ✅ CNIL compliant (6 mois)    | CNIL     |
 
 ### 📋 Points à vérifier pour l'import (Ticket 4)
 
-| Point | Vérification | Fichier |
-|-------|-------------|---------|
-| UUID remapping | IDs locaux → UUID Supabase | sequencesDB.ts:90-95 |
-| Timestamp conversion | number (Date.now) → TIMESTAMPTZ | sequencesDB.ts:150 |
-| Account creation | Créer account lors signup | (Ticket 4 scope) |
-| RLS attachment | Appliquer policies à l'import | (Ticket 4 scope) |
-| Position resquencing | Rénuméroter 0..n-1 si gaps | (Ticket 4 scope) |
+| Point                | Vérification                    | Fichier              |
+| -------------------- | ------------------------------- | -------------------- |
+| UUID remapping       | IDs locaux → UUID Supabase      | sequencesDB.ts:90-95 |
+| Timestamp conversion | number (Date.now) → TIMESTAMPTZ | sequencesDB.ts:150   |
+| Account creation     | Créer account lors signup       | (Ticket 4 scope)     |
+| RLS attachment       | Appliquer policies à l'import   | (Ticket 4 scope)     |
+| Position resquencing | Rénuméroter 0..n-1 si gaps      | (Ticket 4 scope)     |
 
 ### ⚠️ Gap identifié
 
@@ -676,16 +682,19 @@ Pour vérifier l'état courant en dev:
 
 ```javascript
 // DevTools Console
-console.table(Object.entries(localStorage).map(([k, v]) => ({
-  key: k,
-  value: v.length > 50 ? v.substring(0, 50) + '...' : v,
-  size: new Blob([v]).size + ' bytes'
-})))
+console.table(
+  Object.entries(localStorage).map(([k, v]) => ({
+    key: k,
+    value: v.length > 50 ? v.substring(0, 50) + '...' : v,
+    size: new Blob([v]).size + ' bytes',
+  }))
+)
 
 // Visitor mode specific
-console.log('Visitor sequences:', JSON.parse(
-  sessionStorage.getItem('_visitor_sequences') || '[]'
-))
+console.log(
+  'Visitor sequences:',
+  JSON.parse(sessionStorage.getItem('_visitor_sequences') || '[]')
+)
 
 // IndexedDB inspection
 const dbs = await indexedDB.databases()
@@ -693,7 +702,7 @@ console.table(dbs)
 
 // Open app-picto-visitor DB
 const req = indexedDB.open('appli-picto-visitor')
-req.onsuccess = (e) => {
+req.onsuccess = e => {
   const db = e.target.result
   console.table(Array.from(db.objectStoreNames))
 }

@@ -19,7 +19,7 @@ export type Slot = Database['public']['Tables']['slots']['Row']
 export type SlotKind = Database['public']['Enums']['slot_kind']
 
 // Type unifié : Slot DB ou Slot visitor (structures identiques)
-type UnifiedSlot = Slot | visitorSlotsDB.VisitorSlot
+type _UnifiedSlot = Slot | visitorSlotsDB.VisitorSlot
 
 interface ActionResult {
   error: Error | null

@@ -20,6 +20,7 @@
 ### Couche Data
 
 **`src/utils/visitor/sequencesDB.ts`** (409 lignes)
+
 - **But** : CRUD séquences/étapes Visitor en IndexedDB
 - **Exports** :
   - `openDB()` : Ouvre/crée DB IndexedDB
@@ -46,6 +47,7 @@
 ### Hooks Visitor
 
 **`src/hooks/useSequencesLocal.ts`** (170 lignes)
+
 - **Type** : Hook React custom
 - **But** : CRUD séquences Visitor (wrapper IndexedDB)
 - **Signature identique** : `useSequences.ts` (cloud) pour faciliter routing
@@ -54,11 +56,13 @@
 - **Appelle** : `sequencesDB.*` pour toutes opérations
 
 **`src/hooks/useSequenceStepsLocal.ts`** (~150 lignes)
+
 - **Type** : Hook React custom
 - **But** : CRUD étapes séquences Visitor
 - **Pattern** : Identique à `useSequenceStepsWithVisitor` (adapter)
 
 **`src/hooks/useIsVisitor.ts`** (46 lignes)
+
 - **Type** : Hook React custom
 - **But** : Détecter si user est en mode Visitor (non authentifié)
 - **Return** : { isVisitor: bool, authReady: bool }
@@ -67,6 +71,7 @@
 ### Hooks Adapter (Routing Visitor ↔ Cloud)
 
 **`src/hooks/useSequencesWithVisitor.ts`** (~150 lignes)
+
 - **Type** : Hook adapter
 - **Pattern** :
   ```typescript
@@ -78,6 +83,7 @@
 - **Seamless routing** : Composant ne change pas, juste le hook utilisé
 
 **`src/hooks/useSequenceStepsWithVisitor.ts`** (~150 lignes)
+
 - **Type** : Hook adapter
 - **Pattern** : Identique à `useSequencesWithVisitor`
 - **Import** :
@@ -93,12 +99,14 @@
 ### RPC Atomiques
 
 **`supabase/migrations/20260315113000_phase7_10_atomic_sequence_rpc.sql`** (292 lignes)
+
 - **Date** : 2026-03-15
 - **But** : Créer RPC atomiques séquences cloud
 
 #### RPC 1 : `create_sequence_with_steps()`
 
 **Signature** :
+
 ```sql
 CREATE FUNCTION create_sequence_with_steps(
   p_mother_card_id UUID,
@@ -107,22 +115,26 @@ CREATE FUNCTION create_sequence_with_steps(
 ```
 
 **Validations** (lignes 38-145) :
+
 - Auth : `auth.uid()` required
 - Permissions : `can_write_sequences()` (Subscriber/Admin seulement)
 - Parametres : mother_card_id NOT NULL, stepCardIds ≥2, pas de doublons
 - Constraints : UNIQUE(account_id, mother_card_id)
 
 **Opérations** (lignes 112-123) :
+
 1. INSERT séquence (retourne id)
 2. INSERT étapes (via UNNEST avec ORDER BY ordinality)
 
 **Exception Handling** (lignes 125-145) :
+
 - UNIQUE violation → Error message approprié
 - Auto-rollback si erreur
 
 #### RPC 2 : `replace_sequence_steps()`
 
 **Signature** :
+
 ```sql
 CREATE FUNCTION replace_sequence_steps(
   p_sequence_id UUID,
@@ -131,12 +143,14 @@ CREATE FUNCTION replace_sequence_steps(
 ```
 
 **Patterns** :
+
 - `FOR UPDATE` lock (ligne 244-246) : Empêche race conditions
 - DELETE puis INSERT (lignes 256-265) : Remplace tout atomiquement
 
 ### Hooks Cloud
 
 **`src/hooks/useSequences.ts`** (172 lignes)
+
 - **Type** : Hook React custom
 - **But** : CRUD séquences cloud
 - **Appelle** : `supabase.rpc('create_sequence_with_steps', {...})`
@@ -154,6 +168,7 @@ CREATE FUNCTION replace_sequence_steps(
 - **Return** : `{ id: data, error }`
 
 **`src/hooks/useSequenceSteps.ts`** (similaire)
+
 - **Type** : Hook React custom
 - **But** : CRUD étapes séquences cloud
 
@@ -162,6 +177,7 @@ CREATE FUNCTION replace_sequence_steps(
 ## 3. Authentification & Post-Signup
 
 **`src/contexts/AuthContext.tsx`** (237 lignes)
+
 - **Type** : React Context
 - **But** : État global authentification
 - **Lifecycle** (lignes 70-207) :
@@ -173,6 +189,7 @@ CREATE FUNCTION replace_sequence_steps(
 - **Sentry integration** (lignes 47-68) : Track user auth state
 
 **`src/page-components/signup/Signup.tsx`** (176 lignes)
+
 - **Type** : Composant React (client)
 - **But** : Page inscription utilisateur
 - **Flow** (lignes 43-97) :
@@ -184,6 +201,7 @@ CREATE FUNCTION replace_sequence_steps(
 - **Note** (ligne 79) : "Le trigger DB crée automatiquement le profil enfant"
 
 **`src/app/(public)/signup/page.tsx`**
+
 - **Type** : Next.js page
 - **Simplement** : Render `<Signup />`
 
@@ -192,6 +210,7 @@ CREATE FUNCTION replace_sequence_steps(
 ## 4. Contextes & State Management
 
 **`src/contexts/OfflineContext.tsx`** (242 lignes)
+
 - **Type** : React Context
 - **But** : Queue validations offline + sync automatique
 - **Pattern robuste** :
@@ -202,6 +221,7 @@ CREATE FUNCTION replace_sequence_steps(
 - **⚠️ INSPIRATION** : Modèle robuste pour import futur
 
 **`src/contexts/ChildProfileContext.tsx`** (~200 lignes)
+
 - **Note** : Gère nettoyage localStorage au logout (lignes 2-5 du commentaire)
 - **Pattern** :
   ```typescript
@@ -210,6 +230,7 @@ CREATE FUNCTION replace_sequence_steps(
   ```
 
 **`src/contexts/ToastContext.tsx`**
+
 - **Type** : React Context
 - **But** : Notifications toast utilisateur
 - **Utilisé pour** : Feedback import (succès/erreur)
@@ -219,21 +240,25 @@ CREATE FUNCTION replace_sequence_steps(
 ## 5. Composants UI Pertinents
 
 **`src/components/features/modal/modal-import-visitor/`** (À CRÉER - Ticket 4)
+
 - Composant modal post-login
 - Affiche "Importer N séquences?"
 - États : confirm → importing → result
 - Utilise hook `useImportVisitor()`
 
 **`src/components/shared/modal/Modal.tsx`**
+
 - **Type** : Composant wrapper modal
 - **Utilisé par** : ModalImportVisitor (futur)
 
 **`src/components/shared/button/Button.tsx`**
+
 - **Type** : Composant bouton réutilisable
 - **Props** : label, onClick, disabled, variant
 - **Utilisé par** : ModalImportVisitor actions
 
 **`src/components/layout/Navbar.tsx`** (import `useIsVisitor`)
+
 - Utilise `useIsVisitor()` pour adapter affichage
 - Affiche "Créer compte" si visitor, "Profil" si auth
 
@@ -242,6 +267,7 @@ CREATE FUNCTION replace_sequence_steps(
 ## 6. Composants Pages
 
 **`src/page-components/tableau/Tableau.tsx`**
+
 - **Imports** :
   - `useSequencesWithVisitor` (visiteur + auth)
   - `useSequenceStepsWithVisitor` (pareil)
@@ -249,10 +275,12 @@ CREATE FUNCTION replace_sequence_steps(
 - **Epoch check** : Réalignement données si session réinitialisée
 
 **`src/page-components/edition-timeline/EditionTimeline.tsx`**
+
 - **Imports** : `useSequencesWithVisitor`
 - **Comment** (ligne 4) : "Architecture S4 + S6"
 
 **`src/page-components/edition/Edition.tsx`**
+
 - Utilise hooks sequencesWithVisitor
 
 ---
@@ -260,12 +288,14 @@ CREATE FUNCTION replace_sequence_steps(
 ## 7. Structures Layout
 
 **`src/app/(protected)/layout.tsx`**
+
 - **À modifier** (Ticket 4) : Ajouter ModalImportVisitor
 - **Logic à ajouter** :
+
   ```typescript
   const { hasVisitorData } = useImportVisitor()
   const [showImportModal, setShowImportModal] = useState(false)
-  
+
   useEffect(() => {
     if (authReady && user) {
       const hasSeenModal = localStorage.getItem(`import-shown:${user.id}`)
@@ -275,7 +305,7 @@ CREATE FUNCTION replace_sequence_steps(
       }
     }
   }, [authReady, user])
-  
+
   return (
     <>
       {children}
@@ -285,10 +315,12 @@ CREATE FUNCTION replace_sequence_steps(
   ```
 
 **`src/app/(public)/layout.tsx`**
+
 - Layout public (pas auth)
 - Affiche navbar public, footer simple
 
 **`src/app/layout.tsx`** (Root)
+
 - `<AuthProvider>` wrapper
 - Providers globaux (Auth, Toast, Loading, Display, Offline)
 
@@ -297,11 +329,13 @@ CREATE FUNCTION replace_sequence_steps(
 ## 8. Types & Interfaces
 
 **`src/types/supabase.ts`** (Généré automatiquement)
+
 - Types TypeScript pour tables Supabase
 - **À vérifier** : Types sequences, sequence_steps
 - **Généré par** : `pnpm db:types`
 
 **Types locaux** (dans fichiers) :
+
 - `VisitorSequence`, `VisitorSequenceStep` (sequencesDB.ts)
 - `UseSequencesReturn`, `UseImportVisitorReturn` (hooks)
 
@@ -310,14 +344,17 @@ CREATE FUNCTION replace_sequence_steps(
 ## 9. Configuration & Utils
 
 **`src/utils/supabaseClient.ts`**
+
 - **Export** : `supabase` client instance
 - **Utilisé par** : tous hooks (RPC calls)
 
 **`src/hooks/index.ts`**
+
 - **Exports centralisés** : tous hooks
 - **À ajouter** : `export { default as useImportVisitor } from '@/hooks/useImportVisitor'`
 
 **`src/config/i18n/i18n.ts`**
+
 - **i18n setup** : messages multilingues
 - **À ajouter** : Messages import (visitor.importTitle, etc.)
 
@@ -326,18 +363,23 @@ CREATE FUNCTION replace_sequence_steps(
 ## 10. Fichiers Documentation Générés
 
 **`VISITOR_IMPORT_ANALYSIS.md`** (Repo root)
+
 - Analyse complète 500+ lignes
 
 **`.claude/TRANSACTION_PATTERNS.md`**
+
 - Guide patterns transactionnels 400+ lignes
 
 **`.claude/TICKET4_IMPLEMENTATION_PLAN.md`**
+
 - Plan blueprint Ticket 4, 600+ lignes
 
 **`.claude/VISITOR_IMPORT_EXECUTIVE_SUMMARY.md`**
+
 - Ce fichier, résumé exécutif
 
 **`.claude/VISITOR_IMPORT_FILE_INDEX.md`**
+
 - Index tous fichiers (ce document)
 
 ---
@@ -352,7 +394,7 @@ export default function useSequencesWithVisitor(enabled: boolean = true) {
   const { isVisitor } = useIsVisitor()
   const local = useSequencesLocal(isVisitor && enabled)
   const cloud = useSequences(!isVisitor && enabled)
-  
+
   return isVisitor ? local : cloud
 }
 ```
@@ -389,11 +431,13 @@ if (error) {
 ## 12. Fichiers NON Pertinents
 
 **❌ Legacy** (S3 Visitor) :
+
 - `src/hooks/useTaches.ts` (ancien système, non exporté)
 - `src/hooks/useTachesDnd.ts` (ancien système, non exporté)
 - `src/hooks/useFallbackData.ts` (ancien système, non exporté)
 
 **❌ Non-impliqués** :
+
 - Hooks: `useTimelines`, `useSlots`, `useSessions` (système planning S4)
 - Hooks: `useBankCards`, `usePersonalCards` (cartes, pas séquences)
 - Contexts: Tous sauf Auth, Offline, ChildProfile

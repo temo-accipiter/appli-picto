@@ -5,6 +5,7 @@
 **Phase** : S4 (Timelines)
 
 **Dépendances** :
+
 - ✅ S3 : Visitor IndexedDB (complété)
 - ✅ S4 : RPC atomiques cloud (complété)
 - ⏳ Ticket 4 : Import function (À FAIRE)
@@ -105,6 +106,7 @@ src/app/(protected)/layout.tsx (modifié)
 ## 1. Hook React : useImportVisitor()
 
 ### Fichier à Créer
+
 `src/hooks/useImportVisitor.ts`
 
 ### Code Template
@@ -171,8 +173,8 @@ export default function useImportVisitor(): UseImportVisitorReturn {
   }, [])
 
   // Orchestrer l'import
-  const importVisitorSequences = useCallback(
-    async (): Promise<ImportResult | null> => {
+  const importVisitorSequences =
+    useCallback(async (): Promise<ImportResult | null> => {
       // ⚠️ GUARD : User must be authenticated
       if (!user || !authReady) {
         setError(new Error('Authentication required for import'))
@@ -191,7 +193,9 @@ export default function useImportVisitor(): UseImportVisitorReturn {
 
       try {
         // 1. Charger toutes séquences Visitor depuis IndexedDB
-        console.log('[useImportVisitor] Loading visitor sequences from IndexedDB...')
+        console.log(
+          '[useImportVisitor] Loading visitor sequences from IndexedDB...'
+        )
         const visitorSequences = await sequencesDB.getAllSequences()
         result.total = visitorSequences.length
 
@@ -246,12 +250,17 @@ export default function useImportVisitor(): UseImportVisitorReturn {
 
         // 3. Cleanup IndexedDB SEULEMENT si ALL succès
         if (result.failed === 0) {
-          console.log('[useImportVisitor] All imports succeeded, cleaning up IndexedDB...')
+          console.log(
+            '[useImportVisitor] All imports succeeded, cleaning up IndexedDB...'
+          )
           for (const visitorSeq of visitorSequences) {
             try {
               await sequencesDB.deleteSequence(visitorSeq.id)
             } catch (err) {
-              console.warn(`[useImportVisitor] Failed to cleanup sequence ${visitorSeq.id}:`, err)
+              console.warn(
+                `[useImportVisitor] Failed to cleanup sequence ${visitorSeq.id}:`,
+                err
+              )
               // Continue cleanup même si une échoue
             }
           }
@@ -272,9 +281,7 @@ export default function useImportVisitor(): UseImportVisitorReturn {
       } finally {
         setLoading(false)
       }
-    },
-    [user, authReady]
-  )
+    }, [user, authReady])
 
   return {
     loading,
@@ -291,6 +298,7 @@ export default function useImportVisitor(): UseImportVisitorReturn {
 ## 2. Modal UI : ModalImportVisitor
 
 ### Fichier à Créer
+
 `src/components/features/modal/modal-import-visitor/ModalImportVisitor.tsx`
 
 ### Code Template
@@ -443,6 +451,7 @@ export default function ModalImportVisitor({
 ```
 
 ### Styles SCSS
+
 `src/components/features/modal/modal-import-visitor/ModalImportVisitor.scss`
 
 ```scss
@@ -558,6 +567,7 @@ export default function ModalImportVisitor({
 ## 3. Layout Integration
 
 ### Fichier à Modifier
+
 `src/app/(protected)/layout.tsx`
 
 ### Code Modification
@@ -642,6 +652,7 @@ export default function ProtectedLayout({
 ## 4. i18n Messages
 
 ### Fichier à Modifier/Créer
+
 `src/config/i18n/translations/[lang].json`
 
 ### Messages à Ajouter
@@ -774,7 +785,7 @@ try {
   }
 } catch (err) {
   // Mode privé strict
-  showToast('Impossible d\'accéder aux données locales', 'error')
+  showToast("Impossible d'accéder aux données locales", 'error')
 }
 ```
 

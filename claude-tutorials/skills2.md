@@ -1,4 +1,5 @@
 > ## Documentation Index
+>
 > Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt
 > Use this file to discover all available pages before exploring further.
 
@@ -11,7 +12,7 @@ Les skills étendent ce que Claude peut faire. Créez un fichier `SKILL.md` avec
 <Note>
   Pour les commandes intégrées comme `/help` et `/compact`, consultez la [référence des commandes intégrées](/fr/commands).
 
-  **Les commandes personnalisées ont été fusionnées dans les skills.** Un fichier à `.claude/commands/deploy.md` et une skill à `.claude/skills/deploy/SKILL.md` créent tous les deux `/deploy` et fonctionnent de la même manière. Vos fichiers `.claude/commands/` existants continuent de fonctionner. Les skills ajoutent des fonctionnalités optionnelles : un répertoire pour les fichiers de support, un frontmatter pour [contrôler si vous ou Claude invoquez la skill](#control-who-invokes-a-skill), et la capacité pour Claude de les charger automatiquement quand c'est pertinent.
+**Les commandes personnalisées ont été fusionnées dans les skills.** Un fichier à `.claude/commands/deploy.md` et une skill à `.claude/skills/deploy/SKILL.md` créent tous les deux `/deploy` et fonctionnent de la même manière. Vos fichiers `.claude/commands/` existants continuent de fonctionner. Les skills ajoutent des fonctionnalités optionnelles : un répertoire pour les fichiers de support, un frontmatter pour [contrôler si vous ou Claude invoquez la skill](#control-who-invokes-a-skill), et la capacité pour Claude de les charger automatiquement quand c'est pertinent.
 </Note>
 
 Les skills Claude Code suivent la norme ouverte [Agent Skills](https://agentskills.io), qui fonctionne sur plusieurs outils d'IA. Claude Code étend la norme avec des fonctionnalités supplémentaires comme le [contrôle d'invocation](#control-who-invokes-a-skill), l'[exécution de subagent](#run-skills-in-a-subagent), et l'[injection de contexte dynamique](#inject-dynamic-context).
@@ -43,6 +44,7 @@ Cet exemple crée une skill qui enseigne à Claude comment expliquer le code en 
     ```bash  theme={null}
     mkdir -p ~/.claude/skills/explain-code
     ```
+
   </Step>
 
   <Step title="Écrire SKILL.md">
@@ -65,6 +67,7 @@ Cet exemple crée une skill qui enseigne à Claude comment expliquer le code en 
 
     Keep explanations conversational. For complex concepts, use multiple analogies.
     ```
+
   </Step>
 
   <Step title="Tester la skill">
@@ -83,6 +86,7 @@ Cet exemple crée une skill qui enseigne à Claude comment expliquer le code en 
     ```
 
     De l'une ou l'autre façon, Claude devrait inclure une analogie et un diagramme ASCII dans son explication.
+
   </Step>
 </Steps>
 
@@ -105,7 +109,7 @@ Quand vous travaillez avec des fichiers dans des sous-répertoires, Claude Code 
 
 Chaque skill est un répertoire avec `SKILL.md` comme point d'entrée :
 
-```text  theme={null}
+```text theme={null}
 my-skill/
 ├── SKILL.md           # Instructions principales (obligatoire)
 ├── template.md        # Modèle pour que Claude remplisse
@@ -139,21 +143,20 @@ Les fichiers de skill peuvent contenir n'importe quelles instructions, mais réf
 
 **Le contenu de référence** ajoute des connaissances que Claude applique à votre travail actuel. Conventions, modèles, guides de style, connaissances du domaine. Ce contenu s'exécute en ligne pour que Claude puisse l'utiliser aux côtés du contexte de votre conversation.
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: api-conventions
 description: API design patterns for this codebase
 ---
-
 When writing API endpoints:
-- Use RESTful naming conventions
-- Return consistent error formats
-- Include request validation
+  - Use RESTful naming conventions
+  - Return consistent error formats
+  - Include request validation
 ```
 
 **Le contenu de tâche** donne à Claude des instructions étape par étape pour une action spécifique, comme les déploiements, les commits ou la génération de code. Ce sont souvent des actions que vous voulez invoquer directement avec `/skill-name` plutôt que de laisser Claude décider quand les exécuter. Ajoutez `disable-model-invocation: true` pour empêcher Claude de la déclencher automatiquement.
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: deploy
 description: Deploy the application to production
@@ -173,14 +176,13 @@ Votre `SKILL.md` peut contenir n'importe quoi, mais réfléchir à la façon don
 
 Au-delà du contenu markdown, vous pouvez configurer le comportement de la skill en utilisant les champs du frontmatter YAML entre les marqueurs `---` en haut de votre fichier `SKILL.md` :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: my-skill
 description: What this skill does
 disable-model-invocation: true
 allowed-tools: Read, Grep
 ---
-
 Your skill instructions here...
 ```
 
@@ -214,7 +216,7 @@ Les skills supportent la substitution de chaîne pour les valeurs dynamiques dan
 
 **Exemple utilisant les substitutions :**
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: session-logger
 description: Log activity for this session
@@ -229,7 +231,7 @@ $ARGUMENTS
 
 Les skills peuvent inclure plusieurs fichiers dans leur répertoire. Cela garde `SKILL.md` concentré sur l'essentiel tout en permettant à Claude d'accéder au matériel de référence détaillé uniquement quand c'est nécessaire. Les grandes docs de référence, les spécifications d'API, ou les collections d'exemples n'ont pas besoin de se charger dans le contexte à chaque fois que la skill s'exécute.
 
-```text  theme={null}
+```text theme={null}
 my-skill/
 ├── SKILL.md (obligatoire - aperçu et navigation)
 ├── reference.md (docs API détaillées - chargées quand nécessaire)
@@ -240,7 +242,7 @@ my-skill/
 
 Référencez les fichiers de support à partir de `SKILL.md` pour que Claude sache ce que chaque fichier contient et quand le charger :
 
-```markdown  theme={null}
+```markdown theme={null}
 ## Additional resources
 
 - For complete API details, see [reference.md](reference.md)
@@ -253,13 +255,13 @@ Référencez les fichiers de support à partir de `SKILL.md` pour que Claude sac
 
 Par défaut, vous et Claude pouvez tous les deux invoquer n'importe quelle skill. Vous pouvez taper `/skill-name` pour l'invoquer directement, et Claude peut la charger automatiquement quand c'est pertinent pour votre conversation. Deux champs du frontmatter vous permettent de restreindre ceci :
 
-* **`disable-model-invocation: true`** : Seul vous pouvez invoquer la skill. Utilisez ceci pour les workflows avec des effets secondaires ou que vous voulez contrôler le timing, comme `/commit`, `/deploy`, ou `/send-slack-message`. Vous ne voulez pas que Claude décide de déployer parce que votre code semble prêt.
+- **`disable-model-invocation: true`** : Seul vous pouvez invoquer la skill. Utilisez ceci pour les workflows avec des effets secondaires ou que vous voulez contrôler le timing, comme `/commit`, `/deploy`, ou `/send-slack-message`. Vous ne voulez pas que Claude décide de déployer parce que votre code semble prêt.
 
-* **`user-invocable: false`** : Seul Claude peut invoquer la skill. Utilisez ceci pour les connaissances de base qui ne sont pas actionnables comme une commande. Une skill `legacy-system-context` explique comment fonctionne un ancien système. Claude devrait le savoir quand c'est pertinent, mais `/legacy-system-context` n'est pas une action significative pour les utilisateurs.
+- **`user-invocable: false`** : Seul Claude peut invoquer la skill. Utilisez ceci pour les connaissances de base qui ne sont pas actionnables comme une commande. Une skill `legacy-system-context` explique comment fonctionne un ancien système. Claude devrait le savoir quand c'est pertinent, mais `/legacy-system-context` n'est pas une action significative pour les utilisateurs.
 
 Cet exemple crée une skill de déploiement que seul vous pouvez déclencher. Le champ `disable-model-invocation: true` empêche Claude de l'exécuter automatiquement :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: deploy
 description: Deploy the application to production
@@ -290,7 +292,7 @@ Voici comment les deux champs affectent l'invocation et le chargement du context
 
 Utilisez le champ `allowed-tools` pour limiter les outils que Claude peut utiliser quand une skill est active. Cette skill crée un mode lecture seule où Claude peut explorer les fichiers mais pas les modifier :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: safe-reader
 description: Read files without making changes
@@ -304,13 +306,12 @@ Vous et Claude pouvez tous les deux passer des arguments lors de l'invocation d'
 
 Cette skill corrige un problème GitHub par numéro. L'espace réservé `$ARGUMENTS` est remplacé par tout ce qui suit le nom de la skill :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: fix-issue
 description: Fix a GitHub issue
 disable-model-invocation: true
 ---
-
 Fix GitHub issue $ARGUMENTS following our coding standards.
 
 1. Read the issue description
@@ -326,24 +327,22 @@ Si vous invoquez une skill avec des arguments mais que la skill n'inclut pas `$A
 
 Pour accéder aux arguments individuels par position, utilisez `$ARGUMENTS[N]` ou le raccourci plus court `$N` :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: migrate-component
 description: Migrate a component from one framework to another
 ---
-
 Migrate the $ARGUMENTS[0] component from $ARGUMENTS[1] to $ARGUMENTS[2].
 Preserve all existing behavior and tests.
 ```
 
 Exécuter `/migrate-component SearchBar React Vue` remplace `$ARGUMENTS[0]` par `SearchBar`, `$ARGUMENTS[1]` par `React`, et `$ARGUMENTS[2]` par `Vue`. La même skill utilisant le raccourci `$N` :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: migrate-component
 description: Migrate a component from one framework to another
 ---
-
 Migrate the $0 component from $1 to $2.
 Preserve all existing behavior and tests.
 ```
@@ -356,7 +355,7 @@ La syntaxe `` !`<command>` `` exécute les commandes shell avant que le contenu 
 
 Cette skill résume une pull request en récupérant les données de PR en direct avec le CLI GitHub. Les commandes `` !`gh pr diff` `` et autres s'exécutent d'abord, et leur sortie est insérée dans le prompt :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: pr-summary
 description: Summarize changes in a pull request
@@ -407,7 +406,7 @@ Avec `context: fork`, vous écrivez la tâche dans votre skill et choisissez un 
 
 Cette skill exécute la recherche dans un agent Explore forké. Le contenu de la skill devient la tâche, et l'agent fournit des outils en lecture seule optimisés pour l'exploration de la base de code :
 
-```yaml  theme={null}
+```yaml theme={null}
 ---
 name: deep-research
 description: Research a topic thoroughly
@@ -439,14 +438,14 @@ Trois façons de contrôler quelles skills Claude peut invoquer :
 
 **Désactiver toutes les skills** en refusant l'outil Skill dans `/permissions` :
 
-```text  theme={null}
+```text theme={null}
 # Add to deny rules:
 Skill
 ```
 
 **Autoriser ou refuser des skills spécifiques** en utilisant les [règles de permission](/fr/permissions) :
 
-```text  theme={null}
+```text theme={null}
 # Allow only specific skills
 Skill(commit)
 Skill(review-pr *)
@@ -467,9 +466,9 @@ Syntaxe de permission : `Skill(name)` pour une correspondance exacte, `Skill(nam
 
 Les skills peuvent être distribuées à différentes portées selon votre audience :
 
-* **Skills de projet** : Validez `.claude/skills/` dans le contrôle de version
-* **Plugins** : Créez un répertoire `skills/` dans votre [plugin](/fr/plugins)
-* **Gérées** : Déployez à l'échelle de l'organisation via les [paramètres gérés](/fr/settings#settings-files)
+- **Skills de projet** : Validez `.claude/skills/` dans le contrôle de version
+- **Plugins** : Créez un répertoire `skills/` dans votre [plugin](/fr/plugins)
+- **Gérées** : Déployez à l'échelle de l'organisation via les [paramètres gérés](/fr/settings#settings-files)
 
 ### Générer une sortie visuelle
 
@@ -479,13 +478,13 @@ Cet exemple crée un explorateur de base de code : une vue d'arbre interactive o
 
 Créez le répertoire Skill :
 
-```bash  theme={null}
+```bash theme={null}
 mkdir -p ~/.claude/skills/codebase-visualizer/scripts
 ```
 
 Créez `~/.claude/skills/codebase-visualizer/SKILL.md`. La description dit à Claude quand activer cette Skill, et les instructions disent à Claude d'exécuter le script groupé :
 
-````yaml  theme={null}
+````yaml theme={null}
 ---
 name: codebase-visualizer
 description: Generate an interactive collapsible tree visualization of your codebase. Use when exploring a new repo, understanding project structure, or identifying large files.
@@ -516,9 +515,9 @@ This creates `codebase-map.html` in the current directory and opens it in your d
 
 Créez `~/.claude/skills/codebase-visualizer/scripts/visualize.py`. Ce script analyse une arborescence de répertoires et génère un fichier HTML autonome avec :
 
-* Une **barre latérale de résumé** montrant le nombre de fichiers, le nombre de répertoires, la taille totale et le nombre de types de fichiers
-* Un **graphique en barres** décomposant la base de code par type de fichier (top 8 par taille)
-* Un **arbre réductible** où vous pouvez développer et réduire les répertoires, avec des indicateurs de type de fichier codés par couleur
+- Une **barre latérale de résumé** montrant le nombre de fichiers, le nombre de répertoires, la taille totale et le nombre de types de fichiers
+- Un **graphique en barres** décomposant la base de code par type de fichier (top 8 par taille)
+- Un **arbre réductible** où vous pouvez développer et réduire les répertoires, avec des indicateurs de type de fichier codés par couleur
 
 Le script nécessite Python mais utilise uniquement les bibliothèques intégrées, donc il n'y a pas de packages à installer :
 
@@ -686,9 +685,9 @@ Pour remplacer la limite, définissez la variable d'environnement `SLASH_COMMAND
 
 ## Ressources connexes
 
-* **[Subagents](/fr/sub-agents)** : déléguer les tâches à des agents spécialisés
-* **[Plugins](/fr/plugins)** : empaqueter et distribuer les skills avec d'autres extensions
-* **[Hooks](/fr/hooks)** : automatiser les workflows autour des événements d'outils
-* **[Memory](/fr/memory)** : gérer les fichiers CLAUDE.md pour le contexte persistant
-* **[Built-in commands](/fr/commands)** : référence pour les commandes `/` intégrées
-* **[Permissions](/fr/permissions)** : contrôler l'accès aux outils et aux skills
+- **[Subagents](/fr/sub-agents)** : déléguer les tâches à des agents spécialisés
+- **[Plugins](/fr/plugins)** : empaqueter et distribuer les skills avec d'autres extensions
+- **[Hooks](/fr/hooks)** : automatiser les workflows autour des événements d'outils
+- **[Memory](/fr/memory)** : gérer les fichiers CLAUDE.md pour le contexte persistant
+- **[Built-in commands](/fr/commands)** : référence pour les commandes `/` intégrées
+- **[Permissions](/fr/permissions)** : contrôler l'accès aux outils et aux skills

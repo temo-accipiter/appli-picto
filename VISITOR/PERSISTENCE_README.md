@@ -4,11 +4,11 @@
 
 Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté) de trois façons :
 
-| Mécanisme | Données | Fichier clé | Scope |
-|-----------|---------|-------------|-------|
-| **IndexedDB** | Séquences + étapes | `src/utils/visitor/sequencesDB.ts` | Visitor only |
-| **localStorage** | Profil enfant, prefs UI | `src/contexts/*Context.tsx` | Visitor + Auth |
-| **localStorage** | Consentement CNIL | `src/utils/consent.ts` | Global |
+| Mécanisme        | Données                 | Fichier clé                        | Scope          |
+| ---------------- | ----------------------- | ---------------------------------- | -------------- |
+| **IndexedDB**    | Séquences + étapes      | `src/utils/visitor/sequencesDB.ts` | Visitor only   |
+| **localStorage** | Profil enfant, prefs UI | `src/contexts/*Context.tsx`        | Visitor + Auth |
+| **localStorage** | Consentement CNIL       | `src/utils/consent.ts`             | Global         |
 
 **Statut** : ✅ Production-ready, compatible schéma Supabase cloud (import future en Ticket 4)
 
@@ -17,6 +17,7 @@ Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté)
 ## 📚 Documentation disponible
 
 ### 1. **PERSISTENCE_ANALYSIS.md** (30 KB)
+
 📋 **Référence complète** - Tout ce que vous devez savoir
 
 - Architecture détaillée IndexedDB
@@ -33,6 +34,7 @@ Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté)
 ---
 
 ### 2. **PERSISTENCE_QUICK_REFERENCE.md** (10 KB)
+
 ⚡ **Synthèse rapide** - Cheat sheet pratique
 
 - Tableau clés localStorage
@@ -48,6 +50,7 @@ Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté)
 ---
 
 ### 3. **PERSISTENCE_DIAGRAM.md** (30 KB)
+
 🎨 **Visualisations** - Architecture dessinée
 
 - Diagramme Visitor vs Auth
@@ -65,6 +68,7 @@ Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté)
 ---
 
 ### 4. **PERSISTENCE_INDEX.md** (9 KB)
+
 🗺️ **Guide de navigation** - Où trouver quoi
 
 - Guide par cas d'usage
@@ -79,6 +83,7 @@ Appli-Picto stocke les données du rôle **Visitor** (utilisateur non connecté)
 ---
 
 ### 5. **Ce fichier (README.md)**
+
 📖 **Vous êtes ici** - Point d'entrée
 
 ---
@@ -150,18 +155,21 @@ isVisitor = (authReady && !user)
 ### 2. Trois systèmes de persistance
 
 **IndexedDB (IndexedDB)** : Séquences complexes
+
 - Transactional
 - ACID compliance
 - Constraints enforced
 - Survit aux rafraîchis
 
 **localStorage** : Petites données + prefs
+
 - Key-value simple
 - SSR-safe (avec guard)
 - Partagé avec Auth users
 - Limité à ~10MB
 
 **RAM (in-memory state)** : Contextes React
+
 - Réinitializé à chaque page load
 - Hydraté depuis IndexedDB/localStorage
 - Partagé avec Auth users
@@ -175,9 +183,9 @@ const localResult = useSequencesLocal(isVisitor && authReady)
 
 // Composant utilise le bon
 if (isVisitor) {
-  return { ...localResult }  // ← Seul local actif
+  return { ...localResult } // ← Seul local actif
 }
-return { ...cloudResult }    // ← Seul cloud actif
+return { ...cloudResult } // ← Seul cloud actif
 ```
 
 ### 4. Schéma local compatible cloud
@@ -297,16 +305,21 @@ const result = await new Promise(r => {
 console.table(result)
 
 // 3. Vérifier indexes
-Array.from(db.transaction('sequence_steps').objectStore('sequence_steps').indexNames)
+Array.from(
+  db.transaction('sequence_steps').objectStore('sequence_steps').indexNames
+)
 ```
 
 ### Visitor detection issues
 
 ```javascript
 // Vérifier state
-console.log('isVisitor:', localStorage.getItem('applipicto:visitor:activeChildId') === 'visitor-local')
-console.log('authReady:', /* depends on AuthContext */)
-console.log('user:', /* from useAuth() */)
+console.log(
+  'isVisitor:',
+  localStorage.getItem('applipicto:visitor:activeChildId') === 'visitor-local'
+)
+console.log('authReady:' /* depends on AuthContext */)
+console.log('user:' /* from useAuth() */)
 ```
 
 ---
@@ -387,12 +400,14 @@ pnpm test:e2e               # E2E tests
 ## 🚀 Roadmap
 
 ### ✅ Ticket 3 (S9) - Séquençage Visitor
+
 - Implémentation IndexedDB ✅
 - Hooks adapters ✅
 - Composants intégration ✅
 - Tests unitaires ✅
 
 ### 📋 Ticket 4 (S10) - Import Visitor → Compte
+
 - Lire IndexedDB Visitor
 - Créer account Supabase
 - Remap UUIDs
@@ -401,6 +416,7 @@ pnpm test:e2e               # E2E tests
 - Clear IndexedDB (après succès)
 
 ### 🔮 Ticket 5 (S11) - Collaboration Timeline
+
 - Multi-user sequences
 - Real-time sync (Supabase Realtime)
 - Conflict resolution
@@ -410,27 +426,35 @@ pnpm test:e2e               # E2E tests
 ## 📞 Questions fréquentes
 
 ### Q: Où vérifier si Visitor?
+
 **A**: `useIsVisitor()` hook → `isVisitor && authReady`
 
 ### Q: Où lire séquences Visitor?
+
 **A**: IndexedDB `appli-picto-visitor.sequences` via `useSequencesLocal()`
 
 ### Q: Comment éviter double exécution?
+
 **A**: Pattern `enabled` flag dans hooks adapters (voir ANALYSIS § 5)
 
 ### Q: Quand les données deviennent cloud?
+
 **A**: Lors login (import Ticket 4) → Supabase + RLS
 
 ### Q: Que se passe si localStorage plein?
+
 **A**: localStorage ignoré (silent fail), IndexedDB continue
 
 ### Q: IndexedDB survived browser clear?
+
 **A**: **Non** - cleared avec localStorage/cookies
 
 ### Q: Comment exporter données Visitor?
+
 **A**: Future (Ticket 4 impl.) → JSON download
 
 ### Q: Peut-on avoir plusieurs Visitors?
+
 **A**: **Non** - Visitor = une seule instance par navigateur
 
 ---

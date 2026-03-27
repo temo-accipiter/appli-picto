@@ -31,7 +31,7 @@ export type Session = Database['public']['Tables']['sessions']['Row']
 export type SessionState = Database['public']['Enums']['session_state']
 
 // Type unifié : Session DB ou Session visitor (structures identiques)
-type UnifiedSession = Session | visitorSessionsDB.VisitorSession
+type _UnifiedSession = Session | visitorSessionsDB.VisitorSession
 
 interface ActionResult {
   error: Error | null

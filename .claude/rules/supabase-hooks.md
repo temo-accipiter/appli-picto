@@ -29,6 +29,7 @@ const { data } = await supabase.from('bank_cards').select('*')
 **Liste complète** : `/src/hooks/CLAUDE.md`
 
 **Catégories principales** :
+
 - Identité & Auth : `useAuth()`, `useAccountStatus()`, `useIsVisitor()`
 - Cartes : `useBankCards()`, `usePersonalCards()`
 - Planning : `useTimelines()`, `useSlots()`
@@ -56,12 +57,12 @@ return <DisplayData data={data} />
 
 ```typescript
 const {
-  items,         // Données actuelles
-  loading,       // État chargement
-  error,         // Erreur éventuelle
-  create,        // (data) => Promise<Item>
-  update,        // (id, data) => Promise<Item>
-  delete: del,   // (id) => Promise<void>
+  items, // Données actuelles
+  loading, // État chargement
+  error, // Erreur éventuelle
+  create, // (data) => Promise<Item>
+  update, // (id, data) => Promise<Item>
+  delete: del, // (id) => Promise<void>
 } = useCrudHook()
 
 // Créer

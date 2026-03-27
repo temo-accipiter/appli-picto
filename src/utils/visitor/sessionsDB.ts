@@ -384,7 +384,9 @@ export async function validateSlot(
   const slots = await getAllSlots()
   // ⚠️ CRITIQUE : Ne compter que les slots step avec carte assignée (§3.1.1 Tableau)
   // Les slots vides (card_id = null) sont invisibles et ne comptent pas dans la progression
-  const stepsTotal = slots.filter(s => s.kind === 'step' && s.card_id !== null).length
+  const stepsTotal = slots.filter(
+    s => s.kind === 'step' && s.card_id !== null
+  ).length
   const db = await openDB()
 
   // Vérifier si déjà validé (idempotence)
@@ -429,7 +431,8 @@ export async function validateSlot(
 
           const updateSessionRequest = sessionsStore.put(session)
           updateSessionRequest.onsuccess = () => resolve()
-          updateSessionRequest.onerror = () => reject(updateSessionRequest.error)
+          updateSessionRequest.onerror = () =>
+            reject(updateSessionRequest.error)
         } else {
           // Vérifier si toutes les étapes sont validées → completed
           const validationsCount = existingValidations.length + 1 // +1 pour la validation qu'on vient d'ajouter

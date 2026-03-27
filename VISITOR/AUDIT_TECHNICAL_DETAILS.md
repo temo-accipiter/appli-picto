@@ -4,57 +4,57 @@
 
 ### Routing Architecture
 
-| Fichier | Type | Findings |
-|---------|------|----------|
-| `src/app/layout.tsx` | Root Layout | ✅ No auth check (normal, SSR) |
-| `src/app/(public)/layout.tsx` | Public Layout | ✅ No ProtectedRoute (correct) |
-| `src/app/(protected)/layout.tsx` | Protected Layout | ✅ ProtectedRoute applied (correct) |
-| `src/app/page.tsx` | Home Page | ✅ Redirects to /tableau (public) |
-| `src/app/(public)/tableau/page.tsx` | Tableau Page | ✅ No auth required (correct) |
-| `src/app/(protected)/profil/page.tsx` | Profil Page | ✅ Protected (metadata + Profil component) |
-| `src/app/(protected)/edition/page.tsx` | Edition Page | ✅ Protected (uses hooks, Client Component) |
-| `src/app/(protected)/abonnement/page.tsx` | Subscription Page | ✅ Protected (not directly examined but in protected group) |
-| `src/app/(protected)/admin/logs/page.tsx` | Admin Logs | ✅ Protected + AdminRoute wrapper |
-| `src/app/(protected)/admin/metrics/page.tsx` | Admin Metrics | ✅ Protected + AdminRoute wrapper |
-| `src/app/(protected)/admin/permissions/page.tsx` | Admin Permissions | ✅ Protected + AdminRoute wrapper |
+| Fichier                                          | Type              | Findings                                                    |
+| ------------------------------------------------ | ----------------- | ----------------------------------------------------------- |
+| `src/app/layout.tsx`                             | Root Layout       | ✅ No auth check (normal, SSR)                              |
+| `src/app/(public)/layout.tsx`                    | Public Layout     | ✅ No ProtectedRoute (correct)                              |
+| `src/app/(protected)/layout.tsx`                 | Protected Layout  | ✅ ProtectedRoute applied (correct)                         |
+| `src/app/page.tsx`                               | Home Page         | ✅ Redirects to /tableau (public)                           |
+| `src/app/(public)/tableau/page.tsx`              | Tableau Page      | ✅ No auth required (correct)                               |
+| `src/app/(protected)/profil/page.tsx`            | Profil Page       | ✅ Protected (metadata + Profil component)                  |
+| `src/app/(protected)/edition/page.tsx`           | Edition Page      | ✅ Protected (uses hooks, Client Component)                 |
+| `src/app/(protected)/abonnement/page.tsx`        | Subscription Page | ✅ Protected (not directly examined but in protected group) |
+| `src/app/(protected)/admin/logs/page.tsx`        | Admin Logs        | ✅ Protected + AdminRoute wrapper                           |
+| `src/app/(protected)/admin/metrics/page.tsx`     | Admin Metrics     | ✅ Protected + AdminRoute wrapper                           |
+| `src/app/(protected)/admin/permissions/page.tsx` | Admin Permissions | ✅ Protected + AdminRoute wrapper                           |
 
 ### Components - Route Guards
 
-| Fichier | Type | Findings |
-|---------|------|----------|
+| Fichier                                                    | Type  | Findings                     |
+| ---------------------------------------------------------- | ----- | ---------------------------- |
 | `src/components/shared/protected-route/ProtectedRoute.tsx` | Guard | ✅ Redirects !user to /login |
-| `src/components/shared/admin-route/AdminRoute.tsx` | Guard | ✅ Shows 404 for non-admins |
+| `src/components/shared/admin-route/AdminRoute.tsx`         | Guard | ✅ Shows 404 for non-admins  |
 
 ### Components - Navigation
 
-| Fichier | Type | Findings |
-|---------|------|----------|
-| `src/components/layout/navbar/Navbar.tsx` | Navigation | ✅ Masks /edition for !isVisitor |
-| `src/components/layout/user-menu/UserMenu.tsx` | Menu | ✅ Returns null if !user |
-| `src/components/layout/bottom-nav/BottomNav.tsx` | Navigation | ✅ Returns null if !user |
-| `src/components/layout/settings-menu/SettingsMenu.tsx` | Menu | ✅ No protected route links |
-| `src/components/layout/footer/Footer.tsx` | Footer | ✅ Only legal links (public) |
+| Fichier                                                | Type       | Findings                         |
+| ------------------------------------------------------ | ---------- | -------------------------------- |
+| `src/components/layout/navbar/Navbar.tsx`              | Navigation | ✅ Masks /edition for !isVisitor |
+| `src/components/layout/user-menu/UserMenu.tsx`         | Menu       | ✅ Returns null if !user         |
+| `src/components/layout/bottom-nav/BottomNav.tsx`       | Navigation | ✅ Returns null if !user         |
+| `src/components/layout/settings-menu/SettingsMenu.tsx` | Menu       | ✅ No protected route links      |
+| `src/components/layout/footer/Footer.tsx`              | Footer     | ✅ Only legal links (public)     |
 
 ### Components - Modals & UI
 
-| Fichier | Type | Findings |
-|---------|------|----------|
-| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Modal | ✅ Contexts 'visitor' and 'free' correct |
-| `src/components/features/time-timer/FloatingTimeTimer.tsx` | Floating | ✅ Checks isVisitor, hides for visitors |
-| `src/components/ui/floating-pencil/FloatingPencil.tsx` | Floating | 🟢 No auth check BUT only in protected pages |
+| Fichier                                                                      | Type     | Findings                                     |
+| ---------------------------------------------------------------------------- | -------- | -------------------------------------------- |
+| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Modal    | ✅ Contexts 'visitor' and 'free' correct     |
+| `src/components/features/time-timer/FloatingTimeTimer.tsx`                   | Floating | ✅ Checks isVisitor, hides for visitors      |
+| `src/components/ui/floating-pencil/FloatingPencil.tsx`                       | Floating | 🟢 No auth check BUT only in protected pages |
 
 ### Contexts & Hooks
 
-| Fichier | Type | Findings |
-|---------|------|----------|
-| `src/contexts/AuthContext.tsx` | Context | ✅ user: User \| null (no visitor status) |
-| `src/contexts/DisplayContext.tsx` | Context | ✅ localStorage for visitors only |
-| `src/contexts/ChildProfileContext.tsx` | Context | ✅ VISITOR_PROFILE local only |
-| `src/hooks/useAuth.ts` | Hook | ✅ Returns user \| null |
-| `src/hooks/useIsVisitor.ts` | Hook | ✅ isVisitor = authReady && !user |
-| `src/hooks/useAccountStatus.ts` | Hook | ✅ Reads accounts.status from DB |
-| `src/hooks/useSubscriptionStatus.ts` | Hook | ✅ User-only data |
-| `src/types/supabase.ts` | Types | ✅ account_status: 'free' \| 'subscriber' \| 'admin' |
+| Fichier                                | Type    | Findings                                             |
+| -------------------------------------- | ------- | ---------------------------------------------------- |
+| `src/contexts/AuthContext.tsx`         | Context | ✅ user: User \| null (no visitor status)            |
+| `src/contexts/DisplayContext.tsx`      | Context | ✅ localStorage for visitors only                    |
+| `src/contexts/ChildProfileContext.tsx` | Context | ✅ VISITOR_PROFILE local only                        |
+| `src/hooks/useAuth.ts`                 | Hook    | ✅ Returns user \| null                              |
+| `src/hooks/useIsVisitor.ts`            | Hook    | ✅ isVisitor = authReady && !user                    |
+| `src/hooks/useAccountStatus.ts`        | Hook    | ✅ Reads accounts.status from DB                     |
+| `src/hooks/useSubscriptionStatus.ts`   | Hook    | ✅ User-only data                                    |
+| `src/types/supabase.ts`                | Types   | ✅ account_status: 'free' \| 'subscriber' \| 'admin' |
 
 ---
 
@@ -99,6 +99,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Attend `authReady` avant vérifier auth
 - ✅ Redirige `!user` vers `/login`
 - ✅ Ne rend rien pendant le chargement
@@ -179,6 +180,7 @@ export default function Navbar() {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Lien `/edition` masqué si `!isVisitor`
 - ✅ Boutons signup/login visibles uniquement pour visiteurs
 - ✅ UserMenu affiché seulement pour users connectés
@@ -221,6 +223,7 @@ export default function BottomNav() {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Retourne `null` si `!user`
 - ✅ Visiteurs ne voient jamais la nav mobile
 - ✅ Liens /edition, /profil non accessibles
@@ -261,6 +264,7 @@ export default function UserMenu() {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Component masqué si `!user`
 - ✅ Routes protégées (/profil, /abonnement) seulement si user existe
 - ✅ Visiteurs ne voient jamais ce menu
@@ -288,7 +292,7 @@ const WORDINGS = {
 
 const handlePrimary = () => {
   if (context === 'visitor') {
-    router.push('/signup')           // PUBLIC page
+    router.push('/signup') // PUBLIC page
   } else {
     router.push('/profil#abonnement') // PROTECTED (but user exists)
   }
@@ -297,6 +301,7 @@ const handlePrimary = () => {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Contexte 'visitor' → /signup (public)
 - ✅ Contexte 'free' → /profil#abonnement (user seulement)
 - ✅ Pas de fuite entre contextes
@@ -327,6 +332,7 @@ export default function useIsVisitor(): UseIsVisitorReturn {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ Détection simple et claire : authReady && !user
 - ✅ Attend authReady avant affirmer isVisitor
 - ✅ Pas de statut visiteur en BD
@@ -361,6 +367,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ user: User | null (pas de statut visiteur BD)
 - ✅ Distinction claire : user existe = authentifié
 - ✅ Pas de confusion entre états
@@ -383,6 +390,7 @@ Enums: {
 ```
 
 **Analyse de Sécurité** :
+
 - ✅ account_status SEULEMENT : 'free', 'subscriber', 'admin'
 - ✅ **PAS de 'visitor' enum**
 - ✅ Pas de confusion client/serveur possible
@@ -507,26 +515,26 @@ EDGE CASE: localStorage Manipulation
 
 ### High-Priority Threats (None Found)
 
-| Threat | Status | Evidence |
-|--------|--------|----------|
-| Direct access /profil as visitor | ✅ BLOCKED | ProtectedRoute redirects |
-| See /edition button as visitor | ✅ BLOCKED | Navbar checks !isVisitor |
-| Access UserMenu as visitor | ✅ BLOCKED | Component returns null |
-| Call /api/profil endpoint | ✅ BLOCKED | RLS enforces auth |
-| Fake session in localStorage | ✅ BLOCKED | Supabase checks real session |
+| Threat                           | Status     | Evidence                     |
+| -------------------------------- | ---------- | ---------------------------- |
+| Direct access /profil as visitor | ✅ BLOCKED | ProtectedRoute redirects     |
+| See /edition button as visitor   | ✅ BLOCKED | Navbar checks !isVisitor     |
+| Access UserMenu as visitor       | ✅ BLOCKED | Component returns null       |
+| Call /api/profil endpoint        | ✅ BLOCKED | RLS enforces auth            |
+| Fake session in localStorage     | ✅ BLOCKED | Supabase checks real session |
 
 ### Medium-Priority Threats (None Found)
 
-| Threat | Status | Evidence |
-|--------|--------|----------|
-| Infer admin routes exist | ✅ BLOCKED | AdminRoute shows 404 |
-| See subscription page | ✅ BLOCKED | ProtectedRoute redirects |
-| Manipulate theme/lang data | ✅ OK | Visitor-only localStorage |
+| Threat                     | Status     | Evidence                  |
+| -------------------------- | ---------- | ------------------------- |
+| Infer admin routes exist   | ✅ BLOCKED | AdminRoute shows 404      |
+| See subscription page      | ✅ BLOCKED | ProtectedRoute redirects  |
+| Manipulate theme/lang data | ✅ OK      | Visitor-only localStorage |
 
 ### Low-Priority Risks (1 Found)
 
-| Risk | Status | Evidence |
-|------|--------|----------|
+| Risk                         | Status  | Evidence                |
+| ---------------------------- | ------- | ----------------------- |
 | FloatingPencil no auth check | 🟢 SAFE | Only in protected pages |
 
 ---

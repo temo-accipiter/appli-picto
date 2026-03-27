@@ -19,6 +19,7 @@ Utilisateur **non connecté** (`!user` dans `useAuth()`), accédant à `/tableau
 **Affichage** : Navbar uniquement (lignes 163-167)
 
 **Contexte Visitor** :
+
 - Titre : "Personnalise ton tableau"
 - Message : "Pour créer tes propres cartes et catégories, crée un compte et abonne-toi."
 - Actions : "Créer un compte" (→ /signup) ou "Se connecter" (→ /login)
@@ -29,12 +30,12 @@ Utilisateur **non connecté** (`!user` dans `useAuth()`), accédant à `/tableau
 
 **Chemin** : `src/components/layout/navbar/Navbar.tsx`
 
-| Élément | Visitor | Connecté |
-|---------|---------|----------|
-| Lien Édition | ❌ Caché (l.46) | ✅ Visible |
-| Bouton Personnaliser | ✅ Visible (l.104) | ❌ Absent |
-| UserMenu | ❌ Absent | ✅ Visible |
-| SettingsMenu | ❌ Absent | ✅ Visible |
+| Élément              | Visitor            | Connecté   |
+| -------------------- | ------------------ | ---------- |
+| Lien Édition         | ❌ Caché (l.46)    | ✅ Visible |
+| Bouton Personnaliser | ✅ Visible (l.104) | ❌ Absent  |
+| UserMenu             | ❌ Absent          | ✅ Visible |
+| SettingsMenu         | ❌ Absent          | ✅ Visible |
 
 ---
 
@@ -45,6 +46,7 @@ Utilisateur **non connecté** (`!user` dans `useAuth()`), accédant à `/tableau
 **Mode Visitor** : Affiche uniquement cartes banque (lecture seule)
 
 **Code** (lignes 243-293) :
+
 ```typescript
 if (isFree) {
   return (
@@ -57,6 +59,7 @@ if (isFree) {
 ```
 
 **Boutons masqués** :
+
 - Créer carte (l.316)
 - Gestion catégories (l.331)
 - Filtre catégorie (l.338)
@@ -92,6 +95,7 @@ const { isFree, isSubscriber, isAdmin } = useAccountStatus()
 **Bucket** : `bank-images/{cardId}.jpg`
 
 **Visitor** :
+
 - ✅ Lire : PUBLIC (anon)
 - ❌ Uploader : Admin-only (RLS policy `is_admin()`)
 
@@ -102,6 +106,7 @@ const { isFree, isSubscriber, isAdmin } = useAccountStatus()
 **Bucket** : `personal-images/{accountId}/cards/{cardId}.jpg`
 
 **Visitor** :
+
 - ❌ Lire : Owner-only (RLS)
 - ❌ Uploader : Non authentifié
 
@@ -113,15 +118,15 @@ const { isFree, isSubscriber, isAdmin } = useAccountStatus()
 
 **ProtectedRoute** : `src/components/shared/protected-route/ProtectedRoute.tsx`
 
-| Route | Visitor | Connecté |
-|-------|---------|----------|
-| /tableau | ✅ Accès | ✅ Accès |
-| /login | ✅ Accès | ✅ Redirect |
-| /signup | ✅ Accès | ✅ Redirect |
-| /edition | ❌ Redirect /login | ✅ Accès |
-| /profil | ❌ Redirect /login | ✅ Accès |
-| /abonnement | ❌ Redirect /login | ✅ Accès |
-| /admin/* | ❌ AdminRoute /tableau | ✅ Si admin |
+| Route       | Visitor                | Connecté    |
+| ----------- | ---------------------- | ----------- |
+| /tableau    | ✅ Accès               | ✅ Accès    |
+| /login      | ✅ Accès               | ✅ Redirect |
+| /signup     | ✅ Accès               | ✅ Redirect |
+| /edition    | ❌ Redirect /login     | ✅ Accès    |
+| /profil     | ❌ Redirect /login     | ✅ Accès    |
+| /abonnement | ❌ Redirect /login     | ✅ Accès    |
+| /admin/\*   | ❌ AdminRoute /tableau | ✅ Si admin |
 
 ---
 

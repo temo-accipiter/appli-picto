@@ -36,6 +36,7 @@
 #### Code Clé
 
 **Structure IndexedDB** (lignes 24-26) :
+
 ```typescript
 const DB_NAME = 'appli-picto-visitor'
 const DB_VERSION = 1
@@ -44,22 +45,24 @@ const STORE_STEPS = 'sequence_steps'
 ```
 
 **Interfaces persistées** (lignes 30-42) :
+
 ```typescript
 export interface VisitorSequence {
-  id: string                    // UUID généré localement
-  mother_card_id: string        // FK vers carte
-  created_at: number           // timestamp
+  id: string // UUID généré localement
+  mother_card_id: string // FK vers carte
+  created_at: number // timestamp
 }
 
 export interface VisitorSequenceStep {
-  id: string                    // UUID généré localement
-  sequence_id: string          // FK locale
-  step_card_id: string         // FK vers carte
-  position: number             // 0, 1, 2...
+  id: string // UUID généré localement
+  sequence_id: string // FK locale
+  step_card_id: string // FK vers carte
+  position: number // 0, 1, 2...
 }
 ```
 
 **Transactions IndexedDB** (lignes 200-211) :
+
 ```typescript
 // Transaction MULTI-STORE atomique (local IndexedDB)
 const tx = db.transaction([STORE_SEQUENCES, STORE_STEPS], 'readwrite')
@@ -86,6 +89,7 @@ tx.onerror = () => reject(tx.error)
 #### Note de Documentation Critique
 
 **Ligne 19-22** :
+
 ```typescript
 // ⚠️ IMPORT VISITOR → COMPTE
 // - Hors scope Ticket 3 (futur Ticket 4)
@@ -103,6 +107,7 @@ tx.onerror = () => reject(tx.error)
 #### RPC : create_sequence_with_steps()
 
 **Signature** (lignes 29-36) :
+
 ```sql
 CREATE OR REPLACE FUNCTION public.create_sequence_with_steps(
   p_mother_card_id UUID,
@@ -117,6 +122,7 @@ SET search_path = public, pg_temp
 **Contraintes validées** (lignes 38-145) :
 
 1. **Authentification** (lignes 46-53) :
+
    ```sql
    v_account_id := auth.uid();
    IF v_account_id IS NULL THEN
@@ -134,6 +140,7 @@ SET search_path = public, pg_temp
    - `is_execution_only()` → Bloque si mode exécution seul
 
 4. **Transaction atomique** (lignes 112-123) :
+
    ```sql
    INSERT INTO public.sequences (account_id, mother_card_id)
    VALUES (v_account_id, p_mother_card_id)
@@ -172,9 +179,13 @@ SET search_path = public, pg_temp
 #### Code Clé
 
 **Appel RPC atomique** (lignes 128-148) :
+
 ```typescript
 const createSequence = useCallback(
-  async (motherCardId: string, stepCardIds: string[]): Promise<ActionResult & { id: string | null }> => {
+  async (
+    motherCardId: string,
+    stepCardIds: string[]
+  ): Promise<ActionResult & { id: string | null }> => {
     const { data, error: createError } = await supabase.rpc(
       'create_sequence_with_steps',
       {
@@ -194,6 +205,7 @@ const createSequence = useCallback(
 ```
 
 **Pattern d'erreur** :
+
 - ✅ Capture erreurs RPC
 - ✅ Refresh données si succès
 - ✅ Retourne `{ id, error }` tuple pour caller
@@ -209,36 +221,48 @@ const createSequence = useCallback(
 #### Code Clé
 
 **Signature identique au hook cloud** (lignes 70-72) :
+
 ```typescript
-export default function useSequencesLocal(enabled: boolean = true): UseSequencesLocalReturn
+export default function useSequencesLocal(
+  enabled: boolean = true
+): UseSequencesLocalReturn
 ```
 
 **API unifiée** :
+
 ```typescript
 interface UseSequencesLocalReturn {
   sequences: VisitorSequence[]
   loading: boolean
   error: Error | null
-  createSequence: (motherCardId: string, stepCardIds: string[]) => Promise<ActionResult & { id: string | null }>
+  createSequence: (
+    motherCardId: string,
+    stepCardIds: string[]
+  ) => Promise<ActionResult & { id: string | null }>
   deleteSequence: (sequenceId: string) => Promise<ActionResult>
   refresh: () => void
 }
 ```
 
 **Pattern enabled** (lignes 80-84) :
+
 ```typescript
 if (!enabled) {
   setLoading(false)
-  return  // Skip si enabled = false (adapter routing)
+  return // Skip si enabled = false (adapter routing)
 }
 ```
 
 #### Transactions IndexedDB
 
 **Appel direct à sequencesDB** (lignes 118-139) :
+
 ```typescript
 const createSequence = useCallback(
-  async (motherCardId: string, stepCardIds: string[]): Promise<ActionResult & { id: string | null }> => {
+  async (
+    motherCardId: string,
+    stepCardIds: string[]
+  ): Promise<ActionResult & { id: string | null }> => {
     try {
       const newSequence = await sequencesDB.createSequenceWithSteps(
         motherCardId,
@@ -276,6 +300,7 @@ export default function useIsVisitor(): UseIsVisitorReturn {
 ```
 
 **Pattern de routing** :
+
 ```typescript
 const { isVisitor, authReady } = useIsVisitor()
 
@@ -316,6 +341,7 @@ return <useSequences enabled={true} />  // Supabase cloud
 #### Code Clé
 
 **Appel signup** (lignes 72-81) :
+
 ```typescript
 const { error: signUpError } = await supabase.auth.signUp({
   email: emailNorm,
@@ -330,6 +356,7 @@ const { error: signUpError } = await supabase.auth.signUp({
 ```
 
 **Post-signup** :
+
 - ✅ Affiche message "Vérifiez votre email"
 - ✅ Redirige vers `/login`
 - ❌ **AUCUN appel d'importation données Visitor**
@@ -412,7 +439,9 @@ const { error: signUpError } = await supabase.auth.signUp({
 ```typescript
 // PSEUDO-CODE : Fonction importation (À CRÉER)
 
-async function importVisitorSequences(visitorSequences: VisitorSequence[]): Promise<void> {
+async function importVisitorSequences(
+  visitorSequences: VisitorSequence[]
+): Promise<void> {
   // 1. Charger toutes séquences + étapes Visitor depuis IndexedDB
   const allVisitorSequences = await getAllSequences()
 
@@ -448,12 +477,14 @@ async function importVisitorSequences(visitorSequences: VisitorSequence[]): Prom
 ### ✅ Robustesse Cloud (RPC)
 
 **Niveau DB** :
+
 - Transactions SQL atomiques (tout ou rien)
 - Trigger `sequences_enforce_min_two_steps` avant COMMIT
 - RLS policies appliquées à l'insertion
 - Gestion UNIQUE constraint violations (ligne 126-142)
 
 **Niveau Node.js** :
+
 ```typescript
 const { data, error } = await supabase.rpc(...)
 if (error) {
@@ -465,11 +496,13 @@ if (error) {
 ### ✅ Robustesse Local (IndexedDB)
 
 **Niveau IndexedDB** :
+
 - Transactions multi-store atomiques
 - Indices UNIQUE composites
 - Gestion erreurs : `tx.onerror`, `request.onerror`
 
 **Niveau Hook** :
+
 ```typescript
 try {
   const newSequence = await sequencesDB.createSequenceWithSteps(...)
@@ -486,23 +519,25 @@ try {
 
 ### Risques Identifiés
 
-| Risque | Probabilité | Impact | Mitigation |
-|--------|-------------|--------|-----------|
-| **Authentification expirée lors import** | Élevée | CRITIQUE | Vérifier `authReady` avant import |
-| **Quotas Free dépassés** | Élevée | HAUT | Vérifier `can_write_sequences()` avant |
-| **Doublons suite rechargement page** | Moyenne | MOYEN | UNIQUE constraint + UUID stable |
-| **IndexedDB non disponible** | Faible | HAUT | Fallback graceful, afficher message |
-| **Réseau interrompu mid-import** | Moyenne | MOYEN | Transaction atomique cloud + retry |
-| **Données Visitor corrompues** | Très faible | CRITIQUE | Validation avant insert + ROLLBACK |
+| Risque                                   | Probabilité | Impact   | Mitigation                             |
+| ---------------------------------------- | ----------- | -------- | -------------------------------------- |
+| **Authentification expirée lors import** | Élevée      | CRITIQUE | Vérifier `authReady` avant import      |
+| **Quotas Free dépassés**                 | Élevée      | HAUT     | Vérifier `can_write_sequences()` avant |
+| **Doublons suite rechargement page**     | Moyenne     | MOYEN    | UNIQUE constraint + UUID stable        |
+| **IndexedDB non disponible**             | Faible      | HAUT     | Fallback graceful, afficher message    |
+| **Réseau interrompu mid-import**         | Moyenne     | MOYEN    | Transaction atomique cloud + retry     |
+| **Données Visitor corrompues**           | Très faible | CRITIQUE | Validation avant insert + ROLLBACK     |
 
 ### Mitigations à Implémenter (Ticket 4)
 
 1. **Pré-check authentification** :
+
    ```typescript
    if (!user || !authReady) throw new Error('Auth required')
    ```
 
 2. **Vérifier quotas** :
+
    ```typescript
    const { isFree, isSubscriber } = useAccountStatus()
    if (isFree && visitorSequences.length > 5) {
@@ -511,6 +546,7 @@ try {
    ```
 
 3. **Transaction wrapper** :
+
    ```typescript
    try {
      // Import atomique
@@ -534,17 +570,19 @@ try {
 ### LocalStorage / IndexedDB (Visitor)
 
 **Atomic par design** :
+
 ```javascript
 // Tout dans UNE transaction IndexedDB → tout ou rien
 const tx = db.transaction([STORE_SEQUENCES, STORE_STEPS], 'readwrite')
 // ... add, update, delete ...
-tx.oncomplete = () => resolve()  // Succès atomique
-tx.onerror = () => reject()      // Rollback auto
+tx.oncomplete = () => resolve() // Succès atomique
+tx.onerror = () => reject() // Rollback auto
 ```
 
 ### PostgreSQL / Supabase (Cloud)
 
 **Atomic par défaut** :
+
 ```sql
 BEGIN;
   INSERT INTO sequences (...)
@@ -554,6 +592,7 @@ COMMIT;
 ```
 
 **RPC wrapper** :
+
 ```sql
 CREATE FUNCTION create_sequence_with_steps(...) AS $$
 BEGIN
@@ -572,23 +611,19 @@ async function importVisitorSequences() {
   // PSEUDO-CODE : À définir en Ticket 4
 
   // Approche 1 : Parallèle (fast mais moins safe)
-  await Promise.all([
-    importSeq1, importSeq2, importSeq3
-  ])
+  await Promise.all([importSeq1, importSeq2, importSeq3])
   // → Si une échoue, les autres continuent (inconsistency risk)
 
   // Approche 2 : Séquentiel (safe mais slow)
   for (const seq of sequences) {
-    await importOne(seq)  // Stopper si erreur
+    await importOne(seq) // Stopper si erreur
   }
   // → Atomique au niveau logique
 
   // Approche 3 : Batch + Rollback (recommandé)
   try {
     // Créer transaction wrapper
-    const results = await Promise.all([
-      ...sequences.map(s => importOne(s))
-    ])
+    const results = await Promise.all([...sequences.map(s => importOne(s))])
     // Vérifier tous succès
     if (results.every(r => !r.error)) {
       // Commit local : nettoyer IndexedDB
@@ -610,6 +645,7 @@ async function importVisitorSequences() {
 ### Références Explicites
 
 1. **`src/utils/visitor/sequencesDB.ts:19-22`** :
+
    ```typescript
    // ⚠️ IMPORT VISITOR → COMPTE
    // - Hors scope Ticket 3 (futur Ticket 4)
@@ -617,6 +653,7 @@ async function importVisitorSequences() {
    ```
 
 2. **`src/hooks/useSequencesLocal.ts:12-13`** :
+
    ```typescript
    // ⚠️ RÈGLES LOCALES VISITOR
    // - Min 2 étapes par séquence (enforcement dans sequencesDB.ts)
@@ -642,12 +679,14 @@ async function importVisitorSequences() {
 ### État Actuel
 
 ✅ **Infrastructure prête** :
+
 - Couche Visitor locale structurée et documentée
 - Transactions atomiques cloud robustes
 - Hooks adapter pour routing seamless
 - Pattern `enabled` flag pour future import
 
 ❌ **Fonction d'importation manquante** :
+
 - Aucune RPC migration Visitor → Supabase
 - Aucun hook `useImportVisitor()` ou similaire
 - Aucun nettoyage localStorage post-signup

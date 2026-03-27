@@ -41,7 +41,7 @@ export default function ModalVisitorImport({
 }: ModalVisitorImportProps) {
   const { importing, error, result, importSequences, reset } =
     useVisitorImport()
-  const reducedMotion = useReducedMotion()
+  const _reducedMotion = useReducedMotion()
 
   const [showSuccess, setShowSuccess] = useState(false)
 

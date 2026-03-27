@@ -17,6 +17,7 @@ Appli-Picto utilise **3 niveaux de transactions** atomiques :
 ## 1. IndexedDB Transactions (Visitor Local)
 
 ### Fichier Source
+
 `src/utils/visitor/sequencesDB.ts`
 
 ### Pattern : Transaction Multi-Store
@@ -51,8 +52,8 @@ function createSequenceWithSteps(
     steps.forEach(step => stepsStore.add(step))
 
     // ✅ ATOMICITÉ GARANTIE
-    tx.oncomplete = () => resolve(sequence)  // Tout réussit
-    tx.onerror = () => reject(tx.error)      // Tout revient en arrière
+    tx.oncomplete = () => resolve(sequence) // Tout réussit
+    tx.onerror = () => reject(tx.error) // Tout revient en arrière
   })
 }
 ```
@@ -81,6 +82,7 @@ function createSequenceWithSteps(
 ## 2. PostgreSQL RPC Transactions (Cloud)
 
 ### Fichier Source
+
 `supabase/migrations/20260315113000_phase7_10_atomic_sequence_rpc.sql`
 
 ### Pattern : RPC avec Transaction SQL Implicite
@@ -174,19 +176,23 @@ $$;
 ### Points Critiques
 
 1. **RETURNING clause** :
+
    ```sql
    INSERT INTO public.sequences (...)
    VALUES (...)
    RETURNING id INTO v_sequence_id;
    ```
+
    - Récupère l'ID généré pour l'utiliser dans étapes suivantes
    - Atomique : l'ID ne peut pas être utilisé par autre transaction en parallèle
 
 2. **ORDER BY dans INSERT** :
+
    ```sql
    FROM unnest(p_step_card_ids) WITH ORDINALITY AS input(...)
    ORDER BY input.ordinality;
    ```
+
    - Garantit positions stables (0, 1, 2...)
    - Même ordre quel que soit le réseau / timing
 
@@ -194,6 +200,7 @@ $$;
    ```sql
    EXCEPTION WHEN unique_violation THEN ... RAISE;
    ```
+
    - Capture constraint violations
    - Rollback automatique avant RAISE
    - Message d'erreur au client
@@ -203,6 +210,7 @@ $$;
 ## 3. Application Layer (Hook React)
 
 ### Fichier Source
+
 `src/hooks/useSequences.ts` (cloud)
 `src/hooks/useSequencesLocal.ts` (local)
 
@@ -211,7 +219,10 @@ $$;
 ```typescript
 // CLOUD VERSION
 const createSequence = useCallback(
-  async (motherCardId: string, stepCardIds: string[]): Promise<ActionResult & { id: string | null }> => {
+  async (
+    motherCardId: string,
+    stepCardIds: string[]
+  ): Promise<ActionResult & { id: string | null }> => {
     // Appeler RPC atomique
     const { data, error: createError } = await supabase.rpc(
       'create_sequence_with_steps',
@@ -223,7 +234,7 @@ const createSequence = useCallback(
 
     // Gestion résultat
     if (!createError) {
-      refresh()  // Rafraîchir données locales
+      refresh() // Rafraîchir données locales
     }
 
     return {
@@ -236,14 +247,17 @@ const createSequence = useCallback(
 
 // LOCAL VERSION
 const createSequence = useCallback(
-  async (motherCardId: string, stepCardIds: string[]): Promise<ActionResult & { id: string | null }> => {
+  async (
+    motherCardId: string,
+    stepCardIds: string[]
+  ): Promise<ActionResult & { id: string | null }> => {
     try {
       const newSequence = await sequencesDB.createSequenceWithSteps(
         motherCardId,
         stepCardIds
       )
 
-      refresh()  // Rafraîchir état React
+      refresh() // Rafraîchir état React
 
       return {
         id: newSequence.id,
@@ -267,13 +281,16 @@ const createSequence = useCallback(
 // Dans un composant utilisant le hook
 const { sequences, createSequence } = useSequences()
 
-const handleCreate = async (data) => {
-  const { id, error } = await createSequence(data.motherCardId, data.stepCardIds)
+const handleCreate = async data => {
+  const { id, error } = await createSequence(
+    data.motherCardId,
+    data.stepCardIds
+  )
 
   if (error) {
     // Gestion erreur : afficher toast, modal, etc.
     if (error.message.includes('Access denied')) {
-      showModal('ModalReserveBadge')  // Afficher "Réservé Subscriber"
+      showModal('ModalReserveBadge') // Afficher "Réservé Subscriber"
     } else if (error.message.includes('duplicate')) {
       showToast('Cette séquence existe déjà', 'error')
     } else {
@@ -292,6 +309,7 @@ const handleCreate = async (data) => {
 ## 4. Patterns Spécialisés : Replace Sequences
 
 ### Fichier Source
+
 `supabase/migrations/20260315113000_phase7_10_atomic_sequence_rpc.sql` (lignes 158-290)
 
 ### Pattern : DELETE + INSERT dans Transaction
@@ -346,20 +364,24 @@ $$;
 ### Techniques de Robustesse
 
 1. **FOR UPDATE** (ligne 244-246) :
+
    ```sql
    SELECT s.id INTO v_locked_sequence_id
    FROM public.sequences s
    WHERE s.id = p_sequence_id AND s.account_id = v_account_id
    FOR UPDATE;  -- LOCK la ligne
    ```
+
    - Empêche concurrent DELETE/UPDATE d'autres transactions
    - Garantit cohérence entre validation et modifications
 
 2. **DELETE puis INSERT** (lignes 256-265) :
+
    ```sql
    DELETE FROM public.sequence_steps WHERE sequence_id = p_sequence_id;
    INSERT INTO public.sequence_steps (...) SELECT ... FROM unnest(...);
    ```
+
    - Atomique : tout ou rien
    - Si INSERT échoue, DELETE reste en vigueur mais transaction rollback
 
@@ -372,6 +394,7 @@ $$;
 ## 5. Offline Queue Pattern
 
 ### Fichier Source
+
 `src/contexts/OfflineContext.tsx`
 
 ### Pattern : Queue Durable + Sync
@@ -379,10 +402,10 @@ $$;
 ```typescript
 // 1. DÉFINITION
 interface PendingValidation {
-  id: string              // Unique local
-  sessionId: string       // FK session
-  slotId: string         // FK slot
-  enqueuedAt: number     // Timestamp
+  id: string // Unique local
+  sessionId: string // FK session
+  slotId: string // FK slot
+  enqueuedAt: number // Timestamp
 }
 
 // 2. PERSISTANCE (localStorage)
@@ -411,12 +434,10 @@ const flushQueue = useCallback(async () => {
 
   for (const entry of queue) {
     try {
-      const { error } = await supabase
-        .from('session_validations')
-        .insert({
-          session_id: entry.sessionId,
-          slot_id: entry.slotId,
-        })
+      const { error } = await supabase.from('session_validations').insert({
+        session_id: entry.sessionId,
+        slot_id: entry.slotId,
+      })
 
       // Code 23505 = UNIQUE violation → OK (fusion monotone)
       if (error && error.code !== '23505') {
@@ -477,7 +498,7 @@ const { data, error } = await supabase.rpc(...)
 const isFlushing = useRef(false)
 
 const flushQueue = useCallback(async () => {
-  if (isFlushing.current) return  // ✅ Empêche flush concurrents
+  if (isFlushing.current) return // ✅ Empêche flush concurrents
   isFlushing.current = true
 
   try {
@@ -496,15 +517,15 @@ const flushQueue = useCallback(async () => {
 
 ```typescript
 // ❌ MAUVAIS
-const seqId = await createSequence(motherCardId)  // Requête 1
-await addStep(seqId, stepCardId1)                 // Requête 2
-await addStep(seqId, stepCardId2)                 // Requête 3
+const seqId = await createSequence(motherCardId) // Requête 1
+await addStep(seqId, stepCardId1) // Requête 2
+await addStep(seqId, stepCardId2) // Requête 3
 // → Si requête 2 échoue, on a séquence + 1 étape orpheline
 
 // ✅ BON
 const { id: seqId } = await createSequenceWithSteps(
   motherCardId,
-  [stepCardId1, stepCardId2]  // Tout en UNE requête RPC
+  [stepCardId1, stepCardId2] // Tout en UNE requête RPC
 )
 ```
 
@@ -513,14 +534,14 @@ const { id: seqId } = await createSequenceWithSteps(
 ```typescript
 // ❌ MAUVAIS
 await importVisitorSequences()
-localStorage.clear()  // Effacer AVANT import complet
+localStorage.clear() // Effacer AVANT import complet
 // → Si import échoue, données perdues
 
 // ✅ BON
 try {
   const results = await Promise.all([...imports])
   if (results.every(r => !r.error)) {
-    localStorage.clear()  // Effacer APRÈS succès confirmé
+    localStorage.clear() // Effacer APRÈS succès confirmé
   }
 } catch (error) {
   // Garder localStorage intact
@@ -632,6 +653,7 @@ if (allSuccess) {
 - ✅ Lock (FOR UPDATE) contre race conditions
 
 **Pour Ticket 4 (Import Visitor → Free)**, réutiliser ces patterns :
+
 1. Transactions IndexedDB pour charger données locales
 2. RPC `create_sequence_with_steps()` pour créer en cloud
 3. Try/catch + cleanup conditionnel

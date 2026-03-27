@@ -14,6 +14,7 @@ pnpm context:update  # db:dump + db:types
 ```
 
 **Génère automatiquement** :
+
 - `supabase/schema.sql` (dump complet)
 - `src/types/supabase.ts` (types TypeScript)
 
@@ -22,6 +23,7 @@ pnpm context:update  # db:dump + db:types
 Format : `YYYYMMDDHHMMSS_description.sql`
 
 Exemples :
+
 - `20260326120000_add_sequences_table.sql`
 - `20260326130000_create_rls_policies_sessions.sql`
 
@@ -65,6 +67,7 @@ CREATE POLICY "Users can delete own data"
 ## Fichiers protégés (générés automatiquement)
 
 ❌ **JAMAIS modifier manuellement** :
+
 - `src/types/supabase.ts` (généré par `pnpm db:types`)
 - `supabase/schema.sql` (généré par `pnpm db:dump`)
 

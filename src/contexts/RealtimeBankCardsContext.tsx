@@ -4,7 +4,14 @@
 // Provider gérant le channel Realtime persistant pour synchronisation cartes banque
 // DB-first : Contourne limitations RLS + postgres_changes pour dépublications
 
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import type { RealtimeChannel } from '@supabase/supabase-js'
 
@@ -33,7 +40,7 @@ const RealtimeBankCardsContext = createContext<
 >(undefined)
 
 interface RealtimeBankCardsProviderProps {
-  children: React.ReactNode
+  children: ReactNode
 }
 
 /**
@@ -61,7 +68,7 @@ export function RealtimeBankCardsProvider({
   const [isConnected, setIsConnected] = useState(false)
   const channelRef = useRef<RealtimeChannel | null>(null)
   const retryCountRef = useRef(0)
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     let isSubscribing = false

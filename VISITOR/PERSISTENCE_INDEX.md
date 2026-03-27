@@ -6,12 +6,12 @@ Bienvenue dans la documentation complète de la persistance locale pour le rôle
 
 ## 📚 Fichiers de documentation
 
-| Fichier | Contenu | Público |
-|---------|---------|---------|
-| **PERSISTENCE_ANALYSIS.md** | 📋 Analyse exhaustive (30KB) - RÉFÉRENCE PRINCIPALE | Ce fichier |
-| **PERSISTENCE_QUICK_REFERENCE.md** | ⚡ Synthèse rapide (5KB) - Pour consultation rapide | Recommandé |
-| **PERSISTENCE_DIAGRAM.md** | 🎨 Diagrammes ASCII - Architecture visuelle | Recommandé |
-| **PERSISTENCE_INDEX.md** | 🗺️ Ce fichier - Guide de navigation | Vous êtes ici |
+| Fichier                            | Contenu                                             | Público       |
+| ---------------------------------- | --------------------------------------------------- | ------------- |
+| **PERSISTENCE_ANALYSIS.md**        | 📋 Analyse exhaustive (30KB) - RÉFÉRENCE PRINCIPALE | Ce fichier    |
+| **PERSISTENCE_QUICK_REFERENCE.md** | ⚡ Synthèse rapide (5KB) - Pour consultation rapide | Recommandé    |
+| **PERSISTENCE_DIAGRAM.md**         | 🎨 Diagrammes ASCII - Architecture visuelle         | Recommandé    |
+| **PERSISTENCE_INDEX.md**           | 🗺️ Ce fichier - Guide de navigation                 | Vous êtes ici |
 
 ---
 
@@ -53,62 +53,62 @@ Bienvenue dans la documentation complète de la persistance locale pour le rôle
 
 ### IndexedDB (Séquences Visitor)
 
-| Fichier | Ligne | Objectif |
-|---------|-------|----------|
-| `src/utils/visitor/sequencesDB.ts` | 1-409 | Layer IndexedDB CRUD |
-| `src/hooks/useSequencesLocal.ts` | 1-170 | Hook local séquences |
-| `src/hooks/useSequenceStepsLocal.ts` | 1-199 | Hook local étapes |
+| Fichier                              | Ligne | Objectif             |
+| ------------------------------------ | ----- | -------------------- |
+| `src/utils/visitor/sequencesDB.ts`   | 1-409 | Layer IndexedDB CRUD |
+| `src/hooks/useSequencesLocal.ts`     | 1-170 | Hook local séquences |
+| `src/hooks/useSequenceStepsLocal.ts` | 1-199 | Hook local étapes    |
 
 ### Hooks adapters (Router)
 
-| Fichier | Ligne | Objectif |
-|---------|-------|----------|
-| `src/hooks/useIsVisitor.ts` | 1-46 | Détection Visitor |
-| `src/hooks/useSequencesWithVisitor.ts` | 1-113 | Router séquences |
-| `src/hooks/useSequenceStepsWithVisitor.ts` | 1-104 | Router étapes |
+| Fichier                                    | Ligne | Objectif          |
+| ------------------------------------------ | ----- | ----------------- |
+| `src/hooks/useIsVisitor.ts`                | 1-46  | Détection Visitor |
+| `src/hooks/useSequencesWithVisitor.ts`     | 1-113 | Router séquences  |
+| `src/hooks/useSequenceStepsWithVisitor.ts` | 1-104 | Router étapes     |
 
 ### Contextes (State global)
 
-| Fichier | Ligne | Key localStorage | Objectif |
-|---------|-------|------------------|----------|
-| `src/contexts/AuthContext.tsx` | 1-150+ | `session` (SDK) | Auth state |
-| `src/contexts/ChildProfileContext.tsx` | 1-390 | `applipicto:visitor:activeChildId`, `applipicto:activeChild:{userId}` | Profil enfant |
-| `src/contexts/DisplayContext.tsx` | 1-80+ | `showTrain`, `showAutre`, `showTimeTimer` | Prefs UI |
-| `src/contexts/OfflineContext.tsx` | 1-242 | `appli-picto:offline-validation-queue` | Queue offline (auth only) |
+| Fichier                                | Ligne  | Key localStorage                                                      | Objectif                  |
+| -------------------------------------- | ------ | --------------------------------------------------------------------- | ------------------------- |
+| `src/contexts/AuthContext.tsx`         | 1-150+ | `session` (SDK)                                                       | Auth state                |
+| `src/contexts/ChildProfileContext.tsx` | 1-390  | `applipicto:visitor:activeChildId`, `applipicto:activeChild:{userId}` | Profil enfant             |
+| `src/contexts/DisplayContext.tsx`      | 1-80+  | `showTrain`, `showAutre`, `showTimeTimer`                             | Prefs UI                  |
+| `src/contexts/OfflineContext.tsx`      | 1-242  | `appli-picto:offline-validation-queue`                                | Queue offline (auth only) |
 
 ### Utils
 
-| Fichier | Objectif |
-|---------|----------|
-| `src/utils/consent.ts` | Gestion consentement CNIL + localStorage |
-| `src/utils/supabaseClient.ts` | Client Supabase + localStorage session |
-| `src/config/i18n/i18n.ts` | i18n + localStorage langue |
+| Fichier                       | Objectif                                 |
+| ----------------------------- | ---------------------------------------- |
+| `src/utils/consent.ts`        | Gestion consentement CNIL + localStorage |
+| `src/utils/supabaseClient.ts` | Client Supabase + localStorage session   |
+| `src/config/i18n/i18n.ts`     | i18n + localStorage langue               |
 
 ### Composants consommateurs
 
-| Fichier | Hook utilisé | Ligne |
-|---------|--------------|-------|
-| `src/components/features/sequences/sequence-editor/SequenceEditor.tsx` | `useSequenceStepsWithVisitor` | 41 |
-| `src/components/features/timeline/slots-editor/SlotsEditor.tsx` | `useSequencesWithVisitor` | (parent) |
-| `src/components/layout/navbar/Navbar.tsx` | `useIsVisitor` | (detection) |
+| Fichier                                                                | Hook utilisé                  | Ligne       |
+| ---------------------------------------------------------------------- | ----------------------------- | ----------- |
+| `src/components/features/sequences/sequence-editor/SequenceEditor.tsx` | `useSequenceStepsWithVisitor` | 41          |
+| `src/components/features/timeline/slots-editor/SlotsEditor.tsx`        | `useSequencesWithVisitor`     | (parent)    |
+| `src/components/layout/navbar/Navbar.tsx`                              | `useIsVisitor`                | (detection) |
 
 ### Migrations Supabase (schéma cloud)
 
-| Fichier | Phase | Contenu |
-|---------|-------|---------|
-| `supabase/migrations/20260202122000_phase6_create_sequences.sql` | 6.1 | Table sequences |
-| `supabase/migrations/20260202123000_phase6_create_sequence_steps.sql` | 6.2 | Table sequence_steps |
-| `supabase/migrations/20260202124000_phase6_add_sequence_invariants.sql` | 6.3 | Constraints + triggers |
-| `supabase/migrations/20260203133000_phase7_8_rls_sequences.sql` | 7.8 | RLS policies |
+| Fichier                                                                 | Phase | Contenu                |
+| ----------------------------------------------------------------------- | ----- | ---------------------- |
+| `supabase/migrations/20260202122000_phase6_create_sequences.sql`        | 6.1   | Table sequences        |
+| `supabase/migrations/20260202123000_phase6_create_sequence_steps.sql`   | 6.2   | Table sequence_steps   |
+| `supabase/migrations/20260202124000_phase6_add_sequence_invariants.sql` | 6.3   | Constraints + triggers |
+| `supabase/migrations/20260203133000_phase7_8_rls_sequences.sql`         | 7.8   | RLS policies           |
 
 ### Types TypeScript
 
-| Fichier | Contenu |
-|---------|---------|
-| `src/types/supabase.ts` | Types Supabase générés (`pnpm db:types`) |
+| Fichier                                  | Contenu                                             |
+| ---------------------------------------- | --------------------------------------------------- |
+| `src/types/supabase.ts`                  | Types Supabase générés (`pnpm db:types`)            |
 | `src/utils/visitor/sequencesDB.ts:30-42` | Types locaux : VisitorSequence, VisitorSequenceStep |
-| `src/hooks/useSequencesLocal.ts:25` | Export VisitorSequence |
-| `src/hooks/useSequenceStepsLocal.ts:25` | Export VisitorSequenceStep |
+| `src/hooks/useSequencesLocal.ts:25`      | Export VisitorSequence                              |
+| `src/hooks/useSequenceStepsLocal.ts:25`  | Export VisitorSequenceStep                          |
 
 ---
 

@@ -51,6 +51,7 @@ Visitor is **local-only** — no DB row exists. No `accounts.status = 'visitor'`
 ## Reference
 
 For complete contract details and edge cases, see [FRONTEND_CONTRACT.md](../../FRONTEND_CONTRACT.md):
+
 - **§0.3** : Core principles and architecture
 - **§1.6, §5.1, §5.2** : Authorization patterns and RLS
 - **Annexe B** : Error handling examples

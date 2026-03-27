@@ -29,7 +29,7 @@ export type SessionValidation =
   Database['public']['Tables']['session_validations']['Row']
 
 // Type unifié : SessionValidation DB ou visitor (structures identiques)
-type UnifiedSessionValidation =
+type _UnifiedSessionValidation =
   | SessionValidation
   | visitorSessionsDB.VisitorSessionValidation
 

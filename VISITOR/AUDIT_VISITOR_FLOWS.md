@@ -585,6 +585,7 @@ useEffect(() => {
 **AUCUNE FUITE INTERFACE POUR VISITOR DÉTECTÉE**
 
 La sécurité est assurée par :
+
 1. **Architecture en Route Groups** : Séparation claire public/protected
 2. **Guard d'Authentification Centralisé** : ProtectedRoute au layout
 3. **Vérifications Redondantes** : Chaque composant UI vérifie l'état auth

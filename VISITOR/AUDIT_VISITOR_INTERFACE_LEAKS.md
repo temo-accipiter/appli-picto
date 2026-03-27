@@ -13,6 +13,7 @@
 **Visitor = utilisateur NON connecté** (`user === null`)
 
 **Statuts en base de données** (accounts.status) :
+
 ```typescript
 // src/types/supabase.ts (généré)
 account_status: 'free' | 'subscriber' | 'admin'
@@ -25,7 +26,7 @@ account_status: 'free' | 'subscriber' | 'admin'
 export default function useIsVisitor(): UseIsVisitorReturn {
   const { user, authReady } = useAuth()
   return {
-    isVisitor: authReady && !user,  // Visitor = !user (pas connecté)
+    isVisitor: authReady && !user, // Visitor = !user (pas connecté)
     authReady,
   }
 }
@@ -71,12 +72,12 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!authReady) return
     if (!user) {
-      router.replace('/login')  // Redirection FORCÉE vers login
+      router.replace('/login') // Redirection FORCÉE vers login
     }
   }, [user, authReady, router])
 
   if (!authReady || !user) {
-    return null  // Rien n'est affiché jusqu'à l'authentification
+    return null // Rien n'est affiché jusqu'à l'authentification
   }
 
   return children
@@ -84,6 +85,7 @@ export default function ProtectedRoute({ children }: { children: ReactNode }) {
 ```
 
 **Criticalité** : ✅ **CORRECTE**
+
 - Attend `authReady` avant de vérifier
 - Redirige vers `/login` si pas d'utilisateur
 - N'affiche rien pendant le chargement
@@ -111,6 +113,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Toutes les pages sous `(protected)/*` sont protégées
 - Le guard est appliqué au plus haut niveau (layout)
 
@@ -132,11 +135,13 @@ export default function TableauPage() {
 ```
 
 **Points de contrôle** :
+
 - ✅ Pas de ProtectedRoute
 - ✅ Accessible aux visiteurs ET users connectés
 - ✅ Pas de navigation vers `/profil`, `/abonnement`, `/edition` en dur
 
 **Navigation exposée** :
+
 - Navbar expose boutons "Se connecter" / "Créer un compte"
 - Navbar expose boutons thème et langue (visiteurs)
 - PersonalizationModal expose `/signup` et `/login` (pas de fuite)
@@ -146,6 +151,7 @@ export default function TableauPage() {
 **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/page-components/login/Login.tsx`
 
 **Navigation** :
+
 - ✅ `router.push('/tableau')` après connexion réussie
 - ✅ `href="/signup"` pour inscription
 - ✅ `href="/forgot-password"` pour réinitialisation
@@ -166,11 +172,12 @@ Routes publiques `/legal/*` - pas de navigation vers routes protégées.
 
 ```typescript
 export default function HomePage() {
-  redirect('/tableau')  // Redirect vers page publique
+  redirect('/tableau') // Redirect vers page publique
 }
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Visiteurs ET users vont vers `/tableau`
 - Pas d'exposition de routes protégées
 
@@ -183,6 +190,7 @@ export default function HomePage() {
 **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/components/layout/navbar/Navbar.tsx`
 
 **Logique Visiteur** :
+
 ```typescript
 const { user } = useAuth()
 const { isVisitor, authReady } = useIsVisitor()
@@ -205,6 +213,7 @@ const isVisitorMode = !user && (isVisitor || !authReady)
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Lien `/edition` masqué pour visiteurs (`!isVisitor`)
 - Boutons signup/login visibles uniquement pour visiteurs
 - PersonalizationModal gère contextes 'visitor' et 'free' correctement
@@ -215,16 +224,18 @@ const isVisitorMode = !user && (isVisitor || !authReady)
 
 ```typescript
 if (!showNav || !user) {
-  return null  // Masqué si pas d'utilisateur
+  return null // Masqué si pas d'utilisateur
 }
 ```
 
 **Routes** :
+
 - `/tableau` → Tableau (public)
 - `/edition` → Edition (protégé, mais accessible car on a `user`)
 - `/profil` → Profil (protégé, mais accessible car on a `user`)
 
 **Criticalité** : ✅ **CORRECT**
+
 - BottomNav retourne `null` si `!user` (visiteurs)
 - Visiteurs ne voient pas la nav mobile
 
@@ -233,10 +244,11 @@ if (!showNav || !user) {
 **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/components/layout/user-menu/UserMenu.tsx`
 
 ```typescript
-if (!user) return null  // Masqué si pas d'utilisateur
+if (!user) return null // Masqué si pas d'utilisateur
 ```
 
 **Menus exposés** (pour users connectés uniquement) :
+
 - `/edition` → Edition
 - `/profil` → Profil (sur édition mobile, sur tableau)
 - `/abonnement` → Gestion abonnement
@@ -244,6 +256,7 @@ if (!user) return null  // Masqué si pas d'utilisateur
 - Logout
 
 **Criticalité** : ✅ **CORRECT**
+
 - Composant masqué pour visiteurs
 - Routes protégées exposées UNIQUEMENT pour users connectés
 
@@ -277,14 +290,15 @@ const WORDINGS = {
 
 const handlePrimary = () => {
   if (context === 'visitor') {
-    router.push('/signup')      // ✅ Page publique
+    router.push('/signup') // ✅ Page publique
   } else {
-    router.push('/profil#abonnement')  // ✅ Utilisateurs connectés uniquement
+    router.push('/profil#abonnement') // ✅ Utilisateurs connectés uniquement
   }
 }
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Contexte 'visitor' → `/signup` (public)
 - Contexte 'free' → `/profil#abonnement` (utilisateurs connectés)
 - Composant est contrôlé par Navbar qui vérifie `!isVisitor`
@@ -308,6 +322,7 @@ if (isVisitor) {
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Timer masqué pour visiteurs
 - Utilisé dans Tableau (public) mais protégé
 
@@ -330,6 +345,7 @@ const handleClick = () => {
 **⚠️ POTENTIEL RISQUE** : Si FloatingPencil était visible sur `/tableau` public pour visiteurs, ce serait une fuite.
 
 **Vérification d'Usage** :
+
 ```
 src/page-components/profil/Profil.tsx
 src/page-components/admin/logs/Logs.tsx
@@ -337,6 +353,7 @@ src/page-components/abonnement/Abonnement.tsx
 ```
 
 **Criticalité** : ✅ **CORRECT - PAS DE FUITE**
+
 - FloatingPencil n'est utilisé QUE dans pages protégées (`/profil`, `/abonnement`, `/admin/logs`)
 - Ces pages sont enveloppées par ProtectedRoute
 - Même si visiteur tente d'accéder `/profil`, ProtectedRoute redirige vers `/login` **AVANT** que FloatingPencil ne soit affiché
@@ -351,9 +368,9 @@ src/page-components/abonnement/Abonnement.tsx
 
 ```typescript
 interface AuthContextValue {
-  user: User | null           // User Supabase ou null (visiteur)
-  authReady: boolean          // true quand auth est initialisée
-  loading: boolean            // !authReady
+  user: User | null // User Supabase ou null (visiteur)
+  authReady: boolean // true quand auth est initialisée
+  loading: boolean // !authReady
   error: Error | null
   signOut: () => Promise<void>
 }
@@ -363,12 +380,14 @@ interface AuthContextValue {
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Pas de statut "visitor" en contexte
 - Distinction simple et claire : user | null
 
 ### 5.2. DisplayContext & Preferences
 
 **Références Visiteur** :
+
 ```typescript
 // localStorage pour visiteurs UNIQUEMENT
 if (typeof window !== 'undefined' && !isVisitor) {
@@ -380,14 +399,16 @@ return isVisitor ? false : localStorage.getItem('showTrain') === 'true'
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Pas d'exposition accidentelle de données protégées
 
 ### 5.3. ChildProfileContext
 
 **Références Visiteur** :
+
 ```typescript
 const VISITOR_PROFILE: ChildProfileUI = {
-  id: '__VISITOR__',  // ID spécial pour profil visiteur
+  id: '__VISITOR__', // ID spécial pour profil visiteur
   // ...
 }
 
@@ -395,6 +416,7 @@ const VISITOR_PROFILE: ChildProfileUI = {
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Profil visiteur est LOCAL uniquement
 - Pas de synchronisation DB
 
@@ -415,6 +437,7 @@ return children
 ```
 
 **Criticalité** : ✅ **CORRECT**
+
 - Routes admin ne sont jamais révélées (rendu 404 générique)
 - Vérification statut admin via DB (`accounts.status = 'admin'`)
 
@@ -424,26 +447,27 @@ return children
 
 ### 6.1. Checklist Complète
 
-| Point | Statut | Détails |
-|-------|--------|---------|
-| **Statut 'visitor' en DB** | ✅ ABSENT | Seulement 'free', 'subscriber', 'admin' |
-| **ProtectedRoute appliquée** | ✅ OUI | Toutes les routes sous `(protected)/` |
-| **Routes isolées (public/protected)** | ✅ OUI | Route Groups `(public)/` vs `(protected)/` |
-| **Guard d'auth au layout** | ✅ OUI | Appliqué dans `(protected)/layout.tsx` |
-| **Navbar masque routes protégées** | ✅ OUI | Vérifie `!isVisitor` avant affichage |
-| **BottomNav pour visiteurs** | ✅ OUI | Retourne null si `!user` |
-| **UserMenu visible auth** | ✅ OUI | Retourne null si `!user` |
-| **PersonalizationModal contextes** | ✅ OUI | 'visitor' et 'free' correctement gérés |
-| **FloatingTimeTimer masqué** | ✅ OUI | Vérifie `isVisitor` |
-| **FloatingPencil risque** | ✅ SAFE | Utilisé QUE dans pages protégées |
-| **AdminRoute protection** | ✅ OUI | Affiche 404 pour non-admins |
-| **Redirection accueil** | ✅ OUI | Vers `/tableau` (public) |
-| **Pages auth protection** | ✅ OUI | Pas d'exposition routes protégées |
-| **Contextes auth corrects** | ✅ OUI | user \| null uniquement |
+| Point                                 | Statut    | Détails                                    |
+| ------------------------------------- | --------- | ------------------------------------------ |
+| **Statut 'visitor' en DB**            | ✅ ABSENT | Seulement 'free', 'subscriber', 'admin'    |
+| **ProtectedRoute appliquée**          | ✅ OUI    | Toutes les routes sous `(protected)/`      |
+| **Routes isolées (public/protected)** | ✅ OUI    | Route Groups `(public)/` vs `(protected)/` |
+| **Guard d'auth au layout**            | ✅ OUI    | Appliqué dans `(protected)/layout.tsx`     |
+| **Navbar masque routes protégées**    | ✅ OUI    | Vérifie `!isVisitor` avant affichage       |
+| **BottomNav pour visiteurs**          | ✅ OUI    | Retourne null si `!user`                   |
+| **UserMenu visible auth**             | ✅ OUI    | Retourne null si `!user`                   |
+| **PersonalizationModal contextes**    | ✅ OUI    | 'visitor' et 'free' correctement gérés     |
+| **FloatingTimeTimer masqué**          | ✅ OUI    | Vérifie `isVisitor`                        |
+| **FloatingPencil risque**             | ✅ SAFE   | Utilisé QUE dans pages protégées           |
+| **AdminRoute protection**             | ✅ OUI    | Affiche 404 pour non-admins                |
+| **Redirection accueil**               | ✅ OUI    | Vers `/tableau` (public)                   |
+| **Pages auth protection**             | ✅ OUI    | Pas d'exposition routes protégées          |
+| **Contextes auth corrects**           | ✅ OUI    | user \| null uniquement                    |
 
 ### 6.2. Scénarios de Test
 
 #### Scénario 1 : Visiteur accède directement à `/profil`
+
 ```
 1. Visiteur tape : /profil
 2. Page chargée
@@ -455,6 +479,7 @@ return children
 ```
 
 #### Scénario 2 : Visiteur sur `/tableau` clique "Édition"
+
 ```
 1. Visiteur sur /tableau (public)
 2. Navbar affichée
@@ -465,6 +490,7 @@ return children
 ```
 
 #### Scénario 3 : Visiteur sur `/tableau` tente `/edition`
+
 ```
 1. Visiteur tape : /edition
 2. Page chargée
@@ -476,6 +502,7 @@ return children
 ```
 
 #### Scénario 4 : Utilisateur connecté accède à `/edition`
+
 ```
 1. Utilisateur connecté tape : /edition
 2. Page chargée
@@ -487,6 +514,7 @@ return children
 ```
 
 #### Scénario 5 : User Free sur `/tableau` utilise PersonalizationModal
+
 ```
 1. User Free sur /tableau
 2. Clique bouton PersonalizationModal (si présent)
@@ -498,6 +526,7 @@ return children
 ```
 
 #### Scénario 6 : Non-admin tente `/admin/logs`
+
 ```
 1. Non-admin tape : /admin/logs
 2. Page chargée
@@ -547,6 +576,7 @@ export default function FloatingPencil({ className = '' }: FloatingPencilProps) 
 **Description** : Navbar expose bouton PersonalizationModal sur `/tableau` public pour visiteurs.
 
 **Verdict** : ✅ **INTENTIONNEL ET CORRECT**
+
 - Visiteurs peuvent personnaliser l'apparence (thème, langue)
 - PersonalizationModal 'visitor' context expose `/signup` et `/login` (publics)
 - Pas de fuite de routes protégées
@@ -589,24 +619,24 @@ Après audit exhaustif, aucun autre risque d'accès non autorisé n'a été iden
 
 ## 9. Fichiers Clés Auditées
 
-| Fichier | Type | Verdict |
-|---------|------|---------|
-| `src/app/(protected)/layout.tsx` | Layout | ✅ ProtectedRoute appliquée |
-| `src/components/shared/protected-route/ProtectedRoute.tsx` | Composant | ✅ Guard correcte |
-| `src/components/shared/admin-route/AdminRoute.tsx` | Composant | ✅ 404 générique |
-| `src/components/layout/navbar/Navbar.tsx` | Composant | ✅ Masquage visiteur |
-| `src/components/layout/user-menu/UserMenu.tsx` | Composant | ✅ Masquage visiteur |
-| `src/components/layout/bottom-nav/BottomNav.tsx` | Composant | ✅ Masquage visiteur |
-| `src/components/layout/settings-menu/SettingsMenu.tsx` | Composant | ✅ Pas de fuite |
-| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Composant | ✅ Contextes corrects |
-| `src/components/features/time-timer/FloatingTimeTimer.tsx` | Composant | ✅ Masquage visiteur |
-| `src/components/ui/floating-pencil/FloatingPencil.tsx` | Composant | 🟢 Mineure (safe en contexte) |
-| `src/contexts/AuthContext.tsx` | Contexte | ✅ Pas de statut visiteur BD |
-| `src/hooks/useIsVisitor.ts` | Hook | ✅ Logique correcte |
-| `src/types/supabase.ts` | Types | ✅ Pas de 'visitor' enum |
-| `src/app/(public)/tableau/page.tsx` | Page | ✅ Pas de route protégée |
-| `src/app/page.tsx` | Page | ✅ Redirect vers public |
-| `src/app/providers.tsx` | Setup | ✅ AuthProvider configuré |
+| Fichier                                                                      | Type      | Verdict                       |
+| ---------------------------------------------------------------------------- | --------- | ----------------------------- |
+| `src/app/(protected)/layout.tsx`                                             | Layout    | ✅ ProtectedRoute appliquée   |
+| `src/components/shared/protected-route/ProtectedRoute.tsx`                   | Composant | ✅ Guard correcte             |
+| `src/components/shared/admin-route/AdminRoute.tsx`                           | Composant | ✅ 404 générique              |
+| `src/components/layout/navbar/Navbar.tsx`                                    | Composant | ✅ Masquage visiteur          |
+| `src/components/layout/user-menu/UserMenu.tsx`                               | Composant | ✅ Masquage visiteur          |
+| `src/components/layout/bottom-nav/BottomNav.tsx`                             | Composant | ✅ Masquage visiteur          |
+| `src/components/layout/settings-menu/SettingsMenu.tsx`                       | Composant | ✅ Pas de fuite               |
+| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Composant | ✅ Contextes corrects         |
+| `src/components/features/time-timer/FloatingTimeTimer.tsx`                   | Composant | ✅ Masquage visiteur          |
+| `src/components/ui/floating-pencil/FloatingPencil.tsx`                       | Composant | 🟢 Mineure (safe en contexte) |
+| `src/contexts/AuthContext.tsx`                                               | Contexte  | ✅ Pas de statut visiteur BD  |
+| `src/hooks/useIsVisitor.ts`                                                  | Hook      | ✅ Logique correcte           |
+| `src/types/supabase.ts`                                                      | Types     | ✅ Pas de 'visitor' enum      |
+| `src/app/(public)/tableau/page.tsx`                                          | Page      | ✅ Pas de route protégée      |
+| `src/app/page.tsx`                                                           | Page      | ✅ Redirect vers public       |
+| `src/app/providers.tsx`                                                      | Setup     | ✅ AuthProvider configuré     |
 
 ---
 

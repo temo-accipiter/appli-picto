@@ -20,8 +20,8 @@
 import {
   getAllSequences,
   getSequenceSteps,
-  type VisitorSequence,
-  type VisitorSequenceStep,
+  type VisitorSequence as _VisitorSequence,
+  type VisitorSequenceStep as _VisitorSequenceStep,
 } from './sequencesDB'
 import { supabase } from '../supabaseClient'
 

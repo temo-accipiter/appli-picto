@@ -20,6 +20,7 @@ paths:
 ## Client Components ('use client')
 
 ⚠️ **SEULEMENT si nécessaire** :
+
 - Interactivité (useState, useEffect, useRef)
 - Event handlers (onClick, onChange, onSubmit)
 - Contexts (useContext)

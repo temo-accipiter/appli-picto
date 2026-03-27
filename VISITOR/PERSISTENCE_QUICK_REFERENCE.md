@@ -4,9 +4,9 @@
 
 ### IndexedDB
 
-| BD | Store | Clé | Type | Scope | Lifecycle |
-|----|-------|-----|------|-------|-----------|
-| `appli-picto-visitor` v1 | `sequences` | UUID local | VisitorSequence | Visitor only | Jusqu'import (Ticket 4) |
+| BD                       | Store            | Clé        | Type                | Scope        | Lifecycle               |
+| ------------------------ | ---------------- | ---------- | ------------------- | ------------ | ----------------------- |
+| `appli-picto-visitor` v1 | `sequences`      | UUID local | VisitorSequence     | Visitor only | Jusqu'import (Ticket 4) |
 | `appli-picto-visitor` v1 | `sequence_steps` | UUID local | VisitorSequenceStep | Visitor only | Jusqu'import (Ticket 4) |
 
 **Accès** : `src/utils/visitor/sequencesDB.ts`
@@ -15,30 +15,30 @@
 
 ### localStorage : Scope Visitor
 
-| Clé | Valeur | Fichier | Ligne | Lifecycle |
-|-----|--------|---------|-------|-----------|
-| `applipicto:visitor:activeChildId` | `"visitor-local"` | ChildProfileContext.tsx | 70, 155-162 | Jusqu'logout |
-| `cookie_consent_v2` | JSON ConsentRecord | consent.ts | 9 | 180 jours |
+| Clé                                | Valeur             | Fichier                 | Ligne       | Lifecycle    |
+| ---------------------------------- | ------------------ | ----------------------- | ----------- | ------------ |
+| `applipicto:visitor:activeChildId` | `"visitor-local"`  | ChildProfileContext.tsx | 70, 155-162 | Jusqu'logout |
+| `cookie_consent_v2`                | JSON ConsentRecord | consent.ts              | 9           | 180 jours    |
 
 ---
 
 ### localStorage : Scope Auth users
 
-| Clé | Valeur | Fichier | Ligne | Lifecycle |
-|-----|--------|---------|-------|-----------|
-| `applipicto:activeChild:{userId}` | UUID profil enfant | ChildProfileContext.tsx | 76, 171-187 | Jusqu'logout |
-| `appli-picto:offline-validation-queue` | JSON array | OfflineContext.tsx | 67, 75-92 | Sync réseau |
-| `showTrain` | `"true"` \| `"false"` | DisplayContext.tsx | 37, 43-45 | Persistent |
-| `showAutre` | `"true"` \| `"false"` | DisplayContext.tsx | 51, 54-55 | Persistent |
-| `showTimeTimer` | `"true"` \| `"false"` | DisplayContext.tsx | 61, 64-65 | Persistent |
+| Clé                                    | Valeur                | Fichier                 | Ligne       | Lifecycle    |
+| -------------------------------------- | --------------------- | ----------------------- | ----------- | ------------ |
+| `applipicto:activeChild:{userId}`      | UUID profil enfant    | ChildProfileContext.tsx | 76, 171-187 | Jusqu'logout |
+| `appli-picto:offline-validation-queue` | JSON array            | OfflineContext.tsx      | 67, 75-92   | Sync réseau  |
+| `showTrain`                            | `"true"` \| `"false"` | DisplayContext.tsx      | 37, 43-45   | Persistent   |
+| `showAutre`                            | `"true"` \| `"false"` | DisplayContext.tsx      | 51, 54-55   | Persistent   |
+| `showTimeTimer`                        | `"true"` \| `"false"` | DisplayContext.tsx      | 61, 64-65   | Persistent   |
 
 ---
 
 ### localStorage : Scope Global
 
-| Clé | Valeur | Fichier | Lifecycle |
-|-----|--------|---------|-----------|
-| `lang` | `"fr"` \| `"en"` | i18n/i18n.ts | Persistent |
+| Clé     | Valeur                | Fichier        | Lifecycle  |
+| ------- | --------------------- | -------------- | ---------- |
+| `lang`  | `"fr"` \| `"en"`      | i18n/i18n.ts   | Persistent |
 | `theme` | `"light"` \| `"dark"` | app/layout.tsx | Persistent |
 
 ---
@@ -139,6 +139,7 @@ const { steps, addStep } = useSequenceStepsLocal(sequenceId)
 ```
 
 **Constraints** :
+
 - `UNIQUE(sequence_id, step_card_id)` ✅ same both
 - `UNIQUE(sequence_id, position)` ✅ same both
 - Min 2 étapes ✅ enforced local + DB trigger
@@ -161,7 +162,7 @@ const sequences = await sequencesDB.getAllSequences()
 ```typescript
 const { id } = await sequencesDB.createSequenceWithSteps(
   motherCardId,
-  ['step-card-1', 'step-card-2', 'step-card-3']  // ≥2 étapes
+  ['step-card-1', 'step-card-2', 'step-card-3'] // ≥2 étapes
 )
 // Throws si <2 étapes ou séquence déjà existe
 ```
@@ -198,12 +199,12 @@ await sequencesDB.removeSequenceStep(stepId)
 
 ## 📋 Contextes & Fournisseurs
 
-| Contexte | Clé localStorage | Provider fichier | Hook d'accès |
-|----------|------------------|-------------------|--------------|
-| AuthContext | `session` (Supabase SDK) | src/contexts/AuthContext.tsx | `useAuth()` |
+| Contexte            | Clé localStorage                                                      | Provider fichier                     | Hook d'accès        |
+| ------------------- | --------------------------------------------------------------------- | ------------------------------------ | ------------------- |
+| AuthContext         | `session` (Supabase SDK)                                              | src/contexts/AuthContext.tsx         | `useAuth()`         |
 | ChildProfileContext | `applipicto:visitor:activeChildId`, `applipicto:activeChild:{userId}` | src/contexts/ChildProfileContext.tsx | `useChildProfile()` |
-| DisplayContext | `showTrain`, `showAutre`, `showTimeTimer` | src/contexts/DisplayContext.tsx | `useDisplay()` |
-| OfflineContext | `appli-picto:offline-validation-queue` | src/contexts/OfflineContext.tsx | `useOffline()` |
+| DisplayContext      | `showTrain`, `showAutre`, `showTimeTimer`                             | src/contexts/DisplayContext.tsx      | `useDisplay()`      |
+| OfflineContext      | `appli-picto:offline-validation-queue`                                | src/contexts/OfflineContext.tsx      | `useOffline()`      |
 
 **Setup** : Tous les providers sont dans `src/app/providers.tsx` (root layout)
 
@@ -216,18 +217,18 @@ await sequencesDB.removeSequenceStep(stepId)
 ```typescript
 // ❌ INTERDIT
 if (isVisitor) {
-  const { sequences } = useSequencesLocal()  // OK pour Visitor
+  const { sequences } = useSequencesLocal() // OK pour Visitor
 }
 
 // ✅ CORRECT - Utiliser l'adapter
-const { sequences } = useSequencesWithVisitor()  // Router auto
+const { sequences } = useSequencesWithVisitor() // Router auto
 ```
 
 ### ❌ Accéder localStorage sans guard SSR
 
 ```typescript
 // ❌ INTERDIT
-localStorage.getItem('key')  // Crash en SSR!
+localStorage.getItem('key') // Crash en SSR!
 
 // ✅ CORRECT
 if (typeof window !== 'undefined') {
@@ -259,7 +260,7 @@ await sequencesDB.createSequenceWithSteps(motherId, ['step-1'])
 // ✅ CORRECT
 await sequencesDB.createSequenceWithSteps(
   motherId,
-  ['step-1', 'step-2']  // ≥2 obligatoire
+  ['step-1', 'step-2'] // ≥2 obligatoire
 )
 ```
 
@@ -267,8 +268,8 @@ await sequencesDB.createSequenceWithSteps(
 
 ```typescript
 // ❌ INTERDIT - Appeler le hook sans `enabled` flag
-const local = useSequencesLocal()  // TOUJOURS actif!
-const cloud = useSequences()        // TOUJOURS actif!
+const local = useSequencesLocal() // TOUJOURS actif!
+const cloud = useSequences() // TOUJOURS actif!
 // → Double exécution, state race condition
 
 // ✅ CORRECT - Utiliser enabled flag
@@ -285,7 +286,10 @@ const local = useSequencesLocal(isVisitor && authReady)
 
 ```javascript
 // Console DevTools
-console.log('Visitor child ID:', localStorage.getItem('applipicto:visitor:activeChildId'))
+console.log(
+  'Visitor child ID:',
+  localStorage.getItem('applipicto:visitor:activeChildId')
+)
 // → "visitor-local"
 
 console.log('Consent:', JSON.parse(localStorage.getItem('cookie_consent_v2')))
@@ -296,7 +300,7 @@ console.log('Consent:', JSON.parse(localStorage.getItem('cookie_consent_v2')))
 
 ```javascript
 // Ouvrir DB
-const db = await new Promise((r) => {
+const db = await new Promise(r => {
   const req = indexedDB.open('appli-picto-visitor')
   req.onsuccess = () => r(req.result)
 })
@@ -304,7 +308,7 @@ const db = await new Promise((r) => {
 // Lire toutes séquences
 const tx = db.transaction('sequences', 'readonly')
 const store = tx.objectStore('sequences')
-const sequences = await new Promise((r) => {
+const sequences = await new Promise(r => {
   const req = store.getAll()
   req.onsuccess = () => r(req.result)
 })
@@ -323,11 +327,11 @@ window.dispatchEvent(new Event('offline'))
 
 ## 📈 Performance & Limites
 
-| Ressource | Limite | Visitor impact | Notes |
-|-----------|--------|-----------------|-------|
-| localStorage | ~5-10 MB | ≈20 KB max | activeChildId + displayPrefs + consentement |
-| IndexedDB | ~50 MB (Firefox) à 1+ GB (Chrome) | ≈1-10 MB max | séquences + steps (1000 étapes max) |
-| Session storage | ~5-10 MB | Non utilisé | (reserved pour Supabase SDK) |
+| Ressource       | Limite                            | Visitor impact | Notes                                       |
+| --------------- | --------------------------------- | -------------- | ------------------------------------------- |
+| localStorage    | ~5-10 MB                          | ≈20 KB max     | activeChildId + displayPrefs + consentement |
+| IndexedDB       | ~50 MB (Firefox) à 1+ GB (Chrome) | ≈1-10 MB max   | séquences + steps (1000 étapes max)         |
+| Session storage | ~5-10 MB                          | Non utilisé    | (reserved pour Supabase SDK)                |
 
 **Bottleneck** : Position resquencing lors import (Ticket 4) = O(n²) si naïf → utiliser DEFERRABLE en transaction
 
@@ -337,19 +341,19 @@ window.dispatchEvent(new Event('offline'))
 
 ### Données Visitor
 
-| Donnée | Durée | Sécurité | RGPD |
-|--------|-------|----------|------|
-| Séquences IndexedDB | Jusqu'import ou delete manual | Aucune chiffrement (local) | Portabilité via export JSON (future) |
-| activeChildId localStorage | Jusqu'import ou delete manual | Local plaintext | Portabilité via localStorage export |
-| Consent localStorage | 180 jours max | Local plaintext + expiry check | ✅ CNIL compliant |
+| Donnée                     | Durée                         | Sécurité                       | RGPD                                 |
+| -------------------------- | ----------------------------- | ------------------------------ | ------------------------------------ |
+| Séquences IndexedDB        | Jusqu'import ou delete manual | Aucune chiffrement (local)     | Portabilité via export JSON (future) |
+| activeChildId localStorage | Jusqu'import ou delete manual | Local plaintext                | Portabilité via localStorage export  |
+| Consent localStorage       | 180 jours max                 | Local plaintext + expiry check | ✅ CNIL compliant                    |
 
 ### Donnees Auth users
 
-| Donnée | Durée | Sécurité | RGPD |
-|--------|-------|----------|------|
-| Offline queue localStorage | Jusqu'sync cloud | Local plaintext | ✅ Sync automatique |
-| activeChildId localStorage | Jusqu'logout | Local plaintext (namespaced userId) | ✅ Cleanup logout |
-| Preferences localStorage | Jusqu'logout | Local plaintext | ✅ Cleanup logout |
+| Donnée                     | Durée            | Sécurité                            | RGPD                |
+| -------------------------- | ---------------- | ----------------------------------- | ------------------- |
+| Offline queue localStorage | Jusqu'sync cloud | Local plaintext                     | ✅ Sync automatique |
+| activeChildId localStorage | Jusqu'logout     | Local plaintext (namespaced userId) | ✅ Cleanup logout   |
+| Preferences localStorage   | Jusqu'logout     | Local plaintext                     | ✅ Cleanup logout   |
 
 **Pas de données sensibles en localStorage** (pas de tokens, passwords, PII)
 

@@ -100,7 +100,7 @@ if (insertError) {
   if (msg.includes('feature_unavailable')) {
     show('Fonctionnalité réservée aux abonnés.', 'error')
   } else if (msg.includes('not_authenticated')) {
-    show('Veuillez vous connecter d\'abord.', 'error')
+    show("Veuillez vous connecter d'abord.", 'error')
   }
 }
 ```
@@ -301,11 +301,13 @@ Gérer erreurs quota :
 ## Notes de développement
 
 **Architecture DB-first** :
+
 - Ne pas faire de vérifications côté frontend pour autorisation
 - Laisser DB/RLS rejeter les actions non autorisées
 - Frontend gère affichage + erreurs UI
 
 **Hydration Next.js** :
+
 ```typescript
 // ❌ MAUVAIS
 if (isVisitor) return <Demo />
@@ -317,9 +319,11 @@ if (isVisitor) return <Demo />
 ```
 
 **PersonalizationModal vs ModalQuota** :
+
 - PersonalizationModal : Invite création compte (Visitor → Free)
 - ModalQuota : Affiche quotas épuisés (Free → Subscriber)
 
 **Storage buckets** :
+
 - `bank-images/{cardId}.jpg` : PUBLIC read, admin write
 - `personal-images/{accountId}/cards/{cardId}.jpg` : owner-only, subscriber+ write

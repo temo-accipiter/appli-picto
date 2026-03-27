@@ -13,6 +13,10 @@ import type { ReactNode } from 'react'
  * - Informations paiement
  * - Gestion abonnement
  */
-export default function AbonnementLayout({ children }: { children: ReactNode }) {
+export default function AbonnementLayout({
+  children,
+}: {
+  children: ReactNode
+}) {
   return <PrivateRoute>{children}</PrivateRoute>
 }

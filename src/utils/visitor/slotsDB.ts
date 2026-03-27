@@ -165,9 +165,12 @@ function openDBInternal(): Promise<IDBDatabase> {
 
         // Table validations
         if (!db.objectStoreNames.contains('visitor_session_validations')) {
-          const validationsStore = db.createObjectStore('visitor_session_validations', {
-            keyPath: 'id',
-          })
+          const validationsStore = db.createObjectStore(
+            'visitor_session_validations',
+            {
+              keyPath: 'id',
+            }
+          )
           validationsStore.createIndex('session_id', 'session_id', {
             unique: false,
           })

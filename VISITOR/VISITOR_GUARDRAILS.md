@@ -25,11 +25,13 @@
 **Définition Visitor** : Utilisateur **non connecté** (`!user` dans `useAuth()`)
 
 **Contexte d'affichage** :
+
 - Visitor accède au Tableau (enfant) via `/tableau` → **mode lecture seule**
 - Visitor peut configurer préférences mais **pas créer** de contenu personnalisé
 - Les données Visitor sont **local-only** (future IndexedDB en S10)
 
 **Architecture de contrôle** :
+
 - **Frontend** : Restrictions UI cosmétiques (masquage, désactivation)
 - **Backend** : RLS Supabase bloque les vraies modifications (DB-first)
 - **Storage** : Accès limité à `bank-images` PUBLIC uniquement
@@ -61,13 +63,15 @@ interface PersonalizationModalProps {
 const WORDINGS = {
   visitor: {
     title: 'Personnalise ton tableau',
-    message: 'Pour créer tes propres cartes et catégories, crée un compte et abonne-toi.',
+    message:
+      'Pour créer tes propres cartes et catégories, crée un compte et abonne-toi.',
     primaryLabel: 'Créer un compte',
     secondaryLabel: 'Se connecter',
   },
   free: {
     title: 'Fonctionnalité Premium',
-    message: 'Ton compte gratuit te permet de sauvegarder tes préférences. Pour créer des cartes et catégories personnalisées, passe à la version Premium.',
+    message:
+      'Ton compte gratuit te permet de sauvegarder tes préférences. Pour créer des cartes et catégories personnalisées, passe à la version Premium.',
     primaryLabel: 'Passer à Premium',
     secondaryLabel: 'Fermer',
   },
@@ -76,15 +80,16 @@ const WORDINGS = {
 // Lignes 46-54 : Routage des actions primaires
 const handlePrimary = () => {
   if (context === 'visitor') {
-    router.push('/signup')  // Visitor → création compte
+    router.push('/signup') // Visitor → création compte
   } else {
-    router.push('/profil#abonnement')  // Free → upgrade Stripe
+    router.push('/profil#abonnement') // Free → upgrade Stripe
   }
   onClose()
 }
 ```
 
 **Restrictions imposées** :
+
 - Visitor cliquant sur création carte/catégorie → affichage modal
 - Modal propose : **Créer un compte** (→ `/signup`) ou **Se connecter** (→ `/login`)
 - Pas d'actions destructrices possibles avant création compte
@@ -127,6 +132,7 @@ const { isVisitor, authReady } = useIsVisitor()
 ```
 
 **Conditions d'affichage** :
+
 - Navbar détecte : `isVisitorMode = !user && (isVisitor || !authReady)`
 - Si Visitor : affiche bouton "Personnaliser"
 - Au clic : modal apparaît avec contexte "visitor"
@@ -144,6 +150,7 @@ const { isVisitor, authReady } = useIsVisitor()
 **Contexte** : Composant affichage/édition cartes (utilisé en page `/edition`)
 
 **Prop critiques** :
+
 - `isFree?: boolean` — Indicateur cosmétique (lecture seule)
 - `bankCards?: BankCardItem[]` — Cartes banque publiques
 - `isAdmin?: boolean` — Gestion admin uniquement
@@ -184,6 +191,7 @@ if (isFree) {
 ```
 
 **Restrictions appliquées** :
+
 1. **Affichage limité** : Seules les cartes banque visibles
 2. **Édition bloquée** : `editable={false}` → pas d'édition nom
 3. **DnD bloqué** : `onReorder={() => {}}` → pas de réorganisation
@@ -193,6 +201,7 @@ if (isFree) {
    - Sélecteur filtre catégorie : masqué si `!isFree`
 
 **Stockage** :
+
 - Cartes banque : bucket `bank-images` (PUBLIC read)
 - Pas d'upload `personal-images` possible pour Free/Visitor
 
@@ -251,6 +260,7 @@ if (isFree) {
 ```
 
 **Restrictions appliquées** :
+
 1. **Lien Édition caché** : Visitor ne peut pas accéder `/edition`
 2. **UserMenu absent** : Pas de menu utilisateur
 3. **SettingsMenu absent** : Pas d'accès aux paramètres
@@ -276,7 +286,7 @@ interface ModalQuotaProps {
   contentType: ContentType
   currentUsage: number
   limit: number
-  period?: Period  // 'total' | 'monthly'
+  period?: Period // 'total' | 'monthly'
 }
 
 // Lignes 45-61 : Messages contextuels
@@ -304,6 +314,7 @@ const getContextMessage = () => {
 **Chemin de stockage** : `bank-images/{cardId}.jpg`
 
 **Accès** :
+
 - **SELECT** : PUBLIC (anon + authenticated)
 - **INSERT** : Admin uniquement (RLS policy `is_admin()`)
 - **UPDATE** : Admin uniquement
@@ -322,7 +333,7 @@ const getContextMessage = () => {
 
 // Ligne 156-162 : Upload vers bucket public
 const { data, error } = await supabase.storage
-  .from('bank-images')  // Bucket public
+  .from('bank-images') // Bucket public
   .upload(path, jpegBlob, {
     cacheControl: '3600',
     upsert: false,
@@ -339,6 +350,7 @@ const { data, error } = await supabase.storage
 **Chemin de stockage** : `personal-images/{accountId}/cards/{cardId}.jpg`
 
 **Accès** :
+
 - **SELECT** : Owner uniquement (RLS policy `auth.uid() = owner_id`)
 - **INSERT** : Subscriber/Admin uniquement (RLS policy `accounts.status`)
 - **UPDATE** : Impossible (trigger `prevent_update_image_url`)
@@ -357,7 +369,9 @@ const { data, error } = await supabase.storage
  */
 
 // Lignes 121-139 : Vérification session + validation compte
-const { data: { session } } = await supabase.auth.getSession()
+const {
+  data: { session },
+} = await supabase.auth.getSession()
 
 if (!session) {
   return { path: null, error: new Error('Utilisateur non authentifié') }
@@ -365,7 +379,7 @@ if (!session) {
 
 // Vérifier que accountId correspond à l'utilisateur authentifié
 if (session.user.id !== accountId) {
-  return { path: null, error: new Error("accountId ne correspond pas") }
+  return { path: null, error: new Error('accountId ne correspond pas') }
 }
 ```
 
@@ -425,13 +439,14 @@ export default function useIsVisitor(): UseIsVisitorReturn {
   const { user, authReady } = useAuth()
 
   return {
-    isVisitor: authReady && !user,  // Visitor = !user
+    isVisitor: authReady && !user, // Visitor = !user
     authReady,
   }
 }
 ```
 
 **Conditions** :
+
 - `isVisitor: boolean` = true si `!user && authReady`
 - **TOUJOURS** vérifier `authReady` avant `isVisitor` (hydration Next.js)
 
@@ -439,7 +454,7 @@ export default function useIsVisitor(): UseIsVisitorReturn {
 
 ```typescript
 const { isVisitor, authReady } = useIsVisitor()
-const isVisitorMode = !user && (isVisitor || !authReady)  // Guard hydration
+const isVisitorMode = !user && (isVisitor || !authReady) // Guard hydration
 ```
 
 ---
@@ -496,6 +511,7 @@ export default function useAccountStatus(): UseAccountStatusReturn {
 ```
 
 **Important** :
+
 - **Usage COSMÉTIQUE UNIQUEMENT** (affichage UI, badges)
 - **NE PAS** utiliser pour autorisation (DB-first via RLS)
 - Visitor : `status = null` (pas de compte)
@@ -524,6 +540,7 @@ const { isAdmin, isFree } = useAccountStatus()
 **Restriction fondamentale** : Visitor **ne peut rien créer** (pas d'utilisateur en DB)
 
 **Tentative création carte** :
+
 - Frontend : aucune restriction visible (Visitor peut appuyer sur bouton)
 - DB RLS : Refuse avec erreur `feature_unavailable` ou `not_authenticated`
 - Frontend : Catch erreur DB, affiche `PersonalizationModal` ou message d'erreur
@@ -531,6 +548,7 @@ const { isAdmin, isFree } = useAccountStatus()
 ### Quotas Free (utilisateur connecté avec statut `free`)
 
 **Limites** (RLS + triggers DB) :
+
 - 5 cartes personnelles max
 - 2 catégories personnelles max
 - 2 profils enfants max
@@ -557,7 +575,10 @@ if (insertError) {
     return
   }
 
-  if (errorMsg.includes('feature_unavailable') || errorMsg.includes('feature')) {
+  if (
+    errorMsg.includes('feature_unavailable') ||
+    errorMsg.includes('feature')
+  ) {
     show(
       'Fonctionnalité réservée aux abonnés. Passe Premium pour créer des cartes.',
       'error'
@@ -571,6 +592,7 @@ if (insertError) {
 ```
 
 **Messages d'erreur** :
+
 - Quota dépassé (50 cartes) : "Tu as atteint la limite de 50 cartes."
 - Feature indisponible : "Fonctionnalité réservée aux abonnés."
 - Mensuel dépassé : "Tu as créé 100 cartes ce mois-ci. Limite atteinte."
@@ -581,16 +603,16 @@ if (insertError) {
 
 ### Routes accessibles Visitor
 
-| Route | Accessible | Raison |
-|-------|-----------|--------|
-| `/tableau` | ✅ Oui | Affichage demo (cartes banque) |
-| `/login` | ✅ Oui | Connexion |
-| `/signup` | ✅ Oui | Création compte |
-| `/legal/*` | ✅ Oui | Pages légales (CGU, RGPD, etc.) |
-| `/edition` | ❌ Non | Page édition (protégée) |
-| `/profil` | ❌ Non | Page profil (protégée) |
-| `/abonnement` | ❌ Non | Page abonnement (protégée) |
-| `/admin/*` | ❌ Non | Pages admin (admin-only) |
+| Route         | Accessible | Raison                          |
+| ------------- | ---------- | ------------------------------- |
+| `/tableau`    | ✅ Oui     | Affichage demo (cartes banque)  |
+| `/login`      | ✅ Oui     | Connexion                       |
+| `/signup`     | ✅ Oui     | Création compte                 |
+| `/legal/*`    | ✅ Oui     | Pages légales (CGU, RGPD, etc.) |
+| `/edition`    | ❌ Non     | Page édition (protégée)         |
+| `/profil`     | ❌ Non     | Page profil (protégée)          |
+| `/abonnement` | ❌ Non     | Page abonnement (protégée)      |
+| `/admin/*`    | ❌ Non     | Pages admin (admin-only)        |
 
 ### Composant ProtectedRoute
 
@@ -599,6 +621,7 @@ if (insertError) {
 **But** : Bloquer accès pages protégées pour Visitor
 
 **Code de vérification** :
+
 ```typescript
 // Si pas connecté : redirect vers /login
 if (!user && authReady) {
@@ -629,6 +652,7 @@ if (requireAdmin && !isAdmin) {
 ```
 
 **Logique** :
+
 - Si `isFree = true` → bouton masqué
 - Visitor : n'est pas connecté donc pas `isFree` (pas de statut)
 - Free : `isFree = true` → bouton masqué
@@ -683,26 +707,26 @@ if (isFree) {
 
 ### Tableau synthétique
 
-| Guardrail | Visitor | Free | Subscriber/Admin |
-|-----------|---------|------|-----------------|
-| **UI Navbar** | | | |
-| Lien Édition | ❌ Caché | ✅ Visible | ✅ Visible |
-| UserMenu | ❌ Absent | ✅ Visible | ✅ Visible |
-| Bouton Personnaliser | ✅ Visible | ❌ Absent | ❌ Absent |
-| **CardsEdition** | | | |
-| Créer carte | ❌ Masqué | ❌ Masqué | ✅ Visible |
-| Éditer carte perso | ❌ Impossible | ❌ Impossible | ✅ Possible |
-| Voir cartes banque | ✅ Lecture | ✅ Lecture | ✅ Lecture |
-| Éditer cartes banque | ❌ Non | ❌ Non | ✅ Admin |
-| **Storage** | | | |
-| Lire bank-images | ✅ PUBLIC | ✅ PUBLIC | ✅ PUBLIC |
-| Uploader personal-images | ❌ RLS bloque | ❌ RLS bloque | ✅ Possible |
-| Lire personal-images | ❌ RLS bloque | ✅ Own only | ✅ Own only |
-| **Navigation** | | | |
-| Accès /edition | ❌ ProtectedRoute | ✅ Oui | ✅ Oui |
-| Accès /profil | ❌ ProtectedRoute | ✅ Oui | ✅ Oui |
-| Accès /abonnement | ❌ ProtectedRoute | ✅ Oui | ✅ Oui |
-| Accès /admin/* | ❌ AdminRoute | ❌ AdminRoute | ✅ Oui |
+| Guardrail                | Visitor           | Free          | Subscriber/Admin |
+| ------------------------ | ----------------- | ------------- | ---------------- |
+| **UI Navbar**            |                   |               |                  |
+| Lien Édition             | ❌ Caché          | ✅ Visible    | ✅ Visible       |
+| UserMenu                 | ❌ Absent         | ✅ Visible    | ✅ Visible       |
+| Bouton Personnaliser     | ✅ Visible        | ❌ Absent     | ❌ Absent        |
+| **CardsEdition**         |                   |               |                  |
+| Créer carte              | ❌ Masqué         | ❌ Masqué     | ✅ Visible       |
+| Éditer carte perso       | ❌ Impossible     | ❌ Impossible | ✅ Possible      |
+| Voir cartes banque       | ✅ Lecture        | ✅ Lecture    | ✅ Lecture       |
+| Éditer cartes banque     | ❌ Non            | ❌ Non        | ✅ Admin         |
+| **Storage**              |                   |               |                  |
+| Lire bank-images         | ✅ PUBLIC         | ✅ PUBLIC     | ✅ PUBLIC        |
+| Uploader personal-images | ❌ RLS bloque     | ❌ RLS bloque | ✅ Possible      |
+| Lire personal-images     | ❌ RLS bloque     | ✅ Own only   | ✅ Own only      |
+| **Navigation**           |                   |               |                  |
+| Accès /edition           | ❌ ProtectedRoute | ✅ Oui        | ✅ Oui           |
+| Accès /profil            | ❌ ProtectedRoute | ✅ Oui        | ✅ Oui           |
+| Accès /abonnement        | ❌ ProtectedRoute | ✅ Oui        | ✅ Oui           |
+| Accès /admin/\*          | ❌ AdminRoute     | ❌ AdminRoute | ✅ Oui           |
 
 ### Hiérarchie des restrictions
 
@@ -731,43 +755,43 @@ if (isFree) {
 
 ### Modales
 
-| Fichier | Rôle |
-|---------|------|
-| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Invite création compte/connexion |
-| `src/components/shared/modal/modal-quota/ModalQuota.tsx` | Affiche limites quotas |
-| `src/components/shared/modal/modal-ajout/ModalAjout.tsx` | Form création cartes (intègre upload) |
+| Fichier                                                                      | Rôle                                  |
+| ---------------------------------------------------------------------------- | ------------------------------------- |
+| `src/components/shared/modal/modal-personalization/PersonalizationModal.tsx` | Invite création compte/connexion      |
+| `src/components/shared/modal/modal-quota/ModalQuota.tsx`                     | Affiche limites quotas                |
+| `src/components/shared/modal/modal-ajout/ModalAjout.tsx`                     | Form création cartes (intègre upload) |
 
 ### Composants UI avec restrictions
 
-| Fichier | Restrictions |
-|---------|-------------|
-| `src/components/layout/navbar/Navbar.tsx` | Lien édition caché, UserMenu absent |
+| Fichier                                                        | Restrictions                             |
+| -------------------------------------------------------------- | ---------------------------------------- |
+| `src/components/layout/navbar/Navbar.tsx`                      | Lien édition caché, UserMenu absent      |
 | `src/components/features/cards/cards-edition/CardsEdition.tsx` | Mode Free lecture seule, boutons masqués |
-| `src/components/shared/protected-route/ProtectedRoute.tsx` | Redirect vers login si non connecté |
+| `src/components/shared/protected-route/ProtectedRoute.tsx`     | Redirect vers login si non connecté      |
 
 ### Hooks de détection
 
-| Fichier | Détecte |
-|---------|---------|
-| `src/hooks/useIsVisitor.ts` | Mode Visitor (!user) |
+| Fichier                         | Détecte                                |
+| ------------------------------- | -------------------------------------- |
+| `src/hooks/useIsVisitor.ts`     | Mode Visitor (!user)                   |
 | `src/hooks/useAccountStatus.ts` | Statut account (free/subscriber/admin) |
-| `src/hooks/useAuth.ts` | Authentification (user, authReady) |
+| `src/hooks/useAuth.ts`          | Authentification (user, authReady)     |
 
 ### Gestion Storage
 
-| Fichier | Rôle |
-|---------|------|
-| `src/utils/storage/uploadCardImage.ts` | Upload cartes perso (personal-images) |
-| `src/utils/storage/uploadBankCardImage.ts` | Upload cartes banque (bank-images) |
-| `src/utils/storage/deleteImageIfAny.ts` | Suppression images orphelines |
+| Fichier                                    | Rôle                                  |
+| ------------------------------------------ | ------------------------------------- |
+| `src/utils/storage/uploadCardImage.ts`     | Upload cartes perso (personal-images) |
+| `src/utils/storage/uploadBankCardImage.ts` | Upload cartes banque (bank-images)    |
+| `src/utils/storage/deleteImageIfAny.ts`    | Suppression images orphelines         |
 
 ### Hooks de données
 
-| Fichier | Restrictions |
-|---------|-------------|
-| `src/hooks/useBankCards.ts` | SELECT-only (PUBLIC) |
+| Fichier                         | Restrictions                   |
+| ------------------------------- | ------------------------------ |
+| `src/hooks/useBankCards.ts`     | SELECT-only (PUBLIC)           |
 | `src/hooks/usePersonalCards.ts` | Owner-only, RLS bloque Visitor |
-| `src/hooks/useCategories.ts` | Owner-only, RLS bloque Visitor |
+| `src/hooks/useCategories.ts`    | Owner-only, RLS bloque Visitor |
 
 ---
 
@@ -818,6 +842,7 @@ SEULEMENT afficher dans :
 ### 4. Quotas : RLS + Triggers
 
 **Refus création** :
+
 - RLS policy : `accounts.status = 'free'` → refus insert personal cards
 - Trigger `check_can_create_personal_card` : vérif quota stock (50 max)
 - Trigger `check_monthly_creation_limit` : vérif quota mensuel (100 max)
