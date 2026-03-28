@@ -239,6 +239,35 @@ export async function getActiveSession(): Promise<VisitorSession | null> {
 }
 
 /**
+ * Récupère la dernière session terminée pour visitor.
+ * Utilisé comme fallback quand aucune session active n'existe —
+ * permet d'afficher l'overlay SessionComplete après completion.
+ * @returns La session completed la plus récente, ou null
+ */
+export async function getLastCompletedSession(): Promise<VisitorSession | null> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_SESSIONS, 'readonly')
+    const store = tx.objectStore(STORE_SESSIONS)
+    const index = store.index('child_timeline')
+    const request = index.getAll([
+      VISITOR_CHILD_PROFILE_ID,
+      VISITOR_TIMELINE_ID,
+    ])
+
+    request.onsuccess = () => {
+      const sessions = (request.result ?? []) as VisitorSession[]
+      // Trier les sessions completed par updated_at décroissant → la plus récente en premier
+      const lastCompleted = sessions
+        .filter(s => s.state === 'completed')
+        .sort((a, b) => b.updated_at - a.updated_at)[0]
+      resolve(lastCompleted ?? null)
+    }
+    request.onerror = () => reject(request.error)
+  })
+}
+
+/**
  * Crée une nouvelle session (state = active_preview, epoch = 1).
  * @returns La session créée
  */
@@ -425,9 +454,17 @@ export async function validateSlot(
       addValidationRequest.onsuccess = async () => {
         // Si c'était la 1ère validation (preview → started), fixer le snapshot
         if (session.state === 'active_preview') {
-          session.state = 'active_started'
           session.steps_total_snapshot = stepsTotal
           session.updated_at = Date.now()
+
+          // Cas limite : 1 seule étape → la session passe directement à completed
+          // sans passer par active_started (le bloc else ne serait jamais atteint)
+          const validationsCount = existingValidations.length + 1
+          if (stepsTotal > 0 && validationsCount >= stepsTotal) {
+            session.state = 'completed'
+          } else {
+            session.state = 'active_started'
+          }
 
           const updateSessionRequest = sessionsStore.put(session)
           updateSessionRequest.onsuccess = () => resolve()

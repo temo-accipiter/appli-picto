@@ -168,10 +168,10 @@ export function SlotItem({
   const isFullyLocked =
     (isSessionStarted && isValidated) || isOffline || isExecutionOnly
 
-  // Pendant session démarrée, les jetons sont toujours non modifiables
-  // (même sur slot non validé — exception : nouveau slot lors de l'ajout,
-  //  mais on ne peut pas distinguer ici → restriction conservatrice)
-  const tokensLocked = isSessionStarted || isOffline || isExecutionOnly
+  // Contrat §3.2.2bis : slot non validé reste modifiable pendant session démarrée.
+  // Seuls les slots déjà validés sont verrouillés (même logique que isFullyLocked).
+  const tokensLocked =
+    (isSessionStarted && isValidated) || isOffline || isExecutionOnly
   const isEmptyStep = isStep && slot.card_id === null
   const areTokensEditable = !tokensLocked && !isEmptyStep
   const canDragCard = !isFullyLocked && !busy && slot.card_id !== null

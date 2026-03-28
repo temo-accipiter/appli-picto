@@ -121,20 +121,26 @@ export default function useSessions(
 
       const loadVisitorSession = async () => {
         try {
-          // Charger la session active depuis IndexedDB
+          // 1. Chercher une session active (preview ou started)
           const visitorSession = await visitorSessionsDB.getActiveSession()
 
+          // 2. Aucune session active → chercher la dernière session terminée
+          //    (permet d'afficher l'overlay SessionComplete après completion)
+          const sessionToDisplay =
+            visitorSession ??
+            (await visitorSessionsDB.getLastCompletedSession())
+
           // Convertir en format Session (structure identique)
-          if (visitorSession) {
+          if (sessionToDisplay) {
             const formattedSession: Session = {
-              id: visitorSession.id,
-              child_profile_id: visitorSession.child_profile_id,
-              timeline_id: visitorSession.timeline_id,
-              state: visitorSession.state,
-              epoch: visitorSession.epoch,
-              steps_total_snapshot: visitorSession.steps_total_snapshot,
-              created_at: new Date(visitorSession.created_at).toISOString(),
-              updated_at: new Date(visitorSession.updated_at).toISOString(),
+              id: sessionToDisplay.id,
+              child_profile_id: sessionToDisplay.child_profile_id,
+              timeline_id: sessionToDisplay.timeline_id,
+              state: sessionToDisplay.state,
+              epoch: sessionToDisplay.epoch,
+              steps_total_snapshot: sessionToDisplay.steps_total_snapshot,
+              created_at: new Date(sessionToDisplay.created_at).toISOString(),
+              updated_at: new Date(sessionToDisplay.updated_at).toISOString(),
               started_at: null, // Visitor : pas de tracking séparé started_at
               completed_at: null, // Visitor : pas de tracking séparé completed_at
             }

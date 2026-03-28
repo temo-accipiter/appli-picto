@@ -160,11 +160,11 @@ export default function Navbar() {
           </motion.div>
         )}
 
-        {/* Modal de personnalisation pour les visiteurs */}
+        {/* Modal de personnalisation : contexte selon le statut */}
         <PersonalizationModal
           isOpen={showPersonalizationModal}
           onClose={() => setShowPersonalizationModal(false)}
-          context="visitor"
+          context={isVisitor ? 'visitor' : 'free'}
         />
       </nav>
     </header>

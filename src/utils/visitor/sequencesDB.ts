@@ -494,16 +494,21 @@ export async function moveSequenceStep(
     throw new Error('Position cible invalide.')
   }
 
-  // Échange des positions
+  // Échange des positions en 3 étapes pour contourner l'index UNIQUE ['sequence_id', 'position'].
+  // 2 store.put() simultanés → violation de contrainte si les positions se croisent.
+  // Solution : position temporaire hors plage (-1) avant le swap.
+  //   Étape 1 : A → -1          (temp, pas de conflit)
+  //   Étape 2 : B → oldPosition  (libéré par A)
+  //   Étape 3 : A → newPosition  (libéré par B)
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_STEPS, 'readwrite')
     const store = tx.objectStore(STORE_STEPS)
 
-    // Update stepToMove.position → newPosition
-    store.put({ ...stepToMove, position: newPosition })
-
-    // Update stepAtTarget.position → oldPosition
+    // IDB traite les requêtes séquentiellement dans la même transaction :
+    // chaque put() voit l'état après le put() précédent → pas de conflit.
+    store.put({ ...stepToMove, position: -1 })
     store.put({ ...stepAtTarget, position: oldPosition })
+    store.put({ ...stepToMove, position: newPosition })
 
     tx.oncomplete = () => resolve()
     tx.onerror = () => reject(tx.error)

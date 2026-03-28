@@ -184,6 +184,7 @@ describe('Tableau completion reveal', () => {
     mockUseSlots.mockReturnValue({
       slots,
       loading: false,
+      refresh: vi.fn(),
     })
     mockUseBankCards.mockReturnValue({
       cards: bankCards,
@@ -209,7 +210,10 @@ describe('Tableau completion reveal', () => {
       validate: vi.fn(async () => ({ error: null })),
       refresh: vi.fn(),
     }))
-    mockUseSequencesWithVisitor.mockReturnValue({ sequences: [] })
+    mockUseSequencesWithVisitor.mockReturnValue({
+      sequences: [],
+      refresh: vi.fn(),
+    })
     mockUseSequenceStepsWithVisitor.mockReturnValue({
       steps: [],
       loading: false,
