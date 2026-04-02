@@ -70,7 +70,7 @@ Toujours utiliser hooks custom depuis `@/hooks` — jamais `supabase.from()` dir
 
 - `useRouter()` from `'next/navigation'` — jamais `next/router` ni `react-router-dom`
 - Server Components par défaut, `'use client'` SEULEMENT si interactivité
-→ Rule `app-router.md` (active sur `src/app/**/*`)
+  → Rule `app-router.md` (active sur `src/app/**/*`)
 
 ### 3. 📂 Imports absolus
 

@@ -17,8 +17,10 @@
  *
  * ⚠️ RGPD (art. 17 — droit à l'effacement)
  * - Suppression individuelle autorisée
- * - CASCADE: timelines, slots, sessions, validations
- * - Images Storage purgées séparément (si implémenté)
+ * - CASCADE: timelines, slots, sessions, validations (géré par DB)
+ * - Avatars enfants : non implémentés (child_profiles n'a pas de champ image).
+ *   TODO : si un avatar est ajouté à child_profiles, ajouter une purge Storage
+ *   best-effort ici avant le DELETE (chemin probable : {account_id}/children/{profile_id})
  */
 
 import { useState } from 'react'

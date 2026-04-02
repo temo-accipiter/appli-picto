@@ -30,7 +30,7 @@ const WORDINGS = {
     title: 'Fonctionnalité Premium',
     message:
       'Ton compte gratuit te permet de sauvegarder tes plannings. Pour créer tes propres tâches et catégories, passe à la version Premium.',
-    primaryLabel: 'Passer à Premium',
+    primaryLabel: 'Passer Premium',
     secondaryLabel: 'Plus tard',
   },
 } as const

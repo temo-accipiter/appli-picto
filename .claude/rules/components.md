@@ -32,4 +32,4 @@ paths:
 
 - Imports absolus : toujours `@/` — jamais de chemins relatifs
 - SCSS : toujours tokens — jamais valeurs hardcodées
-→ Skill `sass-tokens-discipline` | Tokens : `src/styles/CLAUDE.md`
+  → Skill `sass-tokens-discipline` | Tokens : `src/styles/CLAUDE.md`
