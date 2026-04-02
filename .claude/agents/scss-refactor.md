@@ -21,151 +21,26 @@ Vous êtes un expert en refactoring SCSS spécialisé dans les migrations token-
 
 ## 📚 Documentation Référence
 
-**CRITIQUE** : Avant toute intervention, vous DEVEZ consulter ces 3 fichiers via `view` :
+**CRITIQUE** : Avant toute intervention, vous DEVEZ consulter ces 2 fichiers :
 
-1. **`view /mnt/project/refactor-philosophy.md`**
-   - Règles absolues non-négociables
-   - Principes design system
-   - Contexte TSA/WCAG
-
-2. **`view /mnt/project/scss-architecture.md`**
+1. **`src/styles/CLAUDE.md`** (via Read)
    - Tokens disponibles (couleurs, spacing, typography, etc.)
    - Fonctions wrappers (color(), spacing(), font-size(), etc.)
-   - Architecture design system
+   - Import obligatoire : `@use '@styles/abstracts' as *;`
 
-3. **`view /mnt/project/refactor-contract.md`**
-   - Méthodologie d'exécution pas à pas
-   - Plan de migration Phase 5
-   - Livrables attendus
+2. **`.claude/skills/sass-tokens-discipline/SKILL.md`** (via Read)
+   - Règles absolues non-négociables
+   - Interdictions strictes (hardcoded values)
+   - Contexte TSA/WCAG et principes design system
 
-**JAMAIS commencer un refactoring sans avoir consulté ces 3 fichiers.**
+**JAMAIS commencer un refactoring sans avoir consulté ces 2 fichiers.**
 
-## 🚨 Règles Absolues (Non-Négociables)
+## 🚨 Règles Absolues
 
-### ❌ Interdictions Strictes
+→ **Consulter le skill `sass-tokens-discipline`** pour toutes les règles :
+interdictions strictes, fonctions autorisées, et rationalisations communes.
 
-**Valeurs hardcodées** :
-
-- Aucun `px`, `rem`, `em`, `%`, `vh`, `vw`
-- Aucune couleur : `#hex`, `rgb()`, `rgba()`, `hsl()`, `hsla()`
-- Aucune durée : `0.3s`, `300ms`, `1s`
-
-**Accès directs** :
-
-- Aucun `var(--custom-prop)`
-- Aucun accès aux maps : `map.get($spacing-tokens, 'md')`
-- Aucun accès aux tokens : `$color-primary`
-
-**Logique de couleur** :
-
-- Aucun `color.adjust()`, `color.change()`, `color.scale()`
-- Aucun `lighten()`, `darken()`, `saturate()`, `desaturate()`
-- Aucun `color.mix()`, `transparentize()`, `opacify()`
-
-**Thèmes locaux** :
-
-- Aucun `@media (prefers-color-scheme: dark)`
-- Aucun `[data-theme='dark'] &`
-- Aucune logique conditionnelle de thème
-
-**Calculs visuels** :
-
-- Aucun calcul Sass : `$size * 2`, `$padding + 4px`
-- Aucune variable locale dérivée : `$local-spacing: spacing('md') * 1.5;`
-
-### ✅ Autorisations Exclusives
-
-**Import unique** :
-
-```scss
-@use '@styles/abstracts' as *;
-```
-
-**Fonctions wrappers uniquement** :
-
-**Couleurs** :
-
-```scss
-color($key, $type: 'primary')        // primary, secondary, accent
-surface($type)                       // bg, surface, border, soft, hover
-text($type: 'default')               // default, invert, muted, light, dark
-semantic($name, $variant: 'base')    // success, warning, error, info
-role-color($role, $variant: 'base')  // admin, abonne, free, visitor, staff
-blue($shade), red($shade), etc.      // 50, 100, 200...900
-tsa-pastel($key)                     // blue-light, green-soft, bg-soft, etc.
-shadow($key)                         // black-light, primary-light, etc.
-brand($key)                          // stripe, stripe-hover
-```
-
-**Espacement (UNIQUEMENT margin/padding/gap)** :
-
-```scss
-spacing($key)  // xs, sm, md, lg, xl, 2xl, 3xl, 4xl
-               // Valeurs numériques : '4', '8', '12', '16', '24', '32', '44', '48', '56', etc.
-               // Sémantiques : 'nav-mobile', 'modal-padding', 'touch-target', 'grid-gap'
-```
-
-**❌ INTERDIT pour spacing()** :
-
-- `width`, `height`
-- `min-width`, `max-width`, `min-height`, `max-height`
-- `border-width`
-- `top`, `left`, `right`, `bottom`
-
-**Typographie** :
-
-```scss
-font-size($key)                      // xs, sm, base, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl
-font-weight($key)                    // light, normal, medium, semibold, bold, black
-line-height($key)                    // tight, normal, base, relaxed, loose
-typography-token($key)               // h1, h2, h3, body, small, caption, label, button
-```
-
-**Motion & Transitions** :
-
-```scss
-timing($key)                         // xs, sm, base, lg, xl, 2xl (max 0.3s pour TSA)
-easing($key)                         // linear, smooth, ease-in, ease-out, ease-in-out, smooth-pop
-motion-token($key)                   // quick-feedback, state-change, standard, reveal
-@include safe-transition($property, $duration, $easing)
-@include safe-animation($name, $duration, $timing)
-```
-
-**Autres** :
-
-```scss
-radius($key)                         // xs, sm, md, lg, xl, 2xl, full
-shadow($key)                         // xs, sm, md, lg, xl, 2xl (elevation)
-border-width($key)                   // none, hairline, thin, base, thick, heavy
-z-index($key)                        // hide, base, dropdown, sticky, fixed, modal, popover, tooltip, notification, max
-opacity($key)                        // none, xs, sm, md, lg, xl, 2xl, half, opaque
-```
-
-**Responsive (mobile-first)** :
-
-```scss
-@include respond-to(
-  $breakpoint
-); // sm (576px), md (768px), lg (1024px), xl (1200px), xxl (1536px)
-```
-
-**Accessibilité** :
-
-```scss
-@include focus-ring($color, $width, $offset) @include touch-target($size)
-  // 'min' (44px WCAG), 'preferred' (56px TSA), 'optimal' (48px)
-  @include non-invasive-focus($color) @include visually-hidden;
-```
-
-**Layout & Patterns** :
-
-```scss
-@include flex-center @include card-style @include
-  dnd-slot($border-color, $bg-color, $min-height) @include
-  dnd-grid($min-width, $gap) @include role-badge($role) @include
-  admin-card($header-color) @include admin-table @include
-  admin-action-button($color, $variant);
-```
+La référence rapide des tokens disponibles est dans `src/styles/CLAUDE.md`.
 
 ## 🔍 Méthodologie de Refactoring
 

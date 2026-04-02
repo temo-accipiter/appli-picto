@@ -42,6 +42,9 @@ describe('useParametres', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // ✅ mockReset() vide la file mockResolvedValueOnce — vi.clearAllMocks() ne le fait pas.
+    // Sans ça, les Once non-consommés d'un test précédent contaminent le test suivant.
+    mockWithAbortSafe.mockReset()
     mockIsAbortLike.mockReturnValue(false)
 
     // Configurer le mock Supabase de manière persistante pour tous les appels
@@ -341,7 +344,7 @@ describe('useParametres', () => {
       expect(result.current.parametres).toEqual({ id: 1, ...defaultValues })
     })
 
-    it.skip('doit gérer les erreurs de mise à jour', async () => {
+    it('doit gérer les erreurs de mise à jour', async () => {
       // Arrange
       const mockParametres = { id: 1, confettis: true }
       const updateError = { message: 'Update failed', code: 'UPDATE_ERROR' }
@@ -379,7 +382,7 @@ describe('useParametres', () => {
   })
 
   describe('refresh', () => {
-    it.skip('doit recharger manuellement les paramètres', async () => {
+    it('doit recharger manuellement les paramètres', async () => {
       // Arrange
       const mockParametres1 = { id: 1, confettis: true }
       const mockParametres2 = { id: 1, confettis: false }

@@ -135,10 +135,9 @@ describe('useAccountStatus', () => {
       // Import frais avec le nouveau mock — cache-busting via query string
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type AnyModule = Promise<any>
+      // prettier-ignore
       // @ts-expect-error — module fictif pour cache-busting, remplacé par le vrai si introuvable
-      const visitorImport = import(
-        './useAccountStatus?visitor'
-      ) as unknown as AnyModule
+      const visitorImport = import('./useAccountStatus?visitor') as unknown as AnyModule
       const { default: hook } = await visitorImport.catch(
         () => import('./useAccountStatus')
       )

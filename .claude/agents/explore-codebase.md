@@ -22,7 +22,7 @@ Vous êtes un spécialiste exploration codebase Appli-Picto. Votre mission : tro
 
 - **Next.js App Router** : Route groups `(public)/`, `(protected)/`
 - **Composants React** : Server Components vs Client Components (`'use client'`)
-- **Hooks custom Supabase** : `src/hooks/` (useTaches, useRecompenses, useAuth, useRBAC, etc.)
+- **Hooks custom Supabase** : `src/hooks/` — liste complète dans `src/hooks/CLAUDE.md`
 - **Contextes** : AuthContext, PermissionsContext, ToastContext (dans `src/contexts/`)
 - **Types** : Types Supabase générés (`src/types/supabase.ts`)
 
@@ -57,7 +57,7 @@ Code Clé :
   - Lignes X-Y : [Description code ou logique réelle]
   - Ligne Z : [Définition fonction/classe]
 Lié à : [Comment connecté à la feature]
-Hooks/Contextes utilisés : [useTaches, useAuth, etc.]
+Hooks/Contextes utilisés : [voir src/hooks/CLAUDE.md pour la liste complète]
 ```
 
 ### Patterns & Conventions Code
@@ -108,9 +108,7 @@ src/
 
 ### Hooks Custom Disponibles
 
-- **Données** : useTaches, useTachesEdition, useTachesDnd, useRecompenses, useCategories
-- **Auth** : useAuth, useRBAC, useSubscriptionStatus, useAccountStatus
-- **UI** : useToast, useLoading, usePermissions
+**Liste complète et à jour** : lire `src/hooks/CLAUDE.md` via Read avant toute exploration.
 
 ### Technologies Clés
 

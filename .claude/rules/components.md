@@ -28,36 +28,8 @@ paths:
 - ✅ Animations douces (`@include safe-transition()`)
 - ✅ Respect `prefers-reduced-motion`
 
-## Imports absolus obligatoires
+## Imports et styles
 
-```typescript
-// ✅ CORRECT
-import { useBankCards } from '@/hooks'
-import Modal from '@/components/shared/modal/Modal'
-
-// ❌ INTERDIT
-import { useBankCards } from '../../hooks'
-import Modal from '../shared/modal/Modal'
-```
-
-## SCSS Tokens-First
-
-**JAMAIS de valeurs hardcodées — TOUJOURS utiliser tokens design system**
-
-```scss
-// ✅ CORRECT
-.component {
-  padding: spacing('md');
-  color: text('primary');
-  border-radius: radius('md');
-}
-
-// ❌ INTERDIT
-.component {
-  padding: 16px;
-  color: #333333;
-  border-radius: 8px;
-}
-```
-
-→ Voir skill `sass-tokens-discipline` pour règles détaillées
+- Imports absolus : toujours `@/` — jamais de chemins relatifs
+- SCSS : toujours tokens — jamais valeurs hardcodées
+→ Skill `sass-tokens-discipline` | Tokens : `src/styles/CLAUDE.md`

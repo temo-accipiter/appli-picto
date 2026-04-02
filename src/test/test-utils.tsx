@@ -22,6 +22,7 @@ import {
   OfflineProvider,
   ChildProfileProvider,
 } from '@/contexts'
+import { RealtimeBankCardsProvider } from '@/contexts/RealtimeBankCardsContext'
 
 /**
  * Mock User type pour tests
@@ -43,13 +44,15 @@ export function AllTheProviders({ children }: AllTheProvidersProps) {
   return (
     <OfflineProvider>
       <AuthProvider>
-        <ChildProfileProvider>
-          <DisplayProvider>
-            <LoadingProvider>
-              <ToastProvider>{children}</ToastProvider>
-            </LoadingProvider>
-          </DisplayProvider>
-        </ChildProfileProvider>
+        <RealtimeBankCardsProvider>
+          <ChildProfileProvider>
+            <DisplayProvider>
+              <LoadingProvider>
+                <ToastProvider>{children}</ToastProvider>
+              </LoadingProvider>
+            </DisplayProvider>
+          </ChildProfileProvider>
+        </RealtimeBankCardsProvider>
       </AuthProvider>
     </OfflineProvider>
   )

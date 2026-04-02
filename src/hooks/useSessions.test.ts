@@ -9,6 +9,12 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: {
     from: (...args: unknown[]) => fromMock(...args),
     rpc: (...args: unknown[]) => rpcMock(...args),
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+    }),
+    removeChannel: vi.fn(),
   },
 }))
 
@@ -156,12 +162,8 @@ describe('useSessions', () => {
       await result.current.resetSession()
     })
 
-    expect(rpcMock).toHaveBeenCalledWith(
-      'reset_active_started_session_for_timeline',
-      {
-        p_timeline_id: 'timeline-1',
-        p_reason: 'manual_reset_from_edition',
-      }
-    )
+    expect(rpcMock).toHaveBeenCalledWith('hard_reset_timeline_session', {
+      p_timeline_id: 'timeline-1',
+    })
   })
 })

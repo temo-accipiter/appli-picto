@@ -140,4 +140,4 @@ Before writing code for Planning, Token Economy, or Sequencing, ask:
 
 ## Reference
 
-Full details: see [FRONTEND_CONTRACT.md](../../FRONTEND_CONTRACT.md) Annexe C.
+Full details: see [FRONTEND_CONTRACT.md](../../../docs/refonte_front/FRONTEND_CONTRACT.md) Annexe C.

@@ -56,9 +56,8 @@ pnpm test
 
 ### Erreurs TypeScript
 
-- **329 erreurs connues** : Ignorer (migration Next.js en cours)
-- **Nouvelles erreurs** : Corriger immédiatement
-- **Comment distinguer** : Comparer avec `.github/issues/ts-remaining-errors.md`
+- **0 erreur connue** : `pnpm type-check` doit passer proprement
+- **Toute nouvelle erreur** : Corriger immédiatement avant commit
 
 ### Erreurs de build
 

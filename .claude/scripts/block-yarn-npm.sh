@@ -1,18 +1,7 @@
 #!/bin/bash
 # Script de blocage yarn/npm pour Appli-Picto
 # Ce projet utilise UNIQUEMENT pnpm
+# Format JSON deny — bloque réellement l'exécution
 
-echo ""
-echo "❌ ERREUR: Utilisation de yarn/npm interdite"
-echo ""
-echo "→ Ce projet utilise UNIQUEMENT pnpm"
-echo ""
-echo "Commandes correctes:"
-echo "  ✅ pnpm install"
-echo "  ✅ pnpm dev"
-echo "  ✅ pnpm build"
-echo "  ✅ pnpm test"
-echo ""
-echo "→ Voir CLAUDE.md pour la liste complète des commandes"
-echo ""
-exit 1
+echo '{"decision": "block", "reason": "Ce projet utilise uniquement pnpm. Commandes correctes : pnpm install | pnpm dev | pnpm build | pnpm test | pnpm add <pkg>"}'
+exit 0

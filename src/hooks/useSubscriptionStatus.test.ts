@@ -1,406 +1,120 @@
-// src/hooks/useSubscriptionStatus.test.js
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/hooks/useSubscriptionStatus.test.ts
 /**
- * Tests pour le hook useSubscriptionStatus
+ * Tests pour le hook useSubscriptionStatus (wrapper mince sur useAccountStatus)
+ *
+ * Ce hook ne parle PAS à Supabase — il délègue à useAccountStatus.
+ * On mocke useAccountStatus, pas Supabase.
  *
  * Vérifie :
- * - Chargement du statut d'abonnement Stripe
- * - Gestion des différents statuts (active, trialing, past_due, paused, canceled)
- * - Flags booléens (isActive, isTrial)
- * - Calcul des jours jusqu'à expiration
- * - Détection d'expiration imminente (isExpiringSoon)
- * - Gestion des erreurs et fallback
+ * - Propagation de loading/error depuis useAccountStatus
+ * - Cohérence isActive = isSubscriber
+ * - Calcul de statusDisplay selon status
+ * - Valeurs fixes (isTrial, daysUntilExpiry, isExpiringSoon = toujours false/null)
  */
 
-import { renderHook, waitFor } from '@testing-library/react'
-import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
+import { renderHook } from '@testing-library/react'
+import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-// ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
-const { mockSupabase, mockAuthContext } = vi.hoisted(() => ({
-  mockSupabase: {
-    from: vi.fn(),
-  },
-  mockAuthContext: {
-    user: { id: 'test-user-123' },
-    authReady: true,
-  },
+const { mockUseAccountStatus } = vi.hoisted(() => ({
+  mockUseAccountStatus: vi.fn(),
 }))
 
-vi.mock('@/utils/supabaseClient', () => ({
-  supabase: mockSupabase,
+vi.mock('./useAccountStatus', () => ({
+  default: mockUseAccountStatus,
 }))
 
-vi.mock('@/contexts/AuthContext', () => ({
-  AuthContext: {
-    _currentValue: mockAuthContext,
-  },
-}))
-
-// Mock useContext pour retourner notre mockAuthContext
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react')
-  return {
-    ...actual,
-    useContext: vi.fn(() => mockAuthContext),
-  }
-})
+import useSubscriptionStatus from './useSubscriptionStatus'
 
 describe('useSubscriptionStatus', () => {
-  // Import dynamique du hook (après les mocks)
-  let useSubscriptionStatus
-  beforeAll(async () => {
-    useSubscriptionStatus = (await import('./useSubscriptionStatus')).default
-  })
-
   beforeEach(() => {
     vi.clearAllMocks()
-    mockAuthContext.user = { id: 'test-user-123' }
-    mockAuthContext.authReady = true
   })
 
-  describe('Chargement du statut', () => {
-    it('doit charger un abonnement actif', async () => {
-      // Arrange
-      const futureDate = new Date(Date.now() + 30 * 24 * 3600 * 1000) // +30 jours
-      const mockAbonnement = {
-        status: 'active',
-        current_period_end: futureDate.toISOString(),
-        cancel_at: null,
-        cancel_at_period_end: false,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-        expect(result.current.status).toBe('active')
-        expect(result.current.isActive).toBe(true)
-        expect(result.current.isTrial).toBe(false)
-        expect(result.current.daysUntilExpiry).toBeGreaterThan(25)
-        expect(result.current.isExpiringSoon).toBe(false)
-      })
+  it('propage loading et error depuis useAccountStatus', () => {
+    mockUseAccountStatus.mockReturnValue({
+      status: null,
+      isSubscriber: false,
+      loading: true,
+      error: new Error('réseau'),
     })
 
-    it("doit détecter un abonnement en période d'essai", async () => {
-      // Arrange
-      const futureDate = new Date(Date.now() + 14 * 24 * 3600 * 1000) // +14 jours
-      const mockAbonnement = {
-        status: 'trialing',
-        current_period_end: futureDate.toISOString(),
-        cancel_at: null,
-        cancel_at_period_end: false,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
+    const { result } = renderHook(() => useSubscriptionStatus())
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
+    expect(result.current.loading).toBe(true)
+    expect(result.current.error).toBeInstanceOf(Error)
+  })
 
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.status).toBe('trialing')
-        expect(result.current.isActive).toBe(true) // trialing est considéré actif
-        expect(result.current.isTrial).toBe(true)
-      })
+  it('isActive = isSubscriber, status propagé tel quel', () => {
+    mockUseAccountStatus.mockReturnValue({
+      status: 'subscriber',
+      isSubscriber: true,
+      loading: false,
+      error: null,
     })
 
-    it('doit détecter un abonnement avec paiement en retard', async () => {
-      // Arrange
-      const futureDate = new Date(Date.now() + 7 * 24 * 3600 * 1000) // +7 jours
-      const mockAbonnement = {
-        status: 'past_due',
-        current_period_end: futureDate.toISOString(),
-        cancel_at: null,
-        cancel_at_period_end: false,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
+    const { result } = renderHook(() => useSubscriptionStatus())
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
+    expect(result.current.status).toBe('subscriber')
+    expect(result.current.isSubscriber).toBe(true)
+    expect(result.current.isActive).toBe(true)
+  })
 
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.status).toBe('past_due')
-        expect(result.current.isActive).toBe(true) // past_due est toujours actif
-      })
+  it('calcule statusDisplay selon status', () => {
+    mockUseAccountStatus.mockReturnValue({
+      status: 'subscriber',
+      isSubscriber: true,
+      loading: false,
+      error: null,
     })
 
-    it('doit détecter un abonnement en pause', async () => {
-      // Arrange
-      const futureDate = new Date(Date.now() + 30 * 24 * 3600 * 1000) // +30 jours
-      const mockAbonnement = {
-        status: 'paused',
-        current_period_end: futureDate.toISOString(),
-        cancel_at: null,
-        cancel_at_period_end: false,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.status).toBe('paused')
-        expect(result.current.isActive).toBe(true) // paused est toujours actif
-      })
+    const { result: r1 } = renderHook(() => useSubscriptionStatus())
+    expect(r1.current.statusDisplay).toEqual({
+      label: 'Actif',
+      icon: '',
+      color: 'success',
     })
 
-    it('doit détecter un abonnement annulé', async () => {
-      // Arrange
-      const mockAbonnement = {
-        status: 'canceled',
-        current_period_end: null,
-        cancel_at: null,
-        cancel_at_period_end: true,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.status).toBe('canceled')
-        expect(result.current.isActive).toBe(false) // canceled n'est pas actif
-      })
+    mockUseAccountStatus.mockReturnValue({
+      status: 'free',
+      isSubscriber: false,
+      loading: false,
+      error: null,
+    })
+    const { result: r2 } = renderHook(() => useSubscriptionStatus())
+    expect(r2.current.statusDisplay).toEqual({
+      label: 'Gratuit',
+      icon: '',
+      color: 'default',
     })
 
-    it('doit détecter un abonnement expirant bientôt (< 7 jours)', async () => {
-      // Arrange
-      const soonDate = new Date(Date.now() + 5 * 24 * 3600 * 1000) // +5 jours
-      const mockAbonnement = {
-        status: 'active',
-        current_period_end: soonDate.toISOString(),
-        cancel_at: null,
-        cancel_at_period_end: false,
-        price_id: 'price_123',
-        plan: 'premium',
-      }
+    mockUseAccountStatus.mockReturnValue({
+      status: 'admin',
+      isSubscriber: false,
+      loading: false,
+      error: null,
+    })
+    const { result: r3 } = renderHook(() => useSubscriptionStatus())
+    expect(r3.current.statusDisplay).toEqual({
+      label: 'Admin',
+      icon: '',
+      color: 'info',
+    })
+  })
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: mockAbonnement,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.isExpiringSoon).toBe(true)
-        expect(result.current.daysUntilExpiry).toBeLessThanOrEqual(7)
-      })
+  it('renvoie toujours isTrial=false, daysUntilExpiry=null, isExpiringSoon=false', () => {
+    mockUseAccountStatus.mockReturnValue({
+      status: 'subscriber',
+      isSubscriber: true,
+      loading: false,
+      error: null,
     })
 
-    it("doit gérer le cas où aucun abonnement n'existe", async () => {
-      // Arrange
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
+    const { result } = renderHook(() => useSubscriptionStatus())
 
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-        expect(result.current.status).toBe(null)
-        expect(result.current.isActive).toBe(false)
-        expect(result.current.isTrial).toBe(false)
-        expect(result.current.daysUntilExpiry).toBe(null)
-        expect(result.current.isExpiringSoon).toBe(false)
-      })
-    })
-
-    it("doit fallback à null en cas d'erreur", async () => {
-      // Arrange
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: { message: 'Network error', code: 'PGRST301' },
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-        expect(result.current.status).toBe(null)
-        expect(result.current.isActive).toBe(false)
-      })
-    })
-
-    it('doit retourner loading=true si authReady=false', async () => {
-      // Arrange
-      mockAuthContext.authReady = false
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.loading).toBe(true)
-      })
-    })
-
-    it('doit gérer le cas où user=null', async () => {
-      // Arrange
-      ;(mockAuthContext as any).user = null
-      mockAuthContext.authReady = true
-
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            order: vi.fn().mockReturnValue({
-              limit: vi.fn().mockReturnValue({
-                maybeSingle: vi.fn().mockResolvedValue({
-                  data: null,
-                  error: null,
-                }),
-              }),
-            }),
-          }),
-        }),
-      })
-
-      // Act
-      const { result } = renderHook(() => useSubscriptionStatus())
-
-      // Assert
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-        expect(result.current.status).toBe(null)
-        expect(result.current.currentPeriodEnd).toBe(null)
-      })
-    })
+    expect(result.current.isTrial).toBe(false)
+    expect(result.current.daysUntilExpiry).toBeNull()
+    expect(result.current.isExpiringSoon).toBe(false)
+    expect(result.current.currentPeriodEnd).toBeNull()
+    expect(result.current.subscription).toBeNull()
   })
 })

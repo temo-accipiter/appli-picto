@@ -161,4 +161,4 @@ Before deploying ANY Tableau component, verify:
 
 ## Reference
 
-Full details: see `FRONTEND_CONTRACT.md` §1.2, §1.3, §3.1, §4.3, §6.2, §8.1 (preferences).
+Full details: see `docs/refonte_front/FRONTEND_CONTRACT.md` §1.2, §1.3, §3.1, §4.3, §6.2, §8.1 (preferences).

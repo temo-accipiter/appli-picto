@@ -1,20 +1,28 @@
-// src/hooks/useCategories.test.js
+// src/hooks/useCategories.test.ts
 /**
  * Tests pour le hook useCategories
  *
+ * Schéma actuel (post-migration S12) :
+ * - Table : categories(id, name, account_id, is_system, created_at, updated_at)
+ * - Fetch : .select().eq('account_id', userId).order('is_system').order('name').abortSignal()
+ * - addCategory(name: string) — string, pas objet
+ * - updateCategory(id, name) — par id
+ * - deleteCategory(id) — par id
+ * - systemCategory : catégorie with is_system=true (lecture seule côté front)
+ *
  * Vérifie :
- * - Chargement des catégories utilisateur + globales
+ * - Chargement des catégories de l'utilisateur
  * - Ajout de catégorie
- * - Mise à jour de catégorie
  * - Suppression de catégorie
- * - Filtre catégories globales (user_id IS NULL)
+ * - Gestion erreurs
+ * - Cas user non connecté
  */
 
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-// ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
-const { mockSupabase, mockUser, mockToast } = vi.hoisted(() => ({
+// ✅ vi.hoisted() pour tous les mocks (hoisting Vitest)
+const { mockSupabase, mockUser, mockToast, mockUseAuth } = vi.hoisted(() => ({
   mockSupabase: {
     from: vi.fn(),
   },
@@ -24,6 +32,7 @@ const { mockSupabase, mockUser, mockToast } = vi.hoisted(() => ({
   mockToast: {
     show: vi.fn(),
   },
+  mockUseAuth: vi.fn(),
 }))
 
 vi.mock('@/utils/supabaseClient', () => ({
@@ -34,206 +43,155 @@ vi.mock('@/hooks', async importOriginal => {
   const actual = await importOriginal<typeof import('@/hooks')>()
   return {
     ...actual,
-    useAuth: vi.fn(() => ({
-      user: mockUser,
-      authReady: true,
-    })),
-    useI18n: vi.fn(() => ({
-      t: (key: string) => key,
-      i18n: { language: 'fr' },
-    })),
+    useAuth: mockUseAuth,
     useToast: vi.fn(() => mockToast),
   }
 })
-
-vi.mock('@/hooks/useAuth', () => ({
-  default: () => ({ user: mockUser, authReady: true }),
-}))
 
 vi.mock('@/contexts', () => ({
   useToast: () => mockToast,
   useLoading: () => ({ setLoading: vi.fn() }),
 }))
 
-// Import direct au lieu de dynamique
+// Import direct (après les mocks)
 import useCategories from './useCategories'
+
+/**
+ * Chaîne Supabase pour le fetch des catégories :
+ * .from('categories').select('*').eq(account_id, userId)
+ *   .order('is_system', { ascending: false })
+ *   .order('name', { ascending: true })
+ *   .abortSignal(signal)
+ */
+const mockFetchChain = (data: unknown, error: unknown = null) => ({
+  select: vi.fn().mockReturnValue({
+    eq: vi.fn().mockReturnValue({
+      order: vi.fn().mockReturnValue({
+        order: vi.fn().mockReturnValue({
+          abortSignal: vi.fn().mockResolvedValue({ data, error }),
+        }),
+      }),
+    }),
+  }),
+})
 
 describe('useCategories', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Par défaut : user connecté
+    mockUseAuth.mockReturnValue({ user: mockUser, authReady: true })
   })
 
   describe('Chargement des catégories', () => {
-    // ⚠️ SKIP: Problème de mocking Vitest avec useAuth qui retourne toujours null
-    // Le hook fonctionne correctement en production, c'est un problème de test uniquement
-    // TODO: Investiguer pourquoi vi.mock('@/hooks/useAuth') ne fonctionne pas
-    it.skip("doit charger les catégories de l'utilisateur ET les catégories globales", async () => {
-      // Arrange
+    it("doit charger les catégories de l'utilisateur", async () => {
       const mockCategories = [
-        { id: '1', label: 'Routine', value: 'routine', account_id: null }, // Globale
+        {
+          id: '1',
+          name: 'Routine',
+          account_id: 'test-user-123',
+          is_system: false,
+        },
         {
           id: '2',
-          label: 'École',
-          value: 'ecole',
+          name: 'École',
           account_id: 'test-user-123',
-        }, // Utilisateur
-        { id: '3', label: 'Loisirs', value: 'loisirs', account_id: null }, // Globale
+          is_system: false,
+        },
+        {
+          id: '3',
+          name: 'Sans catégorie',
+          account_id: 'test-user-123',
+          is_system: true,
+        },
       ]
 
-      // Mock simple comme useTaches
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          or: vi.fn().mockReturnValue({
-            order: vi.fn().mockResolvedValue({
-              data: mockCategories,
-              error: null,
-            }),
-          }),
-        }),
-      })
+      mockSupabase.from.mockReturnValue(mockFetchChain(mockCategories))
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      // Assert
       await waitFor(() => {
-        expect(result.current.categories).toHaveLength(3)
         expect(result.current.loading).toBe(false)
+        expect(result.current.categories).toHaveLength(3)
       })
 
-      // Vérifier que les catégories globales ET utilisateur sont présentes
-      const globalCats = result.current.categories.filter(
-        c => c.account_id === null
-      )
-      const userCats = result.current.categories.filter(
-        c => c.account_id === 'test-user-123'
-      )
-
-      expect(globalCats).toHaveLength(2) // Routine + Loisirs
-      expect(userCats).toHaveLength(1) // École
+      // La catégorie système est exposée séparément
+      expect(result.current.systemCategory?.is_system).toBe(true)
     })
 
     it("doit retourner un tableau vide si pas d'utilisateur", async () => {
-      // Arrange - Mock user = null dynamiquement
-      const useAuthMock = await import('@/hooks').then(mod => mod.useAuth)
-      if (vi.isMockFunction(useAuthMock)) {
-        useAuthMock.mockReturnValueOnce({ user: null, authReady: true })
-      }
+      mockUseAuth.mockReturnValue({ user: null, authReady: true })
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      // Assert
       await waitFor(() => {
         expect(result.current.categories).toEqual([])
         expect(result.current.loading).toBe(false)
       })
     })
 
-    it.skip('doit gérer les erreurs de chargement', async () => {
-      // Arrange
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
+    it('doit gérer les erreurs de chargement', async () => {
+      mockSupabase.from.mockReturnValue(
+        mockFetchChain(null, { message: 'Network error', code: 'PGRST301' })
+      )
 
-      mockSupabase.from.mockReturnValue({
-        select: vi.fn().mockReturnValue({
-          or: vi.fn().mockReturnValue({
-            order: vi.fn().mockResolvedValue({
-              data: null,
-              error: { message: 'Network error', code: 'PGRST301' },
-            }),
-          }),
-        }),
-      })
-
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      // Assert
       await waitFor(() => {
         expect(result.current.error).toBeTruthy()
         expect(result.current.loading).toBe(false)
-        expect(consoleErrorSpy).toHaveBeenCalledWith(
-          expect.stringContaining('Erreur chargement catégories')
-        )
       })
-
-      consoleErrorSpy.mockRestore()
     })
   })
 
   describe('addCategory', () => {
-    it.skip('doit ajouter une nouvelle catégorie', async () => {
-      // Arrange
-      const mockExistingCategories = [
-        { id: '1', label: 'Routine', value: 'routine', account_id: null },
+    it('doit ajouter une nouvelle catégorie', async () => {
+      const existingCategories = [
+        {
+          id: '1',
+          name: 'Routine',
+          account_id: 'test-user-123',
+          is_system: false,
+        },
       ]
-
-      const mockNewCategory = {
+      const newCategory = {
         id: '2',
-        label: 'Sport',
-        value: 'sport',
+        name: 'Sport',
         account_id: 'test-user-123',
+        is_system: false,
       }
 
-      let fetchCount = 0
-
-      // Mock différent pour chaque appel (initial + après insert)
-      mockSupabase.from.mockImplementation(table => {
-        if (table === 'categories') {
-          fetchCount++
-          return {
+      mockSupabase.from
+        // Premier from() → fetch initial
+        .mockReturnValueOnce(mockFetchChain(existingCategories))
+        // Deuxième from() → insert
+        .mockReturnValueOnce({
+          insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
-              or: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data:
-                    fetchCount === 1
-                      ? mockExistingCategories
-                      : [...mockExistingCategories, mockNewCategory],
-                  error: null,
-                }),
-              }),
+              single: vi
+                .fn()
+                .mockResolvedValue({ data: newCategory, error: null }),
             }),
-            insert: vi.fn().mockResolvedValue({ error: null }),
-          }
-        }
-      })
+          }),
+        })
+        // Troisième from() → fetch après refresh
+        .mockReturnValueOnce(
+          mockFetchChain([...existingCategories, newCategory])
+        )
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(1)
-      })
+      await waitFor(() => expect(result.current.loading).toBe(false))
 
       await act(async () => {
         await result.current.addCategory('Sport')
       })
 
-      // Assert
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(2)
-        expect(mockToast.show).toHaveBeenCalledWith(
-          'Catégorie ajoutée',
-          'success'
-        )
-      })
+      expect(mockToast.show).toHaveBeenCalledWith('Catégorie créée', 'success')
     })
 
     it("doit gérer les erreurs d'ajout", async () => {
-      // Arrange
       mockSupabase.from
-        .mockReturnValueOnce({
-          select: vi.fn().mockReturnValue({
-            or: vi.fn().mockReturnValue({
-              order: vi.fn().mockResolvedValue({
-                data: [],
-                error: null,
-              }),
-            }),
-          }),
-        })
+        .mockReturnValueOnce(mockFetchChain([]))
         .mockReturnValueOnce({
           insert: vi.fn().mockReturnValue({
             select: vi.fn().mockReturnValue({
@@ -245,18 +203,14 @@ describe('useCategories', () => {
           }),
         })
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      await waitFor(() => {
-        expect(result.current.loading).toBe(false)
-      })
+      await waitFor(() => expect(result.current.loading).toBe(false))
 
       const response = await act(async () => {
         return await result.current.addCategory('Duplicate')
       })
 
-      // Assert
       expect(response.error).toBeTruthy()
       expect(mockToast.show).toHaveBeenCalledWith(
         'Impossible de créer la catégorie',
@@ -266,177 +220,119 @@ describe('useCategories', () => {
   })
 
   describe('updateCategory', () => {
-    it.skip("doit mettre à jour le label d'une catégorie", async () => {
-      // Arrange
+    it("doit mettre à jour le nom d'une catégorie", async () => {
       const mockCategories = [
         {
           id: '1',
-          label: 'Routine',
-          value: 'routine',
+          name: 'Routine',
           account_id: 'test-user-123',
+          is_system: false,
         },
       ]
 
-      let fetchCount = 0
-
-      mockSupabase.from.mockImplementation(table => {
-        if (table === 'categories') {
-          fetchCount++
-          return {
-            select: vi.fn().mockReturnValue({
-              or: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data:
-                    fetchCount === 1
-                      ? mockCategories
-                      : [{ ...mockCategories[0], label: 'Routine Modifiée' }],
-                  error: null,
-                }),
-              }),
+      mockSupabase.from
+        .mockReturnValueOnce(mockFetchChain(mockCategories))
+        .mockReturnValueOnce({
+          update: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
             }),
-            update: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                or: vi.fn().mockResolvedValue({ error: null }),
-              }),
-            }),
-          }
-        }
-      })
+          }),
+        })
+        .mockReturnValueOnce(
+          mockFetchChain([{ ...mockCategories[0], name: 'Routine Modifiée' }])
+        )
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(1)
-      })
+      await waitFor(() => expect(result.current.loading).toBe(false))
 
       await act(async () => {
         await result.current.updateCategory('1', 'Routine Modifiée')
       })
 
-      // Assert
-      await waitFor(() => {
-        expect(result.current.categories[0]?.name).toBe('Routine Modifiée')
-        expect(mockToast.show).toHaveBeenCalledWith(
-          'Catégorie modifiée',
-          'success'
-        )
-      })
+      expect(mockToast.show).toHaveBeenCalledWith(
+        'Catégorie modifiée',
+        'success'
+      )
     })
   })
 
   describe('deleteCategory', () => {
-    it.skip('doit supprimer une catégorie par value (pas id)', async () => {
-      // Arrange
+    it('doit supprimer une catégorie par id', async () => {
       const mockCategories = [
         {
           id: '1',
-          label: 'Routine',
-          value: 'routine',
+          name: 'Routine',
           account_id: 'test-user-123',
+          is_system: false,
         },
         {
           id: '2',
-          label: 'École',
-          value: 'ecole',
+          name: 'École',
           account_id: 'test-user-123',
+          is_system: false,
         },
       ]
 
-      let fetchCount = 0
-
-      mockSupabase.from.mockImplementation(table => {
-        if (table === 'categories') {
-          fetchCount++
-          return {
-            select: vi.fn().mockReturnValue({
-              or: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data: fetchCount === 1 ? mockCategories : [mockCategories[1]],
-                  error: null,
-                }),
-              }),
+      mockSupabase.from
+        .mockReturnValueOnce(mockFetchChain(mockCategories))
+        .mockReturnValueOnce({
+          delete: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ error: null }),
             }),
-            delete: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({
-                eq: vi.fn().mockResolvedValue({ error: null }),
-              }),
-            }),
-          }
-        }
-      })
+          }),
+        })
+        .mockReturnValueOnce(mockFetchChain([mockCategories[1]]))
 
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(2)
-      })
+      await waitFor(() => expect(result.current.loading).toBe(false))
 
       await act(async () => {
-        await result.current.deleteCategory('routine') // ⚠️ Par value, pas id
+        await result.current.deleteCategory('1')
       })
 
-      // Assert
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(1)
-        expect(result.current.categories[0]?.id).toBe('ecole')
-        expect(mockToast.show).toHaveBeenCalledWith(
-          'Catégorie supprimée',
-          'success'
-        )
-      })
+      expect(mockToast.show).toHaveBeenCalledWith(
+        'Catégorie supprimée',
+        'success'
+      )
     })
   })
 
   describe('refresh', () => {
-    it.skip('doit recharger manuellement les catégories', async () => {
-      // Arrange
-      const mockCategories = [
-        { id: '1', label: 'Routine', value: 'routine', account_id: null },
+    it('doit recharger manuellement les catégories', async () => {
+      const initial = [
+        {
+          id: '1',
+          name: 'Routine',
+          account_id: 'test-user-123',
+          is_system: false,
+        },
+      ]
+      const afterRefresh = [
+        ...initial,
+        {
+          id: '2',
+          name: 'Nouvelle',
+          account_id: 'test-user-123',
+          is_system: false,
+        },
       ]
 
-      let fetchCount = 0
+      mockSupabase.from
+        .mockReturnValueOnce(mockFetchChain(initial))
+        .mockReturnValueOnce(mockFetchChain(afterRefresh))
 
-      mockSupabase.from.mockImplementation(table => {
-        if (table === 'categories') {
-          fetchCount++
-          return {
-            select: vi.fn().mockReturnValue({
-              or: vi.fn().mockReturnValue({
-                order: vi.fn().mockResolvedValue({
-                  data:
-                    fetchCount === 1
-                      ? mockCategories
-                      : [
-                          ...mockCategories,
-                          {
-                            id: '2',
-                            label: 'Nouvelle',
-                            value: 'nouvelle',
-                            account_id: 'test-user-123',
-                          },
-                        ],
-                  error: null,
-                }),
-              }),
-            }),
-          }
-        }
-      })
-
-      // Act
       const { result } = renderHook(() => useCategories())
 
-      await waitFor(() => {
-        expect(result.current.categories).toHaveLength(1)
-      })
+      await waitFor(() => expect(result.current.categories).toHaveLength(1))
 
       await act(async () => {
-        await result.current.refresh()
+        result.current.refresh()
       })
 
-      // Assert
       await waitFor(() => {
         expect(result.current.categories).toHaveLength(2)
       })

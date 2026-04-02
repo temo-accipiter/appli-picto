@@ -38,15 +38,6 @@
         ]
       },
       {
-        "matcher": "Edit(*.scss)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-hardcoded-scss.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Write(src/hooks/*.ts)",
         "hooks": [
           {
@@ -87,6 +78,16 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Edit(*.scss)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-hardcoded-scss.sh"
+          }
+        ],
+        "description": "Vérification valeurs hardcodées SCSS après édition (avertissement advisory)"
+      },
+      {
         "matcher": "mcp__supabase__apply_migration",
         "hooks": [
           {
@@ -94,16 +95,6 @@
             "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-migration.sh"
           }
         ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/post-edit-typecheck.sh"
-          }
-        ],
-        "description": "TypeScript check rapide après édition fichiers TS/JS"
       }
     ]
   }

@@ -13,19 +13,24 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
 
-// ✅ Utiliser vi.hoisted() pour les mocks (hoisting Vitest)
+// ✅ vi.hoisted() pour les mocks — mockUser est une référence STABLE
+// (si le mock retourne un nouvel objet à chaque appel, useCallback([user])
+// se recréé à chaque rendu → l'effet re-fetch → consomme les mocks à tort)
 const { mockSupabase, mockWithAbortSafe, mockIsAbortLike, mockUseAuth } =
-  vi.hoisted(() => ({
-    mockSupabase: {
-      from: vi.fn(),
-    },
-    mockWithAbortSafe: vi.fn(),
-    mockIsAbortLike: vi.fn(() => false),
-    mockUseAuth: vi.fn(() => ({
-      user: { id: 'test-user-id', email: 'test@example.com' },
-      authReady: true,
-    })),
-  }))
+  vi.hoisted(() => {
+    const stableUser = { id: 'test-user-id', email: 'test@example.com' }
+    return {
+      mockSupabase: {
+        from: vi.fn(),
+      },
+      mockWithAbortSafe: vi.fn(),
+      mockIsAbortLike: vi.fn(() => false),
+      mockUseAuth: vi.fn(() => ({
+        user: stableUser as { id: string; email: string } | null,
+        authReady: true,
+      })),
+    }
+  })
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
@@ -148,7 +153,7 @@ describe('useAccountPreferences', () => {
     expect(result.current.error).toBeNull()
   })
 
-  it.skip('doit mettre à jour les préférences avec upsert', async () => {
+  it('doit mettre à jour les préférences avec upsert', async () => {
     const mockUpdatedPreferences = {
       account_id: 'test-user-id',
       reduced_motion: false,
@@ -233,7 +238,7 @@ describe('useAccountPreferences', () => {
   it('doit gérer le cas user non connecté', async () => {
     // Mock user null
     mockUseAuth.mockReturnValue({
-      user: { id: '', email: '' },
+      user: null,
       authReady: true,
     })
 
