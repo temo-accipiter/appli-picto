@@ -71,6 +71,8 @@ export { useI18n } from './useI18n'
 // S11 — Plateforme (account_preferences)
 export { default as useAccountPreferences } from './useAccountPreferences'
 // S12 — Administration (support info via admin_get_account_support_info)
+export { default as useSubscriptionLogs } from './useSubscriptionLogs'
+export type { SubscriptionLog, LogFilterType } from './useSubscriptionLogs'
 export { default as useAdminSupportInfo } from './useAdminSupportInfo'
 export type {
   AdminSupportAccountInfo,

@@ -70,9 +70,14 @@ describe('useCategories', () => {
     it.skip("doit charger les catégories de l'utilisateur ET les catégories globales", async () => {
       // Arrange
       const mockCategories = [
-        { id: '1', label: 'Routine', value: 'routine', user_id: null }, // Globale
-        { id: '2', label: 'École', value: 'ecole', user_id: 'test-user-123' }, // Utilisateur
-        { id: '3', label: 'Loisirs', value: 'loisirs', user_id: null }, // Globale
+        { id: '1', label: 'Routine', value: 'routine', account_id: null }, // Globale
+        {
+          id: '2',
+          label: 'École',
+          value: 'ecole',
+          account_id: 'test-user-123',
+        }, // Utilisateur
+        { id: '3', label: 'Loisirs', value: 'loisirs', account_id: null }, // Globale
       ]
 
       // Mock simple comme useTaches
@@ -98,10 +103,10 @@ describe('useCategories', () => {
 
       // Vérifier que les catégories globales ET utilisateur sont présentes
       const globalCats = result.current.categories.filter(
-        c => c.user_id === null
+        c => c.account_id === null
       )
       const userCats = result.current.categories.filter(
-        c => c.user_id === 'test-user-123'
+        c => c.account_id === 'test-user-123'
       )
 
       expect(globalCats).toHaveLength(2) // Routine + Loisirs
@@ -162,14 +167,14 @@ describe('useCategories', () => {
     it.skip('doit ajouter une nouvelle catégorie', async () => {
       // Arrange
       const mockExistingCategories = [
-        { id: '1', label: 'Routine', value: 'routine', user_id: null },
+        { id: '1', label: 'Routine', value: 'routine', account_id: null },
       ]
 
       const mockNewCategory = {
         id: '2',
         label: 'Sport',
         value: 'sport',
-        user_id: 'test-user-123',
+        account_id: 'test-user-123',
       }
 
       let fetchCount = 0
@@ -203,10 +208,7 @@ describe('useCategories', () => {
       })
 
       await act(async () => {
-        await result.current.addCategory({
-          label: 'Sport',
-          value: 'sport',
-        })
+        await result.current.addCategory('Sport')
       })
 
       // Assert
@@ -271,7 +273,7 @@ describe('useCategories', () => {
           id: '1',
           label: 'Routine',
           value: 'routine',
-          user_id: 'test-user-123',
+          account_id: 'test-user-123',
         },
       ]
 
@@ -314,7 +316,7 @@ describe('useCategories', () => {
 
       // Assert
       await waitFor(() => {
-        expect(result.current.categories[0]?.label).toBe('Routine Modifiée')
+        expect(result.current.categories[0]?.name).toBe('Routine Modifiée')
         expect(mockToast.show).toHaveBeenCalledWith(
           'Catégorie modifiée',
           'success'
@@ -331,9 +333,14 @@ describe('useCategories', () => {
           id: '1',
           label: 'Routine',
           value: 'routine',
-          user_id: 'test-user-123',
+          account_id: 'test-user-123',
         },
-        { id: '2', label: 'École', value: 'ecole', user_id: 'test-user-123' },
+        {
+          id: '2',
+          label: 'École',
+          value: 'ecole',
+          account_id: 'test-user-123',
+        },
       ]
 
       let fetchCount = 0
@@ -373,7 +380,7 @@ describe('useCategories', () => {
       // Assert
       await waitFor(() => {
         expect(result.current.categories).toHaveLength(1)
-        expect(result.current.categories[0]?.value).toBe('ecole')
+        expect(result.current.categories[0]?.id).toBe('ecole')
         expect(mockToast.show).toHaveBeenCalledWith(
           'Catégorie supprimée',
           'success'
@@ -386,7 +393,7 @@ describe('useCategories', () => {
     it.skip('doit recharger manuellement les catégories', async () => {
       // Arrange
       const mockCategories = [
-        { id: '1', label: 'Routine', value: 'routine', user_id: null },
+        { id: '1', label: 'Routine', value: 'routine', account_id: null },
       ]
 
       let fetchCount = 0
@@ -407,7 +414,7 @@ describe('useCategories', () => {
                             id: '2',
                             label: 'Nouvelle',
                             value: 'nouvelle',
-                            user_id: 'test-user-123',
+                            account_id: 'test-user-123',
                           },
                         ],
                   error: null,

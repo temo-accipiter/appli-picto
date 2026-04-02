@@ -233,7 +233,7 @@ describe('useAccountPreferences', () => {
   it('doit gérer le cas user non connecté', async () => {
     // Mock user null
     mockUseAuth.mockReturnValue({
-      user: null,
+      user: { id: '', email: '' },
       authReady: true,
     })
 

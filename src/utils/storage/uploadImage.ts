@@ -177,7 +177,10 @@ export async function uploadImage(
   if (error) {
     console.error('❌ [uploadImage] Erreur Storage:')
     console.error('   • Message:', error.message)
-    console.error('   • Status:', error.statusCode || 'N/A')
+    console.error(
+      '   • Status:',
+      (error as unknown as Record<string, unknown>).statusCode || 'N/A'
+    )
     console.error('   • Error object:', JSON.stringify(error, null, 2))
     console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     return { path: null, url: null, error }

@@ -41,13 +41,13 @@ export default function useTachesDnd(onChange, reload = 0) {
 
       try {
         const { data, error, aborted } = await withAbortSafe(
-          supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any)
             .from('taches')
             .select('*')
             .eq('user_id', user.id) // 🔐 visibilité sécurisée
             .eq('aujourdhui', true)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .order('position', { ascending: true }) as any
+            .order('position', { ascending: true })
         )
 
         // 1) Requête annulée (Firefox/Safari) → on sort sans bruit
@@ -108,7 +108,7 @@ export default function useTachesDnd(onChange, reload = 0) {
         const doneCount = Object.values(initDone).filter(Boolean).length
         onChangeRef.current?.(doneCount, rows.length)
       } catch (err) {
-        // Abort (unmount/re-render) → pas d’erreur rouge
+        // Abort (unmount/re-render) → pas d'erreur rouge
         if (isAbortLike(err)) {
           if (process.env.NODE_ENV === 'development')
             console.debug('useTachesDnd: abort/transitoire ignoré (catch)')
@@ -142,12 +142,12 @@ export default function useTachesDnd(onChange, reload = 0) {
 
     try {
       const { error, aborted } = await withAbortSafe(
-        supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
           .from('taches')
           .update({ fait: newDone })
           .eq('id', id)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq('user_id', user.id) as any
+          .eq('user_id', user.id)
       )
 
       if (aborted || (error && isAbortLike(error))) {
@@ -192,12 +192,12 @@ export default function useTachesDnd(onChange, reload = 0) {
 
     try {
       const { error, aborted } = await withAbortSafe(
-        supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
           .from('taches')
           .update({ fait: false })
           .eq('aujourdhui', true)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .eq('user_id', user.id) as any
+          .eq('user_id', user.id)
       )
 
       if (aborted || (error && isAbortLike(error))) {
@@ -271,12 +271,12 @@ export default function useTachesDnd(onChange, reload = 0) {
         await Promise.all(
           batch.map((t, index) =>
             withAbortSafe(
-              supabase
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (supabase as any)
                 .from('taches')
                 .update({ position: i + index })
                 .eq('id', t.id)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .eq('user_id', user.id) as any
+                .eq('user_id', user.id)
             ).then(({ error, aborted }) => {
               if (aborted || (error && isAbortLike(error))) return
               if (error) throw error

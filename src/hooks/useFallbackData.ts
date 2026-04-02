@@ -54,16 +54,18 @@ export function useFallbackData(): UseFallbackDataReturn {
     const loadFallbackData = async () => {
       setLoading(true)
       try {
-        // Tâches
-        const { data: tasks, error: tasksError } = await supabase
+        // Tâches (table legacy — non présente dans supabase.ts)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: tasks, error: tasksError } = await (supabase as any)
           .from('taches')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(10)
 
-        // Récompenses
-        const { data: rewards, error: rewardsError } = await supabase
+        // Récompenses (table legacy — non présente dans supabase.ts)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: rewards, error: rewardsError } = await (supabase as any)
           .from('recompenses')
           .select('*')
           .eq('user_id', user.id)

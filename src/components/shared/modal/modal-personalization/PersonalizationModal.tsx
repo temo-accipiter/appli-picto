@@ -22,16 +22,16 @@ const WORDINGS = {
   visitor: {
     title: 'Personnalise ton tableau',
     message:
-      'Pour créer tes propres cartes et catégories, crée un compte et abonne-toi.',
+      'Pour créer tes propres tâches et catégories, crée un compte et abonne-toi.',
     primaryLabel: 'Créer un compte',
-    secondaryLabel: 'Se connecter',
+    secondaryLabel: 'Plus tard',
   },
   free: {
     title: 'Fonctionnalité Premium',
     message:
-      'Ton compte gratuit te permet de sauvegarder tes préférences. Pour créer des cartes et catégories personnalisées, passe à la version Premium.',
+      'Ton compte gratuit te permet de sauvegarder tes plannings. Pour créer tes propres tâches et catégories, passe à la version Premium.',
     primaryLabel: 'Passer à Premium',
-    secondaryLabel: 'Fermer',
+    secondaryLabel: 'Plus tard',
   },
 } as const
 
@@ -54,11 +54,7 @@ export default function PersonalizationModal({
   }
 
   const handleSecondary = () => {
-    if (context === 'visitor') {
-      router.push('/login')
-    } else {
-      onClose()
-    }
+    onClose()
   }
 
   return (

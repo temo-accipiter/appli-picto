@@ -1,0 +1,90 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// LONG PRESS LINK — Protection enfant (Tableau → Édition)
+// ============================================================================
+// Bouton "appui long" : navigation déclenchée seulement après 2s.
+// Invisible à l'enfant, intuitif pour l'adulte.
+//
+// TSA/WCAG :
+//   - Retour visuel SVG progressif (cercle)
+//   - prefers-reduced-motion : demi-cercle statique (géré dans le JS)
+//   - Focus visible clavier
+//   - Cible tactile min 44×44px
+// ============================================================================
+
+.long-press-link {
+  // Réinitialisation bouton (apparence neutre)
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+
+  // Positionnement relatif pour l'overlay SVG
+  position: relative;
+
+  // Cible tactile WCAG 2.2 AA
+  min-width: size('touch-target-min');
+  min-height: size('touch-target-min');
+
+  // Hover doux
+  @include safe-transition(
+    background-color,
+    timing('fast'),
+    easing('ease-out')
+  );
+
+  &:hover {
+    background-color: surface('hover');
+    border-radius: radius('sm');
+  }
+
+  // WCAG 2.4.7 — Focus visible accessible
+  &:focus-visible {
+    outline: a11y('focus-ring-width') solid color('base');
+    outline-offset: a11y('focus-ring-offset');
+    border-radius: radius('sm');
+  }
+
+  // Retour visuel pendant l'appui (fond léger)
+  &--pressing {
+    background-color: surface('soft');
+    border-radius: radius('sm');
+  }
+}
+
+// Overlay SVG — couvre tout le bouton, non interactif
+.long-press-link__progress {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.long-press-link__svg {
+  // Départ à 12h (haut) plutôt que 3h (droite par défaut SVG)
+  transform: rotate(-90deg);
+  overflow: visible;
+  width: size('touch-target-min');
+  height: size('touch-target-min');
+}
+
+// Cercle de fond (track)
+.long-press-link__track {
+  fill: none;
+  stroke: surface('border');
+  // stroke-width en unités SVG (user space, viewBox 0 0 32 32)
+  // Pas de token disponible pour valeur unitless SVG — 2 = ~2.75px rendu à 44px
+  stroke-width: 2;
+}
+
+// Cercle de progression
+.long-press-link__fill {
+  fill: none;
+  stroke: color('base');
+  stroke-width: 2;
+  stroke-linecap: round;
+  // Pas de CSS transition : la progression est animée via requestAnimationFrame (JS)
+}

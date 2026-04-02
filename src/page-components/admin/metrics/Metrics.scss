@@ -1,0 +1,257 @@
+// src/page-components/admin/metrics/Metrics.scss
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// METRICS PAGE (ADMIN)
+// Scope §8.10 : identité minimale + statut + compteurs (agrégats sans contenu)
+// ============================================================================
+
+.metrics-page {
+  max-width: size('1200');
+  margin: 0 auto;
+  padding: spacing('md') spacing('sm');
+
+  h1 {
+    text-align: center;
+    margin-bottom: spacing('xl');
+    color: text('default');
+  }
+}
+
+// Formulaire de recherche
+.metrics-search {
+  background: surface('soft');
+  border-radius: radius('rounded-12px');
+  padding: spacing('lg');
+  margin-bottom: spacing('xl');
+  border: border-width('thin') solid surface('border');
+
+  h3 {
+    margin: 0 0 spacing('sm') 0;
+    color: text('default');
+    font-size: font-size('xl');
+  }
+
+  p {
+    margin: 0 0 spacing('md') 0;
+    color: text('light');
+    font-size: font-size('sm');
+  }
+
+  .metrics-search__form {
+    display: flex;
+    gap: spacing('sm');
+    flex-direction: column;
+  }
+
+  .metrics-search__input {
+    flex: 1;
+    padding: spacing('sm') spacing('md');
+    font-size: font-size('base');
+    font-family: monospace;
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md');
+    background: surface('bg');
+    color: text('default');
+    min-height: a11y('min-touch-target');
+
+    &:focus {
+      outline: none;
+      border-color: color('base');
+      box-shadow: shadow('focus');
+    }
+
+    &::placeholder {
+      color: text('muted');
+    }
+  }
+
+  .metrics-search__error {
+    font-size: font-size('sm');
+    color: semantic('error');
+    margin-top: spacing('xs');
+  }
+}
+
+// Résultats
+.metrics-result {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+}
+
+// Card individuelle
+.metrics-card {
+  background: surface('soft');
+  border-radius: radius('rounded-12px');
+  padding: spacing('lg');
+  border: border-width('thin') solid surface('border');
+
+  h3 {
+    margin: 0 0 spacing('md') 0;
+    color: text('default');
+    font-size: font-size('lg');
+    font-weight: font-weight('semibold');
+    padding-bottom: spacing('sm');
+    border-bottom: border-width('thin') solid surface('border');
+  }
+}
+
+// Grille de compteurs
+.metrics-counters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: spacing('sm');
+}
+
+.metrics-counter {
+  background: surface('bg');
+  border-radius: radius('md');
+  padding: spacing('md');
+  text-align: center;
+  border: border-width('thin') solid surface('border');
+
+  &__value {
+    display: block;
+    font-size: font-size('3xl');
+    font-weight: font-weight('bold');
+    color: color('base');
+    line-height: 1;
+    margin-bottom: spacing('xs');
+  }
+
+  &__label {
+    display: block;
+    font-size: font-size('xs');
+    color: text('light');
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+  }
+}
+
+// Champ clé-valeur
+.metrics-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: spacing('xs') 0;
+  border-bottom: border-width('thin') solid surface('divider');
+  gap: spacing('sm');
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__key {
+    font-size: font-size('sm');
+    color: text('light');
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: font-size('sm');
+    color: text('default');
+    font-weight: font-weight('medium');
+    font-family: monospace;
+    text-align: right;
+    word-break: break-all;
+  }
+}
+
+// Badge statut
+.metrics-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: spacing('2') spacing('sm');
+  border-radius: radius('full');
+  font-size: font-size('xs');
+  font-weight: font-weight('semibold');
+
+  &--admin {
+    background: semantic('info', 'light');
+    color: semantic('info', 'dark');
+  }
+
+  &--subscriber {
+    background: semantic('success', 'light');
+    color: semantic('success', 'dark');
+  }
+
+  &--free {
+    background: surface('overlay');
+    color: text('secondary');
+  }
+}
+
+// Liste des profils enfants
+.metrics-profiles-list {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+  margin-top: spacing('sm');
+}
+
+.metrics-profile-item {
+  display: flex;
+  align-items: center;
+  gap: spacing('sm');
+  padding: spacing('xs') spacing('sm');
+  background: surface('bg');
+  border-radius: radius('sm');
+  border: border-width('thin') solid surface('border');
+
+  &__name {
+    font-size: font-size('sm');
+    color: text('default');
+    flex: 1;
+  }
+
+  &__status {
+    font-size: font-size('xs');
+    color: text('light');
+    padding: spacing('2') spacing('xs');
+    background: surface('soft');
+    border-radius: radius('sm');
+  }
+}
+
+// Footer
+.metrics-footer {
+  text-align: center;
+  padding: spacing('md') 0;
+  border-top: border-width('thin') solid surface('border');
+  margin-top: spacing('xl');
+}
+
+// [Desktop 576px+]
+@include respond-to(sm) {
+  .metrics-page {
+    padding: spacing('xl') spacing('md');
+  }
+
+  .metrics-search {
+    .metrics-search__form {
+      flex-direction: row;
+    }
+  }
+
+  .metrics-counters {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@include respond-to(md) {
+  .metrics-counters {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .metrics-result {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .metrics-card:first-child {
+    grid-column: 1 / -1;
+  }
+}

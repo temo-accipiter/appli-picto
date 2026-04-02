@@ -37,7 +37,7 @@ import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
-import type { Timeline, Slot, SessionState } from '@/types/supabase'
+import type { Timeline, Slot, SessionState } from '@/hooks'
 import './EditionTimeline.scss'
 
 interface EditionTimelineProps {
@@ -437,7 +437,7 @@ export default function EditionTimeline({
           canResetSession={canResetSession}
           isOffline={!isOnline}
           isExecutionOnly={isExecutionOnly}
-          bankCards={bankCards}
+          {...(bankCards != null ? { bankCards } : {})}
         />
       )}
     </RootTag>

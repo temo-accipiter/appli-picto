@@ -867,6 +867,10 @@ export type Database = {
         Args: { p_sequences_json: Json }
         Returns: Json
       }
+      import_visitor_timelines_slots_batch: {
+        Args: { p_slots_json: Json }
+        Returns: Json
+      }
       is_admin: { Args: never; Returns: boolean }
       is_execution_only: { Args: never; Returns: boolean }
       is_valid_timezone: { Args: { tz: string }; Returns: boolean }

@@ -7,7 +7,7 @@ import { CookieBanner, CookiePreferences, Footer, Navbar } from '@/components'
 import ModalVisitorImport from '@/components/shared/modal/modal-visitor-import/ModalVisitorImport'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks'
-import { hasLocalSequences } from '@/utils/visitor/importVisitorSequences'
+import { hasLocalData } from '@/utils/visitor/importVisitorSequences'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -51,10 +51,10 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     // Vérification asynchrone IndexedDB
     const checkLocalData = async () => {
       try {
-        const hasSequences = await hasLocalSequences()
+        const hasData = await hasLocalData()
 
-        if (hasSequences) {
-          // Afficher modal uniquement si séquences locales trouvées
+        if (hasData) {
+          // Afficher modal si données locales détectées (slots ou séquences)
           setShowImportModal(true)
         }
       } catch (error) {

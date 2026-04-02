@@ -88,7 +88,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
         setError(null)
 
         // Ordre par created_at (index user_id,created_at existant)
-        let { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let { data, error } = await (supabase as any)
           .from('recompenses')
           .select('*')
           .eq('user_id', user.id)
@@ -96,7 +97,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
 
         // (sécurité) si jamais created_at n'existe pas (autre env), refaire sans order
         if (error && String(error.code) === '42703') {
-          const retry = await supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const retry = await (supabase as any)
             .from('recompenses')
             .select('*')
             .eq('user_id', user.id)
@@ -143,10 +145,10 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
         // visible_en_demo est faux par défaut (réservé aux démos globales)
       }
 
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('recompenses')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .insert([toInsert] as any)
+        .insert([toInsert])
         .select()
         .single()
 
@@ -219,7 +221,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
       if (updates.visible_en_demo !== undefined)
         allowed.visible_en_demo = updates.visible_en_demo
 
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('recompenses')
         .update(allowed)
         .eq('id', id)
@@ -259,7 +262,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
       }
 
       // Trouver asset_id correspondant
-      const { data: asset } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: asset } = await (supabase as any)
         .from('user_assets')
         .select('id')
         .eq('user_id', user.id)
@@ -309,7 +313,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
           console.warn('⚠️ Erreur suppression image :', formatErr(error))
       }
 
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from('recompenses')
         .delete()
         .eq('id', id)
@@ -342,7 +347,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
       // - 1 seul round-trip réseau (au lieu de 2)
       // - Atomicité garantie (transaction implicite)
       // - Pas de race condition
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .rpc('select_recompense_atomic', {
           p_reward_id: id,
         })
@@ -374,7 +380,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
     if (!user?.id) return { error: new Error('Utilisateur manquant') }
     try {
       setError(null)
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from('recompenses')
         .update({ selected: false })
         .eq('user_id', user.id)
@@ -397,7 +404,8 @@ export default function useRecompenses(reload = 0): UseRecompensesReturn {
   ): Promise<OperationResult> => {
     try {
       setError(null)
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any)
         .from('recompenses')
         .update({ label })
         .eq('id', id)

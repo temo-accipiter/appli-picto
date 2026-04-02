@@ -16,7 +16,7 @@ import {
   useAccountStatus, // 🆕 Détection admin
 } from '@/hooks'
 import useAdminBankCards from '@/hooks/useAdminBankCards' // CRUD complet (admin uniquement)
-import type { Timeline, Slot } from '@/types/supabase'
+import type { Timeline, Slot } from '@/hooks'
 import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
 import React, {
@@ -52,7 +52,7 @@ interface CardFormData {
 }
 
 interface CardItem {
-  id: string
+  id: string | number
   name: string
   image_url?: string
   categorie?: string
@@ -625,9 +625,9 @@ export default function Edition({
               id: c.id,
               name: c.name,
               image_url: c.image_url,
-              categorie: c.category_id, // ✅ Mapping category_id → categorie (prop attendue par CardsEdition)
+              ...(c.category_id != null ? { categorie: c.category_id } : {}), // ✅ Mapping category_id → categorie
             }))}
-            categories={uniqueCategories}
+            categories={categories}
             onSubmitCard={handleSubmitCard}
             onAddCategory={handleAddCategoryWithQuota}
             onDeleteCategory={handleDeleteCategory}
@@ -650,14 +650,14 @@ export default function Edition({
               type: 'bank' as const,
               published: bc.published, // ✅ Statut réel de publication
             }))}
-            onCreateBankCard={isAdmin ? handleCreateBankCard : undefined}
-            onUpdateBankCardName={
-              isAdmin ? handleUpdateBankCardName : undefined
-            }
-            onDeleteBankCard={isAdmin ? handleDeleteBankCard : undefined}
-            onUpdateBankCardPublished={
-              isAdmin ? handleUpdateBankCardPublished : undefined
-            }
+            {...(isAdmin
+              ? {
+                  onCreateBankCard: handleCreateBankCard,
+                  onUpdateBankCardName: handleUpdateBankCardName,
+                  onDeleteBankCard: handleDeleteBankCard,
+                  onUpdateBankCardPublished: handleUpdateBankCardPublished,
+                }
+              : {})}
             isAdmin={isAdmin}
             isFree={isVisitor || isFree}
           />
@@ -671,7 +671,7 @@ export default function Edition({
           confirmLabel={t('edition.confirmDeleteTask')}
           onConfirm={async () => {
             if (cardASupprimer) {
-              const { error } = await deleteCard(cardASupprimer.id)
+              const { error } = await deleteCard(String(cardASupprimer.id))
               if (!error) {
                 // ✅ DB-first : ON DELETE SET NULL a vidé les slots concernés
                 // Rafraîchir l'UI de la timeline pour refléter changements DB

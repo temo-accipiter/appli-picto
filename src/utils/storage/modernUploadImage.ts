@@ -216,7 +216,10 @@ export async function modernUploadImage(
 
     // 6️⃣ VÉRIFICATION DUPLICATION
     console.log('🔍 [STEP 6] Vérification duplication...')
-    const { data: duplicateCheck, error: dupError } = await supabase.rpc(
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabaseAny = supabase as unknown as any
+    const { data: duplicateCheck, error: dupError } = await supabaseAny.rpc(
       'check_duplicate_image',
       {
         p_user_id: userId,
@@ -263,7 +266,11 @@ export async function modernUploadImage(
 
         // Le champ deleted_at n'existe pas dans user_assets
         // On supprime directement l'enregistrement
-        await supabase.from('user_assets').delete().eq('id', dupCheck.asset_id!)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from('user_assets')
+          .delete()
+          .eq('id', dupCheck.asset_id!)
       }
     }
 
@@ -273,7 +280,8 @@ export async function modernUploadImage(
 
     // 7️⃣ VÉRIFICATION QUOTA
     console.log('🔍 [STEP 7] Vérification quota...')
-    const { data: quotaCheck, error: quotaError } = await supabase.rpc(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: quotaCheck, error: quotaError } = await (supabase as any).rpc(
       'check_image_quota',
       {
         p_user_id: userId,
@@ -361,7 +369,8 @@ export async function modernUploadImage(
 
     // 🔟 ENREGISTREMENT USER_ASSETS
     console.log('🔍 [STEP 10] Enregistrement user_assets...')
-    const { data: asset, error: dbError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: asset, error: dbError } = await (supabase as any)
       .from('user_assets')
       .insert({
         user_id: userId,
@@ -384,7 +393,8 @@ export async function modernUploadImage(
           "ℹ️ Image déjà existante → réutilisation de l'asset (déduplication)"
         )
 
-        const { data: existing } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: existing } = await (supabase as any)
           .from('user_assets')
           .select('id, file_path, width, height')
           .eq('user_id', userId)
@@ -483,7 +493,8 @@ async function logMetrics(
   fileHash?: string
 ): Promise<void> {
   try {
-    await supabase.from('image_metrics').insert({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('image_metrics').insert({
       user_id: userId,
       asset_type: assetType,
       original_size: metrics.originalSize,
@@ -522,7 +533,8 @@ export async function replaceImage(
   }
 
   try {
-    const { data: existingAsset, error: fetchError } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: existingAsset, error: fetchError } = await (supabase as any)
       .from('user_assets')
       .select('*')
       .eq('id', assetId)
@@ -547,11 +559,13 @@ export async function replaceImage(
 
     // Le champ deleted_at n'existe pas dans user_assets
     // On supprime directement l'ancien enregistrement
-    await supabase.from('user_assets').delete().eq('id', assetId)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('user_assets').delete().eq('id', assetId)
 
     const newVersion = (existingAsset.version || 1) + 1
 
-    await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
       .from('user_assets')
       .update({ version: newVersion })
       .eq('id', uploadResult.assetId!)

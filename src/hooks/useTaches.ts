@@ -40,9 +40,9 @@ export default function useTaches(reload = 0): UseTachesReturn {
   // 📥 Chargement initial
   useEffect(() => {
     // ✅ CORRECTIF : Attendre que l'auth soit prête ET que user existe
-    if (!authReady || !user?.id) return
-
-    supabase
+    if (!authReady || !user?.id)
+      return // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(supabase as any)
       .from('taches')
       .select('*')
       .eq('user_id', user.id)
@@ -64,7 +64,8 @@ export default function useTaches(reload = 0): UseTachesReturn {
 
   // ✅ Toggle "fait" (DB en bool, état local en bool)
   const toggleFait = async (id: string, current: boolean): Promise<void> => {
-    const { error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('taches')
       .update({ fait: !current })
       .eq('id', id)
@@ -82,7 +83,8 @@ export default function useTaches(reload = 0): UseTachesReturn {
 
   // ♻️ Reset "fait"
   const resetFait = async (): Promise<void> => {
-    const { error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('taches')
       .update({ fait: false })
       .eq('user_id', user!.id)
@@ -106,7 +108,8 @@ export default function useTaches(reload = 0): UseTachesReturn {
 
       // Envoyer les mises à jour en série pour éviter les problèmes de concurrence
       const updates = ordered.map((t, idx) =>
-        supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
           .from('taches')
           .update({ position: idx })
           .eq('id', t.id)
@@ -147,7 +150,8 @@ export default function useTaches(reload = 0): UseTachesReturn {
       else if (deleted) console.log('🗑️ Image Supabase supprimée')
     }
 
-    const { error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
       .from('taches')
       .delete()
       .eq('id', id)

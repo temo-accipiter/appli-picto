@@ -9,6 +9,7 @@ import {
   useStations,
   useAccountPreferences,
   useReducedMotion,
+  useIsVisitor,
 } from '@/hooks'
 import { useEffect, useState } from 'react'
 import './TrainProgressBar.scss'
@@ -35,8 +36,10 @@ export default function TrainProgressBar({
   const { t } = useI18n()
   const { preferences, updatePreferences } = useAccountPreferences()
   const prefersReducedMotion = useReducedMotion()
+  // Visitor : ligne forcée à '1', aucune modification possible (contrat §7.2)
+  const { isVisitor } = useIsVisitor()
 
-  const [ligne, setLigne] = useState(preferences?.train_line || '1')
+  const [ligne, setLigne] = useState('1')
   const couleur =
     COULEURS_LIGNES[ligne as unknown as keyof typeof COULEURS_LIGNES] || '#999'
   const stationCount = Number(total) + 1
@@ -51,11 +54,12 @@ export default function TrainProgressBar({
   }, [couleur])
 
   // Synchroniser ligne avec preferences quand preferences change
+  // Guard Visitor : ne jamais synchroniser la ligne depuis les préférences DB
   useEffect(() => {
-    if (preferences?.train_line) {
+    if (!isVisitor && preferences?.train_line) {
       setLigne(preferences.train_line)
     }
-  }, [preferences?.train_line])
+  }, [preferences?.train_line, isVisitor])
 
   useEffect(() => {
     if (!loading && ligneStations.length > 0) {
@@ -138,48 +142,51 @@ export default function TrainProgressBar({
       </div>
 
       <div className="toolbar">
-        <SelectWithImage
-          id="ligne"
-          label={t('tableau.selectLine')}
-          value={ligne}
-          onChange={value => {
-            const nouvelleLigne = String(value)
+        {/* Sélecteur de ligne : masqué pour Visitor (contrat §7.2 — aucune modification possible) */}
+        {!isVisitor && (
+          <SelectWithImage
+            id="ligne"
+            label={t('tableau.selectLine')}
+            value={ligne}
+            onChange={value => {
+              const nouvelleLigne = String(value)
 
-            // En mode démo, empêcher le changement de ligne et ouvrir la modal
-            if (isDemo && nouvelleLigne !== '1') {
-              if (onLineChange) {
-                onLineChange('line_change')
+              // En mode démo, empêcher le changement de ligne et ouvrir la modal
+              if (isDemo && nouvelleLigne !== '1') {
+                if (onLineChange) {
+                  onLineChange('line_change')
+                }
+                return
               }
-              return
-            }
 
-            // Mode normal : changer la ligne
-            setLigne(nouvelleLigne)
-            updatePreferences({ train_line: nouvelleLigne })
-          }}
-          options={
-            [
-              {
-                value: '1',
-                label: t('tableau.line1'),
-                image: '/images/ligne/ligne1.png',
-                imageAlt: 'Ligne 1',
-              },
-              {
-                value: '6',
-                label: t('tableau.line6'),
-                image: '/images/ligne/ligne6.png',
-                imageAlt: 'Ligne 6',
-              },
-              {
-                value: '12',
-                label: t('tableau.line12'),
-                image: '/images/ligne/ligne12.png',
-                imageAlt: 'Ligne 12',
-              },
-            ] as SelectWithImageOption[]
-          }
-        />
+              // Mode normal : changer la ligne et persister en DB
+              setLigne(nouvelleLigne)
+              updatePreferences({ train_line: nouvelleLigne })
+            }}
+            options={
+              [
+                {
+                  value: '1',
+                  label: t('tableau.line1'),
+                  image: '/images/ligne/ligne1.png',
+                  imageAlt: 'Ligne 1',
+                },
+                {
+                  value: '6',
+                  label: t('tableau.line6'),
+                  image: '/images/ligne/ligne6.png',
+                  imageAlt: 'Ligne 6',
+                },
+                {
+                  value: '12',
+                  label: t('tableau.line12'),
+                  image: '/images/ligne/ligne12.png',
+                  imageAlt: 'Ligne 12',
+                },
+              ] as SelectWithImageOption[]
+            }
+          />
+        )}
 
         <p className="progression">
           {t('tableau.progression')} : {done} / {total}{' '}

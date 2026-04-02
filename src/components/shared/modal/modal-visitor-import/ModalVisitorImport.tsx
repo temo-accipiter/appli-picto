@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ModalVisitorImport.tsx — Modal d'import séquences Visitor → Supabase.
+ * ModalVisitorImport.tsx — Modal d'import données Visitor → Supabase (plannings + séquences).
  *
  * ⚠️ UI/UX TSA (WCAG 2.2 AA)
  * - Design sobre, tokens Sass uniquement (pas de valeurs hardcodées)
@@ -56,11 +56,7 @@ export default function ModalVisitorImport({
       if (onImportSuccess) {
         onImportSuccess()
       }
-
-      // Fermer modal après 2s (sans animation brusque)
-      setTimeout(() => {
-        handleClose()
-      }, 2000)
+      // L'utilisateur contrôle la fermeture via le bouton "Continuer" (invariant TSA anti-surprise)
     } catch (err) {
       // Erreur déjà gérée par le hook (stockée dans `error`)
       console.error('Erreur import séquences:', err)
@@ -100,10 +96,11 @@ export default function ModalVisitorImport({
         {!isImporting && !hasSuccess && !hasError && (
           <>
             <p className="modal-visitor-import__description">
-              Nous avons détecté des séquences créées avant votre inscription.
+              Nous avons détecté des données créées avant votre inscription.
             </p>
             <p className="modal-visitor-import__description">
-              Souhaitez-vous les importer dans votre compte ?
+              Souhaitez-vous importer vos plannings et séquences dans votre
+              compte ?
             </p>
           </>
         )}
@@ -139,9 +136,19 @@ export default function ModalVisitorImport({
                   {result.imported_count > 1 ? 's' : ''}
                 </span>
               )}
-              {result.skipped_count > 0 && (
+              {(result.slots_imported ?? 0) > 0 && (
                 <span>
                   {result.imported_count > 0 && ' • '}
+                  {result.slots_imported} planning
+                  {(result.slots_imported ?? 0) > 1 ? 's' : ''} importé
+                  {(result.slots_imported ?? 0) > 1 ? 's' : ''}
+                </span>
+              )}
+              {result.skipped_count > 0 && (
+                <span>
+                  {(result.imported_count > 0 ||
+                    (result.slots_imported ?? 0) > 0) &&
+                    ' • '}
                   {result.skipped_count} déjà existante
                   {result.skipped_count > 1 ? 's' : ''}
                 </span>
@@ -184,6 +191,18 @@ export default function ModalVisitorImport({
               Importer mes données
             </button>
           </>
+        )}
+
+        {/* Succès : l'utilisateur contrôle la fermeture (invariant TSA anti-surprise) */}
+        {hasSuccess && (
+          <button
+            type="button"
+            onClick={handleClose}
+            className="modal-visitor-import__button modal-visitor-import__button--primary"
+            autoFocus
+          >
+            Continuer
+          </button>
         )}
 
         {hasError && (

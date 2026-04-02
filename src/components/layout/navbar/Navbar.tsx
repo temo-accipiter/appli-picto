@@ -16,6 +16,7 @@ import {
   Settings,
   UserPlus,
 } from 'lucide-react'
+import LongPressLink from '@/components/shared/long-press-link/LongPressLink'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -50,14 +51,27 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <Link
-                href="/edition"
-                className="nav-icon-link"
-                aria-label={t('nav.edition')}
-                title={t('nav.edition')}
-              >
-                <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-              </Link>
+              {/* Tableau (enfant) : appui long 2s requis — protection enfant */}
+              {isTableau ? (
+                <LongPressLink
+                  href="/edition"
+                  className="nav-icon-link"
+                  aria-label={t('nav.edition')}
+                  title={t('nav.edition')}
+                >
+                  <Pencil size={20} strokeWidth={2} aria-hidden="true" />
+                </LongPressLink>
+              ) : (
+                /* Profil (parent) : navigation directe */
+                <Link
+                  href="/edition"
+                  className="nav-icon-link"
+                  aria-label={t('nav.edition')}
+                  title={t('nav.edition')}
+                >
+                  <Pencil size={20} strokeWidth={2} aria-hidden="true" />
+                </Link>
+              )}
             </motion.div>
           )}
 

@@ -65,11 +65,13 @@ export default function useAccountPreferences(): UseAccountPreferencesReturn {
       error: fetchError,
       aborted,
     } = await withAbortSafe(
-      supabase
-        .from('account_preferences')
-        .select('*')
-        .eq('account_id', user.id)
-        .maybeSingle()
+      Promise.resolve(
+        supabase
+          .from('account_preferences')
+          .select('*')
+          .eq('account_id', user.id)
+          .maybeSingle()
+      )
     )
 
     if (aborted || (fetchError && isAbortLike(fetchError))) {
@@ -86,7 +88,7 @@ export default function useAccountPreferences(): UseAccountPreferencesReturn {
 
     // Si null, le trigger DB créera automatiquement la row au prochain insert
     // Ou on peut attendre que l'utilisateur modifie une préférence
-    setPreferences(data || null)
+    setPreferences((data as AccountPreferences | null) ?? null)
     setLoading(false)
   }, [user])
 

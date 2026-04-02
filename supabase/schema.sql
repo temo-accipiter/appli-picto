@@ -1717,6 +1717,145 @@ COMMENT ON FUNCTION "public"."import_visitor_sequences_batch"("p_sequences_json"
 
 
 
+CREATE OR REPLACE FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") RETURNS "jsonb"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO 'public', 'pg_temp'
+    AS $$
+DECLARE
+  v_account_id   UUID;
+  v_timeline_id  UUID;
+  v_slot         JSONB;
+  v_kind         public.slot_kind;
+  v_position     INTEGER;
+  v_card_id      UUID;
+  v_tokens       INTEGER;
+  v_count        INTEGER := 0;
+  v_step_count   INTEGER;
+  v_reward_count INTEGER;
+BEGIN
+  -- 1. Authentification
+  v_account_id := auth.uid();
+  IF v_account_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required: import_visitor_timelines_slots_batch'
+      USING ERRCODE = '42501',
+            HINT    = 'Sign in with an authenticated account.';
+  END IF;
+
+  -- 2. Validation JSON
+  IF p_slots_json IS NULL OR NOT (p_slots_json ? 'slots') THEN
+    RAISE EXCEPTION 'Invalid JSON: slots array required'
+      USING ERRCODE = '22023';
+  END IF;
+
+  -- 3. Tableau vide → succès sans modification
+  IF jsonb_array_length(p_slots_json->'slots') = 0 THEN
+    RETURN jsonb_build_object(
+      'success',         true,
+      'imported_count',  0,
+      'message',        'no_slots_to_import'
+    );
+  END IF;
+
+  -- 4. Validation métier : au moins 1 step + exactement 1 reward
+  SELECT
+    COUNT(*) FILTER (WHERE (s->>'kind') = 'step'),
+    COUNT(*) FILTER (WHERE (s->>'kind') = 'reward')
+  INTO v_step_count, v_reward_count
+  FROM jsonb_array_elements(p_slots_json->'slots') s;
+
+  IF v_step_count < 1 THEN
+    RAISE EXCEPTION 'Payload invalide: au moins 1 slot Étape requis'
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF v_reward_count <> 1 THEN
+    RAISE EXCEPTION 'Payload invalide: exactement 1 slot Récompense requis (reçu: %)',
+      v_reward_count
+      USING ERRCODE = '22023';
+  END IF;
+
+  -- 5. Trouver la timeline du profil enfant actif (premier créé)
+  SELECT t.id INTO v_timeline_id
+  FROM public.timelines t
+  JOIN public.child_profiles cp ON cp.id = t.child_profile_id
+  WHERE cp.account_id = v_account_id
+    AND cp.status = 'active'
+  ORDER BY cp.created_at ASC
+  LIMIT 1;
+
+  IF v_timeline_id IS NULL THEN
+    RAISE EXCEPTION 'Aucun profil enfant actif trouvé pour ce compte'
+      USING ERRCODE = '22023';
+  END IF;
+
+  -- 6. Activer le bypass transactionnel (reset auto en fin de transaction)
+  PERFORM set_config('app.bypass_slot_guards', 'true', true);
+
+  -- 7. Supprimer les slots auto-créés existants (minimal step + reward)
+  DELETE FROM public.slots WHERE timeline_id = v_timeline_id;
+
+  -- 8. Insérer les slots Visitor
+  FOR v_slot IN
+    SELECT * FROM jsonb_array_elements(p_slots_json->'slots')
+  LOOP
+    v_kind     := (v_slot->>'kind')::public.slot_kind;
+    v_position := (v_slot->>'position')::INTEGER;
+    v_card_id  := (v_slot->>'card_id')::UUID;    -- NULL si JSON null
+    v_tokens   := (v_slot->>'tokens')::INTEGER;  -- NULL si JSON null
+
+    -- Validation individuelle
+    IF v_kind IS NULL OR v_position IS NULL OR v_position < 0 THEN
+      RAISE EXCEPTION 'Slot invalide: kind et position >= 0 requis'
+        USING ERRCODE = '22023';
+    END IF;
+
+    IF v_kind = 'step' AND (v_tokens IS NULL OR v_tokens < 0 OR v_tokens > 5) THEN
+      RAISE EXCEPTION 'Slot step invalide: tokens doit être 0-5 (reçu: %)', v_tokens
+        USING ERRCODE = '22023';
+    END IF;
+
+    IF v_kind = 'reward' AND v_tokens IS NOT NULL THEN
+      RAISE EXCEPTION 'Slot reward invalide: tokens doit être NULL'
+        USING ERRCODE = '22023';
+    END IF;
+
+    -- INSERT avec fallback card_id = NULL si la carte a été supprimée (FK violation)
+    -- Toute autre erreur remonte normalement (contrainte, position dupliquée, etc.)
+    BEGIN
+      INSERT INTO public.slots (timeline_id, kind, position, card_id, tokens)
+      VALUES (v_timeline_id, v_kind, v_position, v_card_id, v_tokens);
+    EXCEPTION
+      WHEN foreign_key_violation THEN
+        -- Carte supprimée depuis la session Visitor → slot importé vide
+        INSERT INTO public.slots (timeline_id, kind, position, card_id, tokens)
+        VALUES (v_timeline_id, v_kind, v_position, NULL, v_tokens);
+    END;
+
+    v_count := v_count + 1;
+  END LOOP;
+
+  -- 9. Résultat
+  RETURN jsonb_build_object(
+    'success',        true,
+    'imported_count', v_count,
+    'timeline_id',    v_timeline_id
+  );
+
+END;
+$$;
+
+
+ALTER FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") OWNER TO "postgres";
+
+
+COMMENT ON FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") IS 'Import atomique des slots Visitor (IndexedDB) vers la timeline du nouveau compte.
+ - Remplace les slots auto-créés par les slots Visitor.
+ - Bypass transactionnel des guards via app.bypass_slot_guards (LOCAL à la transaction).
+ - Carte supprimée : slot importé avec card_id = NULL (contrat §7.3).
+ - SECURITY INVOKER : utilise les RLS existantes de l''utilisateur authentifié.';
+
+
+
 CREATE OR REPLACE FUNCTION "public"."is_admin"() RETURNS boolean
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
     SET "search_path" TO 'public', 'pg_temp'
@@ -2307,33 +2446,36 @@ CREATE OR REPLACE FUNCTION "public"."slots_enforce_min_reward"() RETURNS "trigge
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-  reward_count INTEGER;
+  reward_count      INTEGER;
   is_cascade_context BOOLEAN;
 BEGIN
-  -- Détecter si on est dans un contexte de cascade (suppression timeline/profil/compte)
-  SELECT EXISTS(SELECT 1 FROM timelines WHERE id = OLD.timeline_id) INTO is_cascade_context;
+  -- Bypass pour import Visitor (app.bypass_slot_guards = true, LOCAL à la transaction)
+  IF current_setting('app.bypass_slot_guards', true) = 'true' THEN
+    RETURN OLD;
+  END IF;
 
-  -- Si la timeline n'existe plus, c'est une cascade → autoriser
+  -- Détecter cascade (suppression timeline/profil/compte)
+  SELECT EXISTS(SELECT 1 FROM timelines WHERE id = OLD.timeline_id)
+    INTO is_cascade_context;
   IF NOT is_cascade_context THEN
     RETURN OLD;
   END IF;
 
-  -- Si on supprime un slot de type 'reward' (hors cascade)
   IF OLD.kind = 'reward' THEN
-    -- Compter les slots reward restants pour cette timeline (après suppression)
     SELECT COUNT(*) INTO reward_count
     FROM slots
     WHERE timeline_id = OLD.timeline_id
       AND kind = 'reward'
       AND id != OLD.id;
 
-    -- Si c'est le dernier slot reward, bloquer la suppression
     IF reward_count = 0 THEN
-      RAISE EXCEPTION 'Impossible de supprimer le dernier slot Récompense de la timeline (id: %). Une timeline doit toujours contenir au moins 1 slot Récompense (peut être vide).', OLD.timeline_id;
+      RAISE EXCEPTION
+        'Impossible de supprimer le dernier slot Récompense de la timeline (id: %). '
+        'Une timeline doit toujours contenir au moins 1 slot Récompense (peut être vide).',
+        OLD.timeline_id;
     END IF;
   END IF;
 
-  -- Autoriser la suppression (slot step ou pas le dernier reward ou cascade)
   RETURN OLD;
 END;
 $$;
@@ -2350,35 +2492,34 @@ CREATE OR REPLACE FUNCTION "public"."slots_enforce_min_step"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-  step_count INTEGER;
+  step_count        INTEGER;
   is_cascade_context BOOLEAN;
 BEGIN
-  -- Détecter si on est dans un contexte de cascade (suppression timeline/profil/compte)
-  -- En PostgreSQL, un DELETE cascade déclenché par ON DELETE CASCADE n'a pas de marqueur spécifique
-  -- On doit vérifier si la timeline parente existe encore
-  SELECT EXISTS(SELECT 1 FROM timelines WHERE id = OLD.timeline_id) INTO is_cascade_context;
+  IF current_setting('app.bypass_slot_guards', true) = 'true' THEN
+    RETURN OLD;
+  END IF;
 
-  -- Si la timeline n'existe plus, c'est une cascade → autoriser
+  SELECT EXISTS(SELECT 1 FROM timelines WHERE id = OLD.timeline_id)
+    INTO is_cascade_context;
   IF NOT is_cascade_context THEN
     RETURN OLD;
   END IF;
 
-  -- Si on supprime un slot de type 'step' (hors cascade)
   IF OLD.kind = 'step' THEN
-    -- Compter les slots step restants pour cette timeline (après suppression)
     SELECT COUNT(*) INTO step_count
     FROM slots
     WHERE timeline_id = OLD.timeline_id
       AND kind = 'step'
       AND id != OLD.id;
 
-    -- Si c'est le dernier slot step, bloquer la suppression
     IF step_count = 0 THEN
-      RAISE EXCEPTION 'Impossible de supprimer le dernier slot Étape de la timeline (id: %). Une timeline doit contenir au minimum 1 slot Étape.', OLD.timeline_id;
+      RAISE EXCEPTION
+        'Impossible de supprimer le dernier slot Étape de la timeline (id: %). '
+        'Une timeline doit contenir au minimum 1 slot Étape.',
+        OLD.timeline_id;
     END IF;
   END IF;
 
-  -- Autoriser la suppression (slot reward ou pas le dernier step ou cascade)
   RETURN OLD;
 END;
 $$;
@@ -2397,15 +2538,16 @@ CREATE OR REPLACE FUNCTION "public"."slots_enforce_single_reward"() RETURNS "tri
 DECLARE
   v_exists BOOLEAN;
 BEGIN
+  IF current_setting('app.bypass_slot_guards', true) = 'true' THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
   IF TG_OP = 'INSERT' THEN
     IF NEW.kind = 'reward' THEN
       SELECT EXISTS (
-        SELECT 1
-        FROM slots
-        WHERE timeline_id = NEW.timeline_id
-          AND kind = 'reward'
+        SELECT 1 FROM slots
+        WHERE timeline_id = NEW.timeline_id AND kind = 'reward'
       ) INTO v_exists;
-
       IF v_exists THEN
         RAISE EXCEPTION
           'Invariant violation: timeline % already has a reward slot',
@@ -2417,44 +2559,36 @@ BEGIN
   END IF;
 
   IF TG_OP = 'UPDATE' THEN
-    -- Un reward existant ne peut pas changer de kind ni de timeline
     IF OLD.kind = 'reward' THEN
       IF NEW.kind <> 'reward' THEN
         RAISE EXCEPTION
-          'Invariant violation: reward slot cannot change kind (slot_id=%)',
-          OLD.id;
+          'Invariant violation: reward slot cannot change kind (slot_id=%)', OLD.id;
       END IF;
-
       IF NEW.timeline_id <> OLD.timeline_id THEN
         RAISE EXCEPTION
-          'Invariant violation: reward slot cannot change timeline_id (slot_id=%)',
-          OLD.id;
+          'Invariant violation: reward slot cannot change timeline_id (slot_id=%)', OLD.id;
       END IF;
       RETURN NEW;
     END IF;
 
-    -- Un step ne peut pas devenir reward si un reward existe déjà
     IF NEW.kind = 'reward' THEN
       SELECT EXISTS (
-        SELECT 1
-        FROM slots
+        SELECT 1 FROM slots
         WHERE timeline_id = NEW.timeline_id
           AND kind = 'reward'
           AND id <> NEW.id
       ) INTO v_exists;
-
       IF v_exists THEN
         RAISE EXCEPTION
           'Invariant violation: timeline % already has a reward slot',
           NEW.timeline_id
-          USING HINT = 'A step cannot be converted to reward when reward already exists';
+          USING HINT = 'Only one reward slot is allowed per timeline';
       END IF;
     END IF;
-
     RETURN NEW;
   END IF;
 
-  RETURN NEW;
+  RETURN COALESCE(NEW, OLD);
 END;
 $$;
 
@@ -5954,15 +6088,17 @@ ALTER TABLE "storage"."migrations" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "storage"."objects" ENABLE ROW LEVEL SECURITY;
 
 
-CREATE POLICY "personal_images_delete_owner" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_delete_owner" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
 
 
 
-CREATE POLICY "personal_images_insert_owner" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_insert_owner" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text") AND (EXISTS ( SELECT 1
+   FROM "public"."accounts"
+  WHERE (("accounts"."id" = "auth"."uid"()) AND ("accounts"."status" = ANY (ARRAY['subscriber'::"public"."account_status", 'admin'::"public"."account_status"])))))));
 
 
 
-CREATE POLICY "personal_images_select_owner" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("owner" = "auth"."uid"()) AND ("name" !~~ '%..%'::"text") AND ("name" ~ (('^'::"text" || ("auth"."uid"())::"text") || '/[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text"))));
+CREATE POLICY "personal_images_select_owner" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
 
 
 
@@ -6166,6 +6302,12 @@ GRANT ALL ON FUNCTION "public"."hard_reset_timeline_session"("p_timeline_id" "uu
 GRANT ALL ON FUNCTION "public"."import_visitor_sequences_batch"("p_sequences_json" "jsonb") TO "anon";
 GRANT ALL ON FUNCTION "public"."import_visitor_sequences_batch"("p_sequences_json" "jsonb") TO "authenticated";
 GRANT ALL ON FUNCTION "public"."import_visitor_sequences_batch"("p_sequences_json" "jsonb") TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") TO "anon";
+GRANT ALL ON FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") TO "authenticated";
+GRANT ALL ON FUNCTION "public"."import_visitor_timelines_slots_batch"("p_slots_json" "jsonb") TO "service_role";
 
 
 

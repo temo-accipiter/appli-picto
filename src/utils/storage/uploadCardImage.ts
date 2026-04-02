@@ -171,7 +171,10 @@ export async function uploadCardImage(
     if (error) {
       console.error('❌ [uploadCardImage] Erreur Storage:')
       console.error('   • Message:', error.message)
-      console.error('   • Status:', error.statusCode || 'N/A')
+      console.error(
+        '   • Status:',
+        (error as unknown as Record<string, unknown>).statusCode || 'N/A'
+      )
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       return { path: null, error }
     }

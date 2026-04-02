@@ -24,9 +24,7 @@ export function useDbPseudo(userId: string | undefined): string {
     ).trim()
     if (metadataLabel) return metadataLabel
 
-    const emailLabel = String(user.email || '')
-      .split('@')[0]
-      .trim()
+    const emailLabel = (String(user.email || '').split('@')[0] ?? '').trim()
     if (emailLabel) return emailLabel
 
     return 'Compte'

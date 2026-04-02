@@ -14,7 +14,7 @@
 
 import { useState, useCallback } from 'react'
 import {
-  importVisitorSequences,
+  importAllVisitorData,
   type ImportResult,
 } from '@/utils/visitor/importVisitorSequences'
 
@@ -64,8 +64,8 @@ export function useVisitorImport(): UseVisitorImportReturn {
     setResult(null)
 
     try {
-      // Appel service atomique (pas de boucle for)
-      const importResult = await importVisitorSequences()
+      // Appel service atomique (séquences + slots, pas de boucle for)
+      const importResult = await importAllVisitorData()
 
       // Succès : stocker résultat
       setResult(importResult)

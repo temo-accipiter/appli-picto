@@ -341,7 +341,7 @@ export default function CardsEdition({
               label={t('tasks.filterByCategory')}
               options={[
                 { value: 'all', label: t('tasks.all') },
-                ...categories.filter(cat => cat.value !== 'all'),
+                ...categories.map(c => ({ value: c.id, label: c.name })),
               ]}
               value={filterCategory}
               onChange={e => onChangeFilterCategory(e.target.value)}
@@ -406,29 +406,22 @@ export default function CardsEdition({
                         }
                         labelId={bankCard.id}
                         label={drafts[bankCard.id] ?? bankCard.name}
-                        // 🔓 Éditable SEULEMENT si admin + handler fourni + carte dépubliée
                         editable={canEditBankCard}
-                        onLabelChange={
-                          canEditBankCard
-                            ? val => handleChange(bankCard.id, val)
-                            : undefined
-                        }
-                        onBlur={
-                          canEditBankCard
-                            ? async val => {
-                                const error = validateLabel(val)
-                                if (error) {
+                        // ✅ Diffusion conditionnelle (exactOptionalPropertyTypes)
+                        {...(canEditBankCard
+                          ? {
+                              onLabelChange: (val: string) =>
+                                handleChange(bankCard.id, val),
+                              onBlur: async (val: string) => {
+                                const err = validateLabel(val)
+                                if (err) {
                                   setErrors(prev => ({
                                     ...prev,
-                                    [bankCard.id]: error,
+                                    [bankCard.id]: err,
                                   }))
                                   return
                                 }
-
-                                // Appel handler admin
-                                await onUpdateBankCardName(bankCard.id, val)
-
-                                // Clear draft + error
+                                await onUpdateBankCardName?.(bankCard.id, val)
                                 setDrafts(prev => {
                                   const next = { ...prev }
                                   delete next[bankCard.id]
@@ -439,8 +432,6 @@ export default function CardsEdition({
                                   delete next[bankCard.id]
                                   return next
                                 })
-
-                                // Success animation
                                 setSuccessIds(
                                   prev => new Set([...prev, bankCard.id])
                                 )
@@ -451,34 +442,32 @@ export default function CardsEdition({
                                     return next
                                   })
                                 }, 600)
-                              }
-                            : undefined
-                        }
-                        // 🗑️ Suppression si admin + handler fourni
-                        onDelete={
-                          canDeleteBankCard
-                            ? async () => {
-                                await onDeleteBankCard(
+                              },
+                            }
+                          : {})}
+                        {...(canDeleteBankCard
+                          ? {
+                              onDelete: async () => {
+                                await onDeleteBankCard?.(
                                   bankCard.id,
                                   bankCard.name
                                 )
-                              }
-                            : undefined
-                        }
-                        // 🆕 Checkbox "publier" (admin uniquement)
-                        published={
-                          canTogglePublished ? bankCard.published : undefined
-                        }
-                        onPublishedChange={
-                          canTogglePublished
-                            ? async newPublished => {
-                                await onUpdateBankCardPublished(
+                              },
+                            }
+                          : {})}
+                        {...(canTogglePublished
+                          ? {
+                              published: bankCard.published,
+                              onPublishedChange: async (
+                                newPublished: boolean
+                              ) => {
+                                await onUpdateBankCardPublished?.(
                                   bankCard.id,
                                   newPublished
                                 )
-                              }
-                            : undefined
-                        }
+                              },
+                            }
+                          : {})}
                         // ✅ Checkbox timeline active
                         checked={isCardInTimeline(bankCard.id)}
                         onToggleCheck={() => handleToggleCheckbox(bankCard.id)}
@@ -552,9 +541,14 @@ export default function CardsEdition({
                       lockedCardIds?.has(String(item.id)) ?? false
                     }
                     categorie={item.categorie || ''}
-                    defaultCategoryId={systemCategoryId ?? undefined}
+                    {...(systemCategoryId != null
+                      ? { defaultCategoryId: systemCategoryId }
+                      : {})}
                     onCategorieChange={val => onUpdateCategorie(item.id, val)}
-                    categorieOptions={categories}
+                    categorieOptions={categories.map(c => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
                     className={[
                       errors[item.id] ? 'input-field__input--error' : '',
                       successIds.has(item.id)
@@ -615,9 +609,14 @@ export default function CardsEdition({
                     lockedCardIds?.has(String(item.id)) ?? false
                   }
                   categorie={item.categorie || ''}
-                  defaultCategoryId={systemCategoryId ?? undefined}
+                  {...(systemCategoryId != null
+                    ? { defaultCategoryId: systemCategoryId }
+                    : {})}
                   onCategorieChange={val => onUpdateCategorie(item.id, val)}
-                  categorieOptions={categories}
+                  categorieOptions={categories.map(c => ({
+                    value: c.id,
+                    label: c.name,
+                  }))}
                   className={[
                     errors[item.id] ? 'input-field__input--error' : '',
                     successIds.has(item.id)
@@ -653,7 +652,7 @@ export default function CardsEdition({
       <ModalCategory
         isOpen={manageCatOpen}
         onClose={() => setManageCatOpen(false)}
-        categories={categories}
+        categories={categories.map(c => ({ value: c.id, label: c.name }))}
         onDeleteCategory={value => setCatASupprimer(value)}
         onAddCategory={handleAddCategory}
         newCategory={newCatLabel}
@@ -669,7 +668,7 @@ export default function CardsEdition({
       >
         <>
           ❗ {t('edition.confirmDeleteCategory')}
-          {categories.find(c => c.value === catASupprimer)?.label}&rdquo; ?
+          {categories.find(c => c.id === catASupprimer)?.name}&rdquo; ?
           <br />
           {t('edition.categoryReassignmentWarning')}
         </>

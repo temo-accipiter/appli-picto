@@ -31,7 +31,7 @@ interface CategoryOption {
   label: string
 }
 
-interface ItemFormData {
+export interface ItemFormData {
   label: string
   categorie: string
   image: File
@@ -40,7 +40,7 @@ interface ItemFormData {
   cardId: string // ID carte généré client-side (UUID v4)
 }
 
-interface ItemFormProps {
+export interface ItemFormProps {
   includeCategory?: boolean
   categories?: CategoryOption[]
   onSubmit: (data: ItemFormData) => void

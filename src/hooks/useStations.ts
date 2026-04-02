@@ -1,7 +1,7 @@
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 
-type TransportType = 'metro' | 'bus' | 'tram' | 'rer'
+type TransportType = 'metro' | 'bus' | 'tram'
 
 interface Station {
   id: string

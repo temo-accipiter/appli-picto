@@ -41,10 +41,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import useAccountStatus from '@/hooks/useAccountStatus'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
-import useBankCards from '@/hooks/useBankCards'
+import useBankCards, { type BankCard } from '@/hooks/useBankCards'
 import useAdminBankCards from '@/hooks/useAdminBankCards'
-import usePersonalCards from '@/hooks/usePersonalCards'
+import usePersonalCards, { type PersonalCard } from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
+import type { Sequence } from '@/hooks/useSequences'
 import { Modal } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
@@ -520,13 +521,13 @@ export function SlotsEditor({
                   positionLabel={idx + 1}
                   onUpdate={onUpdateSlot}
                   onRemove={handleRemove}
-                  bankCards={bankCards}
-                  personalCards={personalCards}
+                  bankCards={bankCards as BankCard[]}
+                  personalCards={personalCards as PersonalCard[]}
                   busy={busyId === slot.id || swappingCards}
                   canRemove={slot.kind === 'step' && stepSlotsCount > 1}
                   sessionState={sessionState}
                   isValidated={validatedSlotIds?.has(slot.id) ?? false}
-                  sequence={sequence}
+                  sequence={sequence as Sequence | null}
                   onCreateSequence={createSequence}
                   onDeleteSequence={deleteSequence}
                   canCreateSequence={canCreateSequence}
@@ -622,9 +623,9 @@ export function SlotsEditor({
           <SequenceEditor
             motherCardId={resolvedActiveSequenceSlot.card_id}
             motherCardLabel={activeMotherCard?.name ?? 'Carte'}
-            sequence={activeSequence}
-            bankCards={bankCards}
-            personalCards={personalCards}
+            sequence={activeSequence as Sequence | null}
+            bankCards={bankCards as BankCard[]}
+            personalCards={personalCards as PersonalCard[]}
             onCreateSequence={createSequence}
             onDeleteSequence={deleteSequence}
             canCreateSequence={canCreateSequence}

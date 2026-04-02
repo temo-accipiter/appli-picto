@@ -17,14 +17,34 @@ interface AccountStatusBadgeProps {
  * Composant pour afficher l'état du compte utilisateur
  * Affiche un badge avec l'état, l'icône et la description
  */
+const STATUS_DISPLAY = {
+  free: {
+    label: 'Gratuit',
+    color: 'status-free',
+    icon: '🆓',
+    description: 'Compte gratuit',
+  },
+  subscriber: {
+    label: 'Abonné',
+    color: 'status-subscriber',
+    icon: '⭐',
+    description: 'Compte abonné',
+  },
+  admin: {
+    label: 'Admin',
+    color: 'status-admin',
+    icon: '🔧',
+    description: 'Compte administrateur',
+  },
+} as const
+
 export default function AccountStatusBadge({
   showDescription = false,
   size = 'medium',
   className = '',
   onClick = null,
 }: AccountStatusBadgeProps) {
-  const { accountStatus, loading, statusDisplay, canUseApp } =
-    useAccountStatus()
+  const { status, loading } = useAccountStatus()
 
   if (loading) {
     return (
@@ -35,11 +55,11 @@ export default function AccountStatusBadge({
     )
   }
 
-  if (!accountStatus) {
+  if (!status) {
     return null
   }
 
-  const { label, color, icon, description } = statusDisplay
+  const { label, color, icon, description } = STATUS_DISPLAY[status]
 
   return (
     <div
@@ -51,9 +71,6 @@ export default function AccountStatusBadge({
       <span className="status-label">{label}</span>
       {showDescription && (
         <span className="status-description">{description}</span>
-      )}
-      {!canUseApp && (
-        <div className="status-warning">⚠️ Compte non fonctionnel</div>
       )}
     </div>
   )

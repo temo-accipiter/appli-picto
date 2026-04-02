@@ -195,7 +195,10 @@ export default function ChecklistTachesEdition({
           <Select
             id="filter-category"
             label={t('tasks.filterByCategory')}
-            options={[{ value: 'all', label: t('tasks.all') }, ...categories]}
+            options={[
+              { value: 'all', label: t('tasks.all') },
+              ...categories.map(c => ({ value: c.id, label: c.name })),
+            ]}
             value={filterCategory}
             onChange={e => onChangeFilterCategory(e.target.value)}
           />
@@ -245,7 +248,10 @@ export default function ChecklistTachesEdition({
               onToggleCheck={() => onToggleAujourdhui(item.id, item.aujourdhui)}
               categorie={item.categorie || ''}
               onCategorieChange={val => onUpdateCategorie(item.id, val)}
-              categorieOptions={categories}
+              categorieOptions={categories.map(c => ({
+                value: c.id,
+                label: c.name,
+              }))}
               className={[
                 item.aujourdhui ? 'active' : '',
                 errors[item.id] ? 'input-field__input--error' : '',
@@ -288,7 +294,7 @@ export default function ChecklistTachesEdition({
       <ModalCategory
         isOpen={manageCatOpen}
         onClose={() => setManageCatOpen(false)}
-        categories={categories}
+        categories={categories.map(c => ({ value: c.id, label: c.name }))}
         onDeleteCategory={value => setCatASupprimer(value)}
         onAddCategory={handleAddCategory}
         newCategory={newCatLabel}
@@ -303,7 +309,7 @@ export default function ChecklistTachesEdition({
       >
         <>
           ❗ {t('edition.confirmDeleteCategory')}
-          {categories.find(c => c.value === catASupprimer)?.label}&rdquo; ?
+          {categories.find(c => c.id === catASupprimer)?.name}&rdquo; ?
           <br />
           {t('edition.categoryReassignmentWarning')}
         </>

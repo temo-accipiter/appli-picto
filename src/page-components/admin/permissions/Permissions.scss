@@ -1,0 +1,220 @@
+// src/page-components/admin/permissions/Permissions.scss
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// PERMISSIONS PAGE (ADMIN)
+// Vue lecture des règles d'accès par statut — conforme "Refactor Admin" ux.md
+// ============================================================================
+
+.permissions-page {
+  max-width: size('1200');
+  margin: 0 auto;
+  padding: spacing('md') spacing('sm');
+
+  h1 {
+    text-align: center;
+    margin-bottom: spacing('sm');
+    color: text('default');
+  }
+
+  > p {
+    text-align: center;
+    color: text('light');
+    margin-bottom: spacing('xl');
+    font-size: font-size('sm');
+  }
+}
+
+// Section par contexte fonctionnel
+.permissions-section {
+  background: surface('soft');
+  border-radius: radius('rounded-12px');
+  padding: spacing('lg');
+  margin-bottom: spacing('xl');
+  border: border-width('thin') solid surface('border');
+
+  h2 {
+    margin: 0 0 spacing('md') 0;
+    color: text('default');
+    font-size: font-size('xl');
+    font-weight: font-weight('semibold');
+    padding-bottom: spacing('sm');
+    border-bottom: border-width('thin') solid surface('border');
+  }
+}
+
+// Grille de règles
+.permissions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+}
+
+.permissions-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: spacing('xs');
+  padding: spacing('sm') 0;
+  border-bottom: border-width('thin') solid surface('divider');
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &--header {
+    display: none; // masqué sur mobile
+    font-weight: font-weight('semibold');
+    font-size: font-size('xs');
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+    color: text('light');
+  }
+}
+
+.permissions-action {
+  font-size: font-size('sm');
+  color: text('default');
+  font-weight: font-weight('medium');
+  margin-bottom: spacing('xs');
+}
+
+.permissions-cells {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: spacing('xs');
+}
+
+.permissions-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('2');
+
+  &__role {
+    font-size: font-size('xs');
+    color: text('light');
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+  }
+
+  &__value {
+    font-size: font-size('base');
+  }
+}
+
+// Badges statuts
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: spacing('2') spacing('xs');
+  border-radius: radius('full');
+  font-size: font-size('xs');
+  font-weight: font-weight('semibold');
+
+  &--visitor {
+    background: surface('overlay');
+    color: text('secondary');
+  }
+
+  &--free {
+    background: surface('overlay');
+    color: text('secondary');
+  }
+
+  &--subscriber {
+    background: semantic('success', 'light');
+    color: semantic('success', 'dark');
+  }
+
+  &--admin {
+    background: semantic('info', 'light');
+    color: semantic('info', 'dark');
+  }
+}
+
+// Icônes accès
+.perm-allowed {
+  color: semantic('success', 'base');
+  font-size: font-size('lg');
+}
+
+.perm-denied {
+  color: semantic('error', 'base');
+  font-size: font-size('lg');
+}
+
+.perm-partial {
+  color: semantic('warning', 'base');
+  font-size: font-size('lg');
+}
+
+// Section quotas
+.permissions-quotas {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('sm');
+}
+
+.permissions-quota-row {
+  display: grid;
+  gap: spacing('sm');
+  padding: spacing('sm');
+  background: surface('bg');
+  border-radius: radius('md');
+  border: border-width('thin') solid surface('border');
+  grid-template-columns: 1fr;
+
+  &__label {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    color: text('default');
+  }
+
+  &__values {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: spacing('xs');
+    text-align: center;
+  }
+
+  &__value {
+    font-size: font-size('sm');
+    color: text('default');
+    font-weight: font-weight('semibold');
+
+    small {
+      display: block;
+      font-size: font-size('xs');
+      color: text('light');
+      font-weight: font-weight('regular');
+    }
+  }
+}
+
+// Footer
+.permissions-footer {
+  text-align: center;
+  padding: spacing('md') 0;
+  border-top: border-width('thin') solid surface('border');
+  margin-top: spacing('xl');
+}
+
+// [Desktop 576px+]
+@include respond-to(sm) {
+  .permissions-page {
+    padding: spacing('xl') spacing('md');
+  }
+
+  .permissions-row {
+    &--header {
+      display: grid;
+      grid-template-columns: 2fr repeat(4, 1fr);
+      gap: spacing('sm');
+    }
+  }
+
+  .permissions-quota-row {
+    grid-template-columns: 2fr auto;
+    align-items: center;
+  }
+}

@@ -23,6 +23,7 @@ import {
   type VisitorSequence as _VisitorSequence,
   type VisitorSequenceStep as _VisitorSequenceStep,
 } from './sequencesDB'
+import { getAllSlots } from './slotsDB'
 import { supabase } from '../supabaseClient'
 
 /** Résultat détaillé de l'import */
@@ -31,6 +32,7 @@ export interface ImportResult {
   imported_count: number
   skipped_count: number
   total_sequences: number
+  slots_imported?: number
   errors: Array<{
     error: string
     sqlstate?: string
@@ -126,7 +128,8 @@ export async function importVisitorSequences(): Promise<ImportResult> {
 
   // 2. Appeler RPC Supabase (ATOMIQUE)
   const { data, error } = await supabase.rpc('import_visitor_sequences_batch', {
-    p_sequences_json: payload,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    p_sequences_json: payload as any,
   })
 
   // 3. Gestion erreur RPC
@@ -145,24 +148,104 @@ export async function importVisitorSequences(): Promise<ImportResult> {
     throw new Error('Résultat RPC invalide (aucune donnée retournée)')
   }
 
-  const result = data as ImportResult
+  const result = data as unknown as ImportResult
 
-  // 5. Si succès confirmé, vider IndexedDB
-  if (result.success && result.imported_count > 0) {
+  // 5. Retourner résultat (cleanup IndexedDB géré par importAllVisitorData)
+  return result
+}
+
+/**
+ * Import des slots Visitor (IndexedDB) vers la timeline Supabase.
+ * Appelé uniquement par importAllVisitorData().
+ */
+async function importVisitorSlots(): Promise<{
+  success: boolean
+  imported_count: number
+}> {
+  const slots = await getAllSlots()
+
+  // Aucun slot → succès sans import
+  if (slots.length === 0) {
+    return { success: true, imported_count: 0 }
+  }
+
+  const payload = {
+    slots: slots.map(s => ({
+      kind: s.kind,
+      position: s.position,
+      card_id: s.card_id,
+      tokens: s.tokens,
+    })),
+  }
+
+  const { data, error } = await supabase.rpc(
+    'import_visitor_timelines_slots_batch',
+    {
+      p_slots_json: payload,
+    }
+  )
+
+  if (error) {
+    throw new Error(
+      `Erreur import slots : ${error.message} (code: ${error.code ?? 'unknown'})`
+    )
+  }
+
+  if (!data || typeof data !== 'object') {
+    throw new Error(
+      'Résultat RPC import_visitor_timelines_slots_batch invalide'
+    )
+  }
+
+  const result = data as {
+    success: boolean
+    imported_count: number
+    timeline_id: string
+  }
+  return { success: result.success, imported_count: result.imported_count }
+}
+
+/**
+ * Import atomique de TOUTES les données Visitor : séquences + slots.
+ *
+ * Workflow :
+ * 1. Import séquences (RPC import_visitor_sequences_batch)
+ * 2. Import slots (RPC import_visitor_timelines_slots_batch)
+ * 3. Cleanup IndexedDB UNIQUEMENT après les deux imports confirmés
+ * 4. Retourner résultat combiné { imported_count, slots_imported }
+ *
+ * ⚠️ Si séquences ou slots lancent une exception, IndexedDB n'est PAS vidée.
+ * L'utilisateur peut relancer l'import (les doublons séquences sont skippés).
+ */
+export async function importAllVisitorData(): Promise<ImportResult> {
+  // 1. Import séquences
+  const seqResult = await importVisitorSequences()
+
+  // 2. Import slots
+  const slotResult = await importVisitorSlots()
+
+  // 3. Cleanup IndexedDB APRÈS les deux imports (si au moins un a produit des données)
+  const hasImported =
+    (seqResult.success && seqResult.imported_count > 0) ||
+    (slotResult.success && slotResult.imported_count > 0)
+
+  if (hasImported) {
     try {
       await clearVisitorIndexedDB()
     } catch (cleanupError) {
       console.warn(
-        'Avertissement : Séquences importées avec succès, mais IndexedDB non vidée.',
+        'Avertissement : Données importées avec succès, mais IndexedDB non vidée.',
         cleanupError
       )
-      // Ne pas fail l'import à cause d'un problème de cleanup
-      // L'utilisateur pourra retry l'import, les doublons seront skippés
+      // Ne pas fail l'import — les doublons séquences seront skippés au prochain essai
     }
   }
 
-  // 6. Retourner résultat détaillé
-  return result
+  // 4. Résultat combiné
+  return {
+    ...seqResult,
+    slots_imported: slotResult.imported_count,
+  }
 }
 
 /**
@@ -177,6 +260,26 @@ export async function hasLocalSequences(): Promise<boolean> {
     return sequences.length > 0
   } catch (error) {
     console.warn('Erreur vérification séquences locales:', error)
+    return false
+  }
+}
+
+/**
+ * Vérifie si IndexedDB Visitor contient des données locales
+ * (slots OU séquences) pour déclencher la proposition d'import.
+ *
+ * @returns true si au moins une donnée locale existe (slot ou séquence)
+ */
+export async function hasLocalData(): Promise<boolean> {
+  try {
+    const [sequences, { getAllSlots }] = await Promise.all([
+      getAllSequences(),
+      import('./slotsDB'),
+    ])
+    const slots = await getAllSlots()
+    return sequences.length > 0 || slots.length > 0
+  } catch (error) {
+    console.warn('Erreur vérification données locales Visitor:', error)
     return false
   }
 }

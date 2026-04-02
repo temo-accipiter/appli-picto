@@ -7,18 +7,23 @@ import './ButtonDelete.scss'
 interface ButtonDeleteProps {
   onClick: () => void
   title?: string
+  disabled?: boolean
+  'aria-label'?: string
 }
 
 export default function ButtonDelete({
   onClick,
   title = 'Supprimer',
+  disabled = false,
+  'aria-label': ariaLabel,
 }: ButtonDeleteProps) {
   return (
     <motion.button
       className="button-delete"
       onClick={onClick}
       title={title}
-      aria-label={title}
+      aria-label={ariaLabel ?? title}
+      disabled={disabled}
       initial={{ opacity: 0, scale: 0.8 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.15 }}

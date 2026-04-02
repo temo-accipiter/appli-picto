@@ -725,7 +725,7 @@ export function SequenceEditor({
                         {...(slot.stepId && card && !isReadOnly
                           ? {
                               onRemove: () =>
-                                void handleRemoveExistingStep(slot.stepId),
+                                void handleRemoveExistingStep(slot.stepId!),
                             }
                           : {})}
                       />

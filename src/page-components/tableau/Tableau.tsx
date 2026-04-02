@@ -40,6 +40,7 @@ import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { Sequence } from '@/hooks/useSequences'
+import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import './Tableau.scss'
 
 const COMPLETION_REVEAL_DELAY_MS = 1200
@@ -104,7 +105,7 @@ function SlotCardWithSequence({
       onValidate={onValidate}
       isActive={isActive}
       hasSequence={sequence !== null}
-      sequenceSteps={sequenceSteps}
+      sequenceSteps={sequenceSteps as SequenceStep[]}
       sequenceStepsLoading={
         sequenceStepsLoading || (!!slot.card_id && !sequence)
       }
@@ -133,7 +134,14 @@ function findCard(
 
 // ─── Composant ───────────────────────────────────────────────────────────────
 
-export default function Tableau() {
+interface TableauProps {
+  /** Mode démo/visiteur (conservé pour compatibilité tests) */
+  isDemo?: boolean
+  /** Callback changement de ligne (conservé pour compatibilité tests) */
+  onLineChange?: (line: string) => void
+}
+
+export default function Tableau(_props: TableauProps = {}) {
   const { activeChildId } = useChildProfile()
   const { showTrain, showTimeTimer } = useDisplay()
   const prefersReducedMotion = useReducedMotion()
@@ -145,9 +153,7 @@ export default function Tableau() {
     refresh: refreshSlots,
   } = useSlots(timeline?.id ?? null)
   const { cards: bankCards, loading: bankLoading } = useBankCards()
-  const { cards: personalCards, loading: personalLoading } = usePersonalCards(
-    activeChildId ?? null
-  )
+  const { cards: personalCards, loading: personalLoading } = usePersonalCards()
 
   // ── Session active ──────────────────────────────────────────────────────────
   const {
@@ -211,7 +217,7 @@ export default function Tableau() {
 
     const isFirstLoad = localEpochRef.current === null
     const hasEpochChanged =
-      !isFirstLoad && session.epoch > localEpochRef.current
+      !isFirstLoad && session.epoch > localEpochRef.current!
 
     // ✅ CORRECTIF COMPLET : Rafraîchir TOUTES les données au premier chargement (F5) ET lors changement epoch
     // Raison : Au F5, localEpochRef.current est réinitialisé à null (useRef non persistant entre pages).
@@ -510,7 +516,7 @@ export default function Tableau() {
                 validated={isValidated}
                 sessionCompleted={isSessionCompleted}
                 isActive={!isSessionCompleted && slot.id === activeSlotId}
-                sequence={sequence}
+                sequence={sequence as Sequence | null}
                 bankCards={bankCards}
                 personalCards={personalCards}
                 onValidate={handleValidate}

@@ -132,10 +132,16 @@ describe('useAccountStatus', () => {
         mockChain({ data: { status: 'free' }, error: null })
       )
 
-      // Import frais avec le nouveau mock
-      const { default: hook } = await import(
+      // Import frais avec le nouveau mock — cache-busting via query string
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      type AnyModule = Promise<any>
+      // @ts-expect-error — module fictif pour cache-busting, remplacé par le vrai si introuvable
+      const visitorImport = import(
         './useAccountStatus?visitor'
-      ).catch(() => import('./useAccountStatus'))
+      ) as unknown as AnyModule
+      const { default: hook } = await visitorImport.catch(
+        () => import('./useAccountStatus')
+      )
 
       const { result } = renderHook(() => hook())
 

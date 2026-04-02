@@ -4,6 +4,7 @@ import Loader from '@/components/ui/loader/Loader'
 import { useAccountStatus } from '@/hooks'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import './AdminRoute.scss'
 
 interface AdminRouteProps {
   children: ReactNode
@@ -30,40 +31,15 @@ export default function AdminRoute({ children }: AdminRouteProps) {
 
   if (!isAdmin) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          fontFamily: 'system-ui, sans-serif',
-          padding: '2rem',
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          style={{ fontSize: '4rem', marginBottom: '1rem', color: '#5A9FB8' }}
-        >
+      <div className="admin-404">
+        <span className="admin-404__code" aria-hidden>
           404
-        </h1>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#666' }}>
-          Page non trouvée
-        </h2>
-        <p style={{ fontSize: '1rem', color: '#999', marginBottom: '2rem' }}>
+        </span>
+        <h1 className="admin-404__title">Page non trouvée</h1>
+        <p className="admin-404__desc">
           La page que vous recherchez n&apos;existe pas.
         </p>
-        <Link
-          href="/"
-          style={{
-            padding: '0.75rem 1.5rem',
-            fontSize: '1rem',
-            backgroundColor: '#5A9FB8',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '0.5rem',
-          }}
-        >
+        <Link href="/" className="admin-404__link">
           Retour à l&apos;accueil
         </Link>
       </div>

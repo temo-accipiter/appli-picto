@@ -40,7 +40,7 @@ export default function useParametres(reload = 0): UseParametresReturn {
 
     const { data, error, aborted } = await withAbortSafe(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      supabase.from('parametres').select('*').eq('id', 1).maybeSingle() as any
+      (supabase as any).from('parametres').select('*').eq('id', 1).maybeSingle()
     )
 
     if (aborted || (error && isAbortLike(error))) {
@@ -105,7 +105,9 @@ export default function useParametres(reload = 0): UseParametresReturn {
 
       const { error, aborted } = await withAbortSafe(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        supabase.from('parametres').upsert(payload, { onConflict: 'id' }) as any
+        (supabase as any)
+          .from('parametres')
+          .upsert(payload, { onConflict: 'id' })
       )
 
       if (aborted || (error && isAbortLike(error)))
@@ -151,7 +153,9 @@ export default function useParametres(reload = 0): UseParametresReturn {
 
       const { error, aborted } = await withAbortSafe(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        supabase.from('parametres').upsert(payload, { onConflict: 'id' }) as any
+        (supabase as any)
+          .from('parametres')
+          .upsert(payload, { onConflict: 'id' })
       )
 
       if (aborted || (error && isAbortLike(error)))

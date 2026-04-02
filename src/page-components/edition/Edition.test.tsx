@@ -15,6 +15,16 @@ import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderWithProviders } from '@/test/test-utils'
 import Edition from './Edition'
+
+// Props minimaux requis par Edition (architecture S4 : props reçues depuis page.tsx)
+const defaultEditionProps = {
+  timeline: null,
+  slots: [],
+  updateSlot: vi.fn().mockResolvedValue({ error: null }),
+  refreshSlots: vi.fn(),
+  bankCards: [],
+  refreshBankCards: vi.fn(),
+}
 import { server } from '@/test/mocks/server'
 import { http, HttpResponse } from 'msw'
 
@@ -51,7 +61,7 @@ describe('Edition - Test intégration', () => {
   })
 
   it('✅ affiche la page avec les sections Tâches et Récompenses', async () => {
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     // Attendre le chargement - La section tâches est maintenant toujours visible
     // avec le bouton "Options d'édition" pour les actions/filtres
@@ -66,7 +76,7 @@ describe('Edition - Test intégration', () => {
 
   it.skip('✅ affiche et masque la section Tâches au clic', async () => {
     // TODO: Ce test nécessite une meilleure configuration des mocks pour TachesEdition
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Tâches')).toBeInTheDocument()
@@ -96,7 +106,7 @@ describe('Edition - Test intégration', () => {
 
   it.skip('✅ affiche et masque la section Récompenses au clic', async () => {
     // TODO: Nécessite mocks pour RecompensesEdition
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Récompenses')).toBeInTheDocument()
@@ -149,7 +159,7 @@ describe('Edition - Test intégration', () => {
       })
     )
 
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     // Ouvrir la section Tâches
     await waitFor(() => {
@@ -195,7 +205,7 @@ describe('Edition - Test intégration', () => {
       })
     )
 
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     // Ouvrir la section Récompenses
     await waitFor(() => {
@@ -214,7 +224,7 @@ describe('Edition - Test intégration', () => {
 
   it.skip('✅ active/désactive les confettis', async () => {
     // TODO: Nécessite que parametres soient chargés via MSW
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText(/Confettis/)).toBeInTheDocument()
@@ -266,7 +276,7 @@ describe('Edition - Test intégration', () => {
       })
     )
 
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     // Ouvrir la section Tâches
     await waitFor(() => {
@@ -301,7 +311,7 @@ describe('Edition - Test intégration', () => {
     // Note: Ce test dépend de l'implémentation du hook useRBAC
     // qui devrait être testé séparément
 
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Tâches')).toBeInTheDocument()
@@ -323,7 +333,7 @@ describe('Edition - Test intégration', () => {
 
   it.skip("✅ affiche les indicateurs de quota d'images", async () => {
     // TODO: Nécessite mocks pour ImageQuotaIndicator
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Tâches')).toBeInTheDocument()
@@ -343,7 +353,7 @@ describe('Edition - Test intégration', () => {
 
   it.skip("✅ persiste l'état d'ouverture des sections dans sessionStorage", async () => {
     // TODO: Nécessite configuration plus robuste
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     await waitFor(() => {
       expect(screen.getByText('Tâches')).toBeInTheDocument()
@@ -418,7 +428,7 @@ describe('Edition - Test intégration', () => {
       })
     )
 
-    renderWithProviders(<Edition />)
+    renderWithProviders(<Edition {...defaultEditionProps} />)
 
     // Ouvrir la section Tâches
     await waitFor(() => {

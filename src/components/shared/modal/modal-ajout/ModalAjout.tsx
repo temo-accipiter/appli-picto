@@ -1,20 +1,20 @@
 'use client'
 
 import { Modal, ItemForm } from '@/components'
+import type { ItemFormData } from '@/components/shared/forms/ItemForm'
 import type { Categorie } from '@/types/global'
 import type { AssetType } from '@/utils/storage/modernUploadImage'
 
-// ✅ Importer ItemFormData depuis ItemForm (source de vérité)
-export type { ItemFormData } from '../forms/ItemForm'
+export type { ItemFormData }
 
 interface ModalAjoutProps {
   isOpen: boolean
   onClose: () => void
   includeCategory?: boolean
   categories?: Categorie[]
-  onSubmit: (data: import('../forms/ItemForm').ItemFormData) => void
-  assetType?: AssetType // ✅ Type upload (task_image, reward_image, card_image)
-  prefix?: string // ✅ Préfixe Storage (taches, recompenses, personal-images)
+  onSubmit: (data: ItemFormData) => void
+  assetType?: AssetType // conservé pour compatibilité appelants
+  prefix?: string // conservé pour compatibilité appelants
 }
 
 export default function ModalAjout({
@@ -23,17 +23,16 @@ export default function ModalAjout({
   includeCategory = false,
   categories = [],
   onSubmit,
-  assetType = 'task_image', // Défaut pour rétro-compatibilité
-  prefix = 'misc', // Défaut pour rétro-compatibilité
 }: ModalAjoutProps) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} actions={[]}>
       <ItemForm
         includeCategory={includeCategory}
-        categories={categories}
+        categories={(categories ?? []).map(c => ({
+          value: c.id,
+          label: c.name,
+        }))}
         onSubmit={onSubmit}
-        assetType={assetType}
-        prefix={prefix}
       />
     </Modal>
   )

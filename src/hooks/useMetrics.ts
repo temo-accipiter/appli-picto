@@ -86,7 +86,8 @@ export function useMetrics(): UseMetricsReturn {
             .gte('created_at', weekAgoISO),
 
           // Utilisateurs actifs (ayant créé une tâche dans les 7j)
-          supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any)
             .from('taches')
             .select('user_id')
             .gte('created_at', weekAgoISO),
@@ -112,7 +113,8 @@ export function useMetrics(): UseMetricsReturn {
             .gte('timestamp', weekAgoISO),
 
           // Stats images (7j)
-          supabase.rpc('get_image_analytics_summary'),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any).rpc('get_image_analytics_summary'),
 
           // Erreurs webhooks (7j)
           supabase
@@ -122,7 +124,8 @@ export function useMetrics(): UseMetricsReturn {
             .gte('timestamp', weekAgoISO),
 
           // Erreurs images (7j)
-          supabase
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (supabase as any)
             .from('image_metrics')
             .select('*', { count: 'exact', head: true })
             .eq('result', 'error')

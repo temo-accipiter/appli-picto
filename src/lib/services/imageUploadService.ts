@@ -149,7 +149,7 @@ export async function checkImageQuota(
   assetType: string
 ): Promise<QuotaCheckResult> {
   try {
-    const { data, error } = await supabase.rpc('check_image_quota', {
+    const { data, error } = await (supabase as any).rpc('check_image_quota', {
       p_user_id: userId,
       p_asset_type: assetType,
     })
@@ -252,14 +252,17 @@ export async function uploadImageWithQuota(
     if (uploadError) throw uploadError
 
     // 6. Enregistrement dans la table de suivi
-    const { error: trackingError } = await supabase.from('user_assets').insert({
-      user_id: userId,
-      asset_type: assetType,
-      file_path: filePath,
-      file_size: processedFile.size,
-      mime_type: processedFile.type,
-      dimensions: `unknown x unknown`,
-    })
+
+    const { error: trackingError } = await (supabase as any)
+      .from('user_assets')
+      .insert({
+        user_id: userId,
+        asset_type: assetType,
+        file_path: filePath,
+        file_size: processedFile.size,
+        mime_type: processedFile.type,
+        dimensions: `unknown x unknown`,
+      })
 
     if (trackingError) {
       console.warn('Erreur enregistrement tracking:', trackingError)
@@ -305,7 +308,8 @@ export async function deleteImageWithQuota(
     if (storageError) throw storageError
 
     // 2. Suppression de l'enregistrement de tracking
-    const { error: trackingError } = await supabase
+
+    const { error: trackingError } = await (supabase as any)
       .from('user_assets')
       .delete()
       .eq('user_id', userId)
@@ -327,9 +331,12 @@ export async function deleteImageWithQuota(
  */
 export async function getUserAssetsStats(userId: string): Promise<AssetsStats> {
   try {
-    const { data, error } = await supabase.rpc('get_user_assets_stats', {
-      p_user_id: userId,
-    })
+    const { data, error } = await (supabase as any).rpc(
+      'get_user_assets_stats',
+      {
+        p_user_id: userId,
+      }
+    )
 
     if (error) {
       // Si la fonction n'existe pas encore, retourner des stats par défaut

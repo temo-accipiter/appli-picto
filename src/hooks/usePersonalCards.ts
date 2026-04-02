@@ -17,7 +17,7 @@ export type PersonalCard = Card & {
   type: 'personal'
   account_id: string
   published: null
-  category_id?: string // ✅ Catégorie associée via user_card_categories (hydraté client-side)
+  category_id?: string | null // ✅ Catégorie associée via user_card_categories (hydraté client-side)
 }
 
 // Résultat des actions (erreur DB retournée telle quelle)
@@ -122,7 +122,7 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
           type: 'personal' as const,
           account_id: user.id,
           published: null,
-          category_id: mappingsMap.get(card.id), // undefined si pas de mapping (fallback "Sans catégorie" côté UI)
+          category_id: mappingsMap.get(card.id) ?? null, // null si pas de mapping (fallback "Sans catégorie" côté UI)
         }))
 
         setCards(hydratedCards)

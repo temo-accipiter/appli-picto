@@ -2,10 +2,12 @@
 
 import { DemoSignedImage, Modal, SignedImage } from '@/components'
 import { useI18n } from '@/hooks'
-import type { Recompense } from '@/types/global'
 import './ModalRecompense.scss'
 
-interface RewardWithDemo extends Recompense {
+interface RewardWithDemo {
+  id: string
+  imagepath: string | null
+  label: string
   isDemo?: boolean
 }
 

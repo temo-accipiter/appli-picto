@@ -79,7 +79,7 @@ export default function CookieBanner() {
     ua: navigator.userAgent,
     locale: navigator.language || 'fr',
     app_version: '1.0.0',
-    origin: typeof window !== 'undefined' ? window.location.hostname : null,
+    origin: typeof window !== 'undefined' ? window.location.origin : null,
     ts_client: new Date().toISOString(),
   })
 

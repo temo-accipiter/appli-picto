@@ -179,7 +179,7 @@ export default function useSequenceSteps(
 
       const reorderedSteps = [...steps]
       const [movedStep] = reorderedSteps.splice(currentIndex, 1)
-      reorderedSteps.splice(newPosition, 0, movedStep)
+      reorderedSteps.splice(newPosition, 0, movedStep!)
 
       return replaceSteps(reorderedSteps.map(step => step.step_card_id))
     },

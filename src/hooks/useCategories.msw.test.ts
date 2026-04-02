@@ -61,10 +61,10 @@ describe.skip('useCategories (avec MSW)', () => {
 
       // Vérifier que les catégories globales ET utilisateur sont présentes
       const globalCats = result.current.categories.filter(
-        c => c.user_id === null
+        c => c.account_id === null
       )
       const userCats = result.current.categories.filter(
-        c => c.user_id === TEST_USER_ID
+        c => c.account_id === TEST_USER_ID
       )
 
       expect(globalCats.length).toBeGreaterThan(0) // Catégories globales
@@ -146,7 +146,7 @@ describe.skip('useCategories (avec MSW)', () => {
                   id: '99',
                   value: (body as any)?.value,
                   label: (body as any)?.label,
-                  user_id: TEST_USER_ID,
+                  account_id: TEST_USER_ID,
                 },
               ],
               { status: 201 }
@@ -157,7 +157,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
       // Act
       await act(async () => {
-        await result.current.addCategory(newCategory)
+        await result.current.addCategory(newCategory.label)
       })
 
       // Assert
@@ -192,10 +192,7 @@ describe.skip('useCategories (avec MSW)', () => {
 
       // Act
       await act(async () => {
-        await result.current.addCategory({
-          value: 'duplicate',
-          label: 'Duplicate',
-        })
+        await result.current.addCategory('Duplicate')
       })
 
       // Assert
@@ -314,7 +311,7 @@ describe.skip('useCategories (avec MSW)', () => {
       // Assert
       await waitFor(() => {
         const globalCats = result.current.categories.filter(
-          c => c.user_id === null
+          c => c.account_id === null
         )
         expect(globalCats.length).toBeGreaterThan(0)
       })
@@ -327,7 +324,7 @@ describe.skip('useCategories (avec MSW)', () => {
       // Assert
       await waitFor(() => {
         const userCats = result.current.categories.filter(
-          c => c.user_id === TEST_USER_ID
+          c => c.account_id === TEST_USER_ID
         )
         expect(userCats.length).toBeGreaterThan(0)
       })
@@ -340,7 +337,7 @@ describe.skip('useCategories (avec MSW)', () => {
       // Assert
       await waitFor(() => {
         const otherUserCats = result.current.categories.filter(
-          c => c.user_id !== null && c.user_id !== TEST_USER_ID
+          c => c.account_id !== null && c.account_id !== TEST_USER_ID
         )
         expect(otherUserCats).toHaveLength(0)
       })

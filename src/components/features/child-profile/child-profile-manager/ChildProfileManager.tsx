@@ -172,7 +172,7 @@ export function ChildProfileManager() {
 
         if (activeProfiles.length > 0) {
           // Sélectionner le premier profil actif restant
-          setActiveChildId(activeProfiles[0].id)
+          setActiveChildId(activeProfiles[0]!.id)
         }
       }
     } catch (error) {

@@ -16,6 +16,15 @@ interface SubscriptionLog {
   details: Record<string, unknown> | null
 }
 
+interface SubscriptionData {
+  plan?: string
+  start_date?: string | null
+  current_period_start?: string
+  current_period_end?: string
+  cancel_at?: string | null
+  price_id?: string | null
+}
+
 interface CheckoutResponse {
   portal?: boolean
   url?: string
@@ -23,8 +32,14 @@ interface CheckoutResponse {
 
 export default function Abonnement() {
   const { user } = useAuth()
-  const { isActive, subscription, loading, daysUntilExpiry, statusDisplay } =
-    useSubscriptionStatus()
+  const {
+    isActive,
+    subscription: _sub,
+    loading,
+    daysUntilExpiry,
+    statusDisplay,
+  } = useSubscriptionStatus()
+  const subscription = _sub as SubscriptionData | null
   const { show: showToast } = useToast()
   const router = useRouter()
 
@@ -51,12 +66,12 @@ export default function Abonnement() {
         const { data, error } = await supabase
           .from('subscription_logs')
           .select('*')
-          .eq('user_id', user.id)
+          .eq('account_id', user.id)
           .order('timestamp', { ascending: false })
           .limit(20)
 
         if (error) throw error
-        setUserLogs((data as SubscriptionLog[]) || [])
+        setUserLogs((data as unknown as SubscriptionLog[]) || [])
       } catch (error) {
         console.error('Erreur chargement logs utilisateur:', error)
         // Ne pas afficher d'erreur à l'utilisateur, c'est optionnel
@@ -218,13 +233,13 @@ export default function Abonnement() {
           <div className="details-grid">
             <div className="detail-item">
               <label>Date de début :</label>
-              <span>{formatDate(subscription.start_date)}</span>
+              <span>{formatDate(subscription.start_date ?? null)}</span>
             </div>
             <div className="detail-item">
               <label>Période actuelle :</label>
               <span>
-                Du {formatDate(subscription.current_period_start)}
-                au {formatDate(subscription.current_period_end)}
+                Du {formatDate(subscription.current_period_start ?? null)}
+                au {formatDate(subscription.current_period_end ?? null)}
               </span>
             </div>
             {subscription.cancel_at && (
