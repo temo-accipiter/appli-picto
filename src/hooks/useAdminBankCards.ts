@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import useAuth from './useAuth'
+import { useAccountStatus } from '@/hooks'
 import { useRealtimeBankCards } from '@/contexts/RealtimeBankCardsContext'
 import type { Database } from '@/types/supabase'
 
@@ -67,11 +68,17 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
   const [error, setError] = useState<Error | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const { user, authReady } = useAuth()
+  const { isAdmin } = useAccountStatus()
 
   useEffect(() => {
     // Visitor / non-auth : pas de cartes admin
     if (!authReady) return
     if (!user) {
+      setCards([])
+      setLoading(false)
+      return
+    }
+    if (!isAdmin) {
       setCards([])
       setLoading(false)
       return
@@ -98,7 +105,6 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         setCards((data as AdminBankCard[]) || [])
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
-        console.error('[useAdminBankCards] Erreur lecture cartes bank:', err)
         setError(err as Error)
       } finally {
         if (!controller.signal.aborted) setLoading(false)
@@ -110,7 +116,7 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
     return () => {
       controller.abort()
     }
-  }, [user, authReady, refreshKey])
+  }, [user, authReady, isAdmin, refreshKey])
 
   const refresh = useCallback(() => {
     setRefreshKey(k => k + 1)
@@ -153,11 +159,8 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
             await sendBroadcastPersistent('card_published', {
               card_id: input.id,
             })
-          } catch (broadcastError) {
-            console.warn(
-              '[useAdminBankCards] Échec broadcast création:',
-              broadcastError
-            )
+          } catch {
+            // best-effort
           }
         }
       }
@@ -200,11 +203,8 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         try {
           const event = published ? 'card_published' : 'card_unpublished'
           await sendBroadcastPersistent(event, { card_id: id })
-        } catch (broadcastError) {
-          console.warn(
-            '[useAdminBankCards] Échec broadcast publication:',
-            broadcastError
-          )
+        } catch {
+          // best-effort
         }
       }
 
@@ -262,10 +262,6 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
           .eq('type', 'bank')
 
         if (deleteError) {
-          console.warn(
-            '[useAdminBankCards] Suppression refusée par la base de données:',
-            deleteError.message
-          )
           // ✅ Message contractuel : "Cette carte est utilisée et ne peut pas être supprimée"
           return {
             error: new Error(
@@ -280,19 +276,12 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         // 📢 Broadcast : Notifier la suppression immédiatement
         try {
           await sendBroadcastPersistent('card_deleted', { card_id: id })
-        } catch (broadcastError) {
-          console.warn(
-            '[useAdminBankCards] Échec broadcast suppression:',
-            broadcastError
-          )
+        } catch {
+          // best-effort
         }
 
         return { error: null }
       } catch (err) {
-        console.error(
-          '[useAdminBankCards] Erreur inattendue suppression carte:',
-          err
-        )
         return { error: err as Error }
       }
     },

@@ -31,15 +31,15 @@ export default function AdminRoute({ children }: AdminRouteProps) {
 
   if (!isAdmin) {
     return (
-      <div className="admin-404">
-        <span className="admin-404__code" aria-hidden>
+      <div className="not-found">
+        <span className="not-found__code" aria-hidden>
           404
         </span>
-        <h1 className="admin-404__title">Page non trouvée</h1>
-        <p className="admin-404__desc">
+        <h1 className="not-found__title">Page non trouvée</h1>
+        <p className="not-found__desc">
           La page que vous recherchez n&apos;existe pas.
         </p>
-        <Link href="/" className="admin-404__link">
+        <Link href="/" className="not-found__link">
           Retour à l&apos;accueil
         </Link>
       </div>

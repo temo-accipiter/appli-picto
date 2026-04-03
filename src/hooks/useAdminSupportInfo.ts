@@ -103,7 +103,6 @@ export default function useAdminSupportInfo(): UseAdminSupportInfoReturn {
       }
 
       if (fetchError) {
-        console.error('[useAdminSupportInfo] Erreur RPC:', fetchError)
         setError(fetchError)
         setLoading(false)
         return

@@ -18,7 +18,7 @@ import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
-import { useAccountPreferences } from '@/hooks'
+import { useAccountPreferences, useReducedMotion } from '@/hooks'
 import { TrainProgressBar } from '@/components'
 import './SessionComplete.scss'
 
@@ -47,7 +47,9 @@ export function SessionComplete({
 
   // Préférences utilisateur (confettis)
   const { preferences } = useAccountPreferences()
-  const confettiEnabled = preferences?.confetti_enabled ?? true
+  const confettiEnabled = preferences?.confetti_enabled ?? false
+  const reducedMotion =
+    useReducedMotion() || (preferences?.reduced_motion ?? false)
 
   // État confettis (affichés pendant 10 secondes)
   const [showConfetti, setShowConfetti] = useState(true)
@@ -96,7 +98,7 @@ export function SessionComplete({
       aria-live="polite"
     >
       {/* Confettis (si activés) */}
-      {showConfetti && confettiEnabled && (
+      {showConfetti && confettiEnabled && !reducedMotion && (
         <Confetti
           width={width}
           height={height}

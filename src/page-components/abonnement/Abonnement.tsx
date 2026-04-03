@@ -9,13 +9,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import './Abonnement.scss'
 
-interface SubscriptionLog {
-  id: string
-  timestamp: string
-  event_type: string
-  details: Record<string, unknown> | null
-}
-
 interface SubscriptionData {
   plan?: string
   start_date?: string | null
@@ -45,8 +38,6 @@ export default function Abonnement() {
 
   const [portalLoading, setPortalLoading] = useState(false)
   const [cancelLoading, setCancelLoading] = useState(false)
-  const [userLogs, setUserLogs] = useState<SubscriptionLog[]>([])
-  const [logsLoading, setLogsLoading] = useState(false)
 
   // Rediriger si pas d'abonnement actif
   useEffect(() => {
@@ -55,33 +46,6 @@ export default function Abonnement() {
       router.push('/profil')
     }
   }, [isActive, loading, router, showToast])
-
-  // Charger l'historique des logs de l'utilisateur
-  useEffect(() => {
-    if (!user?.id) return
-
-    const loadUserLogs = async () => {
-      setLogsLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from('subscription_logs')
-          .select('*')
-          .eq('account_id', user.id)
-          .order('timestamp', { ascending: false })
-          .limit(20)
-
-        if (error) throw error
-        setUserLogs((data as unknown as SubscriptionLog[]) || [])
-      } catch (error) {
-        console.error('Erreur chargement logs utilisateur:', error)
-        // Ne pas afficher d'erreur à l'utilisateur, c'est optionnel
-      } finally {
-        setLogsLoading(false)
-      }
-    }
-
-    loadUserLogs()
-  }, [user?.id])
 
   if (!user) {
     return (
@@ -182,23 +146,6 @@ export default function Abonnement() {
     })
   }
 
-  const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('fr-FR', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const formatEventType = (eventType: string) => {
-    return eventType
-      .replace(/\./g, ' → ')
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, l => l.toUpperCase())
-  }
-
   return (
     <div className="abonnement-page">
       <h1>Mon abonnement</h1>
@@ -290,37 +237,6 @@ export default function Abonnement() {
             jusqu&apos;à la fin de la période en cours.
           </p>
         </div>
-      </div>
-
-      {/* Historique des événements */}
-      <div className="abonnement-history">
-        <h3>Historique des événements</h3>
-
-        {logsLoading ? (
-          <p className="history-loading">Chargement de l&apos;historique...</p>
-        ) : userLogs.length > 0 ? (
-          <div className="history-list">
-            {userLogs.map(log => (
-              <div key={log.id} className="history-item">
-                <div className="history-header">
-                  <span className="history-event">
-                    {formatEventType(log.event_type)}
-                  </span>
-                  <span className="history-timestamp">
-                    {formatTimestamp(log.timestamp)}
-                  </span>
-                </div>
-                {log.details && Object.keys(log.details).length > 0 && (
-                  <div className="history-details">
-                    <pre>{JSON.stringify(log.details, null, 2)}</pre>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="no-history">Aucun événement enregistré</p>
-        )}
       </div>
 
       {/* Retour au profil */}

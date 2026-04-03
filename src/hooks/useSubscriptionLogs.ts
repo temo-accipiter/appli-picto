@@ -121,10 +121,6 @@ export default function useSubscriptionLogs(): UseSubscriptionLogsReturn {
 
         if (fetchError) {
           if (isAbortLike(fetchError)) return
-          console.error(
-            '[useSubscriptionLogs] Erreur lecture logs:',
-            fetchError
-          )
           setError(
             'Impossible de charger les logs. Vérifiez la connexion puis réessayez.'
           )
@@ -148,7 +144,6 @@ export default function useSubscriptionLogs(): UseSubscriptionLogsReturn {
         setHasMore(rows.length === ITEMS_PER_PAGE)
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
-        console.error('[useSubscriptionLogs] Erreur inattendue:', err)
         setError('Impossible de charger les logs pour le moment. Réessayez.')
         if (reset) {
           setLogs([])

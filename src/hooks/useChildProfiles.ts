@@ -37,6 +37,15 @@ interface UseChildProfilesReturn {
   createProfile: (
     name: string
   ) => Promise<{ profile: ChildProfile | null; error: string | null }>
+  /**
+   * Supprimer un profil enfant (DB-first).
+   * La DB refuse si c'est le dernier profil (trigger min 1).
+   * Retourne { success, error } — error est un message UX neutre.
+   * ⚠️ Réservé adulte — jamais en mode Tableau.
+   */
+  deleteProfile: (
+    profileId: string
+  ) => Promise<{ success: boolean; error: string | null }>
 }
 
 /**
@@ -163,11 +172,61 @@ export default function useChildProfiles(): UseChildProfilesReturn {
     [user]
   )
 
+  const deleteProfile = useCallback(
+    async (
+      profileId: string
+    ): Promise<{ success: boolean; error: string | null }> => {
+      if (!user) {
+        return { success: false, error: 'Non connecté' }
+      }
+
+      const { data, error: deleteError } = await supabase
+        .from('child_profiles')
+        .delete()
+        .eq('id', profileId)
+        .select('id')
+
+      if (deleteError) {
+        let message = 'Impossible de supprimer le profil. Réessaie plus tard.'
+
+        // Trigger "min 1 profil" lève ERRCODE 23514 (CHECK_VIOLATION)
+        if (
+          deleteError.code === '23514' ||
+          deleteError.message?.includes('child_profile_min_one_required') ||
+          deleteError.message?.includes('minimum')
+        ) {
+          message =
+            'Au moins 1 profil enfant doit être conservé. Supprimez votre compte entier pour effacer toutes vos données.'
+        }
+
+        console.error('[useChildProfiles] Erreur suppression:', deleteError)
+        return { success: false, error: message }
+      }
+
+      // Vérifier qu'une ligne a bien été supprimée (succès fantôme RLS)
+      if (!data || data.length !== 1) {
+        console.error(
+          '[useChildProfiles] Suppression silencieuse (RLS) — aucune ligne supprimée'
+        )
+        return {
+          success: false,
+          error: 'Impossible de supprimer le profil. Vérifiez vos permissions.',
+        }
+      }
+
+      // ✅ Rafraîchir la liste
+      setFetchTick(t => t + 1)
+      return { success: true, error: null }
+    },
+    [user]
+  )
+
   return {
     profiles,
     loading,
     error,
     refetch,
     createProfile,
+    deleteProfile,
   }
 }

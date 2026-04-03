@@ -110,6 +110,14 @@ interface ChildProfileContextValue {
   createChildProfile: (
     name: string
   ) => Promise<{ profile: ChildProfile | null; error: string | null }>
+  /**
+   * Supprimer un profil enfant (DB-first).
+   * Retourne { success, error } — error est un message UX neutre.
+   * ⚠️ NON DISPONIBLE en mode visitor (pas de DB).
+   */
+  deleteChildProfile: (
+    profileId: string
+  ) => Promise<{ success: boolean; error: string | null }>
   /** Rafraîchir la liste depuis la DB (no-op pour visitor) */
   refetchProfiles: () => void
   /** Mode visitor détecté (authReady && !user) */
@@ -142,6 +150,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     error: dbError,
     refetch: dbRefetch,
     createProfile: dbCreateProfile,
+    deleteProfile: dbDeleteProfile,
   } = useChildProfiles()
 
   // ── État local : ID du profil enfant actif ──────────────────────────────────
@@ -327,6 +336,22 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     [isVisitor, dbCreateProfile, setActiveChildId]
   )
 
+  // ── Wrapping deleteProfile (no-op pour visitor) ─────────────────────────────
+  const deleteChildProfile = useCallback(
+    async (
+      profileId: string
+    ): Promise<{ success: boolean; error: string | null }> => {
+      if (isVisitor) {
+        return {
+          success: false,
+          error: 'Fonctionnalité non disponible en mode visiteur',
+        }
+      }
+      return dbDeleteProfile(profileId)
+    },
+    [isVisitor, dbDeleteProfile]
+  )
+
   // ── Wrapping refetch (no-op pour visitor) ───────────────────────────────────
   const refetchProfiles = useCallback(() => {
     if (isVisitor) return // No-op pour visitor
@@ -343,6 +368,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       loading: isVisitor ? false : dbLoading,
       error: isVisitor ? null : dbError,
       createChildProfile,
+      deleteChildProfile,
       refetchProfiles,
       isVisitor,
     }),
@@ -355,6 +381,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       dbLoading,
       dbError,
       createChildProfile,
+      deleteChildProfile,
       refetchProfiles,
     ]
   )

@@ -24,7 +24,6 @@
  */
 
 import { useState } from 'react'
-import { supabase } from '@/utils/supabaseClient'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useToast } from '@/contexts'
 import { useOnlineStatus, useExecutionOnly } from '@/hooks'
@@ -39,7 +38,7 @@ interface DeleteState {
 }
 
 export function ChildProfileManager() {
-  const { childProfiles, activeChildId, setActiveChildId, refetchProfiles } =
+  const { childProfiles, activeChildId, setActiveChildId, deleteChildProfile } =
     useChildProfile()
   const { showToast } = useToast()
   const { isOnline } = useOnlineStatus()
@@ -110,43 +109,15 @@ export function ChildProfileManager() {
         return
       }
 
-      // DELETE child_profiles (CASCADE: timelines → slots → sessions)
-      // .select('id') pour vérifier qu'une ligne a été supprimée (éviter succès fantômes RLS)
-      const { data, error } = await supabase
-        .from('child_profiles')
-        .delete()
-        .eq('id', profile.id)
-        .select('id')
+      // DELETE via hook DB-first (gestion erreurs dans useChildProfiles)
+      const { success, error: deleteError } = await deleteChildProfile(
+        profile.id
+      )
 
-      if (error) {
-        console.error('❌ [ChildProfileManager] Erreur suppression:', error)
-
-        // Traduction erreur DB → message UX neutre
-        let errorMessage =
-          'Impossible de supprimer le profil. Réessayez plus tard.'
-
-        // Trigger "min 1 profil" lève ERRCODE 23514 (CHECK_VIOLATION)
-        if (
-          error.code === '23514' ||
-          error.message?.includes('child_profile_min_one_required') ||
-          error.message?.includes('minimum')
-        ) {
-          errorMessage =
-            'Au moins 1 profil enfant doit être conservé. Supprimez votre compte entier pour effacer toutes vos données.'
-        }
-
-        showToast(errorMessage, 'error')
-        setDeleteState({ isOpen: false, profile: null, loading: false })
-        return
-      }
-
-      // Vérifier qu'une ligne a été effectivement supprimée (pas succès fantôme RLS)
-      if (!data || data.length !== 1) {
-        console.error(
-          '❌ [ChildProfileManager] Suppression silencieuse (RLS policy) - aucune ligne supprimée'
-        )
+      if (!success) {
         showToast(
-          'Impossible de supprimer le profil. Vérifiez vos permissions.',
+          deleteError ??
+            'Impossible de supprimer le profil. Réessayez plus tard.',
           'error'
         )
         setDeleteState({ isOpen: false, profile: null, loading: false })
@@ -154,16 +125,10 @@ export function ChildProfileManager() {
       }
 
       // ✅ Suppression réussie
-      console.log('✅ [ChildProfileManager] Profil supprimé:', profile.id)
-
-      // Fermer modale
       setDeleteState({ isOpen: false, profile: null, loading: false })
-
-      // Toast succès
       showToast(`Profil "${profile.name}" supprimé avec succès`, 'success')
 
-      // Refresh liste profils
-      refetchProfiles()
+      // Le hook rafraîchit automatiquement via setFetchTick — refetchProfiles() n'est plus nécessaire
 
       // Si profil supprimé était actif → basculer vers un autre
       if (activeChildId === profile.id) {
@@ -265,14 +230,14 @@ export function ChildProfileManager() {
           confirmDisabled={deleteState.loading}
           closeOnConfirm={false}
         >
-          <h3 style={{ marginBottom: '1rem' }}>
+          <h3 className="child-profile-manager__modal-title">
             Supprimer le profil &quot;{deleteState.profile.name}&quot; ?
           </h3>
           <p>
             Cette action est <strong>irréversible</strong> et supprimera{' '}
             <strong>définitivement</strong> :
           </p>
-          <ul style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
+          <ul className="child-profile-manager__modal-list">
             <li>La timeline de {deleteState.profile.name}</li>
             <li>Tous les slots (étapes et récompenses)</li>
             <li>Toutes les sessions en cours</li>
@@ -282,7 +247,7 @@ export function ChildProfileManager() {
             <strong>Êtes-vous sûr de vouloir continuer ?</strong>
           </p>
           {deleteState.loading && (
-            <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>
+            <p className="child-profile-manager__modal-loading">
               Suppression en cours...
             </p>
           )}

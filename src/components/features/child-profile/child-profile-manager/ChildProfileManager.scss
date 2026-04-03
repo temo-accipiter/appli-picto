@@ -56,6 +56,20 @@
     color: text('primary');
   }
 
+  &__modal-title {
+    margin-bottom: spacing('md');
+  }
+
+  &__modal-list {
+    margin-left: spacing('lg');
+    margin-bottom: spacing('md');
+  }
+
+  &__modal-loading {
+    margin-top: spacing('md');
+    font-style: italic;
+  }
+
   &__badge {
     display: inline-flex;
     align-items: center;

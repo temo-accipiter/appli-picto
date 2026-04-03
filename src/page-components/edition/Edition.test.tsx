@@ -39,19 +39,6 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/edition',
 }))
 
-// Mock des services d'upload d'images
-vi.mock('@/lib/services/imageUploadService', () => ({
-  checkImageQuota: vi.fn().mockResolvedValue({
-    canUpload: true,
-    stats: { task_images: 2, reward_images: 1 },
-    quotas: { max_task_images: 40, max_reward_images: 10 },
-  }),
-  uploadImageWithQuota: vi.fn().mockResolvedValue({
-    filePath: 'test-image.jpg',
-    publicUrl: 'http://example.com/test-image.jpg',
-  }),
-}))
-
 describe('Edition - Test intégration', () => {
   beforeEach(() => {
     vi.clearAllMocks()

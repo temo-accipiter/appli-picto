@@ -1,7 +1,15 @@
 /**
  * 🔐 Helpers d'authentification pour tests E2E Playwright
  *
- * Fournit des utilitaires pour gérer l'authentification dans les tests E2E.
+ * Comptes seed (supabase/seed.sql) :
+ *   admin@local.dev       / Admin1234x → statut admin
+ *   test-subscriber@local.dev / Test1234x → statut subscriber
+ *   test-free@local.dev   / Test1234x → statut free
+ *
+ * Stratégie login :
+ *   On utilise directement window.supabase.auth.signInWithPassword() via page.evaluate().
+ *   Cela évite le CAPTCHA Turnstile (non validé par Supabase local de toute façon).
+ *   window.supabase est exposé par src/utils/supabaseClient.ts (ligne ~102).
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -16,213 +24,160 @@ export interface LoginCredentials {
 export interface TestUser {
   email: string
   password: string
-  role: 'free' | 'abonne' | 'admin' | 'visiteur'
+  role: 'free' | 'subscriber' | 'admin'
 }
 
 /**
- * Utilisateurs de test prédéfinis
+ * Comptes de test — créés par supabase/seed.sql après pnpm db:reset
  */
 export const TEST_USERS: Record<string, TestUser> = {
   free: {
-    email: 'test-free@appli-picto.test',
-    password: 'TestPassword123!',
+    email: 'test-free@local.dev',
+    password: 'Test1234x',
     role: 'free',
   },
-  abonne: {
-    email: 'test-abonne@appli-picto.test',
-    password: 'TestPassword123!',
-    role: 'abonne',
+  subscriber: {
+    email: 'test-subscriber@local.dev',
+    password: 'Test1234x',
+    role: 'subscriber',
   },
   admin: {
-    email: 'test-admin@appli-picto.test',
-    password: 'TestPassword123!',
+    email: 'admin@local.dev',
+    password: 'Admin1234x',
     role: 'admin',
   },
 }
 
 /**
- * Se connecter avec email et mot de passe
+ * Se connecter via l'API Supabase directement (sans UI, sans Turnstile).
  *
- * @param page - Page Playwright
- * @param credentials - Identifiants de connexion
- * @param waitForRedirect - Attendre la redirection après connexion (défaut: true)
- *
- * @example
- * await login(page, TEST_USERS.free)
- */
-export async function login(
-  page: Page,
-  credentials: LoginCredentials,
-  waitForRedirect = true
-): Promise<void> {
-  // Naviguer vers la page de connexion
-  await page.goto('/connexion')
-
-  // Remplir le formulaire
-  await page.getByLabel(/email|e-mail/i).fill(credentials.email)
-  await page.getByLabel(/mot de passe|password/i).fill(credentials.password)
-
-  // Soumettre le formulaire
-  await page
-    .getByRole('button', { name: /se connecter|connexion|login/i })
-    .click()
-
-  if (waitForRedirect) {
-    // Attendre la redirection (généralement vers /tableau ou /edition)
-    await page.waitForURL(/\/(tableau|edition|profil)/, { timeout: 10000 })
-  }
-
-  // Vérifier que l'utilisateur est connecté
-  await expect(page.getByText(credentials.email)).toBeVisible({ timeout: 5000 })
-}
-
-/**
- * Se connecter en tant qu'utilisateur de test spécifique
- *
- * @param page - Page Playwright
- * @param userRole - Rôle de l'utilisateur ('free', 'abonne', 'admin')
+ * Méthode :
+ *  1. Naviguer vers / pour initialiser le client Supabase
+ *  2. Attendre que window.supabase soit disponible
+ *  3. Appeler signInWithPassword via page.evaluate (pas de Turnstile requis côté local)
+ *  4. Recharger → la session est maintenant active dans localStorage
  *
  * @example
- * await loginAs(page, 'abonne')
+ * await loginAs(page, 'free')
+ * await loginAs(page, 'admin')
  */
 export async function loginAs(
   page: Page,
-  userRole: keyof typeof TEST_USERS
+  role: keyof typeof TEST_USERS
 ): Promise<void> {
-  const user = TEST_USERS[userRole]
-  if (!user) {
-    throw new Error(`User role "${userRole}" not found in TEST_USERS`)
-  }
-  await login(page, user)
+  const user = TEST_USERS[role]
+  if (!user) throw new Error(`Rôle inconnu : "${role}"`)
+  await loginViaAPI(page, user)
 }
 
-/**
- * Se déconnecter
- *
- * @param page - Page Playwright
- *
- * @example
- * await logout(page)
- */
-export async function logout(page: Page): Promise<void> {
-  // Chercher le bouton de déconnexion (peut être dans un menu)
-  const logoutButton = page.getByRole('button', {
-    name: /déconnexion|logout|sign out/i,
-  })
-
-  // Si le bouton n'est pas visible, essayer d'ouvrir le menu utilisateur
-  if (!(await logoutButton.isVisible())) {
-    const userMenu = page.getByRole('button', {
-      name: /profil|compte|account|menu/i,
-    })
-    if (await userMenu.isVisible()) {
-      await userMenu.click()
-    }
-  }
-
-  // Cliquer sur le bouton de déconnexion
-  await logoutButton.click()
-
-  // Attendre la redirection vers la page de connexion ou d'accueil
-  await page.waitForURL(/\/(connexion|accueil|$)/, { timeout: 10000 })
-}
-
-/**
- * Vérifier que l'utilisateur est connecté
- *
- * @param page - Page Playwright
- *
- * @example
- * await expectToBeLoggedIn(page)
- */
-export async function expectToBeLoggedIn(page: Page): Promise<void> {
-  // Vérifier qu'on n'est pas sur la page de connexion
-  await expect(page).not.toHaveURL(/\/connexion/)
-
-  // Vérifier qu'un élément caractéristique d'un utilisateur connecté est présent
-  // (peut varier selon l'application)
-  const userIndicator = page.locator(
-    '[data-testid="user-menu"], [aria-label*="profil" i]'
-  )
-  await expect(userIndicator).toBeVisible({ timeout: 5000 })
-}
-
-/**
- * Vérifier que l'utilisateur n'est pas connecté
- *
- * @param page - Page Playwright
- *
- * @example
- * await expectToBeLoggedOut(page)
- */
-export async function expectToBeLoggedOut(page: Page): Promise<void> {
-  // Vérifier qu'on est sur la page de connexion ou d'accueil
-  await expect(page).toHaveURL(/\/(connexion|accueil|$)/)
-}
-
-/**
- * Se connecter via l'API Supabase (plus rapide que via UI)
- *
- * Cette méthode est plus rapide car elle utilise directement l'API Supabase
- * au lieu de passer par l'interface utilisateur.
- *
- * @param page - Page Playwright
- * @param credentials - Identifiants de connexion
- *
- * @example
- * await loginViaAPI(page, TEST_USERS.free)
- */
 export async function loginViaAPI(
   page: Page,
   credentials: LoginCredentials
 ): Promise<void> {
-  // Injecter un script pour se connecter via l'API Supabase
+  // Naviguer pour charger l'app et initialiser window.supabase
   await page.goto('/')
+  await page.waitForLoadState('domcontentloaded')
 
-  await page.evaluate(async ({ email, password }) => {
-    // Utiliser le client Supabase global (si disponible)
-    const { supabase } = window as any
+  // Attendre que window.supabase soit exposé par l'app
+  await page.waitForFunction(() => !!(window as any).supabase, {
+    timeout: 15000,
+  })
 
-    if (!supabase) {
-      throw new Error('Supabase client not available')
-    }
+  // Sign in via Supabase JS client — pas de Turnstile requis en local
+  const result = await page.evaluate(
+    async ({ email, password }) => {
+      const client = (window as any).supabase
+      const { data, error } = await client.auth.signInWithPassword({
+        email,
+        password,
+      })
+      return {
+        userId: data?.user?.id ?? null,
+        errorMsg: error?.message ?? null,
+      }
+    },
+    { email: credentials.email, password: credentials.password }
+  )
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+  if (result.errorMsg || !result.userId) {
+    throw new Error(
+      `Login échoué pour ${credentials.email}: ${result.errorMsg ?? 'no user returned'}`
+    )
+  }
 
-    if (error) {
-      throw new Error(`Login failed: ${error.message}`)
-    }
+  // Recharger → session active dans localStorage + état React auth initialisé
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+}
 
-    return data
-  }, credentials)
-
-  // Attendre que l'authentification soit effective
-  await page.waitForTimeout(1000)
-
-  // Recharger la page pour que l'état d'authentification soit pris en compte
+/**
+ * Se déconnecter via l'API Supabase (sans UI).
+ */
+export async function logout(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const client = (window as any).supabase
+    if (client) await client.auth.signOut()
+  })
   await page.reload()
 }
 
 /**
- * Naviguer vers une page en mode visiteur (sans authentification)
+ * Vérifier que la page affiche la 404 neutre d'AdminRoute
+ * (sans révéler l'existence d'une route admin).
  *
- * @param page - Page Playwright
- *
- * @example
- * await visitAsGuest(page)
+ * Vérifie :
+ *  - h1 = "Page non trouvée"
+ *  - Aucun texte visible "admin", "forbidden", "permission"
  */
-export async function visitAsGuest(page: Page): Promise<void> {
-  // S'assurer qu'on est déconnecté
-  await page.goto('/')
+export async function expectNeutral404(page: Page): Promise<void> {
+  await expect(
+    page.getByRole('heading', { name: 'Page non trouvée' })
+  ).toBeVisible({ timeout: 8000 })
 
-  // Effacer le localStorage et les cookies pour être sûr
-  await page.evaluate(() => {
-    localStorage.clear()
-    sessionStorage.clear()
+  // Utiliser innerText (texte visible uniquement, sans les scripts Next.js)
+  const visibleText = await page.evaluate(() => document.body.innerText)
+  expect(visibleText.toLowerCase()).not.toContain('forbidden')
+  expect(visibleText.toLowerCase()).not.toContain('permission')
+  expect(visibleText.toLowerCase()).not.toContain('interdit')
+  expect(visibleText.toLowerCase()).not.toContain('non autorisé')
+
+  // "admin" ne doit pas apparaître dans le texte visible
+  // (peut être présent dans les attributs CSS/classes mais pas le texte)
+  const lowerVisible = visibleText.toLowerCase()
+  const adminIdx = lowerVisible.indexOf('admin')
+  if (adminIdx !== -1) {
+    // Extraire le contexte autour du mot trouvé
+    const snippet = visibleText.slice(Math.max(0, adminIdx - 20), adminIdx + 30)
+    throw new Error(
+      `Texte "admin" visible trouvé sur la page 404 neutre : "...${snippet}..."`
+    )
+  }
+}
+
+/**
+ * Mock Turnstile CAPTCHA — conservé pour les tests qui en ont besoin
+ * (ex: tests du flow login via UI).
+ *
+ * NOTE: La plupart des tests utilisent loginViaAPI() et n'ont pas besoin de ce mock.
+ */
+export async function mockTurnstile(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const MOCK_TOKEN = 'mock-turnstile-token-e2e'
+    ;(window as any).turnstile = {
+      ready: (cb: () => void) => setTimeout(cb, 10),
+      render: (_el: HTMLElement, options: Record<string, unknown>) => {
+        const cb =
+          (options.callback as ((t: string) => void) | undefined) ||
+          (options.onSuccess as ((t: string) => void) | undefined)
+        if (typeof cb === 'function') setTimeout(() => cb(MOCK_TOKEN), 100)
+        return 'mock-widget-id'
+      },
+      reset: () => {},
+      remove: () => {},
+      getResponse: () => MOCK_TOKEN,
+      isExpired: () => false,
+    }
   })
-
-  await page.context().clearCookies()
+  await page.route('**/challenges.cloudflare.com/**', route => route.abort())
+  await page.route('**/cloudflare.com/turnstile/**', route => route.abort())
 }

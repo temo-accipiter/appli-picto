@@ -75,13 +75,9 @@ export default function useSequences(
   const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    // 🆕 DEBUG LOG
-    console.log('[useSequences] useEffect triggered:', { enabled, refreshKey })
-
     // ⚠️ GUARD Ticket 3 : Pattern enabled pour adapter routing
     // Si enabled = false → hook inactif (utilisé par adapter Visitor/cloud)
     if (!enabled) {
-      console.log('[useSequences] SKIP (enabled = false)')
       setLoading(false)
       return
     }
@@ -92,7 +88,6 @@ export default function useSequences(
 
     const fetchSequences = async () => {
       try {
-        console.log('[useSequences] Fetching sequences from DB...')
         const { data, error: fetchError } = await supabase
           .from('sequences')
           .select('*')
@@ -102,7 +97,6 @@ export default function useSequences(
         if (controller.signal.aborted) return
         if (fetchError) throw fetchError
 
-        console.log('[useSequences] Sequences loaded:', data?.length ?? 0)
         setSequences(data ?? [])
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
