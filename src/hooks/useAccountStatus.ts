@@ -24,13 +24,22 @@
  * ```
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks'
 import useAuth from './useAuth'
 import type { Database } from '@/types/supabase'
 
 type AccountStatus = Database['public']['Enums']['account_status']
+
+interface StatusDisplay {
+  /** Libellé affiché dans l'UI */
+  label: string
+  /** Icône optionnelle */
+  icon: string
+  /** Couleur sémantique : 'success' | 'default' | 'info' */
+  color: string
+}
 
 interface UseAccountStatusReturn {
   /** Statut utilisateur : 'free' | 'subscriber' | 'admin' | null si non connecté */
@@ -45,6 +54,8 @@ interface UseAccountStatusReturn {
   isSubscriber: boolean
   /** Helper : utilisateur admin */
   isAdmin: boolean
+  /** Affichage cosmétique du statut (label, icon, color) */
+  statusDisplay: StatusDisplay
 }
 
 /**
@@ -108,6 +119,19 @@ export default function useAccountStatus(): UseAccountStatusReturn {
     }
   }, [user, authReady])
 
+  const statusDisplay = useMemo<StatusDisplay>(() => {
+    switch (status) {
+      case 'subscriber':
+        return { label: 'Actif', icon: '', color: 'success' }
+      case 'free':
+        return { label: 'Gratuit', icon: '', color: 'default' }
+      case 'admin':
+        return { label: 'Admin', icon: '', color: 'info' }
+      default:
+        return { label: 'Inconnu', icon: '', color: 'default' }
+    }
+  }, [status])
+
   return {
     status,
     loading,
@@ -115,5 +139,6 @@ export default function useAccountStatus(): UseAccountStatusReturn {
     isFree: status === 'free',
     isSubscriber: status === 'subscriber',
     isAdmin: status === 'admin',
+    statusDisplay,
   }
 }

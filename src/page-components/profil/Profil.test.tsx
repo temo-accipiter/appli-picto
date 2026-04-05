@@ -40,25 +40,16 @@ vi.mock('react-turnstile', () => ({
   default: () => null,
 }))
 
-// Mock useSubscriptionStatus
-vi.mock('@/hooks/useSubscriptionStatus', () => ({
+// Mock useAccountStatus
+vi.mock('@/hooks/useAccountStatus', () => ({
   default: () => ({
-    isActive: false,
-    status: null,
+    isSubscriber: false,
+    isFree: true,
+    isAdmin: false,
+    status: 'free',
     loading: false,
-    daysUntilExpiry: null,
-    isTrial: false,
-    isExpiringSoon: false,
-    currentPeriodEnd: null,
-  }),
-  useSubscriptionStatus: () => ({
-    isActive: false,
-    status: null,
-    loading: false,
-    daysUntilExpiry: null,
-    isTrial: false,
-    isExpiringSoon: false,
-    currentPeriodEnd: null,
+    error: null,
+    statusDisplay: { label: 'Gratuit', icon: '', color: 'default' },
   }),
 }))
 
@@ -135,7 +126,7 @@ describe('Profil - Test intégration', () => {
     })
 
     it.skip("✅ affiche le statut d'abonnement", async () => {
-      // TODO: Nécessite mock useSubscriptionStatus
+      // TODO: Nécessite mock useAccountStatus
       renderWithProviders(<Profil />)
 
       await waitFor(() => {

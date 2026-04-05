@@ -5,7 +5,6 @@ import {
   useAccountStatus,
   useAuth,
   useI18n,
-  useSubscriptionStatus,
   useCheckout,
   useDbPseudo,
 } from '@/hooks'
@@ -35,8 +34,7 @@ import './UserMenu.scss'
 
 export default function UserMenu() {
   const { user, signOut, authReady } = useAuth()
-  const { isActive, loading } = useSubscriptionStatus()
-  const { isAdmin } = useAccountStatus()
+  const { isSubscriber: isActive, isAdmin, loading } = useAccountStatus()
   const { t } = useI18n()
   const { handleCheckout } = useCheckout()
   const dbPseudo = useDbPseudo(user?.id)

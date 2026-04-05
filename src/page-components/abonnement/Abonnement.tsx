@@ -3,20 +3,11 @@
 // src/pages/abonnement/Abonnement.tsx
 import { Button, FloatingPencil } from '@/components'
 import { useToast } from '@/contexts'
-import { useAuth, useSubscriptionStatus } from '@/hooks'
+import { useAuth, useAccountStatus } from '@/hooks'
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import './Abonnement.scss'
-
-interface SubscriptionData {
-  plan?: string
-  start_date?: string | null
-  current_period_start?: string
-  current_period_end?: string
-  cancel_at?: string | null
-  price_id?: string | null
-}
 
 interface CheckoutResponse {
   portal?: boolean
@@ -25,14 +16,7 @@ interface CheckoutResponse {
 
 export default function Abonnement() {
   const { user } = useAuth()
-  const {
-    isActive,
-    subscription: _sub,
-    loading,
-    daysUntilExpiry,
-    statusDisplay,
-  } = useSubscriptionStatus()
-  const subscription = _sub as SubscriptionData | null
+  const { isSubscriber: isActive, loading, statusDisplay } = useAccountStatus()
   const { show: showToast } = useToast()
   const router = useRouter()
 
@@ -137,15 +121,6 @@ export default function Abonnement() {
     }
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Non défini'
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
-
   return (
     <div className="abonnement-page">
       <h1>Mon abonnement</h1>
@@ -160,50 +135,9 @@ export default function Abonnement() {
           </span>
           <div className="status-info">
             <h2>Statut : {statusDisplay.label}</h2>
-            <p className="status-details">
-              {subscription?.plan && `Plan : ${subscription.plan}`}
-              {daysUntilExpiry !== null && daysUntilExpiry >= 0 && (
-                <span className="expiry-warning">
-                  · Expire dans {daysUntilExpiry} jour
-                  {daysUntilExpiry > 1 ? 's' : ''}
-                </span>
-              )}
-            </p>
           </div>
         </div>
       </div>
-
-      {/* Détails de l'abonnement */}
-      {subscription && (
-        <div className="abonnement-details">
-          <h3>Détails de l&apos;abonnement</h3>
-          <div className="details-grid">
-            <div className="detail-item">
-              <label>Date de début :</label>
-              <span>{formatDate(subscription.start_date ?? null)}</span>
-            </div>
-            <div className="detail-item">
-              <label>Période actuelle :</label>
-              <span>
-                Du {formatDate(subscription.current_period_start ?? null)}
-                au {formatDate(subscription.current_period_end ?? null)}
-              </span>
-            </div>
-            {subscription.cancel_at && (
-              <div className="detail-item">
-                <label>Annulation prévue :</label>
-                <span>{formatDate(subscription.cancel_at)}</span>
-              </div>
-            )}
-            {subscription.price_id && (
-              <div className="detail-item">
-                <label>ID du prix :</label>
-                <span className="price-id">{subscription.price_id}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Actions */}
       <div className="abonnement-actions">

@@ -13,7 +13,7 @@ import {
 import { ChildProfileManager } from '@/components/features/child-profile'
 import DeviceList from '@/components/features/profil/device-list/DeviceList'
 import { useToast } from '@/contexts'
-import { useAuth, useI18n, useSubscriptionStatus } from '@/hooks'
+import { useAuth, useI18n, useAccountStatus } from '@/hooks'
 import useDeviceRegistration from '@/hooks/useDeviceRegistration'
 import {
   getDisplayPseudo,
@@ -34,7 +34,7 @@ function wait(ms: number): Promise<void> {
 
 export default function Profil() {
   const { t } = useI18n()
-  const { isActive, status, loading, daysUntilExpiry } = useSubscriptionStatus()
+  const { isSubscriber: isActive, status, loading } = useAccountStatus()
 
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
@@ -324,12 +324,7 @@ export default function Profil() {
           ) : isActive ? (
             <div className="subscription-badge subscription-badge--active">
               <span className="subscription-badge__icon">✅</span>
-              <span className="subscription-badge__text">
-                {status}
-                {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0
-                  ? ` · ${daysUntilExpiry}j`
-                  : ''}
-              </span>
+              <span className="subscription-badge__text">{status}</span>
             </div>
           ) : (
             <div className="subscription-badge subscription-badge--inactive">
@@ -446,11 +441,6 @@ export default function Profil() {
               <p className="subscription-details__status">
                 Statut : <strong>{status}</strong>
               </p>
-              {typeof daysUntilExpiry === 'number' && daysUntilExpiry >= 0 && (
-                <p className="subscription-details__expiry">
-                  Expire dans : <strong>{daysUntilExpiry} jours</strong>
-                </p>
-              )}
             </div>
 
             <Button
