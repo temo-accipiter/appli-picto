@@ -19,7 +19,6 @@ export { SequenceEditor, SequenceMiniTimeline } from './features/sequences'
 
 // Taches
 export { default as TachesDnd } from './features/taches/taches-dnd/TachesDnd'
-export { default as TachesEdition } from './features/taches/taches-edition/TachesEdition'
 export { default as TrainProgressBar } from './features/taches/train-progress-bar/TrainProgressBar'
 
 // Cards
@@ -30,7 +29,6 @@ export { default as TimeTimer } from './features/time-timer/TimeTimer'
 export { default as FloatingTimeTimer } from './features/time-timer/FloatingTimeTimer'
 
 // Recompenses
-export { default as RecompensesEdition } from './features/recompenses/recompenses-edition/RecompensesEdition'
 export { default as SelectedRewardFloating } from './features/recompenses/selected-reward-floating/SelectedRewardFloating'
 
 // Consent (cookies RGPD)

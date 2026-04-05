@@ -14,8 +14,7 @@ import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
 import { ChevronDown } from 'lucide-react'
-// ✅ Réutiliser le même CSS que TachesEdition
-import '@/components/features/taches/taches-edition/TachesEdition.scss'
+import './CardsEdition.scss'
 
 interface CardItem {
   id: string | number

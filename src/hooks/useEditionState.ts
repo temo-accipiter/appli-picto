@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react'
 /**
  * Hook partagé pour la logique d'état d'édition inline.
  *
- * Factorise le noyau commun à TachesEdition, RecompensesEdition,
- * CardsEdition : drafts, errors, successIds + primitives associées.
+ * Factorise le noyau utilisé par CardsEdition :
+ * drafts, errors, successIds + primitives associées.
  *
  * ⚠️ Ce hook N'expose PAS de handleBlur.
  * Chaque composant compose son propre handleBlur avec les primitives
