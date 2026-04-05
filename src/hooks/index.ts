@@ -48,6 +48,12 @@ export { default as useDebounce } from './useDebounce'
 export { useDragAnimation } from './useDragAnimation'
 export { useEscapeKey } from './useEscapeKey'
 export { useFocusTrap } from './useFocusTrap'
+export { useInlineConfirm } from './useInlineConfirm'
+export { useEditionState } from './useEditionState'
+export type {
+  UseEditionStateOptions,
+  UseEditionStateReturn,
+} from './useEditionState'
 export { useReducedMotion } from './useReducedMotion'
 export { useScrollLock } from './useScrollLock'
 export { useAudioContext } from './useAudioContext'
@@ -55,17 +61,7 @@ export { useTimerPreferences } from './useTimerPreferences'
 export { useTimerSvgPath, getNumberPosition } from './useTimerSvgPath'
 export { useCheckout } from './useCheckout'
 export { useDbPseudo } from './useDbPseudo'
-// ⛔ LEGACY — STABILIZATION PATCH avant S4
-// Ces hooks référencent des tables supprimées du nouveau schéma DB (taches, recompenses).
-// Les fichiers hooks sont conservés mais non exportés pour éviter toute réintroduction accidentelle.
-// Réactivation : S4 (useTimelines/useSlots), S5 (useSessions), S12 (useMetrics).
-//
-// export { useMetrics } from './useMetrics'
-// export { default as useFallbackData } from './useFallbackData'
 export { default as useRecompenses } from './useRecompenses'
-// export { default as useTaches } from './useTaches'
-// export { default as useTachesDnd } from './useTachesDnd'
-export { default as useTachesEdition } from './useTachesEdition'
 
 export { useI18n } from './useI18n'
 // S11 — Plateforme (account_preferences)
@@ -80,9 +76,7 @@ export type {
 } from './useAdminSupportInfo'
 export { default as useAdminBankCards } from './useAdminBankCards'
 export type { AdminBankCard } from './useAdminBankCards'
-export { default as useParametres } from './useParametres' // ⚠️ LEGACY — Remplacé par useAccountPreferences (S11)
 export { default as useStations } from './useStations'
-export { default as useSubscriptionStatus } from './useSubscriptionStatus'
 
 // Re-export hooks from contexts
 export { useLoading, useToast } from '@/contexts'
