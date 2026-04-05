@@ -23,7 +23,7 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { loginAs, expectNeutral404 } from './helpers'
+import { loginAs } from './helpers'
 
 // Setup commun : login admin avant chaque test (via API, sans Turnstile UI)
 test.beforeEach(async ({ page }) => {
