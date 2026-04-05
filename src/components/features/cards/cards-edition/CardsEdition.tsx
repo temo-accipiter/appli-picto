@@ -96,7 +96,10 @@ interface CardsEditionProps {
   /**
    * Handler édition nom carte banque (admin uniquement).
    */
-  onUpdateBankCardName?: (id: string, name: string) => Promise<void>
+  onUpdateBankCardName?: (
+    id: string,
+    name: string
+  ) => Promise<{ error: Error | null }>
   /**
    * Handler suppression carte banque (admin uniquement).
    */
@@ -421,7 +424,11 @@ export default function CardsEdition({
                                   }))
                                   return
                                 }
-                                await onUpdateBankCardName?.(bankCard.id, val)
+                                const result = await onUpdateBankCardName?.(
+                                  bankCard.id,
+                                  val
+                                )
+                                // Draft toujours nettoyé (même si erreur Supabase)
                                 setDrafts(prev => {
                                   const next = { ...prev }
                                   delete next[bankCard.id]
@@ -432,16 +439,19 @@ export default function CardsEdition({
                                   delete next[bankCard.id]
                                   return next
                                 })
-                                setSuccessIds(
-                                  prev => new Set([...prev, bankCard.id])
-                                )
-                                setTimeout(() => {
-                                  setSuccessIds(prev => {
-                                    const next = new Set(prev)
-                                    next.delete(bankCard.id)
-                                    return next
-                                  })
-                                }, 600)
+                                // Success uniquement si pas d'erreur Supabase
+                                if (!result?.error) {
+                                  setSuccessIds(
+                                    prev => new Set([...prev, bankCard.id])
+                                  )
+                                  setTimeout(() => {
+                                    setSuccessIds(prev => {
+                                      const next = new Set(prev)
+                                      next.delete(bankCard.id)
+                                      return next
+                                    })
+                                  }, 600)
+                                }
                               },
                             }
                           : {})}

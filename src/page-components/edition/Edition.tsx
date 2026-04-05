@@ -472,22 +472,26 @@ export default function Edition({
 
   // 🆕 Handler édition nom carte banque (admin uniquement)
   // Ouvre modal de confirmation avant modification
-  const handleUpdateBankCardName = async (id: string, newName: string) => {
+  const handleUpdateBankCardName = async (
+    id: string,
+    newName: string
+  ): Promise<{ error: Error | null }> => {
     if (!isAdmin || !updateBankCardName) {
       show('Action réservée aux administrateurs', 'error')
-      return
+      return { error: new Error('Action réservée aux administrateurs') }
     }
 
     // Trouver le nom actuel de la carte
     const card = rawBankCards.find(c => c.id === id)
-    if (!card) return
+    if (!card) return { error: new Error('Carte introuvable') }
 
-    // Ouvrir modal de confirmation
+    // Ouvrir modal de confirmation (pas d'erreur à cette étape)
     setBankCardToRename({
       id,
       oldName: card.name,
       newName,
     })
+    return { error: null }
   }
 
   // Handler de confirmation modification nom
