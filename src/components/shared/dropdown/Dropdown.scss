@@ -69,7 +69,9 @@
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-0.5rem);
+    transform: translateY(
+      -0.5rem
+    ); // TODO Phase 7 : valeur fixe keyframe (spacing() non applicable ici)
   }
   to {
     opacity: 1;

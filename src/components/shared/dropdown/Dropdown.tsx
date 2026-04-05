@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, ReactNode } from 'react'
+import React, { useEffect, useRef, ReactNode } from 'react'
 import type { MouseEvent } from 'react'
 import './Dropdown.scss'
 
@@ -64,11 +64,19 @@ export default function Dropdown({
 
   const dropdownClasses = `dropdown dropdown--${position} ${className}`.trim()
 
+  // Injecte aria-expanded sur le trigger pour conformité WCAG 2.2 AA
+  const augmentedTrigger = React.isValidElement(trigger)
+    ? React.cloneElement(
+        trigger as React.ReactElement<{ 'aria-expanded'?: boolean }>,
+        { 'aria-expanded': isOpen }
+      )
+    : trigger
+
   return (
     <div className="dropdown-wrapper">
       {/* Trigger */}
       <div ref={triggerRef} className="dropdown-trigger">
-        {trigger}
+        {augmentedTrigger}
       </div>
 
       {/* Dropdown Content */}

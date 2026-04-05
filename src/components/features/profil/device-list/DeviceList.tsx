@@ -18,6 +18,7 @@
 import { useState } from 'react'
 import useDevices from '@/hooks/useDevices'
 import type { Device } from '@/hooks/useDevices'
+import { useInlineConfirm } from '@/hooks'
 import './DeviceList.scss'
 
 /** Formatte une date ISO en date française lisible */
@@ -41,8 +42,8 @@ interface DeviceListProps {
 export default function DeviceList({ currentDeviceId }: DeviceListProps) {
   const { devices, loading, error, revokeDevice } = useDevices()
 
-  // Confirmation inline : ID du device en attente de confirmation
-  const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null)
+  // Confirmation inline 1-clic (TSA anti-surprise)
+  const { requireConfirm, cancelConfirm, isConfirming } = useInlineConfirm()
   // Révocation en cours : ID du device en cours de traitement
   const [revokingId, setRevokingId] = useState<string | null>(null)
   // Message d'erreur de révocation (non technique)
@@ -89,14 +90,14 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
    * Deuxième clic → exécute la révocation.
    */
   const handleRevoke = async (device: Device) => {
-    if (confirmRevokeId !== device.id) {
-      setConfirmRevokeId(device.id)
+    if (!isConfirming(device.id)) {
+      requireConfirm(device.id)
       setRevokeError(null)
       return
     }
 
     // Deuxième clic → exécute
-    setConfirmRevokeId(null)
+    cancelConfirm()
     setRevokingId(device.id)
     setRevokeError(null)
 
@@ -114,7 +115,7 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
       currentDeviceId !== null &&
       currentDeviceId !== undefined &&
       device.device_id === currentDeviceId
-    const isConfirming = confirmRevokeId === device.id
+    const isCurrentlyConfirming = isConfirming(device.id)
     const isRevoking = revokingId === device.id
 
     return (
@@ -166,30 +167,30 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
             <button
               type="button"
               className={`device-list__revoke-btn${
-                isConfirming ? ' device-list__revoke-btn--confirm' : ''
+                isCurrentlyConfirming ? ' device-list__revoke-btn--confirm' : ''
               }`}
               onClick={() => handleRevoke(device)}
               disabled={!!revokingId}
               aria-busy={isRevoking}
               aria-label={
-                isConfirming
+                isCurrentlyConfirming
                   ? 'Confirmer la révocation de cet appareil'
                   : 'Révoquer cet appareil'
               }
             >
               {isRevoking
                 ? 'Révocation…'
-                : isConfirming
+                : isCurrentlyConfirming
                   ? 'Confirmer la révocation ?'
                   : 'Révoquer'}
             </button>
 
             {/* Bouton annuler — visible uniquement pendant la confirmation */}
-            {isConfirming && (
+            {isCurrentlyConfirming && (
               <button
                 type="button"
                 className="device-list__cancel-btn"
-                onClick={() => setConfirmRevokeId(null)}
+                onClick={cancelConfirm}
                 aria-label="Annuler la révocation"
               >
                 Annuler

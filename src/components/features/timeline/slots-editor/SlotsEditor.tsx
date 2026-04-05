@@ -46,6 +46,7 @@ import useAdminBankCards from '@/hooks/useAdminBankCards'
 import usePersonalCards, { type PersonalCard } from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import type { Sequence } from '@/hooks/useSequences'
+import { useInlineConfirm } from '@/hooks'
 import { Modal } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
@@ -133,7 +134,12 @@ export function SlotsEditor({
   const [addingStep, setAddingStep] = useState(false)
   const [addingReward, setAddingReward] = useState(false)
   const [resettingSession, setResettingSession] = useState(false)
-  const [confirmReset, setConfirmReset] = useState(false)
+  // Confirmation inline 1-clic (TSA anti-surprise)
+  const {
+    requireConfirm: requireResetConfirm,
+    cancelConfirm: cancelResetConfirm,
+    isConfirming: isResetConfirming,
+  } = useInlineConfirm()
   const [actionError, setActionError] = useState<string | null>(null)
   const [optimisticSlots, setOptimisticSlots] = useState<Slot[] | null>(null)
   const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null)
@@ -192,9 +198,9 @@ export function SlotsEditor({
 
   useEffect(() => {
     if (!canResetSession) {
-      setConfirmReset(false)
+      cancelResetConfirm()
     }
-  }, [canResetSession])
+  }, [canResetSession, cancelResetConfirm])
 
   useEffect(() => {
     if (!activeSequenceSlot) return
@@ -323,12 +329,12 @@ export function SlotsEditor({
   const handleResetSession = async () => {
     if (!canResetSession) return
     // Premier clic → demande confirmation
-    if (!confirmReset) {
-      setConfirmReset(true)
+    if (!isResetConfirming('reset')) {
+      requireResetConfirm('reset')
       return
     }
     // Deuxième clic → exécute
-    setConfirmReset(false)
+    cancelResetConfirm()
     setResettingSession(true)
     setActionError(null)
     const { error: err } = await onResetSession()
@@ -583,12 +589,12 @@ export function SlotsEditor({
       <div className="slots-editor__reset-session">
         <button
           type="button"
-          className={`slots-editor__btn slots-editor__btn--reset${confirmReset ? ' slots-editor__btn--reset-confirm' : ''}`}
+          className={`slots-editor__btn slots-editor__btn--reset${isResetConfirming('reset') ? ' slots-editor__btn--reset-confirm' : ''}`}
           onClick={handleResetSession}
           disabled={isActionBusy || !canResetSession}
           aria-busy={resettingSession}
           aria-label={
-            confirmReset
+            isResetConfirming('reset')
               ? 'Confirmer la réinitialisation de la session'
               : canResetSession
                 ? 'Réinitialiser la session (recommencer depuis le début)'
@@ -602,16 +608,16 @@ export function SlotsEditor({
         >
           {resettingSession
             ? 'Réinitialisation…'
-            : confirmReset
+            : isResetConfirming('reset')
               ? 'Confirmer la réinitialisation ?'
               : 'Réinitialiser la session 🔄'}
         </button>
         {/* Annuler la confirmation */}
-        {confirmReset && canResetSession && (
+        {isResetConfirming('reset') && canResetSession && (
           <button
             type="button"
             className="slots-editor__btn slots-editor__btn--cancel"
-            onClick={() => setConfirmReset(false)}
+            onClick={cancelResetConfirm}
           >
             Annuler
           </button>
