@@ -10,7 +10,7 @@ import {
   SignedImage,
   DndGrid,
 } from '@/components'
-import { useI18n } from '@/hooks'
+import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
 import { ChevronDown } from 'lucide-react'
@@ -148,9 +148,6 @@ export default function CardsEdition({
   isAdmin = false,
   isFree = false,
 }: CardsEditionProps) {
-  const [errors, setErrors] = useState<Record<string | number, string>>({})
-  const [drafts, setDrafts] = useState<Record<string | number, string>>({})
-  const [successIds, setSuccessIds] = useState(new Set<string | number>())
   const [modalCardOpen, setModalCardOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
   const [newCatLabel, setNewCatLabel] = useState('')
@@ -163,47 +160,32 @@ export default function CardsEdition({
 
   const { t } = useI18n()
 
-  const validateLabel = (label: string): string => {
-    const trimmed = label.trim()
-    if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return t('card.invalidName')
-    }
-    return ''
-  }
-
-  const handleChange = (id: string | number, value: string) => {
-    setDrafts(prev => ({ ...prev, [id]: value }))
-    setErrors(prev => ({ ...prev, [id]: '' }))
-  }
+  const {
+    drafts,
+    errors,
+    successIds,
+    handleChange,
+    validateLabel,
+    clearDraft,
+    clearError,
+    setError,
+    triggerSuccess,
+  } = useEditionState({
+    validationErrorMessage: t('card.invalidName'),
+    successDuration: 600,
+  })
 
   const handleBlur = (id: string | number, value: string) => {
-    const error = validateLabel(value)
-    if (error) {
-      setErrors(prev => ({ ...prev, [id]: error }))
+    const err = validateLabel(value)
+    if (err) {
+      setError(id, err)
       return
     }
 
     onUpdateLabel(id, value)
-
-    setDrafts(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-    setErrors(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-
-    setSuccessIds(prev => new Set([...prev, id]))
-    setTimeout(() => {
-      setSuccessIds(prev => {
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
-    }, 600)
+    clearDraft(id)
+    clearError(id)
+    triggerSuccess(id)
   }
 
   const handleAddCategory = async (
@@ -429,10 +411,7 @@ export default function CardsEdition({
                               onBlur: async (val: string) => {
                                 const err = validateLabel(val)
                                 if (err) {
-                                  setErrors(prev => ({
-                                    ...prev,
-                                    [bankCard.id]: err,
-                                  }))
+                                  setError(bankCard.id, err)
                                   return
                                 }
                                 const result = await onUpdateBankCardName?.(
@@ -440,29 +419,10 @@ export default function CardsEdition({
                                   val
                                 )
                                 // Draft toujours nettoyé (même si erreur Supabase)
-                                setDrafts(prev => {
-                                  const next = { ...prev }
-                                  delete next[bankCard.id]
-                                  return next
-                                })
-                                setErrors(prev => {
-                                  const next = { ...prev }
-                                  delete next[bankCard.id]
-                                  return next
-                                })
+                                clearDraft(bankCard.id)
+                                clearError(bankCard.id)
                                 // Success uniquement si pas d'erreur Supabase
-                                if (!result?.error) {
-                                  setSuccessIds(
-                                    prev => new Set([...prev, bankCard.id])
-                                  )
-                                  setTimeout(() => {
-                                    setSuccessIds(prev => {
-                                      const next = new Set(prev)
-                                      next.delete(bankCard.id)
-                                      return next
-                                    })
-                                  }, 600)
-                                }
+                                if (!result?.error) triggerSuccess(bankCard.id)
                               },
                             }
                           : {})}

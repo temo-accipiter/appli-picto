@@ -11,7 +11,7 @@ import {
   SignedImage,
   DndGrid,
 } from '@/components'
-import { useI18n } from '@/hooks'
+import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
 import { ChevronDown } from 'lucide-react'
@@ -72,9 +72,6 @@ export default function ChecklistTachesEdition({
   onShowQuotaModal,
   onReorder,
 }: ChecklistTachesEditionProps) {
-  const [errors, setErrors] = useState<Record<string | number, string>>({})
-  const [drafts, setDrafts] = useState<Record<string | number, string>>({})
-  const [successIds, setSuccessIds] = useState(new Set<string | number>())
   const [showConfirmReset, setShowConfirmReset] = useState(false)
   const [modalTacheOpen, setModalTacheOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
@@ -86,47 +83,32 @@ export default function ChecklistTachesEdition({
 
   const { t } = useI18n()
 
-  const validateLabel = (label: string): string => {
-    const trimmed = label.trim()
-    if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return t('tasks.invalidName')
-    }
-    return ''
-  }
-
-  const handleChange = (id: string | number, value: string) => {
-    setDrafts(prev => ({ ...prev, [id]: value }))
-    setErrors(prev => ({ ...prev, [id]: '' }))
-  }
+  const {
+    drafts,
+    errors,
+    successIds,
+    handleChange,
+    validateLabel,
+    clearDraft,
+    clearError,
+    setError,
+    triggerSuccess,
+  } = useEditionState({
+    validationErrorMessage: t('tasks.invalidName'),
+    successDuration: 600,
+  })
 
   const handleBlur = (id: string | number, value: string) => {
-    const error = validateLabel(value)
-    if (error) {
-      setErrors(prev => ({ ...prev, [id]: error }))
+    const err = validateLabel(value)
+    if (err) {
+      setError(id, err)
       return
     }
 
     onUpdateLabel(id, value)
-
-    setDrafts(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-    setErrors(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-
-    setSuccessIds(prev => new Set([...prev, id]))
-    setTimeout(() => {
-      setSuccessIds(prev => {
-        const next = new Set(prev)
-        next.delete(id)
-        return next
-      })
-    }, 600)
+    clearDraft(id)
+    clearError(id)
+    triggerSuccess(id)
   }
 
   const handleAddCategory = async (
@@ -200,7 +182,7 @@ export default function ChecklistTachesEdition({
               ...categories.map(c => ({ value: c.id, label: c.name })),
             ]}
             value={filterCategory}
-            onChange={e => onChangeFilterCategory(e.target.value)}
+            onChange={value => onChangeFilterCategory(String(value))}
           />
           <Checkbox
             id="filter-done"

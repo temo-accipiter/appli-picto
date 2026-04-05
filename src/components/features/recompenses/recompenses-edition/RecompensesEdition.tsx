@@ -7,7 +7,7 @@ import {
   SignedImage,
   DndGrid,
 } from '@/components'
-import { useI18n } from '@/hooks'
+import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import './RecompensesEdition.scss'
 
@@ -47,61 +47,40 @@ export default function RecompensesEdition({
   onReorder,
 }: RecompensesEditionProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const [drafts, setDrafts] = useState<Record<string | number, string>>({})
-  const [errors, setErrors] = useState<Record<string | number, string>>({})
-  const [successIds, setSuccessIds] = useState(new Set<string | number>())
 
   const { t } = useI18n()
 
-  const validateLabel = (label: string): string => {
-    const trimmed = label.trim()
-    if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return t('rewards.invalidName')
-    }
-    return ''
-  }
-
-  const handleChange = (id: string | number, value: string) => {
-    setDrafts(prev => ({ ...prev, [id]: value }))
-    setErrors(prev => ({ ...prev, [id]: '' }))
-  }
+  const {
+    drafts,
+    errors,
+    successIds,
+    handleChange,
+    validateLabel,
+    clearDraft,
+    clearError,
+    setError,
+    triggerSuccess,
+  } = useEditionState({
+    validationErrorMessage: t('rewards.invalidName'),
+    successDuration: 600,
+  })
 
   const handleBlur = async (id: string | number, value: string) => {
-    const error = validateLabel(value)
-    if (error) {
-      setErrors(prev => ({ ...prev, [id]: error }))
+    const err = validateLabel(value)
+    if (err) {
+      setError(id, err)
       return
     }
 
     // Attendre le résultat de la mise à jour
     const result = await onLabelChange(id, value)
 
-    // Le toast est déjà géré dans le hook useRecompenses.updateLabel
-    // On ne fait que gérer l'état local du composant
-
-    setDrafts(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
-
-    setErrors(prev => {
-      const next = { ...prev }
-      delete next[id]
-      return next
-    })
+    // Draft toujours nettoyé (même si erreur Supabase)
+    clearDraft(id)
+    clearError(id)
 
     // Afficher l'indicateur de succès seulement si pas d'erreur
-    if (!result?.error) {
-      setSuccessIds(prev => new Set([...prev, id]))
-      setTimeout(() => {
-        setSuccessIds(prev => {
-          const next = new Set(prev)
-          next.delete(id)
-          return next
-        })
-      }, 600)
-    }
+    if (!result?.error) triggerSuccess(id)
   }
 
   return (
