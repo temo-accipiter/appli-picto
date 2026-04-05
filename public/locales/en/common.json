@@ -471,7 +471,8 @@
     "active": "Active",
     "name": "Name",
     "category": "Category",
-    "noCategory": "— No category —"
+    "noCategory": "— No category —",
+    "invalidName": "Invalid name"
   },
   "editionList": {
     "noItems": "No items"

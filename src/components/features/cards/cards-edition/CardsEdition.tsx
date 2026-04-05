@@ -161,7 +161,7 @@ export default function CardsEdition({
   const validateLabel = (label: string): string => {
     const trimmed = label.trim()
     if (!trimmed || trimmed !== label || /\s{2,}/.test(label)) {
-      return t('tasks.invalidName')
+      return t('card.invalidName')
     }
     return ''
   }
@@ -344,7 +344,7 @@ export default function CardsEdition({
                 ...categories.map(c => ({ value: c.id, label: c.name })),
               ]}
               value={filterCategory}
-              onChange={e => onChangeFilterCategory(e.target.value)}
+              onChange={value => onChangeFilterCategory(String(value))}
             />
           )}
         </div>
