@@ -106,7 +106,7 @@ src/
 **Hooks Custom Disponibles** :
 
 - **Données** : useTaches, useTachesEdition, useTachesDnd, useRecompenses, useCategories
-- **Auth** : useAuth, useRBAC, useSubscriptionStatus, useAccountStatus
+- **Auth** : useAuth, useRBAC, useAccountStatus
 - **UI** : useToast, useLoading, usePermissions
 
 ### Patterns Critiques
