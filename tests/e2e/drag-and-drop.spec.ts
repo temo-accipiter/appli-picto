@@ -15,7 +15,7 @@ import { test, expect, Page } from '@playwright/test'
 import {
   cleanupDatabase,
   createTestUser,
-  login,
+  loginViaAPI,
   expectNoA11yViolations,
 } from './helpers'
 
@@ -89,7 +89,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
   }) => {
     // Créer un utilisateur de test
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     // Créer 3 tâches
     await createTestTasks(page, 3)
@@ -132,7 +132,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
 
   test('Drag-and-drop - Animations fluides ≤ 150ms', async ({ page }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -175,7 +175,7 @@ test.describe('🎯 Drag-and-Drop - Réorganisation', () => {
 test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
   test('Réorganiser avec clavier - Tab, Espace, Flèches', async ({ page }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 3)
     await page.goto('/tableau')
@@ -227,7 +227,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -255,7 +255,7 @@ test.describe('♿ Drag-and-Drop - Accessibilité Clavier', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -291,7 +291,7 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
@@ -348,7 +348,7 @@ test.describe('🎨 Drag-and-Drop - Feedback Visuel', () => {
     page,
   }) => {
     const user = await createTestUser({ role: 'free' })
-    await login(page, { email: user.email, password: user.password })
+    await loginViaAPI(page, { email: user.email, password: user.password })
 
     await createTestTasks(page, 2)
     await page.goto('/tableau')
