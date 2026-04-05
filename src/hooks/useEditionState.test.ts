@@ -95,7 +95,7 @@ describe('useEditionState', () => {
       expect(result.current.validateLabel('   ')).toBe(ERROR_MSG)
     })
 
-    it("retourne le message pour un label avec espace en début", () => {
+    it('retourne le message pour un label avec espace en début', () => {
       const { result } = renderHook(() =>
         useEditionState({ validationErrorMessage: ERROR_MSG })
       )
@@ -103,7 +103,7 @@ describe('useEditionState', () => {
       expect(result.current.validateLabel(' label')).toBe(ERROR_MSG)
     })
 
-    it("retourne le message pour un label avec espace en fin", () => {
+    it('retourne le message pour un label avec espace en fin', () => {
       const { result } = renderHook(() =>
         useEditionState({ validationErrorMessage: ERROR_MSG })
       )
@@ -151,7 +151,7 @@ describe('useEditionState', () => {
   })
 
   describe('clearError', () => {
-    it("supprime errors[id] sans affecter les autres", () => {
+    it('supprime errors[id] sans affecter les autres', () => {
       const { result } = renderHook(() =>
         useEditionState({ validationErrorMessage: ERROR_MSG })
       )
