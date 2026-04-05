@@ -70,6 +70,9 @@ export { default as ExecutionOnlyBanner } from './shared/execution-only-banner/E
 // S10 — Devices (Page Profil)
 export { default as DeviceList } from './features/profil/device-list/DeviceList'
 
+export { default as AdminRoute } from './shared/admin-route/AdminRoute'
+export { default as LongPressLink } from './shared/long-press-link/LongPressLink'
+export { default as ModalVisitorImport } from './shared/modal/modal-visitor-import/ModalVisitorImport'
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'
 export { default as Dropdown } from './shared/dropdown/Dropdown'
@@ -81,7 +84,7 @@ export { default as TableauCard } from './shared/card/tableau-card/TableauCard'
 export { DndCard, DndSlot, DndGrid, useDndGrid } from './shared/dnd'
 export type { DndCardProps, DndSlotProps, DndGridProps } from './shared/dnd'
 export { default as DemoSignedImage } from './shared/demo-signed-image/DemoSignedImage'
-export { default as EditionList } from './shared/edition-list/EditionList'
+
 export { default as ErrorBoundary } from './shared/error-boundary/ErrorBoundary'
 export { default as ItemForm } from './shared/forms/ItemForm'
 export { default as InputWithValidation } from './shared/input-with-validation/InputWithValidation'
@@ -124,6 +127,7 @@ export { default as Input } from './ui/input/Input'
 export { default as Loader } from './ui/loader/Loader'
 export { default as PasswordChecklist } from './ui/password-checklist/PasswordChecklist'
 export { default as Select } from './ui/select/Select'
+export type { SelectOption, SelectProps } from './ui/select/Select'
 export { default as Toast } from './ui/toast/Toast'
 export {
   default as UploadProgress,
