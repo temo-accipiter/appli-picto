@@ -1,6 +1,6 @@
 'use client'
 
-import AdminRoute from '@/components/shared/admin-route/AdminRoute'
+import { AdminRoute } from '@/components'
 import dynamic from 'next/dynamic'
 
 // Chargement différé : le code admin n'est PAS inclus dans le bundle non-admin

@@ -3,8 +3,13 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState, useCallback } from 'react'
 import ProtectedRoute from '@/components/shared/protected-route/ProtectedRoute'
-import { CookieBanner, CookiePreferences, Footer, Navbar } from '@/components'
-import ModalVisitorImport from '@/components/shared/modal/modal-visitor-import/ModalVisitorImport'
+import {
+  CookieBanner,
+  CookiePreferences,
+  Footer,
+  ModalVisitorImport,
+  Navbar,
+} from '@/components'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks'
 import { hasLocalData } from '@/utils/visitor/importVisitorSequences'

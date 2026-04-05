@@ -12,9 +12,8 @@
 ### Identité & Auth
 
 - `useAuth()` — Authentification (user, authReady, signOut)
-- `useAccountStatus()` — Statut compte (free/subscriber/admin) — COSMÉTIQUE UNIQUEMENT
+- `useAccountStatus()` — Statut compte (free/subscriber/admin) + `statusDisplay` — COSMÉTIQUE UNIQUEMENT
 - `useAccountPreferences()` — Préférences utilisateur (train_enabled, reduced_motion)
-- `useSubscriptionStatus()` — Statut abonnement Stripe
 - `useIsVisitor()` — Détection mode visitor (local-only)
 
 ### Cartes & Catégories

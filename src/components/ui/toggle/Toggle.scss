@@ -74,7 +74,7 @@
   left: spacing('2');
   width: spacing('16');
   height: spacing('16');
-  background: white;
+  background: white(); // Token couleur blanc pur (#ffffff)
   border-radius: radius('full');
   box-shadow: var(--shadow-sm);
   transition: transform var(--motion-duration-quick)

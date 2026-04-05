@@ -11,7 +11,6 @@
 //    - surface('bg'/'border') → Semantics Phase 6 (#ffffff/#e2e8f0) ✅
 //    - radius('md'/'full') → Primitives Phase 6 (12px/50%) ✅
 //    - TSA-friendly : prefers-reduced-motion support ✅
-//    - Note: utilise gray() direct lignes 49 et 75 (sera refactoré Phase 7)
 //    - Autres tokens : Legacy support actif
 // ============================================================================
 
@@ -59,7 +58,7 @@
     }
 
     &:hover:not(:focus) {
-      border-color: gray(300);
+      border-color: surface('border'); // Token sémantique (Phase 6)
     }
   }
 
@@ -85,7 +84,7 @@
     );
 
     &:hover {
-      background: gray(300);
+      background: surface('overlay'); // Token sémantique (Phase 6)
       transform: scale(1.1);
     }
 
