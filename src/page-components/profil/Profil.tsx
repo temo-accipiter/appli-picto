@@ -34,7 +34,12 @@ function wait(ms: number): Promise<void> {
 
 export default function Profil() {
   const { t } = useI18n()
-  const { isSubscriber: isActive, status, loading } = useAccountStatus()
+  const {
+    isSubscriber: isActive,
+    status,
+    statusDisplay,
+    loading,
+  } = useAccountStatus()
 
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
@@ -324,12 +329,16 @@ export default function Profil() {
           ) : isActive ? (
             <div className="subscription-badge subscription-badge--active">
               <span className="subscription-badge__icon">✅</span>
-              <span className="subscription-badge__text">{status}</span>
+              <span className="subscription-badge__text">
+                {statusDisplay.label}
+              </span>
             </div>
           ) : (
             <div className="subscription-badge subscription-badge--inactive">
               <span className="subscription-badge__icon">⭕</span>
-              <span className="subscription-badge__text">Free</span>
+              <span className="subscription-badge__text">
+                {statusDisplay.label}
+              </span>
             </div>
           )}
         </div>
