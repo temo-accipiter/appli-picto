@@ -287,7 +287,7 @@ export default function ItemForm({
             ...categories.filter(c => c.value !== 'none'),
           ]}
           value={categorie}
-          onChange={e => setCategorie(e.target.value)}
+          onChange={value => setCategorie(String(value))}
         />
       )}
 

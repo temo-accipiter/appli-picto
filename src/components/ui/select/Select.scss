@@ -2,85 +2,282 @@
 @use '@styles/abstracts' as *;
 
 /// ============================================================================
-/// SELECT COMPONENT - Tokens-First
+/// SELECT COMPONENT - Tokens-First (Radix UI)
 /// ============================================================================
-/// Composant select (liste déroulante) atomique réutilisable
-/// - States: default, error, focus
-/// - WCAG 2.2 AA compliant (44px touch target, focus visible)
-/// - TSA-friendly animations (≤ 0.3s, prefers-reduced-motion)
+/// Composant select unifié (avec ou sans images)
+/// - Support images optionnel pour trigger et items
+/// - States: open, closed, highlighted, checked, disabled, error
+/// - WCAG 2.2 AA compliant (44px touch target, focus visible, contrastes)
+/// - TSA-friendly (animations douces ≤ 0.3s, prefers-reduced-motion)
 ///
 /// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
-/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/text/surface/semantic avec fallback
-///    - spacing('sm'/'8'/'12'/'md') → Primitives Phase 6 (8px/8px/12px/16px) ✅
-///    - radius('md') → Primitives Phase 6 (12px) ✅
-///    - text() → Semantics Phase 6 (#1e293b) ✅
-///    - surface('border'/'bg') → Semantics Phase 6 (#e2e8f0/#ffffff) ✅
-///    - semantic('error') → Semantics Phase 6 ✅
-///    - Autres tokens : Legacy support actif
+/// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/surface/text/semantic avec fallback
 /// ============================================================================
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SELECT FIELD WRAPPER
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.select-field {
+.select-with-image {
   // Layout
   display: flex;
-  align-items: center;
-  gap: spacing('sm'); // 8px entre label et select
+  flex-direction: column;
+  gap: spacing('xs'); // 4px
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // LABEL
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__label {
+    font-size: font-size('sm');
     font-weight: font-weight('semibold');
-    font-size: font-size('lg');
     color: text();
-    white-space: nowrap; // Évite retour à la ligne
+    margin: 0;
+  }
+
+  &__required {
+    color: semantic('error');
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // SELECT INPUT
+  // TRIGGER (RADIX UI BUTTON)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  &__select {
-    // Spacing
-    padding: spacing('8') spacing('12');
+  &__trigger {
+    // Position
+    position: relative;
 
-    // Typographie
-    font-size: font-size('base');
-    color: text();
-
-    // Apparence
-    border: border-width('base') solid surface('border');
-    border-radius: radius('md'); // 8px
-    background-color: surface('bg');
-    box-shadow: shadow('elevation-xs'); // Ombre subtile
+    // Layout
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('xs');
 
     // Dimensions
     width: 100%;
     min-height: size('touch-target-min'); // 44px WCAG AA
 
+    // Spacing
+    padding: spacing('8') spacing('sm');
+
+    // Apparence
+    background-color: surface('bg');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md'); // 8px
+    box-shadow: shadow('elevation-xs'); // Ombre subtile
+
+    // Typographie
+    color: text();
+    font-size: font-size('base');
+    font-family: inherit;
+
     // UX
     cursor: pointer;
+    user-select: none;
     @include safe-transition(
-      border-color box-shadow,
+      border-color background-color box-shadow,
       timing('fast'),
       easing('smooth')
     );
 
-    // Focus WCAG 2.2 AA
-    @include focus-ring;
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STATES
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // STATE: ERROR
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    &:hover:not([data-disabled]) {
+      background-color: surface('hover'); // Hover subtil
+    }
+
+    &:focus-visible {
+      @include focus-ring; // Focus standard WCAG
+    }
+
+    &[data-disabled] {
+      opacity: opacity('half'); // 0.5
+      cursor: not-allowed;
+    }
 
     &--error {
       border-color: semantic('error');
-      @include validation-glow('error'); // Glow rouge subtil
+      @include validation-glow('error'); // Glow rouge
+
+      &:focus-visible {
+        outline-color: semantic('error');
+      }
     }
+
+    &[data-state='open'] {
+      border-color: color('base'); // Bleu principal
+      @include validation-glow('focus'); // Glow bleu
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // SELECTED CONTENT (TRIGGER CONTENT)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__selected {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex: 1;
+    min-width: 0; // Permet text-overflow ellipsis
+  }
+
+  &__selected-image {
+    width: size('icon-xl'); // 32px
+    height: size('icon-xl');
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: radius('sm'); // 4px
+  }
+
+  &__selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__placeholder {
+    color: text('muted'); // Texte atténué
+    opacity: opacity('lg'); // 0.6
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CHEVRON ICON
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: size('icon-sm'); // 20px
+    height: size('icon-sm');
+    flex-shrink: 0;
+    color: text();
+    font-size: font-size('xs');
+
+    @include safe-transition(transform, timing('fast'), easing('smooth'));
+
+    [data-state='open'] & {
+      transform: rotate(180deg);
+    }
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DROPDOWN CONTENT (RADIX PORTAL)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__content {
+    // Position
+    z-index: z-index('modal');
+
+    // Dimensions (Radix vars)
+    width: var(--radix-select-trigger-width);
+    max-height: var(--radix-select-content-available-height);
+    overflow: hidden;
+
+    // Apparence
+    background-color: surface('bg');
+    border: border-width('base') solid surface('border');
+    border-radius: radius('md'); // 8px
+    box-shadow: shadow('elevation-lg'); // Ombre forte
+
+    // Animations TSA-friendly
+    &[data-state='open'] {
+      @include safe-animation(
+        slideDownAndFade,
+        timing('fast'),
+        // 0.15s
+        easing('smooth') // Easing doux (tokens-first)
+      );
+    }
+
+    &[data-state='closed'] {
+      @include safe-animation(slideUpAndFade, timing('fast'), easing('smooth'));
+    }
+  }
+
+  &__viewport {
+    padding: spacing('sm'); // 8px
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // DROPDOWN ITEM
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__item {
+    // Position
+    position: relative;
+
+    // Layout
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+
+    // Spacing
+    padding: spacing('xs') spacing('sm');
+
+    // Apparence
+    border-radius: radius('sm'); // 4px
+
+    // Typographie
+    font-size: font-size('sm');
+    color: text();
+
+    // UX
+    cursor: pointer;
+    user-select: none;
+    outline: none;
+    @include safe-transition(
+      background-color color,
+      timing('fast'),
+      easing('smooth')
+    );
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // STATES
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+    &[data-highlighted] {
+      background-color: surface('hover'); // Hover subtil
+    }
+
+    &[data-state='checked'] {
+      background-color: tsa-pastel('info-soft'); // Bleu pastel doux
+      font-weight: font-weight('semibold');
+    }
+
+    &[data-disabled] {
+      opacity: opacity('half'); // 0.5
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+  }
+
+  &__item-content {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__item-image {
+    width: size('icon-lg'); // 28px
+    height: size('icon-lg');
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: radius('sm'); // 4px
+  }
+
+  &__item-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__indicator {
+    position: absolute;
+    right: spacing('sm');
+    color: color('base'); // Bleu principal
+    font-weight: font-weight('semibold');
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -88,8 +285,42 @@
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__error {
-    color: semantic('error');
+    min-height: spacing('16');
     font-size: font-size('sm');
-    margin-inline-start: spacing('md'); // RTL-ready (margin-left en LTR)
+    color: semantic('error');
+    line-height: line-height('tight'); // 1.2
+    margin: 0;
+
+    @include safe-transition(opacity, timing('fast'), easing('smooth'));
+
+    &:empty {
+      opacity: opacity('none'); // 0
+    }
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// KEYFRAMES (LOCAL - SELECT-SPECIFIC)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+@keyframes slideDownAndFade {
+  from {
+    opacity: opacity('none'); // 0
+    transform: translateY(-4px); // -4px (valeur fixe animation OK)
+  }
+  to {
+    opacity: opacity('opaque'); // 1
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpAndFade {
+  from {
+    opacity: opacity('opaque'); // 1
+    transform: translateY(0);
+  }
+  to {
+    opacity: opacity('none'); // 0
+    transform: translateY(-4px); // -4px (valeur fixe animation OK)
   }
 }

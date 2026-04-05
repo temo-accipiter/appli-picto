@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { SelectWithImage } from '@/components/ui/select-with-image'
-import type { SelectWithImageOption } from '@/components/ui/select-with-image'
+import { Select } from '@/components'
+import type { SelectOption } from '@/components'
 import { COULEURS_LIGNES } from '@/config/constants/colors'
 import {
   useI18n,
@@ -144,7 +144,7 @@ export default function TrainProgressBar({
       <div className="toolbar">
         {/* Sélecteur de ligne : masqué pour Visitor (contrat §7.2 — aucune modification possible) */}
         {!isVisitor && (
-          <SelectWithImage
+          <Select
             id="ligne"
             label={t('tableau.selectLine')}
             value={ligne}
@@ -183,7 +183,7 @@ export default function TrainProgressBar({
                   image: '/images/ligne/ligne12.png',
                   imageAlt: 'Ligne 12',
                 },
-              ] as SelectWithImageOption[]
+              ] as SelectOption[]
             }
           />
         )}

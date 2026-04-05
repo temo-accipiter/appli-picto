@@ -132,8 +132,9 @@ const CardEdition = memo(function CardEdition({
             <Select
               id={`select-categorie-${labelId}`}
               value={selectedCategoryValue}
-              onChange={e => !disabled && onCategorieChange?.(e.target.value)}
-              includePlaceholder={false}
+              onChange={value =>
+                !disabled && onCategorieChange?.(String(value))
+              }
               options={
                 Array.isArray(categorieOptions) && categorieOptions.length > 0
                   ? categorieOptions
