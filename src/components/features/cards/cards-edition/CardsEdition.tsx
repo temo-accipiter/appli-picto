@@ -55,6 +55,7 @@ interface CardsEditionProps {
   filterCategory: string
   onChangeFilterCategory: (value: string) => void
   onReorder?: (ids: (string | number)[]) => void
+  onShowQuotaModal?: (type: string) => Promise<boolean>
   isSubmittingCategory?: boolean
   systemCategoryId?: string | null
   // ── PHASE 1 : Checkbox bibliothèque contrôlée par timeline ────────────────
@@ -131,6 +132,7 @@ export default function CardsEdition({
   filterCategory,
   onChangeFilterCategory,
   onReorder,
+  onShowQuotaModal,
   isSubmittingCategory = false,
   systemCategoryId = null,
   timelineSlots,
@@ -319,7 +321,16 @@ export default function CardsEdition({
           {!isFree && (
             <Button
               label={`➕ ${t('cards.addCard') || 'Créer carte'}`}
-              onClick={() => setModalCardOpen(true)}
+              onClick={async () => {
+                if (onShowQuotaModal) {
+                  const canOpen = await onShowQuotaModal('card')
+                  if (canOpen) {
+                    setModalCardOpen(true)
+                  }
+                } else {
+                  setModalCardOpen(true)
+                }
+              }}
             />
           )}
           {/* 🆕 Bouton création carte banque (admin uniquement) */}

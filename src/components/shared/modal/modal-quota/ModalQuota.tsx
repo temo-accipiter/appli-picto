@@ -4,7 +4,7 @@ import { Modal } from '@/components'
 import { useI18n } from '@/hooks'
 import './ModalQuota.scss'
 
-type ContentType = 'task' | 'reward' | 'category'
+type ContentType = 'task' | 'reward' | 'category' | 'card'
 type Period = 'total' | 'monthly'
 
 interface ModalQuotaProps {
@@ -31,6 +31,7 @@ export default function ModalQuota({
     task: 'tasks',
     reward: 'rewards',
     category: 'categories',
+    card: 'cards',
   }
 
   const translationKey = typeMap[contentType]

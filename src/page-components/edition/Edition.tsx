@@ -41,6 +41,13 @@ const ModalConfirm = lazy(() =>
 const CreateBankCardModal = lazy(() =>
   import('@/components').then(m => ({ default: m.CreateBankCardModal }))
 )
+const ModalQuota = lazy(() =>
+  import('@/components').then(m => ({ default: m.ModalQuota }))
+)
+
+// Limite stock cartes personnelles (Subscriber)
+// Doit rester en sync avec quota_cards_stock_limit(subscriber) en DB
+const CARD_STOCK_LIMIT = 50
 
 interface CardFormData {
   label: string
@@ -102,6 +109,8 @@ export default function Edition({
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false)
   // 🆕 Modal création carte banque (admin uniquement)
   const [showCreateBankCardModal, setShowCreateBankCardModal] = useState(false)
+  // Guard quota : affiché si limite stock atteinte avant ouverture modal création
+  const [showCardQuotaModal, setShowCardQuotaModal] = useState(false)
   // 🆕 Modals confirmation actions cartes banque (admin uniquement)
   const [bankCardToRename, setBankCardToRename] = useState<{
     id: string
@@ -205,6 +214,16 @@ export default function Edition({
   )
 
   const handleCardAjoutee = () => triggerReload()
+
+  // Guard proactif quota stock cartes (évite upload image inutile si limite atteinte)
+  // Quota mensuel : non détectable proactivement → géré réactivement dans handleSubmitCard
+  const handleShowCardQuotaModal = async (_type: string): Promise<boolean> => {
+    if (cards.length >= CARD_STOCK_LIMIT) {
+      setShowCardQuotaModal(true)
+      return false
+    }
+    return true
+  }
 
   const handleSubmitCard = async ({
     label,
@@ -633,6 +652,7 @@ export default function Edition({
             }))}
             categories={categories}
             onSubmitCard={handleSubmitCard}
+            onShowQuotaModal={handleShowCardQuotaModal}
             onAddCategory={handleAddCategoryWithQuota}
             onDeleteCategory={handleDeleteCategory}
             filterCategory={filterCategory}
@@ -804,7 +824,17 @@ export default function Edition({
         </ModalConfirm>
       </Suspense>
 
-      {/* ✅ DB-first : Pas de modal quota côté client */}
+      {/* Guard quota cartes : affiché avant ouverture modal création si limite stock atteinte */}
+      <Suspense fallback={null}>
+        <ModalQuota
+          isOpen={showCardQuotaModal}
+          onClose={() => setShowCardQuotaModal(false)}
+          contentType="card"
+          currentUsage={cards.length}
+          limit={CARD_STOCK_LIMIT}
+          period="total"
+        />
+      </Suspense>
     </div>
   )
 }
