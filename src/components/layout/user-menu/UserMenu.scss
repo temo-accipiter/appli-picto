@@ -53,8 +53,7 @@
 .user-menu-backdrop {
   position: fixed;
   inset: 0;
-  background: surface('overlay');
-  backdrop-filter: blur(size('4'));
+  background: transparent;
   z-index: z-index('tooltip');
   display: grid;
 

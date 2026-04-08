@@ -114,7 +114,7 @@ export default function AvatarProfil({
       {avatarPath ? (
         <SignedImage
           filePath={avatarPath}
-          bucket="avatars"
+          bucket="personal-images"
           alt={avatarAlt}
           size={160}
           className="avatar-profil"

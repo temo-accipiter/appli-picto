@@ -55,13 +55,22 @@ function generateUUID(): string {
 
 /**
  * Construit un chemin conforme à la RLS policy Storage.
- * Format: {userId}/{UUID}.{extension}
- * Compatible avec la policy: name ~ '^{userId}/[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'
+ * Format: {userId}/{subfolder}/{UUID}.jpg
+ * Compatible avec la policy: foldername[1]=userId, foldername[2]=subfolder, split_part(3)=UUID.jpg
+ *
+ * @param userId - auth.uid() de l'utilisateur connecté
+ * @param fileName - nom du fichier original (pour extraire l'extension)
+ * @param subfolder - sous-dossier dans le bucket ('cards' | 'avatars')
  */
-export function buildRLSPath(userId: string, fileName: string): string {
+export function buildRLSPath(
+  userId: string,
+  fileName: string,
+  subfolder: 'cards' | 'avatars' = 'cards'
+): string {
   const uuid = generateUUID()
-  const ext = fileName.split('.').pop()?.toLowerCase() || 'jpg'
-  return `${userId}/${uuid}.${ext}`
+  // La RLS impose .jpg strictement (regex: ^[0-9a-f-]{36}\.jpg$)
+  // Toutes les images sont normalisées vers .jpg — le contentType reste l'original
+  return `${userId}/${subfolder}/${uuid}.jpg`
 }
 
 /** Construit un chemin scoping par user, avec préfixe (ex: taches, recompenses) */
@@ -142,7 +151,7 @@ export async function uploadImage(
   }
 
   // CRITIQUE : Utiliser session.user.id (= auth.uid() dans RLS) pour le chemin
-  // La RLS policy vérifie: name ~ '^{auth.uid()}/[UUID].{ext}'
+  // La RLS policy vérifie: foldername[1]=auth.uid(), foldername[2]=subfolder, split_part(3)=UUID.jpg
   const authenticatedUserId = session.user.id
 
   // Chemin final - Utiliser authenticatedUserId pour garantir correspondance RLS

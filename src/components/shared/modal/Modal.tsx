@@ -105,9 +105,6 @@ export default function Modal({
         {/* Footer avec actions */}
         {actions.length > 0 && (
           <footer className="modal__footer">
-            {/* Bouton Annuler par défaut à gauche */}
-            <Button label="Annuler" onClick={onClose} variant="secondary" />
-            {/* Autres actions */}
             {actions.map((act, i) => (
               <Button
                 key={i}

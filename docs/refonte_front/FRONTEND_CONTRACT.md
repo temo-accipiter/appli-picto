@@ -390,7 +390,7 @@ Timeline entièrement éditable (toutes actions autorisées).
 
 | Action                                               | Visitor    | Free | Subscriber | Admin | Enforcement                             | Points critiques                                |
 | ---------------------------------------------------- | ---------- | ---- | ---------- | ----- | --------------------------------------- | ----------------------------------------------- |
-| Créer/éditer une séquence (≥2 étapes, sans doublons) | ✅ (local) | ❌   | ✅         | ✅    | DB (contraintes) / Local-only (Visitor) | UI DEVRAIT anticiper (minimum 2, no duplicates) |
+| Créer/éditer une séquence (≥2 étapes, sans doublons) | ✅ (local) | ✅   | ✅         | ✅    | DB (contraintes) / Local-only (Visitor) | UI DEVRAIT anticiper (minimum 2, no duplicates) |
 | Afficher mini‑timeline Tableau                       | ✅         | ✅   | ✅         | ✅    | DB (séquence)                           | État "fait" = local-only par `slot_id`          |
 | Validation carte mère via checkbox                   | ✅         | ✅   | ✅         | ✅    | DB (validation slot)                    | Tap sur image/nom = aucune action               |
 

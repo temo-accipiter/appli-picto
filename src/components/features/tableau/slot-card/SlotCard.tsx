@@ -164,9 +164,9 @@ export function SlotCard({
       {/* Nom de la carte */}
       <p className="slot-card__label">{cardLabel}</p>
 
-      {/* Bouton "Voir étapes" — visible uniquement sur la carte active (§3.1.4) */}
-      {/* §3.1.4 : bouton visible uniquement quand la carte mère est au focus (étape en cours) */}
-      {hasSequence && !validated && isActive && (
+      {/* Bouton "Voir étapes" — visible sur toutes les cartes avec séquence (§3.1.4 mis à jour) */}
+      {/* TSA : prévisibilité — la séquence est toujours visible, pas seulement sur la carte active */}
+      {hasSequence && !validated && (
         <button
           type="button"
           className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}

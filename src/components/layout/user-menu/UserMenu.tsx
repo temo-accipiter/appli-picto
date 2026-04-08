@@ -174,7 +174,7 @@ export default function UserMenu() {
         {avatarPath ? (
           <SignedImage
             filePath={avatarPath}
-            bucket="avatars"
+            bucket="personal-images"
             alt={avatarAlt}
             size={36}
           />
@@ -210,7 +210,7 @@ export default function UserMenu() {
               {avatarPath ? (
                 <SignedImage
                   filePath={avatarPath}
-                  bucket="avatars"
+                  bucket="personal-images"
                   alt=""
                   size={44}
                 />

@@ -368,10 +368,9 @@ export async function initializeDefaultSlots(): Promise<boolean> {
     return false
   }
 
-  // Créer 2 étapes + 1 récompense (vides)
+  // Créer 1 étape + 1 récompense (structure minimale par défaut)
   await createSlot('step') // Position 0
-  await createSlot('step') // Position 1
-  await createSlot('reward') // Position 2
+  await createSlot('reward') // Position 1
 
   return true
 }

@@ -28,7 +28,6 @@ export default function EditionPage() {
     loading: slotsLoading,
     error: slotsError,
     addStep,
-    addReward,
     updateSlot,
     removeSlot,
     refresh: refreshSlots,
@@ -55,7 +54,6 @@ export default function EditionPage() {
         slotsLoading={slotsLoading}
         slotsError={slotsError}
         addStep={addStep}
-        addReward={addReward}
         updateSlot={updateSlot}
         removeSlot={removeSlot}
         bankCards={bankCards}

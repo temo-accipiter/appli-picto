@@ -447,6 +447,8 @@ export default function Tableau(_props: TableauProps = {}) {
             La journée n&apos;est pas encore préparée.
           </p>
         </div>
+        {/* TimeTimer indépendant des slots (préférences utilisateur) */}
+        {showTimeTimer && <FloatingTimeTimer />}
       </div>
     )
   }

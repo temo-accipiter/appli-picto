@@ -61,6 +61,15 @@ export const validatePseudo = (
   return ''
 }
 
+export const makeValidatePseudo =
+  (t: TFunction) =>
+  (label: string | null | undefined): ValidationResult => {
+    const trimmed = String(label ?? '').trim()
+    if (trimmed.length > 30)
+      return t('validation.pseudoMaxLength')
+    return ''
+  }
+
 /* ➕ Normalisation finale (enregistrement) : supprime espaces doublons et bords */
 export const normalizeSpaces = (s: string | null | undefined): string =>
   (s ?? '').replace(/\s{2,}/g, ' ').trim()

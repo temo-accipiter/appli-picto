@@ -177,6 +177,12 @@ export default function CreateBankCardModal({
       showCloseButton={!isUploading}
       actions={[
         {
+          label: 'Annuler',
+          onClick: onClose,
+          variant: 'secondary',
+          disabled: isUploading,
+        },
+        {
           label: isUploading ? 'Création...' : 'Créer',
           onClick: handleCreate,
           variant: 'primary',

@@ -60,8 +60,6 @@ interface SlotsEditorProps {
   error?: Error | null
   /** Ajouter une étape */
   onAddStep: () => Promise<{ error: Error | null }>
-  /** Ajouter une récompense */
-  onAddReward: () => Promise<{ error: Error | null }>
   /** Modifier un slot (card_id et/ou tokens) */
   onUpdateSlot: (
     id: string,
@@ -114,7 +112,6 @@ export function SlotsEditor({
   loading = false,
   error = null,
   onAddStep,
-  onAddReward,
   onUpdateSlot,
   onRemoveSlot,
   sessionState = null,
@@ -132,7 +129,6 @@ export function SlotsEditor({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [swappingCards, setSwappingCards] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
-  const [addingReward, setAddingReward] = useState(false)
   const [resettingSession, setResettingSession] = useState(false)
   // Confirmation inline 1-clic (TSA anti-surprise)
   const {
@@ -186,7 +182,8 @@ export function SlotsEditor({
   // Visitor → IndexedDB local-only, Auth → Supabase cloud
   const { sequences, createSequence, deleteSequence, isVisitorSource } =
     useSequencesWithVisitor()
-  const canWriteCloudSequences = (isSubscriber || isAdmin) && !isExecutionOnly
+  // Comptes Free inclus : les cartes banque publique sont accessibles pour toutes les séquences
+  const canWriteCloudSequences = !isExecutionOnly
   const canCreateSequence = isVisitorSource || canWriteCloudSequences
   const isSequenceReadOnly = !isVisitorSource && !canWriteCloudSequences
   const sequenceCreationAvailabilityLoading =
@@ -282,14 +279,6 @@ export function SlotsEditor({
     if (err) setActionError(dbErrorToMessage(err))
   }
 
-  const handleAddReward = async () => {
-    setAddingReward(true)
-    setActionError(null)
-    const { error: err } = await onAddReward()
-    setAddingReward(false)
-    if (err) setActionError(dbErrorToMessage(err))
-  }
-
   const handleRemove = async (id: string) => {
     // ── S6 : Focus post-suppression (§3.2.2bis — UX TSA anti-choc) ────────────
     // AVANT suppression : calculer prochain slot à focus
@@ -346,7 +335,6 @@ export function SlotsEditor({
   // §6.1 catégorie #8 S9 : Actions structurelles désactivées si execution-only
   const isActionBusy =
     addingStep ||
-    addingReward ||
     swappingCards ||
     !!busyId ||
     resettingSession ||
@@ -572,17 +560,6 @@ export function SlotsEditor({
           {addingStep ? 'Ajout…' : '+ Étape 🎯'}
         </button>
 
-        {!hasRewardSlot && (
-          <button
-            type="button"
-            className="slots-editor__btn slots-editor__btn--reward"
-            onClick={handleAddReward}
-            disabled={isActionBusy}
-            aria-busy={addingReward}
-          >
-            {addingReward ? 'Ajout…' : '+ Récompense 🏆'}
-          </button>
-        )}
       </div>
 
       {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}

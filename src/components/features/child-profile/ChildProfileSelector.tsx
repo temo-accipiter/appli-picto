@@ -96,6 +96,16 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     const trimmed = name.trim()
     if (!trimmed) return
 
+    // Validation formelle côté client (alignée sur les contraintes DB)
+    if (trimmed.length > 50) {
+      setErrorMsg('Le prénom ne doit pas dépasser 50 caractères.')
+      return
+    }
+    if (/\s{2,}/.test(trimmed)) {
+      setErrorMsg('Le prénom ne doit pas contenir de doubles espaces.')
+      return
+    }
+
     setSubmitting(true)
     setErrorMsg(null)
 

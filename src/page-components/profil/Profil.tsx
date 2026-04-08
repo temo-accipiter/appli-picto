@@ -19,9 +19,12 @@ import {
   getDisplayPseudo,
   makeNoDoubleSpaces,
   makeNoEdgeSpaces,
+  makeValidatePseudo,
   normalizeSpaces,
+  validatePseudo,
   supabase,
 } from '@/utils'
+import { buildRLSPath } from '@/utils/storage/uploadImage'
 import React, { useEffect, useMemo, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Turnstile from 'react-turnstile'
@@ -77,6 +80,7 @@ export default function Profil() {
   // Créer les fonctions de validation i18n avec useMemo
   const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
   const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
+  const validatePseudoMaxLength = useMemo(() => makeValidatePseudo(t), [t])
 
   useEffect(() => {
     if (!user) return
@@ -146,11 +150,12 @@ export default function Profil() {
     }
 
     const previousAvatar = user.user_metadata?.avatar
-    const fileName = `${user.id}/${Date.now()}-${file.name}`
+    // Chemin RLS-compatible : {userId}/avatars/{UUID}.jpg
+    const fileName = buildRLSPath(user.id, file.name, 'avatars')
 
     if (previousAvatar) {
       const { error: deleteError } = await supabase.storage
-        .from('avatars')
+        .from('personal-images')
         .remove([previousAvatar])
       if (deleteError)
         console.warn('⚠️ Suppression ancien avatar :', deleteError)
@@ -158,9 +163,9 @@ export default function Profil() {
     }
 
     const { data, error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from('personal-images')
       .upload(fileName, file, {
-        upsert: true, // Écrase le fichier s'il existe déjà
+        upsert: true,
       })
 
     if (process.env.NODE_ENV === 'development') {
@@ -221,7 +226,7 @@ export default function Profil() {
     const avatarPath = user.user_metadata?.avatar
     if (!avatarPath) return
     const { error: deleteError } = await supabase.storage
-      .from('avatars')
+      .from('personal-images')
       .remove([avatarPath])
     if (deleteError) {
       showToast('❌ Erreur suppression', 'error')
@@ -348,7 +353,7 @@ export default function Profil() {
             id="pseudo"
             label={t('profil.pseudo')}
             value={pseudo}
-            rules={[noEdgeSpaces, noDoubleSpaces]}
+            rules={[noEdgeSpaces, noDoubleSpaces, validatePseudoMaxLength]}
             onChange={val => setPseudo(val)}
             onValid={val => setPseudo(normalizeSpaces(val))}
             ariaLabel={t('profil.pseudo')}

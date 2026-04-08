@@ -14,17 +14,6 @@
   box-shadow: shadow('elevation-lg'); // ✅ Harmonisé avec checklist-edition
   min-width: 0; // ✅ Empêche l'extension au-delà du parent (flex-item)
 
-  // ── Sticky : timeline toujours visible lors du scroll vers la bibliothèque ──
-  // Mobile-first (pas de navbar) : colle en haut de l'écran
-  position: sticky;
-  top: 0;
-  z-index: z-index('sticky');
-
-  // Desktop (≥768px) : navbar fixe (height: size('64')) → décaler dessous
-  @include respond-to('md') {
-    top: size('64');
-  }
-
   &__top-bar {
     display: flex;
     justify-content: space-between;
@@ -41,6 +30,17 @@
     position: relative;
     display: inline-flex;
     align-items: center;
+
+    // Pont transparent : comble le gap entre le trigger (avatar) et le popover
+    // Évite que la souris "sorte" du parent en traversant le margin-top du popover
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: spacing('xs');
+    }
   }
 
   &__profile-trigger {

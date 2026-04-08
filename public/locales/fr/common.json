@@ -482,6 +482,7 @@
     "nameRequired": "Le nom est requis",
     "noEdgeSpaces": "Pas d'espace en début/fin",
     "noDoubleSpaces": "Pas de doubles espaces",
+    "pseudoMaxLength": "Le pseudo ne doit pas dépasser 30 caractères",
     "chooseImage": "Choisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)",
     "unsupportedFormat": "Format non supporté.\nChoisis une image (PNG, JPEG/JPG, SVG, WEBP ≤ 100 Ko)",
     "corruptedFile": "Fichier image corrompu ou invalide.",

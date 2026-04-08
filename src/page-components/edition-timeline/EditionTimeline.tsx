@@ -47,7 +47,6 @@ interface EditionTimelineProps {
   slotsLoading: boolean
   slotsError: Error | null
   addStep: () => Promise<{ error: Error | null }>
-  addReward: () => Promise<{ error: Error | null }>
   updateSlot: (
     id: string,
     updates: { card_id?: string | null; tokens?: number | null }
@@ -68,7 +67,6 @@ export default function EditionTimeline({
   slotsLoading,
   slotsError,
   addStep,
-  addReward,
   updateSlot,
   removeSlot,
   bankCards,
@@ -232,11 +230,6 @@ export default function EditionTimeline({
   const safeAddStep = async () => {
     if (guardStructural()) return { error: null }
     return addStep()
-  }
-
-  const safeAddReward = async () => {
-    if (guardStructural()) return { error: null }
-    return addReward()
   }
 
   const safeUpdateSlot = async (
@@ -428,7 +421,6 @@ export default function EditionTimeline({
           loading={slotsLoading}
           error={slotsError}
           onAddStep={safeAddStep}
-          onAddReward={safeAddReward}
           onUpdateSlot={safeUpdateSlot}
           onRemoveSlot={safeRemoveSlot}
           sessionState={session?.state ?? null}

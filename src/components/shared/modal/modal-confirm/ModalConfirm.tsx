@@ -23,16 +23,20 @@ export default function ModalConfirm({
   confirmLabel,
   confirmDisabled = false,
   closeOnConfirm = true,
-  cancelLabel: _cancelLabel,
+  cancelLabel,
   children,
 }: ModalConfirmProps) {
   const { t } = useI18n()
-  // Note: Bouton "Annuler" est maintenant ajouté automatiquement par Modal.tsx dans le footer
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       actions={[
+        {
+          label: cancelLabel || t('actions.cancel'),
+          onClick: onClose,
+          variant: 'secondary',
+        },
         {
           label: confirmLabel || t('actions.confirm'),
           onClick: () => {
