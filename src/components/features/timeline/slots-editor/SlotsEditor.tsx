@@ -144,11 +144,7 @@ export function SlotsEditor({
   )
 
   // Chargement des cartes une seule fois, transmises à chaque SlotItem
-  const {
-    loading: accountStatusLoading,
-    isSubscriber,
-    isAdmin,
-  } = useAccountStatus()
+  const { loading: accountStatusLoading, isAdmin } = useAccountStatus()
 
   // 🆕 Cartes banque : source unique depuis page parent (si fourni), sinon hooks internes
   const publicBankCardsHook = useBankCards()
@@ -454,7 +450,7 @@ export function SlotsEditor({
     )
   }
 
-  const hasRewardSlot = displayedSlots.some(s => s.kind === 'reward')
+  const _hasRewardSlot = displayedSlots.some(s => s.kind === 'reward')
   const stepSlotsCount = displayedSlots.filter(s => s.kind === 'step').length
 
   // ✅ Récompenses en premier, puis étapes (ordre position ASC dans chaque groupe)
@@ -559,7 +555,6 @@ export function SlotsEditor({
         >
           {addingStep ? 'Ajout…' : '+ Étape 🎯'}
         </button>
-
       </div>
 
       {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}

@@ -65,8 +65,7 @@ export const makeValidatePseudo =
   (t: TFunction) =>
   (label: string | null | undefined): ValidationResult => {
     const trimmed = String(label ?? '').trim()
-    if (trimmed.length > 30)
-      return t('validation.pseudoMaxLength')
+    if (trimmed.length > 30) return t('validation.pseudoMaxLength')
     return ''
   }
 

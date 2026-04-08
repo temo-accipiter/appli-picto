@@ -21,7 +21,6 @@ import {
   makeNoEdgeSpaces,
   makeValidatePseudo,
   normalizeSpaces,
-  validatePseudo,
   supabase,
 } from '@/utils'
 import { buildRLSPath } from '@/utils/storage/uploadImage'

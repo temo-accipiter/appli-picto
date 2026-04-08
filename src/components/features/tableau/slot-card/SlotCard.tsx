@@ -40,8 +40,6 @@ interface SlotCardProps {
   /** Callback de validation — appelé quand l'enfant coche la case */
   onValidate: (slotId: string) => void
   // ── S7 : Séquence (optionnel) ──────────────────────────────────────────────
-  /** Cette carte est-elle la carte "active" (focus) ? Utilisé pour afficher le bouton "Voir étapes" (§3.1.4) */
-  isActive?: boolean
   /** Une séquence existe pour cette carte, même si ses étapes chargent encore */
   hasSequence?: boolean
   /** Étapes de la séquence associée à cette carte (vide = pas de séquence) */
@@ -60,7 +58,6 @@ export function SlotCard({
   validated,
   sessionCompleted,
   onValidate,
-  isActive = false,
   hasSequence = false,
   sequenceSteps = [],
   sequenceStepsLoading = false,

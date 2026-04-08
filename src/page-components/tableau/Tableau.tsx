@@ -55,7 +55,6 @@ interface SlotCardWithSequenceProps {
   card: BankCard | PersonalCard | null
   validated: boolean
   sessionCompleted: boolean
-  isActive: boolean
   sequence: Sequence | null
   bankCards: BankCard[]
   personalCards: PersonalCard[]
@@ -67,7 +66,6 @@ function SlotCardWithSequence({
   card,
   validated,
   sessionCompleted,
-  isActive,
   sequence,
   bankCards,
   personalCards,
@@ -103,7 +101,6 @@ function SlotCardWithSequence({
       validated={validated}
       sessionCompleted={sessionCompleted}
       onValidate={onValidate}
-      isActive={isActive}
       hasSequence={sequence !== null}
       sequenceSteps={sequenceSteps as SequenceStep[]}
       sequenceStepsLoading={
@@ -385,16 +382,6 @@ export default function Tableau(_props: TableauProps = {}) {
     ? findCard(rewardSlot.card_id, bankCards, personalCards)
     : null
 
-  // La carte "active" = le premier slot visible non encore validé (§3.1.4).
-  // C'est uniquement sur cette carte que le bouton "Voir étapes" est affiché.
-  // §4.2 : utilise l'ensemble effectif (DB + optimiste offline)
-  const activeSlotId = useMemo<string | null>(() => {
-    const firstNotValidated = visibleStepSlots.find(
-      s => !effectiveValidatedSlotIds.has(s.id)
-    )
-    return firstNotValidated?.id ?? null
-  }, [visibleStepSlots, effectiveValidatedSlotIds])
-
   // ── Calcul des jetons ───────────────────────────────────────────────────────
   // §3.1.2 : Somme des tokens des étapes validées (non-vides uniquement)
   // §4.2 : utilise l'ensemble effectif (DB + optimiste offline)
@@ -517,7 +504,6 @@ export default function Tableau(_props: TableauProps = {}) {
                 card={card}
                 validated={isValidated}
                 sessionCompleted={isSessionCompleted}
-                isActive={!isSessionCompleted && slot.id === activeSlotId}
                 sequence={sequence as Sequence | null}
                 bankCards={bankCards}
                 personalCards={personalCards}
