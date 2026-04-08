@@ -224,6 +224,13 @@ export default function EditionTimeline({
       )
       return true
     }
+    if (session?.state === 'active_started') {
+      showToast(
+        'Session en cours — annulez la session pour modifier les étapes.',
+        'warning'
+      )
+      return true
+    }
     return false
   }
 

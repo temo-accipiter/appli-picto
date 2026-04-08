@@ -159,17 +159,20 @@ export function SlotItem({
 }: SlotItemProps) {
   const isStep = slot.kind === 'step'
 
-  // ── Calcul de la matrice de verrouillage (§3.2.2bis) ──────────────────────
+  // ── Calcul de la matrice de verrouillage ──────────────────────────────────
   const isSessionStarted = sessionState === 'active_started'
 
-  // Slot validé pendant session démarrée → tout verrouillé
+  // Slot validé pendant session démarrée → tout verrouillé (tokens, carte, suppression)
   // §4.4 S8 : Offline → même comportement que slot validé (tout verrouillé)
   // §6.1 catégorie #8 S9 : Execution-only → même comportement (structure verrouillée)
   const isFullyLocked =
     (isSessionStarted && isValidated) || isOffline || isExecutionOnly
 
-  // Contrat §3.2.2bis : slot non validé reste modifiable pendant session démarrée.
-  // Seuls les slots déjà validés sont verrouillés (même logique que isFullyLocked).
+  // Suppression verrouillée pendant toute session active_started (validé ou non).
+  // La composition est en lecture seule — l'adulte doit annuler la session d'abord.
+  const isDeleteLocked = isSessionStarted || isOffline || isExecutionOnly
+
+  // §session-lock : slot non validé → carte toujours assignable, tokens non modifiables
   const tokensLocked =
     (isSessionStarted && isValidated) || isOffline || isExecutionOnly
   const isEmptyStep = isStep && slot.card_id === null
@@ -260,12 +263,16 @@ export function SlotItem({
         {/* Indicateur de verrou (slot validé) */}
         {lockBadge}
 
-        {/* Bouton supprimer — affiché uniquement si ce slot est réellement supprimable */}
+        {/* Bouton supprimer — affiché si supprimable, désactivé si session active */}
         {canRemove && (
           <ButtonDelete
             onClick={() => onRemove(slot.id)}
-            disabled={busy || isFullyLocked}
-            title={`Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`}
+            disabled={busy || isDeleteLocked}
+            title={
+              isSessionStarted && !isValidated
+                ? 'Session en cours — annulez pour modifier les étapes'
+                : `Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`
+            }
           />
         )}
       </div>

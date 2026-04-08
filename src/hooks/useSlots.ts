@@ -13,10 +13,24 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/utils/supabaseClient'
 import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
+import type { SessionState } from '@/hooks/useSessions'
 import * as visitorSlotsDB from '@/utils/visitor/slotsDB'
 
 export type Slot = Database['public']['Tables']['slots']['Row']
 export type SlotKind = Database['public']['Enums']['slot_kind']
+
+/** Traduit une erreur trigger DB "session verrouillée" en message utilisateur neutre. */
+function toSessionLockError(err: unknown): Error | null {
+  if (!err) return null
+  const msg = (err as { message?: string }).message ?? ''
+  if (
+    msg.includes('pendant une session démarrée') ||
+    msg.includes('session is in progress')
+  ) {
+    return new Error('Annulez la session en cours pour modifier les étapes.')
+  }
+  return err as Error
+}
 
 // Type unifié : Slot DB ou Slot visitor (structures identiques)
 type _UnifiedSlot = Slot | visitorSlotsDB.VisitorSlot
@@ -69,7 +83,10 @@ interface UseSlotReturn {
  * const { slots, loading, error, addStep, addReward, removeSlot } = useSlots(timeline?.id ?? null)
  * ```
  */
-export default function useSlots(timelineId: string | null): UseSlotReturn {
+export default function useSlots(
+  timelineId: string | null,
+  sessionState?: SessionState | null
+): UseSlotReturn {
   const [slots, setSlots] = useState<Slot[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
@@ -187,6 +204,16 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
   /** Ajoute un slot en dernière position */
   const addSlot = useCallback(
     async (kind: SlotKind): Promise<ActionResult> => {
+      // Guard : composition verrouillée pendant session démarrée
+      // IndexedDB (Visitor) n'a pas de triggers — ce hook est la seule ligne de défense
+      if (sessionState === 'active_started') {
+        return {
+          error: new Error(
+            'Annulez la session en cours pour modifier les étapes.'
+          ),
+        }
+      }
+
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
       // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
@@ -220,9 +247,9 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
       })
 
       if (!insertError) refresh()
-      return { error: insertError as Error | null }
+      return { error: toSessionLockError(insertError) }
     },
-    [timelineId, slots, refresh]
+    [timelineId, slots, refresh, sessionState]
   )
 
   const addStep = useCallback(() => addSlot('step'), [addSlot])
@@ -280,6 +307,16 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
 
   const removeSlot = useCallback(
     async (id: string): Promise<ActionResult> => {
+      // Guard : composition verrouillée pendant session démarrée
+      // IndexedDB (Visitor) n'a pas de triggers — ce hook est la seule ligne de défense
+      if (sessionState === 'active_started') {
+        return {
+          error: new Error(
+            'Annulez la session en cours pour modifier les étapes.'
+          ),
+        }
+      }
+
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
       // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
@@ -301,9 +338,9 @@ export default function useSlots(timelineId: string | null): UseSlotReturn {
         .eq('timeline_id', timelineId)
 
       if (!deleteError) refresh()
-      return { error: deleteError as Error | null }
+      return { error: toSessionLockError(deleteError) }
     },
-    [timelineId, refresh]
+    [timelineId, refresh, sessionState]
   )
 
   /**

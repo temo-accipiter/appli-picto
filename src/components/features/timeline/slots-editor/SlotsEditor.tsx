@@ -329,13 +329,16 @@ export function SlotsEditor({
 
   // §4.4 S8 : Actions structurelles désactivées si offline
   // §6.1 catégorie #8 S9 : Actions structurelles désactivées si execution-only
+  // §session-lock : Composition verrouillée pendant active_started
+  const isSessionActive = sessionState === 'active_started'
   const isActionBusy =
     addingStep ||
     swappingCards ||
     !!busyId ||
     resettingSession ||
     isOffline ||
-    isExecutionOnly
+    isExecutionOnly ||
+    isSessionActive
 
   const displayedSlots = optimisticSlots ?? slots
 
@@ -552,9 +555,19 @@ export function SlotsEditor({
           onClick={handleAddStep}
           disabled={isActionBusy}
           aria-busy={addingStep}
+          title={
+            isSessionActive
+              ? 'Session en cours — annulez la session pour modifier les étapes'
+              : undefined
+          }
         >
           {addingStep ? 'Ajout…' : '+ Étape 🎯'}
         </button>
+        {isSessionActive && (
+          <p className="slots-editor__session-lock-hint" role="note">
+            Session en cours — annulez pour modifier les étapes
+          </p>
+        )}
       </div>
 
       {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}

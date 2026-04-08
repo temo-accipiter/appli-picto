@@ -6,6 +6,7 @@ import { useChildProfile } from '@/contexts/ChildProfileContext'
 import {
   useTimelines,
   useSlots,
+  useSessions,
   useAccountStatus,
   useBankCards,
   useAdminBankCards,
@@ -23,6 +24,11 @@ export default function EditionPage() {
   // - Quand Edition updateSlot via checkbox, EditionTimeline ne savait rien
   // - Lift state ici = les deux composants voient les mêmes slots
   const { timeline } = useTimelines(activeChildId)
+
+  // Session chargée ici pour alimenter le guard de useSlots (composition lecture seule
+  // pendant active_started). EditionTimeline charge sa propre instance pour resetSession.
+  const { session } = useSessions(activeChildId, timeline?.id ?? null)
+
   const {
     slots,
     loading: slotsLoading,
@@ -31,7 +37,7 @@ export default function EditionPage() {
     updateSlot,
     removeSlot,
     refresh: refreshSlots,
-  } = useSlots(timeline?.id ?? null)
+  } = useSlots(timeline?.id ?? null, session?.state)
 
   // ── SOURCE UNIQUE : Cartes banque au niveau page ─────────────────────────────
   // Solution bug refresh nom carte : Edition et SlotsEditor partagent les mêmes cartes
