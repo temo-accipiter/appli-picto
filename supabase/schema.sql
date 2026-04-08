@@ -13,20 +13,50 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 
-CREATE SCHEMA IF NOT EXISTS "public";
+CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
 
 
-ALTER SCHEMA "public" OWNER TO "pg_database_owner";
+
+
 
 
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 
 
 
-CREATE SCHEMA IF NOT EXISTS "storage";
+CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
 
 
-ALTER SCHEMA "storage" OWNER TO "supabase_admin";
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+
+
+
+
 
 
 CREATE TYPE "public"."account_status" AS ENUM (
@@ -97,16 +127,6 @@ CREATE TYPE "public"."transport_type" AS ENUM (
 
 
 ALTER TYPE "public"."transport_type" OWNER TO "postgres";
-
-
-CREATE TYPE "storage"."buckettype" AS ENUM (
-    'STANDARD',
-    'ANALYTICS',
-    'VECTOR'
-);
-
-
-ALTER TYPE "storage"."buckettype" OWNER TO "supabase_storage_admin";
 
 
 CREATE OR REPLACE FUNCTION "public"."accounts_auto_create_first_child_profile"() RETURNS "trigger"
@@ -455,9 +475,9 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  -- Subscriber et Admin peuvent écrire des séquences.
-  -- Free = lecture seule (contrat FRONTEND_CONTRACT.md §3.2.5).
-  RETURN v_status IN ('subscriber', 'admin');
+  -- Free, Subscriber et Admin peuvent écrire des séquences.
+  -- Visitor n'est pas authentifié (local-only IndexedDB, hors portée RLS).
+  RETURN v_status IN ('free', 'subscriber', 'admin');
 END;
 $$;
 
@@ -465,7 +485,7 @@ $$;
 ALTER FUNCTION "public"."can_write_sequences"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."can_write_sequences"() IS 'Feature gate séquençage: retourne TRUE si le compte courant peut créer/modifier/supprimer des séquences (subscriber ou admin). Free = lecture seule. SECURITY DEFINER minimal, search_path hardened.';
+COMMENT ON FUNCTION "public"."can_write_sequences"() IS 'Feature gate séquençage: retourne TRUE si le compte courant peut créer/modifier/supprimer des séquences (free, subscriber ou admin). Visitor = local-only IndexedDB. SECURITY DEFINER minimal, search_path hardened.';
 
 
 
@@ -2175,14 +2195,11 @@ CREATE OR REPLACE FUNCTION "public"."reset_active_started_session_for_timeline"(
     AS $$
 DECLARE
   v_session_id UUID;
-  v_session_state session_state;
-  v_new_steps_snapshot INTEGER;
-  v_current_validations INTEGER;  -- 🆕 Compteur validations pour Victory Check
 BEGIN
   -- Trouver la session active (active_preview ou active_started) pour cette timeline
   -- FOR UPDATE : verrouillage anti-race-condition
-  SELECT s.id, s.state
-    INTO v_session_id, v_session_state
+  SELECT s.id
+    INTO v_session_id
   FROM sessions s
   WHERE s.timeline_id = p_timeline_id
     AND s.state IN ('active_preview', 'active_started')
@@ -2194,66 +2211,14 @@ BEGIN
     RETURN;
   END IF;
 
-  -- ✅ SOFT SYNC : Incrémenter epoch in-place
-  -- Préserve session_id → préserve validations (FK session_validations.session_id)
-
-  -- 🆕 SNAPSHOT SYNC + VICTORY CHECK : Recalculer snapshot ET vérifier complétion
-  -- Rationale :
-  -- - Si state = 'active_preview' → pas encore de snapshot (sera fait à la 1ère validation)
-  -- - Si state = 'active_started' → snapshot existe, DOIT être mis à jour ET vérifié
-  IF v_session_state = 'active_started' THEN
-    -- Recalculer steps_total_snapshot (nombre actuel de slots step avec card_id NOT NULL)
-    SELECT COUNT(*)
-      INTO v_new_steps_snapshot
-      FROM slots
-      WHERE timeline_id = p_timeline_id
-        AND kind = 'step'
-        AND card_id IS NOT NULL;
-
-    -- 🆕 VICTORY CHECK : Compter validations existantes
-    -- Note : COUNT(*) = nombre de validations pour cette session
-    -- (pas de DISTINCT car UNIQUE constraint sur (session_id, slot_id))
-    SELECT COUNT(*)
-      INTO v_current_validations
-      FROM session_validations
-      WHERE session_id = v_session_id;
-
-    -- 🆕 LOGIQUE CONDITIONNELLE : Complétion immédiate OU Update classique
-    --
-    -- CAS 1 : VICTORY (validations >= nouveau snapshot)
-    -- → La réduction de timeline entraîne une complétion immédiate
-    -- → Transition vers 'completed' (UX TSA : fin claire, prévisible)
-    --
-    -- CAS 2 : EN COURS (validations < nouveau snapshot)
-    -- → La session continue avec le nouveau snapshot
-    -- → Update classique (epoch++, snapshot)
-    IF v_current_validations >= v_new_steps_snapshot THEN
-      -- 🎉 VICTORY : Session complète après réduction de timeline
-      UPDATE sessions
-      SET state = 'completed',
-          completed_at = NOW(),
-          epoch = epoch + 1,
-          steps_total_snapshot = v_new_steps_snapshot,
-          updated_at = NOW()
-      WHERE id = v_session_id;
-    ELSE
-      -- ⏳ EN COURS : Session continue avec nouveau snapshot
-      UPDATE sessions
-      SET epoch = epoch + 1,
-          steps_total_snapshot = v_new_steps_snapshot,
-          updated_at = NOW()
-      WHERE id = v_session_id;
-    END IF;
-  ELSE
-    -- Session en preview → juste epoch++ (snapshot sera fait à la 1ère validation)
-    UPDATE sessions
-    SET epoch = epoch + 1,
-        updated_at = NOW()
-    WHERE id = v_session_id;
-  END IF;
-
-  -- Note : p_reason ignoré côté DB (pas de colonne dédiée dans le contrat)
-  -- Peut être loggé côté application si nécessaire
+  -- ✅ EPOCH++ uniquement
+  -- La branche de recalcul steps_total_snapshot pour active_started est supprimée :
+  -- la composition est verrouillée pendant active_started (trigger slots_guard_validated_on_structural_change).
+  -- Le snapshot reste immuable une fois fixé à la 1ère validation.
+  UPDATE sessions
+  SET epoch = epoch + 1,
+      updated_at = NOW()
+  WHERE id = v_session_id;
 END;
 $$;
 
@@ -2261,7 +2226,7 @@ $$;
 ALTER FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Incrémente epoch + resync steps_total_snapshot + Victory Check lors modification structurelle (Soft Sync + Snapshot Sync + Complétion) - préserve validations existantes';
+COMMENT ON FUNCTION "public"."reset_active_started_session_for_timeline"("p_timeline_id" "uuid", "p_reason" "text") IS 'Incrémente epoch (Soft Sync) lors d''une modification structurelle de timeline. Appelée par slots_trigger_epoch_increment_after_change. Snapshot immuable — recalcul mid-session supprimé car composition verrouillée pendant active_started.';
 
 
 
@@ -2710,7 +2675,7 @@ BEGIN
     RETURN COALESCE(NEW, OLD);
   END IF;
 
-  -- Session active_started ?
+  -- Session active_started existante pour cette timeline ?
   SELECT s.id INTO v_active_session_id
   FROM sessions s
   WHERE s.timeline_id = COALESCE(NEW.timeline_id, OLD.timeline_id)
@@ -2718,27 +2683,30 @@ BEGIN
   LIMIT 1;
 
   IF v_active_session_id IS NULL THEN
+    -- Pas de session active_started → autorisé (active_preview, completed, ou pas de session)
     RETURN COALESCE(NEW, OLD);
   END IF;
 
-  -- GUARD DELETE : Bloquer suppression slot validé
+  -- ── GUARD DELETE : Bloquer TOUTE suppression pendant session démarrée ──────
+  -- Avant : bloquait uniquement les slots validés (laissait passer les non-validés → Bug #4a)
+  -- Après : bloque tous les slots step sans exception
   IF TG_OP = 'DELETE' THEN
-    SELECT EXISTS (
-      SELECT 1 FROM session_validations sv
-      WHERE sv.session_id = v_active_session_id
-        AND sv.slot_id = OLD.id
-    ) INTO v_is_validated;
-
-    IF v_is_validated THEN
-      RAISE EXCEPTION
-        'Action interdite: suppression d''un slot étape déjà validé (slot_id=%) pendant une session démarrée',
-        OLD.id;
-    END IF;
-
-    RETURN OLD;
+    RAISE EXCEPTION
+      'Action interdite : impossible de supprimer un slot pendant une session démarrée (slot_id=%). Annulez la session pour modifier la composition.',
+      OLD.id;
   END IF;
 
-  -- GUARD UPDATE : Bloquer modification slot validé
+  -- ── GUARD INSERT : Bloquer TOUT ajout pendant session démarrée ─────────────
+  -- Avant : toujours autorisé (laissait passer les ajouts → Bug #4b)
+  -- Après : bloque tous les INSERT de slots step
+  IF TG_OP = 'INSERT' THEN
+    RAISE EXCEPTION
+      'Action interdite : impossible d''ajouter un slot pendant une session démarrée. Annulez la session pour modifier la composition.';
+  END IF;
+
+  -- ── GUARD UPDATE : Comportement inchangé ────────────────────────────────────
+  -- Seuls les slots déjà validés sont bloqués en modification structurelle.
+  -- Les slots non validés restent modifiables (changement de carte, etc.).
   IF TG_OP = 'UPDATE' THEN
     SELECT EXISTS (
       SELECT 1 FROM session_validations sv
@@ -2752,7 +2720,7 @@ BEGIN
          OR NEW.tokens IS DISTINCT FROM OLD.tokens
          OR NEW.kind IS DISTINCT FROM OLD.kind THEN
         RAISE EXCEPTION
-          'Action interdite: modification d''un slot étape déjà validé (slot_id=%) pendant une session démarrée',
+          'Action interdite : modification d''un slot étape déjà validé (slot_id=%) pendant une session démarrée.',
           OLD.id;
       END IF;
     END IF;
@@ -2760,8 +2728,7 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- INSERT : Pas de guard (toujours autorisé)
-  RETURN NEW;
+  RETURN COALESCE(NEW, OLD);
 END;
 $$;
 
@@ -2769,7 +2736,7 @@ $$;
 ALTER FUNCTION "public"."slots_guard_validated_on_structural_change"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."slots_guard_validated_on_structural_change"() IS 'BEFORE trigger GUARD : Bloque modifications/suppressions de slots validés pendant active_started';
+COMMENT ON FUNCTION "public"."slots_guard_validated_on_structural_change"() IS 'BEFORE trigger GUARD : Bloque INSERT et DELETE pendant active_started (composition verrouillée). Bloque UPDATE sur slots validés. Autorise UPDATE sur slots non validés (changement de carte).';
 
 
 
@@ -3058,916 +3025,6 @@ $$;
 
 
 ALTER FUNCTION "public"."validate_session_state_transition"() OWNER TO "postgres";
-
-
-CREATE OR REPLACE FUNCTION "storage"."add_prefixes"("_bucket_id" "text", "_name" "text") RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    prefixes text[];
-BEGIN
-    prefixes := "storage"."get_prefixes"("_name");
-
-    IF array_length(prefixes, 1) > 0 THEN
-        INSERT INTO storage.prefixes (name, bucket_id)
-        SELECT UNNEST(prefixes) as name, "_bucket_id" ON CONFLICT DO NOTHING;
-    END IF;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."add_prefixes"("_bucket_id" "text", "_name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."can_insert_object"("bucketid" "text", "name" "text", "owner" "uuid", "metadata" "jsonb") RETURNS "void"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-  INSERT INTO "storage"."objects" ("bucket_id", "name", "owner", "metadata") VALUES (bucketid, name, owner, metadata);
-  -- hack to rollback the successful insert
-  RAISE sqlstate 'PT200' using
-  message = 'ROLLBACK',
-  detail = 'rollback successful insert';
-END
-$$;
-
-
-ALTER FUNCTION "storage"."can_insert_object"("bucketid" "text", "name" "text", "owner" "uuid", "metadata" "jsonb") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."delete_leaf_prefixes"("bucket_ids" "text"[], "names" "text"[]) RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    v_rows_deleted integer;
-BEGIN
-    LOOP
-        WITH candidates AS (
-            SELECT DISTINCT
-                t.bucket_id,
-                unnest(storage.get_prefixes(t.name)) AS name
-            FROM unnest(bucket_ids, names) AS t(bucket_id, name)
-        ),
-        uniq AS (
-             SELECT
-                 bucket_id,
-                 name,
-                 storage.get_level(name) AS level
-             FROM candidates
-             WHERE name <> ''
-             GROUP BY bucket_id, name
-        ),
-        leaf AS (
-             SELECT
-                 p.bucket_id,
-                 p.name,
-                 p.level
-             FROM storage.prefixes AS p
-                  JOIN uniq AS u
-                       ON u.bucket_id = p.bucket_id
-                           AND u.name = p.name
-                           AND u.level = p.level
-             WHERE NOT EXISTS (
-                 SELECT 1
-                 FROM storage.objects AS o
-                 WHERE o.bucket_id = p.bucket_id
-                   AND o.level = p.level + 1
-                   AND o.name COLLATE "C" LIKE p.name || '/%'
-             )
-             AND NOT EXISTS (
-                 SELECT 1
-                 FROM storage.prefixes AS c
-                 WHERE c.bucket_id = p.bucket_id
-                   AND c.level = p.level + 1
-                   AND c.name COLLATE "C" LIKE p.name || '/%'
-             )
-        )
-        DELETE
-        FROM storage.prefixes AS p
-            USING leaf AS l
-        WHERE p.bucket_id = l.bucket_id
-          AND p.name = l.name
-          AND p.level = l.level;
-
-        GET DIAGNOSTICS v_rows_deleted = ROW_COUNT;
-        EXIT WHEN v_rows_deleted = 0;
-    END LOOP;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."delete_leaf_prefixes"("bucket_ids" "text"[], "names" "text"[]) OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."delete_prefix"("_bucket_id" "text", "_name" "text") RETURNS boolean
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-BEGIN
-    -- Check if we can delete the prefix
-    IF EXISTS(
-        SELECT FROM "storage"."prefixes"
-        WHERE "prefixes"."bucket_id" = "_bucket_id"
-          AND level = "storage"."get_level"("_name") + 1
-          AND "prefixes"."name" COLLATE "C" LIKE "_name" || '/%'
-        LIMIT 1
-    )
-    OR EXISTS(
-        SELECT FROM "storage"."objects"
-        WHERE "objects"."bucket_id" = "_bucket_id"
-          AND "storage"."get_level"("objects"."name") = "storage"."get_level"("_name") + 1
-          AND "objects"."name" COLLATE "C" LIKE "_name" || '/%'
-        LIMIT 1
-    ) THEN
-    -- There are sub-objects, skip deletion
-    RETURN false;
-    ELSE
-        DELETE FROM "storage"."prefixes"
-        WHERE "prefixes"."bucket_id" = "_bucket_id"
-          AND level = "storage"."get_level"("_name")
-          AND "prefixes"."name" = "_name";
-        RETURN true;
-    END IF;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."delete_prefix"("_bucket_id" "text", "_name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."delete_prefix_hierarchy_trigger"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-    prefix text;
-BEGIN
-    prefix := "storage"."get_prefix"(OLD."name");
-
-    IF coalesce(prefix, '') != '' THEN
-        PERFORM "storage"."delete_prefix"(OLD."bucket_id", prefix);
-    END IF;
-
-    RETURN OLD;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."delete_prefix_hierarchy_trigger"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."enforce_bucket_name_length"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-begin
-    if length(new.name) > 100 then
-        raise exception 'bucket name "%" is too long (% characters). Max is 100.', new.name, length(new.name);
-    end if;
-    return new;
-end;
-$$;
-
-
-ALTER FUNCTION "storage"."enforce_bucket_name_length"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."extension"("name" "text") RETURNS "text"
-    LANGUAGE "plpgsql" IMMUTABLE
-    AS $$
-DECLARE
-    _parts text[];
-    _filename text;
-BEGIN
-    SELECT string_to_array(name, '/') INTO _parts;
-    SELECT _parts[array_length(_parts,1)] INTO _filename;
-    RETURN reverse(split_part(reverse(_filename), '.', 1));
-END
-$$;
-
-
-ALTER FUNCTION "storage"."extension"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."filename"("name" "text") RETURNS "text"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-_parts text[];
-BEGIN
-	select string_to_array(name, '/') into _parts;
-	return _parts[array_length(_parts,1)];
-END
-$$;
-
-
-ALTER FUNCTION "storage"."filename"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."foldername"("name" "text") RETURNS "text"[]
-    LANGUAGE "plpgsql" IMMUTABLE
-    AS $$
-DECLARE
-    _parts text[];
-BEGIN
-    -- Split on "/" to get path segments
-    SELECT string_to_array(name, '/') INTO _parts;
-    -- Return everything except the last segment
-    RETURN _parts[1 : array_length(_parts,1) - 1];
-END
-$$;
-
-
-ALTER FUNCTION "storage"."foldername"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."get_level"("name" "text") RETURNS integer
-    LANGUAGE "sql" IMMUTABLE STRICT
-    AS $$
-SELECT array_length(string_to_array("name", '/'), 1);
-$$;
-
-
-ALTER FUNCTION "storage"."get_level"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."get_prefix"("name" "text") RETURNS "text"
-    LANGUAGE "sql" IMMUTABLE STRICT
-    AS $_$
-SELECT
-    CASE WHEN strpos("name", '/') > 0 THEN
-             regexp_replace("name", '[\/]{1}[^\/]+\/?$', '')
-         ELSE
-             ''
-        END;
-$_$;
-
-
-ALTER FUNCTION "storage"."get_prefix"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."get_prefixes"("name" "text") RETURNS "text"[]
-    LANGUAGE "plpgsql" IMMUTABLE STRICT
-    AS $$
-DECLARE
-    parts text[];
-    prefixes text[];
-    prefix text;
-BEGIN
-    -- Split the name into parts by '/'
-    parts := string_to_array("name", '/');
-    prefixes := '{}';
-
-    -- Construct the prefixes, stopping one level below the last part
-    FOR i IN 1..array_length(parts, 1) - 1 LOOP
-            prefix := array_to_string(parts[1:i], '/');
-            prefixes := array_append(prefixes, prefix);
-    END LOOP;
-
-    RETURN prefixes;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."get_prefixes"("name" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."get_size_by_bucket"() RETURNS TABLE("size" bigint, "bucket_id" "text")
-    LANGUAGE "plpgsql" STABLE
-    AS $$
-BEGIN
-    return query
-        select sum((metadata->>'size')::bigint) as size, obj.bucket_id
-        from "storage".objects as obj
-        group by obj.bucket_id;
-END
-$$;
-
-
-ALTER FUNCTION "storage"."get_size_by_bucket"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."list_multipart_uploads_with_delimiter"("bucket_id" "text", "prefix_param" "text", "delimiter_param" "text", "max_keys" integer DEFAULT 100, "next_key_token" "text" DEFAULT ''::"text", "next_upload_token" "text" DEFAULT ''::"text") RETURNS TABLE("key" "text", "id" "text", "created_at" timestamp with time zone)
-    LANGUAGE "plpgsql"
-    AS $_$
-BEGIN
-    RETURN QUERY EXECUTE
-        'SELECT DISTINCT ON(key COLLATE "C") * from (
-            SELECT
-                CASE
-                    WHEN position($2 IN substring(key from length($1) + 1)) > 0 THEN
-                        substring(key from 1 for length($1) + position($2 IN substring(key from length($1) + 1)))
-                    ELSE
-                        key
-                END AS key, id, created_at
-            FROM
-                storage.s3_multipart_uploads
-            WHERE
-                bucket_id = $5 AND
-                key ILIKE $1 || ''%'' AND
-                CASE
-                    WHEN $4 != '''' AND $6 = '''' THEN
-                        CASE
-                            WHEN position($2 IN substring(key from length($1) + 1)) > 0 THEN
-                                substring(key from 1 for length($1) + position($2 IN substring(key from length($1) + 1))) COLLATE "C" > $4
-                            ELSE
-                                key COLLATE "C" > $4
-                            END
-                    ELSE
-                        true
-                END AND
-                CASE
-                    WHEN $6 != '''' THEN
-                        id COLLATE "C" > $6
-                    ELSE
-                        true
-                    END
-            ORDER BY
-                key COLLATE "C" ASC, created_at ASC) as e order by key COLLATE "C" LIMIT $3'
-        USING prefix_param, delimiter_param, max_keys, next_key_token, bucket_id, next_upload_token;
-END;
-$_$;
-
-
-ALTER FUNCTION "storage"."list_multipart_uploads_with_delimiter"("bucket_id" "text", "prefix_param" "text", "delimiter_param" "text", "max_keys" integer, "next_key_token" "text", "next_upload_token" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."list_objects_with_delimiter"("bucket_id" "text", "prefix_param" "text", "delimiter_param" "text", "max_keys" integer DEFAULT 100, "start_after" "text" DEFAULT ''::"text", "next_token" "text" DEFAULT ''::"text") RETURNS TABLE("name" "text", "id" "uuid", "metadata" "jsonb", "updated_at" timestamp with time zone)
-    LANGUAGE "plpgsql"
-    AS $_$
-BEGIN
-    RETURN QUERY EXECUTE
-        'SELECT DISTINCT ON(name COLLATE "C") * from (
-            SELECT
-                CASE
-                    WHEN position($2 IN substring(name from length($1) + 1)) > 0 THEN
-                        substring(name from 1 for length($1) + position($2 IN substring(name from length($1) + 1)))
-                    ELSE
-                        name
-                END AS name, id, metadata, updated_at
-            FROM
-                storage.objects
-            WHERE
-                bucket_id = $5 AND
-                name ILIKE $1 || ''%'' AND
-                CASE
-                    WHEN $6 != '''' THEN
-                    name COLLATE "C" > $6
-                ELSE true END
-                AND CASE
-                    WHEN $4 != '''' THEN
-                        CASE
-                            WHEN position($2 IN substring(name from length($1) + 1)) > 0 THEN
-                                substring(name from 1 for length($1) + position($2 IN substring(name from length($1) + 1))) COLLATE "C" > $4
-                            ELSE
-                                name COLLATE "C" > $4
-                            END
-                    ELSE
-                        true
-                END
-            ORDER BY
-                name COLLATE "C" ASC) as e order by name COLLATE "C" LIMIT $3'
-        USING prefix_param, delimiter_param, max_keys, next_token, bucket_id, start_after;
-END;
-$_$;
-
-
-ALTER FUNCTION "storage"."list_objects_with_delimiter"("bucket_id" "text", "prefix_param" "text", "delimiter_param" "text", "max_keys" integer, "start_after" "text", "next_token" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."lock_top_prefixes"("bucket_ids" "text"[], "names" "text"[]) RETURNS "void"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    v_bucket text;
-    v_top text;
-BEGIN
-    FOR v_bucket, v_top IN
-        SELECT DISTINCT t.bucket_id,
-            split_part(t.name, '/', 1) AS top
-        FROM unnest(bucket_ids, names) AS t(bucket_id, name)
-        WHERE t.name <> ''
-        ORDER BY 1, 2
-        LOOP
-            PERFORM pg_advisory_xact_lock(hashtextextended(v_bucket || '/' || v_top, 0));
-        END LOOP;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."lock_top_prefixes"("bucket_ids" "text"[], "names" "text"[]) OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."objects_delete_cleanup"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    v_bucket_ids text[];
-    v_names      text[];
-BEGIN
-    IF current_setting('storage.gc.prefixes', true) = '1' THEN
-        RETURN NULL;
-    END IF;
-
-    PERFORM set_config('storage.gc.prefixes', '1', true);
-
-    SELECT COALESCE(array_agg(d.bucket_id), '{}'),
-           COALESCE(array_agg(d.name), '{}')
-    INTO v_bucket_ids, v_names
-    FROM deleted AS d
-    WHERE d.name <> '';
-
-    PERFORM storage.lock_top_prefixes(v_bucket_ids, v_names);
-    PERFORM storage.delete_leaf_prefixes(v_bucket_ids, v_names);
-
-    RETURN NULL;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."objects_delete_cleanup"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."objects_insert_prefix_trigger"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    PERFORM "storage"."add_prefixes"(NEW."bucket_id", NEW."name");
-    NEW.level := "storage"."get_level"(NEW."name");
-
-    RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."objects_insert_prefix_trigger"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."objects_update_cleanup"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    -- NEW - OLD (destinations to create prefixes for)
-    v_add_bucket_ids text[];
-    v_add_names      text[];
-
-    -- OLD - NEW (sources to prune)
-    v_src_bucket_ids text[];
-    v_src_names      text[];
-BEGIN
-    IF TG_OP <> 'UPDATE' THEN
-        RETURN NULL;
-    END IF;
-
-    -- 1) Compute NEW−OLD (added paths) and OLD−NEW (moved-away paths)
-    WITH added AS (
-        SELECT n.bucket_id, n.name
-        FROM new_rows n
-        WHERE n.name <> '' AND position('/' in n.name) > 0
-        EXCEPT
-        SELECT o.bucket_id, o.name FROM old_rows o WHERE o.name <> ''
-    ),
-    moved AS (
-         SELECT o.bucket_id, o.name
-         FROM old_rows o
-         WHERE o.name <> ''
-         EXCEPT
-         SELECT n.bucket_id, n.name FROM new_rows n WHERE n.name <> ''
-    )
-    SELECT
-        -- arrays for ADDED (dest) in stable order
-        COALESCE( (SELECT array_agg(a.bucket_id ORDER BY a.bucket_id, a.name) FROM added a), '{}' ),
-        COALESCE( (SELECT array_agg(a.name      ORDER BY a.bucket_id, a.name) FROM added a), '{}' ),
-        -- arrays for MOVED (src) in stable order
-        COALESCE( (SELECT array_agg(m.bucket_id ORDER BY m.bucket_id, m.name) FROM moved m), '{}' ),
-        COALESCE( (SELECT array_agg(m.name      ORDER BY m.bucket_id, m.name) FROM moved m), '{}' )
-    INTO v_add_bucket_ids, v_add_names, v_src_bucket_ids, v_src_names;
-
-    -- Nothing to do?
-    IF (array_length(v_add_bucket_ids, 1) IS NULL) AND (array_length(v_src_bucket_ids, 1) IS NULL) THEN
-        RETURN NULL;
-    END IF;
-
-    -- 2) Take per-(bucket, top) locks: ALL prefixes in consistent global order to prevent deadlocks
-    DECLARE
-        v_all_bucket_ids text[];
-        v_all_names text[];
-    BEGIN
-        -- Combine source and destination arrays for consistent lock ordering
-        v_all_bucket_ids := COALESCE(v_src_bucket_ids, '{}') || COALESCE(v_add_bucket_ids, '{}');
-        v_all_names := COALESCE(v_src_names, '{}') || COALESCE(v_add_names, '{}');
-
-        -- Single lock call ensures consistent global ordering across all transactions
-        IF array_length(v_all_bucket_ids, 1) IS NOT NULL THEN
-            PERFORM storage.lock_top_prefixes(v_all_bucket_ids, v_all_names);
-        END IF;
-    END;
-
-    -- 3) Create destination prefixes (NEW−OLD) BEFORE pruning sources
-    IF array_length(v_add_bucket_ids, 1) IS NOT NULL THEN
-        WITH candidates AS (
-            SELECT DISTINCT t.bucket_id, unnest(storage.get_prefixes(t.name)) AS name
-            FROM unnest(v_add_bucket_ids, v_add_names) AS t(bucket_id, name)
-            WHERE name <> ''
-        )
-        INSERT INTO storage.prefixes (bucket_id, name)
-        SELECT c.bucket_id, c.name
-        FROM candidates c
-        ON CONFLICT DO NOTHING;
-    END IF;
-
-    -- 4) Prune source prefixes bottom-up for OLD−NEW
-    IF array_length(v_src_bucket_ids, 1) IS NOT NULL THEN
-        -- re-entrancy guard so DELETE on prefixes won't recurse
-        IF current_setting('storage.gc.prefixes', true) <> '1' THEN
-            PERFORM set_config('storage.gc.prefixes', '1', true);
-        END IF;
-
-        PERFORM storage.delete_leaf_prefixes(v_src_bucket_ids, v_src_names);
-    END IF;
-
-    RETURN NULL;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."objects_update_cleanup"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."objects_update_level_trigger"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    -- Ensure this is an update operation and the name has changed
-    IF TG_OP = 'UPDATE' AND (NEW."name" <> OLD."name" OR NEW."bucket_id" <> OLD."bucket_id") THEN
-        -- Set the new level
-        NEW."level" := "storage"."get_level"(NEW."name");
-    END IF;
-    RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."objects_update_level_trigger"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."objects_update_prefix_trigger"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-    old_prefixes TEXT[];
-BEGIN
-    -- Ensure this is an update operation and the name has changed
-    IF TG_OP = 'UPDATE' AND (NEW."name" <> OLD."name" OR NEW."bucket_id" <> OLD."bucket_id") THEN
-        -- Retrieve old prefixes
-        old_prefixes := "storage"."get_prefixes"(OLD."name");
-
-        -- Remove old prefixes that are only used by this object
-        WITH all_prefixes as (
-            SELECT unnest(old_prefixes) as prefix
-        ),
-        can_delete_prefixes as (
-             SELECT prefix
-             FROM all_prefixes
-             WHERE NOT EXISTS (
-                 SELECT 1 FROM "storage"."objects"
-                 WHERE "bucket_id" = OLD."bucket_id"
-                   AND "name" <> OLD."name"
-                   AND "name" LIKE (prefix || '%')
-             )
-         )
-        DELETE FROM "storage"."prefixes" WHERE name IN (SELECT prefix FROM can_delete_prefixes);
-
-        -- Add new prefixes
-        PERFORM "storage"."add_prefixes"(NEW."bucket_id", NEW."name");
-    END IF;
-    -- Set the new level
-    NEW."level" := "storage"."get_level"(NEW."name");
-
-    RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."objects_update_prefix_trigger"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."operation"() RETURNS "text"
-    LANGUAGE "plpgsql" STABLE
-    AS $$
-BEGIN
-    RETURN current_setting('storage.operation', true);
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."operation"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."prefixes_delete_cleanup"() RETURNS "trigger"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
-DECLARE
-    v_bucket_ids text[];
-    v_names      text[];
-BEGIN
-    IF current_setting('storage.gc.prefixes', true) = '1' THEN
-        RETURN NULL;
-    END IF;
-
-    PERFORM set_config('storage.gc.prefixes', '1', true);
-
-    SELECT COALESCE(array_agg(d.bucket_id), '{}'),
-           COALESCE(array_agg(d.name), '{}')
-    INTO v_bucket_ids, v_names
-    FROM deleted AS d
-    WHERE d.name <> '';
-
-    PERFORM storage.lock_top_prefixes(v_bucket_ids, v_names);
-    PERFORM storage.delete_leaf_prefixes(v_bucket_ids, v_names);
-
-    RETURN NULL;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."prefixes_delete_cleanup"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."prefixes_insert_trigger"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    PERFORM "storage"."add_prefixes"(NEW."bucket_id", NEW."name");
-    RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."prefixes_insert_trigger"() OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."search"("prefix" "text", "bucketname" "text", "limits" integer DEFAULT 100, "levels" integer DEFAULT 1, "offsets" integer DEFAULT 0, "search" "text" DEFAULT ''::"text", "sortcolumn" "text" DEFAULT 'name'::"text", "sortorder" "text" DEFAULT 'asc'::"text") RETURNS TABLE("name" "text", "id" "uuid", "updated_at" timestamp with time zone, "created_at" timestamp with time zone, "last_accessed_at" timestamp with time zone, "metadata" "jsonb")
-    LANGUAGE "plpgsql"
-    AS $$
-declare
-    can_bypass_rls BOOLEAN;
-begin
-    SELECT rolbypassrls
-    INTO can_bypass_rls
-    FROM pg_roles
-    WHERE rolname = coalesce(nullif(current_setting('role', true), 'none'), current_user);
-
-    IF can_bypass_rls THEN
-        RETURN QUERY SELECT * FROM storage.search_v1_optimised(prefix, bucketname, limits, levels, offsets, search, sortcolumn, sortorder);
-    ELSE
-        RETURN QUERY SELECT * FROM storage.search_legacy_v1(prefix, bucketname, limits, levels, offsets, search, sortcolumn, sortorder);
-    END IF;
-end;
-$$;
-
-
-ALTER FUNCTION "storage"."search"("prefix" "text", "bucketname" "text", "limits" integer, "levels" integer, "offsets" integer, "search" "text", "sortcolumn" "text", "sortorder" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."search_legacy_v1"("prefix" "text", "bucketname" "text", "limits" integer DEFAULT 100, "levels" integer DEFAULT 1, "offsets" integer DEFAULT 0, "search" "text" DEFAULT ''::"text", "sortcolumn" "text" DEFAULT 'name'::"text", "sortorder" "text" DEFAULT 'asc'::"text") RETURNS TABLE("name" "text", "id" "uuid", "updated_at" timestamp with time zone, "created_at" timestamp with time zone, "last_accessed_at" timestamp with time zone, "metadata" "jsonb")
-    LANGUAGE "plpgsql" STABLE
-    AS $_$
-declare
-    v_order_by text;
-    v_sort_order text;
-begin
-    case
-        when sortcolumn = 'name' then
-            v_order_by = 'name';
-        when sortcolumn = 'updated_at' then
-            v_order_by = 'updated_at';
-        when sortcolumn = 'created_at' then
-            v_order_by = 'created_at';
-        when sortcolumn = 'last_accessed_at' then
-            v_order_by = 'last_accessed_at';
-        else
-            v_order_by = 'name';
-        end case;
-
-    case
-        when sortorder = 'asc' then
-            v_sort_order = 'asc';
-        when sortorder = 'desc' then
-            v_sort_order = 'desc';
-        else
-            v_sort_order = 'asc';
-        end case;
-
-    v_order_by = v_order_by || ' ' || v_sort_order;
-
-    return query execute
-        'with folders as (
-           select path_tokens[$1] as folder
-           from storage.objects
-             where objects.name ilike $2 || $3 || ''%''
-               and bucket_id = $4
-               and array_length(objects.path_tokens, 1) <> $1
-           group by folder
-           order by folder ' || v_sort_order || '
-     )
-     (select folder as "name",
-            null as id,
-            null as updated_at,
-            null as created_at,
-            null as last_accessed_at,
-            null as metadata from folders)
-     union all
-     (select path_tokens[$1] as "name",
-            id,
-            updated_at,
-            created_at,
-            last_accessed_at,
-            metadata
-     from storage.objects
-     where objects.name ilike $2 || $3 || ''%''
-       and bucket_id = $4
-       and array_length(objects.path_tokens, 1) = $1
-     order by ' || v_order_by || ')
-     limit $5
-     offset $6' using levels, prefix, search, bucketname, limits, offsets;
-end;
-$_$;
-
-
-ALTER FUNCTION "storage"."search_legacy_v1"("prefix" "text", "bucketname" "text", "limits" integer, "levels" integer, "offsets" integer, "search" "text", "sortcolumn" "text", "sortorder" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."search_v1_optimised"("prefix" "text", "bucketname" "text", "limits" integer DEFAULT 100, "levels" integer DEFAULT 1, "offsets" integer DEFAULT 0, "search" "text" DEFAULT ''::"text", "sortcolumn" "text" DEFAULT 'name'::"text", "sortorder" "text" DEFAULT 'asc'::"text") RETURNS TABLE("name" "text", "id" "uuid", "updated_at" timestamp with time zone, "created_at" timestamp with time zone, "last_accessed_at" timestamp with time zone, "metadata" "jsonb")
-    LANGUAGE "plpgsql" STABLE
-    AS $_$
-declare
-    v_order_by text;
-    v_sort_order text;
-begin
-    case
-        when sortcolumn = 'name' then
-            v_order_by = 'name';
-        when sortcolumn = 'updated_at' then
-            v_order_by = 'updated_at';
-        when sortcolumn = 'created_at' then
-            v_order_by = 'created_at';
-        when sortcolumn = 'last_accessed_at' then
-            v_order_by = 'last_accessed_at';
-        else
-            v_order_by = 'name';
-        end case;
-
-    case
-        when sortorder = 'asc' then
-            v_sort_order = 'asc';
-        when sortorder = 'desc' then
-            v_sort_order = 'desc';
-        else
-            v_sort_order = 'asc';
-        end case;
-
-    v_order_by = v_order_by || ' ' || v_sort_order;
-
-    return query execute
-        'with folders as (
-           select (string_to_array(name, ''/''))[level] as name
-           from storage.prefixes
-             where lower(prefixes.name) like lower($2 || $3) || ''%''
-               and bucket_id = $4
-               and level = $1
-           order by name ' || v_sort_order || '
-     )
-     (select name,
-            null as id,
-            null as updated_at,
-            null as created_at,
-            null as last_accessed_at,
-            null as metadata from folders)
-     union all
-     (select path_tokens[level] as "name",
-            id,
-            updated_at,
-            created_at,
-            last_accessed_at,
-            metadata
-     from storage.objects
-     where lower(objects.name) like lower($2 || $3) || ''%''
-       and bucket_id = $4
-       and level = $1
-     order by ' || v_order_by || ')
-     limit $5
-     offset $6' using levels, prefix, search, bucketname, limits, offsets;
-end;
-$_$;
-
-
-ALTER FUNCTION "storage"."search_v1_optimised"("prefix" "text", "bucketname" "text", "limits" integer, "levels" integer, "offsets" integer, "search" "text", "sortcolumn" "text", "sortorder" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."search_v2"("prefix" "text", "bucket_name" "text", "limits" integer DEFAULT 100, "levels" integer DEFAULT 1, "start_after" "text" DEFAULT ''::"text", "sort_order" "text" DEFAULT 'asc'::"text", "sort_column" "text" DEFAULT 'name'::"text", "sort_column_after" "text" DEFAULT ''::"text") RETURNS TABLE("key" "text", "name" "text", "id" "uuid", "updated_at" timestamp with time zone, "created_at" timestamp with time zone, "last_accessed_at" timestamp with time zone, "metadata" "jsonb")
-    LANGUAGE "plpgsql" STABLE
-    AS $_$
-DECLARE
-    sort_col text;
-    sort_ord text;
-    cursor_op text;
-    cursor_expr text;
-    sort_expr text;
-BEGIN
-    -- Validate sort_order
-    sort_ord := lower(sort_order);
-    IF sort_ord NOT IN ('asc', 'desc') THEN
-        sort_ord := 'asc';
-    END IF;
-
-    -- Determine cursor comparison operator
-    IF sort_ord = 'asc' THEN
-        cursor_op := '>';
-    ELSE
-        cursor_op := '<';
-    END IF;
-    
-    sort_col := lower(sort_column);
-    -- Validate sort column  
-    IF sort_col IN ('updated_at', 'created_at') THEN
-        cursor_expr := format(
-            '($5 = '''' OR ROW(date_trunc(''milliseconds'', %I), name COLLATE "C") %s ROW(COALESCE(NULLIF($6, '''')::timestamptz, ''epoch''::timestamptz), $5))',
-            sort_col, cursor_op
-        );
-        sort_expr := format(
-            'COALESCE(date_trunc(''milliseconds'', %I), ''epoch''::timestamptz) %s, name COLLATE "C" %s',
-            sort_col, sort_ord, sort_ord
-        );
-    ELSE
-        cursor_expr := format('($5 = '''' OR name COLLATE "C" %s $5)', cursor_op);
-        sort_expr := format('name COLLATE "C" %s', sort_ord);
-    END IF;
-
-    RETURN QUERY EXECUTE format(
-        $sql$
-        SELECT * FROM (
-            (
-                SELECT
-                    split_part(name, '/', $4) AS key,
-                    name,
-                    NULL::uuid AS id,
-                    updated_at,
-                    created_at,
-                    NULL::timestamptz AS last_accessed_at,
-                    NULL::jsonb AS metadata
-                FROM storage.prefixes
-                WHERE name COLLATE "C" LIKE $1 || '%%'
-                    AND bucket_id = $2
-                    AND level = $4
-                    AND %s
-                ORDER BY %s
-                LIMIT $3
-            )
-            UNION ALL
-            (
-                SELECT
-                    split_part(name, '/', $4) AS key,
-                    name,
-                    id,
-                    updated_at,
-                    created_at,
-                    last_accessed_at,
-                    metadata
-                FROM storage.objects
-                WHERE name COLLATE "C" LIKE $1 || '%%'
-                    AND bucket_id = $2
-                    AND level = $4
-                    AND %s
-                ORDER BY %s
-                LIMIT $3
-            )
-        ) obj
-        ORDER BY %s
-        LIMIT $3
-        $sql$,
-        cursor_expr,    -- prefixes WHERE
-        sort_expr,      -- prefixes ORDER BY
-        cursor_expr,    -- objects WHERE
-        sort_expr,      -- objects ORDER BY
-        sort_expr       -- final ORDER BY
-    )
-    USING prefix, bucket_name, limits, levels, start_after, sort_column_after;
-END;
-$_$;
-
-
-ALTER FUNCTION "storage"."search_v2"("prefix" "text", "bucket_name" "text", "limits" integer, "levels" integer, "start_after" "text", "sort_order" "text", "sort_column" "text", "sort_column_after" "text") OWNER TO "supabase_storage_admin";
-
-
-CREATE OR REPLACE FUNCTION "storage"."update_updated_at_column"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    NEW.updated_at = now();
-    RETURN NEW; 
-END;
-$$;
-
-
-ALTER FUNCTION "storage"."update_updated_at_column"() OWNER TO "supabase_storage_admin";
 
 SET default_tablespace = '';
 
@@ -4464,181 +3521,6 @@ COMMENT ON COLUMN "public"."user_card_categories"."category_id" IS 'FK categorie
 
 
 
-CREATE TABLE IF NOT EXISTS "storage"."buckets" (
-    "id" "text" NOT NULL,
-    "name" "text" NOT NULL,
-    "owner" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone DEFAULT "now"(),
-    "public" boolean DEFAULT false,
-    "avif_autodetection" boolean DEFAULT false,
-    "file_size_limit" bigint,
-    "allowed_mime_types" "text"[],
-    "owner_id" "text",
-    "type" "storage"."buckettype" DEFAULT 'STANDARD'::"storage"."buckettype" NOT NULL
-);
-
-
-ALTER TABLE "storage"."buckets" OWNER TO "supabase_storage_admin";
-
-
-COMMENT ON COLUMN "storage"."buckets"."owner" IS 'Field is deprecated, use owner_id instead';
-
-
-
-CREATE TABLE IF NOT EXISTS "storage"."buckets_analytics" (
-    "name" "text" NOT NULL,
-    "type" "storage"."buckettype" DEFAULT 'ANALYTICS'::"storage"."buckettype" NOT NULL,
-    "format" "text" DEFAULT 'ICEBERG'::"text" NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "deleted_at" timestamp with time zone
-);
-
-
-ALTER TABLE "storage"."buckets_analytics" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."buckets_vectors" (
-    "id" "text" NOT NULL,
-    "type" "storage"."buckettype" DEFAULT 'VECTOR'::"storage"."buckettype" NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
-);
-
-
-ALTER TABLE "storage"."buckets_vectors" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."iceberg_namespaces" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "bucket_name" "text" NOT NULL,
-    "name" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "metadata" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
-    "catalog_id" "uuid" NOT NULL
-);
-
-
-ALTER TABLE "storage"."iceberg_namespaces" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."iceberg_tables" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "namespace_id" "uuid" NOT NULL,
-    "bucket_name" "text" NOT NULL,
-    "name" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "location" "text" NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "remote_table_id" "text",
-    "shard_key" "text",
-    "shard_id" "text",
-    "catalog_id" "uuid" NOT NULL
-);
-
-
-ALTER TABLE "storage"."iceberg_tables" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."migrations" (
-    "id" integer NOT NULL,
-    "name" character varying(100) NOT NULL,
-    "hash" character varying(40) NOT NULL,
-    "executed_at" timestamp without time zone DEFAULT CURRENT_TIMESTAMP
-);
-
-
-ALTER TABLE "storage"."migrations" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."objects" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "bucket_id" "text",
-    "name" "text",
-    "owner" "uuid",
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone DEFAULT "now"(),
-    "last_accessed_at" timestamp with time zone DEFAULT "now"(),
-    "metadata" "jsonb",
-    "path_tokens" "text"[] GENERATED ALWAYS AS ("string_to_array"("name", '/'::"text")) STORED,
-    "version" "text",
-    "owner_id" "text",
-    "user_metadata" "jsonb",
-    "level" integer
-);
-
-
-ALTER TABLE "storage"."objects" OWNER TO "supabase_storage_admin";
-
-
-COMMENT ON COLUMN "storage"."objects"."owner" IS 'Field is deprecated, use owner_id instead';
-
-
-
-CREATE TABLE IF NOT EXISTS "storage"."prefixes" (
-    "bucket_id" "text" NOT NULL,
-    "name" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "level" integer GENERATED ALWAYS AS ("storage"."get_level"("name")) STORED NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"(),
-    "updated_at" timestamp with time zone DEFAULT "now"()
-);
-
-
-ALTER TABLE "storage"."prefixes" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."s3_multipart_uploads" (
-    "id" "text" NOT NULL,
-    "in_progress_size" bigint DEFAULT 0 NOT NULL,
-    "upload_signature" "text" NOT NULL,
-    "bucket_id" "text" NOT NULL,
-    "key" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "version" "text" NOT NULL,
-    "owner_id" "text",
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "user_metadata" "jsonb"
-);
-
-
-ALTER TABLE "storage"."s3_multipart_uploads" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."s3_multipart_uploads_parts" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "upload_id" "text" NOT NULL,
-    "size" bigint DEFAULT 0 NOT NULL,
-    "part_number" integer NOT NULL,
-    "bucket_id" "text" NOT NULL,
-    "key" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "etag" "text" NOT NULL,
-    "owner_id" "text",
-    "version" "text" NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL
-);
-
-
-ALTER TABLE "storage"."s3_multipart_uploads_parts" OWNER TO "supabase_storage_admin";
-
-
-CREATE TABLE IF NOT EXISTS "storage"."vector_indexes" (
-    "id" "text" DEFAULT "gen_random_uuid"() NOT NULL,
-    "name" "text" NOT NULL COLLATE "pg_catalog"."C",
-    "bucket_id" "text" NOT NULL,
-    "data_type" "text" NOT NULL,
-    "dimension" integer NOT NULL,
-    "distance_metric" "text" NOT NULL,
-    "metadata_configuration" "jsonb",
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL
-);
-
-
-ALTER TABLE "storage"."vector_indexes" OWNER TO "supabase_storage_admin";
-
-
 ALTER TABLE ONLY "public"."account_preferences"
     ADD CONSTRAINT "account_preferences_pkey" PRIMARY KEY ("account_id");
 
@@ -4796,66 +3678,6 @@ ALTER TABLE ONLY "public"."user_card_categories"
 
 
 
-ALTER TABLE ONLY "storage"."buckets_analytics"
-    ADD CONSTRAINT "buckets_analytics_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."buckets"
-    ADD CONSTRAINT "buckets_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."buckets_vectors"
-    ADD CONSTRAINT "buckets_vectors_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."iceberg_namespaces"
-    ADD CONSTRAINT "iceberg_namespaces_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."iceberg_tables"
-    ADD CONSTRAINT "iceberg_tables_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."migrations"
-    ADD CONSTRAINT "migrations_name_key" UNIQUE ("name");
-
-
-
-ALTER TABLE ONLY "storage"."migrations"
-    ADD CONSTRAINT "migrations_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."objects"
-    ADD CONSTRAINT "objects_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."prefixes"
-    ADD CONSTRAINT "prefixes_pkey" PRIMARY KEY ("bucket_id", "level", "name");
-
-
-
-ALTER TABLE ONLY "storage"."s3_multipart_uploads_parts"
-    ADD CONSTRAINT "s3_multipart_uploads_parts_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."s3_multipart_uploads"
-    ADD CONSTRAINT "s3_multipart_uploads_pkey" PRIMARY KEY ("id");
-
-
-
-ALTER TABLE ONLY "storage"."vector_indexes"
-    ADD CONSTRAINT "vector_indexes_pkey" PRIMARY KEY ("id");
-
-
-
 CREATE INDEX "account_quota_months_current_idx" ON "public"."account_quota_months" USING "btree" ("account_id", "month_start_utc", "month_end_utc");
 
 
@@ -5005,62 +3827,6 @@ CREATE UNIQUE INDEX "subscriptions_stripe_subscription_id_key" ON "public"."subs
 
 
 CREATE UNIQUE INDEX "subscriptions_unique_active_per_account" ON "public"."subscriptions" USING "btree" ("account_id") WHERE ("status" = ANY (ARRAY['active'::"text", 'trialing'::"text", 'past_due'::"text", 'paused'::"text"]));
-
-
-
-CREATE UNIQUE INDEX "bname" ON "storage"."buckets" USING "btree" ("name");
-
-
-
-CREATE UNIQUE INDEX "bucketid_objname" ON "storage"."objects" USING "btree" ("bucket_id", "name");
-
-
-
-CREATE UNIQUE INDEX "buckets_analytics_unique_name_idx" ON "storage"."buckets_analytics" USING "btree" ("name") WHERE ("deleted_at" IS NULL);
-
-
-
-CREATE UNIQUE INDEX "idx_iceberg_namespaces_bucket_id" ON "storage"."iceberg_namespaces" USING "btree" ("catalog_id", "name");
-
-
-
-CREATE UNIQUE INDEX "idx_iceberg_tables_location" ON "storage"."iceberg_tables" USING "btree" ("location");
-
-
-
-CREATE UNIQUE INDEX "idx_iceberg_tables_namespace_id" ON "storage"."iceberg_tables" USING "btree" ("catalog_id", "namespace_id", "name");
-
-
-
-CREATE INDEX "idx_multipart_uploads_list" ON "storage"."s3_multipart_uploads" USING "btree" ("bucket_id", "key", "created_at");
-
-
-
-CREATE UNIQUE INDEX "idx_name_bucket_level_unique" ON "storage"."objects" USING "btree" ("name" COLLATE "C", "bucket_id", "level");
-
-
-
-CREATE INDEX "idx_objects_bucket_id_name" ON "storage"."objects" USING "btree" ("bucket_id", "name" COLLATE "C");
-
-
-
-CREATE INDEX "idx_objects_lower_name" ON "storage"."objects" USING "btree" (("path_tokens"["level"]), "lower"("name") "text_pattern_ops", "bucket_id", "level");
-
-
-
-CREATE INDEX "idx_prefixes_lower_name" ON "storage"."prefixes" USING "btree" ("bucket_id", "level", (("string_to_array"("name", '/'::"text"))["level"]), "lower"("name") "text_pattern_ops");
-
-
-
-CREATE INDEX "name_prefix_search" ON "storage"."objects" USING "btree" ("name" "text_pattern_ops");
-
-
-
-CREATE UNIQUE INDEX "objects_bucket_id_level_idx" ON "storage"."objects" USING "btree" ("bucket_id", "level", "name" COLLATE "C");
-
-
-
-CREATE UNIQUE INDEX "vector_indexes_name_bucket_id_idx" ON "storage"."vector_indexes" USING "btree" ("name", "bucket_id");
 
 
 
@@ -5260,34 +4026,6 @@ CREATE OR REPLACE TRIGGER "trigger_user_card_categories_integrity" BEFORE INSERT
 
 
 
-CREATE OR REPLACE TRIGGER "enforce_bucket_name_length_trigger" BEFORE INSERT OR UPDATE OF "name" ON "storage"."buckets" FOR EACH ROW EXECUTE FUNCTION "storage"."enforce_bucket_name_length"();
-
-
-
-CREATE OR REPLACE TRIGGER "objects_delete_delete_prefix" AFTER DELETE ON "storage"."objects" FOR EACH ROW EXECUTE FUNCTION "storage"."delete_prefix_hierarchy_trigger"();
-
-
-
-CREATE OR REPLACE TRIGGER "objects_insert_create_prefix" BEFORE INSERT ON "storage"."objects" FOR EACH ROW EXECUTE FUNCTION "storage"."objects_insert_prefix_trigger"();
-
-
-
-CREATE OR REPLACE TRIGGER "objects_update_create_prefix" BEFORE UPDATE ON "storage"."objects" FOR EACH ROW WHEN ((("new"."name" <> "old"."name") OR ("new"."bucket_id" <> "old"."bucket_id"))) EXECUTE FUNCTION "storage"."objects_update_prefix_trigger"();
-
-
-
-CREATE OR REPLACE TRIGGER "prefixes_create_hierarchy" BEFORE INSERT ON "storage"."prefixes" FOR EACH ROW WHEN (("pg_trigger_depth"() < 1)) EXECUTE FUNCTION "storage"."prefixes_insert_trigger"();
-
-
-
-CREATE OR REPLACE TRIGGER "prefixes_delete_hierarchy" AFTER DELETE ON "storage"."prefixes" FOR EACH ROW EXECUTE FUNCTION "storage"."delete_prefix_hierarchy_trigger"();
-
-
-
-CREATE OR REPLACE TRIGGER "update_objects_updated_at" BEFORE UPDATE ON "storage"."objects" FOR EACH ROW EXECUTE FUNCTION "storage"."update_updated_at_column"();
-
-
-
 ALTER TABLE ONLY "public"."account_preferences"
     ADD CONSTRAINT "account_preferences_account_id_fkey" FOREIGN KEY ("account_id") REFERENCES "public"."accounts"("id") ON DELETE CASCADE;
 
@@ -5415,51 +4153,6 @@ ALTER TABLE ONLY "public"."user_card_categories"
 
 ALTER TABLE ONLY "public"."user_card_categories"
     ADD CONSTRAINT "user_card_categories_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "public"."accounts"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "storage"."iceberg_namespaces"
-    ADD CONSTRAINT "iceberg_namespaces_catalog_id_fkey" FOREIGN KEY ("catalog_id") REFERENCES "storage"."buckets_analytics"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "storage"."iceberg_tables"
-    ADD CONSTRAINT "iceberg_tables_catalog_id_fkey" FOREIGN KEY ("catalog_id") REFERENCES "storage"."buckets_analytics"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "storage"."iceberg_tables"
-    ADD CONSTRAINT "iceberg_tables_namespace_id_fkey" FOREIGN KEY ("namespace_id") REFERENCES "storage"."iceberg_namespaces"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "storage"."objects"
-    ADD CONSTRAINT "objects_bucketId_fkey" FOREIGN KEY ("bucket_id") REFERENCES "storage"."buckets"("id");
-
-
-
-ALTER TABLE ONLY "storage"."prefixes"
-    ADD CONSTRAINT "prefixes_bucketId_fkey" FOREIGN KEY ("bucket_id") REFERENCES "storage"."buckets"("id");
-
-
-
-ALTER TABLE ONLY "storage"."s3_multipart_uploads"
-    ADD CONSTRAINT "s3_multipart_uploads_bucket_id_fkey" FOREIGN KEY ("bucket_id") REFERENCES "storage"."buckets"("id");
-
-
-
-ALTER TABLE ONLY "storage"."s3_multipart_uploads_parts"
-    ADD CONSTRAINT "s3_multipart_uploads_parts_bucket_id_fkey" FOREIGN KEY ("bucket_id") REFERENCES "storage"."buckets"("id");
-
-
-
-ALTER TABLE ONLY "storage"."s3_multipart_uploads_parts"
-    ADD CONSTRAINT "s3_multipart_uploads_parts_upload_id_fkey" FOREIGN KEY ("upload_id") REFERENCES "storage"."s3_multipart_uploads"("id") ON DELETE CASCADE;
-
-
-
-ALTER TABLE ONLY "storage"."vector_indexes"
-    ADD CONSTRAINT "vector_indexes_bucket_id_fkey" FOREIGN KEY ("bucket_id") REFERENCES "storage"."buckets_vectors"("id");
 
 
 
@@ -5740,7 +4433,7 @@ CREATE POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" FOR DEL
 
 
 
-COMMENT ON POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en suppression étape';
+COMMENT ON POLICY "sequence_steps_delete_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -5750,7 +4443,7 @@ CREATE POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" FOR INS
 
 
 
-COMMENT ON POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en création étape';
+COMMENT ON POLICY "sequence_steps_insert_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -5772,7 +4465,7 @@ CREATE POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" FOR UPD
 
 
 
-COMMENT ON POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en modification étape';
+COMMENT ON POLICY "sequence_steps_update_owner" ON "public"."sequence_steps" IS 'Owner via sequence + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -5783,7 +4476,7 @@ CREATE POLICY "sequences_delete_owner" ON "public"."sequences" FOR DELETE TO "au
 
 
 
-COMMENT ON POLICY "sequences_delete_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en suppression séquence';
+COMMENT ON POLICY "sequences_delete_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -5791,7 +4484,7 @@ CREATE POLICY "sequences_insert_owner" ON "public"."sequences" FOR INSERT TO "au
 
 
 
-COMMENT ON POLICY "sequences_insert_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en création séquence';
+COMMENT ON POLICY "sequences_insert_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -5807,7 +4500,7 @@ CREATE POLICY "sequences_update_owner" ON "public"."sequences" FOR UPDATE TO "au
 
 
 
-COMMENT ON POLICY "sequences_update_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (subscriber/admin) + not execution-only: Free bloqué en modification séquence';
+COMMENT ON POLICY "sequences_update_owner" ON "public"."sequences" IS 'Owner + can_write_sequences() (free/subscriber/admin) + not execution-only: Visitor hors portée (local-only)';
 
 
 
@@ -6043,75 +4736,20 @@ COMMENT ON POLICY "user_card_categories_update_owner" ON "public"."user_card_cat
 
 
 
-CREATE POLICY "bank_images_delete_admin" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
-   FROM "public"."accounts"
-  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
+
+
+ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
 
 
 
-CREATE POLICY "bank_images_insert_admin" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
-   FROM "public"."accounts"
-  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
 
 
 
-CREATE POLICY "bank_images_select_public" ON "storage"."objects" FOR SELECT TO "authenticated", "anon" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\\.[A-Za-z0-9]+$'::"text")));
+ALTER PUBLICATION "supabase_realtime" ADD TABLE ONLY "public"."sessions";
 
 
 
-CREATE POLICY "bank_images_update_admin" ON "storage"."objects" FOR UPDATE TO "authenticated" USING ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
-   FROM "public"."accounts"
-  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status"))) WITH CHECK ((("bucket_id" = 'bank-images'::"text") AND ("name" !~~ '%..%'::"text") AND ("name" !~~ '%/%'::"text") AND ("name" ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$'::"text") AND (( SELECT "accounts"."status"
-   FROM "public"."accounts"
-  WHERE ("accounts"."id" = "auth"."uid"())) = 'admin'::"public"."account_status")));
 
-
-
-ALTER TABLE "storage"."buckets" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."buckets_analytics" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."buckets_vectors" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."iceberg_namespaces" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."iceberg_tables" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."migrations" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."objects" ENABLE ROW LEVEL SECURITY;
-
-
-CREATE POLICY "personal_images_delete_owner" ON "storage"."objects" FOR DELETE TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
-
-
-
-CREATE POLICY "personal_images_insert_owner" ON "storage"."objects" FOR INSERT TO "authenticated" WITH CHECK ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text") AND (EXISTS ( SELECT 1
-   FROM "public"."accounts"
-  WHERE (("accounts"."id" = "auth"."uid"()) AND ("accounts"."status" = ANY (ARRAY['subscriber'::"public"."account_status", 'admin'::"public"."account_status"])))))));
-
-
-
-CREATE POLICY "personal_images_select_owner" ON "storage"."objects" FOR SELECT TO "authenticated" USING ((("bucket_id" = 'personal-images'::"text") AND ("name" !~~ '%..%'::"text") AND (("storage"."foldername"("name"))[1] = ("auth"."uid"())::"text") AND (("storage"."foldername"("name"))[2] = 'cards'::"text") AND ("split_part"("name", '/'::"text", 3) ~* '^[0-9a-f-]{36}\.jpg$'::"text")));
-
-
-
-ALTER TABLE "storage"."prefixes" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."s3_multipart_uploads" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."s3_multipart_uploads_parts" ENABLE ROW LEVEL SECURITY;
-
-
-ALTER TABLE "storage"."vector_indexes" ENABLE ROW LEVEL SECURITY;
 
 
 GRANT USAGE ON SCHEMA "public" TO "postgres";
@@ -6121,12 +4759,159 @@ GRANT USAGE ON SCHEMA "public" TO "service_role";
 
 
 
-GRANT USAGE ON SCHEMA "storage" TO "postgres" WITH GRANT OPTION;
-GRANT USAGE ON SCHEMA "storage" TO "anon";
-GRANT USAGE ON SCHEMA "storage" TO "authenticated";
-GRANT USAGE ON SCHEMA "storage" TO "service_role";
-GRANT ALL ON SCHEMA "storage" TO "supabase_storage_admin" WITH GRANT OPTION;
-GRANT ALL ON SCHEMA "storage" TO "dashboard_user";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6508,6 +5293,21 @@ GRANT ALL ON FUNCTION "public"."validate_session_state_transition"() TO "service
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 GRANT ALL ON TABLE "public"."account_preferences" TO "anon";
 GRANT ALL ON TABLE "public"."account_preferences" TO "authenticated";
 GRANT ALL ON TABLE "public"."account_preferences" TO "service_role";
@@ -6611,65 +5411,9 @@ GRANT SELECT,INSERT,DELETE,UPDATE ON TABLE "public"."user_card_categories" TO "a
 
 
 
-GRANT ALL ON TABLE "storage"."buckets" TO "postgres" WITH GRANT OPTION;
-GRANT ALL ON TABLE "storage"."buckets" TO "service_role";
-GRANT ALL ON TABLE "storage"."buckets" TO "authenticated";
-GRANT ALL ON TABLE "storage"."buckets" TO "anon";
 
 
 
-GRANT ALL ON TABLE "storage"."buckets_analytics" TO "service_role";
-GRANT ALL ON TABLE "storage"."buckets_analytics" TO "authenticated";
-GRANT ALL ON TABLE "storage"."buckets_analytics" TO "anon";
-
-
-
-GRANT SELECT ON TABLE "storage"."buckets_vectors" TO "service_role";
-GRANT SELECT ON TABLE "storage"."buckets_vectors" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."buckets_vectors" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."iceberg_namespaces" TO "service_role";
-GRANT SELECT ON TABLE "storage"."iceberg_namespaces" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."iceberg_namespaces" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."iceberg_tables" TO "service_role";
-GRANT SELECT ON TABLE "storage"."iceberg_tables" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."iceberg_tables" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."objects" TO "postgres" WITH GRANT OPTION;
-GRANT ALL ON TABLE "storage"."objects" TO "service_role";
-GRANT ALL ON TABLE "storage"."objects" TO "authenticated";
-GRANT ALL ON TABLE "storage"."objects" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."prefixes" TO "service_role";
-GRANT ALL ON TABLE "storage"."prefixes" TO "authenticated";
-GRANT ALL ON TABLE "storage"."prefixes" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."s3_multipart_uploads" TO "service_role";
-GRANT SELECT ON TABLE "storage"."s3_multipart_uploads" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."s3_multipart_uploads" TO "anon";
-
-
-
-GRANT ALL ON TABLE "storage"."s3_multipart_uploads_parts" TO "service_role";
-GRANT SELECT ON TABLE "storage"."s3_multipart_uploads_parts" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."s3_multipart_uploads_parts" TO "anon";
-
-
-
-GRANT SELECT ON TABLE "storage"."vector_indexes" TO "service_role";
-GRANT SELECT ON TABLE "storage"."vector_indexes" TO "authenticated";
-GRANT SELECT ON TABLE "storage"."vector_indexes" TO "anon";
 
 
 
@@ -6703,24 +5447,27 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 
 
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON SEQUENCES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON SEQUENCES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON SEQUENCES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON SEQUENCES TO "service_role";
 
 
 
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON FUNCTIONS TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON FUNCTIONS TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON FUNCTIONS TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON FUNCTIONS TO "service_role";
 
 
 
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON TABLES TO "postgres";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON TABLES TO "anon";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON TABLES TO "authenticated";
-ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "storage" GRANT ALL ON TABLES TO "service_role";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

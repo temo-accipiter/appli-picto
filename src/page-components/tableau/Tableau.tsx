@@ -339,16 +339,11 @@ export default function Tableau(_props: TableauProps = {}) {
     useState(isSessionCompleted)
   const previousSessionCompletedRef = useRef(isSessionCompleted)
 
-  // ✅ CORRECTIF SYMPTÔME B (Complétion prématurée) — Robustesse contre snapshot périmé
-  // Si snapshot DB = 2 (périmé car refetch pas terminé) MAIS visibleStepSlots.length = 3 (à jour)
-  // → Math.max(2, 3) = 3 → on exige 3 validations → complétion correcte
-  // Si snapshot DB = 3 (à jour) MAIS visibleStepSlots.length = 2 (périmé car refetch slots pas terminé)
-  // → Math.max(3, 2) = 3 → on exige 3 validations → complétion correcte
-  // → Le total ne peut JAMAIS être inférieur au nombre de slots actuellement affichés
-  const totalForProgress = Math.max(
-    session?.steps_total_snapshot ?? 0,
-    visibleStepSlots.length
-  )
+  // §4.5 : steps_total_snapshot est immuable pendant toute la session (figé à la 1ère validation).
+  // La composition de la timeline est verrouillée dès active_started → snapshot = réalité.
+  // Fallback visibleStepSlots.length uniquement pendant active_preview (snapshot encore null).
+  const totalForProgress =
+    session?.steps_total_snapshot ?? visibleStepSlots.length
 
   useEffect(() => {
     const wasCompleted = previousSessionCompletedRef.current
