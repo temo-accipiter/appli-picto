@@ -18,12 +18,6 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       const isMobileNow = window.innerWidth < 768
       setIsMobile(isMobileNow)
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '[Layout] isMobile:',
-          isMobileNow,
-          'width:',
-          window.innerWidth
-        )
       }
     }
     checkMobile()
