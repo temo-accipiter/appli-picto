@@ -15,6 +15,7 @@ interface ModalAjoutProps {
   onSubmit: (data: ItemFormData) => void
   assetType?: AssetType // conservé pour compatibilité appelants
   prefix?: string // conservé pour compatibilité appelants
+  overlayClassName?: string
 }
 
 export default function ModalAjout({
@@ -23,9 +24,15 @@ export default function ModalAjout({
   includeCategory = false,
   categories = [],
   onSubmit,
+  overlayClassName,
 }: ModalAjoutProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} actions={[]}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      actions={[]}
+      overlayClassName={overlayClassName}
+    >
       <ItemForm
         includeCategory={includeCategory}
         categories={(categories ?? []).map(c => ({

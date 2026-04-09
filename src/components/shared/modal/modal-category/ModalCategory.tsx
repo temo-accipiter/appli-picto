@@ -21,6 +21,7 @@ interface ModalCategoryProps {
   newCategory: string
   onChangeNewCategory: (value: string) => void
   isSubmitting?: boolean
+  overlayClassName?: string
 }
 
 export default function ModalCategory({
@@ -32,6 +33,7 @@ export default function ModalCategory({
   newCategory,
   onChangeNewCategory,
   isSubmitting = false,
+  overlayClassName,
 }: ModalCategoryProps) {
   const { t } = useI18n()
   const [visibleCats, setVisibleCats] = useState<CategoryOption[]>([])
@@ -81,6 +83,7 @@ export default function ModalCategory({
         onClose={onClose}
         title={t('edition.manageCategoriesTitle')}
         actions={[]}
+        overlayClassName={overlayClassName}
       >
         <ul className="category-list">
           <AnimatePresence>

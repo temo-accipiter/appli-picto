@@ -43,6 +43,12 @@
   @include respond-to(sm) {
     padding: spacing('md');
   }
+
+  // Variante transparente : fond invisible, contenu derrière visible
+  &--transparent {
+    background-color: transparent;
+    backdrop-filter: none;
+  }
 }
 
 // === MODAL CONTENEUR ===

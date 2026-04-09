@@ -26,6 +26,7 @@ interface ModalProps {
   children: ReactNode
   actions?: ModalAction[]
   className?: string
+  overlayClassName?: string | undefined
   size?: ModalSize
   closeOnOverlay?: boolean
   closeOnEscape?: boolean
@@ -39,6 +40,7 @@ export default function Modal({
   children,
   actions = [],
   className = '',
+  overlayClassName = '',
   size = 'medium',
   closeOnOverlay = true,
   closeOnEscape = true,
@@ -75,9 +77,11 @@ export default function Modal({
   const sizeClass = size !== 'medium' ? `modal--${size}` : ''
   const modalClasses = `modal ${sizeClass} ${className}`.trim()
 
+  const overlayClasses = `modal-overlay ${overlayClassName}`.trim()
+
   const content = (
     <div
-      className="modal-overlay"
+      className={overlayClasses}
       onClick={closeOnOverlay ? onClose : undefined}
     >
       <div

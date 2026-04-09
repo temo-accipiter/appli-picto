@@ -285,7 +285,7 @@ export default function CardsEdition({
           {/* ✅ Bouton création carte : masqué si Free (cosmétique) */}
           {!isFree && (
             <Button
-              label={`➕ ${t('cards.addCard') || 'Créer carte'}`}
+              label="➕ Créer une carte"
               onClick={async () => {
                 if (onShowQuotaModal) {
                   const canOpen = await onShowQuotaModal('card')
@@ -607,6 +607,7 @@ export default function CardsEdition({
         includeCategory
         categories={categories}
         assetType="card_image"
+        overlayClassName="modal-overlay--transparent"
         onSubmit={values => {
           onSubmitCard(values)
           setModalCardOpen(false)
@@ -622,6 +623,7 @@ export default function CardsEdition({
         newCategory={newCatLabel}
         onChangeNewCategory={setNewCatLabel}
         isSubmitting={isSubmittingCategory}
+        overlayClassName="modal-overlay--transparent"
       />
 
       <ModalConfirm
@@ -629,6 +631,7 @@ export default function CardsEdition({
         onClose={() => setCatASupprimer(null)}
         confirmLabel={t('actions.delete')}
         onConfirm={() => handleRemoveCategory(catASupprimer!)}
+        overlayClassName="modal-overlay--transparent"
       >
         <>
           ❗ {t('edition.confirmDeleteCategory')}

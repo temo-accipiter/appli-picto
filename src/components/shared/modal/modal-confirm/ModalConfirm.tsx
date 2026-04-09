@@ -14,6 +14,7 @@ interface ModalConfirmProps {
   closeOnConfirm?: boolean
   cancelLabel?: string
   children: ReactNode
+  overlayClassName?: string
 }
 
 export default function ModalConfirm({
@@ -25,12 +26,14 @@ export default function ModalConfirm({
   closeOnConfirm = true,
   cancelLabel,
   children,
+  overlayClassName,
 }: ModalConfirmProps) {
   const { t } = useI18n()
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      overlayClassName={overlayClassName}
       actions={[
         {
           label: cancelLabel || t('actions.cancel'),
