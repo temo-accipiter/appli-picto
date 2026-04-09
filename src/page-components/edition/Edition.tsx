@@ -31,9 +31,6 @@ import React, {
 import './Edition.scss'
 
 // Lazy load des modales (affichées conditionnellement)
-const ModalCategory = lazy(() =>
-  import('@/components').then(m => ({ default: m.ModalCategory }))
-)
 const ModalConfirm = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalConfirm }))
 )
@@ -87,7 +84,6 @@ export default function Edition({
   // ✅ DB-first : Quota validation 100% server-side via RLS + triggers
   // Le client fait INSERT optimistic, serveur reject si quota dépassé
 
-  const [manageCatOpen, setManageCatOpen] = useState(false)
   const [catASupprimer, setCatASupprimer] = useState<string | null>(null)
   const [newCatLabel, setNewCatLabel] = useState('')
   const [cardASupprimer, setCardASupprimer] = useState<CardItem | null>(null)
@@ -692,16 +688,6 @@ export default function Edition({
       </Suspense>
 
       <Suspense fallback={null}>
-        <ModalCategory
-          isOpen={manageCatOpen}
-          onClose={() => setManageCatOpen(false)}
-          categories={uniqueCategories}
-          onDeleteCategory={value => setCatASupprimer(String(value))}
-          onAddCategory={handleAddCategoryWithQuota}
-          newCategory={newCatLabel}
-          onChangeNewCategory={setNewCatLabel}
-        />
-
         <ModalConfirm
           isOpen={!!catASupprimer}
           onClose={() => setCatASupprimer(null)}
