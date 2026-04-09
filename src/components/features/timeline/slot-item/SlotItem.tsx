@@ -211,6 +211,15 @@ export function SlotItem({
   // Séquençage disponible : uniquement pour les étapes avec une carte assignée
   const canManageSequence =
     isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
+  // ⚠️ NOTE INTENTIONNELLE — séquences non verrouillées pendant active_started
+  // Le verrou de composition (isSessionActive) ne s'applique PAS aux séquences.
+  // Pourquoi : les séquences sont indépendantes du mécanisme de session.
+  //   - steps_total_snapshot compte les slots, pas les étapes de séquence.
+  //   - session_validations tracke les slots, jamais les séquences.
+  //   - Modifier une séquence n'affecte ni la progression ni la complétion.
+  // Impact enfant : marginal. Cas d'usage : adulte édite une sous-étape depuis
+  // la page Édition pendant que l'enfant utilise le Tableau sur un autre appareil.
+  // Ce cas exceptionnel ne justifie pas un verrou qui alourdirait le workflow adulte.
   const isSequenceActionDisabled = isFullyLocked || !canManageSequence
 
   const handleTokensChange = async (e: ChangeEvent<HTMLInputElement>) => {
