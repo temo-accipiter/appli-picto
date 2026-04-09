@@ -331,7 +331,10 @@ export function SlotsEditor({
   // §6.1 catégorie #8 S9 : Actions structurelles désactivées si execution-only
   // §session-lock : Composition verrouillée pendant active_started
   const isSessionActive = sessionState === 'active_started'
-  const isActionBusy =
+
+  // Busy pour les actions structurelles (ajout/suppression de slots) :
+  // inclut le verrou de composition active_started.
+  const isStructuralBusy =
     addingStep ||
     swappingCards ||
     !!busyId ||
@@ -339,6 +342,13 @@ export function SlotsEditor({
     isOffline ||
     isExecutionOnly ||
     isSessionActive
+
+  // Busy pour le contrôle de session (réinitialiser) :
+  // N'inclut PAS isSessionActive ni isExecutionOnly — le reset doit rester accessible
+  // pendant active_started (c'est la seule sortie pour l'adulte).
+  // Seul frein légitime : offline (DB inaccessible).
+  const isControlBusy =
+    addingStep || swappingCards || !!busyId || resettingSession || isOffline
 
   const displayedSlots = optimisticSlots ?? slots
 
@@ -553,7 +563,7 @@ export function SlotsEditor({
           type="button"
           className="slots-editor__btn slots-editor__btn--step"
           onClick={handleAddStep}
-          disabled={isActionBusy}
+          disabled={isStructuralBusy}
           aria-busy={addingStep}
           title={
             isSessionActive
@@ -576,7 +586,7 @@ export function SlotsEditor({
           type="button"
           className={`slots-editor__btn slots-editor__btn--reset${isResetConfirming('reset') ? ' slots-editor__btn--reset-confirm' : ''}`}
           onClick={handleResetSession}
-          disabled={isActionBusy || !canResetSession}
+          disabled={isControlBusy || !canResetSession}
           aria-busy={resettingSession}
           aria-label={
             isResetConfirming('reset')

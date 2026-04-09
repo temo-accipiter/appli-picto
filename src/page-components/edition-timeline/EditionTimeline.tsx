@@ -272,7 +272,14 @@ export default function EditionTimeline({
   }
 
   const safeResetSession = async () => {
-    if (guardStructural()) return { error: null }
+    // Le reset est une action de CONTRÔLE de session, pas une modification structurelle.
+    // On ne passe PAS par guardStructural() : le reset doit rester accessible pendant
+    // active_started — c'est la seule porte de sortie pour l'adulte en cas de blocage.
+    // Seul guard légitime : offline (la DB est inaccessible hors connexion).
+    if (!isOnline) {
+      showToast('Indisponible hors connexion', 'warning')
+      return { error: null }
+    }
 
     const result = await resetSession()
 
