@@ -329,86 +329,89 @@ export default function EditionTimeline({
           Glisse l&apos;image d&apos;un slot sur un autre pour échanger. Glisse
           sur Récompense pour la remplir.
         </p>
-        {childProfilesLoading || childProfiles.length === 0 ? (
-          <div className="edition-timeline__profile-placeholder">
-            <span className="avatar-circle" aria-hidden="true">
-              ?
-            </span>
-            <span className="sr-only">Aucun profil enfant</span>
-          </div>
-        ) : (
-          <div
-            className="edition-timeline__profile-selector"
-            ref={selectorRef}
-            onMouseEnter={() => {
-              if (isDesktop) setIsProfilePopoverOpen(true)
-            }}
-            onMouseLeave={() => {
-              if (isDesktop) setIsProfilePopoverOpen(false)
-            }}
-          >
-            <button
-              type="button"
-              className="edition-timeline__profile-trigger"
-              aria-haspopup="menu"
-              aria-expanded={isProfilePopoverOpen}
-              aria-label={
-                activeChildProfile
-                  ? `Profil enfant actif : ${activeChildProfile.name}`
-                  : 'Aucun profil enfant'
-              }
-              onClick={() => setIsProfilePopoverOpen(prev => !prev)}
-              onFocus={() => setIsProfilePopoverOpen(true)}
-              onKeyDown={handleProfileTriggerKeyDown}
-            >
+        {!isVisitor &&
+          (childProfilesLoading || childProfiles.length === 0 ? (
+            <div className="edition-timeline__profile-placeholder">
               <span className="avatar-circle" aria-hidden="true">
-                {activeInitial}
+                ?
               </span>
-            </button>
-
-            {isProfilePopoverOpen && (
-              <div
-                className="edition-timeline__profile-popover"
-                role="menu"
-                aria-label="Sélectionner un profil enfant"
+              <span className="sr-only">Aucun profil enfant</span>
+            </div>
+          ) : (
+            <div
+              className="edition-timeline__profile-selector"
+              ref={selectorRef}
+              onMouseEnter={() => {
+                if (isDesktop) setIsProfilePopoverOpen(true)
+              }}
+              onMouseLeave={() => {
+                if (isDesktop) setIsProfilePopoverOpen(false)
+              }}
+            >
+              <button
+                type="button"
+                className="edition-timeline__profile-trigger"
+                aria-haspopup="menu"
+                aria-expanded={isProfilePopoverOpen}
+                aria-label={
+                  activeChildProfile
+                    ? `Profil enfant actif : ${activeChildProfile.name}`
+                    : 'Aucun profil enfant'
+                }
+                onClick={() => setIsProfilePopoverOpen(prev => !prev)}
+                onFocus={() => setIsProfilePopoverOpen(true)}
+                onKeyDown={handleProfileTriggerKeyDown}
               >
-                {childProfiles.map(profile => {
-                  const isActive = profile.id === activeChildId
-                  const isLocked = profile.status === 'locked'
-                  const initial = profile.name.charAt(0).toUpperCase()
+                <span className="avatar-circle" aria-hidden="true">
+                  {activeInitial}
+                </span>
+              </button>
 
-                  return (
-                    <button
-                      key={profile.id}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={isActive}
-                      aria-label={
-                        isLocked
-                          ? `${profile.name} — verrouillé (lecture seule)`
-                          : `Sélectionner ${profile.name}`
-                      }
-                      className={`edition-timeline__profile-item ${
-                        isActive ? 'edition-timeline__profile-item--active' : ''
-                      }`}
-                      disabled={isLocked}
-                      onClick={() => {
-                        if (isLocked) return
-                        setActiveChildId(profile.id)
-                        setIsProfilePopoverOpen(false)
-                      }}
-                    >
-                      <span className="avatar-circle" aria-hidden="true">
-                        {initial}
-                      </span>
-                      <span className="sr-only">{profile.name}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
+              {isProfilePopoverOpen && (
+                <div
+                  className="edition-timeline__profile-popover"
+                  role="menu"
+                  aria-label="Sélectionner un profil enfant"
+                >
+                  {childProfiles.map(profile => {
+                    const isActive = profile.id === activeChildId
+                    const isLocked = profile.status === 'locked'
+                    const initial = profile.name.charAt(0).toUpperCase()
+
+                    return (
+                      <button
+                        key={profile.id}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={isActive}
+                        aria-label={
+                          isLocked
+                            ? `${profile.name} — verrouillé (lecture seule)`
+                            : `Sélectionner ${profile.name}`
+                        }
+                        className={`edition-timeline__profile-item ${
+                          isActive
+                            ? 'edition-timeline__profile-item--active'
+                            : ''
+                        }`}
+                        disabled={isLocked}
+                        onClick={() => {
+                          if (isLocked) return
+                          setActiveChildId(profile.id)
+                          setIsProfilePopoverOpen(false)
+                        }}
+                      >
+                        <span className="avatar-circle" aria-hidden="true">
+                          {initial}
+                        </span>
+                        <span className="sr-only">{profile.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
       </div>
 
       {/* ── S8 : Bandeau offline (§4.4.1) ──────────────────────────────────────

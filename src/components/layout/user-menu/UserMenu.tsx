@@ -494,7 +494,8 @@ export default function UserMenu() {
                 }}
                 className="user-menu-item danger"
                 onClick={() => {
-                  signOut().then(() => router.push('/login'))
+                  router.push('/login')
+                  void signOut()
                 }}
               >
                 <LogOut className="icon" aria-hidden />

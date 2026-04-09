@@ -36,12 +36,7 @@ function wait(ms: number): Promise<void> {
 
 export default function Profil() {
   const { t } = useI18n()
-  const {
-    isSubscriber: isActive,
-    status,
-    statusDisplay,
-    loading,
-  } = useAccountStatus()
+  const { isSubscriber: isActive, statusDisplay, loading } = useAccountStatus()
 
   const { user, signOut } = useAuth()
   const { show: showToast } = useToast()
@@ -452,7 +447,7 @@ export default function Profil() {
           <div className="profil-card__content">
             <div className="subscription-details">
               <p className="subscription-details__status">
-                Statut : <strong>{status}</strong>
+                Statut : <strong>{statusDisplay.label}</strong>
               </p>
             </div>
 
