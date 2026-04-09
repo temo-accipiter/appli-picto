@@ -728,6 +728,7 @@ export default function Edition({
           <CreateBankCardModal
             onClose={() => setShowCreateBankCardModal(false)}
             onSuccess={handleBankCardCreated}
+            overlayClassName="modal-overlay--transparent"
           />
         )}
       </Suspense>

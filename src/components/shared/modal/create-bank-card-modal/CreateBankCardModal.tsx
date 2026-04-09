@@ -31,11 +31,13 @@ import './CreateBankCardModal.scss'
 interface CreateBankCardModalProps {
   onClose: () => void
   onSuccess: () => void
+  overlayClassName?: string | undefined
 }
 
 export default function CreateBankCardModal({
   onClose,
   onSuccess,
+  overlayClassName,
 }: CreateBankCardModalProps) {
   const { show: showToast } = useToast()
   const { createCard } = useAdminBankCards()
@@ -175,6 +177,7 @@ export default function CreateBankCardModal({
       closeOnOverlay={!isUploading}
       closeOnEscape={!isUploading}
       showCloseButton={!isUploading}
+      overlayClassName={overlayClassName}
       actions={[
         {
           label: 'Annuler',
