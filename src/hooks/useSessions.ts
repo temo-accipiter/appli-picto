@@ -51,11 +51,10 @@ interface UseSessionsReturn {
    */
   createSession: () => Promise<ActionResult>
   /**
-   * Hard Reset : Supprime TOUTES les validations et reset le snapshot.
+   * Hard Reset : Supprime TOUTES les validations et remet la session en active_preview.
    * ⚠️ Disponible uniquement pour une session active_started.
-   * ⚠️ Le changement ne s'applique qu'au prochain Chargement du Contexte Tableau (anti-choc).
    * ⚠️ L'enfant repartira de zéro (toutes les cartes décochées).
-   * ⚠️ La session reste 'active_started' mais avec 0 validations.
+   * ⚠️ La session revient en 'active_preview' → déverrouille entièrement la composition.
    * Cette action est réservée à l'adulte en Édition.
    */
   resetSession: () => Promise<ActionResult>
@@ -307,9 +306,9 @@ export default function useSessions(
    * ⚠️ Action réservée à l'adulte (depuis l'Édition).
    * ⚠️ La DB reste source de vérité via hard_reset_timeline_session().
    *
-   * Cette fonction supprime TOUTES les validations et reset le snapshot.
-   * La session reste 'active_started' mais avec 0 validations.
-   * L'enfant repartira de zéro au prochain chargement du Contexte Tableau.
+   * Cette fonction supprime TOUTES les validations, remet la session en active_preview
+   * et reset steps_total_snapshot à null.
+   * Conséquence : sessionState passe à 'active_preview' → tous les guards levés.
    */
   const resetSession = useCallback(async (): Promise<ActionResult> => {
     if (!timelineId || !session || session.state !== 'active_started') {
