@@ -3,12 +3,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import ProtectedRoute from '@/components/shared/protected-route/ProtectedRoute'
-import {
-  CookieBanner,
-  CookiePreferences,
-  Footer,
-  Navbar,
-} from '@/components'
+import { CookieBanner, CookiePreferences, Footer, Navbar } from '@/components'
 import { usePathname } from 'next/navigation'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
