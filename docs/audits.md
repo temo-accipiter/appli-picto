@@ -1,6 +1,6 @@
 ## 1. Sécurité/Appareils : UX de révocation confuse
 
-**Statut :** À vérifier 🟡 | **Type :** Logique DB vs UI (Contrat §5.2.1) | **Concerne** : General
+**Statut :** Vérifié ✅ | **Type :** Logique DB vs UI (Contrat §5.2.1) | **Concerne** : General
 
 - **Comportement actuel :** Dans `profil-card-devices`, révoquer l'appareil actuel fonctionne. Après reconnexion, un _nouvel_ appareil actif apparaît (normal), mais l'ancien appareil révoqué reste affiché indéfiniment.
 - **Analyse Contrat :** C'est le comportement attendu en base de données (les logs de révocation sont immuables, cf. Invariants PLATFORM.md). Cependant, l'UI doit être claire pour ne pas stresser l'utilisateur.
@@ -35,7 +35,7 @@
 
 ## 4. Gestion Appareils : Multiplications des sessions et UI non contrainte
 
-**Statut :** À corriger 🟢 | **Type :** Logique Auth / UI | **Concerne** : Admin
+**Statut :** Corrigé ✅ | **Type :** Logique Auth / UI | **Concerne** : Admin
 
 - **Comportement actuel :** 1. La liste des appareils actifs s'allonge à l'infini (aucun scroll limité). 2. Chaque connexion enregistre un _nouvel_ appareil (ex: "Enregistré le 3 avril"), même si l'utilisateur se connecte depuis le _même_ navigateur/appareil qu'hier.
 

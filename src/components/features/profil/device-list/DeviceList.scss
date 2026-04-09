@@ -109,6 +109,9 @@
     display: flex;
     flex-direction: column;
     gap: spacing('2');
+    // Scroll après ~5 éléments (Bug #4 — liste infinie)
+    max-height: size('touch-target-min') * 5;
+    overflow-y: auto;
   }
 
   // ── Item appareil ────────────────────────────────────────────────────────
