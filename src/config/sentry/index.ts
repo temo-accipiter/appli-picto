@@ -232,7 +232,6 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
         release: process.env.NEXT_PUBLIC_APP_VERSION,
       }),
     })
-
   } catch (error) {
     console.error("❌ Erreur lors de l'initialisation de Sentry:", error)
   }

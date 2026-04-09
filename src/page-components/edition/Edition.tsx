@@ -220,7 +220,6 @@ export default function Edition({
       return
     }
 
-
     // ✅ DB-first : INSERT avec cardId généré client-side
     const { error: insertError } = await createCard({
       id: cardId, // 🆕 Même ID que Storage

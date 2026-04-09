@@ -78,7 +78,6 @@ export async function convertToWebP(
     }
 
     img.onload = () => {
-
       // ─────────────────────────────────────────────────────────────
       // Stratégies de compression progressives
       // ─────────────────────────────────────────────────────────────
@@ -179,12 +178,6 @@ export async function convertToWebP(
             )
 
             if (compressedFile.size <= currentTargetKB * 1024) {
-              const compressionRatio = (
-                ((file.size - compressedFile.size) / file.size) *
-                100
-              ).toFixed(1)
-
-
               resolve(compressedFile)
             } else {
               // Taille encore trop grande → stratégie suivante

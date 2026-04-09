@@ -178,9 +178,6 @@ export function RealtimeBankCardsProvider({
       event,
       payload,
     })
-
-    if (process.env.NODE_ENV === 'development') {
-    }
   }
 
   return (

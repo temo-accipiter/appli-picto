@@ -91,10 +91,8 @@ export async function uploadCardImage(
     // Conversion JPEG réelle (pas juste renommage)
     const jpegBlob = await convertToJpeg(file)
 
-
     // Path strict contractuel
     const path = buildCardImagePath(accountId, cardId)
-
 
     // Upload vers Storage
     const { data, error } = await supabase.storage
@@ -115,7 +113,6 @@ export async function uploadCardImage(
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       return { path: null, error }
     }
-
 
     return { path: data.path, error: null }
   } catch (error) {

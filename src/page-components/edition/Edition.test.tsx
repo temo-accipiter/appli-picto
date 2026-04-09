@@ -27,6 +27,7 @@ const defaultEditionProps = {
   refreshSlots: vi.fn(),
   bankCards: [],
   refreshBankCards: vi.fn(),
+  session: null,
 }
 
 // Mock des hooks de navigation Next.js

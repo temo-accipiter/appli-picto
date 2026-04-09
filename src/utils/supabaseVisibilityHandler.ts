@@ -35,8 +35,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
   visibilityHandler = async () => {
     if (document.visibilityState === 'hidden') {
       tabHiddenSince = Date.now()
-      if (process.env.NODE_ENV === 'development') {
-      }
       return
     }
 
@@ -45,27 +43,18 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     const hiddenDuration = tabHiddenSince ? Date.now() - tabHiddenSince : 0
     tabHiddenSince = null
 
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // Skip si absence très courte
     if (hiddenDuration < MIN_HIDDEN_DURATION) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return
     }
 
     // 🔑 Éviter recréations en rafale
     const timeSinceLastRecreation = Date.now() - lastRecreationTime
     if (timeSinceLastRecreation < MIN_RECREATION_INTERVAL) {
-      if (process.env.NODE_ENV === 'development') {
-      }
       return
     }
 
     // Test API avec timeout court
-    if (process.env.NODE_ENV === 'development') {
-    }
 
     try {
       const supabaseUrl =
@@ -97,8 +86,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
 
       if (response.ok || response.status === 404) {
         // API répond (même 404 = API fonctionne)
-        if (process.env.NODE_ENV === 'development') {
-        }
         return
       } else {
         throw new Error(`API returned ${response.status}`)
@@ -120,9 +107,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
           detail: { session, timestamp: Date.now() },
         })
         window.dispatchEvent(event)
-
-        if (process.env.NODE_ENV === 'development') {
-        }
       } catch (recreateError) {
         console.error('[Visibility] ❌ Recreation failed:', recreateError)
 
@@ -136,9 +120,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
   }
 
   document.addEventListener('visibilitychange', visibilityHandler)
-
-  if (process.env.NODE_ENV === 'development') {
-  }
 }
 
 /**
@@ -148,8 +129,5 @@ export function stopVisibilityHandler(): void {
   if (visibilityHandler && typeof document !== 'undefined') {
     document.removeEventListener('visibilitychange', visibilityHandler)
     visibilityHandler = null
-
-    if (process.env.NODE_ENV === 'development') {
-    }
   }
 }

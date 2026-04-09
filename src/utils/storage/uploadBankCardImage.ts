@@ -83,10 +83,8 @@ export async function uploadBankCardImage(
     // Conversion JPEG réelle (pas juste renommage)
     const jpegBlob = await convertToJpeg(file)
 
-
     // Path strict contractuel (flat)
     const path = buildBankCardImagePath(cardId)
-
 
     // Upload vers Storage
     // ✅ Storage policy INSERT vérifie is_admin() côté serveur
@@ -108,7 +106,6 @@ export async function uploadBankCardImage(
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       return { path: null, error }
     }
-
 
     return { path: data.path, error: null }
   } catch (error) {

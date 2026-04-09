@@ -210,7 +210,6 @@ export default function ItemForm({
       // ✅ Upload réussi - sauvegarder le chemin
       setUploadedImagePath(result.path)
       setIsUploading(false)
-
     } catch (error) {
       const errorMsg =
         (error as Error).message ||

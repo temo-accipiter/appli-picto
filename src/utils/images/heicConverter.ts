@@ -43,7 +43,6 @@ export async function convertHEICtoJPEG(file: File): Promise<File> {
   }
 
   try {
-
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',

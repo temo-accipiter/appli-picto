@@ -117,8 +117,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
   }
 
   if (recreationInProgress) {
-    if (process.env.NODE_ENV === 'development') {
-    }
     // Attendre que l'autre recréation finisse
     for (let i = 0; i < 20; i++) {
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -130,9 +128,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
   recreationInProgress = true
 
   try {
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 🔑 AMÉLIORATION : Sauvegarder TOUTES les données de session
     const storageKey = `sb-${getProjectRef(url)}-auth-token`
     const savedSessionStr = window.localStorage.getItem(storageKey)
@@ -141,8 +136,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     if (savedSessionStr) {
       try {
         savedSession = JSON.parse(savedSessionStr) as SavedSession
-        if (process.env.NODE_ENV === 'development') {
-        }
       } catch (e) {
         console.warn('[Supabase] Failed to parse saved session:', e)
       }
@@ -188,12 +181,8 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
         if (!error && data?.session) {
           session = data.session
-          if (process.env.NODE_ENV === 'development') {
-          }
         } else if (error) {
           // Si setSession échoue, essayer de refresh
-          if (process.env.NODE_ENV === 'development') {
-          }
 
           const { data: refreshData, error: refreshError } =
             await supabase.auth.refreshSession({
@@ -202,17 +191,12 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
           if (!refreshError && refreshData?.session) {
             session = refreshData.session
-            if (process.env.NODE_ENV === 'development') {
-            }
           }
         }
       } catch (e) {
         const errorMsg = e instanceof Error ? e.message : String(e)
         console.warn('[Supabase] Session restoration failed:', errorMsg)
       }
-    }
-
-    if (process.env.NODE_ENV === 'development') {
     }
 
     return { client: supabase, session }

@@ -227,8 +227,6 @@ export default function Tableau(_props: TableauProps = {}) {
     // BUG 2 (Complétion têtue)  : Si un slot est ajouté en cours de session (epoch++),
     //                             visibleStepSlots restait figé → calcul complétion erroné côté UI.
     if (isFirstLoad || hasEpochChanged) {
-      if (hasEpochChanged) {
-      }
       localEpochRef.current = session.epoch
 
       // Refetch TOUTES les données affectées par les changements structurants
@@ -470,10 +468,6 @@ export default function Tableau(_props: TableauProps = {}) {
             const sequence = slot.card_id
               ? (sequences.find(s => s.mother_card_id === slot.card_id) ?? null)
               : null
-
-            // 🆕 DEBUG LOG
-            if (slot.card_id) {
-            }
 
             return (
               <SlotCardWithSequence

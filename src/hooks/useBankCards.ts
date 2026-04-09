@@ -97,9 +97,6 @@ export default function useBankCards(): UseBankCardsReturn {
 
       const { card_id } = payload as { card_id: string }
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       // Refetch la carte pour l'ajouter au state
       void supabase
         .from('cards')
@@ -126,9 +123,6 @@ export default function useBankCards(): UseBankCardsReturn {
 
       const { card_id } = payload as { card_id: string }
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       // ⚠️ CRITIQUE : Retirer IMMÉDIATEMENT du state (contournement RLS)
       setCards(prev => prev.filter(card => card.id !== card_id))
     }
@@ -138,9 +132,6 @@ export default function useBankCards(): UseBankCardsReturn {
       if (controller.signal.aborted) return
 
       const { card_id } = payload as { card_id: string }
-
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       // Retirer immédiatement du state
       setCards(prev => prev.filter(card => card.id !== card_id))

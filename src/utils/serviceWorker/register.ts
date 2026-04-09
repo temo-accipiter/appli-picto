@@ -32,7 +32,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       scope: '/',
     })
 
-
     // Vérifier updates périodiquement (1h)
     setInterval(
       () => {
@@ -69,7 +68,6 @@ export async function invalidateImageCache(url: string): Promise<void> {
   }
 
   navigator.serviceWorker.controller.postMessage(message)
-
 }
 
 /**
@@ -89,5 +87,4 @@ export async function clearAllCache(): Promise<void> {
   }
 
   navigator.serviceWorker.controller.postMessage(message)
-
 }

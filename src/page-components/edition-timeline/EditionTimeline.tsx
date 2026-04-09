@@ -191,7 +191,6 @@ export default function EditionTimeline({
     const prevState = prevSessionStateRef.current
     const currentState = session?.state ?? null
 
-
     if (prevState === 'active_started' && currentState === 'completed') {
       // Transition détectée : active_started → completed (Victory Check)
       // Rafraîchir les validations pour enlever les cadenas

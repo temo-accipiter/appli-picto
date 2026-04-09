@@ -84,8 +84,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const customEvent = event as SupabaseClientRecreatedEvent
       const { session } = customEvent.detail
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       // Mettre à jour l'utilisateur avec la session restaurée
       setUser(session?.user ?? null)
@@ -97,9 +95,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(newSession?.user ?? null)
         }
       )
-
-      if (process.env.NODE_ENV === 'development') {
-      }
 
       return () => {
         sub?.subscription?.unsubscribe?.()
@@ -137,9 +132,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           try {
             const { session: restoredSession } = await recreateSupabaseClient()
             sessionData = restoredSession ? { session: restoredSession } : null
-
-            if (process.env.NODE_ENV === 'development') {
-            }
           } catch (recreateError) {
             console.error(
               '[Auth] Failed to recreate SDK client:',

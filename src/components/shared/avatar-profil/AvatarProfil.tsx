@@ -34,9 +34,6 @@ export default function AvatarProfil({
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     // 🛡️ Validation du type + en-tête
     try {
       const typeError = validateImageType(file)
@@ -46,17 +43,11 @@ export default function AvatarProfil({
         return
       }
 
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       const headerError = await validateImageHeader(file)
       if (headerError) {
         console.error('❌ AvatarProfil - Erreur header:', headerError)
         setImageError(headerError)
         return
-      }
-
-      if (process.env.NODE_ENV === 'development') {
       }
     } catch (err) {
       console.error('❌ AvatarProfil - Exception validation:', err)
@@ -85,14 +76,8 @@ export default function AvatarProfil({
       lastModified: compressed.lastModified,
     })
 
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     setImageError('')
     onUpload?.(finalFile) // on laisse le parent uploader vers le bucket 'avatars'
-
-    if (process.env.NODE_ENV === 'development') {
-    }
   }
 
   // WCAG 1.1.1 - Alt personnalisé avec le pseudo

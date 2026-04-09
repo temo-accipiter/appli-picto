@@ -239,7 +239,6 @@ export default function useSessions(
 
           // Vérifier que c'est bien la session de cette timeline
           if (updatedSession.timeline_id === timelineId) {
-
             // Mise à jour immédiate du state React
             // → Déclenche useEffect epoch detection dans Tableau.tsx
             setSession(updatedSession)

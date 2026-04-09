@@ -65,9 +65,6 @@ const sendToGA4 = (metric: Metric): void => {
     page_path: window.location.pathname,
     navigation_type: metric.navigationType,
   })
-
-  if (process.env.NODE_ENV === 'development') {
-  }
 }
 
 /**
@@ -107,13 +104,6 @@ const handleMetric = (metric: Metric): void => {
 
   // Envoyer à Sentry
   sendToSentry(metric)
-
-  // Log en développement
-  if (process.env.NODE_ENV === 'development') {
-    const rating = getRating(metric)
-    const emoji =
-      rating === 'good' ? '✅' : rating === 'needs-improvement' ? '⚠️' : '❌'
-  }
 }
 
 /**
@@ -135,9 +125,6 @@ export const useWebVitals = (): void => {
 
     // TTFB (Time to First Byte)
     onTTFB(handleMetric)
-
-    if (process.env.NODE_ENV === 'development') {
-    }
   }, [])
 }
 

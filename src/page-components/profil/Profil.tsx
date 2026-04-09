@@ -88,9 +88,6 @@ export default function Profil() {
     setIsSaving(true)
 
     try {
-      if (process.env.NODE_ENV === 'development') {
-      }
-
       // Bloque si règle violée
       const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
       if (pseudoMsg) {
@@ -103,9 +100,6 @@ export default function Profil() {
 
       const payload = {
         pseudo: pseudoClean === '' ? null : pseudoClean,
-      }
-
-      if (process.env.NODE_ENV === 'development') {
       }
 
       // 1. Mise à jour metadata Auth
@@ -131,9 +125,6 @@ export default function Profil() {
   const handleAvatarUpload = async (file: File) => {
     if (!user) return
 
-    if (process.env.NODE_ENV === 'development') {
-    }
-
     const previousAvatar = user.user_metadata?.avatar
     // Chemin RLS-compatible : {userId}/avatars/{UUID}.jpg
     const fileName = buildRLSPath(user.id, file.name, 'avatars')
@@ -152,9 +143,6 @@ export default function Profil() {
       .upload(fileName, file, {
         upsert: true,
       })
-
-    if (process.env.NODE_ENV === 'development') {
-    }
 
     if (uploadError) {
       showToast('❌ Upload échoué', 'error')
@@ -179,9 +167,6 @@ export default function Profil() {
     const { error: metaError } = await supabase.auth.updateUser({
       data: { avatar: data.path },
     })
-
-    if (process.env.NODE_ENV === 'development') {
-    }
 
     if (metaError) {
       showToast(t('profil.profileUpdateError'), 'error')

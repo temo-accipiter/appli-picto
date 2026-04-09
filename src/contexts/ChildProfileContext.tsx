@@ -304,7 +304,6 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return
     if (isVisitor || !authReady || !userId) return
-
   }, [isVisitor, authReady, userId, activeChildId, dbProfiles, resolvedState])
 
   // ── Wrapping createProfile (no-op pour visitor) ─────────────────────────────

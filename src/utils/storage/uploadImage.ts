@@ -103,7 +103,6 @@ export async function uploadImage(
       ? buildRLSPath(authenticatedUserId, nameGuess) // ✅ session.user.id
       : buildScopedPath(authenticatedUserId, nameGuess, prefix)
 
-
   // Upload
   const { data, error } = await supabase.storage
     .from(bucket)
@@ -124,7 +123,6 @@ export async function uploadImage(
     console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     return { path: null, url: null, error }
   }
-
 
   // Buckets privés : pas d'URL publique. On peut signer si demandé.
   if (sign) {

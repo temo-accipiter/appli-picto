@@ -159,7 +159,6 @@ export async function modernUploadImage(
     const conversionStart = Date.now()
 
     if (isHEIC(file)) {
-
       processedFile = await convertHEICtoJPEG(file)
       metrics.conversionMethod = 'heic_to_jpeg_then_webp'
 
@@ -229,11 +228,9 @@ export async function modernUploadImage(
       console.error('❌ [STEP 6] Erreur vérification duplication:', dupError)
     }
 
-
     const dupCheck = duplicateCheck as DuplicateCheckResult | null
 
     if (dupCheck?.exists) {
-
       const fileName = dupCheck.file_path!.split('/').pop()
       const { data: fileExists } = await supabase.storage
         .from(PRIVATE_BUCKET)
@@ -242,7 +239,6 @@ export async function modernUploadImage(
         })
 
       if (fileExists && fileExists.length > 0) {
-
         await logMetrics(userId, assetType, metrics, fileHash)
 
         return {
@@ -289,7 +285,6 @@ export async function modernUploadImage(
       throw new Error('Impossible de vérifier les quotas')
     }
 
-
     const quota = quotaCheck as QuotaCheckResult | null
 
     if (!quota?.can_upload) {
@@ -329,8 +324,7 @@ export async function modernUploadImage(
           }),
       {
         maxRetries: 2,
-        onRetry: ({ attempt, maxRetries }) => {
-
+        onRetry: ({ attempt }) => {
           if (onProgress) {
             onProgress({
               step: 'upload_retry',
@@ -346,7 +340,6 @@ export async function modernUploadImage(
       console.error('❌ [STEP 9] Erreur upload Supabase Storage:', storageError)
       throw storageError
     }
-
 
     metrics.uploadMs = Date.now() - uploadStart
 
@@ -375,7 +368,6 @@ export async function modernUploadImage(
     if (dbError) {
       // Code 23505 = duplicate hash (comportement normal, déduplication)
       if (dbError.code === '23505') {
-
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: existing } = await (supabase as any)
           .from('user_assets')
@@ -433,7 +425,6 @@ export async function modernUploadImage(
     if (onProgress) {
       onProgress({ step: 'complete', progress: 100 })
     }
-
 
     return {
       path: storageData.path,
@@ -551,7 +542,6 @@ export async function replaceImage(
       .from('user_assets')
       .update({ version: newVersion })
       .eq('id', uploadResult.assetId!)
-
 
     if (uploadResult.url) {
       await invalidateImageCache(uploadResult.url)

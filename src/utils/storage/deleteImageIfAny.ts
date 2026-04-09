@@ -30,7 +30,6 @@ export default async function deleteImageIfAny(
   // 🆕 Cartes personnelles : VRAIE suppression (pas de déduplication)
   if (bucket === 'personal-images') {
     try {
-
       const { error } = await supabase.storage
         .from('personal-images')
         .remove([imagePath])

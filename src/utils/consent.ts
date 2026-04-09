@@ -173,9 +173,7 @@ export async function tryLogServerConsent(
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
 
-    const result = await response.json()
-    if (process.env.NODE_ENV === 'development') {
-    }
+    await response.json()
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement
     if (
