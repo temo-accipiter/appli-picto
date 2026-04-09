@@ -4,6 +4,9 @@
 import { supabase } from '@/utils/supabaseClient'
 import { ALLOWED_MIME_TYPES, MAX_UPLOAD_BYTES } from '@/utils/images/config'
 import { convertToJpeg } from '@/utils/images/convertToJpeg'
+import { buildBankCardImagePath } from '@/utils/storage/pathBuilders'
+
+export { buildBankCardImagePath }
 
 export interface UploadBankCardImageResult {
   path: string | null
@@ -12,15 +15,6 @@ export interface UploadBankCardImageResult {
 
 export interface UploadBankCardImageOptions {
   cardId: string
-}
-
-/**
- * Construit le path strict contractuel pour une carte de banque
- * Format: {cardId}.jpg (flat, pas de sous-dossiers)
- * Storage policies : name ~ '^[0-9A-Fa-f-]{36}\.[A-Za-z0-9]+$' (UUID.ext)
- */
-export function buildBankCardImagePath(cardId: string): string {
-  return `${cardId}.jpg`
 }
 
 /**
