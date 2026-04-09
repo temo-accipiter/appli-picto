@@ -30,14 +30,13 @@ import {
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
 import { useToast } from '@/contexts'
-import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import { SlotsEditor } from '@/components/features/timeline'
 import OfflineBanner from '@/components/shared/offline-banner/OfflineBanner'
 import ExecutionOnlyBanner from '@/components/shared/execution-only-banner/ExecutionOnlyBanner'
-import type { Timeline, Slot, SessionState } from '@/hooks'
+import type { Timeline, Slot, Session, SessionState } from '@/hooks'
 import './EditionTimeline.scss'
 
 interface EditionTimelineProps {
@@ -58,6 +57,22 @@ interface EditionTimelineProps {
     image_url: string
     published: boolean
   }>
+  /**
+   * Session active (source unique depuis page.tsx).
+   * Évite d'avoir plusieurs instances useSessions désynchronisées.
+   */
+  session: Session | null
+  /**
+   * Hard reset de la session (depuis page.tsx — instance unique useSessions).
+   * Quand resetSession() appelle refresh() en interne, page.tsx met à jour session
+   * et la propagation en props déverrouille tous les guards immédiatement.
+   */
+  resetSession: () => Promise<{ error: Error | null }>
+  /**
+   * Rafraîchir la session depuis la DB (depuis page.tsx — instance unique useSessions).
+   * Utilisé après suppression de slot pour détecter un Victory Check (auto-complétion).
+   */
+  refreshSession: () => void
 }
 
 export default function EditionTimeline({
@@ -70,6 +85,9 @@ export default function EditionTimeline({
   updateSlot,
   removeSlot,
   bankCards,
+  session,
+  resetSession,
+  refreshSession,
 }: EditionTimelineProps) {
   const {
     activeChildId,
@@ -151,14 +169,9 @@ export default function EditionTimeline({
   // Plus de useSlots local → désync Timeline ↔ Bibliothèque résolu
   // Toutes les fonctions CRUD (addStep, updateSlot, etc.) proviennent du parent
 
-  // ── S6 : Session active pour verrouillage et réinitialisation ──────────────
-  // On charge la session uniquement si on a un profil + une timeline.
-  // Cela permet d'afficher l'état de verrouillage à l'adulte en édition.
-  const {
-    session,
-    resetSession,
-    refresh: refreshSession,
-  } = useSessions(activeChildId, timeline?.id ?? null)
+  // ── S6 : Session + reset reçus en props depuis page.tsx (source unique) ────
+  // Plus d'instance useSessions locale → plus de désynchronisation entre
+  // EditionTimeline et Edition après un reset (les deux voient le même session).
 
   // Validations de la session (pour savoir quels slots sont verrouillés)
   const { validatedSlotIds, refresh: refreshValidations } =

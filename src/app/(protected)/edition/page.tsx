@@ -25,9 +25,16 @@ export default function EditionPage() {
   // - Lift state ici = les deux composants voient les mêmes slots
   const { timeline } = useTimelines(activeChildId)
 
-  // Session chargée ici pour alimenter le guard de useSlots (composition lecture seule
-  // pendant active_started). EditionTimeline charge sa propre instance pour resetSession.
-  const { session } = useSessions(activeChildId, timeline?.id ?? null)
+  // Session chargée ici — SOURCE UNIQUE pour toute la page.
+  // Évite le bug de désynchronisation post-reset :
+  // resetSession() appelle refresh() sur cette instance → session.state passe à
+  // 'active_preview' → tous les consommateurs (EditionTimeline, Edition, useSlots)
+  // se déverrouillent immédiatement via la propagation de props.
+  const {
+    session,
+    resetSession,
+    refresh: refreshSession,
+  } = useSessions(activeChildId, timeline?.id ?? null)
 
   const {
     slots,
@@ -63,6 +70,9 @@ export default function EditionPage() {
         updateSlot={updateSlot}
         removeSlot={removeSlot}
         bankCards={bankCards}
+        session={session}
+        resetSession={resetSession}
+        refreshSession={refreshSession}
       />
       <Edition
         timeline={timeline}
@@ -71,6 +81,7 @@ export default function EditionPage() {
         refreshSlots={refreshSlots}
         bankCards={bankCards}
         refreshBankCards={refreshBankCards}
+        session={session}
       />
     </>
   )

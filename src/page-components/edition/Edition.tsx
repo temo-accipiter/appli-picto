@@ -11,9 +11,9 @@ import {
   useI18n,
   usePersonalCards,
   useExecutionOnly,
-  useSessions,
   useAccountStatus, // 🆕 Détection admin
 } from '@/hooks'
+import type { Session } from '@/hooks'
 import useAdminBankCards from '@/hooks/useAdminBankCards' // CRUD complet (admin uniquement)
 import type { Timeline, Slot } from '@/hooks'
 import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
@@ -82,6 +82,8 @@ interface EditionProps {
   }>
   /** Rafraîchir les cartes de banque depuis la DB */
   refreshBankCards: () => void
+  /** Session active (source unique depuis page.tsx — évite désynchronisation après reset) */
+  session: Session | null
 }
 
 export default function Edition({
@@ -91,6 +93,7 @@ export default function Edition({
   refreshSlots,
   bankCards: rawBankCards,
   refreshBankCards,
+  session,
 }: EditionProps) {
   const { t } = useI18n()
   const { show } = useToast()
@@ -187,7 +190,7 @@ export default function Edition({
   // ── Guards : offline + execution-only ────────────────────────────────────
   const { isOnline } = useOffline()
   const { isExecutionOnly } = useExecutionOnly()
-  const { session } = useSessions(activeChildId, timeline?.id ?? null)
+  // session reçu en prop depuis page.tsx (source unique — évite désync après reset)
 
   // Checkbox disabled si offline ou execution-only
   const checkboxDisabled = !isOnline || isExecutionOnly
