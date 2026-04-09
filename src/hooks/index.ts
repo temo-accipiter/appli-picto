@@ -76,6 +76,7 @@ export type {
 } from './useAdminSupportInfo'
 export { default as useAdminBankCards } from './useAdminBankCards'
 export type { AdminBankCard } from './useAdminBankCards'
+export { useAdminBankCardActions } from './useAdminBankCardActions'
 export { default as useStations } from './useStations'
 
 // Re-export hooks from contexts

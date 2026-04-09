@@ -12,9 +12,9 @@ import {
   usePersonalCards,
   useExecutionOnly,
   useAccountStatus, // 🆕 Détection admin
+  useAdminBankCardActions,
 } from '@/hooks'
 import type { Session } from '@/hooks'
-import useAdminBankCards from '@/hooks/useAdminBankCards' // CRUD complet (admin uniquement)
 import type { Timeline, Slot } from '@/hooks'
 import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
@@ -90,25 +90,8 @@ export default function Edition({
   const [reload, setReload] = useState(0)
   const [filterCategory, setFilterCategory] = useState('all')
   const [isSubmittingCategory, setIsSubmittingCategory] = useState(false)
-  // 🆕 Modal création carte banque (admin uniquement)
-  const [showCreateBankCardModal, setShowCreateBankCardModal] = useState(false)
   // Guard quota : affiché si limite stock atteinte avant ouverture modal création
   const [showCardQuotaModal, setShowCardQuotaModal] = useState(false)
-  // 🆕 Modals confirmation actions cartes banque (admin uniquement)
-  const [bankCardToRename, setBankCardToRename] = useState<{
-    id: string
-    oldName: string
-    newName: string
-  } | null>(null)
-  const [bankCardToDelete, setBankCardToDelete] = useState<{
-    id: string
-    name: string
-  } | null>(null)
-  const [bankCardToTogglePublish, setBankCardToTogglePublish] = useState<{
-    id: string
-    name: string
-    newPublished: boolean
-  } | null>(null)
 
   // ── Enfant actif : rechargement stable quand l'enfant change (S2) ────────────
   const { activeChildId, isVisitor } = useChildProfile()
@@ -135,33 +118,26 @@ export default function Edition({
   // 🆕 Statut admin + free (détection cosmétique)
   const { isAdmin, isFree } = useAccountStatus()
 
-  // 🆕 Cartes banque : rawBankCards vient maintenant de la prop (source unique depuis page)
-  // On charge les hooks uniquement pour obtenir les méthodes CRUD (admin)
-  const adminBankCardsHook = useAdminBankCards()
-
+  // 🆕 Logique admin cartes de banque : états + handlers extraits dans un hook dédié
   const {
-    updateName: updateBankCardName,
-    deleteCard: deleteBankCard,
-    updatePublished: updateBankCardPublished,
-  } = isAdmin
-    ? adminBankCardsHook
-    : {
-        updateName: undefined,
-        deleteCard: undefined,
-        updatePublished: undefined,
-      }
-
-  // 🆕 Cartes banque pour affichage (mapping simple sans catégories)
-  const bankCardsForDisplay = useMemo(
-    () =>
-      rawBankCards.map(bc => ({
-        id: bc.id,
-        name: bc.name,
-        image_url: bc.image_url || '',
-        published: bc.published,
-      })),
-    [rawBankCards]
-  )
+    bankCardsForDisplay,
+    showCreateBankCardModal,
+    bankCardToRename,
+    bankCardToDelete,
+    bankCardToTogglePublish,
+    setShowCreateBankCardModal,
+    setBankCardToRename,
+    setBankCardToDelete,
+    setBankCardToTogglePublish,
+    handleCreateBankCard,
+    handleUpdateBankCardName,
+    handleDeleteBankCard,
+    handleUpdateBankCardPublished,
+    handleBankCardCreated,
+    confirmUpdateBankCardName,
+    confirmDeleteBankCard,
+    confirmUpdateBankCardPublished,
+  } = useAdminBankCardActions({ isAdmin, rawBankCards, refreshBankCards, show })
 
   // ── PHASE 1 : Timeline + Slots reçus en props (source unique partagée) ───
   // Suppression useTimelines/useSlots locaux → désync résolu
@@ -447,165 +423,6 @@ export default function Edition({
     },
     [timeline, slots, updateSlot, show, lockedCardIds]
   )
-
-  // 🆕 Handler création carte banque (admin uniquement)
-  const handleCreateBankCard = () => {
-    if (!isAdmin) {
-      show('Action réservée aux administrateurs', 'error')
-      return
-    }
-    setShowCreateBankCardModal(true)
-  }
-
-  const handleBankCardCreated = () => {
-    setShowCreateBankCardModal(false)
-    refreshBankCards()
-    show('Carte de banque créée avec succès', 'success')
-  }
-
-  // 🆕 Handler édition nom carte banque (admin uniquement)
-  // Ouvre modal de confirmation avant modification
-  const handleUpdateBankCardName = async (
-    id: string,
-    newName: string
-  ): Promise<{ error: Error | null }> => {
-    if (!isAdmin || !updateBankCardName) {
-      show('Action réservée aux administrateurs', 'error')
-      return { error: new Error('Action réservée aux administrateurs') }
-    }
-
-    // Trouver le nom actuel de la carte
-    const card = rawBankCards.find(c => c.id === id)
-    if (!card) return { error: new Error('Carte introuvable') }
-
-    // Ouvrir modal de confirmation (pas d'erreur à cette étape)
-    setBankCardToRename({
-      id,
-      oldName: card.name,
-      newName,
-    })
-    return { error: null }
-  }
-
-  // Handler de confirmation modification nom
-  const confirmUpdateBankCardName = async () => {
-    if (!bankCardToRename || !updateBankCardName) return
-
-    const { id, newName } = bankCardToRename
-
-    const { error } = await updateBankCardName(id, newName)
-
-    if (error) {
-      console.error('[Edition] Erreur update nom carte banque:', error)
-      show('Impossible de modifier le nom de la carte', 'error')
-      setBankCardToRename(null)
-      return
-    }
-
-    // ✅ CRITIQUE : Refresh pour propager immédiatement aux slots timeline
-    refreshBankCards()
-
-    show('Nom de la carte modifié avec succès', 'success')
-    setBankCardToRename(null)
-  }
-
-  // 🆕 Handler suppression carte banque (admin uniquement)
-  // Ouvre modal de confirmation avant suppression
-  const handleDeleteBankCard = async (id: string, name: string) => {
-    if (!isAdmin || !deleteBankCard) {
-      show('Action réservée aux administrateurs', 'error')
-      return
-    }
-
-    // Ouvrir modal de confirmation
-    setBankCardToDelete({ id, name })
-  }
-
-  // Handler de confirmation suppression
-  const confirmDeleteBankCard = async () => {
-    if (!bankCardToDelete || !deleteBankCard) return
-
-    const { id } = bankCardToDelete
-
-    const { error } = await deleteBankCard(id)
-
-    if (error) {
-      console.error('[Edition] Erreur suppression carte banque:', error)
-
-      // ✅ Traduction erreur DB en message utilisateur (wording contractuel)
-      const errorMsg = error.message || ''
-
-      // Cas 1 : Carte référencée dans slots/sequences/categories
-      if (
-        errorMsg.includes('still referenced') ||
-        errorMsg.includes('active_sessions')
-      ) {
-        show('Cette carte est utilisée et ne peut pas être supprimée.', 'error')
-      } else {
-        // Cas 2 : Erreur DB inconnue
-        show('Impossible de supprimer cette carte.', 'error')
-      }
-
-      setBankCardToDelete(null)
-      return
-    }
-
-    // ✅ CRITIQUE : Refresh pour propager immédiatement aux slots timeline
-    refreshBankCards()
-
-    show('Carte de banque supprimée avec succès', 'success')
-    setBankCardToDelete(null)
-  }
-
-  // 🆕 Handler basculer statut published carte banque (admin uniquement)
-  // Ouvre modal de confirmation avant basculement
-  const handleUpdateBankCardPublished = async (
-    id: string,
-    newPublished: boolean
-  ) => {
-    if (!isAdmin || !updateBankCardPublished) {
-      show('Action réservée aux administrateurs', 'error')
-      return
-    }
-
-    // Trouver le nom de la carte
-    const card = rawBankCards.find(c => c.id === id)
-    if (!card) return
-
-    // Ouvrir modal de confirmation
-    setBankCardToTogglePublish({
-      id,
-      name: card.name,
-      newPublished,
-    })
-  }
-
-  // Handler de confirmation basculement published
-  const confirmUpdateBankCardPublished = async () => {
-    if (!bankCardToTogglePublish || !updateBankCardPublished) return
-
-    const { id, newPublished } = bankCardToTogglePublish
-
-    const { error } = await updateBankCardPublished(id, newPublished)
-
-    if (error) {
-      console.error('[Edition] Erreur update published carte banque:', error)
-      show('Impossible de modifier le statut de publication', 'error')
-      setBankCardToTogglePublish(null)
-      return
-    }
-
-    // ✅ CRITIQUE : Refresh pour propager immédiatement aux slots timeline
-    refreshBankCards()
-
-    show(
-      newPublished
-        ? 'Carte publiée avec succès (visible par tous)'
-        : 'Carte dépubliée avec succès (visible par admin uniquement)',
-      'success'
-    )
-    setBankCardToTogglePublish(null)
-  }
 
   return (
     <div className="page-edition">
