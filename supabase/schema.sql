@@ -1,3 +1,4 @@
+Dumping schemas from local database...
 
 
 
@@ -2688,8 +2689,6 @@ BEGIN
   END IF;
 
   -- ── GUARD DELETE : Bloquer TOUTE suppression pendant session démarrée ──────
-  -- Avant : bloquait uniquement les slots validés (laissait passer les non-validés → Bug #4a)
-  -- Après : bloque tous les slots step sans exception
   IF TG_OP = 'DELETE' THEN
     RAISE EXCEPTION
       'Action interdite : impossible de supprimer un slot pendant une session démarrée (slot_id=%). Annulez la session pour modifier la composition.',
@@ -2697,17 +2696,15 @@ BEGIN
   END IF;
 
   -- ── GUARD INSERT : Bloquer TOUT ajout pendant session démarrée ─────────────
-  -- Avant : toujours autorisé (laissait passer les ajouts → Bug #4b)
-  -- Après : bloque tous les INSERT de slots step
   IF TG_OP = 'INSERT' THEN
     RAISE EXCEPTION
       'Action interdite : impossible d''ajouter un slot pendant une session démarrée. Annulez la session pour modifier la composition.';
   END IF;
 
-  -- ── GUARD UPDATE : Comportement inchangé ────────────────────────────────────
-  -- Seuls les slots déjà validés sont bloqués en modification structurelle.
-  -- Les slots non validés restent modifiables (changement de carte, etc.).
+  -- ── GUARD UPDATE ────────────────────────────────────────────────────────────
   IF TG_OP = 'UPDATE' THEN
+
+    -- 1. Slot déjà validé → bloquer toute modification structurelle
     SELECT EXISTS (
       SELECT 1 FROM session_validations sv
       WHERE sv.session_id = v_active_session_id
@@ -2723,6 +2720,19 @@ BEGIN
           'Action interdite : modification d''un slot étape déjà validé (slot_id=%) pendant une session démarrée.',
           OLD.id;
       END IF;
+    ELSE
+      -- 2. Slot non validé → bloquer uniquement la DÉSassignation de carte
+      --
+      -- Assignation (NULL → card_id) et réassignation (A → B) : autorisées
+      -- car elles n'impactent pas steps_total_snapshot ni la progression.
+      --
+      -- Désassignation (card_id → NULL) : INTERDITE car laisse l'enfant face
+      -- à un slot vide pendant la session (expérience TSA désastreuse).
+      IF NEW.card_id IS NULL AND OLD.card_id IS NOT NULL THEN
+        RAISE EXCEPTION
+          'Action interdite : impossible de retirer la carte d''une étape pendant une session démarrée (slot_id=%). Annulez la session pour modifier les cartes.',
+          OLD.id;
+      END IF;
     END IF;
 
     RETURN NEW;
@@ -2736,7 +2746,7 @@ $$;
 ALTER FUNCTION "public"."slots_guard_validated_on_structural_change"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."slots_guard_validated_on_structural_change"() IS 'BEFORE trigger GUARD : Bloque INSERT et DELETE pendant active_started (composition verrouillée). Bloque UPDATE sur slots validés. Autorise UPDATE sur slots non validés (changement de carte).';
+COMMENT ON FUNCTION "public"."slots_guard_validated_on_structural_change"() IS 'BEFORE trigger GUARD : Bloque INSERT et DELETE pendant active_started (composition verrouillée). Bloque UPDATE sur slots validés. Bloque la DÉSassignation (card_id → NULL) sur slots non validés pendant active_started. Autorise assignation (NULL → card) et réassignation (A → B).';
 
 
 
@@ -5472,3 +5482,5 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 
 
 
+A new version of Supabase CLI is available: v2.84.2 (currently installed v2.67.1)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

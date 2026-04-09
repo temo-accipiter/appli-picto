@@ -12,7 +12,6 @@ import {
   usePersonalCards,
   useExecutionOnly,
   useSessions,
-  useSessionValidations,
   useAccountStatus, // 🆕 Détection admin
 } from '@/hooks'
 import useAdminBankCards from '@/hooks/useAdminBankCards' // CRUD complet (admin uniquement)
@@ -189,7 +188,6 @@ export default function Edition({
   const { isOnline } = useOffline()
   const { isExecutionOnly } = useExecutionOnly()
   const { session } = useSessions(activeChildId, timeline?.id ?? null)
-  const { validatedSlotIds } = useSessionValidations(session?.id ?? null)
 
   // Checkbox disabled si offline ou execution-only
   const checkboxDisabled = !isOnline || isExecutionOnly
@@ -346,17 +344,17 @@ export default function Edition({
       return new Set<string>()
     }
 
+    // Pendant active_started, verrouiller les checkboxes de TOUTES les cartes
+    // présentes dans des slots étape (validés OU non validés).
+    // Raison : retirer une carte d'une étape (card_id → NULL) pendant la session
+    // laisse l'enfant face à un slot vide — expérience TSA désastreuse.
+    // Les cartes non assignées (hors timeline) restent cochables (assignment autorisé).
     return new Set(
       slots
-        .filter(
-          slot =>
-            slot.kind === 'step' &&
-            slot.card_id !== null &&
-            validatedSlotIds.has(slot.id)
-        )
+        .filter(slot => slot.kind === 'step' && slot.card_id !== null)
         .map(slot => slot.card_id as string)
     )
-  }, [session?.state, slots, validatedSlotIds])
+  }, [session?.state, slots])
 
   // Wrappers pour adapter les signatures
   const handleDeleteCategory = async (

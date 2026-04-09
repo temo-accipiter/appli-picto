@@ -262,6 +262,21 @@ export default function useSlots(
     ): Promise<ActionResult> => {
       if (!timelineId) return { error: new Error('Pas de timeline active') }
 
+      // Guard : désassignation de carte verrouillée pendant session démarrée
+      // Retirer une carte (card_id → NULL) d'une étape pendant active_started
+      // laisse l'enfant face à un slot vide en pleine session — expérience TSA désastreuse.
+      // IndexedDB (Visitor) n'a pas de triggers DB — ce hook est la seule défense en Visitor.
+      if (sessionState === 'active_started' && updates.card_id === null) {
+        const affectedSlot = slots.find(s => s.id === id)
+        if (affectedSlot?.kind === 'step') {
+          return {
+            error: new Error(
+              "Annulez la session en cours pour retirer une carte d'une étape."
+            ),
+          }
+        }
+      }
+
       // VISITOR mode → Utiliser IndexedDB (pas de Supabase)
       if (timelineId === 'visitor-timeline-local') {
         try {
@@ -302,7 +317,7 @@ export default function useSlots(
       if (!updateError) refresh()
       return { error: updateError as Error | null }
     },
-    [timelineId, slots, refresh]
+    [timelineId, slots, refresh, sessionState]
   )
 
   const removeSlot = useCallback(
