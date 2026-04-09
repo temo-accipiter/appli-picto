@@ -1,29 +1,20 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import ProtectedRoute from '@/components/shared/protected-route/ProtectedRoute'
 import {
   CookieBanner,
   CookiePreferences,
   Footer,
-  ModalVisitorImport,
   Navbar,
 } from '@/components'
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@/hooks'
-import { hasLocalData } from '@/utils/visitor/importVisitorSequences'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-
-  // ✅ TICKET 4 : Import séquences Visitor → Free
-  const { authReady, user } = useAuth()
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [hasCheckedLocalSequences, setHasCheckedLocalSequences] =
-    useState(false)
 
   // Détection mobile au montage
   useEffect(() => {
@@ -43,48 +34,6 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // ✅ TICKET 4 : Vérifier IndexedDB au mount (une seule fois)
-  // Évite re-renders inutiles en utilisant hasCheckedLocalSequences
-  useEffect(() => {
-    // Conditions strictes : authReady && user && pas encore checké
-    if (!authReady || !user || hasCheckedLocalSequences) {
-      return
-    }
-
-    // Vérification asynchrone IndexedDB
-    const checkLocalData = async () => {
-      try {
-        const hasData = await hasLocalData()
-
-        if (hasData) {
-          // Afficher modal si données locales détectées (slots ou séquences)
-          setShowImportModal(true)
-        }
-      } catch (error) {
-        console.warn(
-          'Erreur vérification séquences locales (skip import modal):',
-          error
-        )
-        // En cas d'erreur, ne pas afficher modal (fail silent)
-      } finally {
-        // Marquer comme checké pour éviter re-vérification
-        setHasCheckedLocalSequences(true)
-      }
-    }
-
-    checkLocalData()
-  }, [authReady, user, hasCheckedLocalSequences])
-
-  // ✅ TICKET 4 : Callbacks modal (useCallback pour éviter re-renders)
-  const handleCloseImportModal = useCallback(() => {
-    setShowImportModal(false)
-  }, [])
-
-  const handleImportSuccess = useCallback(() => {
-    // Optionnel : rafraîchir UI si nécessaire
-    // Pour l'instant, la modal se ferme automatiquement après succès
   }, [])
 
   // Routes où la navbar desktop est affichée (uniquement desktop)
@@ -117,13 +66,6 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
           </div>
           <CookieBanner />
           <CookiePreferences />
-
-          {/* ✅ TICKET 4 : Modal import séquences Visitor → Free */}
-          <ModalVisitorImport
-            isOpen={showImportModal}
-            onClose={handleCloseImportModal}
-            onImportSuccess={handleImportSuccess}
-          />
         </div>
       </div>
     </ProtectedRoute>

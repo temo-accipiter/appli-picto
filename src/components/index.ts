@@ -70,7 +70,6 @@ export { default as DeviceList } from './features/profil/device-list/DeviceList'
 
 export { default as AdminRoute } from './shared/admin-route/AdminRoute'
 export { default as LongPressLink } from './shared/long-press-link/LongPressLink'
-export { default as ModalVisitorImport } from './shared/modal/modal-visitor-import/ModalVisitorImport'
 export { default as AccountStatusBadge } from './shared/account-status-badge/AccountStatusBadge'
 export { default as AvatarProfil } from './shared/avatar-profil/AvatarProfil'
 export { default as Dropdown } from './shared/dropdown/Dropdown'
