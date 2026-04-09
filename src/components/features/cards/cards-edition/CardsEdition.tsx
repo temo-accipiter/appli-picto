@@ -13,16 +13,9 @@ import {
 import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
+import type { CardFormData, CardItem } from '@/types/cards'
 import { ChevronDown } from 'lucide-react'
 import './CardsEdition.scss'
-
-interface CardItem {
-  id: string | number
-  name: string
-  image_url?: string
-  categorie?: string
-  position?: number
-}
 
 // 🆕 Carte de banque (lecture seule, utilisable dans timeline)
 interface BankCardItem {
@@ -31,15 +24,6 @@ interface BankCardItem {
   image_url?: string
   type: 'bank'
   published: boolean
-}
-
-interface CardFormData {
-  label: string
-  categorie: string
-  image: File
-  imagePath: string // ✅ Path Storage uploadé: {accountId}/cards/{cardId}.jpg
-  imageUrl?: string
-  cardId: string // ✅ UUID v4 généré client-side
 }
 
 interface CardsEditionProps {

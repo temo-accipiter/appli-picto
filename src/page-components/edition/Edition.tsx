@@ -18,6 +18,7 @@ import useAdminBankCards from '@/hooks/useAdminBankCards' // CRUD complet (admin
 import type { Timeline, Slot } from '@/hooks'
 import { getCategoryDisplayLabel } from '@/utils/categories/getCategoryDisplayLabel'
 import deleteImageIfAny from '@/utils/storage/deleteImageIfAny'
+import type { CardFormData, CardItem } from '@/types/cards'
 import React, {
   lazy,
   Suspense,
@@ -47,22 +48,6 @@ const ModalQuota = lazy(() =>
 // Limite stock cartes personnelles (Subscriber)
 // Doit rester en sync avec quota_cards_stock_limit(subscriber) en DB
 const CARD_STOCK_LIMIT = 50
-
-interface CardFormData {
-  label: string
-  categorie?: string
-  image: File
-  imagePath: string // Path Storage uploadé: {accountId}/cards/{cardId}.jpg
-  imageUrl?: string
-  cardId: string // ID carte généré client-side (UUID v4)
-}
-
-interface CardItem {
-  id: string | number
-  name: string
-  image_url?: string
-  categorie?: string
-}
 
 interface EditionProps {
   timeline: Timeline | null
