@@ -140,24 +140,12 @@ export async function uploadCardImage(
 
   try {
     // Conversion JPEG réelle (pas juste renommage)
-    console.log('🔄 [uploadCardImage] Conversion en JPEG réel...')
     const jpegBlob = await convertToJpeg(file)
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📤 [uploadCardImage] Upload carte personnelle:')
-    console.log('   • Bucket: personal-images')
-    console.log('   • Account ID:', accountId)
-    console.log('   • Card ID:', cardId)
-    console.log('   • Type original:', type)
-    console.log('   • Type final: image/jpeg (conversion réelle)')
-    console.log('   • Taille JPEG:', (jpegBlob.size / 1024).toFixed(2), 'Ko')
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     // Path strict contractuel
     const path = buildCardImagePath(accountId, cardId)
 
-    console.log('   • Path strict:', path)
-    console.log('   • Format: {accountId}/cards/{cardId}.jpg ✅')
 
     // Upload vers Storage
     const { data, error } = await supabase.storage
@@ -179,9 +167,6 @@ export async function uploadCardImage(
       return { path: null, error }
     }
 
-    console.log('✅ [uploadCardImage] Upload réussi!')
-    console.log('   • Path final:', data.path)
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return { path: data.path, error: null }
   } catch (error) {

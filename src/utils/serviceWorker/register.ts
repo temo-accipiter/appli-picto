@@ -24,7 +24,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('🛠️ Mode dev → Service Worker désactivé')
     return null
   }
 
@@ -33,7 +32,6 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       scope: '/',
     })
 
-    console.log('✅ Service Worker enregistré:', registration.scope)
 
     // Vérifier updates périodiquement (1h)
     setInterval(
@@ -72,7 +70,6 @@ export async function invalidateImageCache(url: string): Promise<void> {
 
   navigator.serviceWorker.controller.postMessage(message)
 
-  console.log('🗑️ Invalidation cache demandée:', url)
 }
 
 /**
@@ -93,5 +90,4 @@ export async function clearAllCache(): Promise<void> {
 
   navigator.serviceWorker.controller.postMessage(message)
 
-  console.log('🗑️ Vidage total cache demandé')
 }

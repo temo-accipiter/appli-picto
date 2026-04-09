@@ -67,11 +67,6 @@ const sendToGA4 = (metric: Metric): void => {
   })
 
   if (process.env.NODE_ENV === 'development') {
-    console.log(`📊 ${metric.name}: ${metric.value.toFixed(2)} (${rating})`, {
-      delta: metric.delta,
-      id: metric.id,
-      navigationType: metric.navigationType,
-    })
   }
 }
 
@@ -118,12 +113,6 @@ const handleMetric = (metric: Metric): void => {
     const rating = getRating(metric)
     const emoji =
       rating === 'good' ? '✅' : rating === 'needs-improvement' ? '⚠️' : '❌'
-    console.log(`${emoji} Core Web Vital: ${metric.name}`, {
-      value: metric.value.toFixed(2),
-      rating,
-      delta: metric.delta,
-      navigationType: metric.navigationType,
-    })
   }
 }
 
@@ -148,7 +137,6 @@ export const useWebVitals = (): void => {
     onTTFB(handleMetric)
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('📊 Core Web Vitals tracking activé')
     }
   }, [])
 }

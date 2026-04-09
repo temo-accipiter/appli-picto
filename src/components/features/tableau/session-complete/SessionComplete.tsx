@@ -148,7 +148,6 @@ export function SessionComplete({
                 height={200}
                 draggable={false}
                 onError={() => {
-                  console.log('[SessionComplete] Erreur chargement image')
                   setSignedImageUrl(null)
                 }}
               />

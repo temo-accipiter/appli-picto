@@ -89,9 +89,6 @@ export default function Profil() {
 
     try {
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 handleSave - Début sauvegarde profil', {
-          pseudo,
-        })
       }
 
       // Bloque si règle violée
@@ -109,7 +106,6 @@ export default function Profil() {
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 handleSave - Payload nettoyé', payload)
       }
 
       // 1. Mise à jour metadata Auth
@@ -136,11 +132,6 @@ export default function Profil() {
     if (!user) return
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleAvatarUpload - Début upload', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-      })
     }
 
     const previousAvatar = user.user_metadata?.avatar
@@ -163,15 +154,6 @@ export default function Profil() {
       })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleAvatarUpload - Résultat upload', {
-        fileName,
-        data,
-        uploadError,
-        path: data?.path,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        errorCode: (uploadError as any)?.statusCode,
-        errorMessage: uploadError?.message,
-      })
     }
 
     if (uploadError) {
@@ -199,10 +181,6 @@ export default function Profil() {
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 handleAvatarUpload - Mise à jour metadata', {
-        metaError,
-        avatarPath: data.path,
-      })
     }
 
     if (metaError) {

@@ -53,7 +53,6 @@ export default function ResetPassword() {
         console.error('❌ supabase.auth.setSession :', error.message)
         setError(t('errors.unauthorized'))
       } else {
-        console.log('✅ Session manuelle restaurée')
         window.history.replaceState(
           {},
           document.title,

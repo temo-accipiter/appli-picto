@@ -191,17 +191,8 @@ export default function EditionTimeline({
     const prevState = prevSessionStateRef.current
     const currentState = session?.state ?? null
 
-    console.log('[EditionTimeline] Session state check:', {
-      prev: prevState,
-      current: currentState,
-      transition:
-        prevState === 'active_started' && currentState === 'completed',
-    })
 
     if (prevState === 'active_started' && currentState === 'completed') {
-      console.log(
-        '[EditionTimeline] Victory Check détecté → Rafraîchissement cadenas + toast'
-      )
       // Transition détectée : active_started → completed (Victory Check)
       // Rafraîchir les validations pour enlever les cadenas
       refreshValidations()

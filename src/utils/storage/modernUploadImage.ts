@@ -159,7 +159,6 @@ export async function modernUploadImage(
     const conversionStart = Date.now()
 
     if (isHEIC(file)) {
-      console.log('📱 iPhone HEIC détecté → conversion JPEG...')
 
       processedFile = await convertHEICtoJPEG(file)
       metrics.conversionMethod = 'heic_to_jpeg_then_webp'
@@ -215,7 +214,6 @@ export async function modernUploadImage(
     }
 
     // 6️⃣ VÉRIFICATION DUPLICATION
-    console.log('🔍 [STEP 6] Vérification duplication...')
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabaseAny = supabase as unknown as any
@@ -231,12 +229,10 @@ export async function modernUploadImage(
       console.error('❌ [STEP 6] Erreur vérification duplication:', dupError)
     }
 
-    console.log('✅ [STEP 6] Duplication check OK:', duplicateCheck)
 
     const dupCheck = duplicateCheck as DuplicateCheckResult | null
 
     if (dupCheck?.exists) {
-      console.log('♻️ Image identique trouvée → vérification existence fichier')
 
       const fileName = dupCheck.file_path!.split('/').pop()
       const { data: fileExists } = await supabase.storage
@@ -246,7 +242,6 @@ export async function modernUploadImage(
         })
 
       if (fileExists && fileExists.length > 0) {
-        console.log('✅ Fichier existe dans Storage → réutilisation')
 
         await logMetrics(userId, assetType, metrics, fileHash)
 
@@ -279,7 +274,6 @@ export async function modernUploadImage(
     }
 
     // 7️⃣ VÉRIFICATION QUOTA
-    console.log('🔍 [STEP 7] Vérification quota...')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: quotaCheck, error: quotaError } = await (supabase as any).rpc(
       'check_image_quota',
@@ -295,7 +289,6 @@ export async function modernUploadImage(
       throw new Error('Impossible de vérifier les quotas')
     }
 
-    console.log('✅ [STEP 7] Quota check OK:', quotaCheck)
 
     const quota = quotaCheck as QuotaCheckResult | null
 
@@ -317,15 +310,11 @@ export async function modernUploadImage(
     }
 
     // 8️⃣ EXTRAIRE DIMENSIONS
-    console.log('🔍 [STEP 8] Extraction dimensions...')
     const { width, height } = await getImageDimensions(processedFile)
-    console.log('✅ [STEP 8] Dimensions:', { width, height })
 
     // 9️⃣ UPLOAD STORAGE
-    console.log('🔍 [STEP 9] Préparation upload...')
     const fileName = sanitizeFileName(processedFile.name)
     const storagePath = buildScopedPath(userId, fileName, prefix)
-    console.log('📁 Chemin storage:', storagePath)
 
     const uploadStart = Date.now()
 
@@ -341,7 +330,6 @@ export async function modernUploadImage(
       {
         maxRetries: 2,
         onRetry: ({ attempt, maxRetries }) => {
-          console.log(`🔄 Réessai upload ${attempt}/${maxRetries}...`)
 
           if (onProgress) {
             onProgress({
@@ -359,7 +347,6 @@ export async function modernUploadImage(
       throw storageError
     }
 
-    console.log('✅ [STEP 9] Upload Storage OK:', storageData.path)
 
     metrics.uploadMs = Date.now() - uploadStart
 
@@ -368,7 +355,6 @@ export async function modernUploadImage(
     }
 
     // 🔟 ENREGISTREMENT USER_ASSETS
-    console.log('🔍 [STEP 10] Enregistrement user_assets...')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: asset, error: dbError } = await (supabase as any)
       .from('user_assets')
@@ -389,9 +375,6 @@ export async function modernUploadImage(
     if (dbError) {
       // Code 23505 = duplicate hash (comportement normal, déduplication)
       if (dbError.code === '23505') {
-        console.log(
-          "ℹ️ Image déjà existante → réutilisation de l'asset (déduplication)"
-        )
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data: existing } = await (supabase as any)
@@ -451,7 +434,6 @@ export async function modernUploadImage(
       onProgress({ step: 'complete', progress: 100 })
     }
 
-    console.log('✅ Upload réussi:', storageData.path)
 
     return {
       path: storageData.path,
@@ -570,9 +552,6 @@ export async function replaceImage(
       .update({ version: newVersion })
       .eq('id', uploadResult.assetId!)
 
-    console.log(
-      `♻️ Image remplacée : v${existingAsset.version} → v${newVersion}`
-    )
 
     if (uploadResult.url) {
       await invalidateImageCache(uploadResult.url)

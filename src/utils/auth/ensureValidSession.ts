@@ -59,11 +59,6 @@ export async function ensureValidSession(
     const timeUntilExpiryMs = expiresAtMs - nowMs
 
     // 🔍 Debug logs
-    console.log('🔐 [ensureValidSession] Session check:', {
-      userId: session.user?.id?.slice(0, 8) + '...',
-      expiresIn: Math.round(timeUntilExpiryMs / 1000 / 60) + ' min',
-      needsRefresh: timeUntilExpiryMs < marginMs,
-    })
 
     // Si token expire bientôt → refresh préventif
     if (timeUntilExpiryMs < marginMs) {
@@ -106,7 +101,6 @@ export async function ensureValidSession(
           return session
         }
 
-        console.log('✅ [ensureValidSession] Session refreshée avec succès')
         return newSession
       } catch (refreshError) {
         console.error(
@@ -121,7 +115,6 @@ export async function ensureValidSession(
     }
 
     // Session valide et pas besoin de refresh
-    console.log('✅ [ensureValidSession] Session valide')
     return session
   } catch (error) {
     // Remonter l'erreur avec contexte

@@ -175,7 +175,6 @@ export async function tryLogServerConsent(
 
     const result = await response.json()
     if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Consent logged server-side:', result)
     }
   } catch (err) {
     // En dev, si l'edge function n'est pas démarrée (503), on log discrètement

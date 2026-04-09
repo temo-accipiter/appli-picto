@@ -36,7 +36,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     if (document.visibilityState === 'hidden') {
       tabHiddenSince = Date.now()
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Visibility] 👁️ Tab hidden')
       }
       return
     }
@@ -47,15 +46,11 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     tabHiddenSince = null
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(
-        `[Visibility] 👁️ Tab visible (was hidden ${Math.round(hiddenDuration / 1000)}s)`
-      )
     }
 
     // Skip si absence très courte
     if (hiddenDuration < MIN_HIDDEN_DURATION) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Visibility] ⏭️ Short absence, skipping')
       }
       return
     }
@@ -64,14 +59,12 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
     const timeSinceLastRecreation = Date.now() - lastRecreationTime
     if (timeSinceLastRecreation < MIN_RECREATION_INTERVAL) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Visibility] ⏭️ Too soon since last recreation, skipping')
       }
       return
     }
 
     // Test API avec timeout court
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Visibility] 🔍 Testing API...')
     }
 
     try {
@@ -105,7 +98,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
       if (response.ok || response.status === 404) {
         // API répond (même 404 = API fonctionne)
         if (process.env.NODE_ENV === 'development') {
-          console.log('[Visibility] ✅ API healthy, no recreation needed')
         }
         return
       } else {
@@ -117,7 +109,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
         const errorMsg =
           apiError instanceof Error ? apiError.message : String(apiError)
         console.warn('[Visibility] ❌ API check failed:', errorMsg)
-        console.log('[Visibility] 🔄 Recreating SDK...')
       }
 
       try {
@@ -131,10 +122,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
         window.dispatchEvent(event)
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(
-            '[Visibility] ✅ SDK recreated',
-            session ? '(session restored)' : '(no session)'
-          )
         }
       } catch (recreateError) {
         console.error('[Visibility] ❌ Recreation failed:', recreateError)
@@ -151,7 +138,6 @@ export function startVisibilityHandler(supabaseClient: SupabaseClient): void {
   document.addEventListener('visibilitychange', visibilityHandler)
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('[Visibility] 👁️ Started monitoring (PRAGMATIC mode)')
   }
 }
 
@@ -164,7 +150,6 @@ export function stopVisibilityHandler(): void {
     visibilityHandler = null
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Visibility] 👁️ Stopped monitoring')
     }
   }
 }

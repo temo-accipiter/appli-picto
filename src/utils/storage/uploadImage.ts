@@ -161,18 +161,6 @@ export async function uploadImage(
       ? buildRLSPath(authenticatedUserId, nameGuess) // ✅ session.user.id
       : buildScopedPath(authenticatedUserId, nameGuess, prefix)
 
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('🔍 [uploadImage] Détails upload:')
-  console.log('   • Bucket:', bucket)
-  console.log('   • Path généré:', path)
-  console.log('   • User auth.uid():', authenticatedUserId)
-  console.log(
-    '   • Format path:',
-    `{userId}/${path.split('/').slice(1).join('/')}`
-  )
-  console.log('   • File type:', type)
-  console.log('   • File size:', (size / 1024).toFixed(2), 'Ko')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
   // Upload
   const { data, error } = await supabase.storage
@@ -195,9 +183,6 @@ export async function uploadImage(
     return { path: null, url: null, error }
   }
 
-  console.log('✅ [uploadImage] Upload réussi!')
-  console.log('   • Path final:', data.path)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
   // Buckets privés : pas d'URL publique. On peut signer si demandé.
   if (sign) {

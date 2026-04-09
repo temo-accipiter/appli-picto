@@ -43,7 +43,6 @@ export async function convertHEICtoJPEG(file: File): Promise<File> {
   }
 
   try {
-    console.log('🔄 Conversion HEIC → JPEG...')
 
     const convertedBlob = await heic2any({
       blob: file,
@@ -67,7 +66,6 @@ export async function convertHEICtoJPEG(file: File): Promise<File> {
       }
     )
 
-    console.log(`✅ HEIC converti : ${file.size} → ${convertedFile.size} bytes`)
     return convertedFile
   } catch (error) {
     console.error('❌ Erreur conversion HEIC:', error)

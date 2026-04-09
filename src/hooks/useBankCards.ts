@@ -98,9 +98,6 @@ export default function useBankCards(): UseBankCardsReturn {
       const { card_id } = payload as { card_id: string }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Realtime-Sync] Event: card_published received`, {
-          card_id,
-        })
       }
 
       // Refetch la carte pour l'ajouter au state
@@ -130,9 +127,6 @@ export default function useBankCards(): UseBankCardsReturn {
       const { card_id } = payload as { card_id: string }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Realtime-Sync] Event: card_unpublished received`, {
-          card_id,
-        })
       }
 
       // ⚠️ CRITIQUE : Retirer IMMÉDIATEMENT du state (contournement RLS)
@@ -146,9 +140,6 @@ export default function useBankCards(): UseBankCardsReturn {
       const { card_id } = payload as { card_id: string }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(`[Realtime-Sync] Event: card_deleted received`, {
-          card_id,
-        })
       }
 
       // Retirer immédiatement du state

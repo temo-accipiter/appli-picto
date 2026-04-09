@@ -228,13 +228,6 @@ export default function Tableau(_props: TableauProps = {}) {
     //                             visibleStepSlots restait figé → calcul complétion erroné côté UI.
     if (isFirstLoad || hasEpochChanged) {
       if (hasEpochChanged) {
-        console.log(
-          '[Tableau] Epoch changé:',
-          localEpochRef.current,
-          '→',
-          session.epoch,
-          '— refetch validations + slots + séquences'
-        )
       }
       localEpochRef.current = session.epoch
 
@@ -480,16 +473,6 @@ export default function Tableau(_props: TableauProps = {}) {
 
             // 🆕 DEBUG LOG
             if (slot.card_id) {
-              console.log('[Tableau] Slot mapping:', {
-                slot_id: slot.id,
-                card_id: slot.card_id,
-                sequences_length: sequences.length,
-                sequences_ids: sequences.map(s => ({
-                  id: s.id,
-                  mother_card_id: s.mother_card_id,
-                })),
-                sequence_found: sequence?.id ?? 'null',
-              })
             }
 
             return (

@@ -30,8 +30,6 @@ const key =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRrbGN6dHFvcXZuaWFsYXFmY2ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNTM0NDEsImV4cCI6MjA2ODgyOTQ0MX0.O2H1eyrlUaq1K6d92j5uAGn3xzOaS0xroa4MagPna68'
 
 // 🔍 DEBUG: Afficher quelle URL est utilisée
-console.log('🔌 Supabase URL:', url)
-console.log('🔑 Supabase Key (first 20 chars):', key.substring(0, 20) + '...')
 
 let recreationInProgress = false
 
@@ -120,7 +118,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
   if (recreationInProgress) {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Supabase] ⏳ Recreation already in progress...')
     }
     // Attendre que l'autre recréation finisse
     for (let i = 0; i < 20; i++) {
@@ -134,7 +131,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
 
   try {
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Supabase] 🔄 Recreating client...')
     }
 
     // 🔑 AMÉLIORATION : Sauvegarder TOUTES les données de session
@@ -146,7 +142,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
       try {
         savedSession = JSON.parse(savedSessionStr) as SavedSession
         if (process.env.NODE_ENV === 'development') {
-          console.log('[Supabase] 💾 Session saved from localStorage')
         }
       } catch (e) {
         console.warn('[Supabase] Failed to parse saved session:', e)
@@ -194,12 +189,10 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
         if (!error && data?.session) {
           session = data.session
           if (process.env.NODE_ENV === 'development') {
-            console.log('[Supabase] ✅ Session restored successfully')
           }
         } else if (error) {
           // Si setSession échoue, essayer de refresh
           if (process.env.NODE_ENV === 'development') {
-            console.log('[Supabase] Trying to refresh token...')
           }
 
           const { data: refreshData, error: refreshError } =
@@ -210,7 +203,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
           if (!refreshError && refreshData?.session) {
             session = refreshData.session
             if (process.env.NODE_ENV === 'development') {
-              console.log('[Supabase] ✅ Session refreshed successfully')
             }
           }
         }
@@ -221,10 +213,6 @@ export async function recreateSupabaseClient(): Promise<RecreateResult> {
     }
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(
-        '[Supabase] ✅ Client recreated',
-        session ? 'with session' : 'without session'
-      )
     }
 
     return { client: supabase, session }

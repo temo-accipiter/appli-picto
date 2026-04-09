@@ -90,10 +90,6 @@ export default function ItemForm({
     return () => {
       // Cleanup seulement si image uploadée ET pas committed
       if (uploadedImagePath && !committedRef.current) {
-        console.log(
-          '🗑️ [ItemForm] Cleanup image orpheline (unmount sans commit):',
-          uploadedImagePath
-        )
         deleteImageIfAny(uploadedImagePath, 'personal-images').catch(err => {
           console.error('Erreur cleanup image:', err)
         })
@@ -215,9 +211,6 @@ export default function ItemForm({
       setUploadedImagePath(result.path)
       setIsUploading(false)
 
-      console.log('✅ [ItemForm] Upload carte réussi')
-      console.log('   • Card ID:', cardId)
-      console.log('   • Path:', result.path)
     } catch (error) {
       const errorMsg =
         (error as Error).message ||

@@ -305,12 +305,6 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     if (process.env.NODE_ENV !== 'development') return
     if (isVisitor || !authReady || !userId) return
 
-    console.log('[ChildProfileContext] activeChild resolution', {
-      persistedActiveChildId: activeChildId,
-      childProfileIds: dbProfiles.map(p => p.id),
-      effectiveChildId: resolvedState.effectiveChildId,
-      reason: resolvedState.reason,
-    })
   }, [isVisitor, authReady, userId, activeChildId, dbProfiles, resolvedState])
 
   // ── Wrapping createProfile (no-op pour visitor) ─────────────────────────────

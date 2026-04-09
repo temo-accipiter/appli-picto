@@ -239,17 +239,6 @@ export default function useSessions(
 
           // Vérifier que c'est bien la session de cette timeline
           if (updatedSession.timeline_id === timelineId) {
-            console.log(
-              '[useSessions] Realtime UPDATE détecté:',
-              'epoch',
-              currentSessionRef.current?.epoch,
-              '→',
-              updatedSession.epoch,
-              '| snapshot',
-              currentSessionRef.current?.steps_total_snapshot,
-              '→',
-              updatedSession.steps_total_snapshot
-            )
 
             // Mise à jour immédiate du state React
             // → Déclenche useEffect epoch detection dans Tableau.tsx

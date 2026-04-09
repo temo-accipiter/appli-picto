@@ -85,9 +85,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const customEvent = event as SupabaseClientRecreatedEvent
       const { session } = customEvent.detail
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          '[Auth] 🔄 Supabase client was recreated, updating auth state...'
-        )
       }
 
       // Mettre à jour l'utilisateur avec la session restaurée
@@ -102,7 +99,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       )
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Auth] ✅ Auth state refreshed after client recreation')
       }
 
       return () => {
@@ -143,7 +139,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             sessionData = restoredSession ? { session: restoredSession } : null
 
             if (process.env.NODE_ENV === 'development') {
-              console.log('[Auth] ✅ SDK client recreated after timeout')
             }
           } catch (recreateError) {
             console.error(

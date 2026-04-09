@@ -133,23 +133,12 @@ export async function uploadBankCardImage(
 
   try {
     // Conversion JPEG réelle (pas juste renommage)
-    console.log('🔄 [uploadBankCardImage] Conversion en JPEG réel...')
     const jpegBlob = await convertToJpeg(file)
 
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('📤 [uploadBankCardImage] Upload carte banque:')
-    console.log('   • Bucket: bank-images (public read)')
-    console.log('   • Card ID:', cardId)
-    console.log('   • Type original:', type)
-    console.log('   • Type final: image/jpeg (conversion réelle)')
-    console.log('   • Taille JPEG:', (jpegBlob.size / 1024).toFixed(2), 'Ko')
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     // Path strict contractuel (flat)
     const path = buildBankCardImagePath(cardId)
 
-    console.log('   • Path strict:', path)
-    console.log('   • Format: {cardId}.jpg (flat) ✅')
 
     // Upload vers Storage
     // ✅ Storage policy INSERT vérifie is_admin() côté serveur
@@ -172,10 +161,6 @@ export async function uploadBankCardImage(
       return { path: null, error }
     }
 
-    console.log('✅ [uploadBankCardImage] Upload réussi!')
-    console.log('   • Path final:', data.path)
-    console.log('   • URL publique: bucket public (lecture autorisée)')
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
     return { path: data.path, error: null }
   } catch (error) {

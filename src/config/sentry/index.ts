@@ -233,7 +233,6 @@ export const initSentry = (options: SentryConfigOptions = {}): void => {
       }),
     })
 
-    console.log('✅ Sentry initialisé avec succès')
   } catch (error) {
     console.error("❌ Erreur lors de l'initialisation de Sentry:", error)
   }
@@ -324,7 +323,6 @@ export const startTransaction = (_name: string): null => {
 export const teardownSentry = async (): Promise<void> => {
   try {
     await Sentry.close(2000) // 2 secondes de timeout
-    console.log('✅ Sentry fermé')
   } catch (error) {
     console.error('❌ Erreur lors de la fermeture de Sentry:', error)
   }

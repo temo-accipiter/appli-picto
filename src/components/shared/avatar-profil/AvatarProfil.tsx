@@ -35,10 +35,6 @@ export default function AvatarProfil({
     if (!file) return
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 AvatarProfil - handleFileChange début', {
-        fileName: file.name,
-        fileSize: file.size,
-      })
     }
 
     // 🛡️ Validation du type + en-tête
@@ -51,7 +47,6 @@ export default function AvatarProfil({
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 AvatarProfil - Type OK, validation header...')
       }
 
       const headerError = await validateImageHeader(file)
@@ -62,7 +57,6 @@ export default function AvatarProfil({
       }
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔍 AvatarProfil - Header OK')
       }
     } catch (err) {
       console.error('❌ AvatarProfil - Exception validation:', err)
@@ -92,17 +86,12 @@ export default function AvatarProfil({
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 AvatarProfil - Avant appel onUpload', {
-        finalFileName: finalFile.name,
-        hasOnUpload: !!onUpload,
-      })
     }
 
     setImageError('')
     onUpload?.(finalFile) // on laisse le parent uploader vers le bucket 'avatars'
 
     if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 AvatarProfil - Après appel onUpload')
     }
   }
 

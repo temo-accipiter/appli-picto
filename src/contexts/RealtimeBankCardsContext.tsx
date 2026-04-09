@@ -88,7 +88,6 @@ export function RealtimeBankCardsProvider({
         if (status === 'SUBSCRIBED') {
           setIsConnected(true)
           retryCountRef.current = 0 // Reset retry count on success
-          console.log('[Realtime-Sync] Channel bank-cards souscrit avec succès')
         } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
           setIsConnected(false)
           isSubscribing = false
@@ -118,7 +117,6 @@ export function RealtimeBankCardsProvider({
         } else if (status === 'CLOSED') {
           setIsConnected(false)
           isSubscribing = false
-          console.log('[Realtime-Sync] Channel fermé')
         }
       })
 
@@ -134,7 +132,6 @@ export function RealtimeBankCardsProvider({
         clearTimeout(retryTimeoutRef.current)
       }
       if (channelRef.current) {
-        console.log('[Realtime-Sync] Nettoyage channel bank-cards')
         void supabase.removeChannel(channelRef.current)
         channelRef.current = null
         setChannel(null)
@@ -183,7 +180,6 @@ export function RealtimeBankCardsProvider({
     })
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Realtime-Sync] Broadcast envoyé: ${event}`, payload)
     }
   }
 

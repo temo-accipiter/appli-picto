@@ -144,7 +144,6 @@ export default function Edition({
   }, [activeChildId])
 
   const triggerReload = () => {
-    console.log('🔄 triggerReload appelé, reload:', reload, '→', reload + 1)
     setReload(r => r + 1)
   }
 
@@ -236,10 +235,6 @@ export default function Edition({
       return
     }
 
-    console.log('📝 [Edition] Création carte en DB...')
-    console.log('   • Card ID:', cardId)
-    console.log('   • Name:', label)
-    console.log('   • Image path:', imagePath)
 
     // ✅ DB-first : INSERT avec cardId généré client-side
     const { error: insertError } = await createCard({
@@ -250,7 +245,6 @@ export default function Edition({
 
     if (insertError) {
       // 🗑️ Cleanup image orpheline si INSERT échoue
-      console.log('🗑️ [Edition] INSERT failed, cleanup image:', imagePath)
       await deleteImageIfAny(imagePath, 'personal-images')
 
       // ✅ DB-first : Parser erreur quota/gating
@@ -285,7 +279,6 @@ export default function Edition({
       return
     }
 
-    console.log('✅ Carte créée en BDD, déclenchement reload...')
     handleCardAjoutee()
     show('Carte créée avec succès !', 'success')
   }

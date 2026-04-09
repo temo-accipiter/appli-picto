@@ -59,7 +59,6 @@ export async function convertToWebP(
   // SVG : pas de conversion (vecteur)
   // ─────────────────────────────────────────────────────────────
   if (file.type === 'image/svg+xml') {
-    console.log('ℹ️ SVG détecté → aucune conversion')
     return file
   }
 
@@ -67,7 +66,6 @@ export async function convertToWebP(
   // Déjà ≤ 20 KB ? → retour tel quel
   // ─────────────────────────────────────────────────────────────
   if (file.size <= targetSizeKB * 1024) {
-    console.log(`ℹ️ Fichier déjà ≤ ${targetSizeKB} KB → aucune compression`)
     return file
   }
 
@@ -80,9 +78,6 @@ export async function convertToWebP(
     }
 
     img.onload = () => {
-      console.log(
-        `🔄 Compression WebP : ${file.size} bytes (cible : ${targetSizeKB} KB)`
-      )
 
       // ─────────────────────────────────────────────────────────────
       // Stratégies de compression progressives
@@ -189,9 +184,6 @@ export async function convertToWebP(
                 100
               ).toFixed(1)
 
-              console.log(
-                `✅ WebP compressé : ${compressedFile.size} bytes (${width}×${height}, qualité ${strategy.quality}, -${compressionRatio}%)`
-              )
 
               resolve(compressedFile)
             } else {
@@ -250,7 +242,6 @@ export async function calculateFileHash(file: File): Promise<string> {
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-  console.log(`🔑 Hash SHA-256 calculé : ${hash.slice(0, 16)}...`)
   return hash
 }
 
