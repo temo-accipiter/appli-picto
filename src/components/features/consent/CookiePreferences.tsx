@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Checkbox } from '@/components'
+import { Button, ButtonClose, Checkbox } from '@/components'
 import { useAuth, useI18n } from '@/hooks'
 import {
   defaultChoices,
@@ -8,7 +8,6 @@ import {
   saveConsent,
   tryLogServerConsent,
 } from '@/utils/consent'
-import { X } from 'lucide-react' // WCAG - Icône SVG au lieu de caractère
 import { useEffect, useRef, useState } from 'react'
 import './CookiePreferences.scss'
 
@@ -147,14 +146,13 @@ export default function CookiePreferences() {
       <div className="cookie-prefs__dialog" role="document">
         <header className="cookie-prefs__header">
           <h2 id="cookie-prefs-title">{t('cookies.preferencesTitle')}</h2>
-          <button
+          <ButtonClose
             ref={closeButtonRef}
+            size="modal"
             className="icon"
             onClick={close}
-            aria-label={t('cookies.close')}
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
+            ariaLabel={t('cookies.close')}
+          />
         </header>
 
         <div className="cookie-prefs__body">

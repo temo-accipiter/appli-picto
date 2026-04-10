@@ -19,8 +19,9 @@ export default function SettingsMenu() {
     useDisplay()
 
   const triggerButton = (
-    <button
+    <Button
       ref={btnRef}
+      variant="default"
       className={`settings-menu__trigger${open ? ' settings-menu__trigger--active' : ''}`}
       onClick={() => setOpen(!open)}
       aria-expanded={open}
@@ -33,7 +34,7 @@ export default function SettingsMenu() {
         <span className="settings-menu__burger-line" />
         <span className="settings-menu__burger-line" />
       </span>
-    </button>
+    </Button>
   )
 
   const dropdownContent = (

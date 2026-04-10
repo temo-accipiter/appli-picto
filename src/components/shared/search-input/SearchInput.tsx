@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useDebounce } from '@/hooks'
+import { ButtonClose } from '@/components'
 import { Search } from 'lucide-react'
 import './SearchInput.scss'
 
@@ -61,14 +62,12 @@ export default function SearchInput({
         onChange={e => setSearchTerm(e.target.value)}
       />
       {searchTerm && (
-        <button
-          type="button"
+        <ButtonClose
           className="search-input__clear"
           onClick={handleClear}
-          aria-label="Effacer la recherche"
-        >
-          ✕
-        </button>
+          ariaLabel="Effacer la recherche"
+          size="small"
+        />
       )}
     </div>
   )

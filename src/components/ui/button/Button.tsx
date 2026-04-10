@@ -1,28 +1,20 @@
 'use client'
 
-import { ReactNode, forwardRef } from 'react'
+import { ComponentPropsWithoutRef, ReactNode, forwardRef } from 'react'
 import './Button.scss'
 
 type ButtonVariant = 'primary' | 'secondary' | 'default' | 'danger'
-type ButtonType = 'button' | 'submit' | 'reset'
 
-interface ButtonProps {
-  onClick?: () => void
+type ButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'children'> & {
   label?: string | ReactNode
   children?: ReactNode
   variant?: ButtonVariant
-  disabled?: boolean
   isLoading?: boolean
-  type?: ButtonType
-  className?: string
-  'aria-expanded'?: boolean
-  'aria-label'?: string
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      onClick,
       label,
       children,
       variant = 'primary',
@@ -30,8 +22,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       type = 'button',
       className = '',
-      'aria-expanded': ariaExpanded,
-      'aria-label': ariaLabel,
+      ...rest
     },
     ref
   ) => {
@@ -43,11 +34,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={`btn btn--${variant}${isLoading ? ' btn--loading' : ''} ${className}`.trim()}
-        onClick={onClick}
         disabled={isDisabled}
+        {...rest}
         aria-disabled={isDisabled}
-        aria-expanded={ariaExpanded}
-        aria-label={ariaLabel}
         aria-busy={isLoading}
       >
         {isLoading && (

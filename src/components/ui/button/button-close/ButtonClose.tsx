@@ -1,29 +1,36 @@
 'use client'
 
+import { ComponentPropsWithoutRef, forwardRef } from 'react'
 import { X } from 'lucide-react'
 import './ButtonClose.scss'
 
-interface ButtonCloseProps {
-  onClick: () => void
+type ButtonCloseProps = Omit<ComponentPropsWithoutRef<'button'>, 'children'> & {
   ariaLabel?: string
   size?: 'small' | 'large' | 'modal'
 }
 
-export default function ButtonClose({
-  onClick,
-  ariaLabel = 'Fermer',
-  size = 'small',
-}: ButtonCloseProps) {
-  const iconSize = size === 'large' ? 28 : size === 'modal' ? 20 : 20
+const ButtonClose = forwardRef<HTMLButtonElement, ButtonCloseProps>(
+  (
+    { onClick, ariaLabel = 'Fermer', size = 'small', className = '', ...rest },
+    ref
+  ) => {
+    const iconSize = size === 'large' ? 28 : size === 'modal' ? 20 : 20
 
-  return (
-    <button
-      className={`button-close button-close--${size}`}
-      onClick={onClick}
-      aria-label={ariaLabel}
-      type="button"
-    >
-      <X size={iconSize} strokeWidth={2} aria-hidden="true" />
-    </button>
-  )
-}
+    return (
+      <button
+        ref={ref}
+        type="button"
+        className={`button-close button-close--${size}${className ? ` ${className}` : ''}`}
+        {...rest}
+        onClick={onClick}
+        aria-label={ariaLabel}
+      >
+        <X size={iconSize} strokeWidth={2} aria-hidden="true" />
+      </button>
+    )
+  }
+)
+
+ButtonClose.displayName = 'ButtonClose'
+
+export default ButtonClose

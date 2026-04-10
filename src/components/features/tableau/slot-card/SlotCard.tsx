@@ -25,6 +25,7 @@ import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
+import { Button } from '@/components'
 import { SequenceMiniTimeline } from '@/components/features/sequences'
 import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
 import './SlotCard.scss'
@@ -164,8 +165,8 @@ export function SlotCard({
       {/* Bouton "Voir étapes" — visible sur toutes les cartes avec séquence (§3.1.4 mis à jour) */}
       {/* TSA : prévisibilité — la séquence est toujours visible, pas seulement sur la carte active */}
       {hasSequence && !validated && (
-        <button
-          type="button"
+        <Button
+          variant="default"
           className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}
           onClick={() => setMiniTimelineOpen(o => !o)}
           aria-expanded={miniTimelineOpen}
@@ -175,7 +176,7 @@ export function SlotCard({
           }
         >
           {miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes 📋'}
-        </button>
+        </Button>
       )}
 
       {/* Mini-timeline (visible uniquement si bouton ouvert) */}
@@ -194,8 +195,8 @@ export function SlotCard({
       )}
 
       {/* Bouton de validation (checkbox agrandie pour enfants TSA) */}
-      <button
-        type="button"
+      <Button
+        variant="default"
         className={`slot-card__check${validated ? ' slot-card__check--done' : ''}`}
         onClick={handleClick}
         disabled={isDisabled}
@@ -205,7 +206,7 @@ export function SlotCard({
         }
       >
         {validated ? '✓' : '○'}
-      </button>
+      </Button>
     </article>
   )
 }

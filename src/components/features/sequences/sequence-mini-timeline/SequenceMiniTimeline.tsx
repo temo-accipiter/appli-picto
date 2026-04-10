@@ -26,7 +26,7 @@
  * ⚠️ SYSTÈME SÉQUENÇAGE — DISTINCT DU PLANNING ET DES JETONS
  */
 
-import { SignedImage } from '@/components'
+import { Button, ButtonClose, SignedImage } from '@/components'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
@@ -74,14 +74,11 @@ export function SequenceMiniTimeline({
       role="region"
     >
       {/* Bouton fermeture */}
-      <button
-        type="button"
+      <ButtonClose
         className="sequence-mini-timeline__close"
         onClick={onClose}
-        aria-label="Fermer les étapes"
-      >
-        ✕
-      </button>
+        ariaLabel="Fermer les étapes"
+      />
 
       {loading ? (
         <div aria-busy="true" aria-label="Préparation des étapes">
@@ -107,8 +104,8 @@ export function SequenceMiniTimeline({
                 className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
               >
                 {/* Bouton "fait" : tap sur toute la carte */}
-                <button
-                  type="button"
+                <Button
+                  variant="default"
                   className="sequence-mini-timeline__step-btn"
                   onClick={() => onToggleDone(step.id)}
                   aria-pressed={isDone}
@@ -148,7 +145,7 @@ export function SequenceMiniTimeline({
                   <span className="sequence-mini-timeline__step-label">
                     {label}
                   </span>
-                </button>
+                </Button>
               </li>
             )
           })}

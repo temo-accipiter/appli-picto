@@ -16,6 +16,7 @@
  */
 
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/components'
 import './LangSelector.scss'
 
 export default function LangSelector() {
@@ -35,22 +36,24 @@ export default function LangSelector() {
       aria-label="Sélecteur de langue"
     >
       {/* 🇫🇷 Bouton pour le français */}
-      <button
+      <Button
+        variant="default"
         className={currentLang === 'fr' ? 'active' : ''}
         onClick={() => changeLanguage('fr')}
         aria-label="Passer le site en français"
       >
         🇫🇷
-      </button>
+      </Button>
 
       {/* 🇬🇧 Bouton pour l'anglais */}
-      <button
+      <Button
+        variant="default"
         className={currentLang === 'en' ? 'active' : ''}
         onClick={() => changeLanguage('en')}
         aria-label="Switch site to English"
       >
         🇬🇧
-      </button>
+      </Button>
     </div>
   )
 }
