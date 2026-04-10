@@ -19,7 +19,7 @@ import { useState } from 'react'
 import useDevices from '@/hooks/useDevices'
 import type { Device } from '@/hooks/useDevices'
 import { useInlineConfirm } from '@/hooks'
-import { Button } from '@/components'
+import { Button, Loader } from '@/components'
 import './DeviceList.scss'
 
 /** Formatte une date ISO en date française lisible */
@@ -58,12 +58,7 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
         aria-busy="true"
         aria-label="Chargement des appareils"
       >
-        <div className="device-list__dots" aria-hidden="true">
-          <span className="device-list__dot" />
-          <span className="device-list__dot" />
-          <span className="device-list__dot" />
-        </div>
-        <span className="sr-only">Chargement des appareils en cours</span>
+        <Loader variant="inline" />
       </div>
     )
   }

@@ -19,7 +19,7 @@
  * - Cibles tactiles ≥ 44px.
  */
 
-import { Button, Input } from '@/components'
+import { Button, Input, Loader } from '@/components'
 import { type FormEvent, useState } from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import type { ChildProfile } from '@/hooks/useChildProfiles'
@@ -194,12 +194,7 @@ export function ChildProfileSelector({
         aria-busy="true"
         aria-label="Chargement des profils"
       >
-        <div className="child-profile-selector__loading">
-          <span className="child-profile-selector__dot" aria-hidden="true" />
-          <span className="child-profile-selector__dot" aria-hidden="true" />
-          <span className="child-profile-selector__dot" aria-hidden="true" />
-          <span className="sr-only">Chargement en cours</span>
-        </div>
+        <Loader variant="inline" />
       </div>
     )
   }

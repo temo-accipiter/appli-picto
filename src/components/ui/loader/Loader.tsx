@@ -2,10 +2,16 @@
 
 import './Loader.scss'
 
-export default function Loader() {
+type LoaderProps = {
+  variant?: 'fullscreen' | 'inline'
+}
+
+export default function Loader({ variant = 'fullscreen' }: LoaderProps) {
+  const className = variant === 'inline' ? 'loader-inline' : 'loader-overlay'
+
   return (
     <div
-      className="loader-overlay"
+      className={className}
       role="status"
       aria-live="polite"
       aria-busy="true"

@@ -1,0 +1,34 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// INPUT FILE — Primitive UI
+// ============================================================================
+// Bouton déclencheur visible + input file natif masqué.
+// La logique métier (validation, compression, upload, preview) reste dans le parent.
+//
+// Mobile-first — cible tactile ≥ 44px héritée de .btn (Button primitive)
+// ✅ Tokens Phase 6 : spacing / font-size / semantic — zéro valeur hardcodée
+// ============================================================================
+
+.input-file {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+
+  // Input natif masqué — déclenché programmatiquement via le bouton trigger
+  &__native {
+    display: none;
+  }
+
+  // Bouton trigger — pleine largeur pour usage formulaire
+  &__trigger {
+    width: 100%;
+  }
+
+  // Message d'erreur accessible (role="alert" dans le TSX)
+  &__error {
+    margin: 0;
+    font-size: font-size('sm');
+    color: semantic('error');
+  }
+}

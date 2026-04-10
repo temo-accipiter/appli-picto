@@ -3,6 +3,7 @@
 import {
   Button,
   ImagePreview,
+  InputFile,
   InputWithValidation,
   Select,
   UploadProgress,
@@ -105,11 +106,9 @@ export default function ItemForm({
 
   const cleanLabel = label.trim().replace(/\s+/g, ' ')
 
-  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleImage = async (file: File | null) => {
     if (!file) {
       setImage(null)
-      // 🆕 Revoke previous preview URL to free memory
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl)
       }
@@ -283,19 +282,13 @@ export default function ItemForm({
         />
       )}
 
-      <div className="file-input-wrapper">
-        <label htmlFor="item-form-image" className="file-input-label">
-          {t('actions.chooseFile')}
-        </label>
-        <input
-          id="item-form-image"
-          type="file"
-          accept="image/*"
-          className={`file-input ${imageError ? 'file-input--error' : ''}`}
-          onChange={handleImage}
-          aria-label={t('quota.images')}
-        />
-      </div>
+      <InputFile
+        id="item-form-image"
+        label={t('actions.chooseFile')}
+        accept="image/*"
+        onChange={handleImage}
+        disabled={isUploading}
+      />
       {/* 🆕 Afficher progress bar si en cours d'upload */}
       {isUploading && (
         <div className="item-form__progress-section">

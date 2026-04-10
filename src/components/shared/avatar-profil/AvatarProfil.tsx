@@ -121,6 +121,12 @@ export default function AvatarProfil({
         </button>
       )}
 
+      {/*
+       * Input file natif intentionnellement conservé ici (pas de primitive InputFile).
+       * Raison : le bouton déclencheur (.avatar-upload-btn) est un cercle "+"
+       * positionné en position:absolute overlay sur l'avatar — structurellement
+       * incompatible avec la primitive InputFile (trigger inline pleine largeur).
+       */}
       <input
         type="file"
         accept="image/*"

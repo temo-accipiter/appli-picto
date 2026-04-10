@@ -19,9 +19,9 @@
  * - Pas de surprises visuelles
  */
 
-import React, { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import Modal from '@/components/shared/modal/Modal'
-import { Button } from '@/components'
+import { Button, Input, InputFile, UploadProgress } from '@/components'
 import { useAdminBankCards } from '@/hooks'
 import { useToast } from '@/contexts'
 import { uploadBankCardImage } from '@/utils/storage/uploadBankCardImage'
@@ -60,8 +60,7 @@ export default function CreateBankCardModal({
   const isValid = name.trim() !== '' && imageFile !== null
 
   // Gestion sélection image
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleImageSelect = async (file: File | null) => {
     if (!file) return
 
     // Vérification type
@@ -201,9 +200,8 @@ export default function CreateBankCardModal({
           <label htmlFor="card-name">
             Nom de la carte <span className="required">*</span>
           </label>
-          <input
+          <Input
             id="card-name"
-            type="text"
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Ex: Se brosser les dents"
@@ -222,22 +220,14 @@ export default function CreateBankCardModal({
 
           {!imagePreview ? (
             <div className="image-upload">
-              <input
+              <InputFile
                 ref={fileInputRef}
                 id="card-image"
-                type="file"
+                label="📷 Choisir une image"
                 accept="image/*"
                 onChange={handleImageSelect}
                 disabled={isUploading}
-                style={{ display: 'none' }}
               />
-              <Button
-                className="upload-button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                📷 Choisir une image
-              </Button>
               <span className="field-hint">
                 Formats acceptés : JPEG, PNG, WebP (max 100 Ko après
                 compression)
@@ -245,6 +235,12 @@ export default function CreateBankCardModal({
             </div>
           ) : (
             <div className="image-preview">
+              {/*
+               * <img> natif conservé intentionnellement (pas de <ImagePreview>).
+               * Raison : ImagePreview est conçu pour des thumbnails carrés fixes
+               * (60/100/160px). Cette preview est pleine largeur responsive
+               * (max-width: 300px) — structurellement incompatible.
+               */}
               <img src={imagePreview} alt="Aperçu de la carte" />
               <Button
                 variant="danger"
@@ -279,25 +275,20 @@ export default function CreateBankCardModal({
           </span>
         </div>
 
-        {/* Progress bar upload */}
+        {/* Progression upload */}
         {isUploading && (
-          <div className="upload-progress">
-            <div className="progress-bar">
-              <div
-                className="progress-fill"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-            <span className="progress-text">
-              {uploadProgress < 33
+          <UploadProgress
+            progress={uploadProgress}
+            message={
+              uploadProgress < 33
                 ? 'Préparation...'
                 : uploadProgress < 66
                   ? "Upload de l'image..."
                   : uploadProgress < 100
                     ? 'Création de la carte...'
-                    : 'Terminé !'}
-            </span>
-          </div>
+                    : 'Terminé !'
+            }
+          />
         )}
       </div>
     </Modal>

@@ -34,34 +34,6 @@
     }
   }
 
-  input[type='text'] {
-    padding: spacing('sm') spacing('md');
-    border: border-width('base') solid surface('border');
-    border-radius: radius('md');
-    font-size: font-size('base');
-    color: text('default');
-    background: surface('bg');
-    @include safe-transition(border-color);
-
-    &:focus {
-      outline: none;
-      border-color: semantic('info', 'border');
-      box-shadow: 0 0 0 3px semantic('info', 'bg');
-    }
-
-    &::placeholder {
-      color: text('muted');
-    }
-
-    &:disabled {
-      opacity: opacity('0-6');
-      cursor: not-allowed;
-    }
-
-    // ✅ Mobile : min-height 44px (WCAG touch target)
-    @include touch-target('min');
-  }
-
   .field-hint {
     font-size: font-size('sm');
     color: text('light');
@@ -69,9 +41,9 @@
   }
 }
 
-// Upload image
+// Upload image — style du bouton trigger InputFile dans ce contexte
 .image-upload {
-  .upload-button {
+  .input-file__trigger {
     width: 100%;
     padding: spacing('md');
     border: border-width('medium') dashed surface('border');
@@ -196,33 +168,9 @@
   }
 }
 
-// Progress bar upload
+// Marge de progression upload — override layout local (UploadProgress primitive)
 .upload-progress {
   margin-top: spacing('md');
-
-  .progress-bar {
-    width: 100%;
-    height: spacing('8');
-    background: surface('soft');
-    border-radius: radius('full');
-    overflow: hidden;
-    margin-bottom: spacing('sm');
-
-    .progress-fill {
-      height: 100%;
-      background: semantic('success', 'bg');
-      @include safe-transition(width);
-      border-radius: radius('full');
-    }
-  }
-
-  .progress-text {
-    display: block;
-    text-align: center;
-    font-size: font-size('sm');
-    color: text('light');
-    font-weight: font-weight('medium');
-  }
 }
 
 // ============================================================================

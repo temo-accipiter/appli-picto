@@ -47,7 +47,7 @@ import usePersonalCards, { type PersonalCard } from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import type { Sequence } from '@/hooks/useSequences'
 import { useInlineConfirm } from '@/hooks'
-import { Button, Modal } from '@/components'
+import { Button, Loader, Modal } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
 import './SlotsEditor.scss'
@@ -442,12 +442,7 @@ export function SlotsEditor({
         aria-busy="true"
         aria-label="Chargement des slots"
       >
-        <div className="slots-editor__loading">
-          <span className="slots-editor__dot" aria-hidden="true" />
-          <span className="slots-editor__dot" aria-hidden="true" />
-          <span className="slots-editor__dot" aria-hidden="true" />
-          <span className="sr-only">Chargement en cours</span>
-        </div>
+        <Loader variant="inline" />
       </div>
     )
   }

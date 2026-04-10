@@ -6,27 +6,42 @@ Configuration personnalisée et optimisée pour le projet Appli-Picto (Next.js 1
 
 ```
 .claude/
-├── README.md                    # Ce fichier
+├── README.md
 ├── settings.json                # Configuration projet (versionné Git)
-├── .mcp.json                    # MCP servers (Supabase, Context7, Stripe)
-├── commands/                    # 7 slash commands optimisées
-│   ├── commit.md               # Commit rapide conventionnel
-│   ├── explore.md              # Explorer codebase (Sonnet)
+├── playwright-config.json
+├── settings.local.json
+├── commands/
+│   ├── deep-code-analysis.md
+│   ├── claude-memory.md
 │   ├── debug.md                # Debug profond (Sonnet)
 │   ├── supabase-migrate.md     # Migration Supabase + types
-│   ├── test-component.md       # Tests unitaires ciblés
+│   ├── prompt-command.md
+│   ├── prompt-agent.md
 │   ├── verify-quick.md         # Vérification rapide complète
 │   └── verify-full.md          # Vérification exhaustive (E2E + coverage)
-├── agents/                      # 4 agents AI
+├── agents/
 │   ├── action.md               # Exécuteur conditionnel
 │   ├── explore-codebase.md     # Exploration code
 │   ├── explore-docs.md         # Exploration docs libraries
 │   └── websearch.md            # Recherche web
-├── output-styles/               # 2 styles de sortie
-│   ├── appli-picto-guide.md    # Pédagogique TSA-friendly (par défaut)
-│   └── minimal.md              # Ultra-concis (économie tokens)
-└── status-line/
-    └── simple.sh               # Affichage tokens/quota
+│   └── database-reviewer.md
+│   └── scss-refactor.md
+│   └── security-reviewer.md
+│   └── typescript-reviewer.md
+├── output-styles/
+│   ├── appli-picto-guide.md    # Pédagogique TSA-friendly
+└── agent-memory/
+    └──explore-codebase/
+       ├── admin-architecture.md
+├── skills/
+    └──db-first-frontend/
+    └──sass-tokens-discipline/
+    └──three-systems-separation/
+    └──tsa-ux-rules/
+├── rules/
+│   ├── action.md
+├── scripts/
+│   ├── action.md
 ```
 
 ## 🎯 Commandes disponibles

@@ -20,24 +20,6 @@
     align-items: center;
   }
 
-  // ── Loader neutre ────────────────────────────────────────────────────────────
-  &__loading {
-    display: flex;
-    flex-direction: row;
-    gap: spacing('1');
-    align-items: center;
-    padding: spacing('2');
-  }
-
-  &__dot {
-    display: inline-block;
-    width: size('8');
-    height: size('8');
-    border-radius: radius('full');
-    background: surface('border');
-    opacity: 0.6;
-  }
-
   // ── Bouton ajout "+" ─────────────────────────────────────────────────────────
   &__add-btn {
     display: inline-flex;
