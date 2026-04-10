@@ -19,6 +19,7 @@ import { useState } from 'react'
 import useDevices from '@/hooks/useDevices'
 import type { Device } from '@/hooks/useDevices'
 import { useInlineConfirm } from '@/hooks'
+import { Button } from '@/components'
 import './DeviceList.scss'
 
 /** Formatte une date ISO en date française lisible */
@@ -164,14 +165,14 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
         {/* Actions — uniquement pour les appareils actifs */}
         {isActive && (
           <div className="device-list__item-actions">
-            <button
-              type="button"
+            <Button
+              variant="danger"
               className={`device-list__revoke-btn${
                 isCurrentlyConfirming ? ' device-list__revoke-btn--confirm' : ''
               }`}
               onClick={() => handleRevoke(device)}
               disabled={!!revokingId}
-              aria-busy={isRevoking}
+              isLoading={isRevoking}
               aria-label={
                 isCurrentlyConfirming
                   ? 'Confirmer la révocation de cet appareil'
@@ -183,18 +184,18 @@ export default function DeviceList({ currentDeviceId }: DeviceListProps) {
                 : isCurrentlyConfirming
                   ? 'Confirmer la révocation ?'
                   : 'Révoquer'}
-            </button>
+            </Button>
 
             {/* Bouton annuler — visible uniquement pendant la confirmation */}
             {isCurrentlyConfirming && (
-              <button
-                type="button"
+              <Button
+                variant="default"
                 className="device-list__cancel-btn"
                 onClick={cancelConfirm}
                 aria-label="Annuler la révocation"
               >
                 Annuler
-              </button>
+              </Button>
             )}
           </div>
         )}

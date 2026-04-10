@@ -22,6 +22,7 @@
 
 import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Button } from '@/components'
 import './ThemeToggle.scss'
 
 type Theme = 'light' | 'dark'
@@ -49,17 +50,14 @@ export default function ThemeToggle() {
   }
 
   return (
-    <button
+    <Button
       className="theme-toggle"
       onClick={toggleTheme}
       aria-label={
         theme === 'light' ? 'Activer le thème sombre' : 'Activer le thème clair'
       }
-      title={
-        theme === 'light' ? 'Activer le thème sombre' : 'Activer le thème clair'
-      }
     >
       {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
-    </button>
+    </Button>
   )
 }

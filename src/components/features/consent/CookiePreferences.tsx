@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/components'
+import { Button, Checkbox } from '@/components'
 import { useAuth, useI18n } from '@/hooks'
 import {
   defaultChoices,
@@ -177,15 +177,13 @@ export default function CookiePreferences() {
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="necessary-cookies"
+                label={t('cookies.alwaysActive')}
                 checked={true}
+                onChange={() => {}}
                 disabled
               />
-              <label htmlFor="necessary-cookies">
-                {t('cookies.alwaysActive')}
-              </label>
             </div>
           </fieldset>
 
@@ -205,15 +203,12 @@ export default function CookiePreferences() {
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="analytics-cookies"
+                label={t('cookies.enableAnalytics')}
                 checked={!!choices.analytics}
                 onChange={() => toggle('analytics')}
               />
-              <label htmlFor="analytics-cookies">
-                {t('cookies.enableAnalytics')}
-              </label>
             </div>
           </fieldset>
 
@@ -232,15 +227,12 @@ export default function CookiePreferences() {
               </ul>
             </div>
             <div className="cookie-prefs__checkbox">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="marketing-cookies"
+                label={t('cookies.enableMarketing')}
                 checked={!!choices.marketing}
                 onChange={() => toggle('marketing')}
               />
-              <label htmlFor="marketing-cookies">
-                {t('cookies.enableMarketing')}
-              </label>
             </div>
           </fieldset>
 

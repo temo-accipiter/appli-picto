@@ -21,6 +21,7 @@
 
 import React, { useState, useRef } from 'react'
 import Modal from '@/components/shared/modal/Modal'
+import { Button } from '@/components'
 import { useAdminBankCards } from '@/hooks'
 import { useToast } from '@/contexts'
 import { uploadBankCardImage } from '@/utils/storage/uploadBankCardImage'
@@ -230,14 +231,13 @@ export default function CreateBankCardModal({
                 disabled={isUploading}
                 style={{ display: 'none' }}
               />
-              <button
-                type="button"
+              <Button
                 className="upload-button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
               >
                 📷 Choisir une image
-              </button>
+              </Button>
               <span className="field-hint">
                 Formats acceptés : JPEG, PNG, WebP (max 100 Ko après
                 compression)
@@ -246,14 +246,14 @@ export default function CreateBankCardModal({
           ) : (
             <div className="image-preview">
               <img src={imagePreview} alt="Aperçu de la carte" />
-              <button
-                type="button"
+              <Button
+                variant="danger"
                 className="remove-image"
                 onClick={handleRemoveImage}
                 disabled={isUploading}
               >
                 ✕ Supprimer
-              </button>
+              </Button>
             </div>
           )}
         </div>

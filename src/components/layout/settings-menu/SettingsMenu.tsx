@@ -1,6 +1,6 @@
 'use client'
 
-import { Checkbox, Dropdown } from '@/components'
+import { Button, Checkbox, Dropdown } from '@/components'
 import { useDisplay, useToast } from '@/contexts'
 import { useI18n, useAccountPreferences } from '@/hooks'
 import { Settings } from 'lucide-react'
@@ -92,7 +92,8 @@ export default function SettingsMenu() {
 
         <div className="settings-menu__divider" />
 
-        <button
+        <Button
+          variant="default"
           className="settings-menu__link"
           onClick={() => {
             window.dispatchEvent(new CustomEvent('cookie-preferences:open'))
@@ -100,7 +101,7 @@ export default function SettingsMenu() {
           }}
         >
           🍪 {t('settings.cookiePreferences')}
-        </button>
+        </Button>
       </div>
     </>
   )

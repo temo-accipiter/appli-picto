@@ -47,7 +47,7 @@ import usePersonalCards, { type PersonalCard } from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import type { Sequence } from '@/hooks/useSequences'
 import { useInlineConfirm } from '@/hooks'
-import { Modal } from '@/components'
+import { Button, Modal } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
 import './SlotsEditor.scss'
@@ -559,20 +559,15 @@ export function SlotsEditor({
 
       {/* ── Boutons d'ajout ──────────────────────────────────────────────────── */}
       <div className="slots-editor__actions">
-        <button
-          type="button"
+        <Button
+          variant="default"
           className="slots-editor__btn slots-editor__btn--step"
           onClick={handleAddStep}
           disabled={isStructuralBusy}
-          aria-busy={addingStep}
-          title={
-            isSessionActive
-              ? 'Session en cours — annulez la session pour modifier les étapes'
-              : undefined
-          }
+          isLoading={addingStep}
         >
           {addingStep ? 'Ajout…' : '+ Étape 🎯'}
-        </button>
+        </Button>
         {isSessionActive && (
           <p className="slots-editor__session-lock-hint" role="note">
             Session en cours — annulez pour modifier les étapes
@@ -582,12 +577,12 @@ export function SlotsEditor({
 
       {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}
       <div className="slots-editor__reset-session">
-        <button
-          type="button"
+        <Button
+          variant="default"
           className={`slots-editor__btn slots-editor__btn--reset${isResetConfirming('reset') ? ' slots-editor__btn--reset-confirm' : ''}`}
           onClick={handleResetSession}
           disabled={isControlBusy || !canResetSession}
-          aria-busy={resettingSession}
+          isLoading={resettingSession}
           aria-label={
             isResetConfirming('reset')
               ? 'Confirmer la réinitialisation de la session'
@@ -595,27 +590,22 @@ export function SlotsEditor({
                 ? 'Réinitialiser la session (recommencer depuis le début)'
                 : 'La réinitialisation devient disponible après le début de la progression'
           }
-          title={
-            canResetSession
-              ? undefined
-              : 'Disponible après le début de la progression'
-          }
         >
           {resettingSession
             ? 'Réinitialisation…'
             : isResetConfirming('reset')
               ? 'Confirmer la réinitialisation ?'
               : 'Réinitialiser la session 🔄'}
-        </button>
+        </Button>
         {/* Annuler la confirmation */}
         {isResetConfirming('reset') && canResetSession && (
-          <button
-            type="button"
+          <Button
+            variant="default"
             className="slots-editor__btn slots-editor__btn--cancel"
             onClick={cancelResetConfirm}
           >
             Annuler
-          </button>
+          </Button>
         )}
       </div>
 
