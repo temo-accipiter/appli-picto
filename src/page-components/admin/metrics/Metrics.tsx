@@ -10,7 +10,7 @@
  * - JAMAIS d'image_url personnelle (enforced par la RPC)
  * - Guard appliqué en amont par AdminRoute
  */
-import { Button } from '@/components'
+import { Button, Input } from '@/components'
 import { useAdminSupportInfo } from '@/hooks'
 import type { AdminSupportAccountInfo, AdminSupportChildProfile } from '@/hooks'
 import { useRouter } from 'next/navigation'
@@ -251,7 +251,8 @@ export default function Metrics() {
           image n&apos;est accessible.
         </p>
         <div className="metrics-search__form">
-          <input
+          <Input
+            id="metrics-account-search"
             type="text"
             className="metrics-search__input"
             placeholder="550e8400-e29b-41d4-a716-446655440000"

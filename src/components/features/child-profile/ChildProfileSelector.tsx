@@ -19,6 +19,7 @@
  * - Cibles tactiles ≥ 44px.
  */
 
+import { Button, Input } from '@/components'
 import { type FormEvent, useState } from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import type { ChildProfile } from '@/hooks/useChildProfiles'
@@ -126,8 +127,8 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
       className="child-profile-create-form"
       aria-label="Créer un profil enfant"
     >
-      <input
-        type="text"
+      <Input
+        id="create-profile-name"
         className="child-profile-create-form__input"
         value={name}
         onChange={e => setName(e.target.value)}
@@ -136,7 +137,7 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
         autoFocus
         disabled={submitting}
         aria-label="Prénom de l'enfant"
-        aria-required="true"
+        aria-required={true}
       />
 
       {errorMsg && (
@@ -146,22 +147,23 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
       )}
 
       <div className="child-profile-create-form__actions">
-        <button
+        <Button
           type="submit"
           className="child-profile-create-form__btn child-profile-create-form__btn--submit"
           disabled={submitting || !name.trim()}
-          aria-busy={submitting}
+          isLoading={submitting}
         >
           {submitting ? 'Création…' : 'Créer'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="default"
           className="child-profile-create-form__btn child-profile-create-form__btn--cancel"
           onClick={onClose}
           disabled={submitting}
         >
           Annuler
-        </button>
+        </Button>
       </div>
     </form>
   )

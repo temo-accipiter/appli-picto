@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components'
 import { useAuth, useI18n } from '@/hooks'
 import { getConsent, saveConsent, tryLogServerConsent } from '@/utils/consent'
 import { usePathname } from 'next/navigation'
@@ -147,28 +148,24 @@ export default function CookieBanner() {
           role="group"
           aria-label={t('cookies.banner')}
         >
-          <button
+          <Button
             ref={firstButtonRef}
-            className="btn btn-secondary"
+            variant="secondary"
+            className="btn-secondary"
             onClick={refuseAll}
-            aria-describedby="cookie-banner-title"
           >
             {t('cookies.refuse')}
-          </button>
-          <button
-            className="btn btn-outline"
+          </Button>
+          <Button
+            variant="default"
+            className="btn-outline"
             onClick={openPreferences}
-            aria-describedby="cookie-banner-title"
           >
             {t('cookies.customize')}
-          </button>
-          <button
-            className="btn"
-            onClick={acceptAll}
-            aria-describedby="cookie-banner-title"
-          >
+          </Button>
+          <Button variant="primary" onClick={acceptAll}>
             {t('cookies.accept')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

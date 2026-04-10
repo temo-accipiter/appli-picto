@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components'
 import { useAuth, useI18n } from '@/hooks'
 import {
   defaultChoices,
@@ -259,27 +260,19 @@ export default function CookiePreferences() {
 
         <footer className="cookie-prefs__footer">
           <div className="cookie-prefs__actions">
-            <button
-              className="btn btn-secondary"
+            <Button
+              variant="secondary"
+              className="btn-secondary"
               onClick={refuseAll}
-              aria-describedby="cookie-prefs-title"
             >
               {t('cookies.refuseAll')}
-            </button>
-            <button
-              className="btn btn-outline"
-              onClick={save}
-              aria-describedby="cookie-prefs-title"
-            >
+            </Button>
+            <Button variant="default" className="btn-outline" onClick={save}>
               {t('cookies.saveMyChoices')}
-            </button>
-            <button
-              className="btn"
-              onClick={acceptAll}
-              aria-describedby="cookie-prefs-title"
-            >
+            </Button>
+            <Button variant="primary" onClick={acceptAll}>
               {t('cookies.acceptAll')}
-            </button>
+            </Button>
           </div>
         </footer>
       </div>

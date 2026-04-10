@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import './PortailRGPD.scss'
@@ -49,53 +50,51 @@ export default function PortailRGPD() {
         <section className="rgpd-card" aria-labelledby="rgpd-export-title">
           <h2 id="rgpd-export-title">{t('rgpd.exportTitle')}</h2>
           <p>{t('rgpd.exportDescription')}</p>
-          <button
-            className="btn"
+          <Button
             onClick={handleExport}
             disabled={downloading}
-            aria-busy={downloading ? 'true' : 'false'}
+            isLoading={downloading}
           >
             {downloading ? t('rgpd.exportingButton') : t('rgpd.exportButton')}
-          </button>
+          </Button>
         </section>
 
         {/* Rectifier → Profil */}
         <section className="rgpd-card" aria-labelledby="rgpd-rectify-title">
           <h2 id="rgpd-rectify-title">{t('rgpd.rectifyTitle')}</h2>
           <p>{t('rgpd.rectifyDescription')}</p>
-          <button
-            className="btn"
+          <Button
             onClick={() => router.push('/profil')}
             aria-label={t('rgpd.rectifyAriaLabel')}
           >
             {t('rgpd.rectifyButton')}
-          </button>
+          </Button>
         </section>
 
         {/* Supprimer → Profil */}
         <section className="rgpd-card" aria-labelledby="rgpd-delete-title">
           <h2 id="rgpd-delete-title">{t('rgpd.deleteTitle')}</h2>
           <p>{t('rgpd.deleteDescription')}</p>
-          <button
-            className="btn btn-danger"
+          <Button
+            variant="danger"
+            className="btn-danger"
             onClick={() => router.push('/profil')}
             aria-label={t('rgpd.deleteAriaLabel')}
           >
             {t('rgpd.deleteButton')}
-          </button>
+          </Button>
         </section>
 
         {/* Consentements cookies */}
         <section className="rgpd-card" aria-labelledby="rgpd-consents-title">
           <h2 id="rgpd-consents-title">{t('rgpd.consentsTitle')}</h2>
           <p>{t('rgpd.consentsDescription')}</p>
-          <button
-            className="btn"
+          <Button
             onClick={openCookiePreferences}
             aria-label={t('rgpd.consentsAriaLabel')}
           >
             {t('rgpd.consentsButton')}
-          </button>
+          </Button>
         </section>
       </div>
     </div>
