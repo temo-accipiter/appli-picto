@@ -17,6 +17,16 @@
 # 2. Capture l'erreur 502 de restart containers (non-critique)
 # 3. Applique les storage policies avec supabase_admin
 # 4. Affiche un résumé clair
+#
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Workaround CLI Supabase locale :
+# Les migrations storage (policies sur storage.objects) échouent
+# avec le rôle `postgres` (non-owner de storage.objects).
+# En production cloud, ces migrations s'appliquent normalement.
+# Ce script les réapplique avec `supabase_admin` (superuser)
+# après le reset standard.
+# Ref: MEMORY.md § "Supabase Local — Pièges connus"
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # ============================================================================
 
 set -e  # Exit on error (sauf erreurs gérées explicitement)
@@ -35,7 +45,7 @@ echo "📦 Étape 1/3 : Reset DB (migrations + seed)..."
 echo ""
 
 # Capturer le code de sortie mais continuer même si erreur 502
-if supabase db reset 2>&1 | tee /tmp/supabase-reset.log; then
+if supabase db reset --local 2>&1 | tee /tmp/supabase-reset.log; then
   echo ""
   echo "✅ Reset DB réussi"
 else
@@ -65,7 +75,7 @@ echo ""
 
 if pnpm supabase:apply-all-storage-policies; then
   echo ""
-  echo "✅ Storage Policies appliquées avec succès (personal-images + bank-images)"
+  echo "✅ Storage Policies appliquées avec succès (personal-images: cards + avatars, bank-images)"
 else
   echo ""
   echo "❌ Erreur lors de l'application des Storage Policies"
@@ -121,7 +131,7 @@ echo "🎉 ============================================"
 echo ""
 echo "✅ Migrations appliquées (55+ migrations)"
 echo "✅ Seed exécuté (3 comptes de test créés)"
-echo "✅ Storage Policies appliquées (personal-images + bank-images)"
+echo "✅ Storage Policies appliquées (personal-images: cards + avatars, bank-images)"
 echo ""
 echo "🔐 Comptes de test disponibles :"
 echo "   👤 Admin      : admin@local.dev / Admin1234x"

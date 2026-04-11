@@ -14,7 +14,7 @@
 --  En local, storage.objects appartient à supabase_storage_admin.
 --  Les migrations s'exécutent avec postgres (non propriétaire) → erreur de privilèges.
 --  → La migration dégrade gracieusement : RAISE NOTICE + skip (pas d'erreur).
---  → Appliquer manuellement après reset : pnpm supabase:apply-storage-policies
+--  → Appliquer manuellement après reset : pnpm supabase:apply-avatars-storage-policies
 --
 --  En production (Supabase cloud), les migrations ont les droits suffisants.
 
