@@ -303,6 +303,17 @@ BEGIN
 
   INSERT INTO _p5_ids VALUES ('session2', v_session2) ON CONFLICT (key) DO UPDATE SET val = EXCLUDED.val;
 
+  -- Créer le slot vide (card_id NULL) maintenant, pendant active_preview.
+  -- Après la 1ère validation (TEST 10), session2 passe en active_started
+  -- et le guard 20260408120000 bloque tout INSERT/DELETE de slot.
+  DECLARE v_empty_step uuid;
+  BEGIN
+    INSERT INTO slots (timeline_id, kind, position, card_id, tokens)
+    VALUES (v_timeline, 'step', 80, NULL, 0)
+    RETURNING id INTO v_empty_step;
+    INSERT INTO _p5_ids VALUES ('empty_step', v_empty_step) ON CONFLICT (key) DO UPDATE SET val = EXCLUDED.val;
+  END;
+
   RAISE NOTICE '✅ TEST 8 PASS — Epoch monotone (session2 epoch=%, > 1)', v_epoch2;
 END $$;
 
@@ -373,18 +384,14 @@ END $$;
 
 -- ============================================================
 -- TEST 12: Validation step vide (card_id NULL) — interdit
+-- Slot créé pendant TEST 8 (active_preview) car le guard 20260408120000
+-- bloque tout INSERT/DELETE de slot pendant active_started.
 -- ============================================================
 DO $$
 DECLARE
   v_session2 uuid := (SELECT val FROM _p5_ids WHERE key = 'session2');
-  v_timeline uuid := (SELECT val FROM _p5_ids WHERE key = 'timeline');
-  v_empty_step uuid;
+  v_empty_step uuid := (SELECT val FROM _p5_ids WHERE key = 'empty_step');
 BEGIN
-  -- Créer un step vide (card_id NULL)
-  INSERT INTO slots (timeline_id, kind, position, card_id, tokens)
-  VALUES (v_timeline, 'step', 80, NULL, 0)
-  RETURNING id INTO v_empty_step;
-
   BEGIN
     INSERT INTO session_validations (session_id, slot_id) VALUES (v_session2, v_empty_step);
     RAISE EXCEPTION 'TEST 12 FAILED: validation sur step vide acceptée';
@@ -394,7 +401,8 @@ BEGIN
       NULL; -- Trigger non-vide bloque = attendu
   END;
 
-  DELETE FROM slots WHERE id = v_empty_step;
+  -- Pas de DELETE ici : slot verrouillé pendant active_started (guard 20260408120000).
+  -- Le ROLLBACK final du fichier nettoie automatiquement.
 
   RAISE NOTICE '✅ TEST 12 PASS — Validation step vide (card_id NULL) bloquée';
 END $$;

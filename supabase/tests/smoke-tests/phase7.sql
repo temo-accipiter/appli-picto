@@ -873,11 +873,11 @@ DO $$
 DECLARE
   v_result BOOLEAN;
 BEGIN
-  -- Bob (free) → FALSE
+  -- Bob (free) → TRUE (depuis 20260408100000_allow_free_write_sequences)
   PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
   SELECT public.can_write_sequences() INTO v_result;
-  IF v_result IS DISTINCT FROM FALSE THEN
-    RAISE EXCEPTION 'TEST 21 FAILED: can_write_sequences() retourne TRUE pour Free (attendu FALSE)';
+  IF v_result IS DISTINCT FROM TRUE THEN
+    RAISE EXCEPTION 'TEST 21 FAILED: can_write_sequences() retourne FALSE pour Free (attendu TRUE depuis 20260408100000)';
   END IF;
 
   -- Alice (subscriber) → TRUE
@@ -895,74 +895,63 @@ BEGIN
   END IF;
 
   PERFORM _test_reset_role();
-  RAISE NOTICE '✅ TEST 21 PASS — can_write_sequences(): Free=FALSE, Subscriber=TRUE, Admin=TRUE';
+  RAISE NOTICE '✅ TEST 21 PASS — can_write_sequences(): Free=TRUE, Subscriber=TRUE, Admin=TRUE';
 END $$;
 
 
 -- ============================================================
--- TEST 22: Free (1 profil) bloqué en INSERT sequences
--- Phase 7.9: sequences_insert_owner requiert can_write_sequences()
--- ============================================================
-DO $$
-DECLARE
-  v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
-BEGIN
-  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
-
-  BEGIN
-    INSERT INTO sequences (account_id, mother_card_id)
-    VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card);
-    RAISE EXCEPTION 'TEST 22 FAILED: Free a pu insérer une séquence (RLS WITH CHECK devrait bloquer)';
-  EXCEPTION
-    WHEN others THEN
-      IF SQLERRM LIKE 'TEST 22 FAILED%' THEN RAISE; END IF;
-      NULL; -- Bloqué = attendu
-  END;
-
-  PERFORM _test_reset_role();
-  RAISE NOTICE '✅ TEST 22 PASS — Free bloqué en INSERT sequences';
-END $$;
-
-
--- ============================================================
--- TEST 23: Free (1 profil) bloqué en UPDATE/DELETE sequences
--- Phase 7.9: policies UPDATE/DELETE requièrent can_write_sequences()
+-- TEST 22: Free peut INSERT sequences (can_write_sequences() = TRUE depuis 20260408100000)
 -- ============================================================
 DO $$
 DECLARE
   v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
   v_bob_seq uuid;
-  v_count int;
 BEGIN
-  PERFORM _test_reset_role();
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 
-  -- Créer une séquence pour Bob en mode postgres (bypass RLS pour setup)
   INSERT INTO sequences (account_id, mother_card_id)
   VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
   RETURNING id INTO v_bob_seq;
 
-  -- En tant que Bob (free), tenter UPDATE → doit retourner 0 rows (USING filtre)
-  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
-
-  UPDATE sequences SET updated_at = NOW() WHERE id = v_bob_seq;
-  GET DIAGNOSTICS v_count = ROW_COUNT;
-  IF v_count != 0 THEN
-    RAISE EXCEPTION 'TEST 23 FAILED: Free a pu modifier une séquence (% row(s) affectée(s))', v_count;
-  END IF;
-
-  -- Tenter DELETE → doit retourner 0 rows (USING filtre)
-  DELETE FROM sequences WHERE id = v_bob_seq;
-  GET DIAGNOSTICS v_count = ROW_COUNT;
-  IF v_count != 0 THEN
-    RAISE EXCEPTION 'TEST 23 FAILED: Free a pu supprimer une séquence (% row(s) affectée(s))', v_count;
+  IF v_bob_seq IS NULL THEN
+    RAISE EXCEPTION 'TEST 22 FAILED: Free n''a pas pu insérer une séquence (attendu SUCCESS)';
   END IF;
 
   PERFORM _test_reset_role();
 
-  -- Cleanup
-  DELETE FROM sequences WHERE id = v_bob_seq;
+  -- Sauvegarder pour TEST 23 (après reset rôle : _rls_ids requiert postgres)
+  INSERT INTO _rls_ids VALUES ('bob_seq_test23', v_bob_seq) ON CONFLICT (key) DO UPDATE SET val = EXCLUDED.val;
 
-  RAISE NOTICE '✅ TEST 23 PASS — Free bloqué en UPDATE/DELETE sequences';
+  RAISE NOTICE '✅ TEST 22 PASS — Free peut INSERT sequences (can_write_sequences() = TRUE)';
+END $$;
+
+
+-- ============================================================
+-- TEST 23: Free peut UPDATE/DELETE ses séquences (can_write_sequences() = TRUE depuis 20260408100000)
+-- ============================================================
+DO $$
+DECLARE
+  v_bob_seq uuid := (SELECT val FROM _rls_ids WHERE key = 'bob_seq_test23');
+  v_count int;
+BEGIN
+  PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
+
+  -- UPDATE → doit affecter 1 row
+  UPDATE sequences SET updated_at = NOW() WHERE id = v_bob_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 23 FAILED: Free n''a pas pu modifier sa séquence (% row(s), attendu 1)', v_count;
+  END IF;
+
+  -- DELETE → doit affecter 1 row
+  DELETE FROM sequences WHERE id = v_bob_seq;
+  GET DIAGNOSTICS v_count = ROW_COUNT;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 23 FAILED: Free n''a pas pu supprimer sa séquence (% row(s), attendu 1)', v_count;
+  END IF;
+
+  PERFORM _test_reset_role();
+  RAISE NOTICE '✅ TEST 23 PASS — Free peut UPDATE/DELETE ses séquences (can_write_sequences() = TRUE)';
 END $$;
 
 
@@ -1080,40 +1069,38 @@ END $$;
 
 
 -- ============================================================
--- TEST 27: Free bloqué en INSERT sequence_steps sur sa propre séquence
--- Phase 7.9: sequence_steps_insert_owner requiert can_write_sequences()
+-- TEST 27: Free peut INSERT sequence_steps (can_write_sequences() = TRUE depuis 20260408100000)
 -- ============================================================
 DO $$
 DECLARE
   v_bank_card uuid := (SELECT val FROM _rls_ids WHERE key = 'bank_card');
   v_bob_seq uuid;
+  v_bob_step uuid;
 BEGIN
   PERFORM _test_reset_role();
 
-  -- Créer séquence pour Bob en mode postgres (bypass RLS)
+  -- Créer séquence pour Bob en mode postgres
   INSERT INTO sequences (account_id, mother_card_id)
   VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', v_bank_card)
   RETURNING id INTO v_bob_seq;
 
-  -- En tant que Bob (free), tenter INSERT sequence_steps sur sa propre séquence
+  -- En tant que Bob (free), INSERT sequence_step → doit réussir
   PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 
-  BEGIN
-    INSERT INTO sequence_steps (sequence_id, step_card_id, position)
-    VALUES (v_bob_seq, v_bank_card, 0);
-    RAISE EXCEPTION 'TEST 27 FAILED: Free a pu insérer une sequence_step (RLS devrait bloquer)';
-  EXCEPTION
-    WHEN others THEN
-      IF SQLERRM LIKE 'TEST 27 FAILED%' THEN RAISE; END IF;
-      NULL; -- Bloqué = attendu
-  END;
+  INSERT INTO sequence_steps (sequence_id, step_card_id, position)
+  VALUES (v_bob_seq, v_bank_card, 0)
+  RETURNING id INTO v_bob_step;
+
+  IF v_bob_step IS NULL THEN
+    RAISE EXCEPTION 'TEST 27 FAILED: Free n''a pas pu insérer une sequence_step (attendu SUCCESS)';
+  END IF;
 
   PERFORM _test_reset_role();
 
   -- Cleanup
   DELETE FROM sequences WHERE id = v_bob_seq;
 
-  RAISE NOTICE '✅ TEST 27 PASS — Free bloqué en INSERT sequence_steps';
+  RAISE NOTICE '✅ TEST 27 PASS — Free peut INSERT sequence_steps (can_write_sequences() = TRUE)';
 END $$;
 
 
@@ -1155,8 +1142,7 @@ END $$;
 
 
 -- ============================================================
--- TEST 29: Free bloqué en UPDATE sequence_steps sur sa propre séquence
--- Phase 7.9: sequence_steps_update_owner requiert can_write_sequences()
+-- TEST 29: Free peut UPDATE sequence_steps (can_write_sequences() = TRUE depuis 20260408100000)
 -- ============================================================
 DO $$
 DECLARE
@@ -1176,13 +1162,13 @@ BEGIN
   VALUES (v_bob_seq, v_bank_card, 0)
   RETURNING id INTO v_bob_step;
 
-  -- En tant que Bob (free), tenter UPDATE → doit retourner 0 rows (USING filtre)
+  -- En tant que Bob (free), UPDATE → doit affecter 1 row
   PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 
   UPDATE sequence_steps SET position = 0 WHERE id = v_bob_step;
   GET DIAGNOSTICS v_count = ROW_COUNT;
-  IF v_count != 0 THEN
-    RAISE EXCEPTION 'TEST 29 FAILED: Free a pu modifier une sequence_step (% row(s) affectée(s))', v_count;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 29 FAILED: Free n''a pas pu modifier sa sequence_step (% row(s), attendu 1)', v_count;
   END IF;
 
   PERFORM _test_reset_role();
@@ -1190,13 +1176,12 @@ BEGIN
   -- Cleanup (CASCADE depuis séquence)
   DELETE FROM sequences WHERE id = v_bob_seq;
 
-  RAISE NOTICE '✅ TEST 29 PASS — Free bloqué en UPDATE sequence_steps';
+  RAISE NOTICE '✅ TEST 29 PASS — Free peut UPDATE sequence_steps (can_write_sequences() = TRUE)';
 END $$;
 
 
 -- ============================================================
--- TEST 30: Free bloqué en DELETE sequence_steps sur sa propre séquence
--- Phase 7.9: sequence_steps_delete_owner requiert can_write_sequences()
+-- TEST 30: Free peut DELETE sequence_steps (can_write_sequences() = TRUE depuis 20260408100000)
 -- ============================================================
 DO $$
 DECLARE
@@ -1216,13 +1201,13 @@ BEGIN
   VALUES (v_bob_seq, v_bank_card, 0)
   RETURNING id INTO v_bob_step;
 
-  -- En tant que Bob (free), tenter DELETE → doit retourner 0 rows (USING filtre)
+  -- En tant que Bob (free), DELETE → doit affecter 1 row
   PERFORM _test_set_auth_uid('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 
   DELETE FROM sequence_steps WHERE id = v_bob_step;
   GET DIAGNOSTICS v_count = ROW_COUNT;
-  IF v_count != 0 THEN
-    RAISE EXCEPTION 'TEST 30 FAILED: Free a pu supprimer une sequence_step (% row(s) affectée(s))', v_count;
+  IF v_count != 1 THEN
+    RAISE EXCEPTION 'TEST 30 FAILED: Free n''a pas pu supprimer sa sequence_step (% row(s), attendu 1)', v_count;
   END IF;
 
   PERFORM _test_reset_role();
@@ -1230,7 +1215,7 @@ BEGIN
   -- Cleanup (CASCADE depuis séquence)
   DELETE FROM sequences WHERE id = v_bob_seq;
 
-  RAISE NOTICE '✅ TEST 30 PASS — Free bloqué en DELETE sequence_steps';
+  RAISE NOTICE '✅ TEST 30 PASS — Free peut DELETE sequence_steps (can_write_sequences() = TRUE)';
 END $$;
 
 

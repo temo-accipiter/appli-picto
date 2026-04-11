@@ -56,17 +56,20 @@ BEGIN
       'personal_images_select_owner',
       'personal_images_insert_owner',
       'personal_images_delete_owner',
+      'personal_images_avatars_select_owner',
+      'personal_images_avatars_insert_owner',
+      'personal_images_avatars_delete_owner',
       'bank_images_select_public',
       'bank_images_insert_admin',
       'bank_images_update_admin',
       'bank_images_delete_admin'
     );
 
-  IF v_count != 7 THEN
-    RAISE EXCEPTION 'TEST 3 FAILED: attendu 7 policies, trouvé % (Phase 8.2 manquante ou non appliquée)', v_count;
+  IF v_count != 10 THEN
+    RAISE EXCEPTION 'TEST 3 FAILED: attendu 10 policies, trouvé % (Phase 8 + avatars manquantes ou non appliquées)', v_count;
   END IF;
 
-  RAISE NOTICE '✅ TEST 3 PASS — 7 storage policies installées';
+  RAISE NOTICE '✅ TEST 3 PASS — 10 storage policies installées (cards + avatars + bank)';
 END $$;
 
 -- TEST 4-7 + 9-11: Storage policies details (STRICT)
@@ -89,12 +92,13 @@ BEGIN
     RAISE EXCEPTION 'TEST FAILED: aucune policy images détectée sur storage.objects';
   END IF;
 
-  -- TEST 4: Personal = 3 policies (pas d'UPDATE = immutabilité)
+  -- TEST 4: Personal = 6 policies (cards + avatars, pas d'UPDATE = immutabilité)
+  -- Mise à jour : +3 policies avatars ajoutées par 20260408110000_personal_images_avatars_rls.sql
   SELECT COUNT(*) INTO v_personal_count FROM pg_policies
   WHERE schemaname = 'storage' AND tablename = 'objects' AND policyname LIKE 'personal_images_%';
 
-  IF v_personal_count != 3 THEN
-    RAISE EXCEPTION 'TEST 4 FAILED: personal-images devrait avoir 3 policies, trouvé %', v_personal_count;
+  IF v_personal_count != 6 THEN
+    RAISE EXCEPTION 'TEST 4 FAILED: personal-images devrait avoir 6 policies (cards + avatars), trouvé %', v_personal_count;
   END IF;
 
   SELECT EXISTS (
@@ -107,7 +111,7 @@ BEGIN
     RAISE EXCEPTION 'TEST 4 FAILED: policy UPDATE trouvée pour personal-images';
   END IF;
 
-  RAISE NOTICE '✅ TEST 4 PASS — Personal-images: 3 policies (pas d''UPDATE = immutabilité)';
+  RAISE NOTICE '✅ TEST 4 PASS — Personal-images: 6 policies (cards + avatars, pas d''UPDATE = immutabilité)';
 
   -- TEST 5: Bank = 4 policies
   SELECT COUNT(*) INTO v_bank_count FROM pg_policies
