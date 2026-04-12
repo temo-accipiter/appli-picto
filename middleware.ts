@@ -43,9 +43,11 @@ export function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    '/profil/:path*',
-    '/edition/:path*',
-    '/abonnement/:path*',
-    '/admin/:path*',
+    // 🚧 VIGILE EN PAUSE POUR L'AUDIT UX
+    // Nous réactiverons ces routes quand @supabase/ssr sera installé
+    // '/profil/:path*',
+    // '/edition/:path*',
+    // '/abonnement/:path*',
+    // '/admin/:path*',
   ],
 }
