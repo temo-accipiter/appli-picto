@@ -1,21 +1,16 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-/**
- * Middleware Next.js pour la protection des routes authentifiées
- *
- * Routes protégées :
- * - /profil
- * - /edition
- * - /abonnement
- * - /admin/*
- */
-export function middleware(request: NextRequest) {
-  // Récupérer les cookies Supabase pour vérifier l'auth
+export function middleware(_request: NextRequest) {
+  // 🚧 KILL SWITCH : ON COUPE LE VIGILE POUR L'AUDIT UX
+  return NextResponse.next()
+
+  /*
+  --- TOUT CE CODE EST MIS EN COMMENTAIRE POUR ÉVITER L'ERREUR VERCEL ---
+  
   const supabaseAuthToken = request.cookies.get('sb-access-token')
   const supabaseRefreshToken = request.cookies.get('sb-refresh-token')
 
-  // Alternative: chercher dans les cookies avec le pattern sb-*-auth-token
   const allCookies = request.cookies.getAll()
   const hasSupabaseAuth = allCookies.some(
     cookie => cookie.name.includes('sb-') && cookie.name.includes('auth-token')
@@ -27,15 +22,12 @@ export function middleware(request: NextRequest) {
     hasSupabaseAuth
   )
 
-  // Si non authentifié, rediriger vers /login
   if (!isAuthenticated) {
     const loginUrl = new URL('/login', request.url)
-    // Stocker l'URL d'origine pour redirection après login
     loginUrl.searchParams.set('returnUrl', request.nextUrl.pathname)
     return NextResponse.redirect(loginUrl)
   }
-
-  return NextResponse.next()
+  */
 }
 
 /**
@@ -43,11 +35,9 @@ export function middleware(request: NextRequest) {
  */
 export const config = {
   matcher: [
-    // 🚧 VIGILE EN PAUSE POUR L'AUDIT UX
-    // Nous réactiverons ces routes quand @supabase/ssr sera installé
-    // '/profil/:path*',
-    // '/edition/:path*',
-    // '/abonnement/:path*',
-    // '/admin/:path*',
+    '/profil/:path*',
+    '/edition/:path*',
+    '/abonnement/:path*',
+    '/admin/:path*',
   ],
 }
