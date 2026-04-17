@@ -1,7 +1,7 @@
 ---
 paths:
-  - "src/**/*.{ts,tsx}"
-  - "next.config.*"
+  - 'src/**/*.{ts,tsx}'
+  - 'next.config.*'
 ---
 
 # Performance Optimization

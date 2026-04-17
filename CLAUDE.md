@@ -122,6 +122,7 @@ pnpm build && pnpm preview   # ou /verify-full
 **Statut** : éphémère, non-authoritatif.
 
 **Règles** :
+
 - Les sub-agents peuvent y écrire librement.
 - `docs/` reste la **seule source de vérité** pour l'architecture et les contrats.
 - Un apprentissage qui devient stable doit être **promu manuellement** vers `docs/` (ex : `docs/PLATFORM.md`).

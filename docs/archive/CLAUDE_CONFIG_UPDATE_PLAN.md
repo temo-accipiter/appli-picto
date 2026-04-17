@@ -12,6 +12,7 @@
 ### 0.1 État initial
 
 Déjà nettoyé par l'utilisateur :
+
 - ✅ `.claude/README.md` supprimé
 - ✅ `.claude/AGENTS_TEST_GUIDE.md` supprimé
 
@@ -39,6 +40,7 @@ Déjà nettoyé par l'utilisateur :
 ### 0.4 En cas de problème imprévu
 
 Si un script échoue, un fichier a un contenu inattendu, ou une modification casserait l'intégrité :
+
 - **NE PAS FORCER**. Arrête l'itération en cours.
 - Logue clairement ce qui a échoué et pourquoi.
 - Passe à l'itération suivante si elle est indépendante, sinon arrête et rapporte.
@@ -107,6 +109,7 @@ find .claude/agent-memory -name "*.md" -exec wc -l {} +
 ### 1.6 Rapport de fin d'itération 1
 
 Synthétise dans un rapport bref :
+
 - Nombre de fichiers par dossier `.claude/`
 - Rules ayant déjà un frontmatter `paths:` (si aucun, c'est normal, itération 3 va les ajouter)
 - Skills ≥ 200 lignes (candidats à progressive disclosure en itération 5)
@@ -131,6 +134,7 @@ test -f playwright-config.json && echo "ATTENTION playwright-config.json existe 
 ```
 
 **Action** :
+
 - Si un autre `playwright.config.*` existe déjà à la racine : lire les deux, fusionner si nécessaire ou choisir de supprimer la copie `.claude/playwright-config.json`. Logger clairement la décision prise.
 - Sinon : `git mv .claude/playwright-config.json ./playwright-config.json`
 
@@ -143,6 +147,7 @@ find .claude/playwright-screenshots -type f -mtime -7 2>/dev/null | head
 ```
 
 **Action** :
+
 - Si des fichiers ont été modifiés récemment (< 7 jours) : arrêter, logger, passer à 2.3 sans supprimer
 - Sinon : `rm -rf .claude/playwright-screenshots/`
 
@@ -185,64 +190,71 @@ grep -q "^\.claude/settings\.local\.json$" .gitignore && echo "OK settings.local
 Pour chaque fichier, appliquer le frontmatter indiqué :
 
 **`.claude/rules/app-router.md`**
+
 ```yaml
 ---
 paths:
-  - "src/app/**/*.{ts,tsx}"
-  - "middleware.ts"
+  - 'src/app/**/*.{ts,tsx}'
+  - 'middleware.ts'
 ---
 ```
 
 **`.claude/rules/components.md`**
+
 ```yaml
 ---
 paths:
-  - "src/components/**/*.{ts,tsx,scss}"
-  - "src/page-components/**/*.{ts,tsx,scss}"
+  - 'src/components/**/*.{ts,tsx,scss}'
+  - 'src/page-components/**/*.{ts,tsx,scss}'
 ---
 ```
 
 **`.claude/rules/migrations.md`**
+
 ```yaml
 ---
 paths:
-  - "supabase/migrations/**/*.sql"
-  - "supabase/schema.sql"
+  - 'supabase/migrations/**/*.sql'
+  - 'supabase/schema.sql'
 ---
 ```
 
 **`.claude/rules/performance.md`**
+
 ```yaml
 ---
 paths:
-  - "src/**/*.{ts,tsx}"
-  - "next.config.*"
+  - 'src/**/*.{ts,tsx}'
+  - 'next.config.*'
 ---
 ```
 
 **`.claude/rules/security.md`**
+
 ```yaml
 ---
 paths:
-  - "supabase/migrations/**/*.sql"
-  - "src/hooks/**/*.ts"
-  - "middleware.ts"
-  - "supabase/functions/**/*.ts"
+  - 'supabase/migrations/**/*.sql'
+  - 'src/hooks/**/*.ts'
+  - 'middleware.ts'
+  - 'supabase/functions/**/*.ts'
 ---
 ```
 
 **`.claude/rules/supabase-hooks.md`**
+
 ```yaml
 ---
 paths:
-  - "src/hooks/**/*.ts"
-  - "src/hooks/**/*.tsx"
+  - 'src/hooks/**/*.ts'
+  - 'src/hooks/**/*.tsx'
 ---
 ```
 
 ### 3.3 Procédure d'insertion
 
 Pour chaque fichier :
+
 1. Lire la première ligne
 2. Si la première ligne est `---` : frontmatter existant. Insérer `paths:` dans le bloc existant sans casser les autres clés
 3. Sinon : préfixer le fichier avec le bloc complet `---\npaths:\n  - ...\n---\n\n`
@@ -288,10 +300,12 @@ head -80 .claude/skills/db-first-frontend/SKILL.md
 ```
 
 **Action** :
+
 - Si `rules/supabase-hooks.md` contient des infos uniques (AbortController, patterns hooks custom spécifiques à Appli-Picto, isAbortLike, etc.) qui ne sont **pas** dans le skill : **préserver ces infos**. Ajouter juste une section "Voir aussi" en fin de fichier pointant vers le skill.
 - Si `rules/supabase-hooks.md` est redondant à 90%+ avec le skill : le réécrire comme résumé court (10-15 lignes) qui renvoie vers le skill, en préservant les patterns uniques Appli-Picto.
 
 **Structure cible si refactor complet** (sous le frontmatter déjà ajouté en itération 3) :
+
 ```markdown
 # Hooks Supabase — règles actives sur `src/hooks/`
 
@@ -319,8 +333,8 @@ head -40 .claude/agents/security-reviewer.md
 ```
 
 **Action** : Si `rules/security.md` ne référence pas l'agent, ajouter une section en fin :
-```markdown
 
+```markdown
 ## Pour un audit approfondi
 
 Pour une review sécurité complète sur un diff, invoquer `@security-reviewer`.
@@ -334,6 +348,7 @@ grep -r "typescript-patterns" .claude/ docs/ 2>/dev/null
 ```
 
 **Action** : Si `typescript-patterns` n'existe nulle part comme skill :
+
 - Supprimer ou reformuler la section "Reference" en fin de `agents/typescript-reviewer.md` qui y fait allusion
 - Remplacer par une référence aux vrais skills du projet : skill `db-first-frontend`, rule `app-router.md`
 
@@ -348,6 +363,7 @@ cat .claude/skills/tsa-ux-rules/SKILL.md
 ```
 
 **Action conditionnelle** :
+
 - **Si** les sections "♿ PRIORITÉ MENTALE TSA" et "📱 MOBILE-FIRST" de l'output-style contiennent des règles de domaine (≥ 0.3s, cibles tactiles 44px, etc.) également présentes dans `tsa-ux-rules` SKILL.md : **raccourcir** ces sections à 2-3 lignes qui renvoient au skill.
 - **Sinon** (les sections ne portent que des règles de ton/style de communication) : ne rien changer.
 
@@ -392,10 +408,12 @@ Pour chaque skill > 200 lignes :
    - `references/error-patterns.md`
    - `references/examples.md`
 4. Dans SKILL.md, ajouter une section en fin :
+
 ```markdown
 ## References
 
 Pour les détails approfondis :
+
 - `references/rationalization.md` — table des excuses et contre-arguments
 - `references/error-patterns.md` — patterns d'erreurs détaillés
 ```
@@ -423,6 +441,7 @@ Aucun contenu ne doit être perdu. Si une vérification échoue, rollback imméd
 ### 6.1 Ajouter la gouvernance dans `CLAUDE.md` racine
 
 Vérifier d'abord la taille :
+
 ```bash
 wc -l CLAUDE.md
 ```
@@ -437,6 +456,7 @@ Ajouter la section suivante à la fin de `CLAUDE.md`, **AVANT** la ligne `**Mise
 **Statut** : éphémère, non-authoritatif.
 
 **Règles** :
+
 - Les sub-agents peuvent y écrire librement.
 - `docs/` reste la **seule source de vérité** pour l'architecture et les contrats.
 - Un apprentissage qui devient stable doit être **promu manuellement** vers `docs/` (ex : `docs/PLATFORM.md`).
@@ -446,6 +466,7 @@ Ajouter la section suivante à la fin de `CLAUDE.md`, **AVANT** la ligne `**Mise
 Mettre à jour la ligne `**Mise à jour** : AAAA-MM-JJ` avec la date du jour.
 
 **Contrainte** : après ajout, `wc -l CLAUDE.md` doit rester ≤ 200.
+
 - Si dépassement : extraire la nouvelle section dans `.claude/rules/agent-memory-governance.md` avec un frontmatter vide `paths: []` (chargement inconditionnel) et remplacer dans CLAUDE.md par un import : `Voir @.claude/rules/agent-memory-governance.md`.
 
 ### 6.2 Disclaimer sur `admin-architecture.md` (Option A choisie)
@@ -522,19 +543,20 @@ Contenu :
 Documentation humaine de la structure `.claude/` du projet. Claude Code n'a pas besoin de lire ce fichier — il est destiné aux développeurs qui veulent comprendre ou modifier la config.
 
 ## Structure
-
 ```
-CLAUDE.md                     # Racine projet (règles transverses critiques)
+
+CLAUDE.md # Racine projet (règles transverses critiques)
 .claude/
-├── agent-memory/             # Notes d'exploration des sub-agents (éphémère)
-├── agents/                   # Sub-agents personnalisés (invoqués par @nom)
-├── commands/                 # Commandes custom (/nom)
-├── output-styles/            # Styles de réponse (ton, format, persona)
-├── rules/                    # Règles auto-chargées par glob de fichiers
-├── scripts/                  # Scripts shell référencés par les hooks
-├── skills/                   # Expertise de domaine chargée à la demande
-├── settings.json             # Config projet (versionné)
-└── settings.local.json       # Config perso (gitignored)
+├── agent-memory/ # Notes d'exploration des sub-agents (éphémère)
+├── agents/ # Sub-agents personnalisés (invoqués par @nom)
+├── commands/ # Commandes custom (/nom)
+├── output-styles/ # Styles de réponse (ton, format, persona)
+├── rules/ # Règles auto-chargées par glob de fichiers
+├── scripts/ # Scripts shell référencés par les hooks
+├── skills/ # Expertise de domaine chargée à la demande
+├── settings.json # Config projet (versionné)
+└── settings.local.json # Config perso (gitignored)
+
 ```
 
 ## Différences conceptuelles
@@ -591,15 +613,15 @@ test -f docs/CLAUDE_CODE_SETUP.md && echo "OK doc humaine créée"
 
 ## Ordre d'exécution final
 
-| Itération | Commit | Risque | Rollback |
-|-----------|--------|--------|----------|
-| 1 | (aucun, read-only) | Nul | N/A |
-| 2 | `iter 2 - move playwright ...` | Faible | `git revert` |
-| 3 | `iter 3 - add paths: frontmatter ...` | Faible | `git revert` |
-| 4 | `iter 4 - add cross-references ...` | Moyen | `git revert` |
-| 5 | `iter 5 - progressive disclosure ...` (conditionnel) | Moyen | `git revert` |
-| 6 | `iter 6 - agent-memory governance ...` | Faible | `git revert` |
-| 7 | `iter 7 - post-migration verification ...` | Nul | `git revert` |
+| Itération | Commit                                               | Risque | Rollback     |
+| --------- | ---------------------------------------------------- | ------ | ------------ |
+| 1         | (aucun, read-only)                                   | Nul    | N/A          |
+| 2         | `iter 2 - move playwright ...`                       | Faible | `git revert` |
+| 3         | `iter 3 - add paths: frontmatter ...`                | Faible | `git revert` |
+| 4         | `iter 4 - add cross-references ...`                  | Moyen  | `git revert` |
+| 5         | `iter 5 - progressive disclosure ...` (conditionnel) | Moyen  | `git revert` |
+| 6         | `iter 6 - agent-memory governance ...`               | Faible | `git revert` |
+| 7         | `iter 7 - post-migration verification ...`           | Nul    | `git revert` |
 
 ## Ce qui NE DOIT PAS être modifié
 
@@ -619,6 +641,7 @@ test -f docs/CLAUDE_CODE_SETUP.md && echo "OK doc humaine créée"
 ## Rapport final attendu
 
 À la fin des 7 itérations, produire un rapport résumant :
+
 - Fichiers déplacés / supprimés / modifiés (par itération)
 - Rules ayant reçu un frontmatter `paths:` (liste)
 - Skills fractionnés (s'il y en a)

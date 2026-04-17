@@ -1,7 +1,7 @@
 ---
 paths:
-  - "src/app/**/*.{ts,tsx}"
-  - "middleware.ts"
+  - 'src/app/**/*.{ts,tsx}'
+  - 'middleware.ts'
 ---
 
 # Règles Next.js App Router — Appli-Picto

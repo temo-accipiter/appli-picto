@@ -118,6 +118,7 @@ jest --ci                           # Tests (Jest)
 ## Référence — Skills et règles du projet
 
 Pour les conventions TypeScript et l'architecture spécifique à Appli-Picto :
+
 - Skill `db-first-frontend` — règles hooks Supabase, patterns AbortController, interdiction des queries directes
 - Rule `app-router.md` — conventions Next.js App Router, Server vs Client Components
 - Rule `supabase-hooks.md` — patterns READ/CRUD/Visitor pour les hooks custom
