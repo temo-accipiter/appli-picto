@@ -27,7 +27,7 @@
   margin: spacing('64') auto;
   padding: spacing('xl');
   background-color: surface('bg');
-  border-radius: radius('rounded-24px');
+  border-radius: radius('2xl');
   box-shadow: shadow('elevation-sm');
   font-family: sans-serif;
 
@@ -133,7 +133,7 @@
   align-items: center;
   gap: spacing('sm');
   padding: spacing('sm') spacing('sm');
-  border-radius: radius('rounded-10px');
+  border-radius: radius('md');
   border: border-width('thin') dashed transparent;
   outline: none;
 }
@@ -200,7 +200,7 @@
   margin: spacing('sm') 0 0;
   background: transparent;
   border: border-width('thin') solid surface('border');
-  border-radius: radius('rounded-10px');
+  border-radius: radius('md');
   padding: spacing('sm') spacing('md');
   width: 100%;
   text-align: left;

@@ -53,7 +53,7 @@
 .delete-guard__error {
   margin: spacing('4') 0 0;
   padding: spacing('sm') spacing('sm');
-  border-radius: radius('rounded-10px');
+  border-radius: radius('md');
   background: semantic('error', 'bg');
   border: border-width('thin') solid semantic('error', 'border');
   color: semantic('error', 'dark');

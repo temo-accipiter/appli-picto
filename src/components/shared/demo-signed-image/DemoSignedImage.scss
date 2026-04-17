@@ -89,12 +89,12 @@
 
 // [Mobile-first] Base = mobile
 .demo-signed-image {
-  border-radius: radius('rounded-6px');
+  border-radius: radius('sm');
 }
 
 .demo-image-loading,
 .demo-image-error {
-  border-radius: radius('rounded-6px');
+  border-radius: radius('sm');
 }
 
 /* Desktop (576px+) */

@@ -47,7 +47,7 @@ $ENABLE_LEGACY_SUPPORT: true !default;
 ///   border-radius: radius('md');         // 12px (primitive)
 ///
 ///   // Phase 5 (legacy - fallback automatique)
-///   border-radius: radius('rounded-8px'); // 8px (legacy, encore supporté)
+///   border-radius: radius('rounded-12px'); // 12px (legacy, encore supporté)
 @function radius($key) {
   // 1. Priorité : Semantics (Phase 6 - noms métier auto-documentés)
   @if map.has-key(sem.$radius-semantic, $key) {

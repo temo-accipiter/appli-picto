@@ -72,7 +72,7 @@
     background: semantic('info', 'bg');
     color: semantic('info', 'dark');
     padding: spacing('8') spacing('12');
-    border-radius: radius('rounded-10px');
+    border-radius: radius('md');
     font-weight: font-weight('semibold');
     cursor: pointer;
     @include safe-transition(background, timing('fast'), easing('smooth'));
