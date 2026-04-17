@@ -4,6 +4,8 @@ description: Découverte complète du système admin avec routes, guards, RLS, h
 type: reference
 ---
 
+> ⚠️ **Non-authoritaire** — Ce fichier est une exploration générée par `@explore-codebase`. Pour la source de vérité sur l'architecture admin, consulter `docs/PLATFORM.md` et `docs/FRONTEND_CONTRACT.md`. Ce fichier peut diverger de la réalité au fil du temps.
+
 # Architecture Admin — Appli-Picto S12
 
 ## Routes Admin (Next.js App Router)

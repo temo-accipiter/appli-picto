@@ -115,4 +115,18 @@ pnpm build && pnpm preview   # ou /verify-full
 
 ---
 
-**Mise à jour** : 2026-04-02
+## 🧠 Gouvernance agent-memory
+
+`.claude/agent-memory/` contient des notes d'exploration des sub-agents (`explore-codebase`, `typescript-reviewer`).
+
+**Statut** : éphémère, non-authoritatif.
+
+**Règles** :
+- Les sub-agents peuvent y écrire librement.
+- `docs/` reste la **seule source de vérité** pour l'architecture et les contrats.
+- Un apprentissage qui devient stable doit être **promu manuellement** vers `docs/` (ex : `docs/PLATFORM.md`).
+- `agent-memory/` peut être nettoyé à tout moment sans perte critique.
+
+---
+
+**Mise à jour** : 2026-04-17
