@@ -1,7 +1,7 @@
 ---
 paths:
-  - 'src/components/**/*'
-  - 'src/app/**/*'
+  - "src/hooks/**/*.ts"
+  - "src/hooks/**/*.tsx"
 ---
 
 # Règles Utilisation Hooks Supabase — Appli-Picto

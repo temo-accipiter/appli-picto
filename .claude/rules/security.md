@@ -1,6 +1,9 @@
 ---
 paths:
-  - 'src/**/*'
+  - "supabase/migrations/**/*.sql"
+  - "src/hooks/**/*.ts"
+  - "middleware.ts"
+  - "supabase/functions/**/*.ts"
 ---
 
 # Security Guidelines

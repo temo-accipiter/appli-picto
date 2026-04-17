@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'supabase/migrations/**/*.sql'
+  - "supabase/migrations/**/*.sql"
+  - "supabase/schema.sql"
 ---
 
 # Règles Migrations Supabase — Appli-Picto

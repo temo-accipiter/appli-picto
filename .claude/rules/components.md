@@ -1,7 +1,7 @@
 ---
 paths:
-  - 'src/components/**/*.tsx'
-  - 'src/components/**/*.scss'
+  - "src/components/**/*.{ts,tsx,scss}"
+  - "src/page-components/**/*.{ts,tsx,scss}"
 ---
 
 # Règles Composants UI — Appli-Picto
