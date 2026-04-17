@@ -320,18 +320,6 @@ $ENABLE_LEGACY_SUPPORT: true !default;
   }
 }
 
-/// Récupère une couleur admin UI (depuis _tokens.scss)
-/// @param {String} $key - Clé de la couleur (primary, secondary, success, danger, etc.)
-/// @return {Color} La couleur demandée
-@function admin-ui($key) {
-  // ✅ Lit depuis $admin-ui-color-tokens (canonical)
-  @if map.has-key($admin-ui-color-tokens, $key) {
-    @return map.get($admin-ui-color-tokens, $key);
-  }
-
-  @error "Admin UI color '#{$key}' not found (source: _tokens.scss)";
-}
-
 /// Récupère une couleur warning state (depuis _tokens.scss)
 /// @param {String} $key - Clé de la couleur (warning, error, warning-bg, etc.)
 /// @return {Color} La couleur demandée

@@ -450,45 +450,6 @@ $surface-color-tokens: (
 );
 
 // =============================================================================
-// ADMIN UI COLOR TOKENS - Interface admin spécifique
-// =============================================================================
-
-/// Couleurs dédiées interface admin
-$admin-ui-color-tokens: (
-  primary: #007bff,
-  // Bleu Bootstrap primary
-  primary-hover: #0056b3,
-  // Hover primary
-  secondary: #6c757d,
-  // Gris Bootstrap secondary
-  secondary-hover: #545b62,
-  // Hover secondary
-  success: #28a745,
-  // Vert Bootstrap success
-  success-hover: #1e7e34,
-  // Hover success
-  danger: #dc3545,
-  // Rouge Bootstrap danger
-  danger-hover: #c82333,
-  // Hover danger
-  info: #2563eb,
-  // Bleu info moderne
-  info-light: rgba(37, 99, 235, 0.05),
-  // Background info léger
-  item-bg: rgba(37, 99, 235, 0.05),
-  // Background item
-  item-alt: rgba(75, 85, 99, 0.05),
-  // Background alternance
-  success-bg: rgba(40, 167, 69, 0.1),
-  // Background success light
-  success-border: rgba(40, 167, 69, 0.3),
-  // Bordure success
-  danger-bg: rgba(220, 53, 69, 0.1),
-  // Background danger light
-  danger-border: rgba(220, 53, 69, 0.3), // Bordure danger
-);
-
-// =============================================================================
 // WARNING STATE COLOR TOKENS - États d'avertissement
 // =============================================================================
 
@@ -1000,22 +961,7 @@ $font-size-tokens: (
   // 30px
   '4xl': 2.25rem,
   // 36px
-  '5xl': 3rem,
-
-  // 48px
-  // === Deprecated legacy values (backward compat only) ===
-  // DO NOT USE - these are OLD fragmentary values from pre-Option-B era
-  '0-75': 0.75rem,
-  // 12px - DEPRECATED, use 'xs'
-  '0-875': 0.875rem,
-  // 14px - DEPRECATED, use 'sm'
-  '0-9': 0.9rem,
-  // 14.4px - DEPRECATED, NOT in Option B
-  '0-95': 0.95rem,
-  // 15.2px - DEPRECATED, NOT in Option B
-  '1-125': 1.125rem,
-  // 18px - DEPRECATED, use 'lg'
-  '1-5': 1.5rem, // 24px - DEPRECATED, use '2xl'
+  '5xl': 3rem, // 48px
 );
 
 // =============================================================================
@@ -1358,120 +1304,6 @@ $container-query-tokens: (
 ///   - Dimensions de composants (modals, sidebars, cards)
 ///   - Touch targets (accessibilité WCAG/TSA)
 ///
-/// ❌ NE PAS UTILISER size() POUR :
-///   - margin, padding → spacing()
-///   - gap, row-gap, column-gap → spacing()
-///
-/// Usage:
-///   - Via fonction: min-height: size('touch-target-min');
-///   - Direct: width: map.get($size-tokens, 'modal-width-md'); (déconseillé)
-$size-tokens: (
-  // === Touch targets (WCAG AA / TSA) ===
-  'touch-target-min': 44px,
-  // Minimum WCAG AA (44×44px)
-  'touch-target-preferred': 48px,
-
-  // Confortable TSA (48×48px)
-  // === Icons ===
-  'icon-xs': 16px,
-  // Petit icône (checkbox variant sm)
-  'icon-sm': 20px,
-  // Icône compact (checkbox base mobile)
-  'icon-md': 24px,
-  // Icône standard (checkbox base desktop)
-  'icon-lg': 28px,
-  // Grand icône (checkbox variant lg)
-  'icon-xl': 32px,
-  // Très grand icône
-  'icon-2xl': 40px,
-
-  // Extra large
-  // === Inputs & Forms ===
-  'input-height-sm': 36px,
-  // Input compact
-  'input-height-base': 44px,
-  // Input standard (WCAG AA)
-  'input-height-lg': 52px,
-  // Input large (TSA confortable)
-  'input-max-width': 320px,
-  // Inputs courts (emails, phone)
-  'input-full-width': 100%,
-
-  // Inputs longs (textarea, description)
-  // === Modals ===
-  'modal-width-sm': 360px,
-  // Modal compact (confirmations)
-  'modal-width-md': 540px,
-  // Modal standard
-  'modal-width-lg': 720px,
-  // Modal large (forms complexes)
-  'modal-width-xl': 960px,
-  // Modal extra large
-  'modal-min-height': 200px,
-
-  // Hauteur minimale
-  // === Sidebars & Navigation ===
-  'sidebar-width': 280px,
-  // Sidebar ouverte
-  'sidebar-collapsed': 64px,
-  // Sidebar réduite (icons only)
-  'navbar-height': 64px,
-  // Barre de navigation
-  'navbar-height-mobile': 56px,
-
-  // Navbar mobile
-  // === Cards & Containers ===
-  'card-min-height': 120px,
-  // Card minimale
-  'card-max-width': 400px,
-
-  // Card standard
-  // === Legacy numeric (migration Phase 5 → Phase 6) ===
-  // TODO Phase 6: Migrer tous usages vers tokens sémantiques ci-dessus
-  '2': 0.125rem,
-  // 2px - Temporaire (petits éléments UI)
-  '4': 0.25rem,
-  // 4px - Temporaire (handle bars, séparateurs)
-  '8': 0.5rem,
-  // 8px - Temporaire (scrollbars, petits espacements structurels)
-  '16': 1rem,
-  // 16px - Temporaire
-  '20': 1.25rem,
-  // 20px - Temporaire
-  '24': 1.5rem,
-  // 24px - Temporaire
-  '28': 1.75rem,
-  // 28px - Temporaire
-  '32': 2rem,
-  // 32px - Temporaire (offsets structurels)
-  '44': 2.75rem,
-  // 44px - Temporaire (→ 'touch-target-min')
-  '64': 4rem,
-  // 64px - Temporaire (offsets structurels)
-  '100': 6.25rem,
-  // 100px - Temporaire (grilles, cards)
-  '150': 9.375rem,
-  // 150px - Temporaire (min-width filtres)
-  '160': 10rem,
-  // 160px - Temporaire (TimeTimer compact)
-  '180': 11.25rem,
-  // 180px - Temporaire (grilles récompenses)
-  '200': 12.5rem,
-  // 200px - Temporaire
-  '260': 16.25rem,
-  // 260px - Temporaire (grilles édition)
-  '280': 17.5rem,
-  // 280px - Temporaire (TimeTimer, sidebar)
-  '300': 18.75rem,
-  // 300px - Temporaire (TimeTimer compact)
-  '500': 31.25rem,
-  // 500px - Temporaire (modals)
-  '540': 33.75rem,
-  // 540px - Temporaire (→ 'modal-width-md')
-  '600': 37.5rem,
-  // 600px - Temporaire (TimeTimer full)
-  '800': 50rem // 800px - Temporaire (CookiePreferences, containers)
-) !default;
 
 // =============================================================================
 // FUNCTIONS - Accesseurs pour tokens
