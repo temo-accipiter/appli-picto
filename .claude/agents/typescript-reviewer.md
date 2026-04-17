@@ -115,9 +115,12 @@ jest --ci                           # Tests (Jest)
 - **Warning**: MEDIUM issues only (can merge with caution)
 - **Block**: CRITICAL or HIGH issues found
 
-## Reference
+## Référence — Skills et règles du projet
 
-This repo does not yet ship a dedicated `typescript-patterns` skill. For detailed TypeScript and JavaScript patterns, use `coding-standards` plus `frontend-patterns` or `backend-patterns` based on the code being reviewed.
+Pour les conventions TypeScript et l'architecture spécifique à Appli-Picto :
+- Skill `db-first-frontend` — règles hooks Supabase, patterns AbortController, interdiction des queries directes
+- Rule `app-router.md` — conventions Next.js App Router, Server vs Client Components
+- Rule `supabase-hooks.md` — patterns READ/CRUD/Visitor pour les hooks custom
 
 ---
 

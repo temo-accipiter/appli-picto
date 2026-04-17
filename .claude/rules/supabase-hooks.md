@@ -124,3 +124,8 @@ import { useAuth } from '@/hooks/auth/useAuth'
 ```
 
 Tous les hooks sont exportés dans `src/hooks/index.ts`
+
+## Voir aussi
+
+Pour les règles DB-first complètes (Iron Law, Red Flags, AbortController, patterns réseau) :
+→ Skill `db-first-frontend` (`.claude/skills/db-first-frontend/SKILL.md`)
