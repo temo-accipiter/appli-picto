@@ -33,6 +33,8 @@
 
     // === SEMANTIC COLORS ===
     --color-success: #{green(400)}; // Succès vert clair
+    --color-success-hover: #{green(500)}; // Succès hover (plus vif)
+    --color-success-subtle: #{green(900)}; // Succès subtle (très sombre)
     --color-warning: #{orange(400)}; // Alerte orange clair
     --color-error: #{red(400)}; // Erreur rouge clair
     --color-info: #{blue(400)}; // Info bleu clair
@@ -70,6 +72,8 @@
 
   // === SEMANTIC COLORS ===
   --color-success: #{green(400)};
+  --color-success-hover: #{green(500)};
+  --color-success-subtle: #{green(900)};
   --color-warning: #{orange(400)};
   --color-error: #{red(400)};
   --color-info: #{blue(400)};

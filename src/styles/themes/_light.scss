@@ -30,7 +30,9 @@
   --color-bg-hover: #{gray(200)}; // Hover background
 
   // === SEMANTIC COLORS ===
-  --color-success: #{green(500)}; // Succès vert
+  --color-success: #{green(600)}; // Succès vert (plus mature)
+  --color-success-hover: #{green(700)}; // Succès hover (plus foncé)
+  --color-success-subtle: #{green(100)}; // Succès subtle (très pâle)
   --color-warning: #{orange(500)}; // Alerte orange
   --color-error: #{red(500)}; // Erreur rouge
   --color-info: #{blue(500)}; // Info bleu
@@ -69,7 +71,9 @@
   --color-border: #{gray(300)};
   --color-bg-soft: #{gray(50)};
   --color-bg-hover: #{gray(200)};
-  --color-success: #{green(500)};
+  --color-success: #{green(600)};
+  --color-success-hover: #{green(700)};
+  --color-success-subtle: #{green(100)};
   --color-warning: #{orange(500)};
   --color-error: #{red(500)};
   --color-info: #{blue(500)};
