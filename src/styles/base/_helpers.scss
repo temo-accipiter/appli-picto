@@ -9,7 +9,7 @@
     1200px
   ); // Fallback custom, pas un token design
   margin-inline: auto;
-  padding-inline: spacing('4');
+  padding-inline: spacing('xs');
 }
 
 /* Visually hidden (WCAG) */
@@ -49,7 +49,7 @@
     outline: a11y('focus-ring-width-enhanced') solid var(--focus-ring-color);
     outline-offset: a11y('focus-ring-offset');
     border-radius: radius('sm');
-    box-shadow: 0 0 0 spacing('4')
+    box-shadow: 0 0 0 spacing('xs')
       color-mix(in srgb, var(--focus-ring-color) 12%, transparent);
   }
 }
@@ -74,7 +74,7 @@
 .u-stack {
   display: flex;
   flex-direction: column;
-  gap: spacing('4');
+  gap: spacing('xs');
 }
 .u-row {
   display: flex;

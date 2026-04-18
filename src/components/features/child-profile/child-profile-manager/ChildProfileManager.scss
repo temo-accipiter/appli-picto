@@ -6,7 +6,7 @@
 
 .child-profile-manager {
   &__empty {
-    padding: spacing('4');
+    padding: spacing('xs');
     text-align: center;
     font-size: font-size('sm');
     color: text('secondary');
@@ -30,7 +30,7 @@
     align-items: center;
     justify-content: space-between;
     gap: spacing('3');
-    padding: spacing('3') spacing('4');
+    padding: spacing('3') spacing('xs');
     background: surface('card');
     border-radius: radius('md');
     border: border-width('thin') solid surface('border');

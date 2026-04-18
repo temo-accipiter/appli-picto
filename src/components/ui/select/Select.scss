@@ -54,7 +54,7 @@
     min-height: size('touch-target-min'); // 44px WCAG AA
 
     // Spacing
-    padding: spacing('8') spacing('sm');
+    padding: spacing('sm') spacing('sm');
 
     // Apparence
     background-color: surface('bg');
@@ -285,7 +285,7 @@
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__error {
-    min-height: spacing('16');
+    min-height: spacing('md');
     font-size: font-size('sm');
     color: semantic('error');
     line-height: line-height('tight'); // 1.2

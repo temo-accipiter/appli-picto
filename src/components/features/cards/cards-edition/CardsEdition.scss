@@ -39,7 +39,7 @@
   .button-label {
     display: inline-flex;
     align-items: center;
-    gap: spacing('8');
+    gap: spacing('sm');
 
     .chevron {
       @include safe-transition(transform, timing('fast'), easing('smooth'));
@@ -165,7 +165,7 @@
 .liste-taches-edition__empty {
   width: 100%;
   min-height: spacing('100');
-  padding: spacing('32') spacing('16');
+  padding: spacing('xl') spacing('md');
   text-align: center;
   font-size: font-size('lg');
   font-style: italic;
@@ -174,7 +174,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: spacing('8');
+  gap: spacing('sm');
 
   span {
     font-size: font-size('4xl');

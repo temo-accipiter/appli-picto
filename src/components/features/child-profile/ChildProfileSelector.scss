@@ -212,7 +212,7 @@
     align-items: center;
     justify-content: center;
     min-height: size('touch-target-min');
-    padding: spacing('2') spacing('4');
+    padding: spacing('2') spacing('xs');
     border-radius: radius('md');
     font-size: font-size('sm');
     font-weight: font-weight('medium');
@@ -265,6 +265,6 @@
 
   .child-profile-card {
     min-width: size('80');
-    padding: spacing('3') spacing('4');
+    padding: spacing('3') spacing('xs');
   }
 }

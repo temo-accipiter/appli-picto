@@ -47,7 +47,7 @@
   position: relative;
   display: block;
   width: a11y('min-touch-target');
-  height: spacing('24');
+  height: spacing('lg');
   background: var(--color-surface-secondary);
   border: border-width('medium') solid var(--color-border-primary);
   border-radius: radius('full');
@@ -72,8 +72,8 @@
   position: absolute;
   top: spacing('2');
   left: spacing('2');
-  width: spacing('16');
-  height: spacing('16');
+  width: spacing('md');
+  height: spacing('md');
   background: white(); // Token couleur blanc pur (#ffffff)
   border-radius: radius('full');
   box-shadow: var(--shadow-sm);

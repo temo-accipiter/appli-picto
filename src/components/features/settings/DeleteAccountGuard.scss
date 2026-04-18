@@ -44,14 +44,14 @@
 }
 
 .delete-guard__intro {
-  margin: 0 0 spacing('4');
+  margin: 0 0 spacing('xs');
   font-size: font-size('sm');
   line-height: 1.4;
   color: text('muted');
 }
 
 .delete-guard__error {
-  margin: spacing('4') 0 0;
+  margin: spacing('xs') 0 0;
   padding: spacing('sm') spacing('sm');
   border-radius: radius('md');
   background: semantic('error', 'bg');
@@ -68,7 +68,7 @@
 
 /* Turnstile a une classe .cf-turnstile */
 .delete-guard .cf-turnstile {
-  margin-top: spacing('4');
+  margin-top: spacing('xs');
 }
 
 /* Focus visible bien lisible (AA) */

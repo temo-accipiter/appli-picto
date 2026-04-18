@@ -144,8 +144,8 @@
 
     input[type='checkbox'] {
       // ✅ Mobile : min 44px (WCAG touch target)
-      min-width: spacing('24');
-      min-height: spacing('24');
+      min-width: spacing('lg');
+      min-height: spacing('lg');
       cursor: pointer;
       margin-top: spacing('2');
 

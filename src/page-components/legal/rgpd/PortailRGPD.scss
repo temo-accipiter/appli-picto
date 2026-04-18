@@ -24,7 +24,7 @@
 .rgpd-portal {
   max-width: size('980');
   margin: 0 auto;
-  padding: spacing('24') spacing('20');
+  padding: spacing('lg') spacing('20');
 
   &__header {
     margin-bottom: spacing('10');
@@ -45,7 +45,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(size('260'), 1fr));
     gap: spacing('14');
-    margin-top: spacing('16');
+    margin-top: spacing('md');
   }
 }
 
@@ -54,11 +54,11 @@
   border: border-width('thin') solid surface('border');
   border-radius: radius('rounded-12px');
   box-shadow: shadow('elevation-sm');
-  padding: spacing('16');
+  padding: spacing('md');
 
   h2 {
     font-size: font-size('lg');
-    margin: 0 0 spacing('8');
+    margin: 0 0 spacing('sm');
   }
 
   p {
@@ -71,7 +71,7 @@
     border: none;
     background: semantic('info', 'bg');
     color: semantic('info', 'dark');
-    padding: spacing('8') spacing('12');
+    padding: spacing('sm') spacing('12');
     border-radius: radius('md');
     font-weight: font-weight('semibold');
     cursor: pointer;

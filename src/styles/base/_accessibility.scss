@@ -21,7 +21,7 @@
   outline: none;
   box-shadow:
     0 0 0 border-width('focus') var(--color-bg),
-    0 0 0 spacing('4') var(--focus-ring-color);
+    0 0 0 spacing('xs') var(--focus-ring-color);
 }
 
 /// Focus visible sur les inputs
@@ -40,7 +40,7 @@ a:focus-visible,
   outline: none;
   box-shadow:
     0 0 0 border-width('focus') var(--color-bg),
-    0 0 0 spacing('4') var(--focus-ring-color);
+    0 0 0 spacing('xs') var(--focus-ring-color);
 }
 
 /// Focus visible sur checkboxes et radios
@@ -148,7 +148,7 @@ body {
 a {
   text-decoration: underline;
   text-decoration-thickness: border-width('thin');
-  text-underline-offset: spacing('4');
+  text-underline-offset: spacing('xs');
 
   &:visited {
     color: var(--color-primary);
@@ -269,7 +269,7 @@ img:not([alt]),
 /// Labels must always be visible (never placeholder-only)
 label {
   display: block;
-  margin-bottom: spacing('4');
+  margin-bottom: spacing('xs');
   font-weight: font-weight('medium');
   color: var(--color-text);
 }
@@ -287,7 +287,7 @@ label[aria-required='true']::after {
 .error-message {
   color: var(--color-error);
   font-size: font-size('sm');
-  margin-top: spacing('4');
+  margin-top: spacing('xs');
   display: block;
 }
 

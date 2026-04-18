@@ -19,7 +19,7 @@
   gap: spacing('2');
 
   // ── Espacement ───────────────────────────────────────────────────────────
-  padding: spacing('2') spacing('4');
+  padding: spacing('2') spacing('xs');
   margin-bottom: spacing('2');
 
   // ── Couleurs : verrou permanent (plus sérieux que offline) ────────────────
@@ -40,7 +40,7 @@
 
   // ── Tablette et + : légèrement plus compact (sm = 768px+) ────────────────
   @include respond-to('sm') {
-    padding: spacing('2') spacing('4');
+    padding: spacing('2') spacing('xs');
     font-size: font-size('sm');
   }
 

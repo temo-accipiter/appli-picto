@@ -22,7 +22,7 @@
 .toast {
   // Position
   position: fixed;
-  bottom: spacing('24');
+  bottom: spacing('lg');
   left: 50%;
   transform: translateX(-50%);
   z-index: z-index('modal'); // Au-dessus de tout

@@ -137,7 +137,7 @@
 
   &__error {
     margin-block-start: spacing('xs'); // Propriété logique
-    margin-inline-start: calc(spacing('24') + spacing('sm')); // RTL-safe
+    margin-inline-start: calc(spacing('lg') + spacing('sm')); // RTL-safe
     font-size: font-size('sm');
     color: semantic('error');
   }

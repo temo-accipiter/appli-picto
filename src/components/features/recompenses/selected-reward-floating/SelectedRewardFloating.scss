@@ -31,8 +31,8 @@
 
 .selected-reward-floating {
   position: fixed;
-  bottom: spacing('32');
-  right: spacing('32');
+  bottom: spacing('xl');
+  right: spacing('xl');
   z-index: z-index('modal');
   pointer-events: none;
   opacity: opacity('0-95');

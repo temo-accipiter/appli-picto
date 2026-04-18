@@ -34,7 +34,7 @@
   backdrop-filter: blur(6px);
   box-shadow: shadow('elevation-lg');
   border-top: border-width('thin') solid surface('border');
-  padding: spacing('20') spacing('16');
+  padding: spacing('20') spacing('md');
 
   /* Motion sûre */
   @media (prefers-reduced-motion: reduce) {
@@ -73,7 +73,7 @@
     }
 
     p {
-      margin: 0 0 spacing('8') 0;
+      margin: 0 0 spacing('sm') 0;
 
       &:last-child {
         margin-bottom: 0;

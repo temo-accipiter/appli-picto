@@ -121,8 +121,8 @@
     flex-shrink: 1;
 
     /* [Mobile-first] Base = mobile */
-    width: spacing('32');
-    height: spacing('32');
+    width: spacing('xl');
+    height: spacing('xl');
   }
 
   input[type='checkbox'] {

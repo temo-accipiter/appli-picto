@@ -87,7 +87,7 @@
     top: spacing('sm'); // Positionné dans le padding du TimeTimer
     left: spacing('sm'); // Positionné dans le padding du TimeTimer
     display: flex;
-    gap: spacing('4'); // Espacement très réduit
+    gap: spacing('xs'); // Espacement très réduit
     z-index: z-index('modal'); // Au-dessus du contenu
   }
 

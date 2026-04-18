@@ -68,7 +68,7 @@
 
     .rail-line {
       stroke: semantic('info-primary');
-      stroke-width: spacing('8');
+      stroke-width: spacing('sm');
       fill: none;
       stroke-dasharray: spacing('14') spacing('14');
       animation: dash-rail timing('slowest') linear infinite;
@@ -127,7 +127,7 @@
         position: absolute;
         top: 100%;
         left: 50%;
-        transform: translateX(-50%) translateY(spacing('8'));
+        transform: translateX(-50%) translateY(spacing('sm'));
         font-weight: font-weight('semibold');
         color: text('default');
         text-align: center;

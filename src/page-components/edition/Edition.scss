@@ -133,7 +133,7 @@
 // Indicateurs de quotas d'images
 .quota-indicators {
   margin-bottom: spacing('12');
-  padding: spacing('8');
+  padding: spacing('sm');
   background: surface('soft');
   border-radius: radius('md');
   border: border-width('thin') solid surface('border');
@@ -142,7 +142,7 @@
 .button-label {
   display: inline-flex;
   align-items: center;
-  gap: spacing('8');
+  gap: spacing('sm');
 
   .button-icon {
     margin-right: spacing('3');
