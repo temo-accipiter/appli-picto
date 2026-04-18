@@ -34,6 +34,8 @@
   --color-warning: #{orange(500)}; // Alerte orange
   --color-error: #{red(500)}; // Erreur rouge
   --color-info: #{blue(500)}; // Info bleu
+  --color-info-hover: #{blue(600)}; // Info hover (plus foncé)
+  --color-info-subtle: #{blue(100)}; // Info subtle (très pâle)
 
   // === SCROLLBAR ===
   --c-scroll-thumb: #{gray(400)}; // Thumb scrollbar gris
@@ -71,6 +73,8 @@
   --color-warning: #{orange(500)};
   --color-error: #{red(500)};
   --color-info: #{blue(500)};
+  --color-info-hover: #{blue(600)};
+  --color-info-subtle: #{blue(100)};
   --c-scroll-thumb: #{gray(400)};
   --c-scroll-track: #{gray(100)};
   --focus-ring-color: #{blue(600)};
