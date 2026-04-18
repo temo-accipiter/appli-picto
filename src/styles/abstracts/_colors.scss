@@ -377,16 +377,16 @@ $ENABLE_LEGACY_SUPPORT: true !default;
   @error "TSA pastel '#{$key}' not found (source: _tokens.scss)";
 }
 
-/// Récupère une ombre/overlay (depuis _tokens.scss)
-/// @param {String} $key - Clé de l'ombre (black-light, primary-medium, etc.)
-/// @return {Color} La couleur d'ombre demandée
-@function shadow($key) {
-  // ✅ Lit depuis $shadow-color-tokens (canonical)
+/// Récupère une couleur d'ombre RGBA (depuis _tokens.scss)
+/// @param {String} $key - Clé de la couleur d'ombre (black-light, primary-medium, etc.)
+/// @return {Color} La couleur RGBA d'ombre demandée
+@function shadow-color($key) {
+  // ✅ Lit depuis $shadow-color-tokens (canonical - RGBA color values for overlays)
   @if map.has-key($shadow-color-tokens, $key) {
     @return map.get($shadow-color-tokens, $key);
   }
 
-  @error "Shadow '#{$key}' not found (source: _tokens.scss)";
+  @error "Shadow color '#{$key}' not found (source: _tokens.scss)";
 }
 
 /// Récupère une couleur de marque tierce (depuis _tokens.scss)

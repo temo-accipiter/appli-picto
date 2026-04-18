@@ -10,12 +10,12 @@
 
 Cette version corrige **4 erreurs structurelles** de la v1.0 détectées par `audit-styles-structure.md` et `audit-aliases-phase6.md`. Les erreurs résidaient dans le vocabulaire et non dans les décisions de direction elles-mêmes (couleurs, typo, densité).
 
-| # | Correction | Raison |
-|---|---|---|
-| 1 | Rondeurs : utilisation des aliases sémantiques composants (`button`, `card`, `modal`, `input`) au lieu de clés primitives (`md`, `lg`, `xl`) | v1 utilisait des clés primitives dont les valeurs diffèrent entre Phase 6 et legacy. Les aliases composants retournent les bonnes valeurs quelle que soit la couche. |
-| 2 | Espacements : utilisation des aliases existants (`card-padding`, `button-padding-*`, `section-gap`, etc.) au lieu d'aliases inventés (`inset-sm`, `stack-tight`, etc.) | v1 proposait de créer des tokens qui existaient déjà sous d'autres noms. Réutiliser l'existant évite la dette. |
-| 3 | Typography : clarification que l'on utilise le système legacy actuel, migration semantics reportée à T2-E | v1 supposait que les aliases typographiques sémantiques étaient fonctionnels. Ils sont définis mais orphelins (wrapper `font-size()` ne les lit pas). |
-| 4 | Shadows : blocage explicite de `shadow()` sur composants atomiques jusqu'à T1-B résolu | v1 recommandait `shadow()` sans savoir qu'il existait un conflit de nommage critique. Deux fonctions `shadow()` coexistent avec sémantiques incompatibles. |
+| #   | Correction                                                                                                                                                             | Raison                                                                                                                                                               |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Rondeurs : utilisation des aliases sémantiques composants (`button`, `card`, `modal`, `input`) au lieu de clés primitives (`md`, `lg`, `xl`)                           | v1 utilisait des clés primitives dont les valeurs diffèrent entre Phase 6 et legacy. Les aliases composants retournent les bonnes valeurs quelle que soit la couche. |
+| 2   | Espacements : utilisation des aliases existants (`card-padding`, `button-padding-*`, `section-gap`, etc.) au lieu d'aliases inventés (`inset-sm`, `stack-tight`, etc.) | v1 proposait de créer des tokens qui existaient déjà sous d'autres noms. Réutiliser l'existant évite la dette.                                                       |
+| 3   | Typography : clarification que l'on utilise le système legacy actuel, migration semantics reportée à T2-E                                                              | v1 supposait que les aliases typographiques sémantiques étaient fonctionnels. Ils sont définis mais orphelins (wrapper `font-size()` ne les lit pas).                |
+| 4   | Shadows : blocage explicite de `shadow()` sur composants atomiques jusqu'à T1-B résolu                                                                                 | v1 recommandait `shadow()` sans savoir qu'il existait un conflit de nommage critique. Deux fonctions `shadow()` coexistent avec sémantiques incompatibles.           |
 
 ---
 
@@ -24,6 +24,7 @@ Cette version corrige **4 erreurs structurelles** de la v1.0 détectées par `au
 Ce document n'est pas un moodboard, pas un guide de style exhaustif. C'est un **contrat de design** : chaque décision a été prise consciemment après challenge et argumentaire. Toute déviation future doit être documentée et justifiée, pas improvisée.
 
 **Positionnement produit retenu** :
+
 - App psycho-éducative pour enfants TSA + parents
 - Ton visuel cible : doux / chaleureux / réconfortant, mais tenu
 - Mobile-first, utilisable sur tablette et desktop
@@ -33,6 +34,7 @@ Ce document n'est pas un moodboard, pas un guide de style exhaustif. C'est un **
 **Principe directeur** : deux atmosphères distinctes pour les deux contextes (adulte / enfant), un système commun de tokens et règles pour les porter sans fragmentation.
 
 **Architecture système sous-jacente** :
+
 - Système à 3 couches : primitives (valeurs brutes) → semantics (aliases composants) → legacy tokens
 - Radius et Spacing : les 3 couches sont connectées (wrappers lisent semantics → primitives → legacy)
 - Typography et Motion : semantics orphelins (wrappers lisent uniquement legacy) — migration T2-E prévue
@@ -46,17 +48,17 @@ Ces règles conditionnent toute l'UX enfant. Elles sont structurantes pour la su
 
 ### A.1 — Composants gardés
 
-| Composant | Rôle | Décision |
-|---|---|---|
-| TrainProgressBar | Feedback visuel gamifié (locomotive + rail de métro) | Gardé, optionnel via paramètres adulte |
-| Progression textuelle | Feedback factuel "X sur N tâches" | Gardé mais traitement revu (taille, placement, couleur neutre) |
+| Composant             | Rôle                                                 | Décision                                                       |
+| --------------------- | ---------------------------------------------------- | -------------------------------------------------------------- |
+| TrainProgressBar      | Feedback visuel gamifié (locomotive + rail de métro) | Gardé, optionnel via paramètres adulte                         |
+| Progression textuelle | Feedback factuel "X sur N tâches"                    | Gardé mais traitement revu (taille, placement, couleur neutre) |
 
 ### A.2 — Composants supprimés ou déplacés
 
-| Élément | Décision |
-|---|---|
-| Dropdown "Ligne 1" (sélection ligne métro) | Déplacé dans Édition (réglage adulte) |
-| Avatar enfant en haut à droite | Supprimé du Tableau |
+| Élément                                                           | Décision                                       |
+| ----------------------------------------------------------------- | ---------------------------------------------- |
+| Dropdown "Ligne 1" (sélection ligne métro)                        | Déplacé dans Édition (réglage adulte)          |
+| Avatar enfant en haut à droite                                    | Supprimé du Tableau                            |
 | Menu système côté enfant (langue, thème, déconnexion, navigation) | Supprimé — ces options sont strictement adulte |
 
 ### A.3 — Sortie du contexte enfant
@@ -68,15 +70,18 @@ Implication DB : session lock côté enfant, à verrouiller par trigger (cohére
 ### A.4 — Modèle d'interaction des cartes
 
 **Carte mère (tâche principale)** validable par deux chemins :
+
 1. **Clic direct sur le rond de validation** sous la card
 2. **Cascade** : toutes les sous-cartes cochées → carte mère validée automatiquement
 
 **Sous-cartes (étapes)** :
+
 - Cochables **indépendamment**, décochables **librement**
 - Le décochage d'une sous-carte ne dé-valide **jamais** la carte mère (asymétrie intentionnelle)
 - Cachées par défaut, révélées via bouton "Voir les étapes" (décision produit assumée)
 
 **Validation carte mère** :
+
 - Irréversible pour l'enfant
 - Le parent peut tout réinitialiser via "Réinitialiser la session" côté Édition, avec confirmation
 
@@ -91,14 +96,14 @@ Implication DB : session lock côté enfant, à verrouiller par trigger (cohére
 
 ### A.6 — Règles TSA transverses
 
-| Contrainte | Valeur |
-|---|---|
-| Transitions | ≤ 200ms pour les interactions, ≤ 300ms pour les changements d'état |
-| Animations agressives (bounce, pulse fort) | Interdites |
-| Messages techniques côté enfant | Interdits |
-| Cibles tactiles Tableau | Minimum 56px, préféré 64px |
-| Focus clavier | Toujours visible, 2px `--color-primary` |
-| Contrastes texte | ≥ 4.5:1 (WCAG AA), viser 7:1 pour le texte principal |
+| Contrainte                                 | Valeur                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------ |
+| Transitions                                | ≤ 200ms pour les interactions, ≤ 300ms pour les changements d'état |
+| Animations agressives (bounce, pulse fort) | Interdites                                                         |
+| Messages techniques côté enfant            | Interdits                                                          |
+| Cibles tactiles Tableau                    | Minimum 56px, préféré 64px                                         |
+| Focus clavier                              | Toujours visible, 2px `--color-primary`                            |
+| Contrastes texte                           | ≥ 4.5:1 (WCAG AA), viser 7:1 pour le texte principal               |
 
 ---
 
@@ -109,55 +114,56 @@ Implication DB : session lock côté enfant, à verrouiller par trigger (cohére
 **7 rôles sémantiques**, plus un système parallèle de couleurs de rôles utilisateurs (non-fusionnable).
 
 Chaque rôle sémantique expose 3 variantes :
+
 - `base` : couleur principale (actions, emphase)
 - `hover` : variante sombrée (10-15% plus foncée)
 - `subtle` : variante très pâle (fonds, banners)
 
 ### B.2 — Les 7 rôles
 
-| Rôle | Light `base` | Dark `base` | Usage |
-|---|---|---|---|
-| **Primary** | `#0077C2` | `#4DABF7` | Actions principales, liens, brand |
-| **Success** | `#16A34A` | `#4ADE80` | Validation, carte validée, confirmation |
-| **Warning** | `#F59E0B` | `#FBBF24` | Alerte non-bloquante |
-| **Danger** | `#DC2626` | `#F87171` | Destruction irréversible **uniquement** |
-| **Info** | `#3B82F6` | `#60A5FA` | Message informatif neutre |
-| **Neutral** (texte) | `#334155` | `#E2E8F0` | Texte, bordures, surfaces |
-| **Accent** | `#FFB400` | `#FCD34D` | Récompense, train, célébration — **décoratif uniquement** |
+| Rôle                | Light `base` | Dark `base` | Usage                                                     |
+| ------------------- | ------------ | ----------- | --------------------------------------------------------- |
+| **Primary**         | `#0077C2`    | `#4DABF7`   | Actions principales, liens, brand                         |
+| **Success**         | `#16A34A`    | `#4ADE80`   | Validation, carte validée, confirmation                   |
+| **Warning**         | `#F59E0B`    | `#FBBF24`   | Alerte non-bloquante                                      |
+| **Danger**          | `#DC2626`    | `#F87171`   | Destruction irréversible **uniquement**                   |
+| **Info**            | `#3B82F6`    | `#60A5FA`   | Message informatif neutre                                 |
+| **Neutral** (texte) | `#334155`    | `#E2E8F0`   | Texte, bordures, surfaces                                 |
+| **Accent**          | `#FFB400`    | `#FCD34D`   | Récompense, train, célébration — **décoratif uniquement** |
 
 ### B.3 — Variables CSS cibles
 
 ```scss
 :root {
-  --color-primary: #0077C2;
-  --color-primary-hover: #005A94;
-  --color-primary-subtle: #E6F2FA;
+  --color-primary: #0077c2;
+  --color-primary-hover: #005a94;
+  --color-primary-subtle: #e6f2fa;
 
-  --color-success: #16A34A;
-  --color-success-hover: #14803D;
-  --color-success-subtle: #DCFCE7;
+  --color-success: #16a34a;
+  --color-success-hover: #14803d;
+  --color-success-subtle: #dcfce7;
 
-  --color-warning: #F59E0B;
-  --color-warning-hover: #D97706;
-  --color-warning-subtle: #FEF3C7;
+  --color-warning: #f59e0b;
+  --color-warning-hover: #d97706;
+  --color-warning-subtle: #fef3c7;
 
-  --color-danger: #DC2626;
-  --color-danger-hover: #B91C1C;
-  --color-danger-subtle: #FEE2E2;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-subtle: #fee2e2;
 
-  --color-info: #3B82F6;
-  --color-info-hover: #2563EB;
-  --color-info-subtle: #DBEAFE;
+  --color-info: #3b82f6;
+  --color-info-hover: #2563eb;
+  --color-info-subtle: #dbeafe;
 
-  --color-accent: #FFB400;
-  --color-accent-hover: #D97706;
-  --color-accent-subtle: #FEF3C7;
+  --color-accent: #ffb400;
+  --color-accent-hover: #d97706;
+  --color-accent-subtle: #fef3c7;
 
   --color-text: #334155;
-  --color-text-muted: #64748B;
-  --color-bg: #FFFFFF;
-  --color-surface: #F8FAFC;
-  --color-border: #E2E8F0;
+  --color-text-muted: #64748b;
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-border: #e2e8f0;
 }
 ```
 
@@ -174,13 +180,13 @@ Chaque rôle sémantique expose 3 variantes :
 
 Non-fusionnable avec la palette sémantique d'action. Identification dans UI adulte uniquement.
 
-| Rôle | Couleur |
-|---|---|
-| Admin | `#667EEA` (violet, immuable) |
-| Abonné | `#22C55E` (vert) |
-| Free | `#64748B` (slate) |
-| Visitor | `#EA580C` (orange) |
-| Staff | `#8B5CF6` (violet plus saturé) |
+| Rôle    | Couleur                        |
+| ------- | ------------------------------ |
+| Admin   | `#667EEA` (violet, immuable)   |
+| Abonné  | `#22C55E` (vert)               |
+| Free    | `#64748B` (slate)              |
+| Visitor | `#EA580C` (orange)             |
+| Staff   | `#8B5CF6` (violet plus saturé) |
 
 ### B.6 — État actuel CSS vars vs palette prescrite
 
@@ -197,6 +203,7 @@ Cette correction sera faite en T1-C, avant refactor Button. Pour l'instant les c
 **Atkinson Hyperlegible** (Google Fonts, self-hosted recommandé).
 
 Choix motivé :
+
 - Conçue pour lisibilité renforcée (TSA, dyslexie, basse vision)
 - Chaque lettre différenciable (pas de confusion I/l/1 ni O/0)
 - ~30KB pour 2 poids
@@ -207,6 +214,7 @@ Fallback : `font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemF
 ### C.2 — Système actuel et cible future
 
 **État actuel (v1.1)** :
+
 - Wrapper `font-size()` lit uniquement `$font-size-tokens` (legacy)
 - Échelle legacy disponible : `xs` (12px), `sm` (14px), `base` (16px), `lg` (18px), `xl` (20px), `2xl` (24px), `3xl` (30px), `4xl` (36px), `5xl` (48px)
 - Aliases sémantiques `$typography-semantic` définis mais **orphelins** (non lus par le wrapper)
@@ -217,14 +225,14 @@ Fallback : `font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemF
 
 ### C.3 — Échelle active pour refactor composants
 
-| Palier | Valeur legacy | Usage |
-|---|---|---|
-| `sm` | 14px | Labels secondaires, métadonnées |
-| `base` | 16px | Texte courant (par défaut) |
-| `lg` | 18px | Texte courant contexte enfant (Tableau) |
-| `xl` | 20px | Sous-titres, boutons importants |
-| `2xl` | 24px | Titres de sections |
-| `3xl` | 30px | Titres de page (rare) |
+| Palier | Valeur legacy | Usage                                   |
+| ------ | ------------- | --------------------------------------- |
+| `sm`   | 14px          | Labels secondaires, métadonnées         |
+| `base` | 16px          | Texte courant (par défaut)              |
+| `lg`   | 18px          | Texte courant contexte enfant (Tableau) |
+| `xl`   | 20px          | Sous-titres, boutons importants         |
+| `2xl`  | 24px          | Titres de sections                      |
+| `3xl`  | 30px          | Titres de page (rare)                   |
 
 Pour l'instant, **utiliser ces clés legacy via `font-size('base')`, `font-size('lg')`, etc.**
 
@@ -232,11 +240,11 @@ Tokens restants (`xs` 12px, `4xl` 36px, `5xl` 48px) : usage exceptionnel.
 
 ### C.4 — Poids actifs
 
-| Poids | Valeur | Usage |
-|---|---|---|
-| `regular` | 400 | Texte par défaut |
-| `semibold` | 600 | Labels importants, boutons, emphase UI |
-| `bold` | 700 | Titres principaux, emphase forte |
+| Poids      | Valeur | Usage                                  |
+| ---------- | ------ | -------------------------------------- |
+| `regular`  | 400    | Texte par défaut                       |
+| `semibold` | 600    | Labels importants, boutons, emphase UI |
+| `bold`     | 700    | Titres principaux, emphase forte       |
 
 Autres poids (`thin`, `light`, `medium`, `extrabold`, `black`) : **hors usage**.
 
@@ -261,52 +269,52 @@ Le système Phase 6 fournit des aliases sémantiques **directement lisibles** pa
 
 **Aliases composants existants** (source : `audit-aliases-phase6.md`) :
 
-| Alias | Valeur résolue | Usage canonique |
-|---|---|---|
-| `radius('button')` | 6px | Boutons (tous contextes adulte et enfant standard) |
-| `radius('input')` | 6px | Inputs, selects, textareas |
-| `radius('card')` | 12px | Cards statiques |
-| `radius('modal')` | 20px | Modales |
-| `radius('badge')` | 50% | Badges, pills |
-| `radius('avatar')` | 50% | Avatars circulaires |
+| Alias              | Valeur résolue | Usage canonique                                    |
+| ------------------ | -------------- | -------------------------------------------------- |
+| `radius('button')` | 6px            | Boutons (tous contextes adulte et enfant standard) |
+| `radius('input')`  | 6px            | Inputs, selects, textareas                         |
+| `radius('card')`   | 12px           | Cards statiques                                    |
+| `radius('modal')`  | 20px           | Modales                                            |
+| `radius('badge')`  | 50%            | Badges, pills                                      |
+| `radius('avatar')` | 50%            | Avatars circulaires                                |
 
 **Aliases génériques disponibles** si besoin d'une valeur hors alias composant :
 
-| Alias | Valeur résolue |
-|---|---|
-| `radius('subtle')` | 4px |
-| `radius('small')` | 6px |
-| `radius('medium')` | 12px |
-| `radius('large')` | 20px |
-| `radius('xlarge')` | 24px |
-| `radius('full')` | 50% |
+| Alias              | Valeur résolue |
+| ------------------ | -------------- |
+| `radius('subtle')` | 4px            |
+| `radius('small')`  | 6px            |
+| `radius('medium')` | 12px           |
+| `radius('large')`  | 20px           |
+| `radius('xlarge')` | 24px           |
+| `radius('full')`   | 50%            |
 
 ### D.3 — Rondeurs UI adulte / neutre
 
 Applique aux contextes : Login, Profil, Édition, Admin, RGPD, CGU, Abonnement.
 
-| Composant | Token | Valeur |
-|---|---|---|
-| Button | `radius('button')` | 6px |
-| Input, Select, Textarea | `radius('input')` | 6px |
-| Checkbox, Radio | `radius('subtle')` | 4px |
-| Card | `radius('card')` | 12px |
-| Modal | `radius('modal')` | 20px |
-| Tooltip | `radius('subtle')` | 4px |
-| Badge, Tag | `radius('badge')` | 50% |
-| Avatar | `radius('avatar')` | 50% |
+| Composant               | Token              | Valeur |
+| ----------------------- | ------------------ | ------ |
+| Button                  | `radius('button')` | 6px    |
+| Input, Select, Textarea | `radius('input')`  | 6px    |
+| Checkbox, Radio         | `radius('subtle')` | 4px    |
+| Card                    | `radius('card')`   | 12px   |
+| Modal                   | `radius('modal')`  | 20px   |
+| Tooltip                 | `radius('subtle')` | 4px    |
+| Badge, Tag              | `radius('badge')`  | 50%    |
+| Avatar                  | `radius('avatar')` | 50%    |
 
 ### D.4 — Rondeurs UI enfant (Tableau)
 
 Le contexte enfant demande des rondeurs plus généreuses. On utilise les aliases génériques car il n'existe pas d'aliases sémantiques "enfant-spécifiques".
 
-| Composant | Token | Valeur |
-|---|---|---|
-| Button (action enfant) | `radius('medium')` | 12px |
-| Rond de validation | `radius('full')` | 50% |
-| Card mère (tâche) | `radius('large')` | 20px |
-| Card sous-tâche | `radius('medium')` | 12px |
-| TrainProgressBar container | `radius('medium')` | 12px |
+| Composant                  | Token              | Valeur |
+| -------------------------- | ------------------ | ------ |
+| Button (action enfant)     | `radius('medium')` | 12px   |
+| Rond de validation         | `radius('full')`   | 50%    |
+| Card mère (tâche)          | `radius('large')`  | 20px   |
+| Card sous-tâche            | `radius('medium')` | 12px   |
+| TrainProgressBar container | `radius('medium')` | 12px   |
 
 ### D.5 — Règles transverses
 
@@ -327,68 +335,69 @@ Commit Phase 1.5 (c4eeb51) a nettoyé `$radius-tokens`. Mais `$radius-primitives
 
 ### E.1 — Densité par contexte
 
-| Contexte | Stack vertical | Padding card |
-|---|---|---|
-| Tableau enfant | `spacing('section-gap')` (48px) | `spacing('card-padding')` (24px) ou plus |
-| Édition adulte | `spacing('grid-gap')` (16px) | `spacing('card-padding')` (24px) |
-| Admin / dashboards | `spacing('nav-gap')` (8px) | `spacing('nav-padding')` (16px) |
-| Pages publiques | `spacing('grid-gap')` (16px) | `spacing('card-padding')` (24px) |
+| Contexte           | Stack vertical                  | Padding card                             |
+| ------------------ | ------------------------------- | ---------------------------------------- |
+| Tableau enfant     | `spacing('section-gap')` (48px) | `spacing('card-padding')` (24px) ou plus |
+| Édition adulte     | `spacing('grid-gap')` (16px)    | `spacing('card-padding')` (24px)         |
+| Admin / dashboards | `spacing('nav-gap')` (8px)      | `spacing('nav-padding')` (16px)          |
+| Pages publiques    | `spacing('grid-gap')` (16px)    | `spacing('card-padding')` (24px)         |
 
 ### E.2 — Aliases sémantiques composants (Phase 6)
 
 **Source** : `audit-aliases-phase6.md`. 12 aliases disponibles, grille 4px stricte respectée.
 
-| Alias | Valeur | Usage canonique |
-|---|---|---|
-| `spacing('card-padding')` | 24px | Padding interne cards |
-| `spacing('input-padding')` | 8px | Padding interne inputs |
-| `spacing('button-padding-x')` | 24px | Padding horizontal boutons |
-| `spacing('button-padding-y')` | 8px | Padding vertical boutons |
-| `spacing('modal-padding')` | 32px | Padding interne modales |
-| `spacing('nav-padding')` | 16px | Padding éléments navigation |
-| `spacing('nav-gap')` | 8px | Gap entre éléments navigation |
-| `spacing('container-padding')` | 24px | Padding containers layout |
-| `spacing('section-gap')` | 48px | Gap entre sections majeures |
-| `spacing('grid-gap')` | 16px | Gap grilles et listes |
-| `spacing('heading-gap')` | 24px | Gap entre titre et contenu |
+| Alias                          | Valeur | Usage canonique               |
+| ------------------------------ | ------ | ----------------------------- |
+| `spacing('card-padding')`      | 24px   | Padding interne cards         |
+| `spacing('input-padding')`     | 8px    | Padding interne inputs        |
+| `spacing('button-padding-x')`  | 24px   | Padding horizontal boutons    |
+| `spacing('button-padding-y')`  | 8px    | Padding vertical boutons      |
+| `spacing('modal-padding')`     | 32px   | Padding interne modales       |
+| `spacing('nav-padding')`       | 16px   | Padding éléments navigation   |
+| `spacing('nav-gap')`           | 8px    | Gap entre éléments navigation |
+| `spacing('container-padding')` | 24px   | Padding containers layout     |
+| `spacing('section-gap')`       | 48px   | Gap entre sections majeures   |
+| `spacing('grid-gap')`          | 16px   | Gap grilles et listes         |
+| `spacing('heading-gap')`       | 24px   | Gap entre titre et contenu    |
 
 ### E.3 — Rythme vertical (3 niveaux conceptuels)
 
 Les 3 rythmes verticaux conceptuels mappent sur les aliases Phase 6 existants :
 
-| Rythme conceptuel | Token Phase 6 | Valeur | Usage |
-|---|---|---|---|
-| Tight | `spacing('nav-gap')` | 8px | Éléments liés (label + input, icône + texte) |
-| Base | `spacing('grid-gap')` | 16px | Éléments d'un groupe (inputs d'un formulaire) |
-| Loose | `spacing('heading-gap')` | 24px | Entre titre et contenu, entre items d'une liste |
-| Very loose | `spacing('section-gap')` | 48px | Sections distinctes |
+| Rythme conceptuel | Token Phase 6            | Valeur | Usage                                           |
+| ----------------- | ------------------------ | ------ | ----------------------------------------------- |
+| Tight             | `spacing('nav-gap')`     | 8px    | Éléments liés (label + input, icône + texte)    |
+| Base              | `spacing('grid-gap')`    | 16px   | Éléments d'un groupe (inputs d'un formulaire)   |
+| Loose             | `spacing('heading-gap')` | 24px   | Entre titre et contenu, entre items d'une liste |
+| Very loose        | `spacing('section-gap')` | 48px   | Sections distinctes                             |
 
 ### E.4 — Philosophie responsive
 
 **Hybride par contexte** :
+
 - **Scale-up** (mobile agrandi) : Tableau enfant, pages publiques, Profil
 - **Adaptive** (structure différenciée) : Édition, Admin
 
 ### E.5 — Max-widths desktop
 
-| Contexte | Max-width desktop |
-|---|---|
-| Publique formulaire (Login, Abonnement) | 480px |
-| Publique lecture (RGPD, CGU, Mentions) | 720px |
-| Profil | 720px |
-| Édition | 1200px |
-| Admin (Logs, Metrics, Permissions) | 1400px |
-| Tableau enfant | 1400px |
+| Contexte                                | Max-width desktop |
+| --------------------------------------- | ----------------- |
+| Publique formulaire (Login, Abonnement) | 480px             |
+| Publique lecture (RGPD, CGU, Mentions)  | 720px             |
+| Profil                                  | 720px             |
+| Édition                                 | 1200px            |
+| Admin (Logs, Metrics, Permissions)      | 1400px            |
+| Tableau enfant                          | 1400px            |
 
 Mobile et tablette : 100% avec padding adapté.
 
 ### E.6 — Paddings latéraux par device
 
-| Device | Padding horizontal |
-|---|---|
-| Mobile (< 768px) | `spacing('nav-padding')` (16px) |
-| Tablette (768-1024px) | `spacing('card-padding')` (24px) |
-| Desktop (> 1024px) | `spacing('modal-padding')` (32px) |
+| Device                | Padding horizontal                |
+| --------------------- | --------------------------------- |
+| Mobile (< 768px)      | `spacing('nav-padding')` (16px)   |
+| Tablette (768-1024px) | `spacing('card-padding')` (24px)  |
+| Desktop (> 1024px)    | `spacing('modal-padding')` (32px) |
 
 ### E.7 — Règle de fer
 
@@ -409,6 +418,7 @@ Exception explicite : hover sur cards interactives du Tableau enfant (voir F.4).
 ### F.2 — Statut actuel de `shadow()` — T1-B à résoudre
 
 **Conflit de nommage critique** (source : `audit-aliases-phase6.md`) :
+
 - `shadow()` de `_colors.scss` : retourne des couleurs RGBA (ex : `rgba(0,0,0,0.1)`)
 - `shadow()` de `_shadows.scss` : retourne des élévations complètes (ex : `0 1px 3px rgba(...)`)
 
@@ -419,6 +429,7 @@ La fonction `shadow()` actuellement exposée via `_index.scss` est celle de `_co
 ### F.3 — Règles pour le refactor composants (pendant que T1-B n'est pas résolu)
 
 Pour les composants atomiques suivants, **ne pas utiliser de `box-shadow` du tout** :
+
 - Button, Input, Select, Textarea, Checkbox, Radio
 - Card statique (utiliser bordure `--color-border`)
 - Badge, Tag, Avatar
@@ -427,14 +438,15 @@ Pour les composants flottants (Modal, Dropdown, Tooltip, Toast) : **les refactor
 
 ### F.4 — Hover cards — règle par contexte
 
-| Contexte | Hover traitement |
-|---|---|
-| Tableau enfant (cards de tâches) | Changement bg (`--color-surface` → `--color-bg-hover`) + subtle shadow (hardcodée jusqu'à T1-B, ensuite `shadow('card-hover')`) |
-| Adulte (cards Profil, Édition, etc.) | Changement bg seul, pas d'ombre |
+| Contexte                             | Hover traitement                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Tableau enfant (cards de tâches)     | Changement bg (`--color-surface` → `--color-bg-hover`) + subtle shadow (hardcodée jusqu'à T1-B, ensuite `shadow('card-hover')`) |
+| Adulte (cards Profil, Édition, etc.) | Changement bg seul, pas d'ombre                                                                                                 |
 
 ### F.5 — Focus clavier (non-négociable)
 
 Indépendamment du hover, tout élément interactif doit avoir un focus clavier visible :
+
 - `outline: 2px solid var(--color-primary)`
 - `outline-offset: 2px`
 - Applicable sur tous les devices
@@ -444,13 +456,13 @@ Indépendamment du hover, tout élément interactif doit avoir un focus clavier 
 
 Une fois le conflit `shadow()` résolu, les 5 aliases sémantiques composants deviendront utilisables :
 
-| Alias | Niveau |
-|---|---|
-| `shadow('card')` | xs (subtle, pour cards interactives au repos) |
+| Alias                  | Niveau                                         |
+| ---------------------- | ---------------------------------------------- |
+| `shadow('card')`       | xs (subtle, pour cards interactives au repos)  |
 | `shadow('card-hover')` | lg (elevated, pour cards hover Tableau enfant) |
-| `shadow('button')` | xs (subtle) |
-| `shadow('modal')` | 2xl (flottant) |
-| `shadow('dropdown')` | xl (flottant) |
+| `shadow('button')`     | xs (subtle)                                    |
+| `shadow('modal')`      | 2xl (flottant)                                 |
+| `shadow('dropdown')`   | xl (flottant)                                  |
 
 ---
 
@@ -463,11 +475,13 @@ Une fois le conflit `shadow()` résolu, les 5 aliases sémantiques composants de
 **⏳ T1-A** — Direction visuelle amendée — **CE DOCUMENT v1.1**
 
 **⏳ T1-B** — Résoudre conflit `shadow()`
+
 - Renommer `shadow()` de `_colors.scss` en `shadow-color()` (plus explicite)
 - Garder `shadow()` de `_shadows.scss` comme fonction principale
 - Valider que les aliases `$shadow-semantic` (card, card-hover, button, modal, dropdown) sont bien lus
 
 **⏳ T1-C** — Aligner CSS vars `--color-*` sur palette prescrite
+
 - Mettre à jour `_light.scss` et `_dark.scss` avec les 7 rôles × 3 variantes du doc v1.1
 - Vérifier non-régression visuelle sur écrans existants
 - Documenter chaque changement de valeur dans le commit
@@ -575,4 +589,4 @@ Chaque composant refactoré doit passer cette checklist avant commit :
 
 ---
 
-*Document v1.1 validé à l'issue de l'audit aliases Phase 6 du 18 avril 2026. Remplace v1.0 (obsolète). Prochaine révision prévue après T1-B + T1-C résolus et refactor Button effectué.*
+_Document v1.1 validé à l'issue de l'audit aliases Phase 6 du 18 avril 2026. Remplace v1.0 (obsolète). Prochaine révision prévue après T1-B + T1-C résolus et refactor Button effectué._
