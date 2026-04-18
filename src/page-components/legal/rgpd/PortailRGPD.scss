@@ -52,7 +52,7 @@
 .rgpd-card {
   background: surface('bg');
   border: border-width('thin') solid surface('border');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   box-shadow: shadow('elevation-sm');
   padding: spacing('md');
 

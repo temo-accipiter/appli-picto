@@ -21,7 +21,7 @@
 // Formulaire de recherche
 .metrics-search {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -83,7 +83,7 @@
 // Card individuelle
 .metrics-card {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   border: border-width('thin') solid surface('border');
 

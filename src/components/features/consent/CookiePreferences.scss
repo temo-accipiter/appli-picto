@@ -17,7 +17,7 @@
 .cookie-prefs__intro {
   background: semantic('info', 'bg');
   border: border-width('thin') solid semantic('info', 'border');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('md');
   margin: 0;
 
@@ -31,7 +31,7 @@
 
 .cookie-prefs__fieldset {
   border: border-width('thin') solid surface('border');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   background: surface('soft');
   margin: 0;
@@ -126,7 +126,7 @@
 .cookie-prefs__info {
   background: semantic('info', 'bg');
   border: border-width('thin') solid semantic('info', 'border');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('md');
   margin: 0;
 

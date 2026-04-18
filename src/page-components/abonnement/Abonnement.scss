@@ -45,7 +45,7 @@
 // Statut de l'abonnement
 .abonnement-status {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -108,7 +108,7 @@
 // Détails de l'abonnement
 .abonnement-details {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -155,7 +155,7 @@
 // Actions
 .abonnement-actions {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -199,7 +199,7 @@
 // Historique des événements
 .abonnement-history {
   background: surface('soft');
-  border-radius: radius('rounded-12px');
+  border-radius: radius('lg');
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
