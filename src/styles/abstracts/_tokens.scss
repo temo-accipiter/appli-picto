@@ -534,32 +534,52 @@ $breakpoint-tokens: (
 
 $semantic-tokens: (
   'success': (
-    'base': #4caf50,
-    'light': #81c784,
-    'dark': #2e7d32,
-    'bg': #f1f8e9,
-    'border': #c8e6c9,
+    'base': #16a34a,
+    // Tailwind green-600 (was #4caf50 Material)
+    'light': #4ade80,
+    // Tailwind green-400 (was #81c784)
+    'dark': #14803d,
+    // Tailwind green-700 (was #2e7d32)
+    'bg': #dcfce7,
+    // Tailwind green-100 (was #f1f8e9)
+    'border': #bbf7d0,
+    // Tailwind green-200 (was #c8e6c9)
   ),
   'warning': (
-    'base': #ff9800,
-    'light': #ffb74d,
-    'dark': #e65100,
-    'bg': #fff3e0,
-    'border': #ffe0b2,
+    'base': #f59e0b,
+    // Tailwind amber-500 (was #ff9800 Material orange — biggest change)
+    'light': #fbbf24,
+    // Tailwind amber-400 (was #ffb74d)
+    'dark': #d97706,
+    // Tailwind amber-600 (was #e65100)
+    'bg': #fef3c7,
+    // Tailwind amber-100 (was #fff3e0)
+    'border': #fde68a,
+    // Tailwind amber-200 (was #ffe0b2)
   ),
   'error': (
-    'base': #f44336,
-    'light': #ef5350,
-    'dark': #c62828,
-    'bg': #ffebee,
-    'border': #ffcdd2,
+    'base': #dc2626,
+    // Tailwind red-600 (was #f44336)
+    'light': #f87171,
+    // Tailwind red-400 (was #ef5350)
+    'dark': #b91c1c,
+    // Tailwind red-700 (was #c62828)
+    'bg': #fee2e2,
+    // Tailwind red-100 (was #ffebee)
+    'border': #fecaca,
+    // Tailwind red-200 (was #ffcdd2)
   ),
   'info': (
-    'base': #2196f3,
-    'light': #64b5f6,
-    'dark': #1565c0,
-    'bg': #e3f2fd,
-    'border': #bbdefb,
+    'base': #3b82f6,
+    // Tailwind blue-500 (was #2196f3)
+    'light': #60a5fa,
+    // Tailwind blue-400 (was #64b5f6)
+    'dark': #2563eb,
+    // Tailwind blue-600 (was #1565c0)
+    'bg': #dbeafe,
+    // Tailwind blue-100 (was #e3f2fd)
+    'border': #bfdbfe,
+    // Tailwind blue-200 (was #bbdefb)
   ),
 );
 
