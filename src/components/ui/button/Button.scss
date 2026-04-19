@@ -32,13 +32,11 @@
   justify-content: center;
 
   // Spacing
-  padding: spacing('xs') spacing('sm');
+  padding: spacing('button-padding-y') spacing('button-padding-x');
 
   // Apparence
   border: none;
-  border-radius: radius('sm'); // 4px - Slightly rounded
-  box-shadow: shadow('elevation-sm'); // ✅ 0 2px 6px rgba(0, 0, 0, 0.15)
-
+  border-radius: radius('button'); // 6px - Sémantique composant (v1.1 §D)
   // Typographie
   font-family: var(--font-tsa);
   font-weight: font-weight('semibold');
