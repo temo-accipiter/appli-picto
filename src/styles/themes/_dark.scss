@@ -16,7 +16,7 @@
     // === COLORS - DARK THEME ===
     --color-primary: #{blue(400)}; // Bleu clair en dark mode
     --color-secondary: #{red(400)}; // Rouge clair
-    --color-accent: #{yellow(400)}; // Jaune clair
+    --color-accent: #{color('light', 'accent')}; // Accent décoratif
 
     // === TEXT COLORS ===
     --color-text: #{slate(200)}; // Texte clair sur fond sombre
@@ -55,7 +55,7 @@
   // === COLORS - DARK THEME ===
   --color-primary: #{blue(400)};
   --color-secondary: #{red(400)};
-  --color-accent: #{yellow(400)};
+  --color-accent: #{color('light', 'accent')};
 
   // === TEXT COLORS ===
   --color-text: #{slate(200)};

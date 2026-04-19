@@ -14,7 +14,7 @@
   // === COLORS - LIGHT THEME ===
   --color-primary: #{blue(600)}; // Bleu principal
   --color-secondary: #{red(500)}; // Rouge accent
-  --color-accent: #{orange(500)}; // Orange accent
+  --color-accent: #{color('base', 'accent')}; // Accent décoratif
 
   // === TEXT COLORS ===
   --color-text: #{gray(900)}; // Texte sombre sur fond clair
@@ -61,7 +61,7 @@
   // Light theme colors (tokens-first)
   --color-primary: #{blue(600)};
   --color-secondary: #{red(500)};
-  --color-accent: #{orange(500)};
+  --color-accent: #{color('base', 'accent')};
   --color-text: #{gray(900)};
   --color-text-rgb: 51, 51, 51;
   --color-text-invert: #{white()};
