@@ -35,7 +35,7 @@
     color: text();
     background: surface('bg');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius('input'); // 6px — champ de recherche §D.3
 
     @include safe-transition(
       border-color box-shadow,
@@ -88,9 +88,9 @@
       transform: scale(1.1);
     }
 
-    &:focus {
-      outline: border-width('base') solid color('base');
-      outline-offset: size('2');
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
 
     &:active {

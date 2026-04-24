@@ -36,9 +36,9 @@
     }
 
     &:focus-visible {
-      outline: border-width('medium') solid semantic('info-primary');
-      outline-offset: border-width('medium');
-      border-radius: radius('sm');
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+      border-radius: radius('subtle'); // 4px — bouton inline §D.5
     }
   }
 
@@ -77,7 +77,7 @@
     code {
       background: surface('soft');
       padding: spacing('2') spacing('6');
-      border-radius: radius('sm');
+      border-radius: radius('subtle'); // 4px — code inline §D.5
     }
 
     blockquote {

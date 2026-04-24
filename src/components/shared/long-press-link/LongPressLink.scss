@@ -11,6 +11,10 @@
 //   - prefers-reduced-motion : demi-cercle statique (géré dans le JS)
 //   - Focus visible clavier
 //   - Cible tactile min 44×44px
+//
+// ✅ MIGRÉ v1.1 :
+//    - radius('button') → 6px §D.3 ✅
+//    - Focus → outline: 2px solid var(--color-primary) §F.5 ✅
 // ============================================================================
 
 .long-press-link {
@@ -36,20 +40,20 @@
 
   &:hover {
     background-color: surface('hover');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton §D.3
   }
 
   // WCAG 2.4.7 — Focus visible accessible
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid color('base');
-    outline-offset: a11y('focus-ring-offset');
-    border-radius: radius('sm');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: radius('button'); // 6px — bouton §D.3
   }
 
   // Retour visuel pendant l'appui (fond léger)
   &--pressing {
     background-color: surface('soft');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton §D.3
   }
 }
 

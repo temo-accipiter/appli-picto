@@ -6,23 +6,13 @@
 // ============================================================================
 // ERROR BOUNDARY COMPONENT
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic avec fallback
-//    - spacing('xl'/'3xl'/'md'/'sm'/'lg'/'2') → Primitives Phase 6 ✅
-//    - surface('bg'/'soft'/'hover'/'border') → Semantics Phase 6 ✅
-//    - radius('lg'/'md'/'sm') → Primitives Phase 6 (20px/12px/6px) ✅
-//    - shadow('elevation-lg'/'elevation-md') → Primitives Phase 6 ✅
-//    - text('muted'/'invert') → Semantics Phase 6 ✅
-//    - semantic('error') → Semantics Phase 6 ✅
-//    - timing('base'/'fast'/'slower') → Primitives Phase 6 (0.2s/0.15s/1.5s) ✅
-//    - easing('ease-out'/'ease-in-out') → Primitives Phase 6 ✅
-//    - color('base'/'dark') → Semantics Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - size('modal-width-md'/'touch-target-min'/'card-min-height'/'2') → Legacy support actif
-//    - font-size('5xl'/'2xl'/'base'/'sm') → Legacy support actif
-//    - font-weight('semibold'/'medium') → Legacy support actif
-//    - line-height('snug'/'relaxed') → Legacy support actif
-//    - border-width('focus'/'thin') → Legacy support actif
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
+//    - radius('large') → 20px — carte flottante §D.2 ✅
+//    - radius('button') → 6px — bouton §D.3 ✅
+//    - radius('card') → 12px — bloc détails §D.3 ✅
+//    - radius('subtle') → 4px — contenu erreur imbriqué §D.5 ✅
+//    - shadow('modal') → alias sémantique T1-B résolu ✅
+//    - Focus → outline 2px solid var(--color-primary) §F.5 ✅
 // ============================================================================
 
 .error-boundary {
@@ -39,8 +29,8 @@
     text-align: center;
     background: surface('bg');
     padding: spacing('3xl') spacing('xl');
-    border-radius: radius('lg');
-    box-shadow: shadow('elevation-lg');
+    border-radius: radius('large'); // 20px — carte flottante §D.2
+    box-shadow: modal-shadow('default'); // Fonction dédiée modal — shadow('modal') retourne une map
 
     // Animation douce d'apparition (TSA-friendly)
     animation: fadeInScale timing('base') easing('ease-out');
@@ -85,7 +75,7 @@
     padding: spacing('sm') spacing('lg');
     font-size: font-size('base');
     font-weight: font-weight('medium');
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — bouton §D.3
     border: none;
     cursor: pointer;
 
@@ -99,9 +89,9 @@
     min-height: size('touch-target-min');
     min-width: size('card-min-height');
 
-    &:focus {
-      outline: border-width('focus') solid color('base');
-      outline-offset: size('2');
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
 
     &--primary {
@@ -111,7 +101,7 @@
       &:hover:not(:disabled) {
         background: color('dark');
         transform: translateY(-#{size('2')});
-        box-shadow: shadow('elevation-md');
+        box-shadow: shadow('elevation-md'); // Hover interactif — exception §F.3
       }
 
       &:active {
@@ -139,7 +129,7 @@
     text-align: left;
     background: surface('soft');
     padding: spacing('md');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — bloc détails §D.3
     border: border-width('thin') solid surface('border');
   }
 
@@ -159,7 +149,7 @@
     margin-top: spacing('md');
     padding: spacing('md');
     background: surface('bg');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — contenu imbriqué §D.5
     font-size: font-size('sm');
     color: semantic('error');
     overflow-x: auto;

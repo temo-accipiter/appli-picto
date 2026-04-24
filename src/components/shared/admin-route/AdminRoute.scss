@@ -43,14 +43,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: a11y('min-touch-target');
+  min-height: size('touch-target-min');
   padding: spacing('sm') spacing('lg');
   font-size: font-size('base');
   font-weight: font-weight('medium');
   background: color('base');
   color: text('invert');
   text-decoration: none;
-  border-radius: radius('md');
+  border-radius: radius('button'); // 6px — bouton §D.3
   @include safe-transition(background-color, color);
 
   &:hover {
@@ -58,6 +58,7 @@
   }
 
   &:focus-visible {
-    @include focus-ring;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }

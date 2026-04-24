@@ -43,8 +43,8 @@
 
   // WCAG 2.4.7 - Focus visible accessible
   &:focus-visible {
-    outline: border-width('focus') solid color('base');
-    outline-offset: size('2');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   svg {

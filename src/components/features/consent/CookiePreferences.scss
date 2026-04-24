@@ -6,6 +6,12 @@
 // Note : La structure overlay/dialog/header/footer est gérée par <Modal>.
 // Ce fichier contient uniquement les styles du contenu interne (.cookie-prefs__body
 // et ses enfants), rendus dans le slot <children> de la primitive Modal.
+//
+// ✅ MIGRÉ v1.1 :
+//    - radius('large') → 20px — conteneurs info/fieldset §D.2 ✅
+//    - radius('badge') → 50% — pills catégories §D.3 ✅
+//    - radius('subtle') → 4px — focus lien inline §D.5 ✅
+//    - Focus → outline: 2px solid var(--color-primary) §F.5 ✅
 // ============================================================================
 
 .cookie-prefs__body {
@@ -17,7 +23,7 @@
 .cookie-prefs__intro {
   background: semantic('info', 'bg');
   border: border-width('thin') solid semantic('info', 'border');
-  border-radius: radius('lg');
+  border-radius: radius('large'); // 20px — conteneur info §D.2
   padding: spacing('md');
   margin: 0;
 
@@ -31,7 +37,7 @@
 
 .cookie-prefs__fieldset {
   border: border-width('thin') solid surface('border');
-  border-radius: radius('lg');
+  border-radius: radius('large'); // 20px — conteneur fieldset §D.2
   padding: spacing('lg');
   background: surface('soft');
   margin: 0;
@@ -52,7 +58,7 @@
 .cookie-prefs__category {
   display: inline-block;
   padding: spacing('xs') spacing('sm');
-  border-radius: radius('xl');
+  border-radius: radius('badge'); // 50% — pill catégorie §D.3
   font-size: font-size('sm');
   font-weight: font-weight('semibold');
   text-transform: uppercase;
@@ -126,7 +132,7 @@
 .cookie-prefs__info {
   background: semantic('info', 'bg');
   border: border-width('thin') solid semantic('info', 'border');
-  border-radius: radius('lg');
+  border-radius: radius('large'); // 20px — conteneur info §D.2
   padding: spacing('md');
   margin: 0;
 
@@ -150,9 +156,9 @@
       }
 
       &:focus-visible {
-        outline: border-width('medium') solid semantic('info-primary');
-        outline-offset: border-width('medium');
-        border-radius: radius('sm');
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        border-radius: radius('subtle'); // 4px — lien inline §D.5
       }
     }
   }

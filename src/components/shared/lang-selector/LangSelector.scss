@@ -31,7 +31,7 @@
   button {
     background: none;
     border: border-width('thin') solid transparent;
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton langue §D.3
     font-size: font-size('lg');
     padding: spacing('xs') spacing('sm');
     color: text();
@@ -58,8 +58,8 @@
     }
 
     &:focus-visible {
-      outline: border-width('base') dashed color('base');
-      outline-offset: size('2');
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
 
     /* Desktop (576px+) */
