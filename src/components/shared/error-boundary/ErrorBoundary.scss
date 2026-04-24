@@ -30,7 +30,9 @@
     background: surface('bg');
     padding: spacing('3xl') spacing('xl');
     border-radius: radius('large'); // 20px — carte flottante §D.2
-    box-shadow: modal-shadow('default'); // Fonction dédiée modal — shadow('modal') retourne une map
+    box-shadow: modal-shadow(
+      'default'
+    ); // Fonction dédiée modal — shadow('modal') retourne une map
 
     // Animation douce d'apparition (TSA-friendly)
     animation: fadeInScale timing('base') easing('ease-out');
