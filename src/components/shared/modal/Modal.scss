@@ -58,7 +58,9 @@
   padding: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: shadow('elevation-modal');
+  box-shadow: modal-shadow(
+    'default'
+  ); // Fonction dédiée modal — shadow('modal') retourne une map
   display: flex;
   flex-direction: column;
   animation: scaleIn timing('fast') easing('ease-out');
@@ -67,14 +69,14 @@
   width: 95vw;
   max-width: calc(100vw - #{size('32')});
   max-height: calc(100vh - #{size('32')});
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — conteneur modal mobile §D.3
 
   // Petite tablette (576px+)
   @include respond-to(sm) {
     width: 90vw;
     max-width: size('modal-width-md');
     max-height: calc(100vh - #{size('64')});
-    border-radius: radius('lg');
+    border-radius: radius('modal'); // 20px — conteneur modal tablette §D.2
   }
 
   // Tablette & Desktop (768px+)
@@ -198,7 +200,7 @@
 
   &::-webkit-scrollbar-thumb {
     background: gray(400);
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — scrollbar §D.5
 
     &:hover {
       background: gray(500);
@@ -267,7 +269,7 @@
 
     &:hover {
       transform: translateY(-#{size('2')});
-      box-shadow: shadow('elevation-md');
+      box-shadow: shadow('elevation-raised'); // Hover interactif — exception §F.4
     }
 
     &:active {
@@ -303,7 +305,7 @@
 
     &:hover {
       transform: translateY(-#{size('2')});
-      box-shadow: shadow('elevation-md');
+      box-shadow: shadow('elevation-raised'); // Hover interactif — exception §F.4
     }
   }
 }
@@ -334,7 +336,7 @@
     width: 95vw;
     max-width: size('modal-width-md');
     max-height: calc(100vh - #{size('64')});
-    border-radius: radius('lg');
+    border-radius: radius('modal'); // 20px — fullscreen tablette §D.2
     position: relative;
   }
 
@@ -369,7 +371,7 @@
   width: 100%;
   max-width: 100%;
   max-height: 70vh;
-  border-radius: radius('lg') radius('lg') 0 0;
+  border-radius: radius('modal') radius('modal') 0 0; // 20px — drawer mobile coins supérieurs §D.2
   margin: 0;
   animation: slideUpIn timing('base') easing('ease-out');
   position: relative;
@@ -409,7 +411,7 @@
     width: 90%;
     max-width: size('modal-width-md');
     max-height: 90vh;
-    border-radius: radius('lg');
+    border-radius: radius('modal'); // 20px — drawer tablette §D.2
     animation: scaleIn timing('fast') easing('ease-out');
     margin: 0;
     position: relative;

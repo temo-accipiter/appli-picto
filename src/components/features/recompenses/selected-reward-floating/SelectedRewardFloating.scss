@@ -17,15 +17,15 @@
 @keyframes pulse-light {
   0% {
     transform: scale(1);
-    box-shadow: shadow('elevation-sm');
+    box-shadow: shadow('elevation-raised'); // Alias sémantique — animation flottante §F.4
   }
   70% {
     transform: scale(1.03);
-    box-shadow: shadow('elevation-md');
+    box-shadow: shadow('elevation-floating'); // Alias sémantique — animation flottante §F.4
   }
   100% {
     transform: scale(1);
-    box-shadow: shadow('elevation-sm');
+    box-shadow: shadow('elevation-raised'); // Alias sémantique — animation flottante §F.4
   }
 }
 
@@ -38,13 +38,13 @@
   opacity: opacity('0-95');
 
   &:focus-visible {
-    outline: border-width('medium') solid semantic('info-primary');
-    outline-offset: border-width('medium');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   .card-edition.no-actions {
     animation: pulse-light timing('slowest') infinite;
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — card flottante §D.3
     overflow: hidden;
   }
 

@@ -40,7 +40,7 @@
     margin-top: spacing('md');
     padding: spacing('sm') spacing('md');
     background: semantic('info', 'bg');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — bloc info-bulle §D.3
     font-size: font-size('sm');
     color: text();
     text-align: left;

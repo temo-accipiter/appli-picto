@@ -47,7 +47,7 @@
     width: 100%;
     padding: spacing('md');
     border: border-width('medium') dashed surface('border');
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — déclencheur bouton §D.3
     background: surface('soft');
     color: text('default');
     font-size: font-size('base');
@@ -81,7 +81,7 @@
   width: 100%;
   max-width: size('300');
   margin: 0 auto;
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — prévisualisation image §D.3
   overflow: hidden;
   border: border-width('base') solid surface('border');
   background: surface('soft');
@@ -100,7 +100,7 @@
     background: semantic('error', 'bg');
     color: semantic('error', 'dark');
     border: border-width('base') solid semantic('error', 'border');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton suppression image §D.3
     font-size: font-size('sm');
     font-weight: font-weight('semibold');
     cursor: pointer;
@@ -134,7 +134,7 @@
     gap: spacing('sm');
     cursor: pointer;
     padding: spacing('md');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — label checkbox §D.3
     background: surface('soft');
     @include safe-transition(background);
 

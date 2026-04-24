@@ -44,8 +44,8 @@
     // Style visuel pour version minimisée (ressemble au TimeTimer réduit)
     background: semantic('info', 'bg'); // Même fond bleu clair
     border: size('2') solid text('dark'); // Bordure noire plus fine
-    border-radius: radius('md'); // Coins arrondis
-    box-shadow: shadow('elevation-md'); // Ombre légère
+    border-radius: radius('card'); // 12px — timer minimisé §D.3
+    box-shadow: shadow('elevation-floating'); // Alias sémantique — élément flottant §F.4
     padding: spacing('md'); // Padding augmenté pour centrer l'icône plus grande
     display: flex;
     align-items: center;

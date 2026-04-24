@@ -29,7 +29,7 @@
 
   &::-webkit-scrollbar-thumb {
     background-color: gray(400);
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — scrollbar §D.5
     border: border-width('base') solid transparent;
     background-clip: content-box;
   }

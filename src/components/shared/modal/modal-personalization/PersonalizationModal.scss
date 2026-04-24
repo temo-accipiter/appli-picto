@@ -44,7 +44,7 @@
       margin: spacing('xl') 0;
       background: surface('soft');
       padding: spacing('lg');
-      border-radius: radius('lg');
+      border-radius: radius('card'); // 12px — conteneur liste §D.3
 
       .feature-item {
         display: flex;
@@ -52,8 +52,7 @@
         margin-bottom: spacing('md');
         padding: spacing('sm');
         background: surface('bg');
-        border-radius: radius('md');
-        box-shadow: shadow('elevation-sm');
+        border-radius: radius('card'); // 12px — item liste §D.3
 
         &:last-child {
           margin-bottom: 0;
@@ -83,7 +82,7 @@
         color: text('invert');
         border: none;
         padding: spacing('sm') spacing('lg');
-        border-radius: radius('md');
+        border-radius: radius('button'); // 6px — bouton §D.3
         font-weight: font-weight('semibold');
         cursor: pointer;
         @include safe-transition(
@@ -103,7 +102,7 @@
         color: color('base');
         border: border-width('base') solid color('base');
         padding: spacing('sm') spacing('lg');
-        border-radius: radius('md');
+        border-radius: radius('button'); // 6px — bouton §D.3
         font-weight: font-weight('semibold');
         cursor: pointer;
         @include safe-transition(
