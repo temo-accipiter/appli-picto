@@ -59,9 +59,9 @@
     opacity: opacity('lg');
   }
 
-  // Focus visible pour keyboard navigation
+  // Focus visible pour keyboard navigation (v1.1 §F.5)
   &:focus-visible {
-    outline: border-width('focus') solid color('base');
-    outline-offset: size('2');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }

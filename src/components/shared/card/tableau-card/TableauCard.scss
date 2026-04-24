@@ -1,12 +1,14 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// TABLEAU CARD COMPONENT
+// TABLEAU CARD COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers radius/spacing/surface avec fallback
-//    - radius('md') → Primitives Phase 6 (12px) ✅
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
+//    - radius('medium') → Alias générique v1.1 (12px, Tableau enfant §D.4) ✅
 //    - spacing('xs'/'sm'/'md') → Primitives Phase 6 (4px/8px/16px) ✅
 //    - surface('hover') → Semantics Phase 6 ✅
+//    - shadow au repos supprimée — conservée au hover (Tableau enfant §F.4) ✅
 //    - tsa-pastel('bg-soft') → Legacy TSA support actif
 //    - Mobile-first responsive avec respond-to() ✅
 //    - Autres tokens : Legacy support actif
@@ -15,8 +17,10 @@
 .tableau-card {
   // Base card styling
   background: tsa-pastel('bg-soft');
-  border-radius: radius('md');
-  box-shadow: shadow('elevation-sm');
+  border-radius: radius(
+    'medium'
+  ); // 12px — Tableau enfant sous-tâche, alias générique §D.4
+  // Shadow supprimée au repos (§F.3) — ajoutée au hover (Tableau enfant §F.4)
   border: border-width('base') solid transparent;
 
   cursor: grab;
@@ -60,10 +64,13 @@
     @include safe-transition(transform, timing('base'), easing('ease-out'));
   }
 
-  // Hover (si non touch)
+  // Hover (si non touch) — shadow exception Tableau enfant §F.4
   @include on-event {
     background-color: surface('hover');
     transform: scale(1.02);
+    box-shadow: shadow(
+      'elevation-md'
+    ); // Shadow hover Tableau enfant — exception §F.4
 
     // Animation de rotation sur l'image au hover
     img,

@@ -1,12 +1,14 @@
 @use '@styles/abstracts' as *;
 
 // ============================================
-// BASE CARD - TSA-FRIENDLY STYLES
+// BASE CARD - TSA-FRIENDLY STYLES - Tokens-First
 // ============================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/shadow/tsa-pastel/semantic avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('md'/'sm'/'xs') → Primitives Phase 6 (16px/8px/4px) ✅
-//    - radius('md') → Primitives Phase 6 (12px) ✅
-//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
+//    - radius('card') → Alias sémantique v1.1 (12px) ✅
+//    - shadow au repos supprimée (§F.3) — conservée sur focus (interaction) ✅
+//    - shadow('elevation-md') → Focus/focus-within — exception §F.3 ✅
 //    - tsa-pastel('bg-soft'/'green-soft') → Semantics TSA Phase 6 ✅
 //    - semantic('success'/'info'/'error') → Semantics Phase 6 ✅
 //    - timing('fast') → Primitives Phase 6 (0.15s) ✅
@@ -27,9 +29,9 @@
   grid-template-columns: auto 1fr;
   gap: spacing('md');
   background: tsa-pastel('bg-soft');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
   padding: spacing('sm');
-  box-shadow: shadow('elevation-sm');
+  // Shadow supprimée au repos (§F.3) — conservée sur focus (interaction)
   border: border-width('base') solid transparent;
 
   @include safe-transition(
@@ -148,18 +150,22 @@
     white-space: pre-wrap;
   }
 
-  /* Focus visible pour accessibility clavier (WCAG 2.2 AA - TSA CRITIQUE) */
+  /* Focus visible pour accessibility clavier (WCAG 2.2 AA - TSA CRITIQUE — v1.1 §F.5) */
   &:focus-within {
-    box-shadow: shadow('elevation-md');
-    outline: border-width('base') solid semantic('info');
-    outline-offset: spacing('xs');
+    box-shadow: shadow(
+      'elevation-md'
+    ); // Ombre sur focus — exception §F.3 (interaction)
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
-  /* Focus visible explicite avec :focus-visible (navigation clavier) */
+  /* Focus visible explicite avec :focus-visible (navigation clavier — v1.1 §F.5) */
   &:focus-visible {
-    outline: border-width('base') solid semantic('info');
-    outline-offset: spacing('xs');
-    box-shadow: shadow('elevation-md');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: shadow(
+      'elevation-md'
+    ); // Ombre sur focus — exception §F.3 (interaction)
   }
 }
 

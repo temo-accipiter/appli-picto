@@ -3,21 +3,23 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// TACHES DND COMPONENT
+// TACHES DND COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers size/spacing/radius/semantic/shadow/timing avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - size('100'/'200'/'160'/'16'/'20') → Legacy support actif
 //    - spacing('sm'/'md'/'xs'/'32'/'300'/'260') → Primitives Phase 6 ✅
-//    - radius('md'/'sm'/'full') → Primitives Phase 6 (12px/6px/50%) ✅
+//    - radius('card'/'subtle'/'full') → Aliases sémantiques v1.1 ✅
 //    - semantic('info', all variants) → Semantics Phase 6 ✅
-//    - shadow('elevation-sm'/'elevation-md'/'elevation-lg') → Primitives Phase 6 ✅
+//    - shadow au repos supprimée — conservée au hover (Tableau enfant §F.4) ✅
+//    - shadow('elevation-md'/'elevation-lg') → Hover + Drag — exceptions §F.3 ✅
 //    - surface('bg') → Semantics Phase 6 ✅
 //    - text('invert') → Semantics Phase 6 (#ffffff) ✅
 //    - timing('base'/'slow'/'fast') → Primitives Phase 6 (0.2s/0.5s/0.15s) ✅
 //    - easing('smooth'/'spring') → Primitives Phase 6 ✅
 //    - safe-transition() → Mixin Phase 6 ✅
 //    - respond-to() → Mixin responsive Phase 6 ✅
-//    - border-width('medium'/'thick') → Legacy support actif
+//    - border-width('medium') → Legacy support actif
 //    - font-size('sm'/'lg'/'xs') → Legacy support actif
 //    - font-weight('bold') → Legacy support actif
 //    - opacity('half'/'0-6'/'lg') → Legacy support actif
@@ -49,7 +51,7 @@
 .slot {
   min-height: size('160');
   border: border-width('medium') dashed transparent;
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — slot droppable, alias sémantique §D.3
   overflow: visible; /* Permet à l'image de dépasser lors du hover */
   @include safe-transition(
     (border-color, background-color),
@@ -77,9 +79,9 @@
   align-items: center;
   justify-content: space-between;
   background: semantic('info', 'bg');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
   text-align: center;
-  box-shadow: shadow('elevation-sm');
+  // Shadow supprimée au repos — conservée au hover (Tableau enfant §F.4)
   gap: spacing('xs');
   transform: scale(1);
 
@@ -100,10 +102,10 @@
     z-index: z-index('dropdown');
   }
 
-  /* Focus visible accessible (WCAG 2.4.7) */
+  /* Focus visible accessible (WCAG 2.4.7 — v1.1 §F.5) */
   &:focus-visible {
-    outline: border-width('thick') solid semantic('info-primary');
-    outline-offset: border-width('thick');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   span {
@@ -129,7 +131,7 @@
     appearance: none;
     border: border-width('medium') solid semantic('info-primary');
     background: surface('bg');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — alias sémantique §D.3
     flex-shrink: 0;
     cursor: pointer;
     position: relative;

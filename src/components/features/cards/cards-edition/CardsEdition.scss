@@ -3,13 +3,14 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// CARDS EDITION COMPONENT
+// CARDS EDITION COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/radius/semantic/shadow/surface avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('md'/'lg'/'sm'/'xs'/'100'/'32'/'16'/'8') → Primitives Phase 6 ✅
-//    - radius('lg'/'md') → Primitives Phase 6 (20px/12px) ✅
+//    - radius('large'/'card'/'button'/'subtle') → Aliases sémantiques v1.1 ✅
 //    - semantic('info', all variants) → Semantics Phase 6 ✅
-//    - shadow('elevation-lg'/'elevation-xs'/'elevation-sm') → Primitives Phase 6 ✅
+//    - Shadows supprimées sur conteneurs statiques (§F.3) ✅
 //    - surface('soft'/'border'/'bg') → Semantics Phase 6 ✅
 //    - text('light') → Semantics Phase 6 ✅
 //    - timing('base'/'fast') → Primitives Phase 6 (0.2s/0.15s) ✅
@@ -26,14 +27,12 @@
   flex-direction: column;
   gap: spacing('md');
   padding: spacing('lg');
-  border-radius: radius('lg');
+  border-radius: radius(
+    'large'
+  ); // 20px — section conteneur, alias générique §D.2
   background: semantic('info', 'bg');
-  box-shadow: shadow('elevation-lg');
-  @include safe-transition(
-    (box-shadow, background-color),
-    timing('base'),
-    easing('smooth')
-  );
+  // Shadow supprimée : conteneur statique (§F.3)
+  @include safe-transition(background-color, timing('base'), easing('smooth'));
 
   /* Button label avec chevron toggle */
   .button-label {
@@ -61,8 +60,8 @@
   align-items: center;
   padding: spacing('md');
   background: surface('soft');
-  border-radius: radius('md');
-  box-shadow: shadow('elevation-xs');
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
+  // Shadow supprimée : conteneur statique (§F.3)
   border: border-width('thin') solid semantic('info', 'border');
 }
 
@@ -83,12 +82,12 @@
 
   &::-webkit-scrollbar-track {
     background: surface('soft');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — alias sémantique §D.3
   }
 
   &::-webkit-scrollbar-thumb {
     background: semantic('info-primary');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — alias sémantique §D.3
 
     &:hover {
       background: semantic('info', 'dark');
@@ -103,7 +102,7 @@
   color: text('light');
   padding: spacing('lg');
   border: border-width('medium') dashed surface('border');
-  border-radius: radius('lg');
+  border-radius: radius('large'); // 20px — zone vide, alias générique §D.2
   text-align: center;
 }
 
@@ -111,7 +110,7 @@
 .edition-slot {
   min-height: size('card-min-height');
   border: border-width('medium') dashed transparent;
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — slot droppable, alias sémantique §D.3
   @include safe-transition(
     (border-color, background-color),
     timing('fast'),
@@ -138,8 +137,8 @@
   gap: spacing('md');
   padding: spacing('xs') spacing('md');
   background: surface('soft');
-  box-shadow: shadow('elevation-sm');
-  border-radius: radius('md');
+  // Shadow supprimée : conteneur statique (§F.3)
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
 
   > * {
     flex: 0 0 auto;
@@ -157,8 +156,8 @@
   gap: spacing('md');
   justify-content: flex-start;
   background: surface('soft');
-  box-shadow: shadow('elevation-sm');
-  border-radius: radius('md');
+  // Shadow supprimée : conteneur statique (§F.3)
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
   padding: spacing('xs');
 }
 
@@ -208,6 +207,6 @@
   margin: 0;
   padding: spacing('sm') spacing('md');
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius('button'); // 6px — barre titre, alias sémantique §D.3
   border-left: border-width('medium') solid semantic('info-primary');
 }

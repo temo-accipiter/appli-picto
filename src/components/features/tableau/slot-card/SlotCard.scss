@@ -11,7 +11,9 @@
   gap: spacing('sm');
   padding: spacing('md');
   background: surface('card');
-  border-radius: radius('lg');
+  border-radius: radius(
+    'large'
+  ); // 20px — carte mère Tableau enfant, alias générique §D.4
   border: border-width('thin') solid surface('border');
   // Carrousel horizontal : largeur adaptative sur toutes tailles (80vw max 400px)
   width: 80vw;
@@ -32,7 +34,9 @@
     position: relative;
     width: size('card-image-height');
     height: size('card-image-height');
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — wrapper image interne, alias générique §D.2
     overflow: hidden;
     background: surface('soft');
     flex-shrink: 0;
@@ -42,7 +46,9 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — image interne, alias générique §D.2
     display: block;
   }
 
@@ -66,7 +72,9 @@
     background: semantic('success', 'bg');
     font-size: font-size('4xl');
     color: semantic('success');
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — overlay interne, alias générique §D.2
   }
 
   // ── Label ──
@@ -92,7 +100,9 @@
     padding: spacing('xs') spacing('sm');
     border: border-width('thin') solid semantic('info');
     background: surface('soft');
-    border-radius: radius('sm');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton interne carte, alias sémantique §D.3
     font-size: font-size('sm');
     font-weight: font-weight('medium');
     color: semantic('info');

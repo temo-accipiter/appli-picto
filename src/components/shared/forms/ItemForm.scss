@@ -1,12 +1,13 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// ITEM FORM COMPONENT
+// ITEM FORM COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/semantic/timing avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('md'/'sm'/'xs') → Primitives Phase 6 (16px/8px/4px) ✅
 //    - surface('soft'/'hover'/'border'/'bg') → Semantics Phase 6 ✅
-//    - radius('sm'/'md') → Primitives Phase 6 (6px/12px) ✅
+//    - radius('card'/'button') → Aliases sémantiques v1.1 ✅
 //    - semantic('error'/'info'/'success', all variants) → Semantics Phase 6 ✅
 //    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
 //    - easing('ease-out') → Primitives Phase 6 ✅
@@ -43,14 +44,16 @@
 .item-form__progress-section {
   padding: spacing('md');
   background: semantic('info', 'bg');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — alias sémantique §D.3
   border: border-width('thin') solid color('base');
 }
 
 .item-form__success {
   padding: spacing('md');
   background: semantic('success', 'bg');
-  border-radius: radius('sm');
+  border-radius: radius(
+    'button'
+  ); // 6px — message feedback, alias sémantique §D.3
   color: semantic('success');
   font-weight: font-weight('semibold');
   text-align: center;
@@ -65,7 +68,9 @@
   .message-erreur {
     padding: spacing('sm');
     background: semantic('error', 'bg');
-    border-radius: radius('sm');
+    border-radius: radius(
+      'button'
+    ); // 6px — message erreur, alias sémantique §D.3
   }
 
   .btn {
