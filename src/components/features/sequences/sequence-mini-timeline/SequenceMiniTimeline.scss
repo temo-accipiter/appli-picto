@@ -7,7 +7,7 @@
 .sequence-mini-timeline {
   position: relative;
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — conteneur parent §D.3
   padding: spacing('sm');
   // Entrée douce ≤ 0.3s (TSA anti-choc)
   @include safe-transition(opacity);
@@ -26,7 +26,7 @@
     background: transparent;
     color: text('muted');
     font-size: font-size('sm');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton fermeture §D.3
     cursor: pointer;
     z-index: 1;
     @include safe-transition(background color);
@@ -89,7 +89,7 @@
     background: transparent;
     cursor: pointer;
     padding: spacing('xs');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton-carte §D.3
     @include safe-transition(background);
 
     &:hover {

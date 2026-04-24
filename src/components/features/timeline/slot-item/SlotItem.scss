@@ -10,7 +10,7 @@
   gap: spacing('sm');
   padding: spacing('md');
   background: surface('card');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — conteneur parent §D.3
   list-style: none;
   flex-shrink: 0;
   width: size('modal-width-sm');
@@ -118,7 +118,7 @@
   &__card-image {
     width: 100%;
     height: size('card-image-height');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — image imbriquée §D.5
     object-fit: contain;
   }
 
@@ -129,7 +129,7 @@
     width: 100%;
     min-height: size('card-image-height');
     background: surface('soft');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — placeholder image imbriquée §D.5
   }
 
   &__sequence {
@@ -173,7 +173,7 @@
     padding: spacing('xs') spacing('sm');
     background: surface('soft');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
+    border-radius: radius('input'); // 6px — input tokens §D.3
     font-size: font-size('base');
     font-weight: font-weight('semibold');
     color: text('dark');
@@ -209,7 +209,7 @@
     background: transparent;
     color: text('muted');
     font-size: font-size('base');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — bouton supprimer §D.3
     cursor: pointer;
     margin-left: auto;
     @include safe-transition(background color);

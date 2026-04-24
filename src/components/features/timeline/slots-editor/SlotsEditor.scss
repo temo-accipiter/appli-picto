@@ -26,8 +26,8 @@
     color: text('muted');
     background: surface('bg');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
-    box-shadow: shadow('elevation-sm');
+    border-radius: radius('subtle'); // 4px — badge statut §D.3
+    // Shadow supprimée au repos (§F.3)
   }
 
   // ── Liste de slots — toujours horizontale avec scroll ──
@@ -59,7 +59,7 @@
     font-size: font-size('sm');
     color: semantic('error');
     background: semantic('error', 'bg');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — message erreur imbriqué §D.5
     padding: spacing('sm') spacing('md');
     margin: 0;
   }
@@ -84,7 +84,7 @@
     gap: spacing('xs');
     padding: spacing('sm') spacing('lg');
     border: none;
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — bouton action §D.3
     font-size: font-size('base');
     font-weight: font-weight('medium');
     cursor: pointer;

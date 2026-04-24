@@ -30,7 +30,7 @@
     padding: spacing('xs') spacing('sm');
     background: surface('soft');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
+    border-radius: radius('input'); // 6px — select natif §D.3
     font-size: font-size('sm');
     color: text('dark');
     cursor: pointer;

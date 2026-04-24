@@ -6,7 +6,7 @@
   gap: spacing('md');
   padding: spacing('md');
   background: surface('card');
-  border-radius: radius('md');
+  border-radius: radius('card'); // 12px — conteneur parent §D.3
   border-left: border-width('thick') solid semantic('info');
 
   @include safe-transition(background border-color);
@@ -106,7 +106,7 @@
     padding: spacing('sm');
     min-height: size('touch-target-min');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
+    border-radius: radius('button'); // 6px — slot imbriqué §D.5
     background: surface('soft');
 
     @include safe-transition(border-color background);
@@ -157,7 +157,7 @@
     align-items: center;
     gap: spacing('sm');
     min-height: size('touch-target-min');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — élément imbriqué dans slot §D.5
   }
 
   &__composer-card {
@@ -222,7 +222,7 @@
     padding: spacing('sm');
     min-height: size('touch-target-min');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('sm');
+    border-radius: radius('card'); // 12px — carte bibliothèque §D.3
     background: surface('card');
     cursor: pointer;
 
