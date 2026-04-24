@@ -21,7 +21,7 @@
   &__warning {
     background: surface('soft');
     padding: spacing('sm');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — bloc avertissement §D.3
     border-left: border-width('thick') solid semantic('warning');
 
     p {

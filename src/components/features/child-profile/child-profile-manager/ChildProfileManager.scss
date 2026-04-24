@@ -1,6 +1,10 @@
 // ChildProfileManager.scss
 // Gestion profils enfants avec suppression — Mobile-first, TSA-friendly
 // Tokens exclusivement (voir src/styles/abstracts/)
+// ✅ MIGRÉ v1.1 :
+//    - radius('md'/'sm') → aliases sémantiques v1.1 ✅
+//    - spacing('1'/'2'/'3') → spacing('xs'/'sm') ✅
+//    - shadow('elevation-raised') → shadow('elevation-md') au hover (§F.4) ✅
 
 @import '@/styles/abstracts/index';
 
@@ -18,7 +22,7 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: spacing('3');
+    gap: spacing('sm');
   }
 
   &__item {
@@ -29,15 +33,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: spacing('3');
-    padding: spacing('3') spacing('xs');
+    gap: spacing('sm');
+    padding: spacing('sm') spacing('xs');
     background: surface('card');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — carte adulte §D.3
     border: border-width('thin') solid surface('border');
     @include safe-transition(box-shadow border-color);
 
     &:hover {
-      box-shadow: shadow('elevation-raised');
+      box-shadow: shadow(
+        'elevation-md'
+      ); // Shadow hover carte profil interactif — §F.4
       border-color: surface('border');
     }
   }
@@ -45,7 +51,7 @@
   &__info {
     display: flex;
     align-items: center;
-    gap: spacing('2');
+    gap: spacing('sm');
     flex-wrap: wrap;
     flex: 1;
   }
@@ -73,13 +79,13 @@
   &__badge {
     display: inline-flex;
     align-items: center;
-    gap: spacing('1');
-    padding: spacing('1') spacing('2');
+    gap: spacing('xs');
+    padding: spacing('xs') spacing('sm');
     font-size: font-size('xs');
     font-weight: font-weight('semibold');
     background: semantic('success', 'bg');
     color: semantic('success');
-    border-radius: radius('sm');
+    border-radius: radius('subtle'); // 4px — badge inline §D.3
     text-transform: uppercase;
     letter-spacing: 0.025em;
 

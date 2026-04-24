@@ -9,6 +9,11 @@
 // - Cibles tactiles ≥ 44px (boutons Révoquer / Annuler)
 // - Confirmation inline : pas de modale (anti-surprise TSA)
 // - Transitions douces ≤ 0.3s
+//
+// ✅ MIGRÉ v1.1 :
+//    - radius('md'/'sm') → aliases sémantiques v1.1 ✅
+//    - spacing('1'/'2'/'3') → spacing('xs'/'sm') ✅
+//    - @include focus-ring → outline: 2px solid var(--color-primary) ✅
 
 @use '@/styles/abstracts' as *;
 
@@ -16,7 +21,7 @@
   // ── Layout global ───────────────────────────────────────────────────────
   display: flex;
   flex-direction: column;
-  gap: spacing('3');
+  gap: spacing('sm');
 
   // ── État chargement ──────────────────────────────────────────────────────
   &--loading {
@@ -31,8 +36,8 @@
     font-size: font-size('sm');
     background: semantic('error', 'light');
     border-left: border-width('thick') solid semantic('error', 'base');
-    border-radius: radius('sm');
-    padding: spacing('2') spacing('3');
+    border-radius: radius('subtle'); // 4px — message erreur §D.3
+    padding: spacing('xs') spacing('sm');
   }
 
   &__empty {
@@ -40,14 +45,14 @@
     font-size: font-size('sm');
     font-style: italic;
     text-align: center;
-    padding: spacing('3');
+    padding: spacing('sm');
   }
 
   // ── Sections (actifs / révoqués) ─────────────────────────────────────────
   &__section {
     display: flex;
     flex-direction: column;
-    gap: spacing('2');
+    gap: spacing('sm');
 
     &--revoked {
       opacity: 0.7;
@@ -75,7 +80,7 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: spacing('2');
+    gap: spacing('sm');
     // Scroll après ~5 éléments (Bug #4 — liste infinie)
     max-height: size('touch-target-min') * 5;
     overflow-y: auto;
@@ -84,12 +89,12 @@
   // ── Item appareil ────────────────────────────────────────────────────────
   &__item {
     background: surface('card');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — conteneur carte §D.3
     border: border-width('thin') solid surface('border');
-    padding: spacing('3');
+    padding: spacing('sm');
     display: flex;
     flex-direction: column;
-    gap: spacing('2');
+    gap: spacing('sm');
     @include safe-transition(opacity border-color);
 
     // Révoqué : visuellement atténué
@@ -110,7 +115,7 @@
   &__item-info {
     display: flex;
     align-items: center;
-    gap: spacing('2');
+    gap: spacing('sm');
     flex: 1;
   }
 
@@ -123,7 +128,7 @@
   &__item-details {
     display: flex;
     flex-direction: column;
-    gap: spacing('1');
+    gap: spacing('xs');
     flex: 1;
   }
 
@@ -138,7 +143,7 @@
     color: semantic('success', 'base');
     font-weight: font-weight('semibold');
     background: semantic('success', 'light');
-    padding: 0 spacing('2');
+    padding: 0 spacing('sm');
     border-radius: radius('full');
     width: fit-content;
   }
@@ -152,7 +157,7 @@
   &__item-status {
     font-size: font-size('xs');
     font-weight: font-weight('semibold');
-    padding: 0 spacing('2');
+    padding: 0 spacing('sm');
     border-radius: radius('full');
     flex-shrink: 0;
 
@@ -170,7 +175,7 @@
   // ── Actions (boutons Révoquer / Annuler) ──────────────────────────────────
   &__item-actions {
     display: flex;
-    gap: spacing('2');
+    gap: spacing('sm');
     flex-shrink: 0;
     flex-wrap: wrap;
 
@@ -183,10 +188,10 @@
   &__revoke-btn {
     // Cible tactile ≥ 44px (WCAG AA + TSA)
     min-height: size('touch-target-min');
-    padding: spacing('2') spacing('3');
+    padding: spacing('xs') spacing('sm');
     font-size: font-size('sm');
     font-weight: font-weight('semibold');
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — bouton §D.3
     border: border-width('thin') solid semantic('warning', 'base');
     background: transparent;
     color: semantic('warning', 'base');
@@ -198,7 +203,8 @@
     }
 
     &:focus-visible {
-      @include focus-ring;
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
 
     &:disabled {
@@ -218,10 +224,10 @@
   &__cancel-btn {
     // Cible tactile ≥ 44px
     min-height: size('touch-target-min');
-    padding: spacing('2') spacing('3');
+    padding: spacing('xs') spacing('sm');
     font-size: font-size('sm');
     font-weight: font-weight('normal');
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — bouton §D.3
     border: border-width('thin') solid surface('border');
     background: surface('page');
     color: text('secondary');
@@ -233,7 +239,8 @@
     }
 
     &:focus-visible {
-      @include focus-ring;
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
   }
 }

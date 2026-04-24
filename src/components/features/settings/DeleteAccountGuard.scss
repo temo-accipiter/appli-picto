@@ -19,8 +19,8 @@
   padding: spacing('md');
   background: surface('bg');
   border: border-width('thin') solid surface('border');
-  border-radius: radius('lg');
-  box-shadow: shadow('elevation-xs');
+  border-radius: radius('large'); // 20px — conteneur guard §D.2
+  // Shadow supprimée au repos (§F.3)
   animation: deleteGuardFadeIn timing('base') ease-out;
 }
 
@@ -53,7 +53,7 @@
 .delete-guard__error {
   margin: spacing('xs') 0 0;
   padding: spacing('sm') spacing('sm');
-  border-radius: radius('md');
+  border-radius: radius('button'); // 6px — message erreur inline §D.3
   background: semantic('error', 'bg');
   border: border-width('thin') solid semantic('error', 'border');
   color: semantic('error', 'dark');
@@ -73,9 +73,8 @@
 
 /* Focus visible bien lisible (AA) */
 .delete-guard :focus-visible {
-  outline: border-width('base') solid semantic('info-primary');
-  outline-offset: border-width('medium');
-  @include safe-transition(outline-color, timing('fast'), easing('smooth'));
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* Espace harmonieux avec tes composants Input/Button */

@@ -49,7 +49,7 @@
   justify-content: center;
   font-weight: font-weight('bold');
   color: text();
-  box-shadow: shadow('elevation-md');
+  // Shadow supprimée au repos (§F.3) — conservée au hover
   @include safe-transition(
     transform box-shadow border-color,
     timing('fast'),
@@ -91,7 +91,13 @@
     timing('fast'),
     easing('ease-out')
   );
-  @include focus-ring(color('base'), border-width('focus'), size('2'));
+  &:focus {
+    outline: none;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 
   // Mobile par défaut (320px-767px)
   width: size('touch-target-optimal');
@@ -162,7 +168,7 @@
   padding: spacing('sm') spacing('md');
   background: semantic('error', 'bg');
   border: border-width('thin') solid semantic('error');
-  border-radius: radius('sm');
+  border-radius: radius('subtle'); // 4px — message erreur §D.3
   color: semantic('error');
   font-size: font-size('sm');
   font-weight: font-weight('medium');

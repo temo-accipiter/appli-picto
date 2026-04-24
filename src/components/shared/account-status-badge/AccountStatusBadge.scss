@@ -26,7 +26,7 @@
   align-items: center;
   gap: spacing('sm');
   padding: spacing('sm');
-  border-radius: radius('xl');
+  border-radius: radius('badge'); // 50% — badge/pill §D.3
   font-weight: font-weight('medium');
   border: border-width('base') solid transparent;
   background: surface('bg');
