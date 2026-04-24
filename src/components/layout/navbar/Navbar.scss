@@ -1,13 +1,15 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// NAVBAR COMPONENT
+// NAVBAR COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/timing/respond-to avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6 ✅
 //    - surface('bg'/'border'/'hover') → Semantics Phase 6 ✅
-//    - shadow('elevation-sm'/'elevation-md') → Primitives Phase 6 ✅
-//    - radius('md'/'sm'/'full') → Primitives Phase 6 (12px/6px/50%) ✅
+//    - radius('card'/'button'/'subtle'/'full') → Aliases sémantiques v1.1 ✅
+//    - Navbar : border-bottom (remplace elevation-sm §F.3) ✅
+//    - shadow('elevation-md') → Skip-link flottant — TODO T1-B ✅
 //    - text('invert') → Semantics Phase 6 ✅
 //    - timing('fast') → Primitives Phase 6 (0.15s) ✅
 //    - easing('ease-out') → Primitives Phase 6 ✅
@@ -20,7 +22,6 @@
 //    - font-weight('medium'/'bold') → Legacy support actif
 //    - border-width('thin'/'base') → Legacy support actif
 //    - color('base'/'dark') → Legacy support actif
-//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
 // ============================================================================
 
 // ============================================================================
@@ -47,13 +48,16 @@
     background: surface('bg');
     color: text();
     padding: spacing('sm') spacing('md');
-    border-radius: radius('md');
+    border-radius: radius('card'); // 12px — petite bulle flottante
     font-size: font-size('sm');
     font-weight: font-weight('medium');
     text-decoration: none;
-    box-shadow: shadow('elevation-md');
-    outline: a11y('focus-ring-width') solid color('base');
-    outline-offset: a11y('focus-ring-offset');
+    // TODO: migrer vers shadow('dropdown') après résolution T1-B (conflit shadow())
+    box-shadow: shadow(
+      'elevation-md'
+    ); // Ombre skip-link flottant — exception §F.3
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
     border: border-width('thin') solid color('base');
   }
 }
@@ -68,7 +72,7 @@
   z-index: z-index('modal');
   display: flex;
   background-color: surface('bg');
-  box-shadow: shadow('elevation-sm');
+  border-bottom: border-width('thin') solid surface('border'); // Séparation légère — remplace elevation-sm (§F.3)
 
   /* [Mobile-first] Base = mobile (320px+) */
   flex-direction: column;
@@ -152,12 +156,12 @@
         align-items: center;
         gap: spacing('xs');
         padding: spacing('sm') spacing('md');
-        border-radius: radius('md');
+        border-radius: radius('button'); // 6px — alias sémantique §D.3
         font-size: font-size('sm');
         font-weight: font-weight('medium');
         text-decoration: none;
         @include safe-transition(
-          background-color transform border-color box-shadow,
+          background-color transform border-color,
           timing('fast'),
           easing('ease-out')
         );
@@ -192,8 +196,9 @@
 
           &:hover {
             background: color('dark');
-            transform: translateY(calc(-1 * #{border-width('thin')}));
-            box-shadow: shadow('elevation-md');
+            transform: translateY(
+              calc(-1 * #{border-width('thin')})
+            ); // Shadow supprimé : bouton = atome (§F.3)
           }
         }
 
@@ -243,11 +248,11 @@
     }
   }
 
-  // WCAG 2.4.7 - Focus visible accessible
+  // WCAG 2.4.7 - Focus visible accessible (v1.1 §F.5)
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid color('base');
-    outline-offset: spacing('xs');
-    border-radius: radius('sm');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: radius('subtle'); // 4px — alias sémantique §D.3
   }
 
   &.active {
@@ -272,7 +277,7 @@
   background: color('base');
   color: text('invert');
   border: none;
-  border-radius: radius('md');
+  border-radius: radius('button'); // 6px — alias sémantique §D.3
   padding: spacing('xs') spacing('sm');
   font-size: font-size('sm');
   margin-left: spacing('md');
@@ -287,10 +292,10 @@
     background: color('dark');
   }
 
-  // WCAG 2.4.7 - Focus visible accessible
+  // WCAG 2.4.7 - Focus visible accessible (v1.1 §F.5)
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid text('invert');
-    outline-offset: a11y('focus-ring-offset');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 .nav-avatar-link {

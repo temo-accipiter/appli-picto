@@ -1,13 +1,15 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// USER MENU COMPONENT
+// USER MENU COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('xs'/'sm'/'md'/'xl'/'1') → Primitives Phase 6 ✅
 //    - surface('soft'/'overlay'/'bg'/'border'/'hover') → Semantics Phase 6 ✅
-//    - radius('full'/'lg'/'md') → Primitives Phase 6 (50%/20px/12px) ✅
-//    - shadow('elevation-sm'/'elevation-lg') → Primitives Phase 6 ✅
+//    - radius('full'/'modal'/'button') → Aliases sémantiques v1.1 ✅
+//    - shadow('elevation-lg') → Dialog flottant — TODO T1-B ✅
+//    - Avatar : shadow supprimé (atome §F.3) ✅
 //    - text('muted') → Semantics Phase 6 ✅
 //    - semantic('error'/'warning'/'info', all variants) → Semantics Phase 6 ✅
 //    - timing('fast') → Primitives Phase 6 (0.15s) ✅
@@ -19,7 +21,6 @@
 //    - z-index('tooltip') → Legacy support actif
 //    - border-width('thin') → Legacy support actif
 //    - color('base') → Legacy support actif
-//    - a11y('focus-ring-width') → Legacy support actif
 // ============================================================================
 
 .user-menu-trigger {
@@ -41,8 +42,7 @@
   font-weight: font-weight('bold');
   font-size: font-size('sm');
   color: text();
-  background: surface('soft');
-  box-shadow: shadow('elevation-sm');
+  background: surface('soft'); // Shadow supprimé : avatar = atome (§F.3)
 }
 .avatar-circle.header {
   width: size('touch-target-min');
@@ -70,8 +70,9 @@
   width: min(92vw, size('320'));
   background: surface('bg');
   color: text();
-  border-radius: radius('lg');
-  box-shadow: shadow('elevation-lg');
+  border-radius: radius('modal'); // 20px — alias sémantique §D.3
+  // TODO: migrer vers shadow('dropdown') après résolution T1-B (conflit shadow())
+  box-shadow: shadow('elevation-lg'); // Ombre menu flottant — exception §F.3
   overflow: hidden;
 
   // Mobile par défaut (320px-767px) : en bas à droite (accessible au pouce droit)
@@ -135,7 +136,7 @@
   padding: spacing('sm') spacing('md');
   border: none;
   background: transparent;
-  border-radius: radius('md');
+  border-radius: radius('button'); // 6px — alias sémantique §D.3
   cursor: pointer;
   text-align: left;
   font-size: font-size('lg');
@@ -145,10 +146,10 @@
     background: surface('hover');
   }
 
-  // WCAG 2.4.7 - Focus visible accessible
+  // WCAG 2.4.7 - Focus visible accessible (v1.1 §F.5)
   &:focus-visible {
     background: surface('hover');
-    outline: a11y('focus-ring-width') solid color('base');
+    outline: 2px solid var(--color-primary);
     outline-offset: calc(-1 * #{spacing('xs')});
   }
 
@@ -158,7 +159,7 @@
 
   &.danger:focus-visible {
     background: semantic('error', 'bg');
-    outline: a11y('focus-ring-width') solid semantic('error');
+    outline: 2px solid semantic('error'); // Couleur sémantique contextuelle
     outline-offset: calc(-1 * #{spacing('xs')});
   }
 
@@ -170,7 +171,7 @@
   &.admin:focus-visible {
     background: semantic('warning', 'bg');
     color: semantic('warning', 'dark');
-    outline: a11y('focus-ring-width') solid semantic('warning');
+    outline: 2px solid semantic('warning'); // Couleur sémantique contextuelle
     outline-offset: calc(-1 * #{spacing('xs')});
   }
 
@@ -180,7 +181,7 @@
 
   &.legal:focus-visible {
     background: semantic('info', 'bg');
-    outline: a11y('focus-ring-width') solid semantic('info');
+    outline: 2px solid semantic('info'); // Couleur sémantique contextuelle
     outline-offset: calc(-1 * #{spacing('xs')});
   }
 

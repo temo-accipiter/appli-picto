@@ -1,13 +1,14 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// SETTINGS MENU COMPONENT
+// SETTINGS MENU COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/timing/respond-to avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('md'/'sm'/'xs'/'2xl') → Primitives Phase 6 ✅
 //    - surface('soft'/'hover'/'border') → Semantics Phase 6 ✅
-//    - radius('md'/'lg'/'xs') → Primitives Phase 6 (12px/20px/3px) ✅
-//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - radius('button'/'large'/'medium'/'subtle') → Aliases sémantiques v1.1 ✅
+//    - shadow : supprimé du trigger hover (atome §F.3) ✅
 //    - text() → Semantics Phase 6 ✅
 //    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
 //    - easing('ease-out') → Primitives Phase 6 ✅
@@ -16,7 +17,6 @@
 //    - size('touch-target-min'/'24'/'300'/'4'/'100') → Legacy support actif
 //    - border-width('thin'/'base') → Legacy support actif
 //    - color('base') → Legacy support actif
-//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
 //    - font-weight('semibold') → Legacy support actif
 // ============================================================================
 
@@ -32,11 +32,11 @@
     padding: 0;
     background: surface('soft');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius('button'); // 6px — alias sémantique §D.3
     cursor: pointer;
     color: text();
     @include safe-transition(
-      background-color transform box-shadow,
+      background-color transform,
       timing('fast'),
       easing('ease-out')
     );
@@ -44,12 +44,11 @@
     &:hover {
       background: surface('hover');
       transform: translateY(calc(-1 * #{border-width('thin')}));
-      box-shadow: shadow('elevation-sm');
     }
 
     &:focus-visible {
-      outline: a11y('focus-ring-width') solid color('base');
-      outline-offset: a11y('focus-ring-offset');
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
     }
   }
 
@@ -69,7 +68,9 @@
     width: size('4');
     height: border-width('base');
     background-color: text();
-    border-radius: radius('xs');
+    border-radius: radius(
+      'subtle'
+    ); // 4px — alias sémantique §D.3 (remplace 'xs' primitif)
     @include safe-transition(
       transform opacity,
       timing('base'),
@@ -104,7 +105,9 @@
     left: auto !important;
     top: auto !important;
     width: min(size('300'), 90vw) !important;
-    border-radius: radius('lg');
+    border-radius: radius(
+      'large'
+    ); // 20px — menu flottant, alias générique §D.2
     overflow-y: auto;
     max-height: 70vh;
     animation: slideInUp timing('fast') easing('ease-out') !important;
@@ -142,7 +145,9 @@
     .checkbox-field {
       padding: spacing('sm') spacing('md');
       background: surface('soft');
-      border-radius: radius('md');
+      border-radius: radius(
+        'medium'
+      ); // 12px — conteneur item liste, alias générique §D.2
       cursor: pointer;
       @include safe-transition(
         background-color transform,

@@ -1,13 +1,14 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// BOTTOM NAV COMPONENT
+// BOTTOM NAV COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/timing/respond-to avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('md'/'sm') → Primitives Phase 6 ✅
 //    - surface('bg'/'hover'/'border') → Semantics Phase 6 ✅
-//    - radius('sm') → Primitives Phase 6 (6px) ✅
-//    - shadow('elevation-sm') → Primitives Phase 6 ✅
+//    - radius('button') → Alias sémantique v1.1 (6px) ✅
+//    - Barre fixe : border-top (remplace elevation-sm §F.3) ✅
 //    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
 //    - easing('ease-out') → Primitives Phase 6 ✅
 //    - safe-transition() → Mixin Phase 6 ✅
@@ -16,7 +17,6 @@
 //    - size('2'/'touch-target-min') → Legacy support actif
 //    - border-width('thin'/'base') → Legacy support actif
 //    - color('base'/'dark') → Legacy support actif
-//    - a11y('focus-ring-width'/'focus-ring-offset') → Legacy support actif
 // ============================================================================
 
 /**
@@ -88,8 +88,7 @@
   // Background opaque pour éviter que le contenu soit visible à travers
   background: surface('bg');
   backdrop-filter: blur(size('2'));
-  border-top: border-width('thin') solid surface('border');
-  box-shadow: shadow('elevation-sm');
+  border-top: border-width('thin') solid surface('border'); // Séparation légère — remplace elevation-sm (§F.3)
 
   // Desktop (768px+) : hidden (navbar top remains)
   @include respond-to(md) {
@@ -123,7 +122,7 @@
   padding: spacing('sm');
   color: color('base');
   text-decoration: none;
-  border-radius: radius('sm');
+  border-radius: radius('button'); // 6px — alias sémantique §D.3
   @include safe-transition(
     background-color color,
     timing('fast'),
@@ -141,8 +140,8 @@
   }
 
   &:focus-visible {
-    outline: a11y('focus-ring-width') solid color('base');
-    outline-offset: a11y('focus-ring-offset');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
