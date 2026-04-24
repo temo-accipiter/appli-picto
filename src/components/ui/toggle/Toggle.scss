@@ -28,10 +28,10 @@
   min-height: a11y('min-touch-target');
   padding: spacing('xs');
 
-  // Focus visible
+  // Focus visible (v1.1 §F.5 — outline direct 2px)
   &:focus-visible {
-    outline: border-width('medium') solid var(--color-primary);
-    outline-offset: spacing('2');
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
     border-radius: radius('full');
   }
 
@@ -76,7 +76,7 @@
   height: spacing('md');
   background: white(); // Token couleur blanc pur (#ffffff)
   border-radius: radius('full');
-  box-shadow: var(--shadow-sm);
+  // Pas de box-shadow sur composant atomique (v1.1 §F.3)
   transition: transform var(--motion-duration-quick)
     var(--motion-easing-default);
 

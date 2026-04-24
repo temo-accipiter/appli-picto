@@ -27,12 +27,13 @@
   transform: translateX(-50%);
   z-index: z-index('modal'); // Au-dessus de tout
 
-  // Spacing
-  padding: spacing('12') spacing('20');
+  // Spacing — button-padding-y (8px) × nav-padding (16px) — alias sémantiques §E.2
+  padding: spacing('button-padding-y') spacing('nav-padding');
 
   // Apparence
-  border-radius: radius('md'); // 8px
-  box-shadow: shadow('elevation-lg'); // Ombre forte pour visibilité
+  border-radius: radius('card'); // 12px — alias sémantique §D.2
+  // TODO: migrer vers shadow('dropdown') après résolution T1-B (conflit shadow())
+  box-shadow: shadow('elevation-lg'); // Ombre flottante toast — exception §F.3
   max-width: 90%; // Responsive mobile
 
   // Typographie

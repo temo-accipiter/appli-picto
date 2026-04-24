@@ -27,7 +27,7 @@
   // Apparence
   background-color: tsa-pastel('info-soft'); // Bleu pastel doux
   border: border-width('base') solid semantic('info', 'border');
-  border-radius: radius('md'); // 8px
+  border-radius: radius('card'); // 12px — alias sémantique §D.2
 
   // Layout
   text-align: center;
@@ -42,9 +42,9 @@
       'input-height-sm'
     ); // 36px (ou custom 8px via spacing tolérance)
     background-color: semantic('info', 'border'); // Fond barre (bleu clair)
-    border-radius: radius('sm'); // 4px
+    border-radius: radius('subtle'); // 4px — alias générique §D.2
     overflow: hidden;
-    margin-block-end: spacing('12'); // Espace avant message
+    margin-block-end: spacing('nav-gap'); // 8px — alias sémantique §E.2
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -59,7 +59,7 @@
       semantic('info', 'base'),
       semantic('success', 'base')
     );
-    border-radius: radius('sm'); // 4px
+    border-radius: radius('subtle'); // 4px — alias générique §D.2
 
     // Animation DOUCE TSA-friendly
     @include safe-transition(
