@@ -3,20 +3,22 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// TIME TIMER COMPONENT
+// TIME TIMER COMPONENT - Tokens-First
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/semantic/radius/shadow/timing/surface avec fallback
+// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
+// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
 //    - spacing('xl'/'lg'/'md'/'xs'/'sm'/'80') → Primitives Phase 6 ✅
 //    - semantic('info'/'success'/'warning'/'error', all variants) → Semantics Phase 6 ✅
-//    - radius('lg'/'md'/'sm') → Primitives Phase 6 (20px/12px/6px) ✅
-//    - shadow('elevation-sm'/'elevation-md'/'elevation-xs') → Primitives Phase 6 ✅
+//    - radius('large'/'button'/'input'/'medium'/'subtle'/'full') → Aliases sémantiques v1.1 ✅
+//    - shadow conteneur statique supprimée (§F.3) ✅
+//    - shadow('elevation-sm'/'elevation-md') → Boutons interactifs — exception §F.3 ✅
+//    - filter: drop-shadow sur cercle SVG → visuel TSA, conservé ✅
 //    - timing('base'/'fast') → Primitives Phase 6 (0.2s/0.15s) ✅
 //    - easing('smooth') → Primitives Phase 6 ✅
 //    - surface('bg'/'soft'/'border') → Semantics Phase 6 ✅
 //    - text('default'/'invert'/'light') → Semantics Phase 6 ✅
 //    - safe-transition() → Mixin Phase 6 ✅
 //    - when-inside() → Mixin Phase 6 ✅
-//    - non-invasive-focus() → Mixin Phase 6 ✅
 //    - visually-hidden → Mixin Phase 6 ✅
 //    - respond-to() → Mixin responsive Phase 6 ✅
 //    - size('600'/'300'/'280'/'160') → Legacy support actif
@@ -40,8 +42,10 @@
   /* Appearance - Fond bleu avec bordure noire (Time Timer physique) */
   background: semantic('info', 'bg');
   border: size('4') solid text('dark'); // Bordure noire épaisse
-  border-radius: radius('lg');
-  box-shadow: shadow('elevation-lg'); // Ombre portée pour effet 3D
+  border-radius: radius(
+    'large'
+  ); // 20px — conteneur principal TSA, alias générique §D.4
+  // Shadow supprimée : conteneur statique (§F.3)
 
   /* Modifiers (BEM) */
 
@@ -137,12 +141,16 @@
     gap: spacing('xs');
     padding: spacing('md') spacing('lg');
     border: none;
-    border-radius: radius('md');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton contrôle TSA, alias sémantique §D.3
     font-size: font-size('base');
     font-weight: font-weight('semibold');
     cursor: pointer;
     @include safe-transition(all, timing('base'), easing('smooth'));
-    box-shadow: shadow('elevation-sm');
+    box-shadow: shadow(
+      'elevation-sm'
+    ); // Conservé : bouton interactif (exception §F.3 Tableau enfant)
 
     @include when-inside('.time-timer--compact') {
       padding: spacing('sm') spacing('md');
@@ -165,8 +173,14 @@
       cursor: not-allowed;
     }
 
-    /* A11y Focus */
-    @include non-invasive-focus(semantic('info-primary'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
 
     /* Variant: Primary */
     &--primary {
@@ -233,7 +247,7 @@
       font-weight: font-weight('medium');
       padding: spacing('sm') spacing('md');
       background: semantic('info', 'bg');
-      border-radius: radius('sm');
+      border-radius: radius('subtle'); // 4px — note info, alias sémantique §D.3
       border-left: size('4') solid semantic('info-primary');
     }
   }
@@ -244,7 +258,9 @@
     gap: spacing('md');
     cursor: pointer;
     padding: spacing('md');
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — zone sélection, alias générique §D.2
     @include safe-transition(background, timing('fast'), easing('smooth'));
 
     &:hover {
@@ -295,7 +311,9 @@
   &__preset-btn {
     padding: spacing('md');
     border: border-width('base') solid surface('border');
-    border-radius: radius('sm');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton preset, alias sémantique §D.3
     background: surface('bg');
     color: text('default');
     font-size: font-size('base');
@@ -313,7 +331,14 @@
       transform: translateY(0);
     }
 
-    @include non-invasive-focus(semantic('info-primary'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
 
     &--active {
       background: semantic('info-primary');
@@ -347,7 +372,9 @@
     gap: spacing('xs');
     padding: spacing('md');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton couleur, alias sémantique §D.3
     background: surface('bg');
     cursor: pointer;
     @include safe-transition(all, timing('fast'), easing('smooth'));
@@ -362,7 +389,14 @@
       transform: translateY(0);
     }
 
-    @include non-invasive-focus(semantic('info-primary'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
 
     &--selected {
       border-color: semantic('info-primary');
@@ -398,7 +432,9 @@
   &__size-btn {
     padding: spacing('md');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton taille, alias sémantique §D.3
     background: surface('bg');
     color: text('default');
     font-size: font-size('base');
@@ -416,7 +452,14 @@
       transform: translateY(0);
     }
 
-    @include non-invasive-focus(semantic('info-primary'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
 
     &--selected {
       background: semantic('info-primary');
@@ -446,7 +489,7 @@
     flex: 1;
     padding: spacing('md');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius('input'); // 6px — champ saisie, alias sémantique §D.3
     background: surface('bg');
     color: text('default');
     font-size: font-size('base');
@@ -466,7 +509,9 @@
   &__add-custom-btn {
     padding: spacing('md') spacing('lg');
     border: none;
-    border-radius: radius('md');
+    border-radius: radius(
+      'button'
+    ); // 6px — bouton ajout, alias sémantique §D.3
     background: semantic('info-primary');
     color: text('invert');
     font-size: font-size('base');
@@ -483,7 +528,14 @@
       transform: translateY(0);
     }
 
-    @include non-invasive-focus(semantic('info-primary'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
   }
 
   &__custom-duration-list {
@@ -528,7 +580,14 @@
       transform: scale(0.95);
     }
 
-    @include non-invasive-focus(semantic('error'));
+    /* A11y Focus (v1.1 §F.5) */
+    &:focus {
+      outline: none;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
   }
 
   /* Timer Size Variations */

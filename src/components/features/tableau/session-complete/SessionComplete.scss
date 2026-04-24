@@ -61,7 +61,9 @@
     gap: spacing('sm');
     padding: spacing('md');
     background: surface('card');
-    border-radius: radius('lg');
+    border-radius: radius(
+      'large'
+    ); // 20px — carte récompense Tableau enfant, alias générique §D.4
     border: border-width('thin') solid semantic('warning');
   }
 
@@ -69,7 +71,9 @@
     width: size('card-image-height');
     height: size('card-image-height');
     object-fit: cover;
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — image interne, alias générique §D.2
     display: block;
   }
 
@@ -81,7 +85,9 @@
     justify-content: center;
     font-size: font-size('4xl');
     background: surface('soft');
-    border-radius: radius('md');
+    border-radius: radius(
+      'medium'
+    ); // 12px — placeholder interne, alias générique §D.2
   }
 
   &__reward-name {
@@ -104,8 +110,10 @@
     max-width: size('container-md');
     background: surface('card');
     border: border-width('thin') solid semantic('warning');
-    border-radius: radius('lg');
-    box-shadow: shadow('elevation-sm');
+    border-radius: radius(
+      'large'
+    ); // 20px — overlay Tableau enfant, alias générique §D.4
+    // Shadow supprimée : conteneur statique (§F.3)
 
     .session-complete__message {
       gap: spacing('xs');
@@ -113,7 +121,7 @@
 
     .session-complete__reward-card {
       width: 100%;
-      box-shadow: shadow('elevation-sm');
+      // Shadow supprimée : conteneur statique interne (§F.3)
     }
   }
 }
