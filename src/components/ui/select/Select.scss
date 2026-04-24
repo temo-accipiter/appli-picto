@@ -53,14 +53,16 @@
     width: 100%;
     min-height: size('touch-target-min'); // 44px WCAG AA
 
-    // Spacing
-    padding: spacing('sm') spacing('sm');
+    // Spacing — alias sémantique composant (v1.1 §E.2)
+    padding: spacing('input-padding'); // 8px
 
     // Apparence
     background-color: surface('bg');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md'); // 8px
-    box-shadow: shadow('elevation-xs'); // Ombre subtile
+    border-radius: radius(
+      'input'
+    ); // 6px — alias sémantique composant (v1.1 §D.3)
+    // Pas de box-shadow sur composant atomique (v1.1 §F.3)
 
     // Typographie
     color: text();
@@ -71,7 +73,7 @@
     cursor: pointer;
     user-select: none;
     @include safe-transition(
-      border-color background-color box-shadow,
+      border-color background-color,
       timing('fast'),
       easing('smooth')
     );
@@ -84,8 +86,13 @@
       background-color: surface('hover'); // Hover subtil
     }
 
+    &:focus {
+      outline: none;
+    }
+
     &:focus-visible {
-      @include focus-ring; // Focus standard WCAG
+      outline: 2px solid var(--color-primary); // Focus WCAG 2.2 AA (v1.1 §F.5)
+      outline-offset: 2px;
     }
 
     &[data-disabled] {
@@ -125,7 +132,7 @@
     height: size('icon-xl');
     object-fit: contain;
     flex-shrink: 0;
-    border-radius: radius('sm'); // 4px
+    border-radius: radius('subtle'); // 4px — alias générique (v1.1 §D.2)
   }
 
   &__selected-label {
@@ -176,8 +183,12 @@
     // Apparence
     background-color: surface('bg');
     border: border-width('base') solid surface('border');
-    border-radius: radius('md'); // 8px
-    box-shadow: shadow('elevation-lg'); // Ombre forte
+    border-radius: radius(
+      'medium'
+    ); // 12px — alias générique flottant (v1.1 §D.2)
+    // TODO: migrer vers shadow('dropdown') après résolution T1-B (conflit shadow())
+    // Ombre flottante temporaire — exception documentée v1.1 §F.3 (composant flottant)
+    box-shadow: 0 4px 16px shadow-color('black-light');
 
     // Animations TSA-friendly
     &[data-state='open'] {
@@ -215,7 +226,7 @@
     padding: spacing('xs') spacing('sm');
 
     // Apparence
-    border-radius: radius('sm'); // 4px
+    border-radius: radius('subtle'); // 4px — alias générique (v1.1 §D.2)
 
     // Typographie
     font-size: font-size('sm');
@@ -264,7 +275,7 @@
     height: size('icon-lg');
     object-fit: contain;
     flex-shrink: 0;
-    border-radius: radius('sm'); // 4px
+    border-radius: radius('subtle'); // 4px — alias générique (v1.1 §D.2)
   }
 
   &__item-label {

@@ -37,15 +37,17 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 .input-field__input {
-  // Spacing
-  padding: spacing('sm');
+  // Spacing — alias sémantique composant (v1.1 §E.2)
+  padding: spacing('input-padding'); // 8px
 
   // Typographie
   font-size: font-size('base');
 
   // Apparence
   border: border-width('base') solid surface('border');
-  border-radius: radius('md'); // 8px
+  border-radius: radius(
+    'input'
+  ); // 6px — alias sémantique composant (v1.1 §D.3)
   box-sizing: border-box;
   background-color: surface('bg');
   color: text();
@@ -59,8 +61,15 @@
   // Transitions TSA-compliant
   @include safe-transition(border outline, timing('fast'), easing('smooth'));
 
-  // Focus WCAG 2.2 AA
-  @include focus-ring;
+  // Focus WCAG 2.2 AA (v1.1 §F.5 — outline direct, pas de box-shadow)
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -108,8 +117,12 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 input[type='file'].input-field__input {
-  padding: spacing('6');
-  border-radius: radius('sm'); // 4px
+  padding: spacing(
+    'input-padding'
+  ); // 8px — alias sémantique composant (v1.1 §E.2)
+  border-radius: radius(
+    'input'
+  ); // 6px — alias sémantique composant (v1.1 §D.3)
   cursor: pointer;
 }
 
@@ -139,7 +152,7 @@ input[type='file'].input-field__input {
   // Apparence
   background: none;
   border: none;
-  border-radius: radius('sm'); // 4px
+  border-radius: radius('subtle'); // 4px — alias générique (v1.1 §D.2)
   font-size: font-size('base');
 
   // UX
@@ -159,8 +172,8 @@ input[type='file'].input-field__input {
   }
 
   &:focus-visible {
-    outline: border-width('focus') solid color('base'); // Couleur focus principale
-    outline-offset: border-width('focus');
+    outline: 2px solid var(--color-primary); // Focus WCAG 2.2 AA (v1.1 §F.5)
+    outline-offset: 2px;
     opacity: opacity('opaque'); // 1
   }
 }
