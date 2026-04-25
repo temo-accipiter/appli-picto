@@ -70,7 +70,9 @@
 .toggle__thumb {
   // Bouton rond qui se déplace
   position: absolute;
-  top: spacing('2');
+  top: spacing(
+    '2'
+  ); // §E.7 : 2px positionnement sub-grille, sans CSS var → exception documentée
   left: spacing('2');
   width: spacing('md');
   height: spacing('md');
@@ -82,7 +84,9 @@
 
   // État checked : déplacement vers la droite (44px - 16px - 4px = 24px, mais arrondi à 20px pour centrage visuel)
   .toggle--checked & {
-    transform: translateX(spacing('20'));
+    transform: translateX(
+      var(--spacing-20)
+    ); // §E.7 : 20px sans alias sémantique → CSS var
   }
 
   // Pas d'animation si reduced motion

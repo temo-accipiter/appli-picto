@@ -36,7 +36,7 @@
     'elevation-floating'
   ); // Alias sémantique — bannière flottante §F.4
   border-top: border-width('thin') solid surface('border');
-  padding: spacing('20') spacing('md');
+  padding: var(--spacing-20) spacing('md'); // §E.7 : 20px sans alias sémantique → CSS var
 
   /* Motion sûre */
   @media (prefers-reduced-motion: reduce) {
@@ -68,7 +68,7 @@
     color: text('default');
 
     .cookie-banner__title {
-      margin: 0 0 spacing('12') 0;
+      margin: 0 0 var(--spacing-12) 0; // §E.7 : 12px sans alias sémantique → CSS var
       font-size: font-size('lg');
       font-weight: font-weight('bold');
       color: text('default');

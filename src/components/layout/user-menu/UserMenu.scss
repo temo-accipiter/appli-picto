@@ -241,7 +241,9 @@
 /* a11y util */
 .sr-only {
   position: absolute;
-  width: spacing('1');
+  width: spacing(
+    '1'
+  ); // §E.7 : 1px pattern sr-only a11y, sans CSS var → exception documentée
   height: spacing('1');
   padding: 0;
   margin: calc(-1 * #{spacing('1')});

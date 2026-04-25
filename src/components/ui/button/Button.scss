@@ -50,8 +50,11 @@
   cursor: pointer;
   @include safe-transition(background color, timing('fast'), easing('smooth'));
 
-  // Focus WCAG 2.2 AA
-  @include focus-ring;
+  // Focus WCAG 2.2 AA — §F.5
+  &:focus-visible {
+    outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+    outline-offset: 2px;
+  }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   // ELEMENTS
@@ -148,7 +151,7 @@
   display: inline-block;
   width: spacing(
     '6'
-  ); // 6px - Tolérance : pas de token size() dédié pour dots 6px
+  ); // §E.7 : 6px spinner dot, sans CSS var ni size() dédié → exception documentée
   height: spacing('6');
   border-radius: radius('full'); // 50% (cercle)
   background-color: currentColor;

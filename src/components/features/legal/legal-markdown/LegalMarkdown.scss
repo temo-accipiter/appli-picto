@@ -16,7 +16,7 @@
 .legal-content {
   max-width: size('container-md');
   margin: 0 auto;
-  padding: spacing('lg') spacing('20');
+  padding: spacing('lg') var(--spacing-20); // §E.7 : 20px sans alias sémantique → CSS var
 
   &__back-button {
     background: none;
@@ -44,7 +44,7 @@
 
   &__header h1 {
     font-size: font-size('2xl');
-    margin: 0 0 spacing('12');
+    margin: 0 0 var(--spacing-12); // §E.7 : 12px sans alias sémantique → CSS var
   }
 
   &__body {
@@ -52,7 +52,9 @@
 
     h2 {
       font-size: font-size('xl');
-      margin-top: spacing('20');
+      margin-top: var(
+        --spacing-20
+      ); // §E.7 : 20px sans alias sémantique → CSS var
     }
 
     h3 {
@@ -76,13 +78,15 @@
 
     code {
       background: surface('soft');
-      padding: spacing('2') spacing('6');
+      padding: spacing('2') spacing('6'); // §E.7 : 2px/6px sub-grille, sans CSS var → exception documentée
       border-radius: radius('subtle'); // 4px — code inline §D.5
     }
 
     blockquote {
       border-left: border-width('base') solid surface('border');
-      padding-left: spacing('12');
+      padding-left: var(
+        --spacing-12
+      ); // §E.7 : 12px sans alias sémantique → CSS var
       color: text('muted');
     }
   }

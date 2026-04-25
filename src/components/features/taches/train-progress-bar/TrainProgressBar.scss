@@ -73,7 +73,7 @@
       stroke: semantic('info-primary');
       stroke-width: spacing('sm');
       fill: none;
-      stroke-dasharray: spacing('14') spacing('14');
+      stroke-dasharray: spacing('14') spacing('14'); // §E.7 : 14px SVG stroke-dasharray, sans CSS var → exception documentée
       animation: dash-rail timing('slowest') linear infinite;
     }
 
@@ -105,8 +105,8 @@
       }
 
       .dot {
-        width: spacing('20');
-        height: spacing('20');
+        width: var(--spacing-20); // §E.7 : 20px sans alias sémantique → CSS var
+        height: var(--spacing-20);
         border: border-width('base') solid semantic('info-primary');
         background: surface('bg');
         border-radius: radius('full');

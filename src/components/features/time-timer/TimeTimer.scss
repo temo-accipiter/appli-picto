@@ -499,10 +499,10 @@
       border-color: semantic('info', 'border');
     }
 
-    &:focus {
-      outline: none;
+    &:focus-visible {
+      outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+      outline-offset: 2px;
       border-color: semantic('info-primary');
-      box-shadow: shadow('elevation-sm');
     }
   }
 

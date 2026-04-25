@@ -135,10 +135,14 @@
     transform: translateY(0);
   }
   40% {
-    transform: translateY(-#{spacing('10')});
+    transform: translateY(
+      -#{spacing('10')}
+    ); // §E.7 : 10px keyframe animation, sans CSS var → exception documentée
   }
   60% {
-    transform: translateY(-#{spacing('6')});
+    transform: translateY(
+      -#{spacing('6')}
+    ); // §E.7 : 6px keyframe animation, sans CSS var → exception documentée
   }
 }
 
