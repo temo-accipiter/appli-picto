@@ -86,3 +86,5 @@ supabase/migrations/.DS_Store
 
 # Captures d'écran Playwright MCP
 .claude/playwright-screenshots/
+# Ne pas versionner les backups
+.backups/

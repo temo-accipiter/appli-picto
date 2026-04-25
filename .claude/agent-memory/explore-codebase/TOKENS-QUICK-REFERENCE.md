@@ -422,10 +422,10 @@ a11y('focus-ring-offset')      // 2px
 }
 
 // MIXINS
-@include touch-target('min');       // 44px WCAG AA
+@include touch-target('min'); // 44px WCAG AA
 @include touch-target('preferred'); // 56px TSA
-@include safe-transition(...);      // respect prefers-reduced-motion
-@include focus-ring();              // WCAG focus visible
+@include safe-transition(...); // respect prefers-reduced-motion
+@include focus-ring(); // WCAG focus visible
 ```
 
 ---
@@ -473,7 +473,7 @@ a11y('focus-ring-offset')      // 2px
 }
 
 // TOUCH TARGETS WCAG AA / TSA
-@include touch-target('min');       // 44px × 44px
+@include touch-target('min'); // 44px × 44px
 @include touch-target('preferred'); // 56px × 56px
 
 // CENTER FLEX
@@ -496,10 +496,10 @@ a11y('focus-ring-offset')      // 2px
 
 ```scss
 // ❌ ERREUR BUILD
-min-height: size('44');  // ❌ Token inexistant!
+min-height: size('44'); // ❌ Token inexistant!
 
 // ✅ CORRECT
-min-height: size('touch-target-min');  // 44px WCAG AA
+min-height: size('touch-target-min'); // 44px WCAG AA
 ```
 
 ### ⚠️ spacing('3'), spacing('5'), spacing('7') n'existe PAS
@@ -508,33 +508,33 @@ Grille **4px stricte UNIQUEMENT**:
 
 ```scss
 // ❌ ERREUR BUILD
-padding: spacing('3');   // ❌ Pas dans la grille
-padding: spacing('5');   // ❌ Pas dans la grille
-padding: spacing('14');  // ❌ Pas dans la grille (legacy)
+padding: spacing('3'); // ❌ Pas dans la grille
+padding: spacing('5'); // ❌ Pas dans la grille
+padding: spacing('14'); // ❌ Pas dans la grille (legacy)
 
 // ✅ CORRECT
-padding: spacing('md');  // 16px (grille 4px)
-padding: spacing('4');   // 4px (grille 4px)
-padding: spacing('12');  // 12px (grille 4px)
+padding: spacing('md'); // 16px (grille 4px)
+padding: spacing('4'); // 4px (grille 4px)
+padding: spacing('12'); // 12px (grille 4px)
 ```
 
 ### ⚠️ surface('warning-subtle') n'existe PAS
 
 ```scss
 // ❌ ERREUR BUILD
-background: surface('warning-subtle');  // ❌ Pas de token!
+background: surface('warning-subtle'); // ❌ Pas de token!
 
 // ✅ CORRECT
-background: semantic('warning', 'light');   // #ffedd5
-border-color: semantic('warning', 'base');  // #f97316
+background: semantic('warning', 'light'); // #ffedd5
+border-color: semantic('warning', 'base'); // #f97316
 ```
 
 ### ⚠️ Hardcoding couleurs = BUILD OK mais MAINTENANCE MAUVAISE
 
 ```scss
 // ⚠️ BUILD OK mais MAUVAIS
-color: #1e293b;         // Hardcoded
-background: #ffffff;    // Hardcoded
+color: #1e293b; // Hardcoded
+background: #ffffff; // Hardcoded
 border: 1px solid #ddd; // Hardcoded
 
 // ✅ CORRECT
@@ -549,18 +549,18 @@ border: 1px solid surface('border');
 
 Most used:
 
-| Token | Frequency | Notes |
-|-------|-----------|-------|
-| `spacing('md')` | 174x | 16px — très fréquent |
-| `spacing('sm')` | 152x | 8px — très fréquent |
-| `spacing('lg')` | 61x | 24px — fréquent |
-| `font-size('sm')` | 61x | 14px — texte principal |
-| `font-size('base')` | 37x | 16px — standard |
-| `radius('md')` | 58x | 12px — cards standard |
-| `radius('sm')` | 33x | 6px — buttons/inputs |
-| `size('icon-sm')` | 23x | 16px — icons standard |
-| `semantic('error', 'light')` | ~15x | Rouge pastel bg |
-| `size('modal-width-md')` | 6x | 540px — modals standard |
+| Token                        | Frequency | Notes                   |
+| ---------------------------- | --------- | ----------------------- |
+| `spacing('md')`              | 174x      | 16px — très fréquent    |
+| `spacing('sm')`              | 152x      | 8px — très fréquent     |
+| `spacing('lg')`              | 61x       | 24px — fréquent         |
+| `font-size('sm')`            | 61x       | 14px — texte principal  |
+| `font-size('base')`          | 37x       | 16px — standard         |
+| `radius('md')`               | 58x       | 12px — cards standard   |
+| `radius('sm')`               | 33x       | 6px — buttons/inputs    |
+| `size('icon-sm')`            | 23x       | 16px — icons standard   |
+| `semantic('error', 'light')` | ~15x      | Rouge pastel bg         |
+| `size('modal-width-md')`     | 6x        | 540px — modals standard |
 
 ---
 

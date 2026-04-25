@@ -1,4 +1,6 @@
 #!/bin/bash
+# ⚠️ DEPRECATED depuis 2026-04-25 — fonctionnalités migrées dans pre-commit.sh
+# Ne pas appeler. Sera supprimé en Phase 0 Étape 6.
 
 # 🎨 Hook Pre-Commit CSS - Validation Design System Appli-Picto
 # Bloque les commits avec valeurs hardcodées ou erreurs compilation SCSS

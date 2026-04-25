@@ -27,6 +27,7 @@ src/styles/main.scss  ← Point d'entrée Next.js (compilé par Turbopack)
 ```
 
 **Ordre d'import critique (IMMUABLE)**:
+
 1. **Vendors** — normalize.css (immutable)
 2. **Abstracts** (OUTILS) — maps, fonctions, mixins, breakpoints
 3. **Abstracts RUNTIME** — couleurs, typo, spacing, motion, radius, shadows, forms (génèrent CSS vars)
@@ -445,7 +446,7 @@ Générées dans `_spacing.scss`, `_light.scss`, etc. pour accès JavaScript:
 Dans `_index.scss`:
 
 ```scss
-$ENABLE_LEGACY_SUPPORT: true !default;  // Phase 5 fallback (garder true)
+$ENABLE_LEGACY_SUPPORT: true !default; // Phase 5 fallback (garder true)
 ```
 
 ---
@@ -459,7 +460,7 @@ $ENABLE_LEGACY_SUPPORT: true !default;  // Phase 5 fallback (garder true)
 @use './vendors/normalize' as *;
 
 // 2. ABSTRACTS — OUTILS (maps, fonctions, mixins)
-@use './abstracts' as *;  // Forward depuis _index.scss
+@use './abstracts' as *; // Forward depuis _index.scss
 
 // 3. ABSTRACTS — RUNTIME (génèrent CSS vars et selectors globaux)
 @use './abstracts/colors' as *;
@@ -482,13 +483,13 @@ $ENABLE_LEGACY_SUPPORT: true !default;  // Phase 5 fallback (garder true)
 
 ```scss
 // ⭐ PHASE 6 en priorité
-@forward './primitives';          // Palettes, grille, radius bruts
-@forward './semantics';           // Noms métier
-@forward './spacing' show spacing, spacing-value;  // Wrapper + CSS vars
-@forward './size';                // Dimensions
+@forward './primitives'; // Palettes, grille, radius bruts
+@forward './semantics'; // Noms métier
+@forward './spacing' show spacing, spacing-value; // Wrapper + CSS vars
+@forward './size'; // Dimensions
 
 // Legacy + accessibilité
-@forward './tokens' hide spacing, spacing-value;   // Canonical maps
+@forward './tokens' hide spacing, spacing-value; // Canonical maps
 @forward './colors' show color, semantic, gray, blue, red, ...;
 @forward './radius' show radius, radius-value;
 @forward './a11y-tokens' show a11y;
@@ -499,7 +500,7 @@ $ENABLE_LEGACY_SUPPORT: true !default;  // Phase 5 fallback (garder true)
 @forward './mixins';
 
 // Palettes couleurs (legacy)
-@forward './colors' show ..., tsa-pastel, shadow, shadow-color, ...;
+@forward './colors' show..., tsa-pastel, shadow, shadow-color, ...;
 ```
 
 ### 🗂️ Imports dans composants
@@ -507,10 +508,11 @@ $ENABLE_LEGACY_SUPPORT: true !default;  // Phase 5 fallback (garder true)
 **Tous les composants `.scss` importent**:
 
 ```scss
-@use '@styles/abstracts' as *;  // Alias @/ = src/ (tsconfig.json)
+@use '@styles/abstracts' as *; // Alias @/ = src/ (tsconfig.json)
 ```
 
 Cela donne accès à TOUS les tokens et fonctions:
+
 - `spacing('md')` ✅
 - `radius('card')` ✅
 - `text('primary')` ✅
@@ -544,14 +546,22 @@ import styles from './Component.module.scss';  // CSS Modules
 
 ```scss
 // Dans _motion.scss, toutes transitions utilisent ce mixin
-@mixin safe-transition($properties: all, $timing: timing('base'), $easing: easing('smooth')) {
+@mixin safe-transition(
+  $properties: all,
+  $timing: timing('base'),
+  $easing: easing('smooth')
+) {
   @media (prefers-reduced-motion: no-preference) {
     transition: $properties $timing $easing;
   }
 }
 
 // Usage
-@include safe-transition(background-color transform, timing('fast'), easing('smooth'));
+@include safe-transition(
+  background-color transform,
+  timing('fast'),
+  easing('smooth')
+);
 ```
 
 #### 2. Focus visible WCAG AA
@@ -559,11 +569,11 @@ import styles from './Component.module.scss';  // CSS Modules
 ```scss
 // Pattern obligatoire pour tous les boutons/inputs
 &:focus {
-  outline: none;  // Retire outline par défaut
+  outline: none; // Retire outline par défaut
 }
 
 &:focus-visible {
-  outline: 2px solid var(--color-primary);  // Bleu visible
+  outline: 2px solid var(--color-primary); // Bleu visible
   outline-offset: 2px;
 }
 ```
@@ -581,8 +591,8 @@ import styles from './Component.module.scss';  // CSS Modules
 }
 
 // Usage
-@include touch-target('min');        // 44px WCAG AA
-@include touch-target('preferred');  // 56px TSA
+@include touch-target('min'); // 44px WCAG AA
+@include touch-target('preferred'); // 56px TSA
 ```
 
 #### 4. Responsive mobile-first UNIQUEMENT
@@ -624,14 +634,14 @@ import styles from './Component.module.scss';  // CSS Modules
 
 ```scss
 // ✅ CORRECT : transitions courtes pour feedback immédiat
-transition: color timing('base') easing('smooth');  // 0.2s
-transform: scale(1.1);  // Léger scaledown on hover
-outline: 2px solid ...;  // Focus direct (pas de transition)
+transition: color timing('base') easing('smooth'); // 0.2s
+transform: scale(1.1); // Léger scaledown on hover
+outline: 2px solid...; // Focus direct (pas de transition)
 
 // ❌ INCORRECT
-transition: all 1s ease;    // Trop long
-animation: 0.5s bounce;     // Trop d'énergie
-transform: rotate(360deg);  // Vertigineux
+transition: all 1s ease; // Trop long
+animation: 0.5s bounce; // Trop d'énergie
+transform: rotate(360deg); // Vertigineux
 ```
 
 #### 7. Couleurs UNIQUEMENT via tokens
@@ -639,51 +649,51 @@ transform: rotate(360deg);  // Vertigineux
 ```scss
 // ✅ CORRECT
 .button {
-  color: text('primary');           // Semantic
-  background: surface('bg');        // Semantic
-  border-color: surface('border');  // Semantic
+  color: text('primary'); // Semantic
+  background: surface('bg'); // Semantic
+  border-color: surface('border'); // Semantic
 
   &:hover {
-    background: semantic('error', 'light');  // Semantic feedback
+    background: semantic('error', 'light'); // Semantic feedback
   }
 }
 
 // ❌ INCORRECT
-color: #1e293b;          // Hardcoded!
-background: #ffffff;     // Hardcoded!
-border: 1px solid #ddd;  // Hardcoded!
+color: #1e293b; // Hardcoded!
+background: #ffffff; // Hardcoded!
+border: 1px solid #ddd; // Hardcoded!
 ```
 
 #### 8. Spacing pour espacement SEUL
 
 ```scss
 // ✅ CORRECT : spacing() = padding, margin, gap
-padding: spacing('md');      // 16px respiration
+padding: spacing('md'); // 16px respiration
 margin-bottom: spacing('lg'); // 24px respiration
-gap: spacing('sm');          // 8px respiration
+gap: spacing('sm'); // 8px respiration
 
 // ✅ CORRECT : size() = dimensions
-width: size('modal-width-md');  // 540px structure
-height: size('button-height');  // 44px structure
+width: size('modal-width-md'); // 540px structure
+height: size('button-height'); // 44px structure
 
 // ❌ INCORRECT
-width: spacing('300');      // NON! Utiliser size()
-padding: spacing('16');     // NON! Utiliser spacing('md')
+width: spacing('300'); // NON! Utiliser size()
+padding: spacing('16'); // NON! Utiliser spacing('md')
 ```
 
 #### 9. Couleurs de bordures et dividers
 
 ```scss
 // ✅ CORRECT
-border: 1px solid surface('border');      // Bordure standard
+border: 1px solid surface('border'); // Bordure standard
 border-top: 1px solid surface('divider'); // Séparateur
 
 // Alternative feedback
-border-color: semantic('success', 'base');  // Vert
-border-color: semantic('error', 'dark');    // Rouge
+border-color: semantic('success', 'base'); // Vert
+border-color: semantic('error', 'dark'); // Rouge
 
 // ❌ INCORRECT
-border: 1px solid #e2e8f0;  // Hardcoded!
+border: 1px solid #e2e8f0; // Hardcoded!
 border: 1px solid gray(300); // Sans wrapper
 ```
 
@@ -704,23 +714,23 @@ border: 1px solid gray(300); // Sans wrapper
 .modal-header { ... }        // Pas de tiret pour sous-partie
 ```
 
-#### 11. Icons toujours via size('icon-*')
+#### 11. Icons toujours via size('icon-\*')
 
 ```scss
 // ✅ CORRECT
 .button__icon {
-  width: size('icon-sm');   // 16px
+  width: size('icon-sm'); // 16px
   height: size('icon-sm');
 }
 
 .avatar {
-  width: size('avatar-md');  // 40px
+  width: size('avatar-md'); // 40px
   height: size('avatar-md');
 }
 
 // ❌ INCORRECT
-width: 24px;                      // Hardcoded!
-width: spacing('24');             // Confusion spacing/size
+width: 24px; // Hardcoded!
+width: spacing('24'); // Confusion spacing/size
 ```
 
 ---
@@ -737,31 +747,31 @@ width: spacing('24');             // Confusion spacing/size
 
 // Overlay
 .modal-overlay {
-  background-color: surface('overlay');      // Phase 6 ✅
+  background-color: surface('overlay'); // Phase 6 ✅
   backdrop-filter: blur(size('4'));
-  padding: spacing('sm');                    // Phase 6 ✅
+  padding: spacing('sm'); // Phase 6 ✅
 
   @include respond-to(sm) {
-    padding: spacing('md');                  // Phase 6 ✅
+    padding: spacing('md'); // Phase 6 ✅
   }
 }
 
 // Modal conteneur
 .modal {
-  background: surface('surface');            // Phase 6 ✅
+  background: surface('surface'); // Phase 6 ✅
   border: border-width('base') solid color('base');
   box-shadow: modal-shadow('default');
-  border-radius: radius('card');             // Phase 6 ✅ (12px TSA-friendly)
-  animation: scaleIn timing('fast') easing('ease-out');  // Phase 6 ✅
+  border-radius: radius('card'); // Phase 6 ✅ (12px TSA-friendly)
+  animation: scaleIn timing('fast') easing('ease-out'); // Phase 6 ✅
 
-  max-width: size('modal-width-md');         // Legacy support
-  padding: spacing('lg');                    // Phase 6 ✅ (24px)
+  max-width: size('modal-width-md'); // Legacy support
+  padding: spacing('lg'); // Phase 6 ✅ (24px)
 }
 
 // Header
 .modal__header {
-  padding: spacing('lg');                    // Phase 6 ✅
-  border-bottom: 1px solid surface('border');// Phase 6 ✅
+  padding: spacing('lg'); // Phase 6 ✅
+  border-bottom: 1px solid surface('border'); // Phase 6 ✅
 }
 ```
 
@@ -772,21 +782,25 @@ width: spacing('24');             // Confusion spacing/size
 // ✅ VALIDÉ PHASE 6 COMPLET
 
 .button-delete {
-  padding: spacing('button-padding-y');      // Phase 6 ✅ (8px sémantique)
-  border-radius: radius('button');           // Phase 6 ✅ (6px TSA)
+  padding: spacing('button-padding-y'); // Phase 6 ✅ (8px sémantique)
+  border-radius: radius('button'); // Phase 6 ✅ (6px TSA)
   background: transparent;
-  color: text();                             // Phase 6 ✅ (primary)
+  color: text(); // Phase 6 ✅ (primary)
 
-  @include touch-target('min');              // Phase 6 ✅ (44px WCAG)
-  @include safe-transition(background-color transform, timing('fast'), easing('smooth'));  // Phase 6 ✅
+  @include touch-target('min'); // Phase 6 ✅ (44px WCAG)
+  @include safe-transition(
+    background-color transform,
+    timing('fast'),
+    easing('smooth')
+  ); // Phase 6 ✅
 
   &:hover,
   &:focus {
-    background-color: semantic('error', 'bg');  // Phase 6 ✅ (rouge pastel)
+    background-color: semantic('error', 'bg'); // Phase 6 ✅ (rouge pastel)
   }
 
   &__icon {
-    width: size('icon-sm');                  // Legacy support
+    width: size('icon-sm'); // Legacy support
     height: size('icon-sm');
   }
 }
@@ -795,14 +809,17 @@ width: spacing('24');             // Confusion spacing/size
 ### 📊 Statut de migration par composant
 
 **PHASE 6 COMPLET (migrations finis)**:
+
 - ✅ Modal.scss
 - ✅ ButtonDelete.scss
 - ✅ (Autres avec annotations `// ✅ PHASE 6 VALIDÉ`)
 
 **EN MIGRATION (avec fallback legacy)**:
+
 - ⏳ Plupart des composants (utilisent wrappers fallback)
 
 **LEGACY ESPACE (peu de réaménagement)**:
+
 - 🔴 Certains composants admin complexes
 
 ---
@@ -870,19 +887,19 @@ FLUXE DONNÉES TOKENS :
 
 ## FICHIERS CRITIQUES À RETENIR
 
-| Fichier | Rôle | Modification? |
-|---------|------|---------------|
-| **main.scss** | Orchestration ordre import | ⚠️ Attentif (ordre critique) |
-| **_tokens.scss** | SOURCE DE VÉRITÉ canonique | ✅ Ajouter mappings (pas supprimer) |
-| **_primitives.scss** | Palettes/grille PHASE 6 | ✅ Ajouter si PHASE 6 migration |
-| **_semantics.scss** | Noms métier PHASE 6 | ✅ Ajouter si PHASE 6 migration |
-| **_spacing.scss** | Wrapper spacing + CSS vars | 🔴 Ne pas modifier (logique critique) |
-| **_colors.scss** | Wrapper couleurs | 🔴 Ne pas modifier (logique fallback) |
-| **_radius.scss** | Wrapper radius | 🔴 Ne pas modifier |
-| **abstracts/_index.scss** | Forward systématique | ⚠️ Ordre des forwards crucial |
-| **base/_reset.scss** | CSS reset minimal | 🔴 Conservatif (fondation) |
-| **themes/_light.scss** | Light theme CSS vars | ✅ Peut ajouter vars (Phase 6 colors) |
-| **themes/_dark.scss** | Dark theme CSS vars | ✅ Peut ajouter vars |
+| Fichier                    | Rôle                       | Modification?                         |
+| -------------------------- | -------------------------- | ------------------------------------- |
+| **main.scss**              | Orchestration ordre import | ⚠️ Attentif (ordre critique)          |
+| **\_tokens.scss**          | SOURCE DE VÉRITÉ canonique | ✅ Ajouter mappings (pas supprimer)   |
+| **\_primitives.scss**      | Palettes/grille PHASE 6    | ✅ Ajouter si PHASE 6 migration       |
+| **\_semantics.scss**       | Noms métier PHASE 6        | ✅ Ajouter si PHASE 6 migration       |
+| **\_spacing.scss**         | Wrapper spacing + CSS vars | 🔴 Ne pas modifier (logique critique) |
+| **\_colors.scss**          | Wrapper couleurs           | 🔴 Ne pas modifier (logique fallback) |
+| **\_radius.scss**          | Wrapper radius             | 🔴 Ne pas modifier                    |
+| **abstracts/\_index.scss** | Forward systématique       | ⚠️ Ordre des forwards crucial         |
+| **base/\_reset.scss**      | CSS reset minimal          | 🔴 Conservatif (fondation)            |
+| **themes/\_light.scss**    | Light theme CSS vars       | ✅ Peut ajouter vars (Phase 6 colors) |
+| **themes/\_dark.scss**     | Dark theme CSS vars        | ✅ Peut ajouter vars                  |
 
 ---
 
@@ -898,16 +915,17 @@ $spacing-tokens: (
   // Ajouter au bon endroit alphabétique/logique
   'new-token-name': 2.5rem,
   ...
-)
+);
 ```
 
 **2. Puis dans `_primitives.scss` (si PHASE 6)**:
 
 ```scss
 $spacing-primitives: (
-  'new-token-name': 2.5rem,  // Même valeur
-  ...
-)
+  'new-token-name': 2.5rem,
+  // Même valeur
+  ...,
+);
 ```
 
 **3. Puis dans `_semantics.scss` (si sémantique)**:
@@ -915,8 +933,8 @@ $spacing-primitives: (
 ```scss
 $spacing-semantic: (
   'my-semantic-spacing': map.get(p.$spacing-primitives, 'new-token-name'),
-  ...
-)
+  ...,
+);
 ```
 
 **4. Utiliser dans composants**:
@@ -924,7 +942,7 @@ $spacing-semantic: (
 ```scss
 @use '@styles/abstracts' as *;
 .component {
-  padding: spacing('my-semantic-spacing');  // Fallback → primitives → legacy
+  padding: spacing('my-semantic-spacing'); // Fallback → primitives → legacy
 }
 ```
 

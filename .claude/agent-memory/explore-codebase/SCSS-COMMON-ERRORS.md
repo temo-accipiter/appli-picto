@@ -24,12 +24,12 @@ min-height: size('44');
 min-width: size('44');
 
 // ✅ CORRECT
-min-height: size('touch-target-min');    // 44px WCAG AA
-min-width: size('touch-target-min');     // 44px WCAG AA
+min-height: size('touch-target-min'); // 44px WCAG AA
+min-width: size('touch-target-min'); // 44px WCAG AA
 
 // ✅ ALTERNATIVE (TSA preferred)
-min-height: size('touch-target-preferred');  // 56px
-min-width: size('touch-target-preferred');   // 56px
+min-height: size('touch-target-preferred'); // 56px
+min-width: size('touch-target-preferred'); // 56px
 ```
 
 ### Why This Happens
@@ -54,23 +54,23 @@ Grille **4px stricte UNIQUEMENT**. Pas de 3px, 5px, 7px, 14px, etc.
 
 ```scss
 // ❌ WRONG (violated grid)
-padding: spacing('3');    // ❌ 3px not in grid
-padding: spacing('5');    // ❌ 5px not in grid
-padding: spacing('7');    // ❌ 7px not in grid
-padding: spacing('14');   // ❌ 14px not in grid (legacy)
+padding: spacing('3'); // ❌ 3px not in grid
+padding: spacing('5'); // ❌ 5px not in grid
+padding: spacing('7'); // ❌ 7px not in grid
+padding: spacing('14'); // ❌ 14px not in grid (legacy)
 
 // ✅ CORRECT (4px grid strict)
-padding: spacing('4');    // 4px OK (grille)
-padding: spacing('8');    // 8px OK (grille)
-padding: spacing('12');   // 12px OK (grille)
-padding: spacing('16');   // 16px OK (grille)
-padding: spacing('20');   // 20px OK (grille)
+padding: spacing('4'); // 4px OK (grille)
+padding: spacing('8'); // 8px OK (grille)
+padding: spacing('12'); // 12px OK (grille)
+padding: spacing('16'); // 16px OK (grille)
+padding: spacing('20'); // 20px OK (grille)
 
 // ✅ BETTER (semantic)
-padding: spacing('xs');   // 4px
-padding: spacing('sm');   // 8px (TRÈS FRÉQUENT)
-padding: spacing('md');   // 16px (TRÈS FRÉQUENT)
-padding: spacing('lg');   // 24px (TRÈS FRÉQUENT)
+padding: spacing('xs'); // 4px
+padding: spacing('sm'); // 8px (TRÈS FRÉQUENT)
+padding: spacing('md'); // 16px (TRÈS FRÉQUENT)
+padding: spacing('lg'); // 24px (TRÈS FRÉQUENT)
 ```
 
 ### Why This Happens
@@ -99,19 +99,19 @@ width: spacing('300');  // Returns 18.75rem (18.75px??)
 
 ```scss
 // ❌ WRONG (semantics inverted)
-width: spacing('300');            // ❌ WRONG FUNCTION
-min-height: spacing('44');        // ❌ WRONG FUNCTION
-max-width: spacing('540');        // ❌ WRONG FUNCTION
+width: spacing('300'); // ❌ WRONG FUNCTION
+min-height: spacing('44'); // ❌ WRONG FUNCTION
+max-width: spacing('540'); // ❌ WRONG FUNCTION
 
 // ✅ CORRECT
-width: size('300');               // ✅ Dimensions use size()
-min-height: size('touch-target-min');  // ✅ 44px
-max-width: size('modal-width-md');     // ✅ 540px
+width: size('300'); // ✅ Dimensions use size()
+min-height: size('touch-target-min'); // ✅ 44px
+max-width: size('modal-width-md'); // ✅ 540px
 
 // ✅ SPACING CORRECT USES
-padding: spacing('md');           // ✅ Respiration
-margin-bottom: spacing('lg');     // ✅ Respiration
-gap: spacing('sm');               // ✅ Respiration
+padding: spacing('md'); // ✅ Respiration
+margin-bottom: spacing('lg'); // ✅ Respiration
+gap: spacing('sm'); // ✅ Respiration
 ```
 
 ### Mental Model
@@ -153,12 +153,12 @@ width: 540px;
 border-radius: 12px;
 
 // ✅ CORRECT (all tokens)
-color: text('primary');                    // #1e293b light, adjusted dark
-background: surface('bg');                 // #ffffff light, #0f172a dark
-border: 1px solid surface('border');       // #e2e8f0 light, adjusted dark
-padding: spacing('md');                    // 16px (respiration)
-width: size('modal-width-md');             // 540px (dimension)
-border-radius: radius('card');             // 12px (semantic)
+color: text('primary'); // #1e293b light, adjusted dark
+background: surface('bg'); // #ffffff light, #0f172a dark
+border: 1px solid surface('border'); // #e2e8f0 light, adjusted dark
+padding: spacing('md'); // 16px (respiration)
+width: size('modal-width-md'); // 540px (dimension)
+border-radius: radius('card'); // 12px (semantic)
 ```
 
 ### Why This Happens
@@ -227,19 +227,19 @@ Tried to use `surface('warning-subtle')` which doesn't exist.
 
 ```scss
 // ❌ WRONG (non-existent token)
-background: surface('warning-subtle');   // ❌ Doesn't exist
-background: surface('info-light');       // ❌ Doesn't exist
+background: surface('warning-subtle'); // ❌ Doesn't exist
+background: surface('info-light'); // ❌ Doesn't exist
 
 // ✅ CORRECT (use semantic())
-background: semantic('warning', 'light');   // #ffedd5
-background: semantic('info', 'light');      // #e0f2fe
+background: semantic('warning', 'light'); // #ffedd5
+background: semantic('info', 'light'); // #e0f2fe
 
 // ✅ OR surface() for standard roles
-background: surface('bg');               // #ffffff
-background: surface('page');             // #f8fafc
-background: surface('overlay');          // #f1f5f9
-background: surface('soft');             // #f8fafc
-background: surface('hover');            // #f8fafc
+background: surface('bg'); // #ffffff
+background: surface('page'); // #f8fafc
+background: surface('overlay'); // #f1f5f9
+background: surface('soft'); // #f8fafc
+background: surface('hover'); // #f8fafc
 ```
 
 ### Available surface() tokens
@@ -263,7 +263,7 @@ surface('soft')     // Soft background (#f8fafc)
 
 ```scss
 &:focus {
-  outline: blue;  // ❌ Generic browser default
+  outline: blue; // ❌ Generic browser default
 }
 ```
 
@@ -286,7 +286,7 @@ Using browser default focus instead of WCAG AA custom focus.
 
 // ✅ CORRECT (WCAG 2.2 AA pattern)
 &:focus {
-  outline: none;  // Remove default outline
+  outline: none; // Remove default outline
 }
 
 &:focus-visible {
@@ -297,7 +297,8 @@ Using browser default focus instead of WCAG AA custom focus.
 // ✅ ALTERNATIVE with box-shadow (if outline doesn't work)
 &:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--color-primary) 10%, transparent);
   border-color: var(--color-primary);
 }
 ```
@@ -328,18 +329,20 @@ Using `@media (max-width)` desktop-first instead of mobile-first.
 ```scss
 // ❌ WRONG (desktop-first)
 @media (max-width: 768px) {
-  padding: 8px;  // Mobile hacks
+  padding: 8px; // Mobile hacks
 }
 
 // ✅ CORRECT (mobile-first)
 .component {
-  padding: spacing('sm');  // Mobile base
+  padding: spacing('sm'); // Mobile base
 
-  @include respond-to('md') {  // 768px+ (tablet+)
+  @include respond-to('md') {
+    // 768px+ (tablet+)
     padding: spacing('lg');
   }
 
-  @include respond-to('lg') {  // 1024px+ (desktop+)
+  @include respond-to('lg') {
+    // 1024px+ (desktop+)
     padding: spacing('xl');
   }
 }
@@ -398,7 +401,11 @@ Direct `transition:` property without checking `prefers-reduced-motion`.
 ### What safe-transition() does
 
 ```scss
-@mixin safe-transition($properties: all, $timing: timing('base'), $easing: easing('smooth')) {
+@mixin safe-transition(
+  $properties: all,
+  $timing: timing('base'),
+  $easing: easing('smooth')
+) {
   @media (prefers-reduced-motion: no-preference) {
     transition: $properties $timing $easing;
   }
@@ -427,13 +434,13 @@ Components with min-height/width < 44px.
 ```scss
 // ❌ WRONG (too small)
 .button {
-  height: 32px;      // ❌ < 44px
-  width: auto;       // ❌ Could be < 44px
+  height: 32px; // ❌ < 44px
+  width: auto; // ❌ Could be < 44px
 }
 
 // ✅ CORRECT (WCAG AA)
 .button {
-  @include touch-target('min');  // 44×44px minimum
+  @include touch-target('min'); // 44×44px minimum
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -441,13 +448,13 @@ Components with min-height/width < 44px.
 
 // ✅ ALTERNATIVE (TSA preferred)
 .button {
-  @include touch-target('preferred');  // 56×56px TSA-optimal
+  @include touch-target('preferred'); // 56×56px TSA-optimal
 }
 
 // ✅ MANUAL
 .button {
-  min-height: size('touch-target-min');   // 44px
-  min-width: size('touch-target-min');    // 44px
+  min-height: size('touch-target-min'); // 44px
+  min-width: size('touch-target-min'); // 44px
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -479,25 +486,27 @@ Using `transition: all 1s` or `animation: 2s` (too long for TSA).
 
 ```scss
 // ❌ WRONG (too long for TSA)
-transition: all 1s ease;           // ❌ 1s is too long
+transition: all 1s ease; // ❌ 1s is too long
 animation: spin 2s linear infinite; // ❌ 2s is way too long
 
 // ✅ CORRECT (TSA-safe max 0.3s)
 @include safe-transition(
   background-color,
-  timing('fast'),      // 0.15s
+  timing('fast'),
+  // 0.15s
   easing('smooth')
 );
 
 // ✅ FOR FEEDBACK
 @include safe-transition(
   all,
-  timing('base'),      // 0.2s
+  timing('base'),
+  // 0.2s
   easing('smooth-out')
 );
 
 // ✅ MAXIMUM (for reveals/modals)
-animation: fadeIn timing('reveal') easing('smooth-out');  // 0.4s max
+animation: fadeIn timing('reveal') easing('smooth-out'); // 0.4s max
 ```
 
 ### Timing Scale (TSA-optimized)
@@ -532,16 +541,17 @@ Forgot `@use '@styles/abstracts' as *;` at component .scss top.
 ```scss
 // ❌ WRONG (forgot import)
 .button {
-  color: text('primary');  // ❌ text is undefined!
+  color: text('primary'); // ❌ text is undefined!
 }
 
 // ✅ CORRECT
 @use '@styles/abstracts' as *;
 
 .button {
-  color: text('primary');  // ✅ Works
-  padding: spacing('md');  // ✅ Works
-  @include respond-to('md') {  // ✅ Works
+  color: text('primary'); // ✅ Works
+  padding: spacing('md'); // ✅ Works
+  @include respond-to('md') {
+    // ✅ Works
     padding: spacing('lg');
   }
 }

@@ -24,12 +24,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Vue d'ensemble exhaustive** — Architecture, structure, tokens, dépendances, patterns.
 
 **Utilisé pour**:
+
 - Onboarding developers
 - Understanding global architecture
 - Making architecture decisions
 - Phase 6 migration planning
 
 **Taille**: ~5000 lignes | **Sections critiques**:
+
 - Structure globale
 - Arborescence détaillée tous fichiers
 - Système de tokens 3-niveaux (expliqué en profondeur)
@@ -44,12 +46,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Lookup rapide pour développeurs** — Copy-paste friendly, structuré par type.
 
 **Utilisé pour**:
+
 - Daily coding
 - Token lookup rapide
 - API reference
 - Edge cases
 
 **Contenu**:
+
 - Quick imports (une ligne)
 - Spacing (primitives + semantics)
 - Size (dimensions structurelles)
@@ -67,12 +71,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Patterns observés dans codebase** — Best practices par pattern.
 
 **Utilisé pour**:
+
 - Code review (vérifier conformité)
 - New components (template)
 - Refactoring (following patterns)
 - Consistency
 
 **Patterns**:
+
 1. Import + Use Token Wrapper
 2. Component Structure (BEM-Light)
 3. Mobile-First Responsive
@@ -99,12 +105,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Fichiers SCSS catalogués** — Localisation, rôle, statut.
 
 **Utilisé pour**:
+
 - Finding files quickly
 - Impact analysis
 - Understanding dependencies
 - Migration status
 
 **Sections**:
+
 - Core Infrastructure (30 files)
 - Page Components (12 files)
 - Component Library (60+ files)
@@ -121,12 +129,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Erreurs fréquentes et solutions rapides** — Diagnostic + fix.
 
 **Utilisé pour**:
+
 - Debugging build errors
 - Prevention via checklist
 - Learning what NOT to do
 - Quick reference troubleshooting
 
 **Errors**:
+
 1. Token inexistant (size('44'))
 2. Spacing value inexistant (spacing('3'), spacing('14'))
 3. Wrong function (spacing vs size confusion)
@@ -149,12 +159,14 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Diagrammes visuels de hiérarchie tokens** — 3-level flow, visual references.
 
 **Utilisé pour**:
+
 - Visual understanding
 - Explaining to non-technical
 - Flow diagrams
 - Architecture overview
 
 **Diagrams**:
+
 - 3-level architecture tree
 - Component → Token flow
 - Colors hierarchy
@@ -173,6 +185,7 @@ Date : 2026-04-25 | Version : Phase 6 migration (Phase 5 fallback)
 **Index documentaire** — Table matières, cas d'usage, insights clés.
 
 **Utilisé pour**:
+
 - Quick navigation
 - Finding right doc
 - Understanding connections
@@ -332,7 +345,7 @@ Phase 6 validated:              2
 ✅ Edge cases testés (size('44'), spacing('3'), etc.)
 ✅ Architecture mappée (dépendances, imports)
 ✅ Phase 6 wrappers validés (Modal, ButtonDelete)
-✅ Tokens canoniques identifiés (_tokens.scss)
+✅ Tokens canoniques identifiés (\_tokens.scss)
 ✅ Accessibility patterns documentés (WCAG AA + TSA)
 ✅ Responsive patterns mobile-first (no desktop-first)
 
@@ -371,6 +384,7 @@ Phase 6 validated:              2
 These explorations are **agent-memory** (ephemeral learning notes).
 
 **Source of truth remains**:
+
 - `src/styles/CLAUDE.md` — User-facing tokens API
 - `.claude/rules/components.md` — UI/accessibility rules
 - This exploration — Technical deep-dive
@@ -416,6 +430,7 @@ All exploration files are in:
 ## Questions?
 
 Refer to appropriate document:
+
 - **"How do I...?"** → SCSS-PATTERNS.md
 - **"What token for...?"** → TOKENS-QUICK-REFERENCE.md
 - **"Error says..."** → SCSS-COMMON-ERRORS.md

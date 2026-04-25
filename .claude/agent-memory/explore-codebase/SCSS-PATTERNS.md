@@ -145,10 +145,11 @@ a11y()             // accessibility values
 
   // Custom focus-visible pour clavier users
   &:focus-visible {
-    outline: 2px solid var(--color-primary);    // Bleu principal
+    outline: 2px solid var(--color-primary); // Bleu principal
     outline-offset: 2px;
     // Optionnel: ajouter box-shadow pour plus de contraste
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 20%, transparent);
+    box-shadow: 0 0 0 4px
+      color-mix(in srgb, var(--color-primary) 20%, transparent);
   }
 
   // Variante 2: Border-basée (si outline impossible)
@@ -162,11 +163,11 @@ a11y()             // accessibility values
 
 // ❌ WRONG
 &:focus {
-  outline: blue;                   // ❌ Default outline visible
+  outline: blue; // ❌ Default outline visible
 }
 
 &:focus-visible {
-  outline: 1px solid blue;         // ❌ 1px trop fin
+  outline: 1px solid blue; // ❌ 1px trop fin
 }
 ```
 
@@ -183,14 +184,16 @@ a11y()             // accessibility values
   // Transitions appliquées SEULEMENT via mixin
 
   @include safe-transition(
-    background-color transform,    // properties
-    timing('fast'),                // duration (0.15s)
-    easing('smooth')               // easing (ease)
+    background-color transform,
+    // properties
+    timing('fast'),
+    // duration (0.15s)
+    easing('smooth') // easing (ease)
   );
 
   &:hover {
     background-color: semantic('admin', 'light');
-    transform: scale(1.05);        // Très léger scale
+    transform: scale(1.05); // Très léger scale
   }
 }
 
@@ -207,8 +210,8 @@ a11y()             // accessibility values
 }
 
 // ❌ NEVER
-transition: all 0.5s ease;  // ❌ Pas de transition globale!
-transition: all 1s;         // ❌ Trop long!
+transition: all 0.5s ease; // ❌ Pas de transition globale!
+transition: all 1s; // ❌ Trop long!
 ```
 
 ---
@@ -220,7 +223,7 @@ transition: all 1s;         // ❌ Trop long!
 ```scss
 // Pattern 1: Mixin @include touch-target()
 .button {
-  @include touch-target('min');   // 44×44px WCAG AA
+  @include touch-target('min'); // 44×44px WCAG AA
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -228,8 +231,8 @@ transition: all 1s;         // ❌ Trop long!
 
 // Pattern 2: Manual calculation
 .icon-button {
-  min-height: size('touch-target-min');   // 44px
-  min-width: size('touch-target-min');    // 44px
+  min-height: size('touch-target-min'); // 44px
+  min-width: size('touch-target-min'); // 44px
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,7 +240,7 @@ transition: all 1s;         // ❌ Trop long!
 
 // Pattern 3: TSA Preferred (56px)
 .large-button {
-  @include touch-target('preferred');     // 56×56px TSA
+  @include touch-target('preferred'); // 56×56px TSA
 }
 
 // Vérification : touch targets doivent TOUJOURS être ≥ 44px
@@ -255,22 +258,22 @@ transition: all 1s;         // ❌ Trop long!
 ```scss
 // Pattern 1: Text + background semantic
 .alert-success {
-  color: semantic('success', 'dark');      // #047857 texte sombre
+  color: semantic('success', 'dark'); // #047857 texte sombre
   background: semantic('success', 'light'); // #d1fae5 fond pâle
   border: 1px solid semantic('success', 'border'); // #6ee7b7 bordure
 }
 
 // Pattern 2: Text with role color
 .badge-admin {
-  color: semantic('admin', 'dark');        // #4c5ac4
-  background: semantic('admin', 'light');  // #e0e7ff
+  color: semantic('admin', 'dark'); // #4c5ac4
+  background: semantic('admin', 'light'); // #e0e7ff
 }
 
 // Pattern 3: Mixed text/surface
 .card {
-  color: text('primary');                  // #1e293b
-  background: surface('bg');               // #ffffff
-  border: 1px solid surface('border');     // #e2e8f0
+  color: text('primary'); // #1e293b
+  background: surface('bg'); // #ffffff
+  border: 1px solid surface('border'); // #e2e8f0
 }
 
 // Pattern 4: Hover states
@@ -279,17 +282,17 @@ transition: all 1s;         // ❌ Trop long!
   background: surface('bg');
 
   &:hover {
-    background: surface('hover');  // #f8fafc pâle
+    background: surface('hover'); // #f8fafc pâle
   }
 
   &:active {
-    background: semantic('admin', 'light');  // Plus foncé
+    background: semantic('admin', 'light'); // Plus foncé
   }
 }
 
 // ❌ WRONG
-background: #ffffff;                  // ❌ Hardcoded!
-color: #1e293b;                       // ❌ Hardcoded!
+background: #ffffff; // ❌ Hardcoded!
+color: #1e293b; // ❌ Hardcoded!
 border: 1px solid rgb(226, 232, 240); // ❌ Hardcoded!
 ```
 
@@ -304,36 +307,36 @@ border: 1px solid rgb(226, 232, 240); // ❌ Hardcoded!
 
 // PAGE LEVEL
 .page {
-  padding: spacing('page-padding');  // 32px
-  gap: spacing('section-gap');       // 48px
+  padding: spacing('page-padding'); // 32px
+  gap: spacing('section-gap'); // 48px
 }
 
 // SECTION / CONTAINER
 .section {
-  padding: spacing('container-padding');  // 24px
-  gap: spacing('grid-gap');               // 16px
+  padding: spacing('container-padding'); // 24px
+  gap: spacing('grid-gap'); // 16px
 }
 
 // CARD / COMPONENT
 .card {
-  padding: spacing('card-padding');  // 24px
-  gap: spacing('card-gap');          // 16px
+  padding: spacing('card-padding'); // 24px
+  gap: spacing('card-gap'); // 16px
 }
 
 // BUTTON / INPUT
 .button {
-  padding: spacing('button-padding-y') spacing('button-padding-x');  // 8px 24px
+  padding: spacing('button-padding-y') spacing('button-padding-x'); // 8px 24px
 }
 
 // INTERNAL TYPOGRAPHY
 .card__title {
-  margin-bottom: spacing('text-gap-normal');  // 8px
+  margin-bottom: spacing('text-gap-normal'); // 8px
 }
 
 // ❌ WRONG
-padding: 16px;                      // ❌ Hardcoded!
-gap: 20px;                          // ❌ Grille 4px violée!
-margin: 10px 0;                     // ❌ Pas dans tokens!
+padding: 16px; // ❌ Hardcoded!
+gap: 20px; // ❌ Grille 4px violée!
+margin: 10px 0; // ❌ Pas dans tokens!
 ```
 
 ---
@@ -366,11 +369,11 @@ margin: 10px 0;                     // ❌ Pas dans tokens!
 
 // Usage dans componant
 .modal-overlay {
-  animation: fadeIn timing('fast') easing('ease-out');  // 0.15s
+  animation: fadeIn timing('fast') easing('ease-out'); // 0.15s
 }
 
 .modal {
-  animation: scaleIn timing('fast') easing('ease-out');  // 0.15s
+  animation: scaleIn timing('fast') easing('ease-out'); // 0.15s
 }
 
 // ⚠️ Jamais animations longues
@@ -389,10 +392,10 @@ margin: 10px 0;                     // ❌ Pas dans tokens!
 // Base input
 .input {
   width: 100%;
-  height: size('input-height');      // 44px
-  padding: spacing('input-padding');  // 8px
+  height: size('input-height'); // 44px
+  padding: spacing('input-padding'); // 8px
   border: 1px solid surface('border');
-  border-radius: radius('input');     // 6px
+  border-radius: radius('input'); // 6px
   background: surface('bg');
   color: text('primary');
   font-size: font-size('base');
@@ -410,7 +413,8 @@ margin: 10px 0;                     // ❌ Pas dans tokens!
 
   &:focus-visible {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 10%, transparent);
+    box-shadow: 0 0 0 3px
+      color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 
   // Error state
@@ -433,10 +437,10 @@ margin: 10px 0;                     // ❌ Pas dans tokens!
 }
 
 // ❌ WRONG
-border: 1px solid #ddd;                    // ❌ Hardcoded!
-padding: 8px;                              // ❌ Hardcoded!
-height: 44px;                              // ❌ Hardcoded!
-box-shadow: 0 0 0 3px rgba(59, 130, 246);  // ❌ Hardcoded!
+border: 1px solid #ddd; // ❌ Hardcoded!
+padding: 8px; // ❌ Hardcoded!
+height: 44px; // ❌ Hardcoded!
+box-shadow: 0 0 0 3px rgba(59, 130, 246); // ❌ Hardcoded!
 ```
 
 ---
@@ -450,11 +454,11 @@ box-shadow: 0 0 0 3px rgba(59, 130, 246);  // ❌ Hardcoded!
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(size('card-max-width'), 1fr));
-  gap: spacing('grid-gap');  // 16px
+  gap: spacing('grid-gap'); // 16px
 
   // Responsive
   @include respond-to('md') {
-    gap: spacing('section-gap');  // 48px tablette+
+    gap: spacing('section-gap'); // 48px tablette+
   }
 }
 
@@ -462,19 +466,19 @@ box-shadow: 0 0 0 3px rgba(59, 130, 246);  // ❌ Hardcoded!
 .stack {
   display: flex;
   flex-direction: column;
-  gap: spacing('md');  // 16px
+  gap: spacing('md'); // 16px
 }
 
 // Flex row
 .row {
   display: flex;
-  gap: spacing('sm');  // 8px
+  gap: spacing('sm'); // 8px
   align-items: center;
 }
 
 // ❌ WRONG
-gap: 16px;      // ❌ Hardcoded!
-gap: 24px;      // ❌ Pas sémantique!
+gap: 16px; // ❌ Hardcoded!
+gap: 24px; // ❌ Pas sémantique!
 ```
 
 ---
@@ -487,13 +491,13 @@ gap: 24px;      // ❌ Pas sémantique!
 // Overlay — backdrop semi-transparent
 .modal-overlay {
   position: fixed;
-  inset: 0;  // top: 0, right: 0, bottom: 0, left: 0
+  inset: 0; // top: 0, right: 0, bottom: 0, left: 0
   background-color: surface('overlay');
-  backdrop-filter: blur(size('4'));  // 4px blur
+  backdrop-filter: blur(size('4')); // 4px blur
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: z-index('modal-backdrop');  // 900
+  z-index: z-index('modal-backdrop'); // 900
   animation: fadeIn timing('fast') easing('ease-out');
   padding: spacing('sm');
 
@@ -505,7 +509,7 @@ gap: 24px;      // ❌ Pas sémantique!
 // Modal — conteneur
 .modal {
   background: surface('surface');
-  border-radius: radius('card');  // 12px mobile
+  border-radius: radius('card'); // 12px mobile
   box-shadow: shadow('modal');
   display: flex;
   flex-direction: column;
@@ -516,8 +520,8 @@ gap: 24px;      // ❌ Pas sémantique!
   max-height: calc(100vh - #{size('32')});
 
   @include respond-to('sm') {
-    max-width: size('modal-width-md');  // 540px tablette
-    border-radius: radius('modal');     // 20px tablette
+    max-width: size('modal-width-md'); // 540px tablette
+    border-radius: radius('modal'); // 20px tablette
   }
 }
 
@@ -537,56 +541,56 @@ gap: 24px;      // ❌ Pas sémantique!
 ```scss
 // Headings
 h1 {
-  font-size: font-size('5xl');      // 48px
+  font-size: font-size('5xl'); // 48px
   font-weight: font-weight('bold');
   line-height: line-height('tight');
-  color: text('dark');              // #0f172a
+  color: text('dark'); // #0f172a
 }
 
 h2 {
-  font-size: font-size('4xl');      // 36px
+  font-size: font-size('4xl'); // 36px
   font-weight: font-weight('bold');
   color: text('dark');
 }
 
 h3 {
-  font-size: font-size('2xl');      // 24px (TRÈS FRÉQUENT)
+  font-size: font-size('2xl'); // 24px (TRÈS FRÉQUENT)
   font-weight: font-weight('bold');
 }
 
 h4 {
-  font-size: font-size('xl');       // 20px
+  font-size: font-size('xl'); // 20px
   font-weight: font-weight('semibold');
 }
 
 // Body text
 .body {
-  font-size: font-size('base');     // 16px
+  font-size: font-size('base'); // 16px
   color: text('primary');
   line-height: line-height('normal');
 }
 
 .body-small {
-  font-size: font-size('sm');       // 14px (TRÈS FRÉQUENT)
+  font-size: font-size('sm'); // 14px (TRÈS FRÉQUENT)
   color: text('secondary');
 }
 
 .caption {
-  font-size: font-size('xs');       // 12px
+  font-size: font-size('xs'); // 12px
   color: text('tertiary');
 }
 
 // Label
 .label {
-  font-size: font-size('sm');       // 14px
+  font-size: font-size('sm'); // 14px
   font-weight: font-weight('medium');
   color: text('secondary');
 }
 
 // ❌ WRONG
-font-size: 16px;                    // ❌ Hardcoded!
-font-size: 14px;                    // ❌ Hardcoded!
-font-weight: 700;                   // ❌ Use font-weight() function!
+font-size: 16px; // ❌ Hardcoded!
+font-size: 14px; // ❌ Hardcoded!
+font-weight: 700; // ❌ Use font-weight() function!
 ```
 
 ---
@@ -599,36 +603,36 @@ font-weight: 700;                   // ❌ Use font-weight() function!
 // Button icon (PATTERN COURANT)
 .button {
   &__icon {
-    width: size('icon-sm');    // 16px ← TRÈS FRÉQUENT
+    width: size('icon-sm'); // 16px ← TRÈS FRÉQUENT
     height: size('icon-sm');
-    flex-shrink: 0;            // Empêche compression
-    pointer-events: none;      // Évite events doubles
+    flex-shrink: 0; // Empêche compression
+    pointer-events: none; // Évite events doubles
   }
 }
 
 // Avatar icon
 .avatar {
-  width: size('avatar-md');    // 40px
+  width: size('avatar-md'); // 40px
   height: size('avatar-md');
-  border-radius: radius('avatar');  // 50%
+  border-radius: radius('avatar'); // 50%
 }
 
 // Large icon (card, section header)
 .card__icon {
-  width: size('icon-md');      // 24px
+  width: size('icon-md'); // 24px
   height: size('icon-md');
 }
 
 // Small decorative icon
 .badge__icon {
-  width: size('icon-xs');      // 12px
+  width: size('icon-xs'); // 12px
   height: size('icon-xs');
 }
 
 // ❌ WRONG
-width: 20px;                   // ❌ Hardcoded! Use size()
-height: 16px;                  // ❌ Hardcoded!
-width: size('16');             // ❌ Legacy. Use size('icon-sm')
+width: 20px; // ❌ Hardcoded! Use size()
+height: 16px; // ❌ Hardcoded!
+width: size('16'); // ❌ Legacy. Use size('icon-sm')
 ```
 
 ---
@@ -640,29 +644,29 @@ width: size('16');             // ❌ Legacy. Use size('icon-sm')
 ```scss
 // SUCCESS
 .success-state {
-  color: semantic('success', 'dark');      // #047857
+  color: semantic('success', 'dark'); // #047857
   background: semantic('success', 'light'); // #d1fae5
   border: 1px solid semantic('success', 'border'); // #6ee7b7
 }
 
 // ERROR
 .error-state {
-  color: semantic('error', 'dark');        // #b91c1c
-  background: semantic('error', 'light');  // #fee2e2 (TSA-friendly pâle)
+  color: semantic('error', 'dark'); // #b91c1c
+  background: semantic('error', 'light'); // #fee2e2 (TSA-friendly pâle)
   border: 1px solid semantic('error', 'border'); // #fca5a5
 }
 
 // WARNING
 .warning-state {
-  color: semantic('warning', 'dark');      // #c2410c
+  color: semantic('warning', 'dark'); // #c2410c
   background: semantic('warning', 'light'); // #ffedd5
   border: 1px solid semantic('warning', 'border'); // #fdba74
 }
 
 // INFO
 .info-state {
-  color: semantic('info', 'dark');         // #0369a1
-  background: semantic('info', 'light');   // #e0f2fe
+  color: semantic('info', 'dark'); // #0369a1
+  background: semantic('info', 'light'); // #e0f2fe
   border: 1px solid semantic('info', 'border'); // #7dd3fc
 }
 
@@ -682,19 +686,19 @@ width: size('16');             // ❌ Legacy. Use size('icon-sm')
 // Utiliser z-index() function depuis tokens
 
 .dropdown {
-  z-index: z-index('dropdown');      // 100
+  z-index: z-index('dropdown'); // 100
 }
 
 .sticky-header {
-  z-index: z-index('sticky');        // 200
+  z-index: z-index('sticky'); // 200
 }
 
 .fixed-element {
-  z-index: z-index('fixed');         // 300
+  z-index: z-index('fixed'); // 300
 }
 
 .offcanvas {
-  z-index: z-index('offcanvas');     // 400
+  z-index: z-index('offcanvas'); // 400
 }
 
 .modal-backdrop {
@@ -702,24 +706,24 @@ width: size('16');             // ❌ Legacy. Use size('icon-sm')
 }
 
 .modal {
-  z-index: z-index('modal');         // 1000
+  z-index: z-index('modal'); // 1000
 }
 
 .popover {
-  z-index: z-index('popover');       // 1050
+  z-index: z-index('popover'); // 1050
 }
 
 .tooltip {
-  z-index: z-index('tooltip');       // 1100
+  z-index: z-index('tooltip'); // 1100
 }
 
 .notification {
-  z-index: z-index('notification');  // 1200
+  z-index: z-index('notification'); // 1200
 }
 
 // ❌ WRONG
-z-index: 999;         // ❌ Hardcoded!
-z-index: 1000000;     // ❌ Arbitrary magic number!
+z-index: 999; // ❌ Hardcoded!
+z-index: 1000000; // ❌ Arbitrary magic number!
 ```
 
 ---

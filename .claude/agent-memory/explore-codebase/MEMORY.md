@@ -204,7 +204,7 @@ Ces explorations ont été validées via:
 - ✅ Edge cases testés (size('44'), spacing('3'), etc.)
 - ✅ Architecture mappée (dépendances, imports)
 - ✅ Phase 6 wrappers validés (Modal, ButtonDelete)
-- ✅ Tokens canoniques identifiés (_tokens.scss)
+- ✅ Tokens canoniques identifiés (\_tokens.scss)
 
 ---
 

@@ -31,8 +31,11 @@ while IFS= read -r file; do
   fi
 
   # Chercher @media avec max-width (desktop-first interdit)
-  if grep -n "@media.*max-width" "$file" 2>/dev/null; then
+  # Exclure les commentaires SassDoc (///) et les commentaires simples (//)
+  matches=$(grep -n "@media.*max-width" "$file" 2>/dev/null | grep -vE "^\s*[0-9]+:\s*///" | grep -vE "^\s*[0-9]+:\s*//" || true)
+  if [ -n "$matches" ]; then
     echo "❌ ERREUR: Desktop-first détecté dans $file"
+    echo "$matches"
     echo "   → Remplacer @media (max-width: ...) par @media (min-width: ...)"
     echo "   → Appli-Picto est Mobile-First (tablette/smartphone prioritaires)"
     errors=$((errors + 1))
