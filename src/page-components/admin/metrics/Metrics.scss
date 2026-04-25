@@ -21,7 +21,9 @@
 // Formulaire de recherche
 .metrics-search {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius(
+    'card'
+  ); // §D.3 : panneau recherche → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -50,15 +52,15 @@
     font-size: font-size('base');
     font-family: monospace;
     border: border-width('base') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius('input'); // §D.3 : input → radius('input') 6px
     background: surface('bg');
     color: text('default');
     min-height: a11y('min-touch-target');
 
-    &:focus {
-      outline: none;
+    &:focus-visible {
+      outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+      outline-offset: 2px;
       border-color: color('base');
-      box-shadow: shadow('focus');
     }
 
     &::placeholder {
@@ -83,7 +85,7 @@
 // Card individuelle
 .metrics-card {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : card → radius('card') 12px
   padding: spacing('lg');
   border: border-width('thin') solid surface('border');
 
@@ -106,7 +108,7 @@
 
 .metrics-counter {
   background: surface('bg');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : compteur → radius('card') 12px
   padding: spacing('md');
   text-align: center;
   border: border-width('thin') solid surface('border');
@@ -162,7 +164,7 @@
 .metrics-badge {
   display: inline-flex;
   align-items: center;
-  padding: spacing('2') spacing('sm');
+  padding: spacing('2') spacing('sm'); // 2px vertical — sans alias sémantique (§E.7 exception)
   border-radius: radius('full');
   font-size: font-size('xs');
   font-weight: font-weight('semibold');
@@ -197,7 +199,7 @@
   gap: spacing('sm');
   padding: spacing('xs') spacing('sm');
   background: surface('bg');
-  border-radius: radius('sm');
+  border-radius: radius('subtle'); // §D.3 : item liste → radius('subtle') 4px
   border: border-width('thin') solid surface('border');
 
   &__name {
@@ -209,9 +211,11 @@
   &__status {
     font-size: font-size('xs');
     color: text('light');
-    padding: spacing('2') spacing('xs');
+    padding: spacing('2') spacing('xs'); // 2px vertical — sans alias sémantique (§E.7 exception)
     background: surface('soft');
-    border-radius: radius('sm');
+    border-radius: radius(
+      'subtle'
+    ); // §D.3 : badge statut → radius('subtle') 4px
   }
 }
 

@@ -28,7 +28,7 @@
   padding: spacing('xl');
   background-color: surface('bg');
   border-radius: radius('2xl');
-  box-shadow: shadow('elevation-sm');
+  // Ombre supprimée §F.3 : conteneur de page, état statique
   font-family: sans-serif;
 
   h1 {
@@ -47,7 +47,7 @@
   input {
     padding: spacing('md');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius('input'); // §D.3 : input → radius('input') 6px
     font-size: font-size('base');
   }
 
@@ -57,7 +57,7 @@
     color: text('invert');
     font-weight: font-weight('bold');
     border: none;
-    border-radius: radius('md');
+    border-radius: radius('button'); // §D.3 : bouton → radius('button') 6px
     cursor: pointer;
     font-size: font-size('base');
     @include safe-transition(background, timing('fast'), easing('smooth'));
@@ -101,7 +101,7 @@
 .password-checklist {
   margin-top: spacing('sm');
   padding: spacing('md') spacing('md');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : bloc checklist → radius('card') 12px
   background: surface('soft');
   border: border-width('thin') solid surface('border');
 }
@@ -133,24 +133,24 @@
   align-items: center;
   gap: spacing('sm');
   padding: spacing('sm') spacing('sm');
-  border-radius: radius('md');
+  border-radius: radius('subtle'); // §D.3 : item liste → radius('subtle') 4px
   border: border-width('thin') dashed transparent;
   outline: none;
 }
 
 .password-checklist__item:focus-visible {
-  outline: border-width('medium') solid color('base');
-  outline-offset: border-width('medium');
+  outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+  outline-offset: 2px;
   background: semantic('info', 'bg');
 }
 
 .password-checklist__icon {
-  width: spacing('20');
-  height: spacing('20');
+  width: var(--spacing-20); // 20px icône — §E.7 via CSS var
+  height: var(--spacing-20);
   display: inline-grid;
   place-items: center;
   font-size: font-size('sm');
-  flex: 0 0 spacing('20');
+  flex: 0 0 var(--spacing-20);
 }
 
 /* ✅ Critère rempli */
@@ -190,7 +190,9 @@
     );
   }
   .password-checklist__item.is-ok {
-    transform: translateX(spacing('2')); /* micro-feedback agréable */
+    transform: translateX(
+      spacing('2')
+    ); /* 2px micro-feedback — sans alias sémantique (§E.7 exception) */
   }
 }
 /* ===========================
@@ -200,7 +202,9 @@
   margin: spacing('sm') 0 0;
   background: transparent;
   border: border-width('thin') solid surface('border');
-  border-radius: radius('md');
+  border-radius: radius(
+    'button'
+  ); // §D.3 : toggle bouton → radius('button') 6px
   padding: spacing('sm') spacing('md');
   width: 100%;
   text-align: left;
@@ -216,8 +220,8 @@
   background: surface('hover');
 }
 .password-checklist__toggle:focus-visible {
-  outline: border-width('medium') solid color('base');
-  outline-offset: border-width('medium');
+  outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+  outline-offset: 2px;
 }
 
 .password-checklist__chev {
@@ -233,7 +237,9 @@
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transform: translateY(calc(-1 * #{spacing('2')}));
+  transform: translateY(
+    calc(-1 * #{spacing('2')})
+  ); // 2px micro-offset — sans alias sémantique (§E.7 exception)
   @include safe-transition(
     (max-height, opacity, transform),
     timing('base'),

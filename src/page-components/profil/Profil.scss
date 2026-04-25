@@ -87,7 +87,7 @@
   );
 
   &:hover {
-    box-shadow: shadow('elevation-lg');
+    box-shadow: shadow('elevation-lg'); // Hover OK — TODO: migrer après T1-B
   }
 
   // Tablette & Desktop (768px+)
@@ -186,7 +186,9 @@
   }
 
   &:hover {
-    transform: translateY(calc(-1 * #{spacing('2')}));
+    transform: translateY(
+      calc(-1 * #{spacing('2')})
+    ); // 2px micro-lift hover — §E.7 exception
   }
 
   &--active {
@@ -197,10 +199,10 @@
       semantic('success', 'dark')
     );
     color: text('invert');
-    box-shadow: shadow('elevation-md');
+    // Ombre statique supprimée §F.3 : badge atomique
 
     &:hover {
-      box-shadow: shadow('elevation-lg');
+      box-shadow: shadow('elevation-lg'); // Hover OK — TODO: migrer après T1-B
     }
   }
 
@@ -208,10 +210,10 @@
     // Badge free (neutre)
     background: linear-gradient(135deg, surface('border'), text('muted'));
     color: text('invert');
-    box-shadow: shadow('elevation-sm');
+    // Ombre statique supprimée §F.3 : badge atomique
 
     &:hover {
-      box-shadow: shadow('elevation-md');
+      box-shadow: shadow('elevation-md'); // Hover OK — TODO: migrer après T1-B
     }
   }
 
@@ -223,10 +225,10 @@
       semantic('warning', 'dark')
     );
     color: text('invert');
-    box-shadow: shadow('elevation-sm');
+    // Ombre statique supprimée §F.3 : badge atomique
 
     &:hover {
-      box-shadow: shadow('elevation-md');
+      box-shadow: shadow('elevation-md'); // Hover OK — TODO: migrer après T1-B
     }
   }
 }
@@ -266,7 +268,7 @@
   gap: spacing('xs');
   padding: spacing('md');
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : display email → radius('card') 12px
   border: border-width('thin') solid surface('border');
 
   // Tablette & Desktop (768px+)
@@ -345,7 +347,7 @@
   gap: spacing('sm');
   padding: spacing('md');
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : bloc abonnement → radius('card') 12px
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
@@ -384,7 +386,7 @@
   margin: 0 0 spacing('md') 0;
   padding: spacing('md');
   background: semantic('error', 'bg');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : warning block → radius('card') 12px
   border: border-width('thin') solid semantic('error', 'border');
   color: text('default');
   font-size: font-size('sm');
@@ -414,19 +416,20 @@
   &:hover:not(:disabled) {
     background-color: semantic('error', 'dark');
     border-color: semantic('error', 'dark');
-    transform: translateY(calc(-1 * #{spacing('2')}));
-    box-shadow: shadow('elevation-lg');
+    transform: translateY(
+      calc(-1 * #{spacing('2')})
+    ); // 2px micro-offset hover — §E.7 exception
+    box-shadow: shadow('elevation-lg'); // Hover OK — TODO: migrer après T1-B
   }
 
   &:active:not(:disabled) {
     transform: translateY(0);
   }
 
-  @include focus-ring(
-    semantic('error'),
-    border-width('medium'),
-    border-width('medium')
-  );
+  &:focus-visible {
+    outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+    outline-offset: 2px;
+  }
 
   // Tablette & Desktop (768px+)
   @include respond-to(md) {
@@ -490,8 +493,10 @@
     max-width: size('600');
     margin: 0 auto;
     background-color: surface('bg');
-    border-radius: radius('lg');
-    box-shadow: shadow('elevation-md');
+    border-radius: radius(
+      'card'
+    ); // §D.3 : legacy container → radius('card') 12px
+    // Ombre supprimée §F.3 : état statique
     padding: spacing('lg');
 
     @include respond-to(md) {
@@ -518,7 +523,9 @@
       width: 100%;
       padding: spacing('sm');
       border: border-width('thin') solid surface('border');
-      border-radius: radius('sm');
+      border-radius: radius(
+        'input'
+      ); // §D.3 : legacy input → radius('input') 6px
     }
   }
 
@@ -531,7 +538,9 @@
       padding: spacing('sm') spacing('lg');
       font-weight: font-weight('bold');
       border: none;
-      border-radius: radius('sm');
+      border-radius: radius(
+        'button'
+      ); // §D.3 : legacy button → radius('button') 6px
       cursor: pointer;
       @include safe-transition(
         background-color,
@@ -591,7 +600,9 @@
 .abonnement-section {
   margin: spacing('lg') 0;
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius(
+    'card'
+  ); // §D.3 : section abonnement → radius('card') 12px
   border: border-width('thin') solid surface('border');
   padding: spacing('md');
 

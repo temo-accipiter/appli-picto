@@ -45,7 +45,7 @@
 // Statut de l'abonnement
 .abonnement-status {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : bloc statut → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -108,7 +108,7 @@
 // Détails de l'abonnement
 .abonnement-details {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : bloc détails → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -144,7 +144,9 @@
           font-family: monospace;
           background: surface('bg');
           padding: spacing('xs') spacing('sm');
-          border-radius: radius('sm');
+          border-radius: radius(
+            'subtle'
+          ); // §D.3 : code inline → radius('subtle') 4px
           font-size: font-size('sm');
         }
       }
@@ -155,7 +157,7 @@
 // Actions
 .abonnement-actions {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : bloc actions → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -199,7 +201,7 @@
 // Historique des événements
 .abonnement-history {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : historique → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -225,7 +227,9 @@
 
     .history-item {
       background: surface('bg');
-      border-radius: radius('md');
+      border-radius: radius(
+        'card'
+      ); // §D.3 : item historique → radius('card') 12px
       padding: spacing('md');
       border: border-width('thin') solid surface('border');
 
@@ -247,7 +251,9 @@
           color: text('light');
           background: surface('soft');
           padding: spacing('xs') spacing('sm');
-          border-radius: radius('sm');
+          border-radius: radius(
+            'subtle'
+          ); // §D.3 : timestamp badge → radius('subtle') 4px
         }
       }
 
@@ -258,7 +264,9 @@
           color: text('light');
           background: surface('soft');
           padding: spacing('sm');
-          border-radius: radius('sm');
+          border-radius: radius(
+            'subtle'
+          ); // §D.3 : pre code → radius('subtle') 4px
           max-height: size('120');
           overflow-y: auto;
           white-space: pre-wrap;
@@ -389,7 +397,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(spacing('20'));
+    transform: translateY(var(--spacing-20)); // 20px — §E.7 via CSS var
   }
   to {
     opacity: 1;

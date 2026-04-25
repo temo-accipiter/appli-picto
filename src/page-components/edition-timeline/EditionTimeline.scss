@@ -10,8 +10,10 @@
   gap: spacing('md'); // ✅ Aligné avec checklist-edition
   padding: spacing('lg'); // ✅ Padding uniforme comme checklist-edition
   background: semantic('info', 'bg'); // ✅ Harmonisé avec checklist-edition
-  border-radius: radius('lg'); // ✅ Harmonisé avec checklist-edition
-  box-shadow: shadow('elevation-lg'); // ✅ Harmonisé avec checklist-edition
+  border-radius: radius(
+    'card'
+  ); // §D.3 : panneau principal → radius('card') 12px
+  // Ombre supprimée §F.3 : composant non-flottant, état statique
   min-width: 0; // ✅ Empêche l'extension au-delà du parent (flex-item)
 
   &__top-bar {
@@ -69,8 +71,10 @@
     padding: spacing('sm');
     background: surface('bg');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('md');
-    box-shadow: shadow('elevation-md');
+    border-radius: radius('card'); // §D.3 : popover → radius('card') 12px
+    box-shadow: shadow(
+      'elevation-md'
+    ); // Flottant OK — TODO: migrer vers shadow('dropdown') après T1-B
     z-index: z-index('modal');
   }
 
@@ -89,11 +93,14 @@
       easing('ease-out')
     );
 
-    &:hover:not(:disabled),
-    &:focus-visible {
+    &:hover:not(:disabled) {
       transform: translateY(calc(-1 * #{border-width('thin')}));
-      box-shadow: shadow('elevation-sm');
-      outline: none;
+      box-shadow: shadow('elevation-sm'); // Hover OK — TODO: migrer après T1-B
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+      outline-offset: 2px;
     }
 
     &:disabled {
@@ -136,7 +143,7 @@
   &__profiles {
     padding: spacing('md');
     background: surface('card');
-    border-radius: radius('lg');
+    border-radius: radius('card'); // §D.3 : bloc profils → radius('card') 12px
   }
 
   // ── Contenu principal ──
@@ -190,7 +197,9 @@
     font-size: font-size('sm');
     color: semantic('error');
     background: semantic('error', 'bg');
-    border-radius: radius('sm');
+    border-radius: radius(
+      'subtle'
+    ); // §D.3 : bloc erreur → radius('subtle') 4px
     padding: spacing('sm') spacing('md');
     margin: 0;
   }

@@ -41,7 +41,9 @@
     background-color: semantic('success');
     color: text('invert');
     border: none;
-    border-radius: radius('sm');
+    border-radius: radius(
+      'button'
+    ); // §D.3 : bouton action → radius('button') 6px
     cursor: pointer;
 
     @include transition-smooth;
@@ -91,9 +93,9 @@
       color: semantic('error');
     }
 
-    &:focus {
-      outline: none;
-      box-shadow: shadow('focus');
+    &:focus-visible {
+      outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+      outline-offset: 2px;
     }
   }
 }
@@ -126,16 +128,16 @@
       surface('border'),
       transparent
     );
-    border-radius: radius('xs');
+    border-radius: radius('subtle'); // §D.3 : séparateur → radius('subtle') 4px
   }
 }
 
 // Indicateurs de quotas d'images
 .quota-indicators {
-  margin-bottom: spacing('12');
+  margin-bottom: var(--spacing-12); // 12px — §E.7 exception via CSS var
   padding: spacing('sm');
   background: surface('soft');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : bloc quota → radius('card') 12px
   border: border-width('thin') solid surface('border');
 }
 //----- Button styles -----//
@@ -145,7 +147,9 @@
   gap: spacing('sm');
 
   .button-icon {
-    margin-right: spacing('3');
+    margin-right: spacing(
+      '3'
+    ); // 3px micro-gap — sans alias sémantique (§E.7 exception)
   }
 
   .chevron {
@@ -158,7 +162,7 @@
   }
 
   &:focus-visible {
-    outline: border-width('medium') solid color('base');
-    outline-offset: border-width('medium');
+    outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+    outline-offset: 2px;
   }
 }

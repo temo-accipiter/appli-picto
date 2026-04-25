@@ -28,7 +28,9 @@
   align-items: center;
   padding: spacing('xl');
   background: surface('overlay');
-  border-radius: radius('md');
+  border-radius: radius(
+    'card'
+  ); // §D.3 : loading container → radius('card') 12px
   margin: spacing('md') 0;
 
   p {
@@ -215,8 +217,10 @@
   margin-top: spacing('48');
   text-align: center;
   background-color: surface('soft');
-  border-radius: radius('lg');
-  box-shadow: shadow('elevation-sm');
+  border-radius: radius(
+    'large'
+  ); // §D.4 : carte enfant → radius('large') 20px (contexte Tableau)
+  // Ombre supprimée §F.3 : état statique
   @include safe-transition(
     (transform, filter, opacity),
     timing('base'),

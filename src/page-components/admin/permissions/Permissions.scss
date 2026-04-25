@@ -28,7 +28,7 @@
 // Section par contexte fonctionnel
 .permissions-section {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : section → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -88,7 +88,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: spacing('2');
+  gap: spacing('2'); // 2px — sans alias sémantique (§E.7 exception)
 
   &__role {
     font-size: font-size('xs');
@@ -106,7 +106,7 @@
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: spacing('2') spacing('xs');
+  padding: spacing('2') spacing('xs'); // 2px vertical — sans alias sémantique (§E.7 exception)
   border-radius: radius('full');
   font-size: font-size('xs');
   font-weight: font-weight('semibold');
@@ -160,7 +160,7 @@
   gap: spacing('sm');
   padding: spacing('sm');
   background: surface('bg');
-  border-radius: radius('md');
+  border-radius: radius('card'); // §D.3 : bloc quota → radius('card') 12px
   border: border-width('thin') solid surface('border');
   grid-template-columns: 1fr;
 

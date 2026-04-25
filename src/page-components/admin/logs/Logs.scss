@@ -46,7 +46,7 @@
 // Filtres
 .logs-filters {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : panneau filtres → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -86,7 +86,7 @@
 // Liste des logs
 .logs-list {
   background: surface('soft');
-  border-radius: radius('lg');
+  border-radius: radius('card'); // §D.3 : panneau liste → radius('card') 12px
   padding: spacing('lg');
   margin-bottom: spacing('xl');
   border: border-width('thin') solid surface('border');
@@ -113,7 +113,9 @@
     gap: spacing('md');
     padding: spacing('md');
     background: surface('bg');
-    border-radius: radius('md');
+    border-radius: radius(
+      'small'
+    ); // §D.3 : en-tête tableau → radius('small') 6px
     margin-bottom: spacing('sm');
     font-weight: font-weight('semibold');
     color: text('default');
@@ -150,7 +152,9 @@
       color: text('default');
       background: surface('soft');
       padding: spacing('xs') spacing('sm');
-      border-radius: radius('sm');
+      border-radius: radius(
+        'subtle'
+      ); // §D.3 : badge user → radius('subtle') 4px
       text-align: center;
     }
 
@@ -167,7 +171,9 @@
         color: text('light');
         background: surface('soft');
         padding: spacing('sm');
-        border-radius: radius('sm');
+        border-radius: radius(
+          'subtle'
+        ); // §D.3 : pre code → radius('subtle') 4px
         max-height: size('100');
         overflow-y: auto;
         white-space: pre-wrap;
@@ -234,7 +240,9 @@
 
   .log-row {
     border: border-width('thin') solid surface('border');
-    border-radius: radius('md');
+    border-radius: radius(
+      'card'
+    ); // §D.3 : log-row mobile → radius('card') 12px
     margin-bottom: spacing('sm');
 
     .log-timestamp,
@@ -326,7 +334,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(spacing('20'));
+    transform: translateY(var(--spacing-20)); // 20px — §E.7 via CSS var
   }
   to {
     opacity: 1;
