@@ -32,7 +32,9 @@
   z-index: z-index('max');
   background: surface('bg');
   backdrop-filter: blur(6px);
-  box-shadow: shadow('elevation-floating'); // Alias sémantique — bannière flottante §F.4
+  box-shadow: shadow(
+    'elevation-floating'
+  ); // Alias sémantique — bannière flottante §F.4
   border-top: border-width('thin') solid surface('border');
   padding: spacing('20') spacing('md');
 

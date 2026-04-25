@@ -17,15 +17,21 @@
 @keyframes pulse-light {
   0% {
     transform: scale(1);
-    box-shadow: shadow('elevation-raised'); // Alias sémantique — animation flottante §F.4
+    box-shadow: shadow(
+      'elevation-raised'
+    ); // Alias sémantique — animation flottante §F.4
   }
   70% {
     transform: scale(1.03);
-    box-shadow: shadow('elevation-floating'); // Alias sémantique — animation flottante §F.4
+    box-shadow: shadow(
+      'elevation-floating'
+    ); // Alias sémantique — animation flottante §F.4
   }
   100% {
     transform: scale(1);
-    box-shadow: shadow('elevation-raised'); // Alias sémantique — animation flottante §F.4
+    box-shadow: shadow(
+      'elevation-raised'
+    ); // Alias sémantique — animation flottante §F.4
   }
 }
 

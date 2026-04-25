@@ -42,7 +42,9 @@
   background: surface('bg');
   border: border-width('thin') solid surface('border');
   border-radius: radius('card'); // 12px — conteneur dropdown §D.3
-  box-shadow: shadow('elevation-floating'); // Alias sémantique — élément flottant §F.4
+  box-shadow: shadow(
+    'elevation-floating'
+  ); // Alias sémantique — élément flottant §F.4
   z-index: z-index('modal');
   pointer-events: auto;
   max-width: size('card-max-width');
