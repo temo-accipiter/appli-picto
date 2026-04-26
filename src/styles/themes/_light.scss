@@ -12,7 +12,7 @@
 
 :root {
   // === COLORS - LIGHT THEME ===
-  --color-primary: #{blue(600)}; // Bleu principal
+  --color-primary: #0077c2; // Bleu brand
   --color-secondary: #{red(500)}; // Rouge accent
   --color-accent: #{color('base', 'accent')}; // Accent décoratif
 
@@ -59,7 +59,7 @@
 // Data attribute override (for theme switcher)
 [data-theme='light'] {
   // Light theme colors (tokens-first)
-  --color-primary: #{blue(600)};
+  --color-primary: #0077c2;
   --color-secondary: #{red(500)};
   --color-accent: #{color('base', 'accent')};
   --color-text: #{gray(900)};
