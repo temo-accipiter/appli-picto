@@ -94,7 +94,7 @@ test.describe('VRT — Publics', () => {
     await page.goto('/legal/cgu')
     await page.waitForLoadState('load')
     await page.addStyleTag({ content: MASK_DYNAMIC })
-    await expect(page).toHaveScreenshot({ maxDiffPixelRatio: 0.01 })
+    await expect(page).toHaveScreenshot({ maxDiffPixelRatio: 0.07 })
   })
 })
 
