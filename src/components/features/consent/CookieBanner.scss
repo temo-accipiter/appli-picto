@@ -87,7 +87,10 @@
     }
 
     .cookie-banner__link {
-      color: semantic('info', 'dark'); // #0369a1 — ratio 5.83:1 sur blanc — WCAG AA ✅ (VIO-2)
+      color: semantic(
+        'info',
+        'dark'
+      ); // #0369a1 — ratio 5.83:1 sur blanc — WCAG AA ✅ (VIO-2)
       text-decoration: underline;
       text-underline-offset: 2px;
 
@@ -150,7 +153,9 @@
   }
 
   .btn {
-    background: color('base'); // #0077c2 — ratio 4.75:1 texte blanc — WCAG AA ✅ (VIO-3)
+    background: color(
+      'base'
+    ); // #0077c2 — ratio 4.75:1 texte blanc — WCAG AA ✅ (VIO-3)
     color: text('invert');
     border-color: color('base');
 
