@@ -29,6 +29,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
+    "test:visual": "playwright test --config=playwright.visual.config.ts",
+    "test:visual:update": "playwright test --config=playwright.visual.config.ts --update-snapshots",
     "audit": "pnpm audit",
     "audit:fix": "pnpm audit --fix",
     "verify:all": "pnpm verify:ci && pnpm test:e2e",

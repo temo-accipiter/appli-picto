@@ -19,6 +19,7 @@ export default defineConfig({
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
       '**/tests/e2e/**', // Exclure les tests Playwright
       '**/tests/accessibility/**', // Exclure les tests d'accessibilité Playwright
+      '**/tests/visual/**', // Exclure les tests VRT Playwright
       '**/blueprint-archive/**', // Exclure code temporaire
     ],
     // Configuration du coverage
