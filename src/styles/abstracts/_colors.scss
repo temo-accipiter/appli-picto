@@ -81,7 +81,11 @@ $ENABLE_LEGACY_SUPPORT: true !default;
 @function semantic($name, $variant: 'base') {
   // ⚠️ Compatibilité : anciennes clés plates (legacy hardcodées)
   @if $name == 'info-primary' {
-    @return #66c3f7; // Valeur legacy pour compatibilité backward
+    // ⚠️  LEGACY — valeur intentionnellement conservée (#66c3f7, bleu clair décoratif)
+    // Utilisé uniquement pour : TrainProgressBar, TachesDnd, TimeTimer, CardsEdition (backgrounds/borders décoratifs)
+    // NE PAS utiliser pour du texte sur fond blanc (ratio 1.96:1 insuffisant WCAG AA)
+    // Migration vers color('base') ou semantic('info', 'dark') uniquement si usage textuel détecté
+    @return #66c3f7;
   }
 
   // 1. Priorité : Semantics (Phase 6 - clés plates avec tirets)
