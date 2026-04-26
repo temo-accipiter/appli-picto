@@ -56,7 +56,7 @@
 
   .app-footer__copy {
     margin: 0;
-    opacity: opacity('md');
+    color: text('muted'); // ratio 4.73:1 sur fond blanc — WCAG AA ✅ (VIO-1)
     font-size: font-size('xs');
   }
 }

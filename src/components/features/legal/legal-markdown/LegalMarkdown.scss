@@ -21,7 +21,7 @@
   &__back-button {
     background: none;
     border: none;
-    color: semantic('info-primary');
+    color: semantic('info', 'dark'); // #0369a1 — ratio 5.83:1 sur blanc — WCAG AA ✅ (VIO-4)
     font-size: font-size('base');
     cursor: pointer;
     padding: spacing('sm') spacing('sm');
