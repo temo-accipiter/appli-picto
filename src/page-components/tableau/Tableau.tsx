@@ -398,6 +398,7 @@ export default function Tableau(_props: TableauProps = {}) {
   if (isLoading) {
     return (
       <div className="tableau-magique" aria-busy="true" aria-label="Chargement">
+        <h1 className="sr-only">Planning</h1>
         <div className="tableau-magique__loading">
           <div className="tableau-magique__dot" />
           <div className="tableau-magique__dot" />
@@ -412,6 +413,7 @@ export default function Tableau(_props: TableauProps = {}) {
   if (!timeline || visibleStepSlots.length === 0) {
     return (
       <div className="tableau-magique">
+        <h1 className="sr-only">Planning</h1>
         <div className="tableau-magique__empty">
           <span className="tableau-magique__empty-icon" aria-hidden="true">
             📋
