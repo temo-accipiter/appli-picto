@@ -134,6 +134,7 @@
     background: transparent;
     border: none;
     outline-offset: spacing('xs');
+    min-height: a11y('min-touch-target');
   }
 
   // Actions spécifiques aux visiteurs
@@ -160,6 +161,7 @@
         font-size: font-size('sm');
         font-weight: font-weight('medium');
         text-decoration: none;
+        min-height: a11y('min-touch-target');
         @include safe-transition(
           background-color transform border-color,
           timing('fast'),
@@ -226,6 +228,7 @@
   text-decoration: none;
   color: text();
   padding: spacing('xs') 0;
+  min-height: a11y('min-touch-target');
 
   @include transition-smooth;
 
@@ -271,6 +274,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: a11y('min-touch-target');
 }
 
 .nav-button {
@@ -282,6 +286,7 @@
   font-size: font-size('sm');
   margin-left: spacing('md');
   cursor: pointer;
+  min-height: a11y('min-touch-target');
   @include safe-transition(
     background-color,
     timing('fast'),

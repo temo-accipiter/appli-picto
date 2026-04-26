@@ -71,7 +71,7 @@ const CONFIG = {
   validPatterns: [
     /@include\s+touch-target/i,
     /@include\s+interactive-target/i,
-    /\/\*\s*touch-target\s*\*\//i,
+    /\/\*\s*touch-target[\s\S]*?\*\//i,
     /min-height:\s*(?:44|56|48)px/i, // Valeurs WCAG directes
     /min-height:\s*spacing\(['"](?:44|56|48)['"]\)/i, // spacing tokens
     /min-height:\s*a11y\(/i, // a11y tokens
@@ -231,7 +231,6 @@ function main() {
 
   // Exit 0 toujours (warning only, pas d'erreur CI)
   // Pour début de migration, mode informatif
-  process.exit(0)
-}
+process.exit(suspiciousFiles > 0 ? 1 : 0)}
 
 main()

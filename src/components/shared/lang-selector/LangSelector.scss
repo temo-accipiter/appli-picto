@@ -36,6 +36,7 @@
     padding: spacing('xs') spacing('sm');
     color: text();
     cursor: pointer;
+    min-height: a11y('min-touch-target');
 
     /* [Mobile-first] Base = mobile */
     flex: 1 1 100%;

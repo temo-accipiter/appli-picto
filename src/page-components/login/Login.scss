@@ -59,6 +59,7 @@
     border: none;
     border-radius: radius('button'); // §D.3 : bouton → radius('button') 6px
     cursor: pointer;
+    min-height: a11y('preferred-touch-target');
     font-size: font-size('base');
     @include safe-transition(background, timing('fast'), easing('smooth'));
 

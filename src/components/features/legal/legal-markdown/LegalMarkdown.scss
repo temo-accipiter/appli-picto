@@ -29,6 +29,7 @@
     display: inline-flex;
     align-items: center;
     gap: spacing('xs');
+    min-height: a11y('min-touch-target');
     @include safe-transition(opacity, timing('fast'), easing('smooth'));
 
     &:hover {

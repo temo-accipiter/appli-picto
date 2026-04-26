@@ -85,6 +85,7 @@
         border-radius: radius('button'); // 6px — bouton §D.3
         font-weight: font-weight('semibold');
         cursor: pointer;
+        min-height: a11y('preferred-touch-target');
         @include safe-transition(
           background transform,
           timing('fast'),
@@ -105,6 +106,7 @@
         border-radius: radius('button'); // 6px — bouton §D.3
         font-weight: font-weight('semibold');
         cursor: pointer;
+        min-height: a11y('preferred-touch-target');
         @include safe-transition(
           background color,
           timing('fast'),
@@ -195,5 +197,11 @@
         }
       }
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .personalization-icon {
+    animation: none;
   }
 }
