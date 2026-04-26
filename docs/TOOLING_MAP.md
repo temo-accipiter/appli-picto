@@ -2,14 +2,14 @@
 
 **Cartographie complète du tooling de qualité, sécurité et accessibilité — Appli-Picto**
 
-| Méta             | Valeur                                              |
-| ---------------- | --------------------------------------------------- |
-| Version          | 1.1                                                 |
-| Date             | 2026-04-26                                          |
-| Auteur           | Temo (synthèse établie avec Claude)                 |
-| Branche          | `phase0/finitions`                                  |
-| Source de vérité | Ce document remplace toute autre carte mentale      |
-| Statut           | **Phase 0 COMPLÉTÉE** — Prêt pour redesign visuel   |
+| Méta             | Valeur                                            |
+| ---------------- | ------------------------------------------------- |
+| Version          | 1.1                                               |
+| Date             | 2026-04-26                                        |
+| Auteur           | Temo (synthèse établie avec Claude)               |
+| Branche          | `phase0/finitions`                                |
+| Source de vérité | Ce document remplace toute autre carte mentale    |
+| Statut           | **Phase 0 COMPLÉTÉE** — Prêt pour redesign visuel |
 
 ---
 
@@ -329,7 +329,7 @@ Quatre trous, classés par criticité.
 
 **Impact** : pendant le redesign à venir, toute régression visuelle non intentionnelle (mauvais token, contraste cassé, layout shift) passera silencieusement. Détection humaine = trop tard.
 
-**Solution** : setup VRT ciblé avec baseline capturée pour 9 écrans (/, /login, /signup, /forgot-password, /tableau, /legal/*, etc.).
+**Solution** : setup VRT ciblé avec baseline capturée pour 9 écrans (/, /login, /signup, /forgot-password, /tableau, /legal/\*, etc.).
 
 **Statut** : Baseline VRT générée et commitée (7334524). Tests fonctionnels : `pnpm test:visual`, `pnpm test:visual:update`.
 
@@ -634,10 +634,10 @@ echo ""
 
 ### 8.5 Changelog
 
-| Version | Date       | Changements                                                |
-| ------- | ---------- | ---------------------------------------------------------- |
+| Version | Date       | Changements                                                                                                                                                            |
+| ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.1     | 2026-04-26 | **Phase 0 COMPLÉTÉE** — Tous les 5 trous résolus (Étapes 1-6). Pre-commit unifié via Husky, VRT baseline, audit axe-core, hooks versionnés. Prêt pour redesign visuel. |
-| 1.0     | 2026-04-25 | Création initiale après audit complet du tooling existant. |
+| 1.0     | 2026-04-25 | Création initiale après audit complet du tooling existant.                                                                                                             |
 
 ---
 
