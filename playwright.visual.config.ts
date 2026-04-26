@@ -35,10 +35,7 @@ export default defineConfig({
   workers: 1,
 
   // Reporter séparé du E2E fonctionnel
-  reporter: [
-    ['html', { outputFolder: 'playwright-report-visual' }],
-    ['list'],
-  ],
+  reporter: [['html', { outputFolder: 'playwright-report-visual' }], ['list']],
 
   // Options partagées
   use: {
