@@ -263,21 +263,6 @@ export default function Login() {
           </Link>
         </p>
       </main>
-
-      {/* ── FOOTER LÉGAL ── */}
-      <footer className="login-page__footer" aria-label="Liens légaux">
-        <nav aria-label="Informations légales">
-          <Link href="/legal/mentions-legales">Mentions légales</Link>
-          <span aria-hidden="true">&nbsp;·&nbsp;</span>
-          <Link href="/legal/cgu">CGU</Link>
-          <span aria-hidden="true">&nbsp;·&nbsp;</span>
-          <Link href="/legal/cgv">CGV</Link>
-          <span aria-hidden="true">&nbsp;·&nbsp;</span>
-          <Link href="/legal/politique-confidentialite">Confidentialité</Link>
-          <span aria-hidden="true">&nbsp;·&nbsp;</span>
-          <Link href="/legal/politique-cookies">Cookies</Link>
-        </nav>
-      </footer>
     </div>
   )
 }

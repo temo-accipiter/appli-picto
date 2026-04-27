@@ -86,9 +86,10 @@
 .login-page__card {
   width: 100%;
   max-width: size('400');
-  background-color: surface('bg');
-  border-radius: radius('card');
-  box-shadow: shadow('elevation-sm');
+  background-color: surface('soft');
+  //background-color: surface('bg');
+  //border-radius: radius('card');
+  //box-shadow: shadow('elevation-sm');
   padding: spacing('card-padding');
 
   display: flex;
@@ -123,7 +124,7 @@
 
 .login-page__forgot {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .login-page__forgot-link {
@@ -152,6 +153,7 @@
   // Centrage du widget Turnstile (il a une largeur fixe interne)
   display: flex;
   justify-content: center;
+  margin-bottom: spacing('sm');
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -276,51 +278,6 @@
     outline: border-width('base') solid color('base');
     outline-offset: spacing('xs');
     border-radius: radius('input');
-  }
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// FOOTER LÉGAL
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.login-page__footer {
-  width: 100%;
-  max-width: size('400');
-  text-align: center;
-
-  nav {
-    font-size: font-size('xs');
-    color: text('muted');
-    display: flex;
-    flex-wrap: wrap; // autorisé sur 320px (max 2 lignes)
-    justify-content: center;
-    align-items: center;
-    gap: spacing('xs');
-    row-gap: spacing('xs');
-    line-height: line-height('normal');
-  }
-
-  a {
-    color: text('muted');
-    text-decoration: none;
-    @include safe-transition(color, timing('fast'), easing('smooth'));
-
-    &:hover {
-      color: text('default');
-      text-decoration: underline;
-    }
-
-    &:focus-visible {
-      outline: border-width('base') solid color('base');
-      outline-offset: spacing('xs');
-      border-radius: radius('input');
-    }
-  }
-
-  // Points médians (span aria-hidden)
-  span {
-    color: text('muted');
-    font-size: font-size('xs');
   }
 }
 
