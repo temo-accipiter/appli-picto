@@ -1,27 +1,333 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// LOGIN & SIGNUP PAGE
+// LOGIN PAGE — Refonte UI (feature/re-design-login)
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/radius/shadow/text/semantic/timing/respond-to avec fallback
-//    - spacing('64'/'xl'/'md'/'sm'/'xs'/'20'/'2') → Primitives Phase 6 ✅
-//    - surface('bg'/'border'/'hover'/'soft') → Semantics Phase 6 ✅
-//    - radius('rounded-24px'/'rounded-12px'/'rounded-10px'/'md'/'full') → Primitives Phase 6 ✅
-//    - shadow('elevation-sm') → Primitives Phase 6 ✅
-//    - text('default'/'invert') → Semantics Phase 6 ✅
-//    - semantic('error'/'success'/'warning'/'info', all variants) → Semantics Phase 6 ✅
-//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
-//    - easing('smooth') → Primitives Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - size('400'/'520') → Legacy support actif
-//    - font-size('3xl'/'base'/'sm') → Legacy support actif
-//    - font-weight('bold'/'medium'/'semibold') → Legacy support actif
-//    - border-width('thin'/'medium') → Legacy support actif
-//    - color('base'/'dark') → Legacy support actif
+// Tokens utilisés :
+//   surface() → bg, soft, border, hover
+//   color() → base, dark
+//   text() → invert, muted, default
+//   semantic() → error
+//   spacing() → card-padding, md, sm, xs, lg
+//   radius() → card, button, input, full
+//   shadow() → elevation-sm
+//   font-size() → 3xl, 2xl, base, sm, xs
+//   font-weight() → bold, semibold, medium
+//   timing() / easing() → via safe-transition()
+//   touch-target() → min (44px WCAG AA)
+//   border-width() → thin
 // ============================================================================
 
-.login-page,
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PAGE WRAPPER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page {
+  // Fond page — léger tint bleuté calme (TSA-friendly)
+  background-color: surface('soft');
+  min-height: 100vh;
+
+  // Centrage vertical + horizontal mobile-first
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: spacing('md');
+  gap: spacing('md');
+
+  @include respond-to(md) {
+    padding: spacing('lg');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HEADER MARQUE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('xs');
+  text-align: center;
+}
+
+.login-page__logo {
+  // Couleur du SVG inline (fill="currentColor" sur le rect de fond)
+  color: color('base');
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: spacing('xs');
+}
+
+.login-page__title {
+  font-size: font-size('2xl');
+  font-weight: font-weight('bold');
+  color: text('dark');
+  margin: 0;
+
+  @include respond-to(md) {
+    font-size: font-size('3xl');
+  }
+}
+
+.login-page__tagline {
+  font-size: font-size('base');
+  color: text('muted');
+  margin: 0;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CARTE FORMULAIRE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__card {
+  width: 100%;
+  max-width: size('400');
+  background-color: surface('bg');
+  border-radius: radius('card');
+  box-shadow: shadow('elevation-sm');
+  padding: spacing('card-padding');
+
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// FORMULAIRE — CHAMPS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+
+  // Étend l'Input UI sur toute la largeur disponible
+  .input-field {
+    width: 100%;
+  }
+
+  .input-field__input {
+    width: 100%;
+    max-width: none; // Neutralise le max-width 200px de l'Input UI
+    box-sizing: border-box;
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// LIEN MOT DE PASSE OUBLIÉ
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__forgot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.login-page__forgot-link {
+  font-size: font-size('sm');
+  color: color('base');
+  text-decoration: none;
+  @include safe-transition(color, timing('fast'), easing('smooth'));
+
+  &:hover {
+    color: color('dark');
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: border-width('base') solid color('base');
+    outline-offset: spacing('xs');
+    border-radius: radius('input');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CAPTCHA TURNSTILE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__captcha {
+  // Centrage du widget Turnstile (il a une largeur fixe interne)
+  display: flex;
+  justify-content: center;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ERREUR DE SOUMISSION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__error {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+  padding: spacing('sm') spacing('md');
+  background-color: semantic('error', 'bg');
+  border: border-width('thin') solid semantic('error', 'border');
+  border-radius: radius('input');
+  font-size: font-size('sm');
+  color: semantic('error', 'dark');
+
+  p {
+    margin: 0;
+  }
+}
+
+.login-page__resend-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: font-size('sm');
+  color: color('base');
+  cursor: pointer;
+  text-decoration: underline;
+  text-align: left;
+  @include touch-target('min'); // 44px WCAG AA
+  @include safe-transition(color, timing('fast'), easing('smooth'));
+
+  &:hover {
+    color: color('dark');
+  }
+
+  &:focus-visible {
+    outline: border-width('base') solid color('base');
+    outline-offset: spacing('xs');
+    border-radius: radius('input');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BOUTON SE CONNECTER — toujours pleine largeur
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__submit {
+  // Bouton toujours pleine largeur (écrase le display: inline-flex du btn)
+  width: 100%;
+  justify-content: center;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SÉPARATEUR "ou"
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__separator {
+  display: flex;
+  align-items: center;
+  gap: spacing('sm');
+}
+
+.login-page__separator-line {
+  flex: 1;
+  height: border-width('thin');
+  background-color: surface('border');
+}
+
+.login-page__separator-text {
+  font-size: font-size('sm');
+  color: text('muted');
+  flex-shrink: 0;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// BOUTON GOOGLE — pleine largeur, logo + label
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__google-btn {
+  width: 100%;
+  justify-content: center;
+  gap: spacing('sm');
+  border: border-width('thin') solid surface('border');
+
+  // Le btn__text doit afficher icône + label côte à côte
+  .btn__text {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// LIEN INSCRIPTION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__signup-prompt {
+  text-align: center;
+  font-size: font-size('sm');
+  margin: 0;
+}
+
+.login-page__signup-hint {
+  color: text('muted');
+}
+
+.login-page__signup-link {
+  color: color('base');
+  font-weight: font-weight('semibold');
+  text-decoration: none;
+  @include safe-transition(color, timing('fast'), easing('smooth'));
+
+  &:hover {
+    color: color('dark');
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: border-width('base') solid color('base');
+    outline-offset: spacing('xs');
+    border-radius: radius('input');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// FOOTER LÉGAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.login-page__footer {
+  width: 100%;
+  max-width: size('400');
+  text-align: center;
+
+  nav {
+    font-size: font-size('xs');
+    color: text('muted');
+    display: flex;
+    flex-wrap: wrap; // autorisé sur 320px (max 2 lignes)
+    justify-content: center;
+    align-items: center;
+    gap: spacing('xs');
+    row-gap: spacing('xs');
+    line-height: line-height('normal');
+  }
+
+  a {
+    color: text('muted');
+    text-decoration: none;
+    @include safe-transition(color, timing('fast'), easing('smooth'));
+
+    &:hover {
+      color: text('default');
+      text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: border-width('base') solid color('base');
+      outline-offset: spacing('xs');
+      border-radius: radius('input');
+    }
+  }
+
+  // Points médians (span aria-hidden)
+  span {
+    color: text('muted');
+    font-size: font-size('xs');
+  }
+}
+
+// ============================================================================
+// SIGNUP PAGE — styles préservés (Signup.tsx importe ce fichier)
+// ============================================================================
+
 .signup-page {
   max-width: size('400');
   margin: spacing('64') auto;
@@ -95,7 +401,11 @@
     }
   }
 }
-//-------- signup -------
+
+// ============================================================================
+// PASSWORD CHECKLIST — styles signup (inchangés)
+// ============================================================================
+
 /* ===========================
    Password checklist (Signup)
    =========================== */
@@ -140,8 +450,8 @@
 }
 
 .password-checklist__item:focus-visible {
-  outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
-  outline-offset: 2px;
+  outline: border-width('base') solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+  outline-offset: border-width('base');
   background: semantic('info', 'bg');
 }
 
@@ -221,8 +531,8 @@
   background: surface('hover');
 }
 .password-checklist__toggle:focus-visible {
-  outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
-  outline-offset: 2px;
+  outline: border-width('base') solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
+  outline-offset: border-width('base');
 }
 
 .password-checklist__chev {
