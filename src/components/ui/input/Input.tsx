@@ -77,6 +77,7 @@ export default function Input({
                 ? 'Masquer le mot de passe'
                 : 'Afficher le mot de passe'
             }
+            aria-pressed={showPassword}
             title={showPassword ? 'Masquer' : 'Afficher'}
           >
             {showPassword ? (
