@@ -1,33 +1,31 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// LOGIN PAGE — Refonte UI (feature/re-design-login)
+// SIGNUP PAGE — Refonte UI (feature/re-design-login)
 // ============================================================================
 // Tokens utilisés :
-//   surface() → bg, soft, border, hover
+//   surface() → soft, bg, border, hover
 //   color() → base, dark
-//   text() → invert, muted, default
-//   semantic() → error
+//   text() → muted, dark, secondary
+//   semantic() → error, success
 //   spacing() → card-padding, md, sm, xs, lg
 //   radius() → card, button, input, full
 //   shadow() → elevation-sm
 //   font-size() → 3xl, 2xl, base, sm, xs
-//   font-weight() → bold, semibold, medium
+//   font-weight() → bold, semibold, medium, regular
 //   timing() / easing() → via safe-transition()
 //   touch-target() → min (44px WCAG AA)
-//   border-width() → thin
+//   border-width() → thin, base
 // ============================================================================
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PAGE WRAPPER
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page {
-  // Fond page — léger tint bleuté calme (TSA-friendly)
+.signup-page {
   background-color: surface('soft');
   min-height: 100vh;
 
-  // Centrage vertical + horizontal mobile-first
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,7 +43,7 @@
 // HEADER MARQUE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page__header {
+.signup-page__header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,8 +51,7 @@
   text-align: center;
 }
 
-.login-page__logo {
-  // Couleur du SVG inline (fill="currentColor" sur le rect de fond)
+.signup-page__logo {
   color: color('base');
   display: flex;
   align-items: center;
@@ -62,7 +59,7 @@
   margin-bottom: spacing('xs');
 }
 
-.login-page__title {
+.signup-page__title {
   font-size: font-size('2xl');
   font-weight: font-weight('bold');
   color: text('dark');
@@ -73,7 +70,7 @@
   }
 }
 
-.login-page__tagline {
+.signup-page__tagline {
   font-size: font-size('base');
   color: text('muted');
   margin: 0;
@@ -83,13 +80,10 @@
 // CARTE FORMULAIRE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page__card {
+.signup-page__card {
   width: 100%;
   max-width: size('400');
   background-color: surface('soft');
-  //background-color: surface('bg');
-  //border-radius: radius('card');
-  //box-shadow: shadow('elevation-sm');
   padding: spacing('card-padding');
 
   display: flex;
@@ -101,35 +95,202 @@
 // FORMULAIRE — CHAMPS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page__field {
+.signup-page__field {
   display: flex;
   flex-direction: column;
   gap: spacing('xs');
 
-  // Étend l'Input UI sur toute la largeur disponible
   .input-field {
     width: 100%;
   }
 
   .input-field__input {
     width: 100%;
-    max-width: none; // Neutralise le max-width 200px de l'Input UI
+    max-width: none;
     box-sizing: border-box;
   }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// LIEN MOT DE PASSE OUBLIÉ
+// CHECKLIST MOT DE PASSE — version discrète, toujours visible
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// Override des styles "carte" du composant PasswordChecklist :
+// - Pas de fond coloré sur le conteneur
+// - Pas de fond de carte sur chaque item
+// - is-ko → icône grise + texte muted
+// - is-ok → icône verte + texte success (conservé)
 
-.login-page__forgot {
-  display: flex;
-  justify-content: center;
+.signup-page__checklist {
+  .password-checklist {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-block-start: spacing('xs');
+  }
+
+  .password-checklist__title {
+    font-size: font-size('xs');
+    color: text('muted');
+    font-weight: font-weight('medium');
+    margin-bottom: spacing('xs');
+  }
+
+  .password-checklist__item {
+    padding: spacing('xs') spacing('sm');
+    background: transparent;
+    border-color: transparent;
+
+    // Transition douce sur changement d'état (TSA-friendly ≤ 200ms)
+    @include safe-transition(color, timing('fast'), easing('smooth'));
+
+    // Désactiver le translateX de PasswordChecklist.scss sur les items is-ok
+    @media (prefers-reduced-motion: no-preference) {
+      &.is-ok {
+        transform: none;
+      }
+    }
+
+    &.is-ko {
+      background: transparent;
+      border-color: transparent;
+
+      .password-checklist__text {
+        color: text('muted');
+        font-size: font-size('sm');
+        font-weight: font-weight('regular');
+      }
+
+      .password-checklist__icon {
+        background: transparent;
+        color: text('muted');
+      }
+    }
+
+    &.is-ok {
+      background: transparent;
+      border-color: transparent;
+
+      .password-checklist__text {
+        color: semantic('success', 'dark');
+        font-size: font-size('sm');
+      }
+
+      .password-checklist__icon {
+        background: transparent;
+        color: semantic('success', 'dark');
+      }
+    }
+  }
 }
 
-.login-page__forgot-link {
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CAPTCHA TURNSTILE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.signup-page__captcha {
+  display: flex;
+  justify-content: center;
+  margin-bottom: spacing('sm');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CASE CGU / POLITIQUE DE CONFIDENTIALITÉ (RGPD art. 7)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.signup-page__cgu {
+  display: flex;
+  align-items: flex-start;
+  gap: spacing('sm');
+
+  // Aligne la checkbox avec la première ligne du label
+  .checkbox-field {
+    flex-shrink: 0;
+    margin-top: spacing('xs');
+  }
+}
+
+.signup-page__cgu-label {
   font-size: font-size('sm');
+  color: text('secondary');
+  line-height: line-height('relaxed');
+  cursor: pointer;
+
+  // Rend le label cliquable (associé à la checkbox via htmlFor)
+  @include touch-target('min');
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: spacing('xs');
+  padding: 0;
+  min-height: auto;
+}
+
+.signup-page__cgu-link {
   color: color('base');
+  text-decoration: underline;
+  font-weight: font-weight('medium');
+  @include safe-transition(color, timing('fast'), easing('smooth'));
+
+  &:hover {
+    color: color('dark');
+  }
+
+  &:focus-visible {
+    outline: border-width('base') solid color('base');
+    outline-offset: spacing('xs');
+    border-radius: radius('input');
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ERREUR DE SOUMISSION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.signup-page__error {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+  padding: spacing('sm') spacing('md');
+  background-color: semantic('error', 'bg');
+  border: border-width('thin') solid semantic('error', 'border');
+  border-radius: radius('input');
+  font-size: font-size('sm');
+  color: semantic('error', 'dark');
+
+  p {
+    margin: 0;
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SUCCÈS — confirmation de l'inscription
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.signup-page__success {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('sm');
+  padding: spacing('md');
+  background-color: semantic('success', 'bg');
+  border: border-width('thin') solid semantic('success', 'border');
+  border-radius: radius('input');
+  font-size: font-size('base');
+  color: semantic('success', 'dark');
+  text-align: center;
+
+  p {
+    margin: 0;
+  }
+}
+
+.signup-page__success-hint {
+  font-size: font-size('sm');
+  color: text('muted');
+}
+
+.signup-page__success-link {
+  color: color('base');
+  font-weight: font-weight('semibold');
   text-decoration: none;
   @include safe-transition(color, timing('fast'), easing('smooth'));
 
@@ -146,124 +307,36 @@
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// CAPTCHA TURNSTILE
+// BOUTON CRÉER UN COMPTE — pleine largeur, disabled si CGU non cochée
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page__captcha {
-  // Centrage du widget Turnstile (il a une largeur fixe interne)
-  display: flex;
-  justify-content: center;
-  margin-bottom: spacing('sm');
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// ERREUR DE SOUMISSION
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.login-page__error {
-  display: flex;
-  flex-direction: column;
-  gap: spacing('xs');
-  padding: spacing('sm') spacing('md');
-  background-color: semantic('error', 'bg');
-  border: border-width('thin') solid semantic('error', 'border');
-  border-radius: radius('input');
-  font-size: font-size('sm');
-  color: semantic('error', 'dark');
-
-  p {
-    margin: 0;
-  }
-}
-
-.login-page__resend-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: font-size('sm');
-  color: color('base');
-  cursor: pointer;
-  text-decoration: underline;
-  text-align: left;
-  @include touch-target('min'); // 44px WCAG AA
-  @include safe-transition(color, timing('fast'), easing('smooth'));
-
-  &:hover {
-    color: color('dark');
-  }
-
-  &:focus-visible {
-    outline: border-width('base') solid color('base');
-    outline-offset: spacing('xs');
-    border-radius: radius('input');
-  }
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// BOUTON SE CONNECTER — toujours pleine largeur
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.login-page__submit {
-  // Bouton toujours pleine largeur (écrase le display: inline-flex du btn)
+.signup-page__submit {
   width: 100%;
   justify-content: center;
-}
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// SÉPARATEUR "ou"
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.login-page__separator {
-  display: flex;
-  align-items: center;
-  gap: spacing('sm');
-}
-
-.login-page__separator-line {
-  flex: 1;
-  height: border-width('thin');
-  background-color: surface('border');
-}
-
-.login-page__separator-text {
-  font-size: font-size('sm');
-  color: text('muted');
-  flex-shrink: 0;
-}
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// BOUTON GOOGLE — pleine largeur, logo + label
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-.login-page__google-btn {
-  width: 100%;
-  justify-content: center;
-  gap: spacing('sm');
-  border: border-width('thin') solid surface('border');
-
-  // Le btn__text doit afficher icône + label côte à côte
-  .btn__text {
-    display: flex;
-    align-items: center;
-    gap: spacing('sm');
+  // État désactivé (CGU non cochée) — exception RGPD art. 7 au pattern Login
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// LIEN INSCRIPTION
+// LIEN CONNEXION
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-.login-page__signup-prompt {
+.signup-page__login-prompt {
   text-align: center;
   font-size: font-size('sm');
   margin: 0;
 }
 
-.login-page__signup-hint {
+.signup-page__login-hint {
   color: text('muted');
 }
 
-.login-page__signup-link {
+.signup-page__login-link {
   color: color('base');
   font-weight: font-weight('semibold');
   text-decoration: none;
