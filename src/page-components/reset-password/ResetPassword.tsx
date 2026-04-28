@@ -2,16 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import type { FormEvent, ChangeEvent } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase, validatePasswordStrength } from '@/utils'
-import { useAuth, useI18n } from '@/hooks'
+import { useI18n } from '@/hooks'
 import { Input, Button, PasswordChecklist } from '@/components'
 import './ResetPassword.scss'
 
 export default function ResetPassword() {
-  const router = useRouter()
-  const { user, loading: authLoading } = useAuth()
   const { t } = useI18n()
 
   const [password, setPassword] = useState('')
@@ -68,11 +65,6 @@ export default function ResetPassword() {
       setRecoveryHandled(true)
     }
   }, [fromEmailLink])
-
-  if (!authLoading && recoveryHandled && !user && !invalidToken) {
-    router.push('/login')
-    return null
-  }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
