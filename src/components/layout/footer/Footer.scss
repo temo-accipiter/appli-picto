@@ -3,60 +3,61 @@
 // ============================================================================
 // FOOTER COMPONENT
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers spacing/surface/text/radius avec fallback intelligent
-//    - surface('border') → Semantics Phase 6 (#e2e8f0) ✅
-//    - surface('bg') → Semantics Phase 6 (#ffffff) ✅
-//    - text('muted') → Semantics Phase 6 (#64748b) ✅
-//    - spacing('md'/'lg'/'sm'/'xs') → Primitives Phase 6 (16px/24px/8px/4px) ✅
-//    - radius('xs') → Primitives Phase 6 (4px) ✅
-//    - Autres tokens : Legacy support actif
+// Tokens utilisés :
+//   surface() → bg, border
+//   text() → muted
+//   spacing() → md, lg, nav-gap
+//   font-size() → xs
+//   border-width() → thin, base
+//   radius() → xs
+//   touch-target() → min (44px WCAG AA)
+//   safe-transition() → color
 // ============================================================================
 
 .app-footer {
-  border-top: border-width('thin') solid surface('border'); // Phase 6: #e2e8f0 (semantic)
-  background: surface('bg'); // Phase 6: #ffffff (semantic)
-  color: text('muted'); // Phase 6: #64748b (semantic)
-  padding: spacing('md') spacing('lg'); // Phase 6: 16px 24px (primitives)
-  font-size: font-size('sm'); // Legacy support
+  border-top: border-width('thin') solid surface('border');
+  background: surface('bg');
+  padding: spacing('md') spacing('lg');
+}
 
-  .app-footer__nav {
-    margin-bottom: spacing('sm');
+.app-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: spacing('nav-gap');
+}
+
+.app-footer__sep {
+  color: text('muted');
+  font-size: font-size('xs');
+  user-select: none;
+}
+
+.app-footer__item {
+  font-size: font-size('xs');
+  color: text('muted');
+  text-decoration: none;
+  @include touch-target('min');
+  display: inline-flex;
+  align-items: center;
+  @include safe-transition(color, timing('fast'), easing('smooth'));
+
+  &:hover {
+    text-decoration: underline;
   }
 
-  .app-footer__list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: spacing('xs') spacing('md');
-    list-style: none;
-    margin: 0;
+  &:focus-visible {
+    outline: border-width('base') solid currentColor;
+    outline-offset: spacing('xs');
+    border-radius: radius('xs');
+  }
+
+  // Variante bouton (Refuser, Personnaliser)
+  &--btn {
+    border: none;
+    background: transparent;
     padding: 0;
-
-    a,
-    .linklike {
-      text-decoration: none;
-      color: text('muted');
-      border: none;
-      background: transparent;
-      padding: 0;
-      cursor: pointer;
-
-      &:hover {
-        text-decoration: underline;
-      }
-
-      // WCAG 2.4.7 - Focus visible accessible
-      &:focus-visible {
-        text-decoration: underline;
-        outline: border-width('base') solid currentColor;
-        outline-offset: spacing('xs');
-        border-radius: radius('xs');
-      }
-    }
-  }
-
-  .app-footer__copy {
-    margin: 0;
-    color: text('muted'); // ratio 4.73:1 sur fond blanc — WCAG AA ✅ (VIO-1)
-    font-size: font-size('xs');
+    cursor: pointer;
   }
 }

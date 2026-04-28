@@ -9,65 +9,89 @@ export default function Footer() {
   const { t } = useI18n()
 
   const handleRetractConsent = () => {
-    // Retirer le consentement aux cookies
     if (revokeConsent()) {
-      // Recharger la page pour appliquer les changements
       window.location.reload()
     }
   }
 
   return (
     <footer className="app-footer" role="contentinfo">
-      <nav className="app-footer__nav" aria-label={t('legal.mentions')}>
-        <ul className="app-footer__list">
-          <li>
-            <Link href="/legal/mentions-legales">{t('legal.mentions')}</Link>
-          </li>
-          <li>
-            <Link href="/legal/cgu">{t('legal.cgu')}</Link>
-          </li>
-          <li>
-            <Link href="/legal/cgv">{t('legal.cgv')}</Link>
-          </li>
-          <li>
-            <Link href="/legal/politique-confidentialite">
-              {t('legal.privacy')}
-            </Link>
-          </li>
-          <li>
-            <Link href="/legal/politique-cookies">{t('legal.cookies')}</Link>
-          </li>
-          <li>
-            <button
-              type="button"
-              className="linklike"
-              aria-label={t('cookies.customize')}
-              onClick={() =>
-                window.dispatchEvent(new CustomEvent('open-cookie-preferences'))
-              }
-            >
-              {t('cookies.customize')}
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              className="linklike"
-              onClick={handleRetractConsent}
-              aria-label={t('cookies.refuse')}
-            >
-              {t('cookies.refuse')}
-            </button>
-          </li>
-          <li>
-            <Link href="/legal/accessibilite">{t('legal.accessibility')}</Link>
-          </li>
-          <li>
-            <Link href="/legal/rgpd">{t('legal.rgpd')}</Link>
-          </li>
-        </ul>
+      <nav className="app-footer__nav" aria-label="Liens légaux et cookies">
+        <Link href="/legal/mentions-legales" className="app-footer__item">
+          {t('legal.mentions')}
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link
+          href="/legal/politique-confidentialite"
+          className="app-footer__item"
+        >
+          Confidentialité
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link
+          href="/legal/cgu"
+          className="app-footer__item"
+          aria-label="Conditions générales d'utilisation"
+        >
+          CGU
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link
+          href="/legal/cgv"
+          className="app-footer__item"
+          aria-label="Conditions générales de vente"
+        >
+          CGV
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link href="/legal/accessibilite" className="app-footer__item">
+          {t('legal.accessibility')}
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link href="/legal/rgpd" className="app-footer__item">
+          Portail RGPD
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <Link href="/legal/politique-cookies" className="app-footer__item">
+          Cookies
+        </Link>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <button
+          type="button"
+          className="app-footer__item app-footer__item--btn"
+          onClick={handleRetractConsent}
+          aria-label={t('cookies.refuse')}
+        >
+          Refuser
+        </button>
+        <span className="app-footer__sep" aria-hidden="true">
+          ·
+        </span>
+        <button
+          type="button"
+          className="app-footer__item app-footer__item--btn"
+          aria-label={t('cookies.customize')}
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent('open-cookie-preferences'))
+          }
+        >
+          Personnaliser
+        </button>
       </nav>
-      <p className="app-footer__copy">© {new Date().getFullYear()}</p>
     </footer>
   )
 }
