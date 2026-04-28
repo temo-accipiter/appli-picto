@@ -121,6 +121,7 @@
 // - is-ok → icône verte + texte success (conservé)
 
 .signup-page__checklist {
+  // Conteneur aligné sur la largeur du champ password
   .password-checklist {
     background: transparent;
     border: none;
@@ -128,22 +129,35 @@
     margin-block-start: spacing('xs');
   }
 
+  // Titre discret ou masqué
   .password-checklist__title {
     font-size: font-size('xs');
     color: text('muted');
-    font-weight: font-weight('medium');
+    font-weight: font-weight('regular');
     margin-bottom: spacing('xs');
   }
 
+  // Liste verticale dense (1 colonne, écrase la grille 2 colonnes)
+  .password-checklist__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    grid-template-columns: none; // neutralise le grid du composant
+
+    @include respond-to(sm) {
+      grid-template-columns: none; // neutralise le 1fr 1fr du breakpoint
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
   .password-checklist__item {
-    padding: spacing('xs') spacing('sm');
+    padding: 0 spacing('xs');
     background: transparent;
     border-color: transparent;
 
-    // Transition douce sur changement d'état (TSA-friendly ≤ 200ms)
     @include safe-transition(color, timing('fast'), easing('smooth'));
 
-    // Désactiver le translateX de PasswordChecklist.scss sur les items is-ok
     @media (prefers-reduced-motion: no-preference) {
       &.is-ok {
         transform: none;
@@ -156,7 +170,7 @@
 
       .password-checklist__text {
         color: text('muted');
-        font-size: font-size('sm');
+        font-size: font-size('xs');
         font-weight: font-weight('regular');
       }
 
@@ -172,7 +186,7 @@
 
       .password-checklist__text {
         color: semantic('success', 'dark');
-        font-size: font-size('sm');
+        font-size: font-size('xs');
       }
 
       .password-checklist__icon {
@@ -212,7 +226,7 @@
 .signup-page__cgu-label {
   font-size: font-size('sm');
   color: text('secondary');
-  line-height: line-height('relaxed');
+  line-height: line-height('normal');
   cursor: pointer;
 
   // Rend le label cliquable (associé à la checkbox via htmlFor)

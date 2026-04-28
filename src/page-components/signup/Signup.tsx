@@ -245,8 +245,9 @@ export default function Signup() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="signup-page__cgu-link"
+                  aria-label="Conditions générales d'utilisation"
                 >
-                  Conditions générales d&apos;utilisation
+                  CGU
                 </Link>{' '}
                 et la{' '}
                 <Link
