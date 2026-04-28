@@ -1,30 +1,29 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import type { FormEvent } from 'react'
+import { useState, useEffect } from 'react'
+import type { FormEvent, ChangeEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { supabase, validatePasswordStrength } from '@/utils'
 import { useAuth, useI18n } from '@/hooks'
-import { InputWithValidation, Button, PasswordChecklist } from '@/components'
-import { supabase, validatePasswordStrength, makeMatchRule } from '@/utils'
+import { Input, Button, PasswordChecklist } from '@/components'
 import './ResetPassword.scss'
-
-interface InputWithValidationRef {
-  validateNow?: () => void
-}
 
 export default function ResetPassword() {
   const router = useRouter()
-  const { user, loading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { t } = useI18n()
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
-  const [error, setError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmError, setConfirmError] = useState('')
+  const [confirmTouched, setConfirmTouched] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [recoveryHandled, setRecoveryHandled] = useState(false)
-
-  const pwRef = useRef<InputWithValidationRef>(null)
-  const confirmRef = useRef<InputWithValidationRef>(null)
+  const [invalidToken, setInvalidToken] = useState(false)
 
   const fromEmailLink =
     typeof window !== 'undefined' &&
@@ -39,7 +38,7 @@ export default function ResetPassword() {
     const handleRecovery = async () => {
       const token = extractAccessToken(window.location.hash)
       if (!token) {
-        setError(t('errors.validationError'))
+        setInvalidToken(true)
         setRecoveryHandled(true)
         return
       }
@@ -51,7 +50,7 @@ export default function ResetPassword() {
 
       if (error) {
         console.error('❌ supabase.auth.setSession :', error.message)
-        setError(t('errors.unauthorized'))
+        setInvalidToken(true)
       } else {
         window.history.replaceState(
           {},
@@ -68,90 +67,193 @@ export default function ResetPassword() {
     } else {
       setRecoveryHandled(true)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromEmailLink])
 
-  if (!loading && recoveryHandled && !user) {
+  if (!authLoading && recoveryHandled && !user && !invalidToken) {
     router.push('/login')
     return null
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setError('')
-
-    pwRef.current?.validateNow?.()
-    confirmRef.current?.validateNow?.()
+    setSubmitError('')
 
     const e1 = validatePasswordStrength(password)
-    const e2 = confirm === password ? '' : t('auth.passwordsDontMatch')
+    const e2 = confirm !== password ? t('auth.passwordsDontMatch') : ''
+
+    setPasswordError(e1)
+    setConfirmError(e2)
+    setConfirmTouched(true)
+
     if (e1 || e2) {
-      setError(e1 || e2)
+      if (e1) document.getElementById('reset-password')?.focus()
+      else document.getElementById('reset-confirm')?.focus()
       return
     }
 
-    const { error } = await supabase.auth.updateUser({ password })
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
 
-    if (error) {
-      const msg = /Password should|weak password/i.test(error.message)
-        ? t('auth.passwordTooShort')
-        : error.message
-      setError(msg)
-    } else {
-      setSuccess(true)
-      setTimeout(() => router.push('/login'), 3000)
+      if (error) {
+        const msg = /Password should|weak password/i.test(error.message)
+          ? t('auth.passwordTooShort')
+          : t('errors.generic')
+        setSubmitError(msg)
+      } else {
+        setSuccess(true)
+      }
+    } catch {
+      setSubmitError(t('errors.generic'))
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
-    <div className="reset-password-page">
-      <h1>{t('auth.resetPassword')}</h1>
+    <div className="reset-page">
+      {/* ── HEADER MARQUE ── */}
+      <header className="reset-page__header">
+        {/* Logo décoratif : aria-hidden car "Appli-Picto" est écrit en clair ci-dessous */}
+        <div className="reset-page__logo" aria-hidden="true">
+          <svg
+            width="56"
+            height="56"
+            viewBox="0 0 56 56"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <rect width="56" height="56" rx="12" fill="currentColor" />
+            <rect x="11" y="11" width="14" height="14" rx="2" fill="white" />
+            <rect x="31" y="11" width="14" height="14" rx="2" fill="white" />
+            <rect x="11" y="31" width="14" height="14" rx="2" fill="white" />
+            <rect x="31" y="31" width="14" height="14" rx="2" fill="white" />
+          </svg>
+        </div>
+        <h1 className="reset-page__title">Appli-Picto</h1>
+        <p className="reset-page__tagline">La journée en pictogrammes</p>
+      </header>
 
-      {success ? (
-        <p className="success">{t('auth.loginSuccess')}</p>
-      ) : (
-        <form onSubmit={handleSubmit} className="reset-form">
-          <InputWithValidation
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ref={pwRef as any}
-            id="new-password"
-            label={t('auth.newPassword')}
-            type="password"
-            value={password}
-            onValid={val => setPassword(val)}
-            onChange={val => setPassword(val)}
-            rules={[validatePasswordStrength]}
-          />
+      {/* ── CARTE FORMULAIRE ── */}
+      <main className="reset-page__card">
+        {invalidToken ? (
+          /* Token invalide ou expiré */
+          <div className="reset-page__error-token" role="alert">
+            <p>
+              Ce lien de réinitialisation est invalide ou a expiré. Demandez un
+              nouveau lien.
+            </p>
+            <p className="reset-page__back">
+              <Link href="/forgot-password" className="reset-page__back-link">
+                Demander un nouveau lien
+              </Link>
+            </p>
+          </div>
+        ) : success ? (
+          /* Message de confirmation post-soumission */
+          <div className="reset-page__success" role="status" aria-live="polite">
+            <p>
+              Votre mot de passe a été réinitialisé avec succès. Vous pouvez
+              maintenant vous connecter avec votre nouveau mot de passe.
+            </p>
+            <p className="reset-page__back">
+              <Link href="/login" className="reset-page__back-link">
+                Se connecter
+              </Link>
+            </p>
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            aria-label="Formulaire de réinitialisation du mot de passe"
+          >
+            <h2 className="reset-page__form-title">
+              Réinitialiser votre mot de passe
+            </h2>
+            <p className="reset-page__form-subtitle">
+              Choisissez un nouveau mot de passe pour votre compte.
+            </p>
 
-          {/* ✅ Checklist repliable (fermée par défaut) */}
-          <PasswordChecklist
-            password={password}
-            collapsible
-            defaultOpen={false}
-          />
+            {/* Champ nouveau mot de passe */}
+            <div className="reset-page__field">
+              <Input
+                id="reset-password"
+                label={t('auth.newPassword')}
+                type="password"
+                value={password}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setPassword(e.target.value)
+                  if (passwordError) setPasswordError('')
+                }}
+                autoComplete="new-password"
+                error={passwordError}
+                autoFocus
+              />
+              {/* Checklist discrète, toujours visible, sans accordion */}
+              <div className="reset-page__checklist">
+                <PasswordChecklist password={password} />
+              </div>
+            </div>
 
-          <InputWithValidation
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ref={confirmRef as any}
-            id="confirm-password"
-            label={t('auth.confirmPassword')}
-            type="password"
-            value={confirm}
-            onValid={val => setConfirm(val)}
-            rules={[
-              makeMatchRule(() => password, t('auth.passwordsDontMatch')),
-            ]}
-          />
+            {/* Champ confirmation mot de passe */}
+            <div className="reset-page__field">
+              <Input
+                id="reset-confirm"
+                label={t('auth.confirmPassword')}
+                type="password"
+                value={confirm}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                  setConfirm(e.target.value)
+                  if (confirmTouched) {
+                    setConfirmError(
+                      e.target.value !== password
+                        ? t('auth.passwordsDontMatch')
+                        : ''
+                    )
+                  }
+                }}
+                onBlur={() => {
+                  setConfirmTouched(true)
+                  setConfirmError(
+                    confirm !== password ? t('auth.passwordsDontMatch') : ''
+                  )
+                }}
+                autoComplete="new-password"
+                error={confirmError}
+              />
+            </div>
 
-          <Button
-            type="submit"
-            label={t('actions.confirm')}
-            variant="primary"
-          />
+            {/* Erreur de soumission */}
+            {submitError && (
+              <div
+                className="reset-page__submit-error"
+                role="alert"
+                aria-live="polite"
+              >
+                <p>{submitError}</p>
+              </div>
+            )}
 
-          {error && <p className="error">{error}</p>}
-        </form>
-      )}
+            {/* Bouton toujours saturé — pattern Login/Signup */}
+            <Button
+              type="submit"
+              label={t('auth.resetPassword')}
+              variant="primary"
+              isLoading={loading}
+              className="reset-page__submit"
+            />
+
+            {/* Lien retour */}
+            <p className="reset-page__back">
+              <Link href="/login" className="reset-page__back-link">
+                Retour à la connexion
+              </Link>
+            </p>
+          </form>
+        )}
+      </main>
     </div>
   )
 }
