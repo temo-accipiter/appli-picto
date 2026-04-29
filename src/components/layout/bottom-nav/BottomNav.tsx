@@ -1,121 +1,101 @@
 'use client'
 
-import { useAuth, useI18n, useIsVisitor } from '@/hooks'
+import { useAuth, useI18n, useAccountStatus } from '@/hooks'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Pencil } from 'lucide-react'
-import { UserMenu, SettingsMenu } from '@/components'
+import { LayoutDashboard, Pencil, User, Shield } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import './BottomNav.scss'
 
 /**
- * BottomNav - Responsive navigation bar with page-specific compositions
+ * BottomNav — Navigation principale mobile (authentifiés uniquement)
  *
- * ✅ CONTRAT PRODUIT : Visitor DOIT pouvoir naviguer entre /tableau et /edition
+ * Visible uniquement si :
+ * - Utilisateur authentifié
+ * - Page ≠ /tableau (zen mode TSA — pas de distraction)
  *
- * /tableau (zen mode TSA-optimized):
- * - Mobile (User): bottom-right avatar only
- * - Mobile (Visitor): lien Édition uniquement
- * - Desktop: top-right avatar only
+ * Composition :
+ * - Non-admin (3 icônes) : Tableau · Édition · Profil
+ * - Admin (4 icônes) : Tableau · Édition · Profil · Admin
  *
- * /edition (Mobile < 768px):
- * - User: Fixed bottom Tableau, Avatar, Settings
- * - Visitor: Fixed bottom Tableau
- *
- * /profil (Mobile < 768px):
- * - User: Fixed bottom Édition, Tableau, Avatar
- * - Visitor: n/a (PrivateRoute bloque accès)
- *
- * Desktop (≥ 768px):
- * - Hidden (navbar top remains)
+ * Masqué sur desktop ≥ 768px (navbar top prend le relai)
  */
+
+interface NavItem {
+  href: string
+  label: string
+  ariaLabel: string
+  Icon: LucideIcon
+  active: boolean
+}
+
 export default function BottomNav() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const { isVisitor } = useIsVisitor()
+  const { isAdmin } = useAccountStatus()
   const { t } = useI18n()
 
-  const isTableau = pathname === '/tableau'
-  const isEdition = pathname === '/edition'
-  const isProfil = pathname === '/profil'
+  // Masqué sur /tableau (zen mode TSA) et pour les non-authentifiés
+  if (!user || pathname === '/tableau') return null
 
-  // Only show BottomNav on specific pages
-  const showNav = isTableau || isEdition || isProfil
+  const isEdition = pathname?.startsWith('/edition') ?? false
+  const isProfil = pathname?.startsWith('/profil') ?? false
+  const isAdminPage = pathname?.startsWith('/admin') ?? false
 
-  // ✅ AUTORISER Visitor sur /tableau et /edition (contrat produit)
-  // Bloquer UNIQUEMENT si ni user, ni visitor
-  if (!showNav || (!user && !isVisitor)) {
-    return null
+  const navItems: NavItem[] = [
+    {
+      href: '/tableau',
+      label: t('nav.tableau'),
+      ariaLabel: t('nav.tableau'),
+      Icon: LayoutDashboard,
+      // /tableau n'est jamais actif ici (on return null dessus), mais l'item reste cliquable
+      active: false,
+    },
+    {
+      href: '/edition',
+      label: t('nav.edition'),
+      ariaLabel: t('nav.edition'),
+      Icon: Pencil,
+      active: isEdition,
+    },
+    {
+      href: '/profil',
+      label: t('nav.profil'),
+      ariaLabel: t('nav.profil'),
+      Icon: User,
+      active: isProfil,
+    },
+  ]
+
+  if (isAdmin) {
+    navItems.push({
+      href: '/admin',
+      label: 'Admin',
+      ariaLabel: 'Administration',
+      Icon: Shield,
+      active: isAdminPage,
+    })
   }
 
-  // Class conditionnelle pour position
-  const navClass = isTableau
-    ? 'bottom-nav bottom-nav--tableau'
-    : 'bottom-nav bottom-nav--fixed'
-
   return (
-    <nav className={navClass} role="navigation" aria-label={t('nav.main')}>
-      <div className="bottom-nav__items">
-        {/* /tableau: Avatar (user) OU lien Édition (visitor) */}
-        {isTableau && (
-          <>
-            {user ? (
-              <UserMenu />
-            ) : (
-              <Link
-                href="/edition"
-                className="nav-icon-link"
-                aria-label={t('nav.edition')}
-                title={t('nav.edition')}
-              >
-                <Pencil size={24} strokeWidth={2} aria-hidden="true" />
-              </Link>
-            )}
-          </>
-        )}
-
-        {/* /edition: Tableau (toujours) + Avatar, Settings (user uniquement) */}
-        {isEdition && (
-          <>
-            <Link
-              href="/tableau"
-              className="nav-icon-link"
-              aria-label={t('nav.tableau')}
-              title={t('nav.tableau')}
-            >
-              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
-            </Link>
-            {user && (
-              <>
-                <UserMenu />
-                <SettingsMenu />
-              </>
-            )}
-          </>
-        )}
-
-        {/* /profil: Édition, Tableau, Avatar (user uniquement - visitor bloqué par PrivateRoute) */}
-        {isProfil && user && (
-          <>
-            <Link
-              href="/edition"
-              className="nav-icon-link"
-              aria-label={t('nav.edition')}
-              title={t('nav.edition')}
-            >
-              <Pencil size={24} strokeWidth={2} aria-hidden="true" />
-            </Link>
-            <Link
-              href="/tableau"
-              className="nav-icon-link"
-              aria-label={t('nav.tableau')}
-              title={t('nav.tableau')}
-            >
-              <LayoutDashboard size={24} strokeWidth={2} aria-hidden="true" />
-            </Link>
-            <UserMenu />
-          </>
-        )}
-      </div>
+    <nav className="bottom-nav" aria-label={t('nav.main')}>
+      {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
+        <Link
+          key={href}
+          href={href}
+          className={`bottom-nav__item${active ? ' bottom-nav__item--active' : ''}`}
+          aria-label={ariaLabel}
+          aria-current={active ? 'page' : undefined}
+        >
+          <Icon
+            size={24}
+            strokeWidth={2}
+            aria-hidden="true"
+            className="bottom-nav__icon"
+          />
+          <span className="bottom-nav__label">{label}</span>
+        </Link>
+      ))}
     </nav>
   )
 }

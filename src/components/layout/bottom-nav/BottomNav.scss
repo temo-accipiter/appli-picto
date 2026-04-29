@@ -1,153 +1,97 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// BOTTOM NAV COMPONENT - Tokens-First
+// BOTTOM NAV — Navigation principale mobile
 // ============================================================================
-// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
-// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
-//    - spacing('md'/'sm') → Primitives Phase 6 ✅
-//    - surface('bg'/'hover'/'border') → Semantics Phase 6 ✅
-//    - radius('button') → Alias sémantique v1.1 (6px) ✅
-//    - Barre fixe : border-top (remplace elevation-sm §F.3) ✅
-//    - timing('fast'/'base') → Primitives Phase 6 (0.15s/0.2s) ✅
-//    - easing('ease-out') → Primitives Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - z-index('modal') → Legacy support actif
-//    - size('2'/'touch-target-min') → Legacy support actif
-//    - border-width('thin'/'base') → Legacy support actif
-//    - color('base'/'dark') → Legacy support actif
+// 📱 Mobile-first | ♿ WCAG 2.2 AA | 🎨 Tokens uniquement
+// Masqué sur desktop ≥ 768px
+//
+// ✅ Tokens validés :
+//    spacing('xs'/'sm'/'md') → Primitives Phase 6
+//    surface('bg'/'border') → Semantics Phase 6
+//    text('muted') → Semantics Phase 6
+//    radius('button') → Alias sémantique v1.1 (6px)
+//    timing('fast') → Primitives Phase 6 (0.15s)
+//    easing('ease-out') → Primitives Phase 6
+//    safe-transition() / focus-ring() / respond-to() → Mixins Phase 6
+//    font-size('xs') → Legacy support actif
+//    font-weight('medium') → Legacy support actif
+//    border-width('thin') → Legacy support actif
+//    size('touch-target-min') → Legacy support actif
+//    z-index('modal') → Legacy support actif
 // ============================================================================
 
-/**
- * BottomNav - Responsive navbar with context-aware positioning
- *
- * /tableau (zen mode TSA-optimized):
- * - Mobile: bottom-right (accessible thumb zone)
- * - Desktop: top-right (standard UI position)
- * - Shows ONLY avatar (no nav-icon-links)
- *
- * Other pages (/profil, /edition):
- * - Mobile: bottom fixed navbar with 3 icons
- * - Desktop: hidden (navbar remains at top)
- */
+// === CONTENEUR ===
 
 .bottom-nav {
-  // Mobile par défaut (320px-767px)
+  // Mobile par défaut (320px-767px) : barre fixe en bas
   display: flex;
   position: fixed;
-  top: 0;
-  right: 0;
-  z-index: z-index('modal');
-  padding: spacing('md');
-  gap: spacing('md');
-  align-items: center;
-  // Support safe area (iPhone notch)
-  padding-top: max(spacing('md'), env(safe-area-inset-top));
-  padding-right: max(spacing('md'), env(safe-area-inset-right));
-
-  // Desktop (768px+)
-  @include respond-to(md) {
-    display: none;
-  }
-}
-
-// Zen mode /tableau: Avatar positioning
-.bottom-nav--tableau {
-  // Mobile par défaut (320px-767px) : bas-droite (thumb-friendly zone)
-  top: auto;
-  bottom: 0;
-  padding-bottom: max(spacing('md'), env(safe-area-inset-bottom));
-  padding-top: spacing('md');
-
-  // Desktop (768px+) : haut-droite (standard UI)
-  @include respond-to(md) {
-    display: flex;
-    position: fixed;
-    top: 0;
-    bottom: auto;
-    right: 0;
-    z-index: z-index('modal');
-    padding: spacing('md');
-    padding-top: max(spacing('md'), env(safe-area-inset-top));
-    padding-right: max(spacing('md'), env(safe-area-inset-right));
-  }
-}
-
-// Other pages (/edition, /profil): Bottom fixed navbar
-.bottom-nav--fixed {
-  // Mobile par défaut (320px-767px) : bas de l'écran (full width navbar)
-  top: auto;
   bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
-  padding: spacing('sm') spacing('md');
-  padding-bottom: max(spacing('sm'), env(safe-area-inset-bottom));
-  justify-content: space-around;
-  // Background opaque pour éviter que le contenu soit visible à travers
   background: surface('bg');
-  backdrop-filter: blur(size('2'));
-  border-top: border-width('thin') solid surface('border'); // Séparation légère — remplace elevation-sm (§F.3)
+  border-top: border-width('thin') solid surface('border');
+  padding: spacing('xs') spacing('md');
+  // Support encoche iPhone (safe area)
+  padding-bottom: max(spacing('xs'), env(safe-area-inset-bottom));
+  z-index: z-index('modal');
+  justify-content: space-around;
+  align-items: stretch;
 
-  // Desktop (768px+) : hidden (navbar top remains)
+  // Desktop (768px+) : masqué — la navbar top prend le relai
   @include respond-to(md) {
     display: none;
   }
 }
 
-.bottom-nav__items {
-  display: flex;
-  align-items: center;
-  gap: spacing('md');
+// === ITEM DE NAVIGATION ===
 
-  // On mobile, items should not wrap
-  flex-wrap: nowrap;
+.bottom-nav__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: spacing('xs');
+  flex: 1;
+  min-width: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs');
+  color: text('muted');
+  text-decoration: none;
+  border-radius: radius('button');
+  @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+
+  // Page courante : couleur primary
+  &--active {
+    color: var(--color-primary);
+  }
 }
 
-// ✅ Sélecteur de profil enfant dans bottom nav (mobile uniquement)
-.bottom-nav__profile-selector {
-  display: inline-flex;
-  align-items: center;
+// === ICÔNE ===
+
+.bottom-nav__icon {
   flex-shrink: 0;
 }
 
-// Nav icon link styling (used for Édition/Tableau icons)
-.nav-icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: size('touch-target-min');
-  min-height: size('touch-target-min');
-  padding: spacing('sm');
-  color: color('base');
-  text-decoration: none;
-  border-radius: radius('button'); // 6px — alias sémantique §D.3
-  @include safe-transition(
-    background-color color,
-    timing('fast'),
-    easing('ease-out')
-  );
-  background: transparent;
+// === LABEL ===
 
-  svg {
-    flex-shrink: 0;
-  }
-
-  &:hover {
-    background: surface('hover');
-    color: color('dark');
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
+.bottom-nav__label {
+  font-size: font-size('xs');
+  font-weight: font-weight('medium');
+  line-height: 1;
+  white-space: nowrap;
 }
 
-// Reduced motion support
+// === RÉDUCTION MOUVEMENT ===
+
 @media (prefers-reduced-motion: reduce) {
-  .nav-icon-link {
+  .bottom-nav__item {
     transition: none;
   }
 }
