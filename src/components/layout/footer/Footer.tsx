@@ -52,18 +52,6 @@ export default function Footer() {
         <span className="app-footer__sep" aria-hidden="true">
           ·
         </span>
-        <Link href="/legal/accessibilite" className="app-footer__item">
-          {t('legal.accessibility')}
-        </Link>
-        <span className="app-footer__sep" aria-hidden="true">
-          ·
-        </span>
-        <Link href="/legal/rgpd" className="app-footer__item">
-          Portail RGPD
-        </Link>
-        <span className="app-footer__sep" aria-hidden="true">
-          ·
-        </span>
         <Link href="/legal/politique-cookies" className="app-footer__item">
           Cookies
         </Link>

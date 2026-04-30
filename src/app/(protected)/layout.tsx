@@ -1,56 +1,24 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useEffect, useState } from 'react'
 import ProtectedRoute from '@/components/shared/protected-route/ProtectedRoute'
 import { CookieBanner, CookiePreferences, Footer, Navbar } from '@/components'
-import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname()
-  const [mounted, setMounted] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const { user, authReady } = useAuth()
 
-  // Détection mobile au montage
-  useEffect(() => {
-    setMounted(true)
-    const checkMobile = () => {
-      const isMobileNow = window.innerWidth < 768
-      setIsMobile(isMobileNow)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  // Routes où la navbar desktop est affichée (uniquement desktop)
-  const navbarRoutes = ['/profil', '/edition', '/abonnement']
-  const isNavbarRoute = navbarRoutes.some(route => pathname.startsWith(route))
-
-  // Footer caché sur mobile pour les routes d'édition et de profil
-  // Sur desktop, footer toujours visible
-  const footerMobileHiddenRoutes = ['/edition', '/profil']
-  const footerMobileHidden = footerMobileHiddenRoutes.some(route =>
-    pathname.startsWith(route)
-  )
-
-  // Navbar affichée UNIQUEMENT sur desktop (≥768px) pour certaines routes
-  const shouldShowNavbar = mounted && isNavbarRoute && !isMobile
+  // Footer masqué pour les authentifiés (liens légaux accessibles via carte RGPD du Profil)
+  // Visible pour les visiteurs sur /edition (conformité légale — mode visiteur first-class)
+  const showFooter = authReady && !user
 
   return (
     <ProtectedRoute>
       <div className="layout">
         <div className="layout-main">
-          {/* Navbar visible UNIQUEMENT sur desktop (≥768px) */}
-          {shouldShowNavbar && (
-            <div className="navbar-desktop-only">
-              <Navbar />
-            </div>
-          )}
+          <Navbar />
           <main id="main-content">{children}</main>
-          <div className={footerMobileHidden ? 'footer-desktop-only' : ''}>
-            <Footer />
-          </div>
+          {showFooter && <Footer />}
           <CookieBanner />
           <CookiePreferences />
         </div>

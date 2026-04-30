@@ -70,13 +70,24 @@
     z-index: z-index('modal');
     background-color: surface('bg');
     border-bottom: border-width('thin') solid surface('border');
-    flex-direction: row;
-    justify-content: space-between;
     align-items: center;
     height: size('64');
-    padding: 0 spacing('lg');
-    gap: spacing('lg');
   }
+}
+
+// Wrapper interne centré — aligne le contenu sur le body principal (max-width 900px)
+// Le fond reste pleine largeur grâce au positionnement fixe du .navbar parent
+.navbar__inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: size('900');
+  margin-inline: auto;
+  padding: 0 spacing('lg');
+  gap: spacing('lg');
+  height: 100%;
 }
 
 // === LOGO ===

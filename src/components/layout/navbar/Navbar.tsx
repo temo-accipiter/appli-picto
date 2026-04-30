@@ -89,38 +89,41 @@ export default function Navbar() {
       </a>
 
       <nav className="navbar" aria-label={t('nav.main')}>
-        {/* Logo — gauche */}
-        <Link
-          href="/edition"
-          className="navbar-logo"
-          aria-label="Appli-Picto — Retour à l'accueil"
-        >
-          <span className="navbar-logo__text">Appli-Picto</span>
-        </Link>
+        {/* Wrapper interne centré — aligne le contenu sur le body principal */}
+        <div className="navbar__inner">
+          {/* Logo — gauche */}
+          <Link
+            href="/edition"
+            className="navbar-logo"
+            aria-label="Appli-Picto — Retour à l'accueil"
+          >
+            <span className="navbar-logo__text">Appli-Picto</span>
+          </Link>
 
-        {/* Actions — droite */}
-        <div className="navbar-actions">
-          {/* SettingsMenu : outil contextuel page Édition, hors navigation */}
-          {isEdition && <SettingsMenu />}
+          {/* Actions — droite */}
+          <div className="navbar-actions">
+            {/* SettingsMenu : outil contextuel page Édition, hors navigation */}
+            {isEdition && <SettingsMenu />}
 
-          {/* Icônes de navigation */}
-          {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`navbar__item${active ? ' navbar__item--active' : ''}`}
-              aria-label={ariaLabel}
-              aria-current={active ? 'page' : undefined}
-            >
-              <Icon
-                size={20}
-                strokeWidth={2}
-                aria-hidden="true"
-                className="navbar__icon"
-              />
-              <span className="navbar__label">{label}</span>
-            </Link>
-          ))}
+            {/* Icônes de navigation */}
+            {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`navbar__item${active ? ' navbar__item--active' : ''}`}
+                aria-label={ariaLabel}
+                aria-current={active ? 'page' : undefined}
+              >
+                <Icon
+                  size={20}
+                  strokeWidth={2}
+                  aria-hidden="true"
+                  className="navbar__icon"
+                />
+                <span className="navbar__label">{label}</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </nav>
     </header>

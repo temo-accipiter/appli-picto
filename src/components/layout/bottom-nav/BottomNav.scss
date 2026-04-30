@@ -4,7 +4,7 @@
 // BOTTOM NAV — Navigation principale mobile
 // ============================================================================
 // 📱 Mobile-first | ♿ WCAG 2.2 AA | 🎨 Tokens uniquement
-// Masqué sur desktop ≥ 768px
+// Masqué sur desktop ≥ 1024px
 //
 // ✅ Tokens validés :
 //    spacing('xs'/'sm'/'md') → Primitives Phase 6
@@ -24,7 +24,7 @@
 // === CONTENEUR ===
 
 .bottom-nav {
-  // Mobile par défaut (320px-767px) : barre fixe en bas
+  // Mobile par défaut (320px-1023px) : barre fixe en bas
   display: flex;
   position: fixed;
   bottom: 0;
@@ -40,8 +40,8 @@
   justify-content: space-around;
   align-items: stretch;
 
-  // Desktop (768px+) : masqué — la navbar top prend le relai
-  @include respond-to(md) {
+  // Desktop (1024px+) : masqué — la navbar top prend le relai
+  @include respond-to(lg) {
     display: none;
   }
 }
