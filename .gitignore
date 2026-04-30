@@ -89,3 +89,5 @@ supabase/migrations/.DS_Store
 .claude/playwright-screenshots/
 # Ne pas versionner les backups
 .backups/
+.claude/.edit-count
+# Next.js auto-generated, should not be tracked
