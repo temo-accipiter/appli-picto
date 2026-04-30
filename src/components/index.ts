@@ -55,7 +55,6 @@ export { default as LegalMarkdown } from './features/legal/legal-markdown/LegalM
 export { default as Footer } from './layout/footer/Footer'
 export { default as Navbar } from './layout/navbar/Navbar'
 export { default as SettingsMenu } from './layout/settings-menu/SettingsMenu'
-export { default as UserMenu } from './layout/user-menu/UserMenu'
 
 // ========================================
 // SHARED - Composants réutilisables métier

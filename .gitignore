@@ -91,3 +91,4 @@ supabase/migrations/.DS_Store
 .backups/
 .claude/.edit-count
 # Next.js auto-generated, should not be tracked
+next-env.d.ts

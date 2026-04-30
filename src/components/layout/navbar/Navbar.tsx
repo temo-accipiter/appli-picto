@@ -1,185 +1,127 @@
 'use client'
 
-import {
-  LangSelector,
-  PersonalizationModal,
-  SettingsMenu,
-  ThemeToggle,
-  UserMenu,
-} from '@/components'
-import { useAuth, useI18n, useIsVisitor } from '@/hooks'
-import { motion } from 'framer-motion'
-import {
-  LayoutDashboard,
-  Palette,
-  Pencil,
-  Settings,
-  UserPlus,
-} from 'lucide-react'
-import LongPressLink from '@/components/shared/long-press-link/LongPressLink'
+import { SettingsMenu } from '@/components'
+import { useAuth, useI18n, useAccountStatus } from '@/hooks'
+import { LayoutDashboard, Pencil, User, Shield } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
 import './Navbar.scss'
+
+/**
+ * Navbar — Navigation principale desktop (≥1024px)
+ *
+ * Visible uniquement si :
+ * - Viewport ≥ 1024px (CSS)
+ * - Utilisateur authentifié
+ * - Page ≠ /tableau (kiosk mode TSA — pas de distraction)
+ *
+ * Composition :
+ * - Logo Appli-Picto à gauche (lien vers /edition)
+ * - Non-admin (3 icônes) : Tableau · Édition · Profil
+ * - Admin (4 icônes) : Tableau · Édition · Profil · Admin
+ * - SettingsMenu (sur /edition uniquement, hors nav)
+ *
+ * Sur mobile (< 1024px) : BottomNav prend le relai
+ */
+
+interface NavItem {
+  href: string
+  label: string
+  ariaLabel: string
+  Icon: LucideIcon
+  active: boolean
+}
 
 export default function Navbar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const { isVisitor, authReady } = useIsVisitor()
-  const { t } = useI18n() // 🌐 Hook i18n pour les traductions
-  const [showPersonalizationModal, setShowPersonalizationModal] =
-    useState(false)
+  const { isAdmin } = useAccountStatus()
+  const { t } = useI18n()
 
-  const isTableau = pathname === '/tableau'
-  const isEdition = pathname === '/edition'
-  const isProfil = pathname === '/profil'
+  // Masquée sur /tableau (kiosk mode TSA) et pour les non-authentifiés
+  if (!user || pathname === '/tableau') return null
 
-  // Détecter visitor même pendant le chargement
-  const isVisitorMode = !user && (isVisitor || !authReady)
+  const isEdition = pathname?.startsWith('/edition') ?? false
+  const isProfil = pathname?.startsWith('/profil') ?? false
+  const isAdminPage = pathname?.startsWith('/admin') ?? false
+
+  const navItems: NavItem[] = [
+    {
+      href: '/tableau',
+      label: t('nav.tableau'),
+      ariaLabel: t('nav.tableau'),
+      Icon: LayoutDashboard,
+      // /tableau masque la navbar → cet item n'est jamais "actif" ici
+      active: false,
+    },
+    {
+      href: '/edition',
+      label: t('nav.edition'),
+      ariaLabel: t('nav.edition'),
+      Icon: Pencil,
+      active: isEdition,
+    },
+    {
+      href: '/profil',
+      label: t('nav.profil'),
+      ariaLabel: t('nav.profil'),
+      Icon: User,
+      active: isProfil,
+    },
+  ]
+
+  if (isAdmin) {
+    navItems.push({
+      href: '/admin',
+      label: 'Admin',
+      ariaLabel: 'Administration',
+      Icon: Shield,
+      active: isAdminPage,
+    })
+  }
+
   return (
     <header className="navbar-header">
-      {/* Lien d'évitement : permet à la navigation clavier/lecteur d'écran de sauter au contenu */}
+      {/* Lien d'évitement — WCAG 2.4.1 Contourner des blocs */}
       <a href="#main-content" className="skip-link">
         {t('nav.skipToContent')}
       </a>
+
       <nav className="navbar" aria-label={t('nav.main')}>
-        <div className="navbar-left">
-          {/* ✅ CONTRAT PRODUIT : Visitor DOIT pouvoir accéder à /edition pour tester l'app */}
-          {(isTableau || isProfil) && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Tableau (enfant) : appui long 2s requis — protection enfant */}
-              {isTableau ? (
-                <LongPressLink
-                  href="/edition"
-                  className="nav-icon-link"
-                  aria-label={t('nav.edition')}
-                  title={t('nav.edition')}
-                >
-                  <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-                </LongPressLink>
-              ) : (
-                /* Profil (parent) : navigation directe */
-                <Link
-                  href="/edition"
-                  className="nav-icon-link"
-                  aria-label={t('nav.edition')}
-                  title={t('nav.edition')}
-                >
-                  <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-                </Link>
-              )}
-            </motion.div>
-          )}
+        {/* Logo — gauche */}
+        <Link
+          href="/edition"
+          className="navbar-logo"
+          aria-label="Appli-Picto — Retour à l'accueil"
+        >
+          <span className="navbar-logo__text">Appli-Picto</span>
+        </Link>
 
-          {(isEdition || isProfil) && (
+        {/* Actions — droite */}
+        <div className="navbar-actions">
+          {/* SettingsMenu : outil contextuel page Édition, hors navigation */}
+          {isEdition && <SettingsMenu />}
+
+          {/* Icônes de navigation */}
+          {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
             <Link
-              href="/tableau"
-              className="nav-icon-link"
-              aria-label={t('nav.tableau')}
-              title={t('nav.tableau')}
+              key={href}
+              href={href}
+              className={`navbar__item${active ? ' navbar__item--active' : ''}`}
+              aria-label={ariaLabel}
+              aria-current={active ? 'page' : undefined}
             >
-              <LayoutDashboard size={20} strokeWidth={2} aria-hidden="true" />
+              <Icon
+                size={20}
+                strokeWidth={2}
+                aria-hidden="true"
+                className="navbar__icon"
+              />
+              <span className="navbar__label">{label}</span>
             </Link>
-          )}
+          ))}
         </div>
-
-        {/* Actions à droite : UserMenu pour les utilisateurs connectés, actions pour les visiteurs */}
-        {user ? (
-          <motion.div
-            className="navbar-actions"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-          >
-            {isEdition && <SettingsMenu />}
-            <UserMenu />
-          </motion.div>
-        ) : (
-          <motion.div
-            className="navbar-actions visitor-actions"
-            initial={{ opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-          >
-            {/* Thème et langue pour tous */}
-            <div className="visitor-controls">
-              <ThemeToggle />
-              <LangSelector />
-            </div>
-
-            {/* Boutons de conversion pour les visiteurs */}
-            <div className="visitor-buttons">
-              {isVisitorMode ? (
-                // Boutons pour tous les visiteurs (tableau, tableau-demo, etc.)
-                <>
-                  <button
-                    className="nav-button personalize-button"
-                    aria-label={t('nav.personalization')}
-                    title={t('nav.personalization')}
-                    onClick={() => setShowPersonalizationModal(true)}
-                  >
-                    <Palette size={18} aria-hidden="true" />
-                    <span>{t('nav.personalization')}</span>
-                  </button>
-
-                  <Link
-                    href="/signup"
-                    className="nav-button signup-button"
-                    aria-label={t('nav.createAccount')}
-                    title={t('nav.createAccount')}
-                  >
-                    <UserPlus size={18} aria-hidden="true" />
-                    <span>{t('nav.createAccount')}</span>
-                  </Link>
-
-                  <Link
-                    href="/login"
-                    className="nav-button login-button"
-                    aria-label={t('nav.login')}
-                    title={t('nav.login')}
-                  >
-                    <Settings size={18} aria-hidden="true" />
-                    <span>{t('nav.login')}</span>
-                  </Link>
-                </>
-              ) : (
-                // Boutons normaux pour les autres pages
-                <>
-                  <Link
-                    href="/signup"
-                    className="nav-button signup-button"
-                    aria-label={t('nav.signup')}
-                    title={t('nav.signup')}
-                  >
-                    <UserPlus size={18} aria-hidden="true" />
-                    <span>{t('nav.signup')}</span>
-                  </Link>
-
-                  <Link
-                    href="/login"
-                    className="nav-button login-button"
-                    aria-label={t('nav.login')}
-                    title={t('nav.login')}
-                  >
-                    <Settings size={18} aria-hidden="true" />
-                    <span>{t('nav.login')}</span>
-                  </Link>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Modal de personnalisation : contexte selon le statut */}
-        <PersonalizationModal
-          isOpen={showPersonalizationModal}
-          onClose={() => setShowPersonalizationModal(false)}
-          context={isVisitor ? 'visitor' : 'free'}
-        />
       </nav>
     </header>
   )

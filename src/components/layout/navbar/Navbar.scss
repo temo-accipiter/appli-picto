@@ -1,343 +1,151 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// NAVBAR COMPONENT - Tokens-First
+// NAVBAR — Navigation principale desktop (≥1024px)
 // ============================================================================
-// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
-// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
-//    - spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6 ✅
-//    - surface('bg'/'border'/'hover') → Semantics Phase 6 ✅
-//    - radius('card'/'button'/'subtle'/'full') → Aliases sémantiques v1.1 ✅
-//    - Navbar : border-bottom (remplace elevation-sm §F.3) ✅
-//    - shadow('elevation-md') → Skip-link flottant — TODO T1-B ✅
-//    - text('invert') → Semantics Phase 6 ✅
-//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
-//    - easing('ease-out') → Primitives Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - transition-smooth → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - z-index('modal') → Legacy support actif
-//    - size('64'/'avatar-md') → Legacy support actif
-//    - font-size('sm'/'2xl'/'base') → Legacy support actif
-//    - font-weight('medium'/'bold') → Legacy support actif
-//    - border-width('thin'/'base') → Legacy support actif
-//    - color('base'/'dark') → Legacy support actif
+// 🖥️  Desktop-only | ♿ WCAG 2.2 AA | 🎨 Tokens uniquement
+// Mobile (< 1024px) : masquée — BottomNav prend le relai
+//
+// ✅ Tokens validés :
+//    spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6
+//    surface('bg'/'border') → Semantics Phase 6
+//    text('muted') → Semantics Phase 6
+//    radius('card'/'button'/'subtle') → Aliases sémantiques v1.1
+//    shadow('elevation-md') → Primitives Phase 6
+//    timing('fast') → Primitives Phase 6 (0.15s)
+//    easing('ease-out') → Primitives Phase 6
+//    safe-transition() / focus-ring() / respond-to() → Mixins Phase 6
+//    size('64'/'touch-target-min') → Legacy support actif
+//    font-size('sm'/'base'/'lg') → Legacy support actif
+//    font-weight('medium'/'semibold'/'bold') → Legacy support actif
+//    border-width('thin') → Legacy support actif
+//    z-index('modal') → Legacy support actif
+//    color('base') → Legacy support actif
 // ============================================================================
 
-// ============================================================================
-// SKIP LINK — WCAG 2.4.1 (Contourner des blocs)
-// Visible uniquement au focus clavier, invisible par défaut
-// ============================================================================
+// === SKIP LINK — WCAG 2.4.1 (Contourner des blocs) ===
+// Invisible par défaut, visible au focus clavier
 
 .navbar-header {
-  // Le header est juste un conteneur sémantique — pas de style propre
+  // Conteneur sémantique — pas de style propre
   display: contents;
 }
 
 .skip-link {
-  // Positionné hors écran par défaut (invisible mais accessible aux lecteurs d'écran)
   position: absolute;
   top: spacing('sm');
   left: spacing('sm');
   z-index: z-index('modal') + 1;
   transform: translateY(calc(-100% - #{spacing('md')}));
 
-  // Style visible au focus
   &:focus-visible {
     transform: translateY(0);
     background: surface('bg');
     color: text();
     padding: spacing('sm') spacing('md');
-    border-radius: radius('card'); // 12px — petite bulle flottante
+    border-radius: radius('card');
     font-size: font-size('sm');
     font-weight: font-weight('medium');
     text-decoration: none;
-    // TODO: migrer vers shadow('dropdown') après résolution T1-B (conflit shadow())
-    box-shadow: shadow(
-      'elevation-md'
-    ); // Ombre skip-link flottant — exception §F.3
+    box-shadow: shadow('elevation-md');
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
     border: border-width('thin') solid color('base');
   }
 }
 
-// ============================================================================
+// === NAVBAR CONTAINER ===
 
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: z-index('modal');
-  display: flex;
-  background-color: surface('bg');
-  border-bottom: border-width('thin') solid surface('border'); // Séparation légère — remplace elevation-sm (§F.3)
+  // Mobile (< 1024px) : masquée — BottomNav prend le relai
+  display: none;
 
-  /* [Mobile-first] Base = mobile (320px+) */
-  flex-direction: column;
-  align-items: flex-start;
-  gap: spacing('xs');
-  height: auto;
-  padding: spacing('sm') spacing('md');
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
+  // Desktop (≥ 1024px) : visible en barre fixe en haut
+  @include respond-to(lg) {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: z-index('modal');
+    background-color: surface('bg');
+    border-bottom: border-width('thin') solid surface('border');
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     height: size('64');
     padding: 0 spacing('lg');
-    gap: 0;
-  }
-}
-
-.navbar-left {
-  display: flex;
-
-  /* [Mobile-first] Base = mobile */
-  width: 100%;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: spacing('md');
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
-    width: auto;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
     gap: spacing('lg');
   }
 }
+
+// === LOGO ===
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  flex-shrink: 0;
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+}
+
+.navbar-logo__text {
+  font-size: font-size('lg');
+  font-weight: font-weight('bold');
+  color: text();
+  white-space: nowrap;
+}
+
+// === ACTIONS DROITE ===
 
 .navbar-actions {
   display: flex;
   align-items: center;
-
-  /* [Mobile-first] Base = mobile */
-  width: 100%;
-  justify-content: center;
-  gap: spacing('sm');
-
-  /* Desktop = enhancement */
-  @include respond-to(sm) {
-    width: auto;
-    justify-content: flex-end;
-    gap: spacing('md');
-  }
-
-  // Sélecteur de profil enfant (page Edition uniquement)
-  // ✅ Stylisé comme user-menu-trigger (transparent, minimal)
-  .navbar-profile-selector {
-    display: inline-flex;
-    align-items: center;
-    background: transparent;
-    border: none;
-    outline-offset: spacing('xs');
-    min-height: a11y('min-touch-target');
-  }
-
-  // Actions spécifiques aux visiteurs
-  &.visitor-actions {
-    gap: spacing('lg');
-
-    .visitor-controls {
-      display: flex;
-      align-items: center;
-      gap: spacing('sm');
-    }
-
-    .visitor-buttons {
-      display: flex;
-      align-items: center;
-      gap: spacing('sm');
-
-      .nav-button {
-        display: flex;
-        align-items: center;
-        gap: spacing('xs');
-        padding: spacing('sm') spacing('md');
-        border-radius: radius('button'); // 6px — alias sémantique §D.3
-        font-size: font-size('sm');
-        font-weight: font-weight('medium');
-        text-decoration: none;
-        min-height: a11y('min-touch-target');
-        @include safe-transition(
-          background-color transform border-color,
-          timing('fast'),
-          easing('ease-out')
-        );
-        border: border-width('thin') solid transparent;
-
-        &.signup-button {
-          background: color('base');
-          color: text('invert');
-          border-color: color('base');
-
-          &:hover {
-            background: color('dark');
-            transform: translateY(calc(-1 * #{border-width('thin')}));
-          }
-        }
-
-        &.login-button {
-          background: transparent;
-          color: text();
-          border-color: surface('border');
-
-          &:hover {
-            background: surface('hover');
-            border-color: color('base');
-          }
-        }
-
-        &.personalize-button {
-          background: color('base');
-          color: text('invert');
-          border-color: color('base');
-
-          &:hover {
-            background: color('dark');
-            transform: translateY(
-              calc(-1 * #{border-width('thin')})
-            ); // Shadow supprimé : bouton = atome (§F.3)
-          }
-        }
-
-        span {
-          /* [Mobile-first] Base = mobile (caché pour gagner espace) */
-          display: none;
-
-          /* Desktop = afficher le texte */
-          @include respond-to(sm) {
-            display: inline;
-          }
-        }
-      }
-    }
-  }
+  gap: spacing('md');
+  flex-shrink: 0;
 }
 
-.nav-link {
-  position: relative;
+// === ITEM DE NAVIGATION ===
+
+.navbar__item {
   display: flex;
   align-items: center;
   gap: spacing('xs');
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs') spacing('sm');
+  text-decoration: none;
+  color: text('muted');
+  border-radius: radius('button');
+  @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+
+  // Page courante : couleur primary (cohérence avec BottomNav)
+  &--active {
+    color: var(--color-primary);
+  }
+}
+
+.navbar__icon {
+  flex-shrink: 0;
+}
+
+.navbar__label {
   font-size: font-size('sm');
   font-weight: font-weight('medium');
-  text-decoration: none;
-  color: text();
-  padding: spacing('xs') 0;
-  min-height: a11y('min-touch-target');
-
-  @include transition-smooth;
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: border-width('base');
-    background-color: color('base');
-    @include safe-transition(width, timing('fast'), easing('ease-out'));
-  }
-
-  &:hover {
-    color: color('base');
-
-    &::after {
-      width: 100%;
-    }
-  }
-
-  // WCAG 2.4.7 - Focus visible accessible (v1.1 §F.5)
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-    border-radius: radius('subtle'); // 4px — alias sémantique §D.3
-  }
-
-  &.active {
-    color: color('base');
-
-    &::after {
-      width: 100%;
-    }
-  }
+  white-space: nowrap;
 }
 
-.nav-icon-link {
-  font-size: font-size('2xl');
-  padding: spacing('sm');
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: a11y('min-touch-target');
-}
+// === RÉDUCTION MOUVEMENT — TSA ===
 
-.nav-button {
-  background: color('base');
-  color: text('invert');
-  border: none;
-  border-radius: radius('button'); // 6px — alias sémantique §D.3
-  padding: spacing('xs') spacing('sm');
-  font-size: font-size('sm');
-  margin-left: spacing('md');
-  cursor: pointer;
-  min-height: a11y('min-touch-target');
-  @include safe-transition(
-    background-color,
-    timing('fast'),
-    easing('ease-out')
-  );
-
-  &:hover {
-    background: color('dark');
-  }
-
-  // WCAG 2.4.7 - Focus visible accessible (v1.1 §F.5)
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-}
-.nav-avatar-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: spacing('md');
-
-  .navbar-avatar {
-    width: size('avatar-md');
-    height: size('avatar-md');
-    border-radius: radius('full');
-    overflow: hidden;
-    border: border-width('base') solid surface('border');
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-  }
-
-  .navbar-avatar-fallback {
-    width: size('avatar-md');
-    height: size('avatar-md');
-    border-radius: radius('full');
-    // WCAG 2.2 AA compliant - Ratio ~4.5:1
-    background: surface('soft');
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: font-weight('bold');
-    color: text();
-    font-size: font-size('base');
-  }
-
-  &:hover .navbar-avatar {
-    transform: scale(1.05);
+@media (prefers-reduced-motion: reduce) {
+  .navbar__item {
+    transition: none;
   }
 }
