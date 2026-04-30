@@ -33,6 +33,7 @@
   justify-content: space-between;
   margin-top: spacing('48');
   gap: spacing('lg');
+  margin-bottom: 3rem; // Espace pour le footer fixe
 
   .ajouter-tache-btn {
     display: block;

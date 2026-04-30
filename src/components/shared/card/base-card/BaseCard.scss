@@ -132,6 +132,13 @@
     gap: spacing('sm');
     justify-content: flex-start;
     min-width: 0; /* Force text truncation */
+
+    // Force les champs enfants à respecter la colonne grid
+    input,
+    select {
+      width: 100%;
+      min-width: 0;
+    }
   }
 
   &__label {
