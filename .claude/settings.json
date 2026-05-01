@@ -88,6 +88,16 @@
         "description": "Vérification valeurs hardcodées SCSS après édition (avertissement advisory)"
       },
       {
+        "matcher": "Edit(*.tsx)|Edit(*.ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/scripts/check-inline-styles.sh $CLAUDE_TOOL_INPUT_PATH"
+          }
+        ],
+        "description": "Vérification CSS inline dans TSX/TS après édition (avertissement advisory)"
+      },
+      {
         "matcher": "mcp__supabase__apply_migration",
         "hooks": [
           {
