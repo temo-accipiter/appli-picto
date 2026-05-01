@@ -28,7 +28,7 @@
 .input-field {
   display: flex;
   flex-direction: column;
-  gap: spacing('xs'); // 4px (au lieu de xxs inexistant)
+  //gap: spacing('xs'); // 4px (au lieu de xxs inexistant)
   position: relative;
 }
 
@@ -53,9 +53,6 @@
   color: text();
 
   // Dimensions
-  max-width: spacing(
-    '200'
-  ); // ~11.5rem - Tolérance : max-width contextuel inputs courts
   @include touch-target('min'); // 44px WCAG AA
 
   // Transitions TSA-compliant
@@ -95,9 +92,9 @@
   min-height: spacing(
     '16'
   ); // 16px - Tolérance : min-height message erreur (pas structurel strict)
-  font-size: font-size('sm');
+  font-size: font-size('xs');
   color: semantic('error');
-  line-height: line-height('tight'); // 1.2
+  line-height: line-height('none'); // 1.2
   margin: 0;
 
   // Visibilité

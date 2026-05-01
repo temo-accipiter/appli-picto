@@ -6,7 +6,7 @@
 //    - spacing('1'/'2'/'3') → spacing('xs'/'sm') ✅
 //    - shadow('elevation-raised') → shadow('elevation-md') au hover (§F.4) ✅
 
-@import '@/styles/abstracts/index';
+@use '@/styles/abstracts' as *;
 
 .child-profile-manager {
   &__empty {

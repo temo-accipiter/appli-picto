@@ -29,10 +29,14 @@
   grid-template-columns: auto 1fr;
   gap: spacing('md');
   background: tsa-pastel('bg-soft');
+  // Correction token: tsa-pastel est obsolète, utiliser surface('soft')
+  //background: surface('soft');
   border-radius: radius('card'); // 12px — alias sémantique §D.3
   padding: spacing('sm');
   // Shadow supprimée au repos (§F.3) — conservée sur focus (interaction)
   border: border-width('base') solid transparent;
+  width: 100%;
+  min-height: size('card-min-height'); // 140px
 
   @include safe-transition(
     border-color background-color box-shadow,
@@ -86,8 +90,9 @@
   &__image-section {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: spacing('xs');
+    //align-items: center;
+    justify-content: space-between;
+    //gap: spacing('xs');
   }
 
   &__image {
@@ -129,9 +134,14 @@
   &__content {
     display: flex;
     flex-direction: column;
-    gap: spacing('sm');
-    justify-content: flex-start;
+    //gap: spacing('sm');
+    //justify-content: flex-start;
+    // 2. Distribuer l'espace pour que l'erreur s'affiche en bas sans pousser le label vers le haut
+    justify-content: space-between;
     min-width: 0; /* Force text truncation */
+
+    // 3. Permettre au conteneur de prendre toute la hauteur disponible dans la grid
+    height: 100%;
 
     // Force les champs enfants à respecter la colonne grid
     input,

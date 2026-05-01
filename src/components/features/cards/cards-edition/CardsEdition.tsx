@@ -229,7 +229,7 @@ export default function CardsEdition({
                     filePath={bankCard.image_url || ''}
                     bucket="bank-images"
                     alt={bankCard.name}
-                    className="img-size-sm"
+                    size={80}
                   />
                 }
                 labelId={bankCard.id}
@@ -380,7 +380,7 @@ export default function CardsEdition({
                             filePath={bankCard.image_url || ''}
                             bucket="bank-images"
                             alt={bankCard.name}
-                            className="img-size-sm"
+                            size={80}
                           />
                         }
                         labelId={bankCard.id}
@@ -490,7 +490,7 @@ export default function CardsEdition({
                         filePath={item.image_url || ''}
                         bucket="personal-images"
                         alt={item.name}
-                        className="img-size-sm"
+                        size={80}
                       />
                     }
                     labelId={item.id}
@@ -558,7 +558,7 @@ export default function CardsEdition({
                       filePath={item.image_url || ''}
                       bucket="personal-images"
                       alt={item.name}
-                      className="img-size-sm"
+                      size={80}
                     />
                   }
                   labelId={item.id}

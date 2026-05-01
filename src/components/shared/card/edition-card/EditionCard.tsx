@@ -142,19 +142,8 @@ const CardEdition = memo(function CardEdition({
               }
             />
           )}
-        </>
-      }
-      // 🎛️ Slot actions (delete + checkbox publier + checkbox timeline)
-      actionsSlot={
-        <>
-          {onDelete && (
-            <ButtonDelete
-              onClick={disabled ? () => {} : onDelete}
-              aria-label={t('card.delete')}
-            />
-          )}
 
-          {/* 🆕 Toggle "publier" (cartes banque admin uniquement) */}
+          {/* Toggle "publier" — même espace logique que le Select (cartes banque admin) */}
           {published !== undefined && onPublishedChange && (
             <Toggle
               id={`toggle-published-${labelId}`}
@@ -164,6 +153,17 @@ const CardEdition = memo(function CardEdition({
               }
               aria-label={published ? 'Carte publiée' : 'Carte dépubliée'}
               disabled={disabled}
+            />
+          )}
+        </>
+      }
+      // 🎛️ Slot actions (delete + checkbox timeline)
+      actionsSlot={
+        <>
+          {onDelete && (
+            <ButtonDelete
+              onClick={disabled ? () => {} : onDelete}
+              aria-label={t('card.delete')}
             />
           )}
 
