@@ -19,7 +19,6 @@ export default function ResetPassword() {
   const [submitError, setSubmitError] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [recoveryHandled, setRecoveryHandled] = useState(false)
   const [invalidToken, setInvalidToken] = useState(false)
 
   const fromEmailLink =
@@ -36,7 +35,6 @@ export default function ResetPassword() {
       const token = extractAccessToken(window.location.hash)
       if (!token) {
         setInvalidToken(true)
-        setRecoveryHandled(true)
         return
       }
 
@@ -55,14 +53,10 @@ export default function ResetPassword() {
           window.location.pathname
         )
       }
-
-      setRecoveryHandled(true)
     }
 
     if (fromEmailLink) {
       handleRecovery()
-    } else {
-      setRecoveryHandled(true)
     }
   }, [fromEmailLink])
 
