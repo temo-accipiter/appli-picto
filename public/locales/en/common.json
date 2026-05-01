@@ -6,7 +6,8 @@
     "error": "An error occurred",
     "retry": "Retry",
     "goBack": "Go back",
-    "demo": "Demo mode"
+    "demo": "Demo mode",
+    "tagline": "Days in pictograms"
   },
   "nav": {
     "tableau": "Dashboard",
@@ -155,7 +156,8 @@
     "cancelSubscription": "Cancel my subscription",
     "reactivate": "Reactivate subscription",
     "features": "Features",
-    "currentPlan": "Current plan"
+    "currentPlan": "Current plan",
+    "subscriberLabel": "Subscriber"
   },
   "quota": {
     "title": "Quotas",
@@ -184,7 +186,8 @@
     "tasksThisMonth": "tasks this month",
     "rewardsThisMonth": "rewards this month",
     "categoriesThisMonth": "categories this month",
-    "upgradeToPremium": "Upgrade to Premium for more {{contentType}}"
+    "upgradeToPremium": "Upgrade to Premium for more {{contentType}}",
+    "devicesLimit": "Maximum number of devices reached."
   },
   "auth": {
     "email": "Email",
@@ -211,7 +214,17 @@
     "pseudo": "Username",
     "enterPseudo": "Enter your username",
     "avatar": "Avatar",
-    "chooseAvatar": "Choose your avatar"
+    "chooseAvatar": "Choose your avatar",
+    "validateCaptchaRequired": "Please complete the CAPTCHA before continuing",
+    "emailNotConfirmed": "Your email address has not been confirmed yet. Please check your inbox.",
+    "confirmationEmailResent": "Confirmation email resent",
+    "googleComingSoon": "Google sign-in coming soon",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGoogleComingSoon": "Continue with Google (coming soon)",
+    "acceptCguToSubmit": "Please accept the Terms to continue",
+    "alreadyHasAccount": "Already have an account?",
+    "signupFormLabel": "Sign-up form",
+    "acceptCguAndPrivacy": "I accept the <cguLink>Terms of Use</cguLink> and the <privacyLink>Privacy Policy</privacyLink>"
   },
   "errors": {
     "generic": "An error occurred",
@@ -227,7 +240,12 @@
     "labelRequired": "A name is required",
     "labelTooLong": "Name is too long",
     "noSpacesAtEdges": "No spaces at the beginning or end",
-    "noDoubleSpaces": "No double spaces"
+    "noDoubleSpaces": "No double spaces",
+    "uploadFailed": "Upload failed",
+    "uploadDataInvalid": "Upload failed: invalid data",
+    "deletionFailed": "Deletion error",
+    "resetPasswordRateLimit": "For security reasons, please wait before requesting a new link.",
+    "networkRetry": "An error occurred, please try again"
   },
   "legal": {
     "mentions": "Legal notices",
@@ -339,7 +357,16 @@
     "accountInfo": "Account information",
     "dangerZone": "Danger zone",
     "deleteAccountWarning": "This action is irreversible",
-    "deleteAccountConfirm": "Are you sure you want to delete your account?"
+    "deleteAccountConfirm": "Are you sure you want to delete your account?",
+    "personalInfo": "Personal information",
+    "personalInfoSub": "Name, email, avatar",
+    "personalInfoLabel": "Personal information — Name, email, avatar",
+    "displayPreferences": "Display preferences",
+    "themeLanguageSub": "Theme, language",
+    "childProfiles": "Child profiles",
+    "childProfilesLabel_one": "Child profiles — {{count}} profile",
+    "childProfilesLabel_other": "Child profiles — {{count}} profiles",
+    "myDevices": "My devices"
   },
   "modal": {
     "title": "Title",

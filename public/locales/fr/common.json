@@ -6,7 +6,8 @@
     "error": "Une erreur est survenue",
     "retry": "Réessayer",
     "goBack": "Retour",
-    "demo": "Mode démo"
+    "demo": "Mode démo",
+    "tagline": "La journée en pictogrammes"
   },
   "nav": {
     "tableau": "Tableau",
@@ -155,7 +156,8 @@
     "cancelSubscription": "Annuler mon abonnement",
     "reactivate": "Réactiver l'abonnement",
     "features": "Fonctionnalités",
-    "currentPlan": "Forfait actuel"
+    "currentPlan": "Forfait actuel",
+    "subscriberLabel": "Abonné"
   },
   "quota": {
     "title": "Quotas",
@@ -184,7 +186,8 @@
     "tasksThisMonth": "tâches ce mois",
     "rewardsThisMonth": "récompenses ce mois",
     "categoriesThisMonth": "catégories ce mois",
-    "upgradeToPremium": "Passez à Premium pour plus de {{contentType}}"
+    "upgradeToPremium": "Passez à Premium pour plus de {{contentType}}",
+    "devicesLimit": "Nombre maximum d'appareils atteint."
   },
   "auth": {
     "email": "Email",
@@ -211,7 +214,17 @@
     "pseudo": "Pseudo",
     "enterPseudo": "Entre ton pseudo",
     "avatar": "Avatar",
-    "chooseAvatar": "Choisis ton avatar"
+    "chooseAvatar": "Choisis ton avatar",
+    "validateCaptchaRequired": "Veuillez valider le CAPTCHA avant de continuer",
+    "emailNotConfirmed": "Votre adresse email n'est pas encore confirmée. Vérifiez votre boîte mail.",
+    "confirmationEmailResent": "Email de confirmation renvoyé",
+    "googleComingSoon": "Connexion Google bientôt disponible",
+    "continueWithGoogle": "Continuer avec Google",
+    "continueWithGoogleComingSoon": "Continuer avec Google (bientôt disponible)",
+    "acceptCguToSubmit": "Veuillez accepter les CGU pour continuer",
+    "alreadyHasAccount": "Déjà un compte ?",
+    "signupFormLabel": "Formulaire d'inscription",
+    "acceptCguAndPrivacy": "J'accepte les <cguLink>CGU</cguLink> et la <privacyLink>Politique de confidentialité</privacyLink>"
   },
   "errors": {
     "generic": "Une erreur est survenue",
@@ -227,7 +240,12 @@
     "labelRequired": "Un nom est requis",
     "labelTooLong": "Le nom est trop long",
     "noSpacesAtEdges": "Pas d'espaces au début ou à la fin",
-    "noDoubleSpaces": "Pas de double espaces"
+    "noDoubleSpaces": "Pas de double espaces",
+    "uploadFailed": "Upload échoué",
+    "uploadDataInvalid": "Upload échoué : données invalides",
+    "deletionFailed": "Erreur lors de la suppression",
+    "resetPasswordRateLimit": "Pour des raisons de sécurité, veuillez patienter avant de demander un nouveau lien.",
+    "networkRetry": "Une erreur est survenue, veuillez réessayer"
   },
   "legal": {
     "mentions": "Mentions légales",
@@ -339,7 +357,16 @@
     "accountInfo": "Informations du compte",
     "dangerZone": "Zone dangereuse",
     "deleteAccountWarning": "Cette action est irréversible",
-    "deleteAccountConfirm": "Es-tu sûr de vouloir supprimer ton compte ?"
+    "deleteAccountConfirm": "Es-tu sûr de vouloir supprimer ton compte ?",
+    "personalInfo": "Informations personnelles",
+    "personalInfoSub": "Nom, email, avatar",
+    "personalInfoLabel": "Informations personnelles — Nom, email, avatar",
+    "displayPreferences": "Préférences d'affichage",
+    "themeLanguageSub": "Thème, langue",
+    "childProfiles": "Profils enfants",
+    "childProfilesLabel_one": "Profils enfants — {{count}} profil",
+    "childProfilesLabel_other": "Profils enfants — {{count}} profils",
+    "myDevices": "Mes appareils"
   },
   "modal": {
     "title": "Titre",
