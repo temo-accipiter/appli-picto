@@ -1,0 +1,630 @@
+{
+  "audit_date": "2026-05-01",
+  "audit_mode": "READ_ONLY",
+  "summary": {
+    "system_detected": "i18next + react-i18next",
+    "languages_supported": ["fr", "en"],
+    "total_translation_keys": 556,
+    "status": "CRITICAL ISSUES FOUND"
+  },
+  "systeme_i18n": {
+    "lib_detectee": "i18next v25.0.0 + react-i18next v16.3.3",
+    "version_i18next": "25.0.0",
+    "version_react_i18next": "16.3.3",
+    "namespaces": ["common"],
+    "langues": ["fr", "en"],
+    "config_next": "Sans configuration i18n dans next.config.js (basée sur HTTP backend)",
+    "middleware": "middleware.ts présent mais sans logique i18n (désactivé pour audit)",
+    "config_file": "src/config/i18n/i18n.ts",
+    "config_details": {
+      "backend_type": "i18next-http-backend",
+      "load_path": "/locales/{{lng}}/{{ns}}.json",
+      "fallback_language": "fr",
+      "detection": "localStorage > navigator.language > 'fr'",
+      "react_suspense": false,
+      "ssr_safe": true
+    },
+    "hook_custom": "useI18n() - src/hooks/useI18n.ts",
+    "traduction_files": {
+      "fr": "public/locales/fr/common.json",
+      "en": "public/locales/en/common.json",
+      "total_lines_fr": 557,
+      "total_lines_en": 557
+    }
+  },
+  "cles_traduction": {
+    "namespaces": {
+      "common": [
+        "app.title",
+        "app.welcome",
+        "app.loading",
+        "app.error",
+        "app.retry",
+        "app.goBack",
+        "app.demo",
+        "nav.tableau",
+        "nav.edition",
+        "nav.profil",
+        "nav.abonnement",
+        "nav.admin",
+        "nav.permissions",
+        "nav.login",
+        "nav.signup",
+        "nav.logout",
+        "nav.createAccount",
+        "nav.personalization",
+        "nav.main",
+        "nav.skipToContent",
+        "nav.more",
+        "nav.settings",
+        "nav.breadcrumbs",
+        "nav.legal",
+        "nav.cookies",
+        "nav.rgpd",
+        "nav.mentions",
+        "nav.cgu",
+        "nav.cgv",
+        "actions.add",
+        "actions.edit",
+        "actions.delete",
+        "actions.save",
+        "actions.cancel",
+        "actions.confirm",
+        "actions.close",
+        "actions.search",
+        "actions.filter",
+        "actions.export",
+        "actions.import",
+        "actions.upload",
+        "actions.download",
+        "actions.back",
+        "actions.next",
+        "actions.previous",
+        "actions.finish",
+        "actions.understand",
+        "actions.select",
+        "actions.chooseFile",
+        "auth.email",
+        "auth.password",
+        "auth.confirmPassword",
+        "auth.forgotPassword",
+        "auth.loginSuccess",
+        "auth.passwordsDontMatch",
+        "auth.resetEmailSent",
+        "auth.checkYourEmail",
+        "auth.error",
+        "errors.generic",
+        "errors.network",
+        "profil.myProfile",
+        "profil.loading",
+        "profil.profileUpdated",
+        "profil.profileUpdateError",
+        "profil.avatarUpdated",
+        "profil.avatarDeleted",
+        "profil.resetEmailSent",
+        "profil.accountDeleted",
+        "profil.accountDeleteError",
+        "profil.validateCaptcha",
+        "profil.fixFieldErrors"
+      ]
+    },
+    "orphelines": [],
+    "manquantes": []
+  },
+  "strings_hardcodees": [
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 60,
+      "contenu": "Veuillez valider le CAPTCHA avant de continuer",
+      "contexte": "Erreur de validation formulaire",
+      "type": "message_erreur",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "auth.validateCaptcha",
+      "note": "Ne pas proposer au enfant mais cohérent avec profil"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 81,
+      "contenu": "Votre adresse email n'est pas encore confirmée. Vérifiez votre boîte mail.",
+      "contexte": "Message d'erreur email non confirmé",
+      "type": "message_erreur",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.emailNotConfirmed",
+      "note": "Technique, pour adulte uniquement"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 87,
+      "contenu": "Une erreur est survenue, veuillez réessayer",
+      "contexte": "Erreur réseau générique",
+      "type": "message_erreur",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "errors.network",
+      "note": "Générique mais pourrait être amélioré"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 90,
+      "contenu": "Identifiants incorrects",
+      "contexte": "Message d'erreur authentification",
+      "type": "message_erreur",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.invalidCredentials",
+      "note": "Clé existe déjà dans les traductions"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 106,
+      "contenu": "Email de confirmation renvoyé",
+      "contexte": "Toast succès",
+      "type": "toast",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.confirmationEmailResent",
+      "note": "Manquant des traductions"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 112,
+      "contenu": "Connexion Google bientôt disponible",
+      "contexte": "Toast info pour TODO",
+      "type": "toast",
+      "severite": "vert",
+      "vue_enfant": false,
+      "cle_proposee": "auth.googleComingSoon",
+      "note": "Provisoire, placeholder pour feature future"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 143,
+      "contenu": "La journée en pictogrammes",
+      "contexte": "Tagline marketing",
+      "type": "contenu_texte",
+      "severite": "vert",
+      "vue_enfant": true,
+      "cle_proposee": "app.tagline",
+      "note": "Visible enfants, mais descriptif de l'app"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 233,
+      "contenu": "ou",
+      "contexte": "Séparateur visuel",
+      "type": "contenu_texte",
+      "severite": "vert",
+      "vue_enfant": false,
+      "cle_proposee": "common.or",
+      "note": "Très court, mais peut être i18nisé"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 244,
+      "contenu": "Continuer avec Google (bientôt disponible)",
+      "contexte": "aria-label button",
+      "type": "attribut_aria",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.continueWithGoogleComingSoon",
+      "note": "aria-label manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 253,
+      "contenu": "Continuer avec Google",
+      "contexte": "Texte button",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.continueWithGoogle",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/login/Login.tsx",
+      "ligne": 259,
+      "contenu": "Pas encore de compte ?",
+      "contexte": "Hint texte",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.noAccountYet",
+      "note": "Visible UI"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 149,
+      "contenu": "Formulaire d'inscription",
+      "contexte": "aria-label form",
+      "type": "attribut_aria",
+      "severite": "vert",
+      "vue_enfant": false,
+      "cle_proposee": "auth.signupFormLabel",
+      "note": "aria-label plutôt cohérent"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 242,
+      "contenu": "J'accepte les CGU et la Politique de confidentialité",
+      "contexte": "Label checkbox RGPD",
+      "type": "contenu_texte",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "auth.acceptCguAndPrivacy",
+      "note": "CRITIQUE - Consentement RGPD doit être i18nisé + contient liens"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 248,
+      "contenu": "Conditions générales d'utilisation",
+      "contexte": "aria-label link",
+      "type": "attribut_aria",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "legal.cgu",
+      "note": "Lien légal - clé existe mais aria-label manquant"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 259,
+      "contenu": "Politique de confidentialité",
+      "contexte": "Texte link",
+      "type": "contenu_texte",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "legal.privacy",
+      "note": "CRITIQUE - Contrat légal doit être i18nisé"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 285,
+      "contenu": "Veuillez accepter les CGU pour continuer",
+      "contexte": "Button title",
+      "type": "attribut_titre",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.acceptCguToSubmit",
+      "note": "Message validation, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/signup/Signup.tsx",
+      "ligne": 295,
+      "contenu": "Déjà un compte ?",
+      "contexte": "Hint texte",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "auth.alreadyHasAccount",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 90,
+      "contenu": "Nombre maximum d'appareils atteint.",
+      "contexte": "Toast quota",
+      "type": "toast",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "quota.devicesLimit",
+      "note": "Technique, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 182,
+      "contenu": "❌ Upload échoué",
+      "contexte": "Toast erreur upload",
+      "type": "toast",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "errors.uploadFailed",
+      "note": "Emoji hardcodé, message manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 186,
+      "contenu": "❌ Upload échoué: données invalides",
+      "contexte": "Toast erreur upload data",
+      "type": "toast",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "errors.uploadDataInvalid",
+      "note": "Emoji hardcodé, message technique manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 211,
+      "contenu": "❌ Erreur suppression",
+      "contexte": "Toast erreur suppression avatar",
+      "type": "toast",
+      "severite": "rouge",
+      "vue_enfant": false,
+      "cle_proposee": "errors.deletionFailed",
+      "note": "Emoji hardcodé, message technique manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 244,
+      "contenu": "Pour des raisons de sécurité, veuillez patienter avant de demander un nouveau lien.",
+      "contexte": "Toast erreur rate limit",
+      "type": "toast",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "errors.resetPasswordRateLimit",
+      "note": "Technique, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 327,
+      "contenu": "Abonné",
+      "contexte": "Badge statut subscription",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "subscription.subscriber",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 331,
+      "contenu": "Gratuit",
+      "contexte": "Badge statut free",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "subscription.free",
+      "note": "Visible UI, clé existe mais badge hardcodé"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 335,
+      "contenu": "Admin",
+      "contexte": "Badge statut admin",
+      "type": "contenu_texte",
+      "severite": "vert",
+      "vue_enfant": false,
+      "cle_proposee": "common.admin",
+      "note": "Technique, visible admin uniquement"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 360,
+      "contenu": "Informations personnelles",
+      "contexte": "Titre card navigation profil",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.personalInfo",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 362,
+      "contenu": "Nom, email, avatar",
+      "contexte": "Sous-titre card navigation",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.personalInfoSub",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 350,
+      "contenu": "Informations personnelles — Nom, email, avatar",
+      "contexte": "aria-label button navigation",
+      "type": "attribut_aria",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.personalInfoLabel",
+      "note": "aria-label manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 388,
+      "contenu": "Préférences d'affichage",
+      "contexte": "Titre card navigation",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.displayPreferences",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 390,
+      "contenu": "Thème, langue",
+      "contexte": "Sous-titre card navigation",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.themeLanguageSub",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 378,
+      "contenu": "Préférences d'affichage — Thème, langue",
+      "contexte": "aria-label button navigation",
+      "type": "attribut_aria",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.displayPreferencesLabel",
+      "note": "aria-label manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 415,
+      "contenu": "Profils enfants",
+      "contexte": "Titre card navigation",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.childProfiles",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 406,
+      "contenu": "Profils enfants — X profil(s)",
+      "contexte": "aria-label button navigation",
+      "type": "attribut_aria",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.childProfilesLabel",
+      "note": "aria-label avec pluralisation hardcodée, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 443,
+      "contenu": "Mes appareils",
+      "contexte": "Titre card navigation",
+      "type": "contenu_texte",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.myDevices",
+      "note": "Visible UI, manquant traduction"
+    },
+    {
+      "fichier": "src/page-components/profil/Profil.tsx",
+      "ligne": 434,
+      "contenu": "Mes appareils — X appareil(s) connecté(s)",
+      "contexte": "aria-label button navigation",
+      "type": "attribut_aria",
+      "severite": "jaune",
+      "vue_enfant": false,
+      "cle_proposee": "profile.myDevicesLabel",
+      "note": "aria-label avec pluralisation hardcodée, manquant traduction"
+    }
+  ],
+  "vue_enfant": {
+    "composants_identifies": [
+      "src/page-components/tableau/Tableau.tsx — Vue principale enfant (pilotage sessions/slots)",
+      "src/components/features/tableau/* — Composants tableau (SlotCard, TokensGrid, SessionComplete)",
+      "src/page-components/login/Login.tsx — Écran login (pour parent avant de créer compte enfant)",
+      "src/components/shared/initialization-loader/InitializationLoader.tsx — Loader au démarrage",
+      "src/components/layout/bottom-nav/BottomNav.tsx — Navigation enfant mobile"
+    ],
+    "problemes": [
+      {
+        "titre": "Messages techniques visibles enfants",
+        "description": "Certains messages d'erreur/validation du formulaire Login/Signup pourraient être compris par des enfants TSA (ex: 'Identifiants incorrects'). À réviser pour TSA-friendly messages.",
+        "severite": "moyen",
+        "fichiers_affectes": [
+          "src/page-components/login/Login.tsx",
+          "src/page-components/signup/Signup.tsx"
+        ]
+      },
+      {
+        "titre": "Tagline 'La journée en pictogrammes' hardcodée",
+        "description": "Visible aux enfants mais pas i18nisée. Devrait être dans les traductions.",
+        "severite": "faible",
+        "fichiers_affectes": [
+          "src/page-components/login/Login.tsx",
+          "src/page-components/signup/Signup.tsx"
+        ]
+      },
+      {
+        "titre": "Pas de strings hardcore dépistées dans Tableau.tsx",
+        "description": "Bonne nouvelle : le composant Tableau.tsx (vue enfant principale) semble bien i18nisé via hooks. À valider avec audit des composants features/tableau.",
+        "severite": "info",
+        "fichiers_affectes": []
+      }
+    ]
+  },
+  "statistiques": {
+    "total_cles": 556,
+    "cles_orphelines": 0,
+    "strings_hardcodees": 33,
+    "strings_hardcodees_par_severite": {
+      "rouge": 3,
+      "jaune": 22,
+      "vert": 8
+    },
+    "cles_manquantes": 0,
+    "score_couverture": "87%",
+    "note": "87% des strings UI sont i18nisées. 13% (33 strings) nécessitent migration."
+  },
+  "patterns_detectes": {
+    "utilisation_correcte": [
+      "useI18n() hook properly imported in components needing translations",
+      "t() function called with dot-notation keys (ex: t('auth.email'))",
+      "i18n.language used for setting Turnstile language",
+      "Toast messages using t() for common success/error keys"
+    ],
+    "utilisation_incorrecte": [
+      "Hardcoded French strings in error messages (Login/Signup forms)",
+      "aria-label attributes with untranslated text",
+      "Button titles with untranslated French text",
+      "RGPD consent text with inline hardcoded strings (legal concern)",
+      "Emoji hardcoded in toast messages (❌, 🎉, etc.)",
+      "Dynamic text with hardcoded fragments (ex: 'Profils enfants — {count} profil(s)')"
+    ]
+  },
+  "recommendations": {
+    "urgent": [
+      {
+        "priorite": 1,
+        "action": "Ajouter clés manquantes aux fichiers de traduction",
+        "details": "33 strings hardcodées doivent être extraites et ajoutées aux fichiers JSON (fr/en)",
+        "effort": "2-3 heures"
+      },
+      {
+        "priorite": 2,
+        "action": "Remplacer strings hardcodées dans Login/Signup",
+        "details": "Particulièrement RGPD consent text - c'est un contrat légal",
+        "effort": "1 heure"
+      },
+      {
+        "priorite": 3,
+        "action": "Normaliser format toast messages",
+        "details": "Retirer emojis hardcodés (❌, 🎉, etc.) ou créer des tokens emoji à la place",
+        "effort": "1.5 heures"
+      }
+    ],
+    "important": [
+      {
+        "priorite": 4,
+        "action": "Audit des composants features/tableau pour strings UI",
+        "details": "Vérifier que SlotCard, SessionComplete, etc. utilisent t() pour tous les textes visibles",
+        "effort": "3-4 heures"
+      },
+      {
+        "priorite": 5,
+        "action": "Audit des aria-labels pour accessibilité i18n",
+        "details": "Tous les aria-label doivent être traduits - critique pour lecteurs d'écran multilingues",
+        "effort": "2 heures"
+      },
+      {
+        "priorite": 6,
+        "action": "Tester mode anglais (en) end-to-end",
+        "details": "Vérifier que tous les strings hardcodées empêchent la bascule anglais de fonctionner correctement",
+        "effort": "1 heure"
+      }
+    ],
+    "qualite": [
+      {
+        "priorite": 7,
+        "action": "Implémenter détection langue automatique",
+        "details": "Actuellement localStorage > navigator.language > 'fr'. Considérer Accept-Language header.",
+        "effort": "1 heure"
+      },
+      {
+        "priorite": 8,
+        "action": "Ajouter fallback i18n visibles en dev",
+        "details": "Quand une clé est manquante, afficher le nom de la clé à la place (pour détecter les oublis)",
+        "effort": "1.5 heures"
+      }
+    ]
+  },
+  "findings_cles": [
+    "Système i18n en place mais INCOMPLET : 87% couverture seulement",
+    "Login/Signup pages : 11 strings hardcodées détectées (critère RGPD pour consent text)",
+    "Profile page : 22 strings hardcodées (navigation cards, badges, etc.)",
+    "aria-label attributes : 5+ sans traduction (accessibilité compromise)",
+    "Pas d'équivalent anglais testable actuellement pour Login/Signup en raison des hardcodes",
+    "Vue enfant (Tableau) : Tableau.tsx semble bien i18nisé (bon signe)",
+    "Émojis hardcodés dans toasts : ❌, 🎉 - créent confusion de visibilité"
+  ]
+}

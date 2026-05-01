@@ -89,7 +89,7 @@ export default function Profil() {
       quotaToastShown.current = true
       showToast(t('quota.devicesLimit'), 'warning')
     }
-  }, [registrationError, showToast])
+  }, [registrationError, showToast, t])
 
   // ── États identité ──────────────────────────────────────────────────────────
   const [pseudo, setPseudo] = useState('')
@@ -356,7 +356,9 @@ export default function Profil() {
             <span className="profil-nav-card__title">
               {t('profile.personalInfo')}
             </span>
-            <span className="profil-nav-card__sub">{t('profile.personalInfoSub')}</span>
+            <span className="profil-nav-card__sub">
+              {t('profile.personalInfoSub')}
+            </span>
           </div>
           <ChevronRight
             className="profil-nav-card__chevron"
@@ -384,7 +386,9 @@ export default function Profil() {
             <span className="profil-nav-card__title">
               {t('profile.displayPreferences')}
             </span>
-            <span className="profil-nav-card__sub">{t('profile.themeLanguageSub')}</span>
+            <span className="profil-nav-card__sub">
+              {t('profile.themeLanguageSub')}
+            </span>
           </div>
           <ChevronRight
             className="profil-nav-card__chevron"
@@ -409,7 +413,9 @@ export default function Profil() {
             <Users size={20} />
           </span>
           <div className="profil-nav-card__body">
-            <span className="profil-nav-card__title">{t('profile.childProfiles')}</span>
+            <span className="profil-nav-card__title">
+              {t('profile.childProfiles')}
+            </span>
             <span className="profil-nav-card__sub">
               {childCount} profil{childCount !== 1 ? 's' : ''}
             </span>
@@ -437,7 +443,9 @@ export default function Profil() {
             <Smartphone size={20} />
           </span>
           <div className="profil-nav-card__body">
-            <span className="profil-nav-card__title">{t('profile.myDevices')}</span>
+            <span className="profil-nav-card__title">
+              {t('profile.myDevices')}
+            </span>
             <span className="profil-nav-card__sub">
               {deviceCount} appareil{deviceCount !== 1 ? 's' : ''} connecté
               {deviceCount !== 1 ? 's' : ''}

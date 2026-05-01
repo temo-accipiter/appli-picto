@@ -292,7 +292,9 @@ export default function Signup() {
 
         {/* Lien connexion — correction bug "Se connecter Se connecter" */}
         <p className="signup-page__login-prompt">
-          <span className="signup-page__login-hint">{t('auth.alreadyHasAccount')}</span>{' '}
+          <span className="signup-page__login-hint">
+            {t('auth.alreadyHasAccount')}
+          </span>{' '}
           <Link href="/login" className="signup-page__login-link">
             {t('nav.login')}
           </Link>
