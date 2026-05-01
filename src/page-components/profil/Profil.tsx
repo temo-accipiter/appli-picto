@@ -87,7 +87,7 @@ export default function Profil() {
   useEffect(() => {
     if (registrationError === 'quota' && !quotaToastShown.current) {
       quotaToastShown.current = true
-      showToast("Nombre maximum d'appareils atteint.", 'warning')
+      showToast(t('quota.devicesLimit'), 'warning')
     }
   }, [registrationError, showToast])
 
@@ -179,11 +179,11 @@ export default function Profil() {
       .from('personal-images')
       .upload(fileName, file, { upsert: true })
     if (uploadError) {
-      showToast('❌ Upload échoué', 'error')
+      showToast(t('errors.uploadFailed'), 'error')
       return
     }
     if (!data || !data.path) {
-      showToast('❌ Upload échoué: données invalides', 'error')
+      showToast(t('errors.uploadDataInvalid'), 'error')
       return
     }
     await wait(300)
@@ -208,7 +208,7 @@ export default function Profil() {
       .from('personal-images')
       .remove([avatarPath])
     if (deleteError) {
-      showToast('❌ Erreur suppression', 'error')
+      showToast(t('errors.deletionFailed'), 'error')
       return
     }
     const { error: metaError } = await supabase.auth.updateUser({
@@ -240,10 +240,7 @@ export default function Profil() {
     } catch (err) {
       const errorMessage = (err as Error)?.message || ''
       if (errorMessage.includes('you can only request this after')) {
-        showToast(
-          'Pour des raisons de sécurité, veuillez patienter avant de demander un nouveau lien.',
-          'error'
-        )
+        showToast(t('errors.resetPasswordRateLimit'), 'error')
       } else {
         showToast(errorMessage || t('errors.generic'), 'error')
       }
@@ -324,7 +321,7 @@ export default function Profil() {
             {!loading &&
               (isActive ? (
                 <span className="profil-badge profil-badge--success">
-                  Abonné
+                  {t('subscription.subscriberLabel')}
                 </span>
               ) : (
                 <span className="profil-badge profil-badge--neutral">
@@ -347,7 +344,7 @@ export default function Profil() {
           }}
           className="profil-nav-card"
           onClick={() => setActiveModal('identity')}
-          aria-label="Informations personnelles — Nom, email, avatar"
+          aria-label={t('profile.personalInfoLabel')}
         >
           <span
             className="profil-nav-card__icon-wrap profil-nav-card__icon-wrap--blue"
@@ -357,9 +354,9 @@ export default function Profil() {
           </span>
           <div className="profil-nav-card__body">
             <span className="profil-nav-card__title">
-              Informations personnelles
+              {t('profile.personalInfo')}
             </span>
-            <span className="profil-nav-card__sub">Nom, email, avatar</span>
+            <span className="profil-nav-card__sub">{t('profile.personalInfoSub')}</span>
           </div>
           <ChevronRight
             className="profil-nav-card__chevron"
@@ -385,9 +382,9 @@ export default function Profil() {
           </span>
           <div className="profil-nav-card__body">
             <span className="profil-nav-card__title">
-              Préférences d&apos;affichage
+              {t('profile.displayPreferences')}
             </span>
-            <span className="profil-nav-card__sub">Thème, langue</span>
+            <span className="profil-nav-card__sub">{t('profile.themeLanguageSub')}</span>
           </div>
           <ChevronRight
             className="profil-nav-card__chevron"
@@ -403,7 +400,7 @@ export default function Profil() {
           }}
           className="profil-nav-card"
           onClick={() => setActiveModal('children')}
-          aria-label={`Profils enfants — ${childCount} profil${childCount !== 1 ? 's' : ''}`}
+          aria-label={t('profile.childProfilesLabel', { count: childCount })}
         >
           <span
             className="profil-nav-card__icon-wrap profil-nav-card__icon-wrap--green"
@@ -412,7 +409,7 @@ export default function Profil() {
             <Users size={20} />
           </span>
           <div className="profil-nav-card__body">
-            <span className="profil-nav-card__title">Profils enfants</span>
+            <span className="profil-nav-card__title">{t('profile.childProfiles')}</span>
             <span className="profil-nav-card__sub">
               {childCount} profil{childCount !== 1 ? 's' : ''}
             </span>
@@ -440,7 +437,7 @@ export default function Profil() {
             <Smartphone size={20} />
           </span>
           <div className="profil-nav-card__body">
-            <span className="profil-nav-card__title">Mes appareils</span>
+            <span className="profil-nav-card__title">{t('profile.myDevices')}</span>
             <span className="profil-nav-card__sub">
               {deviceCount} appareil{deviceCount !== 1 ? 's' : ''} connecté
               {deviceCount !== 1 ? 's' : ''}
