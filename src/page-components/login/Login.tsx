@@ -57,7 +57,7 @@ export default function Login() {
     }
 
     if (!captchaToken) {
-      setSubmitError('Veuillez valider le CAPTCHA avant de continuer')
+      setSubmitError(t('auth.validateCaptchaRequired'))
       return
     }
 
@@ -77,18 +77,16 @@ export default function Login() {
 
       if (isEmailNotConfirmed) {
         setEmailNotConfirmed(true)
-        setSubmitError(
-          'Votre adresse email n\u2019est pas encore confirmée. Vérifiez votre boîte mail.'
-        )
+        setSubmitError(t('auth.emailNotConfirmed'))
       } else if (
         error.message?.toLowerCase().includes('network') ||
         error.message?.toLowerCase().includes('fetch')
       ) {
-        setSubmitError('Une erreur est survenue, veuillez réessayer')
+        setSubmitError(t('errors.networkRetry'))
       } else {
         // Message générique anti-énumération (ne révèle pas si l'email existe)
-        setSubmitError('Identifiants incorrects')
-        showToast('Identifiants incorrects', 'error')
+        setSubmitError(t('auth.invalidCredentials'))
+        showToast(t('auth.invalidCredentials'), 'error')
       }
     } else {
       showToast(t('auth.loginSuccess'), 'success')
@@ -103,7 +101,7 @@ export default function Login() {
       type: 'signup',
       email: normalizeEmail(emailValue),
     })
-    showToast('Email de confirmation renvoyé', 'success')
+    showToast(t('auth.confirmationEmailResent'), 'success')
   }
 
   // TODO(oauth-google): implémenter le flow OAuth dans un commit séparé
