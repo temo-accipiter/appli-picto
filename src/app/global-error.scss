@@ -4,7 +4,7 @@
 // GLOBAL ERROR PAGE — TSA-friendly
 // Page d'erreur root (erreur JS non capturée, rend son propre <html>)
 // ✅ TOKENS-FIRST : valeurs via fonctions tokens
-// ⚠️  var(--color-danger) / var(--color-text-muted) : CSS custom properties
+// ⚠️  var(--color-error) / var(--color-text-muted) : CSS custom properties
 //      attendues dans le design system (voir _colors.scss)
 // ============================================================
 
@@ -20,7 +20,9 @@
   &__icon {
     font-size: font-size('2xl'); // 1.5rem — mapping mission (original: 2rem)
     margin-bottom: spacing('md'); // 1rem = 16px
-    color: var(--color-danger); // #e74c3c → CSS custom property design system
+    color: var(
+      --color-error
+    ); // Couleur erreur → CSS custom property design system
   }
 
   &__message {
