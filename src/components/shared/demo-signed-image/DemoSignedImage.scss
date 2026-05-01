@@ -9,6 +9,9 @@
 // ============================================================================
 
 .demo-signed-image {
+  // Taille contrôlée par CSS custom property injectée via style={{ '--demo-image-size': `${size}px` }}
+  width: var(--demo-image-size);
+  height: var(--demo-image-size);
   object-fit: cover;
   border-radius: radius('card'); // 12px §D.3
   border: border-width('base') solid surface('border');
@@ -25,6 +28,9 @@
 }
 
 .demo-image-loading {
+  // Taille contrôlée par CSS custom property injectée via style={{ '--demo-image-size': `${size}px` }}
+  width: var(--demo-image-size);
+  height: var(--demo-image-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,6 +49,9 @@
 }
 
 .demo-image-error {
+  // Taille contrôlée par CSS custom property injectée via style={{ '--demo-image-size': `${size}px` }}
+  width: var(--demo-image-size);
+  height: var(--demo-image-size);
   display: flex;
   flex-direction: column;
   align-items: center;

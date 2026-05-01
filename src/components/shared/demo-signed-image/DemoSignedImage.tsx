@@ -1,7 +1,7 @@
 'use client'
 
+import React, { useEffect, useState } from 'react'
 import { supabase } from '@/utils/supabaseClient'
-import { useEffect, useState } from 'react'
 import './DemoSignedImage.scss'
 
 // ⚡ cache en mémoire pour éviter les appels redondants
@@ -101,7 +101,7 @@ export default function DemoSignedImage({
     return (
       <div
         className={`demo-image-error ${className}`}
-        style={{ width: size, height: size }}
+        style={{ '--demo-image-size': `${size}px` } as React.CSSProperties}
         onClick={handleRetry}
         title="Cliquer pour réessayer"
       >
@@ -115,7 +115,7 @@ export default function DemoSignedImage({
     return (
       <div
         className={`demo-image-loading ${className}`}
-        style={{ width: size, height: size }}
+        style={{ '--demo-image-size': `${size}px` } as React.CSSProperties}
       >
         <div className="loading-spinner"></div>
       </div>
@@ -127,7 +127,7 @@ export default function DemoSignedImage({
       src={url}
       alt={alt}
       className={`demo-signed-image ${className}`}
-      style={{ width: size, height: size }}
+      style={{ '--demo-image-size': `${size}px` } as React.CSSProperties}
       onError={handleImageError}
       loading="lazy"
     />

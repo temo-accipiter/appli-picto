@@ -53,6 +53,8 @@
 
   &__fill {
     height: 100%;
+    // Largeur contrôlée par CSS custom property injectée via style={{ '--upload-progress': `${pct}%` }}
+    width: var(--upload-progress);
     // Gradient bleu → vert (TSA-friendly progression visuelle)
     background: linear-gradient(
       90deg,

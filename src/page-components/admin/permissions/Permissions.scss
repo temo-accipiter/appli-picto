@@ -218,3 +218,24 @@
     align-items: center;
   }
 }
+
+// Note d'explication sous une règle d'accès
+.permissions__action-note {
+  display: block;
+  font-size: font-size('sm'); // 0.875rem = 14px (original: 0.75em relatif)
+  opacity: 0.7; // TODO: token opacity('0-7') manquant — valeur exacte 0.7 non disponible
+}
+
+// Ligne de badges de statuts
+.permissions__badges {
+  display: flex;
+  gap: spacing('sm'); // 8px = 0.5rem
+  flex-wrap: wrap;
+}
+
+// Note sur les rôles disponibles
+.permissions__roles-note {
+  margin-top: spacing('12'); // 12px = 0.75rem
+  font-size: font-size('sm'); // 14px ≈ 0.875rem
+  color: inherit;
+}

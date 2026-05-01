@@ -9,4 +9,7 @@
 
 .dnd-slot {
   @include dnd-slot;
+  // Surcharge : min-height dynamique via CSS custom property (prop minHeight du composant)
+  // Fallback = size('dnd-slot-min-height') = 8.75rem = 140px (token dimensionnel §size)
+  min-height: var(--dnd-slot-min-height, #{size('dnd-slot-min-height')});
 }

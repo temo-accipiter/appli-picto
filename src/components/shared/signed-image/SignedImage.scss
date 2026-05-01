@@ -14,6 +14,10 @@
   align-items: center;
   overflow: visible; // Permet à l'image de dépasser lors des animations hover
 
+  // Taille contrôlée par CSS custom property injectée via style={{ '--signed-image-size': `${size}px` }}
+  width: var(--signed-image-size);
+  height: var(--signed-image-size);
+
   &__img {
     width: 100%;
     height: 100%;

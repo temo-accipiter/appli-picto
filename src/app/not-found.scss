@@ -1,0 +1,47 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================
+// NOT FOUND PAGE (404) — TSA-friendly
+// ✅ TOKENS-FIRST : valeurs via fonctions tokens
+// ⚠️  var(--color-text-muted) : CSS custom property attendue
+// ============================================================
+
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; // Valeur CSS native viewport — pas de token équivalent
+  padding: spacing('xl'); // 2rem = 32px
+  text-align: center;
+
+  &__code {
+    font-size: font-size(
+      '4xl'
+    ); // 2.25rem = 36px (original: 4rem — token disponible le plus proche)
+    margin-bottom: spacing('md'); // 1rem = 16px
+    color: var(--color-primary); // #5A9FB8 — confirmé dans _colors.scss
+  }
+
+  &__title {
+    font-size: font-size('xl'); // 1.25rem = 20px (original: 1.5rem)
+    margin-bottom: spacing('md'); // 1rem = 16px
+    color: var(--color-text-muted); // #666 → CSS custom property design system
+  }
+
+  &__subtitle {
+    font-size: font-size('base'); // 1rem = 16px
+    color: var(--color-text-muted); // #999 → même token texte secondaire
+    margin-bottom: spacing('xl'); // 2rem = 32px
+  }
+
+  &__action {
+    padding: spacing('sm') spacing('md'); // 0.5rem 1rem
+    font-size: font-size('base'); // 1rem = 16px
+    background-color: var(--color-primary); // #5A9FB8
+    color: white; // Pas de token texte inversé disponible
+    text-decoration: none;
+    border-radius: radius('button'); // 8px
+    display: inline-block;
+  }
+}

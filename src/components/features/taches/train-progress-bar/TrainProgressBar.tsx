@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
 import { Select } from '@/components'
 import type { SelectOption } from '@/components'
@@ -92,11 +93,7 @@ export default function TrainProgressBar({
     <div className="train-progress-bar">
       <div className="metroline">
         <svg viewBox="0 0 1000 60" className="metrosvg">
-          <path
-            d="M 0 30 H 1000"
-            className="rail-line"
-            style={{ stroke: couleur }}
-          />
+          <path d="M 0 30 H 1000" className="rail-line" />
         </svg>
 
         {/* Affichage des stations sans le logo */}
@@ -104,7 +101,7 @@ export default function TrainProgressBar({
           <div
             key={index}
             className={`station ${isActive ? 'active' : ''} ${done > index ? 'passed' : ''}`}
-            style={{ left }}
+            style={{ '--station-left': left } as React.CSSProperties}
           >
             <div className="label" title={label}>
               {label}
@@ -116,7 +113,12 @@ export default function TrainProgressBar({
         {/* Train en mouvement */}
         <div
           className={`train ${prefersReducedMotion ? 'train--no-motion' : ''}`}
-          style={trainStyle}
+          style={
+            {
+              '--train-left': trainStyle.left,
+              '--train-transform': trainStyle.transform,
+            } as React.CSSProperties
+          }
         >
           <Image
             src="/images/train.png"

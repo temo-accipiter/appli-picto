@@ -326,9 +326,7 @@ function LigneRegle({ regle }: { regle: RegleAccès }) {
       <div className="permissions-action">
         {regle.action}
         {regle.note && (
-          <small style={{ display: 'block', fontSize: '0.75em', opacity: 0.7 }}>
-            {regle.note}
-          </small>
+          <small className="permissions__action-note">{regle.note}</small>
         )}
       </div>
       <div className="permissions-cells">
@@ -359,19 +357,13 @@ export default function Permissions() {
       {/* Statuts disponibles */}
       <section className="permissions-section" aria-label="Statuts utilisateur">
         <h2>Statuts utilisateur</h2>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <div className="permissions__badges">
           <span className="status-badge status-badge--visitor">Visiteur</span>
           <span className="status-badge status-badge--free">Gratuit</span>
           <span className="status-badge status-badge--subscriber">Abonné</span>
           <span className="status-badge status-badge--admin">Admin</span>
         </div>
-        <p
-          style={{
-            marginTop: '0.75rem',
-            fontSize: '0.875rem',
-            color: 'inherit',
-          }}
-        >
+        <p className="permissions__roles-note">
           Aucun rôle supplémentaire ne doit subsister dans le système.
         </p>
       </section>

@@ -147,11 +147,7 @@ function DndGrid<T>({
           <AnimatePresence>
             {slots.map(slot => (
               <DndSlot key={slot.id} id={slot.id} isDraggingFrom={false}>
-                {renderSlot ? (
-                  renderSlot(slot.id, slot.index)
-                ) : (
-                  <div style={{ minHeight: '140px' }} />
-                )}
+                {renderSlot ? renderSlot(slot.id, slot.index) : <div />}
               </DndSlot>
             ))}
           </AnimatePresence>

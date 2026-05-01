@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 // src/components/ui/upload-progress/UploadProgress.tsx
 // Indicateur progression upload TSA-friendly (couleurs pastel, animations douces)
 
@@ -70,7 +72,11 @@ export default function UploadProgress({
       <div className="upload-progress__bar" aria-hidden="true">
         <div
           className="upload-progress__fill"
-          style={{ width: `${progressPercent}%` }}
+          style={
+            {
+              '--upload-progress': `${progressPercent}%`,
+            } as React.CSSProperties
+          }
         />
       </div>
       <p className="upload-progress__message">{displayMessage}</p>

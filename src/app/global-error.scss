@@ -1,0 +1,43 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================
+// GLOBAL ERROR PAGE — TSA-friendly
+// Page d'erreur root (erreur JS non capturée, rend son propre <html>)
+// ✅ TOKENS-FIRST : valeurs via fonctions tokens
+// ⚠️  var(--color-danger) / var(--color-text-muted) : CSS custom properties
+//      attendues dans le design system (voir _colors.scss)
+// ============================================================
+
+.global-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; // Valeur CSS native viewport — pas de token équivalent
+  padding: spacing('xl'); // 2rem = 32px
+  text-align: center;
+
+  &__icon {
+    font-size: font-size('2xl'); // 1.5rem — mapping mission (original: 2rem)
+    margin-bottom: spacing('md'); // 1rem = 16px
+    color: var(--color-danger); // #e74c3c → CSS custom property design system
+  }
+
+  &__message {
+    font-size: font-size('base'); // 1rem = 16px
+    color: var(--color-text-muted); // #666 → CSS custom property design system
+    margin-bottom: spacing('xl'); // 2rem = 32px
+  }
+
+  &__action {
+    padding: spacing('sm') spacing('md'); // 0.5rem 1rem
+    font-size: font-size('base'); // 1rem = 16px
+    background-color: var(
+      --color-primary
+    ); // #5A9FB8 — confirmé dans _colors.scss
+    color: white; // Pas de token texte inversé disponible dans ce contexte isolé
+    border: none;
+    border-radius: radius('button'); // 8px
+    cursor: pointer;
+  }
+}

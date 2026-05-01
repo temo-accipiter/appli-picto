@@ -551,7 +551,7 @@ export default function TimeTimer({
                 >
                   <span
                     className="time-timer__color-swatch"
-                    style={{ backgroundColor: colorOption.color }}
+                    style={{ backgroundColor: colorOption.cssVar }}
                   />
                   <span className="time-timer__color-label">
                     {colorOption.label}

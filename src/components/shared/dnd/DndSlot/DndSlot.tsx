@@ -11,7 +11,7 @@
  * À utiliser pour les slots vides dans une grille DnD (mode édition)
  */
 
-import { memo, ReactNode } from 'react'
+import React, { memo, ReactNode } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import './DndSlot.scss'
 
@@ -47,7 +47,7 @@ const DndSlot = memo(function DndSlot({
     <div
       ref={setNodeRef}
       className={classNames}
-      style={{ minHeight }}
+      style={{ '--dnd-slot-min-height': minHeight } as React.CSSProperties}
       role="region"
       aria-label={`${label} ${id}`}
       data-testid={`dnd-slot-${id}`}

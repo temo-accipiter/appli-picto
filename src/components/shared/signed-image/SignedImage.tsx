@@ -8,7 +8,7 @@
 // - Si la signature échoue avec le bucket fourni (ex. 'avatars'), on tente automatiquement 'images' en fallback.
 // - Utilise next/image pour optimisation automatique (WebP/AVIF, lazy loading)
 
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { getSignedImageUrl } from '@/utils/storage/getSignedUrl'
 import { supabase } from '@/utils/supabaseClient'
@@ -115,7 +115,7 @@ export default function SignedImage({
   return (
     <div
       className={`signed-image ${className || ''}`}
-      style={{ width: `${size}px`, height: `${size}px` }}
+      style={{ '--signed-image-size': `${size}px` } as React.CSSProperties}
     >
       {url ? (
         <Image

@@ -70,7 +70,8 @@
     }
 
     .rail-line {
-      stroke: semantic('info-primary');
+      // Couleur injectée via document.documentElement.style.setProperty('--couleur-ligne', couleur)
+      stroke: var(--couleur-ligne);
       stroke-width: spacing('sm');
       fill: none;
       stroke-dasharray: spacing('14') spacing('14'); // §E.7 : 14px SVG stroke-dasharray, sans CSS var → exception documentée
@@ -80,6 +81,8 @@
     .station {
       position: absolute;
       top: 50%;
+      // Position horizontale injectée via style={{ '--station-left': left }}
+      left: var(--station-left);
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: z-index('base');
@@ -154,6 +157,9 @@
     .train {
       position: absolute;
       top: calc(#{size('10')} * -1);
+      // Position et transform injectés via style={{ '--train-left': ..., '--train-transform': ... }}
+      left: var(--train-left);
+      transform: var(--train-transform);
       z-index: z-index('dropdown');
       @include safe-transition(
         (left, transform),

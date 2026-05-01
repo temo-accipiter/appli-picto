@@ -47,18 +47,18 @@ describe('DndSlot', () => {
     expect(slot).toHaveClass('dnd-slot')
   })
 
-  it('applique le minHeight par défaut de 140px', () => {
+  it('applique le minHeight par défaut de 140px via CSS custom property', () => {
     render(<DndSlot id="slot-2" />)
 
     const slot = screen.getByTestId('dnd-slot-slot-2')
-    expect(slot).toHaveStyle({ minHeight: '140px' })
+    expect(slot.style.getPropertyValue('--dnd-slot-min-height')).toBe('140px')
   })
 
-  it('applique le minHeight personnalisé si fourni', () => {
+  it('applique le minHeight personnalisé si fourni via CSS custom property', () => {
     render(<DndSlot id="slot-3" minHeight="200px" />)
 
     const slot = screen.getByTestId('dnd-slot-slot-3')
-    expect(slot).toHaveStyle({ minHeight: '200px' })
+    expect(slot.style.getPropertyValue('--dnd-slot-min-height')).toBe('200px')
   })
 
   it('rend les enfants (children) correctement', () => {

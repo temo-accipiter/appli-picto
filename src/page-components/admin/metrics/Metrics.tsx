@@ -291,7 +291,7 @@ export default function Metrics() {
 
       {/* État de chargement */}
       {loading && (
-        <p aria-live="polite" style={{ textAlign: 'center' }}>
+        <p aria-live="polite" className="metrics__loading">
           Chargement…
         </p>
       )}
