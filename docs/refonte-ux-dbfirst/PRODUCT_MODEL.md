@@ -185,7 +185,7 @@ Dans tout le projet, le seul terme utilisé côté produit est **"Réinitialisat
 
 | Terme                      | Définition                                                                    | Référence        |
 | -------------------------- | ----------------------------------------------------------------------------- | ---------------- |
-| **Planning visuel**        | Timeline sans économie de jetons ; ordre + états Maintenant/À venir/Fini.     | ux.md L515-522   |
+| **Planning visuel**        | Timeline sans économie de jetons ; ordre + états Cochée/Décochée.             | ux.md L515-522   |
 | **Économie de jetons**     | Système optionnel superposé ; activé si ≥1 slot a >0 jeton.                   | ux.md L538-542   |
 | **Jeton**                  | Unité de motivation sur slot Étape ; temporaire ; reset chaque session.       | ux.md L546-554   |
 | **Grille de jetons**       | Cases = somme jetons des slots Étapes.                                        | ux.md L558-561   |
@@ -1012,7 +1012,7 @@ _(ux.md L3206-3214)_
 ### 6.1.1 Définition _(ux.md L1821-1837)_
 
 - Timeline **sans économie de jetons** (tous slots à 0 jeton)
-- Repose sur : ordre des cartes + états Maintenant/À venir/Fini
+- Repose sur : ordre des cartes + états Cochée (Fini) / Décochée (Active)
 
 ### 6.1.2 Comportement
 
@@ -1128,7 +1128,7 @@ _(ux.md L3206-3214)_
 
 ### 6.3.5 Mini-timeline (Tableau) _(ux.md L2355-2365)_
 
-- Affichée sous carte mère au focus via bouton "Voir étapes"
+- Affichée sous toute carte mère avec séquence non encore validée via bouton "Voir étapes"
 - Scrollable horizontalement
 - Utilisable à une main
 - Ne permet aucune modification

@@ -209,8 +209,9 @@
   - 🧪 Tester avec `prefers-reduced-motion: reduce` activé dans OS
 - [x] ✅ Aucun message technique (réseau, quota, abonnement) — règle documentée et commentée
   - _Fichier_ : `Tableau.tsx:10-15`
-- [x] ✅ États visuels explicites Maintenant / À venir / Fini — gérés dans `SlotCard`
+- [x] ✅ États visuels Cochée / Décochée (2 états) — gérés dans `SlotCard`
   - _Fichier_ : `src/components/features/tableau/slot-card/SlotCard.tsx`
+  - 🧪 Tester : carte validée = grisée/opacifiée (jamais display:none) ; carte non validée = affichage normal
 - [ ] ⚠️ Interface émotionnellement neutre — à vérifier : aucun emoji négatif, aucun texte anxiogène
   - 🧪 Tester : parcourir le Tableau en Visitor avec session active
 - [x] ✅ Session Terminée = lecture seule, récompense affichée — `SessionComplete` component

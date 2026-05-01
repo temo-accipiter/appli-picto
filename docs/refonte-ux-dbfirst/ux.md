@@ -135,9 +135,10 @@ Aucune fonctionnalité ne peut être implémentée si elle viole un de ces invar
   - lisibles,
   - jamais agressives.
 - États visuels toujours explicites :
-  - **Maintenant**
-  - **À venir**
-  - **Fini**
+  - **Cochée (Fini)**
+  - **Décochée (Active)**
+
+> *Décision produit du 2026-05-01 — La distinction "Maintenant / À venir" est supprimée. Validation libre, sans focus imposé (souplesse pédagogique).*
 
 ---
 
@@ -334,7 +335,9 @@ Aucune action n’est requise pour l’activer.
 
 **Voir étapes**
 
-Petit bouton du Contexte Tableau permettant d’afficher/masquer la mini-timeline de séquence d’une carte mère, uniquement lorsque celle-ci est l’étape en cours. N’a aucun impact sur la progression.
+Petit bouton du Contexte Tableau permettant d’afficher/masquer la mini-timeline de séquence d’une carte mère, visible sur toute carte mère non encore validée. N’a aucun impact sur la progression.
+
+*Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA : l’aide visuelle est accessible quand l’enfant en a besoin).*
 
 ---
 
@@ -519,7 +522,7 @@ Mode d’utilisation de la timeline sans économie de jetons.
 
 - l’ordre des cartes,
 - la progression visuelle,
-- les états Maintenant / À venir / Fini.
+- les états Cochée (Fini) / Décochée (Active).
 
 ---
 
@@ -647,7 +650,7 @@ La bibliothèque est utilisée exclusivement pour sélectionner des cartes à in
 
 Affichage horizontal des étapes d’une séquence associée à une carte mère.
 
-Elle peut être affichée sous la carte mère au focus dans la Page Tableau via le bouton « Voir les étapes ».
+Elle peut être affichée sous toute carte mère non encore validée dans la Page Tableau via le bouton « Voir les étapes ».
 
 Elle ne permet aucune modification côté enfant.
 
@@ -1635,25 +1638,19 @@ Côté Tableau, un slot Récompense vide n’occupe aucun espace : aucun placeho
 
 ## **7\. États visuels des cartes (Tableau)**
 
-### **Maintenant (Focus)**
+> *Décision produit du 2026-05-01 — Les 3 états (Maintenant / À venir / Fini) sont remplacés par 2 états. La notion de "focus" (une seule carte active à la fois) est supprimée : validation libre, guidée par l'accompagnateur selon le rythme de l'enfant.*
 
-- # Carte centrale, agrandie.
+### **Décochée (Active)**
 
-- # Interaction active **uniquement** sur cette carte.
+- # Toutes les cartes non encore validées sont affichées normalement.
 
-# ---
-
-### **À venir (Anticipation)**
-
-- # Cartes suivantes visibles, plus petites.
-
-- # Rassurent sur la suite sans distraire.
+- # Toutes sont validables dans l'ordre souhaité.
 
 # ---
 
-### **Fini (Satisfaction)**
+### **Cochée (Fini)**
 
-- # Les cartes terminées :
+- # Les cartes validées :
   - # restent visibles,
 
   - # deviennent grisées / opacifiées.
@@ -1673,10 +1670,12 @@ Côté Tableau, un slot Récompense vide n’occupe aucun espace : aucun placeho
 - # Checkbox de validation.
 
 **Affichage des étapes de séquence (carte mère)**  
-Si la carte affichée est une carte mère possédant une séquence :  
-● un petit bouton « Voir étapes » est affiché uniquement lorsque cette carte mère est l’étape en cours,  
+Si la carte affichée est une carte mère possédant une séquence et qu’elle n’est pas encore validée :  
+● un petit bouton « Voir étapes » est affiché sur la carte (indépendant du focus),  
 ● cliquer sur « Voir étapes » affiche/masque la mini-timeline des étapes,  
 ● Cette action est purement visuelle et ne modifie jamais la progression.
+
+*Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA).*
 
 # ---
 
@@ -1701,7 +1700,9 @@ Objectif : éviter toute validation accidentelle (enfant qui tapote), garantir u
 
 ## **9\. Affichage et animation des jetons**
 
-- # Les jetons associés au slot Étape sont visibles sur la carte (empilés verticalement).
+- # Les jetons d'un slot ne sont **pas** affichés sur la carte individuelle — visibles uniquement dans la grille de jetons au-dessus de la timeline.
+
+*Décision produit du 2026-05-01 — Simplification visuelle, charge cognitive réduite. Dette UX assumée : l'enfant ne voit pas, avant validation, combien de jetons une carte rapporte. À reconsidérer post-launch via retours terrain.*
 
 - # Une **grille de jetons** est affichée au-dessus de la timeline :
   - # nombre de cases \= somme des jetons des slots Étapes.
@@ -2006,7 +2007,7 @@ Si l’adulte ajoute un slot Étape (avec jetons) pendant qu’une session est d
 
 Côté enfant :
 
-- les jetons associés à l’étape en cours sont visibles sur la carte,
+- les jetons d’une étape ne sont pas affichés sur la carte individuelle,
 - la grille de jetons est affichée au-dessus de la timeline,
 - aucun calcul n’est requis,
 - aucun nombre abstrait n’est demandé à l’enfant.
@@ -2324,8 +2325,8 @@ Une carte mère peut apparaître **plusieurs fois** dans un planning.
 Le séquençage est utilisé uniquement en cas de besoin.
 
 - Le bouton **« Voir les étapes »** :
-  - est visible sur la carte mère,
-  - devient cliquable uniquement lorsque la carte est **au focus**.
+  - est visible sur toute carte mère non encore validée,
+  - est accessible indépendamment de l'ordre de validation.
 
 Cliquer ouvre l’affichage de la séquence associée.
 
@@ -2395,7 +2396,7 @@ La validation d’une tâche (carte mère) se fait exclusivement via la checkbox
 Interactions sur la carte mère (non négociable)
 
 - Le tap/clic sur l’image ou le nom de la carte mère ne déclenche jamais de validation et ne déclenche aucune action.
-- La mini-timeline de séquence, si elle existe, est affichée uniquement via un petit bouton dédié « Voir étapes », visible uniquement lorsque la carte mère est l’étape en cours.
+- La mini-timeline de séquence, si elle existe, est affichée uniquement via un petit bouton dédié « Voir étapes », visible sur toute carte mère non encore validée (indépendant du focus).
 - Le bouton « Voir étapes » n’a aucun impact sur la progression et ne peut jamais valider une étape.
 
 👉 L’état “fait” des étapes de la séquence reste purement visuel et n’a aucun impact sur la validation.

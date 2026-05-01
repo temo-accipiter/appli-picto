@@ -452,7 +452,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 2. **Visitor** : peut composer localement. Import au passage Visitor → Compte
 3. **Free** : pas de création/édition de séquences (feature gating DB)
 4. **Mini-timeline Tableau** :
-   - Sous la carte mère, visible via bouton « Voir étapes » quand carte mère au focus
+   - Sous la carte mère, visible via bouton « Voir étapes » si carte mère avec séquence non encore validée
    - Scrollable horizontalement, utilisable à une main
    - Cliquer étape = griser "fait" (état visuel local-only par `slot_id`)
    - Tap sur image/nom carte mère = aucune action
@@ -464,7 +464,7 @@ Un fichier `AUDIT_REPORT.md` dans le repo avec :
 
 - [ ] Séquence créée avec minimum 2 étapes — DB refuse sinon
 - [ ] Pas de doublons dans les étapes — DB refuse sinon
-- [ ] Mini-timeline visible en Tableau sous carte mère au focus
+- [ ] Mini-timeline visible en Tableau sous toute carte mère avec séquence non encore validée
 - [ ] État "fait" = local-only, reset chaque session, aucun impact fonctionnel
 - [ ] Tap image/nom carte mère = aucune action
 - [ ] Validation carte mère → mini-timeline se referme (< 0.3s)

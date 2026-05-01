@@ -257,7 +257,7 @@ Quand une session passe à **Terminée** (toutes étapes validées = `steps_tota
 #### 3.1.4 Mini-timeline de séquence (Tableau)
 
 - Affichée **sous la carte mère**, sous forme de mini-timeline horizontale
-- Accessible via bouton **« Voir étapes »**, visible uniquement quand la carte mère est au focus (étape en cours)
+- Accessible via bouton **« Voir étapes »**, visible sur toute carte mère avec séquence non encore validée (indépendant du focus — décision produit 2026-05-01)
 - Scrollable horizontalement, utilisable à une main, sans geste complexe
 - Chaque étape est cliquable : cliquer = griser pour indiquer "fait" (état visuel local-only, par `slot_id`)
 - **Tap/clic sur l'image ou le nom de la carte mère** = aucune action (ne valide jamais)

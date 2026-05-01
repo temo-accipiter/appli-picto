@@ -162,8 +162,7 @@ export function SlotCard({
       {/* Nom de la carte */}
       <p className="slot-card__label">{cardLabel}</p>
 
-      {/* Bouton "Voir étapes" — visible sur toutes les cartes avec séquence (§3.1.4 mis à jour) */}
-      {/* TSA : prévisibilité — la séquence est toujours visible, pas seulement sur la carte active */}
+      {/* Bouton "Voir étapes" — cf. ux.md §3.1.4 : visible si carte mère, indépendant du focus */}
       {hasSequence && !validated && (
         <Button
           variant="default"
