@@ -13,6 +13,7 @@ import {
 import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
 import { Input, Button, Checkbox, PasswordChecklist } from '@/components'
+import { Trans } from 'react-i18next'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
 import './Signup.scss'
@@ -123,7 +124,7 @@ export default function Signup() {
           </svg>
         </div>
         <h1 className="signup-page__title">Appli-Picto</h1>
-        <p className="signup-page__tagline">La journée en pictogrammes</p>
+        <p className="signup-page__tagline">{t('app.tagline')}</p>
       </header>
 
       {/* ── CARTE FORMULAIRE ── */}
@@ -146,7 +147,7 @@ export default function Signup() {
           <form
             onSubmit={handleSignup}
             noValidate
-            aria-label="Formulaire d'inscription"
+            aria-label={t('auth.signupFormLabel')}
           >
             {/* Champ email */}
             <div className="signup-page__field">
@@ -239,25 +240,28 @@ export default function Signup() {
                 size="sm"
               />
               <label htmlFor="signup-cgu" className="signup-page__cgu-label">
-                J&apos;accepte les{' '}
-                <Link
-                  href="/cgu"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="signup-page__cgu-link"
-                  aria-label="Conditions générales d'utilisation"
-                >
-                  CGU
-                </Link>{' '}
-                et la{' '}
-                <Link
-                  href="/politique-de-confidentialite"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="signup-page__cgu-link"
-                >
-                  Politique de confidentialité
-                </Link>
+                <Trans
+                  i18nKey="auth.acceptCguAndPrivacy"
+                  components={{
+                    cguLink: (
+                      <Link
+                        href="/cgu"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="signup-page__cgu-link"
+                        aria-label={t('legal.cgu')}
+                      />
+                    ),
+                    privacyLink: (
+                      <Link
+                        href="/politique-de-confidentialite"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="signup-page__cgu-link"
+                      />
+                    ),
+                  }}
+                />
               </label>
             </div>
 
@@ -280,11 +284,7 @@ export default function Signup() {
               variant="primary"
               isLoading={loading}
               disabled={!cguAccepted}
-              title={
-                !cguAccepted
-                  ? 'Veuillez accepter les CGU pour continuer'
-                  : undefined
-              }
+              title={!cguAccepted ? t('auth.acceptCguToSubmit') : undefined}
               className="signup-page__submit"
             />
           </form>
@@ -292,7 +292,7 @@ export default function Signup() {
 
         {/* Lien connexion — correction bug "Se connecter Se connecter" */}
         <p className="signup-page__login-prompt">
-          <span className="signup-page__login-hint">Déjà un compte&nbsp;?</span>{' '}
+          <span className="signup-page__login-hint">{t('auth.alreadyHasAccount')}</span>{' '}
           <Link href="/login" className="signup-page__login-link">
             {t('nav.login')}
           </Link>
