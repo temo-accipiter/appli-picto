@@ -20,12 +20,12 @@
 // - L'état "fait" des étapes est LOCAL-ONLY — jamais persisté en DB
 
 import Image from 'next/image'
-import { useCallback, useEffect, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useState, type ChangeEvent } from 'react'
 import type { Slot } from '@/hooks/useSlots'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
-import { Button } from '@/components'
+import { Button, Checkbox } from '@/components'
 import { SequenceMiniTimeline } from '@/components/features/sequences'
 import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
 import './SlotCard.scss'
@@ -113,11 +113,9 @@ export function SlotCard({
     })
   }, [])
 
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault()
+  const handleValidate = useCallback(
+    (_e: ChangeEvent<HTMLInputElement>) => {
       if (isDisabled) return
-      // Fermer la mini-timeline quand la carte est validée (§3.1.4)
       setMiniTimelineOpen(false)
       setDoneStepIds(new Set())
       onValidate(slot.id)
@@ -150,33 +148,10 @@ export function SlotCard({
             📋
           </div>
         )}
-
-        {/* Indicateur "fait" — superposé sur l'image quand validé */}
-        {validated && (
-          <div className="slot-card__done-overlay" aria-hidden="true">
-            ✓
-          </div>
-        )}
       </div>
 
       {/* Nom de la carte */}
       <p className="slot-card__label">{cardLabel}</p>
-
-      {/* Bouton "Voir étapes" — cf. ux.md §3.1.4 : visible si carte mère, indépendant du focus */}
-      {hasSequence && !validated && (
-        <Button
-          variant="default"
-          className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}
-          onClick={() => setMiniTimelineOpen(o => !o)}
-          aria-expanded={miniTimelineOpen}
-          aria-controls={`sequence-${slot.id}`}
-          aria-label={
-            miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes'
-          }
-        >
-          {miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes 📋'}
-        </Button>
-      )}
 
       {/* Mini-timeline (visible uniquement si bouton ouvert) */}
       {miniTimelineOpen && hasSequence && (
@@ -193,19 +168,32 @@ export function SlotCard({
         </div>
       )}
 
-      {/* Bouton de validation (checkbox agrandie pour enfants TSA) */}
-      <Button
-        variant="default"
-        className={`slot-card__check${validated ? ' slot-card__check--done' : ''}`}
-        onClick={handleClick}
-        disabled={isDisabled}
-        aria-pressed={validated}
-        aria-label={
-          validated ? `${cardLabel} est terminé` : `Valider ${cardLabel}`
-        }
-      >
-        {validated ? '✓' : '○'}
-      </Button>
+      {/* Pied de carte : checkbox (gauche) + "Voir étapes" (droite) */}
+      <div className="slot-card__footer">
+        <Checkbox
+          id={`slot-check-${slot.id}`}
+          label={validated ? 'Validé' : 'Valider'}
+          checked={validated}
+          onChange={handleValidate}
+          disabled={isDisabled}
+          size="md"
+        />
+        {/* Bouton "Voir étapes" — cf. ux.md §3.1.4 : visible si carte mère, indépendant du focus */}
+        {hasSequence && !validated && (
+          <Button
+            variant="default"
+            className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}
+            onClick={() => setMiniTimelineOpen(o => !o)}
+            aria-expanded={miniTimelineOpen}
+            aria-controls={`sequence-${slot.id}`}
+            aria-label={
+              miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes'
+            }
+          >
+            {miniTimelineOpen ? 'Masquer' : 'Voir les étapes'}
+          </Button>
+        )}
+      </div>
     </article>
   )
 }

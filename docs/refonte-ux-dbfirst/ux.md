@@ -138,7 +138,7 @@ Aucune fonctionnalité ne peut être implémentée si elle viole un de ces invar
   - **Cochée (Fini)**
   - **Décochée (Active)**
 
-> *Décision produit du 2026-05-01 — La distinction "Maintenant / À venir" est supprimée. Validation libre, sans focus imposé (souplesse pédagogique).*
+> _Décision produit du 2026-05-01 — La distinction "Maintenant / À venir" est supprimée. Validation libre, sans focus imposé (souplesse pédagogique)._
 
 ---
 
@@ -337,7 +337,7 @@ Aucune action n’est requise pour l’activer.
 
 Petit bouton du Contexte Tableau permettant d’afficher/masquer la mini-timeline de séquence d’une carte mère, visible sur toute carte mère non encore validée. N’a aucun impact sur la progression.
 
-*Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA : l’aide visuelle est accessible quand l’enfant en a besoin).*
+_Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA : l’aide visuelle est accessible quand l’enfant en a besoin)._
 
 ---
 
@@ -1638,7 +1638,7 @@ Côté Tableau, un slot Récompense vide n’occupe aucun espace : aucun placeho
 
 ## **7\. États visuels des cartes (Tableau)**
 
-> *Décision produit du 2026-05-01 — Les 3 états (Maintenant / À venir / Fini) sont remplacés par 2 états. La notion de "focus" (une seule carte active à la fois) est supprimée : validation libre, guidée par l'accompagnateur selon le rythme de l'enfant.*
+> _Décision produit du 2026-05-01 — Les 3 états (Maintenant / À venir / Fini) sont remplacés par 2 états. La notion de "focus" (une seule carte active à la fois) est supprimée : validation libre, guidée par l'accompagnateur selon le rythme de l'enfant._
 
 ### **Décochée (Active)**
 
@@ -1675,7 +1675,7 @@ Si la carte affichée est une carte mère possédant une séquence et qu’elle 
 ● cliquer sur « Voir étapes » affiche/masque la mini-timeline des étapes,  
 ● Cette action est purement visuelle et ne modifie jamais la progression.
 
-*Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA).*
+_Décision produit du 2026-05-01 — Visibilité indépendante du focus (prévisibilité TSA)._
 
 # ---
 
@@ -1702,7 +1702,7 @@ Objectif : éviter toute validation accidentelle (enfant qui tapote), garantir u
 
 - # Les jetons d'un slot ne sont **pas** affichés sur la carte individuelle — visibles uniquement dans la grille de jetons au-dessus de la timeline.
 
-*Décision produit du 2026-05-01 — Simplification visuelle, charge cognitive réduite. Dette UX assumée : l'enfant ne voit pas, avant validation, combien de jetons une carte rapporte. À reconsidérer post-launch via retours terrain.*
+_Décision produit du 2026-05-01 — Simplification visuelle, charge cognitive réduite. Dette UX assumée : l'enfant ne voit pas, avant validation, combien de jetons une carte rapporte. À reconsidérer post-launch via retours terrain._
 
 - # Une **grille de jetons** est affichée au-dessus de la timeline :
   - # nombre de cases \= somme des jetons des slots Étapes.
