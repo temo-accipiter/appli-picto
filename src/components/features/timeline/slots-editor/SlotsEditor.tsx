@@ -37,7 +37,7 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import useAccountStatus from '@/hooks/useAccountStatus'
 import type { Slot } from '@/hooks/useSlots'
 import type { SessionState } from '@/hooks/useSessions'
@@ -505,18 +505,23 @@ export function SlotsEditor({
           }}
         >
           <ul className="slots-editor__list" aria-label="Slots de la timeline">
-            {sortedSlots.map((slot, idx) => {
-              // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
-              const sequence = slot.card_id
-                ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
-                  null)
-                : null
+            {sortedSlots.reduce<{ stepCount: number; elements: React.ReactNode[] }>(
+              (acc, slot, idx) => {
+                if (slot.kind === 'step') acc.stepCount++
+                const stepNumber = slot.kind === 'step' ? acc.stepCount : undefined
 
-              return (
+                // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
+                const sequence = slot.card_id
+                  ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
+                    null)
+                  : null
+
+                acc.elements.push(
                 <SlotItem
                   key={slot.id}
                   slot={slot}
                   positionLabel={idx + 1}
+                  {...(stepNumber !== undefined ? { stepNumber } : {})}
                   onUpdate={onUpdateSlot}
                   onRemove={handleRemove}
                   bankCards={bankCards as BankCard[]}
@@ -537,8 +542,11 @@ export function SlotsEditor({
                   isDragActive={activeDragSlotId === slot.id}
                   setSlotRef={node => setSlotRef(slot.id, node)}
                 />
-              )
-            })}
+                )
+                return acc
+              },
+              { stepCount: 0, elements: [] }
+            ).elements}
           </ul>
         </DndContext>
       ) : (

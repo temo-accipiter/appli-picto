@@ -7,21 +7,17 @@
 .slot-item {
   display: flex;
   flex-direction: column;
-  gap: spacing('sm');
-  padding: spacing('md');
+  gap: 0; // Les séparateurs gèrent l'espacement visuel
+  padding: spacing('sm');
   background: surface('card');
   border-radius: radius('card'); // 12px — conteneur parent §D.3
   list-style: none;
   flex-shrink: 0;
-  width: size('modal-width-sm');
-  min-height: calc(
-    #{size('card-image-height')} + #{size('touch-target-min')} +
-      #{spacing('2xl')}
-  );
+  width: 15rem;
+  min-height: auto;
   scroll-snap-align: start;
   position: relative;
 
-  // ── Bordure complète autour du slot ──
   border: border-width('thin') solid surface('border');
 
   @include safe-transition(background opacity);
@@ -36,71 +32,75 @@
     border-color: semantic('warning');
   }
 
-  // ── En-tête : contient le bouton supprimer → positionné en bas à droite ──
+  // ── Partie 1 : Header — label à gauche, actions à droite ──
   &__header {
     display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    position: absolute;
-    bottom: spacing('sm');
-    right: spacing('sm');
-    z-index: 1;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('xs');
+    padding: spacing('xs') spacing('xs');
+    min-height: size('touch-target-min');
   }
 
-  // ── Placeholder : icône centrée en haut + meta centrée en dessous ──
+  &__label {
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex-shrink: 0;
+  }
+
+  // ── Séparateur entre les 3 parties ──
+  &__separator {
+    height: border-width('medium');
+    margin: spacing('xs') 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      surface('border'),
+      transparent
+    );
+    border-radius: radius('subtle'); // 4px
+  }
+
+  // ── Partie 2 : Placeholder et card-display — hauteur fixe identique ──
+  // Même min-height pour que le slot vide ne soit pas plus petit que le slot rempli
+  &__placeholder,
+  &__card-display {
+    min-height: size('card-image-height') + size('touch-target-min') + spacing('sm');
+  }
+
   &__placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: spacing('sm');
-    flex: 1;
-    min-height: calc(#{size('card-image-height')} + #{spacing('xl')});
-    padding-top: spacing('md');
-    padding-bottom: spacing('xl');
   }
 
-  // ── Icône ──
-  &__icon {
-    font-size: font-size('2xl');
-    line-height: 1;
-    flex-shrink: 0;
-    width: size('touch-target-min');
-    text-align: center;
-  }
-
-  // ── Meta (position + kind) — côte à côte ──
-  &__meta {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: spacing('sm');
-    min-width: 0;
-  }
-
-  &__position {
-    font-size: font-size('xs');
-    color: text('muted');
-    font-weight: font-weight('medium');
-  }
-
-  &__kind {
+  &__empty-text {
     font-size: font-size('base');
     font-weight: font-weight('semibold');
-    color: text('dark');
+    color: text('muted');
   }
 
-  // ── Affichage carte (quand une carte est assignée) ──
+  // ── Partie 2 : Affichage carte (image + nom) ──
   &__card-display {
     display: flex;
-    flex-direction: column; // Empile nom au-dessus de l'image
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: spacing('sm'); // Espace entre nom et image
-    flex: 1;
-    min-height: calc(#{size('card-image-height')} + #{spacing('xl')});
-    padding-top: spacing('md');
-    padding-bottom: spacing('xl');
+    gap: spacing('sm');
+    padding: spacing('sm') 0;
   }
 
   &__card-name {
@@ -109,7 +109,6 @@
     color: text('dark');
     text-align: center;
     width: 100%;
-    min-height: size('touch-target-min');
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -129,55 +128,38 @@
     width: 100%;
     min-height: size('card-image-height');
     background: surface('soft');
-    border-radius: radius('subtle'); // 4px — placeholder image imbriquée §D.5
+    border-radius: radius('subtle'); // 4px
   }
 
-  &__sequence {
+  // ── Partie 3 : Footer — tokens (gauche) + séquence (droite) ──
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: spacing('xs');
+    padding: spacing('xs') spacing('xs');
     min-height: size('touch-target-min');
-    display: flex;
-    align-items: flex-start;
   }
 
-  // ── Corps : contrôles carte + jetons ──
-  &__body {
-    display: flex;
-    flex-direction: column;
-    gap: spacing('sm');
-
-    @include respond-to('md') {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: spacing('md');
-    }
-  }
-
-  // ── Contrôle tokens — positionné en bas à gauche ──
+  // ── Contrôle tokens — dans le footer, côté gauche ──
   &__tokens-control {
     display: flex;
     flex-direction: column;
     gap: spacing('xs');
-    position: absolute;
-    bottom: spacing('sm');
-    left: spacing('sm');
+    flex-shrink: 0;
   }
 
-  &__tokens-label {
-    font-size: font-size('xs');
-    font-weight: font-weight('medium');
-    color: text('muted');
-  }
-
-  &__tokens-input {
-    width: size('touch-target-min');
+  &__tokens-select {
     min-height: size('touch-target-min');
     padding: spacing('xs') spacing('sm');
     background: surface('soft');
     border: border-width('thin') solid surface('border');
-    border-radius: radius('input'); // 6px — input tokens §D.3
+    border-radius: radius('input'); // 6px
     font-size: font-size('base');
     font-weight: font-weight('semibold');
     color: text('dark');
     text-align: center;
+    cursor: pointer;
     @include safe-transition(border-color);
 
     &:focus {
@@ -197,31 +179,22 @@
     margin: 0;
   }
 
-  // ── Bouton supprimer ──
-  &__delete {
-    flex-shrink: 0;
-    min-width: size('touch-target-min');
-    min-height: size('touch-target-min');
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    color: text('muted');
+  // ── Icône verrou ──
+  &__lock {
     font-size: font-size('base');
-    border-radius: radius('button'); // 6px — bouton supprimer §D.3
-    cursor: pointer;
-    margin-left: auto;
-    @include safe-transition(background color);
+    flex-shrink: 0;
+  }
 
-    &:hover:not(:disabled) {
-      background: surface('hover');
-      color: semantic('error');
-    }
+  // ── Bouton séquence (côté droit du footer) ──
+  &__sequence-toggle {
+    border-radius: radius('button');
+    @include safe-transition(background-color);
 
-    &:disabled {
-      opacity: opacity('half');
-      cursor: not-allowed;
+    background-color: transparent;
+
+    &--has-sequence {
+      background-color: tsa-pastel('green-soft');
+      color: text('dark');
     }
   }
 }

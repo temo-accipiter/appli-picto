@@ -111,6 +111,8 @@ interface SlotItemProps {
    * Free cloud → readonly, Visitor local → éditable, Subscriber/Admin cloud → éditable.
    */
   isSequenceReadOnly?: boolean
+  /** Numéro de l'étape parmi les étapes uniquement (1, 2, 3…) — undefined pour les rewards */
+  stepNumber?: number
   /** ID DnD du slot (même valeur que slot.id) */
   dndSlotId?: string
   /** Indique si ce slot est la source active du drag */
@@ -122,17 +124,14 @@ interface SlotItemProps {
   setSlotRef?: (node: HTMLLIElement | null) => void
 }
 
-/** Icône selon le kind du slot */
-const SLOT_ICONS: Record<'step' | 'reward', string> = {
-  step: '🎯',
-  reward: '🏆',
-}
-
 /** Libellé selon le kind du slot */
 const SLOT_LABELS: Record<'step' | 'reward', string> = {
   step: 'Étape',
   reward: 'Récompense',
 }
+
+/** Options du select jetons (0 à 5) avec emoji jeton */
+const TOKEN_OPTIONS = [0, 1, 2, 3, 4, 5]
 
 export function SlotItem({
   slot,
@@ -153,6 +152,7 @@ export function SlotItem({
   isSequenceEditorOpen = false,
   isOffline = false,
   isExecutionOnly = false,
+  stepNumber,
   dndSlotId,
   isDragActive = false,
   setSlotRef,
@@ -162,17 +162,11 @@ export function SlotItem({
   // ── Calcul de la matrice de verrouillage ──────────────────────────────────
   const isSessionStarted = sessionState === 'active_started'
 
-  // Slot validé pendant session démarrée → tout verrouillé (tokens, carte, suppression)
-  // §4.4 S8 : Offline → même comportement que slot validé (tout verrouillé)
-  // §6.1 catégorie #8 S9 : Execution-only → même comportement (structure verrouillée)
   const isFullyLocked =
     (isSessionStarted && isValidated) || isOffline || isExecutionOnly
 
-  // Suppression verrouillée pendant toute session active_started (validé ou non).
-  // La composition est en lecture seule — l'adulte doit annuler la session d'abord.
   const isDeleteLocked = isSessionStarted || isOffline || isExecutionOnly
 
-  // §session-lock : slot non validé → carte toujours assignable, tokens non modifiables
   const tokensLocked =
     (isSessionStarted && isValidated) || isOffline || isExecutionOnly
   const isEmptyStep = isStep && slot.card_id === null
@@ -194,8 +188,6 @@ export function SlotItem({
     disabled: !canDropCard,
   })
 
-  // ── Composition ref : DnD + focus programmatique (§3.2.2bis) ─────────────
-  // Permet au parent (SlotsEditor) de gérer le focus après suppression
   const composedRef = useCallback(
     (node: HTMLLIElement | null) => {
       setDroppableRef(node)
@@ -204,29 +196,18 @@ export function SlotItem({
     [setDroppableRef, setSlotRef]
   )
 
-  // État local pour le contrôle tokens (UI optimiste — refresh hook sur succès)
   const [updatingTokens, setUpdatingTokens] = useState(false)
   const [tokensError, setTokensError] = useState<string | null>(null)
 
-  // Séquençage disponible : uniquement pour les étapes avec une carte assignée
   const canManageSequence =
     isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
-  // ⚠️ NOTE INTENTIONNELLE — séquences non verrouillées pendant active_started
-  // Le verrou de composition (isSessionActive) ne s'applique PAS aux séquences.
-  // Pourquoi : les séquences sont indépendantes du mécanisme de session.
-  //   - steps_total_snapshot compte les slots, pas les étapes de séquence.
-  //   - session_validations tracke les slots, jamais les séquences.
-  //   - Modifier une séquence n'affecte ni la progression ni la complétion.
-  // Impact enfant : marginal. Cas d'usage : adulte édite une sous-étape depuis
-  // la page Édition pendant que l'enfant utilise le Tableau sur un autre appareil.
-  // Ce cas exceptionnel ne justifie pas un verrou qui alourdirait le workflow adulte.
+
   const isSequenceActionDisabled = isFullyLocked || !canManageSequence
 
-  const handleTokensChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleTokensChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     if (!areTokensEditable) return
 
     const value = parseInt(e.target.value, 10)
-    // Validation côté client (double filet — la DB a aussi le CHECK)
     if (isNaN(value) || value < 0 || value > 5) return
 
     setUpdatingTokens(true)
@@ -238,14 +219,12 @@ export function SlotItem({
     if (error) setTokensError('Erreur mise à jour jetons.')
   }
 
-  // Trouver la carte assignée pour afficher son image
   const assignedCard =
     slot.card_id !== null
       ? (bankCards.find(c => c.id === slot.card_id) ??
         personalCards.find(c => c.id === slot.card_id))
       : null
 
-  // Indicateur visuel pour les slots verrouillés
   const lockBadge = isFullyLocked ? (
     <span
       className="slot-item__lock"
@@ -267,49 +246,37 @@ export function SlotItem({
       data-drag-over={isOver || undefined}
       data-dragging={isDragging || undefined}
     >
-      {/* ── Bouton supprimer en haut à droite (PHASE 1) ──────────────────────── */}
+      {/* ── Partie 1 : Label + bouton supprimer ──────────────────────────────── */}
       <div className="slot-item__header">
-        {/* Indicateur de verrou (slot validé) */}
-        {lockBadge}
-
-        {/* Bouton supprimer — affiché si supprimable, désactivé si session active */}
-        {canRemove && (
-          <ButtonDelete
-            onClick={() => onRemove(slot.id)}
-            disabled={busy || isDeleteLocked}
-            title={
-              isSessionStarted && !isValidated
-                ? 'Session en cours — annulez pour modifier les étapes'
-                : `Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`
-            }
-          />
-        )}
+        <span className="slot-item__label">
+          {isStep ? `${SLOT_LABELS.step} ${stepNumber ?? positionLabel}` : SLOT_LABELS.reward}
+        </span>
+        <div className="slot-item__header-actions">
+          {lockBadge}
+          {canRemove && (
+            <ButtonDelete
+              onClick={() => onRemove(slot.id)}
+              disabled={busy || isDeleteLocked}
+              title={
+                isSessionStarted && !isValidated
+                  ? 'Session en cours — annulez pour modifier les étapes'
+                  : `Supprimer la ${SLOT_LABELS[slot.kind].toLowerCase()} #${positionLabel}`
+              }
+            />
+          )}
+        </div>
       </div>
 
-      {/* ── Centre : placeholder (vide) vs image carte (rempli) ─────────────── */}
-      {slot.card_id === null ? (
-        // Slot vide : afficher icône + meta centrés
-        <div className="slot-item__placeholder">
-          <span className="slot-item__icon" aria-hidden="true" role="img">
-            {SLOT_ICONS[slot.kind]}
-          </span>
+      {/* ── Séparateur 1 : entre header et image ─────────────────────────────── */}
+      <div className="slot-item__separator" aria-hidden="true" />
 
-          <div className="slot-item__meta">
-            <span className="slot-item__position" aria-hidden="true">
-              #{positionLabel}
-            </span>
-            <span className="slot-item__kind">{SLOT_LABELS[slot.kind]}</span>
-          </div>
+      {/* ── Partie 2 : Image + titre ─────────────────────────────────────────── */}
+      {slot.card_id === null ? (
+        <div className="slot-item__placeholder">
+          <span className="slot-item__empty-text">Vide</span>
         </div>
       ) : (
-        // Slot rempli : afficher nom + image de la carte assignée
         <div className="slot-item__card-display">
-          {/* Nom de la carte au-dessus de l'image */}
-          {assignedCard && (
-            <span className="slot-item__card-name">{assignedCard.name}</span>
-          )}
-
-          {/* Image de la carte = handle DnD (focusable clavier) */}
           <div
             ref={setDraggableRef}
             {...attributes}
@@ -322,7 +289,7 @@ export function SlotItem({
             tabIndex={canDragCard ? 0 : undefined}
             aria-label={
               canDragCard
-                ? 'Glisser l’image pour réorganiser la timeline'
+                ? "Glisser l'image pour réorganiser la timeline"
                 : undefined
             }
             aria-grabbed={canDragCard ? isDragging : undefined}
@@ -344,69 +311,72 @@ export function SlotItem({
               </div>
             )}
           </div>
-        </div>
-      )}
 
-      {/* ── Contrôle tokens en bas à droite (étapes uniquement) ──────────────── */}
-      {isStep && (
-        <div className="slot-item__tokens-control">
-          <label
-            className="slot-item__tokens-label"
-            htmlFor={`tokens-${slot.id}`}
-          >
-            Jetons 🪙
-          </label>
-          <input
-            id={`tokens-${slot.id}`}
-            type="number"
-            className="slot-item__tokens-input"
-            min={0}
-            max={5}
-            value={slot.tokens ?? 0}
-            onChange={handleTokensChange}
-            disabled={busy || updatingTokens || !areTokensEditable}
-            aria-busy={updatingTokens}
-            aria-disabled={!areTokensEditable}
-            aria-label={`Nombre de jetons pour l'étape #${positionLabel} (0 à 5)${
-              tokensLocked
-                ? ' — verrouillé pendant la session'
-                : isEmptyStep
-                  ? ' — ajoute une carte pour modifier les jetons'
-                  : ''
-            }`}
-          />
-          {tokensError && (
-            <p className="slot-item__tokens-error" role="alert">
-              {tokensError}
-            </p>
+          {assignedCard && (
+            <span className="slot-item__card-name">{assignedCard.name}</span>
           )}
         </div>
       )}
 
-      {/* ── Gestion séquence (S7 — hauteur réservée sur les étapes) ─────────── */}
+      {/* ── Séparateur 2 + Partie 3 : uniquement pour les étapes ────────────── */}
       {isStep && (
-        <div className="slot-item__sequence">
-          <Button
-            variant="default"
-            className={`slot-item__sequence-toggle${isSequenceEditorOpen ? ' slot-item__sequence-toggle--open' : ''}`}
-            onClick={() => onOpenSequenceEditor?.(slot)}
-            disabled={isSequenceActionDisabled}
-            aria-expanded={isSequenceEditorOpen}
-            aria-haspopup="dialog"
-            aria-label={
-              isEmptyStep
-                ? 'Ajoute une carte pour créer une séquence'
-                : isFullyLocked
-                  ? 'Étape validée — séquence non modifiable'
-                  : sequence
-                    ? 'Modifier la séquence'
-                    : canCreateSequence
-                      ? 'Créer une séquence'
-                      : 'Voir les informations de séquence'
-            }
-            label={sequence ? '📋 Séquence' : '📋 Ajouter une séquence'}
-          />
-        </div>
+        <>
+          <div className="slot-item__separator" aria-hidden="true" />
+
+          {/* Partie 3 : Select jetons (gauche) + Séquence (droite) */}
+          <div className="slot-item__footer">
+            <div className="slot-item__tokens-control">
+              <select
+                id={`tokens-${slot.id}`}
+                className="slot-item__tokens-select"
+                value={slot.tokens ?? 0}
+                onChange={handleTokensChange}
+                disabled={busy || updatingTokens || !areTokensEditable}
+                aria-busy={updatingTokens}
+                aria-disabled={!areTokensEditable}
+                aria-label={`Nombre de jetons pour l'étape #${positionLabel} (0 à 5)${
+                  tokensLocked
+                    ? ' — verrouillé pendant la session'
+                    : isEmptyStep
+                      ? ' — ajoute une carte pour modifier les jetons'
+                      : ''
+                }`}
+              >
+                {TOKEN_OPTIONS.map(n => (
+                  <option key={n} value={n}>
+                    🪙 {n}
+                  </option>
+                ))}
+              </select>
+              {tokensError && (
+                <p className="slot-item__tokens-error" role="alert">
+                  {tokensError}
+                </p>
+              )}
+            </div>
+
+            <Button
+              variant="default"
+              className={`slot-item__sequence-toggle${sequence ? ' slot-item__sequence-toggle--has-sequence' : ''}`}
+              onClick={() => onOpenSequenceEditor?.(slot)}
+              disabled={isSequenceActionDisabled}
+              aria-expanded={isSequenceEditorOpen}
+              aria-haspopup="dialog"
+              aria-label={
+                isEmptyStep
+                  ? 'Ajoute une carte pour créer une séquence'
+                  : isFullyLocked
+                    ? 'Étape validée — séquence non modifiable'
+                    : sequence
+                      ? 'Modifier la séquence'
+                      : canCreateSequence
+                        ? 'Créer une séquence'
+                        : 'Voir les informations de séquence'
+              }
+              label={sequence ? 'Séquence' : '+ Séquence'}
+            />
+          </div>
+        </>
       )}
     </li>
   )
