@@ -2,7 +2,7 @@
 
 import { Pencil } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { useReducedMotion } from '@/hooks'
 import './FloatingPencil.scss'
 
 interface FloatingPencilProps {
@@ -14,25 +14,19 @@ export default function FloatingPencil({
 }: FloatingPencilProps) {
   const router = useRouter()
   const pathname = usePathname()
-
-  const handleClick = () => {
-    router.push('/edition')
-  }
+  const prefersReducedMotion = useReducedMotion()
 
   const isTableau = pathname === '/tableau'
   if (!isTableau) return null
 
   return (
-    <motion.button
-      className={`floating-pencil ${className}`}
-      onClick={handleClick}
-      aria-label="Édition"
-      title="Édition"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+    <button
+      type="button"
+      className={`floating-pencil${prefersReducedMotion ? ' floating-pencil--no-motion' : ''} ${className}`.trim()}
+      onClick={() => router.push('/edition')}
+      aria-label="Quitter le tableau et retourner à l'édition"
     >
       <Pencil size={20} strokeWidth={2} aria-hidden="true" />
-    </motion.button>
+    </button>
   )
 }

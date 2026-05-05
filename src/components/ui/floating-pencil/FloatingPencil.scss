@@ -22,8 +22,8 @@
 .floating-pencil {
   // Position
   position: fixed;
-  top: spacing('lg'); // 16px (~1rem)
-  left: spacing('lg');
+  bottom: spacing('lg');
+  right: spacing('lg');
   z-index: z-index('tooltip'); // Au-dessus du contenu, sous modals
 
   // Layout
@@ -51,9 +51,9 @@
     easing('smooth')
   );
 
-  // Focus WCAG 2.2 AA (v1.1 §F.5 — outline direct)
+  // Focus WCAG 2.2 AA
   &:focus {
-    outline: none;
+    outline: none; // Géré par :focus-visible
   }
 
   &:focus-visible {
@@ -75,9 +75,21 @@
   // STATES
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+  // Discret au repos — l'enfant TSA ne doit pas être attiré
+  opacity: 0.65;
+
   &:hover,
-  &:focus-within {
+  &:focus-visible {
     background-color: surface('hover'); // Hover subtil
     transform: scale(1.1); // Scale doux TSA-friendly
+    opacity: 1;
+  }
+
+  // Pas d'animation de scale pour prefers-reduced-motion
+  &--no-motion {
+    &:hover,
+    &:focus-visible {
+      transform: none;
+    }
   }
 }

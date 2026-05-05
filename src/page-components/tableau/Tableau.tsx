@@ -30,7 +30,11 @@ import usePersonalCards from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import useSequenceStepsWithVisitor from '@/hooks/useSequenceStepsWithVisitor'
 import { useReducedMotion } from '@/hooks'
-import { TrainProgressBar, FloatingTimeTimer } from '@/components'
+import {
+  TrainProgressBar,
+  FloatingTimeTimer,
+  FloatingPencil,
+} from '@/components'
 import {
   SlotCard,
   TokensGrid,
@@ -513,6 +517,9 @@ export default function Tableau(_props: TableauProps = {}) {
 
       {/* Time Timer flottant */}
       {!isSessionCompleted && showTimeTimer && <FloatingTimeTimer />}
+
+      {/* FAB adulte — sortie kiosk vers /edition */}
+      <FloatingPencil />
     </div>
   )
 }

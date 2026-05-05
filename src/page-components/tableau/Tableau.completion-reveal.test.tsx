@@ -73,6 +73,7 @@ vi.mock('@/components', () => ({
     </div>
   ),
   FloatingTimeTimer: () => <div data-testid="floating-timer" />,
+  FloatingPencil: () => null,
 }))
 
 vi.mock('@/components/features/tableau', () => ({
