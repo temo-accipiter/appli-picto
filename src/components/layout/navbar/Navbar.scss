@@ -95,6 +95,7 @@
 .navbar-logo {
   display: flex;
   align-items: center;
+  gap: spacing('xs');
   text-decoration: none;
   min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
   flex-shrink: 0;
@@ -102,6 +103,11 @@
   &:focus-visible {
     @include focus-ring();
   }
+}
+
+.navbar-logo__icon {
+  color: color('base');
+  flex-shrink: 0;
 }
 
 .navbar-logo__text {
@@ -137,9 +143,18 @@
     @include focus-ring();
   }
 
+  // Neutralise a:visited global (spécificité 0,1,1 < 0,2,1)
+  &:visited {
+    color: text('muted');
+  }
+
   // Page courante : couleur primary (cohérence avec BottomNav)
   &--active {
     color: var(--color-primary);
+
+    &:visited {
+      color: var(--color-primary);
+    }
   }
 }
 

@@ -43,6 +43,11 @@
   align-items: center;
   @include safe-transition(color, timing('fast'), easing('smooth'));
 
+  // Neutralise a:visited global (spécificité 0,1,1 < 0,2,1)
+  &:visited {
+    color: text('muted');
+  }
+
   &:hover {
     text-decoration: underline;
   }

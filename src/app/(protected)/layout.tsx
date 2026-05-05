@@ -2,7 +2,13 @@
 
 import type { ReactNode } from 'react'
 import ProtectedRoute from '@/components/shared/protected-route/ProtectedRoute'
-import { CookieBanner, CookiePreferences, Footer, Navbar } from '@/components'
+import {
+  CookieBanner,
+  CookiePreferences,
+  Footer,
+  Navbar,
+  NavbarVisiteur,
+} from '@/components'
 import { useAuth } from '@/hooks'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
@@ -17,6 +23,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       <div className="layout">
         <div className="layout-main">
           <Navbar />
+          <NavbarVisiteur />
           <main id="main-content">{children}</main>
           {showFooter && <Footer />}
           <CookieBanner />

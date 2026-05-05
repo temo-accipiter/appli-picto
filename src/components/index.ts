@@ -54,6 +54,7 @@ export { default as LegalMarkdown } from './features/legal/legal-markdown/LegalM
 
 export { default as Footer } from './layout/footer/Footer'
 export { default as Navbar } from './layout/navbar/Navbar'
+export { default as NavbarVisiteur } from './layout/navbar-visiteur/NavbarVisiteur'
 export { default as SettingsMenu } from './layout/settings-menu/SettingsMenu'
 
 // ========================================

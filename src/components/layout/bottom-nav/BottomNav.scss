@@ -67,9 +67,18 @@
     @include focus-ring();
   }
 
+  // Neutralise a:visited global (spécificité 0,1,1 < 0,2,1)
+  &:visited {
+    color: text('muted');
+  }
+
   // Page courante : couleur primary
   &--active {
     color: var(--color-primary);
+
+    &:visited {
+      color: var(--color-primary);
+    }
   }
 }
 

@@ -97,6 +97,21 @@ export default function Navbar() {
             className="navbar-logo"
             aria-label="Appli-Picto — Retour à l'accueil"
           >
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 56 56"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              className="navbar-logo__icon"
+            >
+              <rect width="56" height="56" rx="12" fill="currentColor" />
+              <rect x="11" y="11" width="14" height="14" rx="2" fill="white" />
+              <rect x="31" y="11" width="14" height="14" rx="2" fill="white" />
+              <rect x="11" y="31" width="14" height="14" rx="2" fill="white" />
+              <rect x="31" y="31" width="14" height="14" rx="2" fill="white" />
+            </svg>
             <span className="navbar-logo__text">Appli-Picto</span>
           </Link>
 

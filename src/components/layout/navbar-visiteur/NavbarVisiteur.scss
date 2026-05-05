@@ -1,0 +1,397 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// NAVBAR VISITEUR — Navigation pour les visiteurs non connectés
+// ============================================================================
+// 📱 Mobile-first | ♿ WCAG 2.2 AA | 🎨 Tokens uniquement
+// Visible sur /edition si !user (mode démo visiteur)
+// Masquée sur /tableau (kiosk) et pour les authentifiés
+//
+// ✅ Tokens validés :
+//    spacing('xs'/'sm'/'md'/'lg') → Primitives Phase 6
+//    surface('bg'/'border') → Semantics Phase 6
+//    text()'/'muted'/'invert') → Semantics Phase 6
+//    color('base'/'dark') → Primary color tokens
+//    radius('button'/'card') → Aliases sémantiques v1.1
+//    shadow('elevation-sm'/'elevation-md') → Legacy support actif
+//    timing('fast') / easing('ease-out'/'smooth') → Primitives Phase 6
+//    size('64'/'900'/'touch-target-min') → Legacy support actif
+//    font-size('sm'/'lg') / font-weight('medium'/'semibold'/'bold') → Legacy
+//    border-width('thin') → Legacy support actif
+//    z-index('modal') → Legacy support actif
+//    safe-transition() / focus-ring() / respond-to() → Mixins Phase 6
+// ============================================================================
+
+.navbar-visiteur-header {
+  // Conteneur sémantique — pas de style propre
+  display: contents;
+}
+
+// === CONTENEUR PRINCIPAL ===
+
+.navbar-visiteur {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: z-index('modal');
+  background-color: surface('bg');
+  border-bottom: border-width('thin') solid surface('border');
+  box-shadow: shadow('elevation-sm');
+}
+
+// Wrapper interne centré (cohérence avec Navbar authentifié)
+.navbar-visiteur__inner {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: size('900');
+  margin-inline: auto;
+  padding: 0 spacing('lg');
+  height: size('64');
+}
+
+// === LOGO ===
+
+.navbar-visiteur__logo {
+  display: flex;
+  align-items: center;
+  gap: spacing('xs');
+  text-decoration: none;
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  flex-shrink: 0;
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+}
+
+.navbar-visiteur__logo-icon {
+  color: color('base');
+  flex-shrink: 0;
+}
+
+.navbar-visiteur__logo-text {
+  font-size: font-size('lg');
+  font-weight: font-weight('bold');
+  color: text();
+  white-space: nowrap;
+}
+
+// === LIENS NAV DESKTOP ===
+
+.navbar-visiteur__nav-desktop {
+  // Mobile : masqué (remplacé par le menu ☰)
+  display: none;
+
+  @include respond-to(lg) {
+    display: flex;
+    align-items: center;
+    gap: spacing('md');
+    flex: 1;
+    margin-inline: spacing('lg');
+  }
+}
+
+.navbar-visiteur__nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: spacing('xs');
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs') spacing('sm');
+  text-decoration: none;
+  color: text('muted');
+  border-radius: radius('button');
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
+  white-space: nowrap;
+  @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+  // Neutralise a:visited global
+  &:visited {
+    color: text('muted');
+  }
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+
+  // Page courante
+  &--active {
+    color: var(--color-primary);
+
+    &:visited {
+      color: var(--color-primary);
+    }
+  }
+}
+
+.navbar-visiteur__nav-icon {
+  flex-shrink: 0;
+}
+
+// === ACTIONS DROITE ===
+
+.navbar-visiteur__actions {
+  display: flex;
+  align-items: center;
+  gap: spacing('sm');
+  flex-shrink: 0;
+}
+
+// === BOUTON MENU (burger identique à SettingsMenu) ===
+
+.navbar-visiteur__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  min-height: size('touch-target-min');
+  background: surface('soft');
+  border: border-width('thin') solid surface('border');
+  cursor: pointer;
+  color: text();
+  border-radius: radius('button');
+  @include safe-transition(
+    background-color,
+    timing('fast'),
+    easing('ease-out')
+  );
+
+  &:hover {
+    background: surface('hover');
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Burger — 3 barres (identique à settings-menu__burger)
+.navbar-visiteur__burger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: size('24');
+  height: size('24');
+  gap: spacing('xs');
+}
+
+.navbar-visiteur__burger-line {
+  display: block;
+  width: size('4');
+  height: border-width('base');
+  background-color: text();
+  border-radius: radius('subtle');
+  @include safe-transition(
+    transform opacity,
+    timing('base'),
+    easing('ease-out')
+  );
+}
+
+// Animation burger → X quand le menu est ouvert
+.navbar-visiteur__menu-btn--active {
+  .navbar-visiteur__burger-line {
+    &:nth-child(1) {
+      transform: translateY(spacing('xs')) rotate(45deg);
+    }
+
+    &:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+
+    &:nth-child(3) {
+      transform: translateY(calc(-1 * #{spacing('xs')})) rotate(-45deg);
+    }
+  }
+}
+
+// === SE CONNECTER ===
+
+.navbar-visiteur__login {
+  display: inline-flex;
+  align-items: center;
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs') spacing('sm');
+  text-decoration: none;
+  color: text('muted');
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
+  border-radius: radius('button');
+  white-space: nowrap;
+  @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+  // Neutralise a:visited global
+  &:visited {
+    color: text('muted');
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+}
+
+// === CTA — CRÉER UN COMPTE (primary) ===
+
+.navbar-visiteur__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs') spacing('md');
+  text-decoration: none;
+  color: text('invert');
+  background-color: color('base'); // Primary — WCAG 2.2 AA ~4.7:1
+  border-radius: radius('button');
+  font-size: font-size('sm');
+  font-weight: font-weight('semibold');
+  white-space: nowrap;
+  @include safe-transition(background-color, timing('fast'), easing('smooth'));
+
+  // Neutralise a:visited global
+  &:visited {
+    color: text('invert');
+  }
+
+  &:hover {
+    background-color: color('dark');
+    color: text('invert');
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+// Texte court "S'inscrire" — mobile uniquement
+.navbar-visiteur__cta-short {
+  @include respond-to(lg) {
+    display: none;
+  }
+}
+
+// Texte long "Créer un compte" — desktop uniquement
+.navbar-visiteur__cta-long {
+  display: none;
+
+  @include respond-to(lg) {
+    display: inline;
+  }
+}
+
+// === MENU (DRAWER MOBILE / DROPDOWN DESKTOP) ===
+
+.navbar-visiteur__menu {
+  // Mobile : panel pleine largeur sous la navbar
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: z-index('modal');
+  background: surface('bg');
+  border-bottom: border-width('thin') solid surface('border');
+  box-shadow: shadow('elevation-md');
+  display: flex;
+  flex-direction: column;
+  padding: spacing('sm') spacing('lg');
+
+  @include respond-to(lg) {
+    // Desktop : dropdown aligné à droite
+    left: auto;
+    right: spacing('lg');
+    border: border-width('thin') solid surface('border');
+    border-radius: 0 0 radius('card') radius('card');
+    padding: spacing('sm');
+    box-shadow: shadow('elevation-md');
+  }
+}
+
+// Section nav (Édition / Tableau) — mobile uniquement
+.navbar-visiteur__menu-nav {
+  display: flex;
+  flex-direction: column;
+
+  @include respond-to(lg) {
+    // Masqué sur desktop (liens déjà dans la top-nav)
+    display: none;
+  }
+}
+
+// Séparateur après la section nav — masqué sur desktop aussi
+.navbar-visiteur__menu-sep--after-nav {
+  @include respond-to(lg) {
+    display: none;
+  }
+}
+
+// Séparateur générique
+.navbar-visiteur__menu-icon {
+  flex-shrink: 0;
+}
+
+.navbar-visiteur__menu-sep {
+  display: block;
+  height: border-width('thin');
+  background: surface('border');
+  margin: spacing('xs') 0;
+}
+
+// Item de menu (lien ou bouton)
+.navbar-visiteur__menu-item {
+  display: flex;
+  align-items: center;
+  gap: spacing('xs');
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  padding: spacing('xs') spacing('sm');
+  color: text('muted');
+  font-size: font-size('sm');
+  text-decoration: none;
+  border-radius: radius('button');
+  @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+  // Neutralise a:visited global
+  &:visited {
+    color: text('muted');
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+
+  // Variante bouton (Refuser, Personnaliser)
+  &--btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-tsa);
+    text-align: start;
+    width: 100%;
+  }
+}
+
+// === RÉDUCTION MOUVEMENT — TSA ===
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-visiteur__menu-btn,
+  .navbar-visiteur__nav-link,
+  .navbar-visiteur__login,
+  .navbar-visiteur__cta,
+  .navbar-visiteur__menu-item {
+    transition: none;
+  }
+}
