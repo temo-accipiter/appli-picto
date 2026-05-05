@@ -761,7 +761,7 @@ export default function Profil() {
             className="profil-modal-rgpd__link"
             onClick={() => {
               closeModal()
-              router.push('/legal/accessibilite')
+              router.push('/legal/politique-confidentialite#accessibilite')
             }}
           >
             {t('legal.accessibility')}

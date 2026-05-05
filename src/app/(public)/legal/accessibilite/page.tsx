@@ -1,13 +1,6 @@
-import Accessibilite from '@/page-components/legal/Accessibilite'
+import { redirect } from 'next/navigation'
 
-// Force dynamic rendering due to client-only dependencies
-export const dynamic = 'force-dynamic'
-
-export const metadata = {
-  title: 'Accessibilité - Appli-Picto',
-  description: "Déclaration d'accessibilité WCAG 2.2 AA",
-}
-
+// Redirection permanente — maintenue 6 mois min pour préserver les bookmarks/indexations
 export default function AccessibilitePage() {
-  return <Accessibilite />
+  redirect('/legal/politique-confidentialite#accessibilite')
 }

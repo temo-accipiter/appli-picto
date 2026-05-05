@@ -222,6 +222,12 @@ Cette politique peut être mise à jour pour refléter :
 
 ---
 
+## 13. Accessibilité {#accessibilite}
+
+Nous visons la conformité **WCAG 2.1 AA**. Si vous rencontrez une difficulté d'accès, écrivez-nous à {{EmailContact}}. Dernière mise à jour : {{DateMAJ}}.
+
+---
+
 **Historique des versions :**
 
 - 1.0 (Décembre 2024) - Première version conforme RGPD
