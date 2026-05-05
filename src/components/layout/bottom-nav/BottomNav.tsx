@@ -35,8 +35,9 @@ export default function BottomNav() {
   const { isAdmin } = useAccountStatus()
   const { t } = useI18n()
 
-  // Masqué sur /tableau (zen mode TSA) et pour les non-authentifiés
-  if (!user || pathname === '/tableau') return null
+  // Visible uniquement sur les pages app — masqué sur /tableau (kiosk), pages légales, auth, 404
+  const appRoutes = ['/edition', '/profil', '/admin', '/abonnement']
+  if (!user || !appRoutes.some(r => pathname?.startsWith(r))) return null
 
   const isEdition = pathname?.startsWith('/edition') ?? false
   const isProfil = pathname?.startsWith('/profil') ?? false

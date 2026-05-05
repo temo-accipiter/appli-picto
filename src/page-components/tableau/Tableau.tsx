@@ -428,6 +428,7 @@ export default function Tableau(_props: TableauProps = {}) {
         </div>
         {/* TimeTimer indépendant des slots (préférences utilisateur) */}
         {showTimeTimer && <FloatingTimeTimer />}
+        <FloatingPencil />
       </div>
     )
   }
