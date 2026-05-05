@@ -10,13 +10,15 @@ import {
   NavbarVisiteur,
 } from '@/components'
 import { useAuth } from '@/hooks'
+import { shouldShowFooter } from '@/lib/layout/shouldShowFooter'
+import { usePathname } from 'next/navigation'
 
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const { user, authReady } = useAuth()
+  const pathname = usePathname()
 
-  // Footer masqué pour les authentifiés (liens légaux accessibles via carte RGPD du Profil)
-  // Visible pour les visiteurs sur /edition (conformité légale — mode visiteur first-class)
-  const showFooter = authReady && !user
+  const isAuthenticated = authReady && !!user
+  const showFooter = shouldShowFooter(pathname ?? '', isAuthenticated)
 
   return (
     <ProtectedRoute>

@@ -39,7 +39,7 @@ export function Providers({ children }: { children: ReactNode }) {
                     <InitializationLoader>
                       <Suspense fallback={<Loader />}>
                         {children}
-                        {/* Bottom Navigation Bar - Mobile only (< 768px) */}
+                        {/* Bottom Navigation Bar - Mobile only (< 1024px) */}
                         <BottomNav />
                       </Suspense>
                     </InitializationLoader>
