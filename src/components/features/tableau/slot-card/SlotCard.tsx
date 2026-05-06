@@ -153,19 +153,19 @@ export function SlotCard({
       {/* Nom de la carte */}
       <p className="slot-card__label">{cardLabel}</p>
 
-      {/* Mini-timeline (visible uniquement si bouton ouvert) */}
-      {miniTimelineOpen && hasSequence && (
-        <div id={`sequence-${slot.id}`}>
-          <SequenceMiniTimeline
-            loading={sequenceStepsLoading}
-            steps={sequenceSteps}
-            doneStepIds={doneStepIds}
-            onToggleDone={handleToggleDone}
-            bankCards={bankCards}
-            personalCards={personalCards}
-            onClose={() => setMiniTimelineOpen(false)}
-          />
-        </div>
+      {/* Modal overlay séquence — portal, rendu hors de la carte */}
+      {hasSequence && (
+        <SequenceMiniTimeline
+          isOpen={miniTimelineOpen}
+          loading={sequenceStepsLoading}
+          steps={sequenceSteps}
+          doneStepIds={doneStepIds}
+          onToggleDone={handleToggleDone}
+          bankCards={bankCards}
+          personalCards={personalCards}
+          onClose={() => setMiniTimelineOpen(false)}
+          motherCard={card}
+        />
       )}
 
       {/* Pied de carte : checkbox (gauche) + "Voir étapes" (droite) */}
@@ -185,7 +185,6 @@ export function SlotCard({
             className={`slot-card__sequence-toggle${miniTimelineOpen ? ' slot-card__sequence-toggle--open' : ''}`}
             onClick={() => setMiniTimelineOpen(o => !o)}
             aria-expanded={miniTimelineOpen}
-            aria-controls={`sequence-${slot.id}`}
             aria-label={
               miniTimelineOpen ? 'Masquer les étapes' : 'Voir les étapes'
             }

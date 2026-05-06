@@ -1,10 +1,10 @@
 'use client'
 
 /**
- * SequenceMiniTimeline — Mini-timeline de séquence (contexte Tableau, enfant).
+ * SequenceMiniTimeline — Modal overlay des sous-étapes d'une séquence (contexte Tableau, enfant).
  *
- * Affiche les sous-étapes d'une carte mère, sous forme de timeline horizontale
- * scrollable. Chaque étape peut être marquée "fait" par un simple clic ou tap.
+ * S'ouvre en modal au-dessus du Tableau. Affiche les étapes dans l'ordre,
+ * chacune pouvant être marquée "fait" par tap (état local-only).
  *
  * ⚠️ ÉTAT LOCAL-ONLY
  * - L'état "fait" de chaque étape N'EST PAS persisté en DB.
@@ -13,7 +13,7 @@
  *
  * ⚠️ RÈGLES TSA
  * - Interface calme, prévisible.
- * - Transition de fermeture douce ≤ 0.3s (gérée par CSS).
+ * - Modal avec transition douce ≤ 0.3s (gérée par Modal.scss).
  * - Cibles tactiles ≥ 44px.
  * - ZÉRO message technique ou erreur visible par l'enfant.
  * - Le "fait" est une aide visuelle — pas une contrainte.
@@ -26,13 +26,17 @@
  * ⚠️ SYSTÈME SÉQUENÇAGE — DISTINCT DU PLANNING ET DES JETONS
  */
 
-import { Button, ButtonClose, SignedImage } from '@/components'
+import { Fragment } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { Button, ButtonClose, Modal, SignedImage } from '@/components'
 import type { SequenceStep } from '@/hooks/useSequenceSteps'
 import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import './SequenceMiniTimeline.scss'
 
 interface SequenceMiniTimelineProps {
+  /** Contrôle l'ouverture du modal */
+  isOpen: boolean
   /** Chargement en cours des étapes de séquence */
   loading?: boolean
   /** Étapes de la séquence (triées par position ASC) */
@@ -41,15 +45,18 @@ interface SequenceMiniTimelineProps {
   doneStepIds: Set<string>
   /** Toggle local d'une étape */
   onToggleDone: (stepId: string) => void
-  /** Cartes banque disponibles (pour afficher l'image + le nom) */
+  /** Cartes banque disponibles (pour afficher l'image + le nom des étapes) */
   bankCards: BankCard[]
   /** Cartes personnelles disponibles */
   personalCards: PersonalCard[]
-  /** Callback de fermeture (quand l'enfant clique sur "Fermer") */
+  /** Callback de fermeture */
   onClose: () => void
+  /** Carte mère de la séquence — affichée en mini dans l'en-tête du modal */
+  motherCard: BankCard | PersonalCard | null
 }
 
 export function SequenceMiniTimeline({
+  isOpen,
   loading = false,
   steps,
   doneStepIds,
@@ -57,35 +64,81 @@ export function SequenceMiniTimeline({
   bankCards,
   personalCards,
   onClose,
+  motherCard,
 }: SequenceMiniTimelineProps) {
-  /** Cherche la carte dans banque + perso */
-  const findCard = (cardId: string): BankCard | PersonalCard | null => {
-    return (
-      bankCards.find(c => c.id === cardId) ??
-      personalCards.find(c => c.id === cardId) ??
-      null
-    )
-  }
+  const findCard = (cardId: string): BankCard | PersonalCard | null =>
+    bankCards.find(c => c.id === cardId) ??
+    personalCards.find(c => c.id === cardId) ??
+    null
+
+  const motherBucket: 'bank-images' | 'personal-images' = bankCards.some(
+    c => c.id === motherCard?.id
+  )
+    ? 'bank-images'
+    : 'personal-images'
+
+  const motherName = motherCard?.name ?? 'Séquence'
+  const completedCount = doneStepIds.size
 
   return (
-    <div
-      className="sequence-mini-timeline"
-      aria-label="Étapes de la séquence"
-      role="region"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      showCloseButton={false}
+      size="large"
+      className="sequence-mini-timeline-modal"
+      overlayClassName="sequence-mini-timeline-overlay"
+      closeOnOverlay={true}
+      closeOnEscape={true}
     >
-      {/* Bouton fermeture */}
-      <ButtonClose
-        className="sequence-mini-timeline__close"
-        onClick={onClose}
-        ariaLabel="Fermer les étapes"
-      />
+      {/* En-tête custom : mini-image carte mère + titre + sous-titre + fermeture */}
+      <div className="sequence-mini-timeline__header">
+        {/* Mini-image de la carte mère (remplace le badge icône du modèle de référence) */}
+        <div className="sequence-mini-timeline__mother-mini" aria-hidden="true">
+          {motherCard?.image_url ? (
+            <SignedImage
+              filePath={motherCard.image_url}
+              alt=""
+              bucket={motherBucket}
+              className="sequence-mini-timeline__mother-image"
+              size={80}
+            />
+          ) : (
+            <div className="sequence-mini-timeline__mother-placeholder">📋</div>
+          )}
+        </div>
 
+        {/* Titre + sous-titre */}
+        <div className="sequence-mini-timeline__header-text">
+          <h2
+            className="sequence-mini-timeline__title"
+            id="seq-mini-timeline-title"
+          >
+            {motherName}
+          </h2>
+          <p className="sequence-mini-timeline__subtitle">
+            {completedCount} sur {steps.length} étape
+            {steps.length > 1 ? 's' : ''}
+          </p>
+        </div>
+
+        <ButtonClose
+          onClick={onClose}
+          size="modal"
+          ariaLabel="Fermer les étapes"
+        />
+      </div>
+
+      {/* Corps : liste des étapes */}
       {loading ? (
-        <div aria-busy="true" aria-label="Préparation des étapes">
+        <div
+          className="sequence-mini-timeline__loading"
+          aria-busy="true"
+          aria-label="Préparation des étapes"
+        >
           <p>Préparation des étapes…</p>
         </div>
       ) : (
-        /* Liste horizontale scrollable */
         <ol
           className="sequence-mini-timeline__list"
           aria-label="Étapes à faire"
@@ -99,11 +152,11 @@ export function SequenceMiniTimeline({
             const label = card?.name ?? `Étape ${idx + 1}`
 
             return (
+              <Fragment key={step.id}>
               <li
-                key={step.id}
                 className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
               >
-                {/* Bouton "fait" : tap sur toute la carte */}
+                {/* Tap sur toute la carte = marque "fait" */}
                 <Button
                   variant="default"
                   className="sequence-mini-timeline__step-btn"
@@ -111,7 +164,14 @@ export function SequenceMiniTimeline({
                   aria-pressed={isDone}
                   aria-label={isDone ? `${label} — fait` : label}
                 >
-                  {/* Image */}
+                  {/* Badge numéro — positionné en absolu, partiellement en dehors de l'image */}
+                  <span
+                    className="sequence-mini-timeline__step-number"
+                    aria-hidden="true"
+                  >
+                    {idx + 1}
+                  </span>
+
                   <div className="sequence-mini-timeline__step-image-wrapper">
                     {card?.image_url ? (
                       <SignedImage
@@ -141,17 +201,27 @@ export function SequenceMiniTimeline({
                     )}
                   </div>
 
-                  {/* Nom */}
+                  {/* Nom de l'étape */}
                   <span className="sequence-mini-timeline__step-label">
                     {label}
                   </span>
                 </Button>
               </li>
+              {/* Séparateur "›" entre les étapes (sauf après la dernière) */}
+              {idx < steps.length - 1 && (
+                <li
+                  className="sequence-mini-timeline__separator"
+                  aria-hidden="true"
+                >
+                  <ChevronRight className="sequence-mini-timeline__chevron" />
+                </li>
+              )}
+              </Fragment>
             )
           })}
         </ol>
       )}
-    </div>
+    </Modal>
   )
 }
 

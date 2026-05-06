@@ -1,57 +1,150 @@
 // src/components/features/sequences/sequence-mini-timeline/SequenceMiniTimeline.scss
 // ✅ Tokens validés — aucune valeur hardcodée
-// Mobile-first TSA : calme, scrollable horizontalement, cibles ≥ 44px
+// Mobile-first TSA : modal calme, scrollable horizontalement, cibles ≥ 44px
 
 @use '@styles/abstracts' as *;
 
-.sequence-mini-timeline {
-  position: relative;
-  background: surface('soft');
-  border-radius: radius('card'); // 12px — conteneur parent §D.3
-  padding: spacing('sm');
-  // Entrée douce ≤ 0.3s (TSA anti-choc)
-  @include safe-transition(opacity);
+// ── Overlay très transparent + flou minimal ───────────────────────────────────
+// Laisse le Tableau clairement visible en arrière-plan
+.sequence-mini-timeline-overlay {
+  background-color: transparent;
+  backdrop-filter: blur(size('4')); // 4px — léger flou visible mais discret
+}
 
-  // ── Bouton fermeture ──
-  &__close {
-    position: absolute;
-    top: spacing('xs');
-    right: spacing('xs');
-    min-width: size('touch-target-min');
-    min-height: size('touch-target-min');
+// ── Override ciblé sur l'instance Modal de la mini-timeline ──────────────────
+// Le header par défaut du Modal est vide (showCloseButton=false, pas de title).
+// On le masque et on gère notre propre header dans le contenu.
+.sequence-mini-timeline-modal {
+  // Tablette+ : largeur adaptée au contenu (plus d'espace vide avec 2 cartes)
+  @include respond-to('sm') {
+    width: fit-content;
+    max-width: min(size('modal-width-lg'), 90vw);
+  }
+
+  .modal__header {
+    display: none;
+  }
+
+  .modal__content {
+    padding: 0;
+    // overflow non surchargé : garde overflow-y:auto de Modal.scss
+    // La liste gère son propre scroll-x si besoin
+  }
+}
+
+// ── Contenu du modal ─────────────────────────────────────────────────────────
+.sequence-mini-timeline {
+  // ── En-tête custom ──
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+    padding: spacing('md') spacing('sm');
+    border-bottom: border-width('thin') solid surface('divider');
+    flex-shrink: 0;
+
+    @include respond-to('sm') {
+      padding: spacing('lg') spacing('md');
+      gap: spacing('md');
+    }
+  }
+
+  // Mini-image de la carte mère (remplace le badge icône du modèle de référence)
+  &__mother-mini {
+    flex-shrink: 0;
+    width: size('80'); // 80px
+    height: size('80');
+    border-radius: radius('card'); // arrondi prononcé — seul bord visible
+    overflow: hidden; // clip l'image aux coins arrondis
+    background: surface('card');
+    border: border-width('thin') solid surface('border');
+
+    // SignedImage remplit le conteneur — on neutralise ses propres styles de bord
+    .signed-image {
+      width: 100%;
+      height: 100%;
+    }
+
+    .signed-image__img {
+      width: 100%;
+      height: 100%;
+      border-radius: 0; // le parent gère les coins via overflow:hidden
+      border: none; // le parent a sa propre bordure
+    }
+  }
+
+  &__mother-placeholder {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    background: transparent;
+    font-size: font-size('lg');
+  }
+
+  &__header-text {
+    flex: 1;
+    min-width: 0; // permet text-overflow ellipsis
+  }
+
+  &__title {
+    margin: 0;
+    font-size: font-size('lg');
+    font-weight: font-weight('bold');
+    color: text('dark');
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @include respond-to('sm') {
+      font-size: font-size('xl');
+    }
+  }
+
+  &__subtitle {
+    margin: spacing('xs') 0 0;
+    font-size: font-size('xs');
+    color: text('muted');
+  }
+
+  // ── État de chargement ──
+  &__loading {
+    padding: spacing('lg') spacing('md');
+    text-align: center;
     color: text('muted');
     font-size: font-size('sm');
-    border-radius: radius('button'); // 6px — bouton fermeture §D.3
-    cursor: pointer;
-    z-index: 1;
-    @include safe-transition(background color);
 
-    &:hover {
-      background: surface('hover');
-      color: text('dark');
+    p {
+      margin: 0;
     }
   }
 
   // ── Liste scrollable horizontalement ──
   &__list {
     list-style: none;
-    padding: 0;
+    padding: spacing('md') spacing('sm');
     margin: 0;
-    padding-top: spacing('xs'); // espace sous le bouton fermeture
     display: flex;
+    align-items: flex-start;
+    // "safe center" : centré si le contenu rentre, aligné à gauche si ça déborde
+    justify-content: safe center;
     gap: spacing('sm');
     overflow-x: auto;
+    overflow-y: visible; // laisse les badges numéros dépasser en haut
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    // Masque la scrollbar visuellement (TSA — moins de distraction)
+    // Scrollbar masquée (TSA — moins de distraction visuelle)
     scrollbar-width: none;
+    // Espace en haut pour que les badges numéros ne soient pas coupés
+    padding-top: spacing('md');
+
     &::-webkit-scrollbar {
       display: none;
+    }
+
+    @include respond-to('sm') {
+      padding: spacing('md') spacing('md') spacing('lg');
+      gap: spacing('md');
     }
   }
 
@@ -59,15 +152,13 @@
   &__step {
     flex-shrink: 0;
     scroll-snap-align: start;
-    // Largeur adaptée à la main d'un enfant (tactile)
-    width: size('touch-target-min');
+    width: size('100'); // 100px — mobile
 
     @include respond-to('md') {
-      width: size('icon-xl');
+      width: size('120'); // 120px — tablette+
     }
 
-    // État "fait" : légèrement atténué
-    &--done .sequence-mini-timeline__step-image,
+    // État "fait" : image atténuée, label barré
     &--done .sequence-mini-timeline__step-placeholder {
       opacity: opacity('md');
     }
@@ -80,17 +171,20 @@
 
   // ── Bouton-carte (toute la zone est cliquable) ──
   &__step-btn {
+    position: relative; // ancre le badge numéro
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: spacing('xs');
+    gap: spacing('sm');
     width: 100%;
-    border: none;
-    background: transparent;
+    // Fond uni pour toutes les cartes
+    background: surface('card');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('card');
     cursor: pointer;
-    padding: spacing('xs');
-    border-radius: radius('button'); // 6px — bouton-carte §D.3
-    @include safe-transition(background);
+    // Padding augmenté — réduit la taille visuelle de l'image dans la carte
+    padding: spacing('md');
+    @include safe-transition(background border-color);
 
     &:hover {
       background: surface('hover');
@@ -108,13 +202,62 @@
     aspect-ratio: 1;
     border-radius: radius('xs');
     overflow: hidden;
+    background: surface('card');
+
+    // SignedImage remplit le conteneur — neutralise ses propres bords
+    .signed-image {
+      width: 100%;
+      height: 100%;
+    }
+
+    .signed-image__img {
+      width: 100%;
+      height: 100%;
+      border-radius: 0; // parent gère via overflow:hidden
+      border: none;
+    }
   }
 
-  &__step-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    @include safe-transition(opacity);
+  // ── Badge numéro : dépasse l'image mais reste dans la carte ──
+  // Positionné à spacing('xs') du bord de la carte (padding = spacing('md') = 16px)
+  // Le badge de 24px va de 4px à 28px → chevauche le bord de l'image (à 16px) → effet protrusion
+  &__step-number {
+    position: absolute;
+    top: spacing('xs');  // 4px — inside card, overlaps image top edge
+    left: spacing('xs'); // 4px — inside card, overlaps image left edge
+    width: spacing('lg'); // 24px — diamètre du cercle
+    height: spacing('lg');
+    background: surface('bg'); // fond blanc/clair
+    color: text('dark'); // texte foncé — lisible
+    border: border-width('base') solid surface('border'); // bord visible
+    border-radius: 50%; // cercle parfait
+    font-size: font-size('xs');
+    font-weight: font-weight('bold');
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  // ── Séparateur icône entre les étapes ──
+  &__separator {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: text('muted');
+    pointer-events: none;
+    align-self: center;
+    // Aligner verticalement avec le centre de l'image (pas du label)
+    margin-bottom: spacing('lg');
+  }
+
+  &__chevron {
+    width: size('icon-md'); // 24px
+    height: size('icon-md');
+    flex-shrink: 0;
   }
 
   &__step-placeholder {
@@ -123,7 +266,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: surface('card');
     font-size: font-size('xl');
     @include safe-transition(opacity);
   }
@@ -148,11 +290,12 @@
     color: text('dark');
     text-align: center;
     font-weight: font-weight('medium');
-    // Tronque si trop long
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     width: 100%;
+    // Espace légèrement augmenté entre image et titre
+    margin-top: spacing('xs');
     @include safe-transition(color);
   }
 }
