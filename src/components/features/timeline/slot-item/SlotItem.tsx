@@ -249,7 +249,9 @@ export function SlotItem({
       {/* ── Partie 1 : Label + bouton supprimer ──────────────────────────────── */}
       <div className="slot-item__header">
         <span className="slot-item__label">
-          {isStep ? `${SLOT_LABELS.step} ${stepNumber ?? positionLabel}` : SLOT_LABELS.reward}
+          {isStep
+            ? `${SLOT_LABELS.step} ${stepNumber ?? positionLabel}`
+            : SLOT_LABELS.reward}
         </span>
         <div className="slot-item__header-actions">
           {lockBadge}

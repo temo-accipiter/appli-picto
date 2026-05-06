@@ -76,7 +76,8 @@
   // Même min-height pour que le slot vide ne soit pas plus petit que le slot rempli
   &__placeholder,
   &__card-display {
-    min-height: size('card-image-height') + size('touch-target-min') + spacing('sm');
+    min-height: size('card-image-height') + size('touch-target-min') +
+      spacing('sm');
   }
 
   &__placeholder {

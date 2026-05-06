@@ -505,48 +505,54 @@ export function SlotsEditor({
           }}
         >
           <ul className="slots-editor__list" aria-label="Slots de la timeline">
-            {sortedSlots.reduce<{ stepCount: number; elements: React.ReactNode[] }>(
-              (acc, slot, idx) => {
-                if (slot.kind === 'step') acc.stepCount++
-                const stepNumber = slot.kind === 'step' ? acc.stepCount : undefined
+            {
+              sortedSlots.reduce<{
+                stepCount: number
+                elements: React.ReactNode[]
+              }>(
+                (acc, slot, idx) => {
+                  if (slot.kind === 'step') acc.stepCount++
+                  const stepNumber =
+                    slot.kind === 'step' ? acc.stepCount : undefined
 
-                // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
-                const sequence = slot.card_id
-                  ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
-                    null)
-                  : null
+                  // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
+                  const sequence = slot.card_id
+                    ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
+                      null)
+                    : null
 
-                acc.elements.push(
-                <SlotItem
-                  key={slot.id}
-                  slot={slot}
-                  positionLabel={idx + 1}
-                  {...(stepNumber !== undefined ? { stepNumber } : {})}
-                  onUpdate={onUpdateSlot}
-                  onRemove={handleRemove}
-                  bankCards={bankCards as BankCard[]}
-                  personalCards={personalCards as PersonalCard[]}
-                  busy={busyId === slot.id || swappingCards}
-                  canRemove={slot.kind === 'step' && stepSlotsCount > 1}
-                  sessionState={sessionState}
-                  isValidated={validatedSlotIds?.has(slot.id) ?? false}
-                  sequence={sequence as Sequence | null}
-                  onCreateSequence={createSequence}
-                  onDeleteSequence={deleteSequence}
-                  canCreateSequence={canCreateSequence}
-                  onOpenSequenceEditor={openSequenceEditor}
-                  isSequenceEditorOpen={activeSequenceSlot?.id === slot.id}
-                  isOffline={isOffline}
-                  isExecutionOnly={isExecutionOnly}
-                  dndSlotId={slot.id}
-                  isDragActive={activeDragSlotId === slot.id}
-                  setSlotRef={node => setSlotRef(slot.id, node)}
-                />
-                )
-                return acc
-              },
-              { stepCount: 0, elements: [] }
-            ).elements}
+                  acc.elements.push(
+                    <SlotItem
+                      key={slot.id}
+                      slot={slot}
+                      positionLabel={idx + 1}
+                      {...(stepNumber !== undefined ? { stepNumber } : {})}
+                      onUpdate={onUpdateSlot}
+                      onRemove={handleRemove}
+                      bankCards={bankCards as BankCard[]}
+                      personalCards={personalCards as PersonalCard[]}
+                      busy={busyId === slot.id || swappingCards}
+                      canRemove={slot.kind === 'step' && stepSlotsCount > 1}
+                      sessionState={sessionState}
+                      isValidated={validatedSlotIds?.has(slot.id) ?? false}
+                      sequence={sequence as Sequence | null}
+                      onCreateSequence={createSequence}
+                      onDeleteSequence={deleteSequence}
+                      canCreateSequence={canCreateSequence}
+                      onOpenSequenceEditor={openSequenceEditor}
+                      isSequenceEditorOpen={activeSequenceSlot?.id === slot.id}
+                      isOffline={isOffline}
+                      isExecutionOnly={isExecutionOnly}
+                      dndSlotId={slot.id}
+                      isDragActive={activeDragSlotId === slot.id}
+                      setSlotRef={node => setSlotRef(slot.id, node)}
+                    />
+                  )
+                  return acc
+                },
+                { stepCount: 0, elements: [] }
+              ).elements
+            }
           </ul>
         </DndContext>
       ) : (
