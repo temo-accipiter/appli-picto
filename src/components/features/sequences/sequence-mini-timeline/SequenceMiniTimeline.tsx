@@ -153,69 +153,69 @@ export function SequenceMiniTimeline({
 
             return (
               <Fragment key={step.id}>
-              <li
-                className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
-              >
-                {/* Tap sur toute la carte = marque "fait" */}
-                <Button
-                  variant="default"
-                  className="sequence-mini-timeline__step-btn"
-                  onClick={() => onToggleDone(step.id)}
-                  aria-pressed={isDone}
-                  aria-label={isDone ? `${label} — fait` : label}
+                <li
+                  className={`sequence-mini-timeline__step${isDone ? ' sequence-mini-timeline__step--done' : ''}`}
                 >
-                  {/* Badge numéro — positionné en absolu, partiellement en dehors de l'image */}
-                  <span
-                    className="sequence-mini-timeline__step-number"
+                  {/* Tap sur toute la carte = marque "fait" */}
+                  <Button
+                    variant="default"
+                    className="sequence-mini-timeline__step-btn"
+                    onClick={() => onToggleDone(step.id)}
+                    aria-pressed={isDone}
+                    aria-label={isDone ? `${label} — fait` : label}
+                  >
+                    {/* Badge numéro — positionné en absolu, partiellement en dehors de l'image */}
+                    <span
+                      className="sequence-mini-timeline__step-number"
+                      aria-hidden="true"
+                    >
+                      {idx + 1}
+                    </span>
+
+                    <div className="sequence-mini-timeline__step-image-wrapper">
+                      {card?.image_url ? (
+                        <SignedImage
+                          filePath={card.image_url}
+                          alt={label}
+                          bucket={imageBucket}
+                          className="sequence-mini-timeline__step-image"
+                          size={80}
+                        />
+                      ) : (
+                        <div
+                          className="sequence-mini-timeline__step-placeholder"
+                          aria-hidden="true"
+                        >
+                          📋
+                        </div>
+                      )}
+
+                      {/* Overlay "fait" */}
+                      {isDone && (
+                        <div
+                          className="sequence-mini-timeline__done-overlay"
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Nom de l'étape */}
+                    <span className="sequence-mini-timeline__step-label">
+                      {label}
+                    </span>
+                  </Button>
+                </li>
+                {/* Séparateur "›" entre les étapes (sauf après la dernière) */}
+                {idx < steps.length - 1 && (
+                  <li
+                    className="sequence-mini-timeline__separator"
                     aria-hidden="true"
                   >
-                    {idx + 1}
-                  </span>
-
-                  <div className="sequence-mini-timeline__step-image-wrapper">
-                    {card?.image_url ? (
-                      <SignedImage
-                        filePath={card.image_url}
-                        alt={label}
-                        bucket={imageBucket}
-                        className="sequence-mini-timeline__step-image"
-                        size={80}
-                      />
-                    ) : (
-                      <div
-                        className="sequence-mini-timeline__step-placeholder"
-                        aria-hidden="true"
-                      >
-                        📋
-                      </div>
-                    )}
-
-                    {/* Overlay "fait" */}
-                    {isDone && (
-                      <div
-                        className="sequence-mini-timeline__done-overlay"
-                        aria-hidden="true"
-                      >
-                        ✓
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Nom de l'étape */}
-                  <span className="sequence-mini-timeline__step-label">
-                    {label}
-                  </span>
-                </Button>
-              </li>
-              {/* Séparateur "›" entre les étapes (sauf après la dernière) */}
-              {idx < steps.length - 1 && (
-                <li
-                  className="sequence-mini-timeline__separator"
-                  aria-hidden="true"
-                >
-                  <ChevronRight className="sequence-mini-timeline__chevron" />
-                </li>
-              )}
+                    <ChevronRight className="sequence-mini-timeline__chevron" />
+                  </li>
+                )}
               </Fragment>
             )
           })}

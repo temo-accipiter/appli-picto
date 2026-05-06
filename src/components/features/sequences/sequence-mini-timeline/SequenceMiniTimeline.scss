@@ -223,7 +223,7 @@
   // Le badge de 24px va de 4px à 28px → chevauche le bord de l'image (à 16px) → effet protrusion
   &__step-number {
     position: absolute;
-    top: spacing('xs');  // 4px — inside card, overlaps image top edge
+    top: spacing('xs'); // 4px — inside card, overlaps image top edge
     left: spacing('xs'); // 4px — inside card, overlaps image left edge
     width: spacing('lg'); // 24px — diamètre du cercle
     height: spacing('lg');
