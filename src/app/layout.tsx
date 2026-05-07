@@ -1,7 +1,15 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
+import { Lexend } from 'next/font/google'
 import { ClientWrapper } from './client-wrapper'
 import '@/styles/main.scss'
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-lexend',
+})
 
 export const metadata: Metadata = {
   title: 'Appli-Picto',
@@ -23,7 +31,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning className={lexend.variable}>
       <head>
         {/* Anti-flash de thème - évite l'éblouissement sensoriel au chargement */}
         <script
@@ -50,18 +58,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <link
           rel="dns-prefetch"
           href="https://tklcztqoqvnialaqfcjm.supabase.co"
-        />
-
-        {/* Lexend font pour accessibilité TSA - meilleure lisibilité des lettres */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
         />
       </head>
       <body>

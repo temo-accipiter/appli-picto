@@ -211,7 +211,7 @@
   padding: form-padding($size);
   font-size: form-font-size($size);
   line-height: line-height('snug');
-  font-family: var(--font-family-lexend);
+  font-family: var(--font-lexend), sans-serif;
   color: var(--color-text);
   background-color: form-bg('default');
   border: 1px solid form-border-color('default');
@@ -294,7 +294,7 @@
   font-weight: font-weight('medium');
   margin-bottom: spacing('sm');
   color: var(--color-text);
-  font-family: var(--font-family-lexend);
+  font-family: var(--font-lexend), sans-serif;
 
   &[aria-required='true']::after,
   &.required::after {
