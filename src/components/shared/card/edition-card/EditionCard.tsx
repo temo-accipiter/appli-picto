@@ -18,17 +18,6 @@ import {
 } from '@/utils'
 import './EditionCard.scss'
 
-/**
- * EditionCard - Carte pour éditer une tâche ou récompense
- *
- * Responsabilités :
- * - ✏️ Logique édition (input label, validation, catégorie)
- * - 🗑️ Actions métier (delete, toggle checkbox)
- * - 🎛️ Gestion callbacks et état
- *
- * Compose BaseCard via slots (imageSlot, contentSlot, actionsSlot)
- */
-
 interface CategoryOption {
   value: string | number
   label: string
@@ -53,7 +42,7 @@ interface EditionCardProps {
   categorieOptions?: CategoryOption[]
   labelId: string | number
 
-  // 🆕 Checkbox "publier" (cartes banque admin uniquement)
+  // Checkbox "publier" (cartes banque admin uniquement)
   published?: boolean
   onPublishedChange?: (published: boolean) => void
 
@@ -88,7 +77,6 @@ const CardEdition = memo(function CardEdition({
 }: EditionCardProps) {
   const { t } = useI18n()
 
-  // Règles de validation i18n
   const validationRules = useMemo(
     () => [makeValidateNotEmpty(t), makeNoEdgeSpaces(t), makeNoDoubleSpaces(t)],
     [t]
@@ -96,17 +84,24 @@ const CardEdition = memo(function CardEdition({
   const selectedCategoryValue =
     categorie || defaultCategoryId || String(categorieOptions[0]?.value ?? '')
 
+  const isBankCard = published !== undefined && onPublishedChange !== undefined
+
   return (
     <BaseCard
       size="md"
       disabled={disabled}
       checked={checked}
-      className={`card-edition ${className}`}
+      disableHoverScale
+      className={`card-edition${isBankCard ? ' card-edition--bank' : ''} ${className}`}
       ariaLabel={`${t('card.item')} ${label}`}
       testId={labelId}
-      // 🖼️ Slot image
-      imageSlot={imageComponent || <ImagePreview url={image || ''} size="sm" />}
-      // 📝 Slot contenu (input label + select catégorie)
+      // 🖼️ Slot image — wrapper coloré (fond bleu-gris)
+      imageSlot={
+        <div className="card-edition__image-wrapper">
+          {imageComponent || <ImagePreview url={image || ''} size="md" />}
+        </div>
+      }
+      // 📝 Slot contenu : label + catégorie + footer actions
       contentSlot={
         <>
           {editable ? (
@@ -143,40 +138,43 @@ const CardEdition = memo(function CardEdition({
             />
           )}
 
-          {/* Toggle "publier" — même espace logique que le Select (cartes banque admin) */}
-          {published !== undefined && onPublishedChange && (
-            <Toggle
-              id={`toggle-published-${labelId}`}
-              checked={published}
-              onChange={newPublished =>
-                !disabled && onPublishedChange(newPublished)
-              }
-              aria-label={published ? 'Carte publiée' : 'Carte dépubliée'}
-              disabled={disabled}
-            />
-          )}
-        </>
-      }
-      // 🎛️ Slot actions (delete + checkbox timeline)
-      actionsSlot={
-        <>
-          {onDelete && (
-            <ButtonDelete
-              onClick={disabled ? () => {} : onDelete}
-              aria-label={t('card.delete')}
-            />
-          )}
-
-          <Checkbox
-            id={`checkbox-${labelId}`}
-            checked={checked}
-            onChange={() => !disabled && !checkboxDisabled && onToggleCheck()}
-            aria-label={checked ? t('card.visible') : t('card.hidden')}
-            size="md"
-            disabled={disabled || checkboxDisabled}
+          {/* Séparateur + ligne d'actions */}
+          <div
+            className="card-edition__separator"
+            role="separator"
+            aria-hidden="true"
           />
+          <div className="card-edition__footer">
+            <Checkbox
+              id={`checkbox-${labelId}`}
+              checked={checked}
+              onChange={() => !disabled && !checkboxDisabled && onToggleCheck()}
+              aria-label={checked ? t('card.visible') : t('card.hidden')}
+              {...(isBankCard ? {} : { label: checked ? t('card.shown') : t('card.show') })}
+              size="md"
+              disabled={disabled || checkboxDisabled}
+            />
+            {isBankCard && onPublishedChange && (
+              <Toggle
+                id={`toggle-published-${labelId}`}
+                checked={published!}
+                onChange={newPublished =>
+                  !disabled && onPublishedChange(newPublished)
+                }
+                aria-label={published ? 'Carte publiée' : 'Carte dépubliée'}
+                disabled={disabled}
+              />
+            )}
+            {onDelete && (
+              <ButtonDelete
+                onClick={disabled ? () => {} : onDelete}
+                aria-label={t('card.delete')}
+              />
+            )}
+          </div>
         </>
       }
+      // actionsSlot vide — actions intégrées dans contentSlot (footer)
     />
   )
 })

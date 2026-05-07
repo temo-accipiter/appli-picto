@@ -25,12 +25,6 @@
     ); // Couleur erreur → CSS custom property design system
   }
 
-  &__message {
-    font-size: font-size('base'); // 1rem = 16px
-    color: var(--color-text-muted); // #666 → CSS custom property design system
-    margin-bottom: spacing('xl'); // 2rem = 32px
-  }
-
   &__action {
     padding: spacing('sm') spacing('md'); // 0.5rem 1rem
     font-size: font-size('base'); // 1rem = 16px
