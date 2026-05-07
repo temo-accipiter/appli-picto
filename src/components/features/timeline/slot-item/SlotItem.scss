@@ -83,6 +83,7 @@
   &__placeholder {
     display: flex;
     flex-direction: column;
+    background: tsa-pastel('bg-soft'); // #f0f8ff
     align-items: center;
     justify-content: center;
     gap: spacing('sm');
@@ -98,6 +99,7 @@
   &__card-display {
     display: flex;
     flex-direction: column;
+    background: tsa-pastel('bg-soft'); // #f0f8ff
     align-items: center;
     justify-content: center;
     gap: spacing('sm');

@@ -1,14 +1,148 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// EDITION CARD COMPONENT
+// EDITION CARD — LAYOUT VERTICAL
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrapper autour de BaseCard sans styles propres
-//    Tous les styles gérés par BaseCard.scss
+// Override de la grille horizontale (auto 1fr) de BaseCard vers une colonne
+// unique. Conforme tokens-first, aucune valeur hardcodée.
+//
+// Structure visuelle (référence docs/carte.png) :
+//   ┌──────────────────────────┐
+//   │  [Zone image colorée]    │  ← tsa-pastel('bg-soft') = bleu-gris doux
+//   ├──────────────────────────┤
+//   │  [Input label]           │
+//   │  [Select catégorie]      │
+//   │ ─────────────────────── │  ← séparateur
+//   │  ☐ Afficher      🗑️     │  ← footer actions
+//   └──────────────────────────┘
 // ============================================================================
 
+// --- Override layout BaseCard → colonne unique ---
+
 .card-edition {
-  // 📝 EditionCard est un thin wrapper autour de BaseCard
-  // avec editable={true} forcé. BaseCard gère le layout, les animations, et les états.
-  // Aucune surcharge de style spécifique à EditionCard.
+  &.base-card {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+    background: surface('card'); // Fond blanc — zone image porte la couleur
+    padding: spacing('sm');
+  }
+
+  // Re-déclarer état checked (spécificité identique, ordre assure la priorité)
+  &.base-card--checked {
+    background: tsa-pastel('green-soft');
+  }
+
+  // Section image : occupe toute la largeur
+  .base-card__image-section {
+    width: 100%;
+    justify-content: flex-start; // Override space-between (un seul enfant)
+  }
+
+  .base-card__image {
+    width: 100%;
+  }
+
+  // Zone contenu : colonne, espacement entre éléments
+  .base-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+    height: auto; // Override height: 100% (pas nécessaire en flex colonne)
+    justify-content: flex-start; // Override space-between
+  }
+}
+
+// --- Zone image colorée ---
+// height fixe (pas min-height) = obligatoire pour que height:100% des enfants fonctionne
+
+.card-edition__image-wrapper {
+  width: 100%;
+  height: size('card-image-height'); // 12.5rem = 200px — height, pas min-height
+  background: tsa-pastel('bg-soft'); // #f0f8ff
+  border-radius: radius('subtle');
+  overflow: hidden;
+}
+
+// Spécificité (0,3,0) > .image-preview.image-preview--md (0,2,0)
+// Nécessaire car ImagePreview.scss est chargé après EditionCard.scss (ordre Next.js)
+.card-edition .card-edition__image-wrapper {
+  .image-preview {
+    width: 100%;
+    height: 100%; // Fonctionne car parent a height fixe (pas min-height)
+    background: transparent;
+    border-radius: 0;
+    padding: spacing('sm') 0; // 8px haut/bas, pleine largeur (comme slot-item)
+    box-sizing: border-box;
+  }
+
+  .image-preview__img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
+  }
+
+  // SignedImage (imageComponent réel dans CardsEdition) — remplit le wrapper
+  .signed-image {
+    width: 100%;
+    height: 100%;
+    padding: spacing('sm'); // 8px sur les 4 côtés (comme slot-item)
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .signed-image__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; // cover = image remplit la boîte, border colle à l'image (comme slot-item)
+      // border, border-radius, et hover (scale + border bleu) hérités de SignedImage.scss
+      // Le zoom est clippé par overflow:hidden du wrapper — la carte ne grossit pas
+    }
+  }
+}
+
+// --- Separator horizontal custom (sans margin du composant Separator partagé) ---
+
+.card-edition__separator {
+  height: border-width('medium');
+  margin: spacing('xs') 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    surface('border'),
+    transparent
+  );
+  border-radius: radius('subtle');
+  flex-shrink: 0;
+}
+
+// --- Checkmark : centré et agrandi sur les cartes ---
+// inset: 0 du composant base gère le positionnement — on surcharge uniquement la taille SVG
+
+.card-edition__footer {
+  .checkbox-field__checkmark {
+    svg {
+      width: size('icon-md'); // 24px — agrandi pour les cartes
+      height: size('icon-md');
+    }
+  }
+}
+
+// --- Ligne d'actions : checkbox + (toggle banque) + bouton supprimer ---
+
+.card-edition__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: size('touch-target-min'); // 44px WCAG 2.5.5
+}
+
+// --- Variante carte de banque : label centré ---
+
+.card-edition--bank {
+  .base-card__label,
+  .input-with-validation input {
+    text-align: center;
+  }
 }

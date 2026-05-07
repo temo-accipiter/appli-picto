@@ -37,22 +37,24 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ) => {
     return (
       <div className={`checkbox-field checkbox-field--${size} ${className}`}>
-        <input
-          ref={ref}
-          type="checkbox"
-          id={id}
-          className="checkbox-field__input"
-          checked={checked}
-          onChange={onChange}
-          aria-invalid={!!error}
-          aria-describedby={error ? `${id}-error` : undefined}
-          {...rest}
-        />
-        {checked && (
-          <span className="checkbox-field__checkmark" aria-hidden="true">
-            <Check size={16} strokeWidth={3} />
-          </span>
-        )}
+        <div className="checkbox-field__box">
+          <input
+            ref={ref}
+            type="checkbox"
+            id={id}
+            className="checkbox-field__input"
+            checked={checked}
+            onChange={onChange}
+            aria-invalid={!!error}
+            aria-describedby={error ? `${id}-error` : undefined}
+            {...rest}
+          />
+          {checked && (
+            <span className="checkbox-field__checkmark" aria-hidden="true">
+              <Check strokeWidth={3} />
+            </span>
+          )}
+        </div>
         {label && (
           <label htmlFor={id} className="checkbox-field__label">
             {label}

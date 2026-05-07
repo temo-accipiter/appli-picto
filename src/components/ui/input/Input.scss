@@ -28,7 +28,7 @@
 .input-field {
   display: flex;
   flex-direction: column;
-  //gap: spacing('xs'); // 4px (au lieu de xxs inexistant)
+  gap: spacing('xs'); // 4px (au lieu de xxs inexistant)
   position: relative;
 }
 

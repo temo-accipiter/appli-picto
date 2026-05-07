@@ -120,7 +120,8 @@
   // Separator stylisé comme LiensGrid
   .separator {
     height: border-width('medium');
-    margin: spacing('xl') auto;
+    //margin: spacing('xl') auto;
+    margin: auto;
     max-width: size('600');
     width: 100%;
     background: linear-gradient(

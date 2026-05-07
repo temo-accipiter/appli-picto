@@ -99,25 +99,40 @@
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // CHECKMARK ICON
+  // BOX — wrapper input + checkmark (référence de positionnement)
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  &__box {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // CHECKMARK ICON — positionné par rapport à __box (= surface exacte de l'input)
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   &__checkmark {
     position: absolute;
-    top: 50%;
-    left: spacing('xs');
-    transform: translateY(-50%);
-    color: text('invert');
+    inset: 0; // couvre exactement __box = la surface de l'input
     display: flex;
     align-items: center;
     justify-content: center;
+    color: text('invert');
     pointer-events: none;
     z-index: 2;
 
     svg {
-      width: size('icon-xs'); // 16px
-      height: size('icon-xs');
+      width: size('icon-sm'); // 20px mobile
+      height: size('icon-sm');
       stroke: currentColor;
+
+      @include respond-to(sm) {
+        width: size('icon-md'); // 24px desktop
+        height: size('icon-md');
+      }
     }
   }
 

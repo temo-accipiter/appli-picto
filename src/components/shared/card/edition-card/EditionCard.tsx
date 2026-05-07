@@ -150,7 +150,9 @@ const CardEdition = memo(function CardEdition({
               checked={checked}
               onChange={() => !disabled && !checkboxDisabled && onToggleCheck()}
               aria-label={checked ? t('card.visible') : t('card.hidden')}
-              {...(isBankCard ? {} : { label: checked ? t('card.shown') : t('card.show') })}
+              {...(isBankCard
+                ? {}
+                : { label: checked ? t('card.shown') : t('card.show') })}
               size="md"
               disabled={disabled || checkboxDisabled}
             />

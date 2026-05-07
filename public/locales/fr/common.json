@@ -497,6 +497,8 @@
   },
   "card": {
     "active": "Actif",
+    "show": "Afficher",
+    "shown": "Affiché",
     "name": "Nom",
     "category": "Catégorie",
     "noCategory": "— Aucune catégorie —",

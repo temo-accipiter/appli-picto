@@ -38,6 +38,9 @@ interface BaseCardProps {
   className?: string
   ariaLabel?: string
   testId?: string | number
+
+  // 🎞️ Animations
+  disableHoverScale?: boolean
 }
 
 const BaseCard = memo(function BaseCard({
@@ -51,6 +54,7 @@ const BaseCard = memo(function BaseCard({
   className = '',
   ariaLabel,
   testId,
+  disableHoverScale = false,
 }: BaseCardProps) {
   const prefersReducedMotion = useReducedMotion()
 
@@ -71,7 +75,9 @@ const BaseCard = memo(function BaseCard({
       role="article"
       aria-label={ariaLabel}
       data-testid={testId ? `base-card-${testId}` : undefined}
-      whileHover={prefersReducedMotion ? {} : { scale: 1.02, y: -2 }}
+      whileHover={
+        prefersReducedMotion || disableHoverScale ? {} : { scale: 1.02, y: -2 }
+      }
       transition={
         prefersReducedMotion ? {} : { duration: 0.2, ease: 'easeOut' }
       }
