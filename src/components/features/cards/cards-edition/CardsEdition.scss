@@ -30,7 +30,7 @@
   border-radius: radius(
     'large'
   ); // 20px — section conteneur, alias générique §D.2
-  background: semantic('info', 'bg');
+  background: surface('page');
   // Shadow supprimée : conteneur statique (§F.3)
   @include safe-transition(background-color, timing('base'), easing('smooth'));
 
@@ -62,7 +62,7 @@
   background: surface('soft');
   border-radius: radius('card'); // 12px — alias sémantique §D.3
   // Shadow supprimée : conteneur statique (§F.3)
-  border: border-width('thin') solid semantic('info', 'border');
+  border: border-width('thin') solid surface('border');
 }
 
 /* Grille de cards avec drag & drop */
@@ -190,7 +190,7 @@
 .cards-edition__library-sections {
   display: flex;
   flex-direction: column;
-  gap: spacing('xl');
+  gap: spacing('48');
   padding: spacing('md') 0;
 }
 
@@ -198,15 +198,38 @@
   display: flex;
   flex-direction: column;
   gap: spacing('md');
+  background: surface('bg');
+  padding: spacing('lg');
+  border-radius: radius('card');
+  box-shadow: shadow('small');
 }
 
 .cards-edition__section-title {
   font-size: font-size('lg');
-  font-weight: 600;
-  color: semantic('info', 'dark');
+  font-weight: font-weight('semibold');
+  color: color('base');
   margin: 0;
   padding: spacing('sm') spacing('md');
   background: surface('soft');
-  border-radius: radius('button'); // 6px — barre titre, alias sémantique §D.3
-  border-left: border-width('medium') solid semantic('info-primary');
+  border-radius: radius('button'); // 6px — barre titre §D.3
+  border-left: border-width('medium') solid color('base');
+}
+
+// Unification visuelle : toggle "Cartes banque" (Button) ≡ titre "Mes cartes" (h3)
+.cards-edition__section-toggle {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  font-size: font-size('lg');
+  font-weight: font-weight('semibold');
+  color: color('base');
+  background: surface('soft');
+  border-radius: radius('button');
+  border-left: border-width('medium') solid color('base');
+  padding: spacing('sm') spacing('md');
+
+  @include on-event {
+    background: surface('hover');
+    color: color('base');
+  }
 }
