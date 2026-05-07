@@ -201,7 +201,7 @@
   background: surface('bg');
   padding: spacing('lg');
   border-radius: radius('card');
-  box-shadow: shadow('small');
+  box-shadow: shadow('elevation-sm');
 }
 
 .cards-edition__section-title {
