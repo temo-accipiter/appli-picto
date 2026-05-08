@@ -310,8 +310,8 @@
 
     .select-with-image__label {
       position: absolute;
-      width: 1px;
-      height: 1px;
+      width: size('1'); // sr-only : valeur minimale pour clip visuel
+      height: size('1');
       overflow: hidden;
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
