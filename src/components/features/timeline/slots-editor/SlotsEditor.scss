@@ -162,4 +162,69 @@
       gap: spacing('md');
     }
   }
+
+  // ── Slot fantôme — fin de liste DnD ──
+  // Remplace le bouton + Étape ; visuellement cohérent avec les vrais slots
+  &__phantom {
+    flex-shrink: 0;
+    width: 15rem; // Correspond exactement à .slot-item (SlotItem.scss)
+    scroll-snap-align: start;
+    list-style: none;
+  }
+
+  &__phantom-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: spacing('sm');
+    width: 100%;
+    height: 100%; // Épouse la hauteur du flex row — même hauteur que les vrais slots
+    padding: spacing('md');
+    background: transparent;
+    border: border-width('medium') dashed semantic('info');
+    border-radius: radius('card'); // 12px — cohérent avec .slot-item
+    color: semantic('info');
+    cursor: pointer;
+    @include safe-transition(
+      (background, border-color, color),
+      timing('fast'),
+      easing('ease-out')
+    );
+
+    &:hover:not(:disabled) {
+      background: semantic('info', 'bg');
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: opacity('0-6');
+      cursor: not-allowed;
+    }
+  }
+
+  &__phantom-icon {
+    font-size: font-size('xl');
+    line-height: 1;
+    font-weight: font-weight('medium');
+  }
+
+  &__phantom-label {
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+  }
+
+  // ── Message verrou session ──
+  &__session-lock-hint {
+    font-size: font-size('sm');
+    color: text('muted');
+    margin: 0;
+    padding: spacing('xs') spacing('sm');
+    background: semantic('warning', 'bg');
+    border-radius: radius('subtle');
+  }
 }

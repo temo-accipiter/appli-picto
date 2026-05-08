@@ -25,6 +25,7 @@
     flex-direction: column;
     gap: spacing('sm');
     background: surface('card'); // Fond blanc — zone image porte la couleur
+    border: border-width('thin') solid surface('border'); // Bordure visible sur cartes non-cochées
     padding: spacing('sm');
   }
 

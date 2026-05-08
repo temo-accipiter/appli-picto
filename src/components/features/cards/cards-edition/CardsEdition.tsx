@@ -14,7 +14,6 @@ import { useEditionState, useI18n } from '@/hooks'
 import React, { useState } from 'react'
 import type { Categorie } from '@/types/global'
 import type { CardFormData, CardItem } from '@/types/cards'
-import { ChevronDown } from 'lucide-react'
 import './CardsEdition.scss'
 
 // 🆕 Carte de banque (lecture seule, utilisable dans timeline)
@@ -101,6 +100,11 @@ interface CardsEditionProps {
    * Usage cosmétique uniquement (autorisation = DB via RLS).
    */
   isFree?: boolean
+  /**
+   * Nombre total de cartes personnelles (sans filtre catégorie).
+   * Si fourni, l'onglet "Mes cartes" affiche toujours ce total même avec un filtre actif.
+   */
+  totalPersonalCount?: number
 }
 
 export default function CardsEdition({
@@ -130,6 +134,7 @@ export default function CardsEdition({
   onUpdateBankCardPublished,
   isAdmin = false,
   isFree = false,
+  totalPersonalCount,
 }: CardsEditionProps) {
   const [modalCardOpen, setModalCardOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
@@ -137,9 +142,7 @@ export default function CardsEdition({
   const [catASupprimer, setCatASupprimer] = useState<string | number | null>(
     null
   )
-  const [showActions, setShowActions] = useState(false)
-  // 🆕 État pour afficher/masquer la section cartes banque (collapsible)
-  const [showBankCards, setShowBankCards] = useState(false)
+  const [activeTab, setActiveTab] = useState<'personal' | 'bank'>('personal')
 
   const { t } = useI18n()
 
@@ -262,59 +265,61 @@ export default function CardsEdition({
     )
   }
 
-  // ✅ Subscriber/Admin : Affichage complet avec toutes les options d'édition
+  // ✅ Subscriber/Admin : Affichage complet avec onglets Mes cartes / Banque
   return (
     <div className="checklist-edition">
-      <Button
-        label={
-          <span className="button-label">
-            ⚙️ Options d&apos;édition
-            <ChevronDown
-              className={`chevron ${showActions ? 'open' : ''}`}
-              size={16}
-              aria-hidden="true"
-            />
-          </span>
-        }
-        onClick={() => setShowActions(prev => !prev)}
-        aria-expanded={showActions}
-      />
+      {/* ── Onglets Mes cartes / Banque ──────────────────────────────────── */}
+      <div
+        className="cards-edition__tabs"
+        role="tablist"
+        aria-label="Sélectionner une bibliothèque"
+      >
+        <button
+          role="tab"
+          id="tab-personal"
+          aria-controls="panel-personal"
+          aria-selected={activeTab === 'personal'}
+          className={`cards-edition__tab${activeTab === 'personal' ? ' cards-edition__tab--active' : ''}`}
+          onClick={() => setActiveTab('personal')}
+        >
+          Mes cartes ({totalPersonalCount ?? items.length})
+        </button>
+        <button
+          role="tab"
+          id="tab-bank"
+          aria-controls="panel-bank"
+          aria-selected={activeTab === 'bank'}
+          className={`cards-edition__tab${activeTab === 'bank' ? ' cards-edition__tab--active' : ''}`}
+          onClick={() => setActiveTab('bank')}
+        >
+          Banque ({bankCards?.length ?? 0})
+        </button>
+      </div>
 
-      {showActions && (
-        <div className="edition-section__actions">
-          {/* ✅ Bouton création carte : masqué si Free (cosmétique) */}
-          {!isFree && (
+      {/* ── Panneau : Mes cartes ─────────────────────────────────────────── */}
+      {activeTab === 'personal' && (
+        <div
+          role="tabpanel"
+          id="panel-personal"
+          aria-labelledby="tab-personal"
+          className="cards-edition__tab-content"
+        >
+          <div className="cards-edition__tab-actions">
+            <Button
+              label={`⚙️ ${t('tasks.manageCategories')}`}
+              onClick={() => setManageCatOpen(true)}
+            />
             <Button
               label="➕ Créer une carte"
               onClick={async () => {
                 if (onShowQuotaModal) {
                   const canOpen = await onShowQuotaModal('card')
-                  if (canOpen) {
-                    setModalCardOpen(true)
-                  }
+                  if (canOpen) setModalCardOpen(true)
                 } else {
                   setModalCardOpen(true)
                 }
               }}
             />
-          )}
-          {/* 🆕 Bouton création carte banque (admin uniquement) */}
-          {isAdmin && onCreateBankCard && (
-            <Button
-              label="➕ Créer carte de banque"
-              onClick={onCreateBankCard}
-              variant="secondary"
-            />
-          )}
-          {/* ✅ Bouton gestion catégories : masqué si Free (cosmétique) */}
-          {!isFree && (
-            <Button
-              label={`⚙️ ${t('tasks.manageCategories')}`}
-              onClick={() => setManageCatOpen(true)}
-            />
-          )}
-          {/* ✅ Sélecteur filtre catégorie : masqué si Free (cosmétique) */}
-          {!isFree && (
             <Select
               id="filter-category"
               label={t('tasks.filterByCategory')}
@@ -325,223 +330,14 @@ export default function CardsEdition({
               value={filterCategory}
               onChange={value => onChangeFilterCategory(String(value))}
             />
-          )}
-        </div>
-      )}
-
-      {/* 🆕 Affichage : deux sections si bankCards fourni, sinon une seule grille */}
-      {bankCards && bankCards.length > 0 ? (
-        <div className="cards-edition__library-sections">
-          {/* Section 1 : Cartes banque (collapsible) */}
-          <div className="cards-edition__library-group">
-            <Button
-              label={
-                <span className="button-label">
-                  Cartes banque ({bankCards.length})
-                  <ChevronDown
-                    className={`chevron ${showBankCards ? 'open' : ''}`}
-                    size={16}
-                    aria-hidden="true"
-                  />
-                </span>
-              }
-              onClick={() => setShowBankCards(prev => !prev)}
-              aria-expanded={showBankCards}
-              className="cards-edition__section-toggle"
-            />
-            {showBankCards &&
-              (bankCards.length === 0 ? (
-                <div
-                  className="edition-section__empty"
-                  role="status"
-                  aria-live="polite"
-                >
-                  💤 Aucune carte de banque
-                </div>
-              ) : (
-                <DndGrid
-                  items={bankCards}
-                  // 🔒 Cartes banque : pas de réorganisation (lecture seule)
-                  onReorder={() => {
-                    // No-op : cartes banque non réorganisables
-                  }}
-                  renderItem={(bankCard: BankCardItem) => {
-                    // 🔒 SÉCURITÉ TSA : Verrouiller nom si carte publiée (éviter perturbation sessions actives)
-                    const canEditBankCard =
-                      isAdmin && !!onUpdateBankCardName && !bankCard.published
-                    const canDeleteBankCard = isAdmin && !!onDeleteBankCard
-                    const canTogglePublished =
-                      isAdmin && !!onUpdateBankCardPublished
-
-                    return (
-                      <EditionCard
-                        imageComponent={
-                          <SignedImage
-                            filePath={bankCard.image_url || ''}
-                            bucket="bank-images"
-                            alt={bankCard.name}
-                            size={80}
-                          />
-                        }
-                        labelId={bankCard.id}
-                        label={drafts[bankCard.id] ?? bankCard.name}
-                        editable={canEditBankCard}
-                        // ✅ Diffusion conditionnelle (exactOptionalPropertyTypes)
-                        {...(canEditBankCard
-                          ? {
-                              onLabelChange: (val: string) =>
-                                handleChange(bankCard.id, val),
-                              onBlur: async (val: string) => {
-                                const err = validateLabel(val)
-                                if (err) {
-                                  setError(bankCard.id, err)
-                                  return
-                                }
-                                const result = await onUpdateBankCardName?.(
-                                  bankCard.id,
-                                  val
-                                )
-                                // Draft toujours nettoyé (même si erreur Supabase)
-                                clearDraft(bankCard.id)
-                                clearError(bankCard.id)
-                                // Success uniquement si pas d'erreur Supabase
-                                if (!result?.error) triggerSuccess(bankCard.id)
-                              },
-                            }
-                          : {})}
-                        {...(canDeleteBankCard
-                          ? {
-                              onDelete: async () => {
-                                await onDeleteBankCard?.(
-                                  bankCard.id,
-                                  bankCard.name
-                                )
-                              },
-                            }
-                          : {})}
-                        {...(canTogglePublished
-                          ? {
-                              published: bankCard.published,
-                              onPublishedChange: async (
-                                newPublished: boolean
-                              ) => {
-                                await onUpdateBankCardPublished?.(
-                                  bankCard.id,
-                                  newPublished
-                                )
-                              },
-                            }
-                          : {})}
-                        // ✅ Checkbox timeline active
-                        checked={isCardInTimeline(bankCard.id)}
-                        onToggleCheck={() => handleToggleCheckbox(bankCard.id)}
-                        disabled={checkboxDisabled}
-                        checkboxDisabled={
-                          lockedCardIds?.has(bankCard.id) ?? false
-                        }
-                        // 🚫 Pas de catégories pour cartes banque (non pertinent)
-                        className={[
-                          errors[bankCard.id]
-                            ? 'input-field__input--error'
-                            : '',
-                          successIds.has(bankCard.id)
-                            ? 'input-field__input--success'
-                            : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ')}
-                      />
-                    )
-                  }}
-                  columns={3}
-                  gap="medium"
-                  layout="custom"
-                  className="edition-section__grid"
-                  getItemId={(bankCard: BankCardItem) => bankCard.id}
-                />
-              ))}
           </div>
-
-          {/* Section 2 : Mes cartes (édition complète) */}
-          <div className="cards-edition__library-group">
-            <h3 className="cards-edition__section-title">
-              Mes cartes ({items.length})
-            </h3>
-            {items.length === 0 ? (
-              <div
-                className="edition-section__empty"
-                role="status"
-                aria-live="polite"
-              >
-                💤 Aucune carte personnelle
-              </div>
-            ) : (
-              <DndGrid
-                items={items}
-                onReorder={newItems => {
-                  if (onReorder) {
-                    onReorder(newItems.map(item => item.id))
-                  }
-                }}
-                renderItem={(item: CardItem) => (
-                  <EditionCard
-                    imageComponent={
-                      <SignedImage
-                        filePath={item.image_url || ''}
-                        bucket="personal-images"
-                        alt={item.name}
-                        size={80}
-                      />
-                    }
-                    labelId={item.id}
-                    label={drafts[item.id] ?? item.name}
-                    onLabelChange={val => handleChange(item.id, val)}
-                    onBlur={val => handleBlur(item.id, val)}
-                    onDelete={() => onDelete(item)}
-                    checked={isCardInTimeline(item.id)}
-                    onToggleCheck={() => handleToggleCheckbox(item.id)}
-                    disabled={checkboxDisabled}
-                    checkboxDisabled={
-                      lockedCardIds?.has(String(item.id)) ?? false
-                    }
-                    categorie={item.categorie || ''}
-                    {...(systemCategoryId != null
-                      ? { defaultCategoryId: systemCategoryId }
-                      : {})}
-                    onCategorieChange={val => onUpdateCategorie(item.id, val)}
-                    categorieOptions={categories.map(c => ({
-                      value: c.id,
-                      label: c.name,
-                    }))}
-                    className={[
-                      errors[item.id] ? 'input-field__input--error' : '',
-                      successIds.has(item.id)
-                        ? 'input-field__input--success'
-                        : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                  />
-                )}
-                columns={3}
-                gap="medium"
-                layout="custom"
-                className="edition-section__grid"
-                getItemId={(item: CardItem) => item.id}
-              />
-            )}
-          </div>
-        </div>
-      ) : (
-        // Comportement actuel : une seule grille (cartes personnelles uniquement)
-        <>
           {items.length === 0 ? (
             <div
               className="edition-section__empty"
               role="status"
               aria-live="polite"
             >
-              💤 Aucune carte à afficher
+              💤 Aucune carte personnelle
             </div>
           ) : (
             <DndGrid
@@ -598,7 +394,120 @@ export default function CardsEdition({
               getItemId={(item: CardItem) => item.id}
             />
           )}
-        </>
+        </div>
+      )}
+
+      {/* ── Panneau : Banque ─────────────────────────────────────────────── */}
+      {activeTab === 'bank' && (
+        <div
+          role="tabpanel"
+          id="panel-bank"
+          aria-labelledby="tab-bank"
+          className="cards-edition__tab-content"
+        >
+          {isAdmin && onCreateBankCard && (
+            <div className="cards-edition__tab-actions">
+              <Button
+                label="➕ Créer carte de banque"
+                onClick={onCreateBankCard}
+              />
+            </div>
+          )}
+          {!bankCards || bankCards.length === 0 ? (
+            <div
+              className="edition-section__empty"
+              role="status"
+              aria-live="polite"
+            >
+              💤 Aucune carte de banque disponible
+            </div>
+          ) : (
+            <DndGrid
+              items={bankCards}
+              onReorder={() => {
+                // No-op : cartes banque non réorganisables
+              }}
+              renderItem={(bankCard: BankCardItem) => {
+                const canEditBankCard =
+                  isAdmin && !!onUpdateBankCardName && !bankCard.published
+                const canDeleteBankCard = isAdmin && !!onDeleteBankCard
+                const canTogglePublished =
+                  isAdmin && !!onUpdateBankCardPublished
+
+                return (
+                  <EditionCard
+                    imageComponent={
+                      <SignedImage
+                        filePath={bankCard.image_url || ''}
+                        bucket="bank-images"
+                        alt={bankCard.name}
+                        size={80}
+                      />
+                    }
+                    labelId={bankCard.id}
+                    label={drafts[bankCard.id] ?? bankCard.name}
+                    editable={canEditBankCard}
+                    {...(canEditBankCard
+                      ? {
+                          onLabelChange: (val: string) =>
+                            handleChange(bankCard.id, val),
+                          onBlur: async (val: string) => {
+                            const err = validateLabel(val)
+                            if (err) {
+                              setError(bankCard.id, err)
+                              return
+                            }
+                            const result = await onUpdateBankCardName?.(
+                              bankCard.id,
+                              val
+                            )
+                            clearDraft(bankCard.id)
+                            clearError(bankCard.id)
+                            if (!result?.error) triggerSuccess(bankCard.id)
+                          },
+                        }
+                      : {})}
+                    {...(canDeleteBankCard
+                      ? {
+                          onDelete: async () => {
+                            await onDeleteBankCard?.(bankCard.id, bankCard.name)
+                          },
+                        }
+                      : {})}
+                    {...(canTogglePublished
+                      ? {
+                          published: bankCard.published,
+                          onPublishedChange: async (newPublished: boolean) => {
+                            await onUpdateBankCardPublished?.(
+                              bankCard.id,
+                              newPublished
+                            )
+                          },
+                        }
+                      : {})}
+                    checked={isCardInTimeline(bankCard.id)}
+                    onToggleCheck={() => handleToggleCheckbox(bankCard.id)}
+                    disabled={checkboxDisabled}
+                    checkboxDisabled={lockedCardIds?.has(bankCard.id) ?? false}
+                    className={[
+                      errors[bankCard.id] ? 'input-field__input--error' : '',
+                      successIds.has(bankCard.id)
+                        ? 'input-field__input--success'
+                        : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                  />
+                )
+              }}
+              columns={3}
+              gap="medium"
+              layout="custom"
+              className="edition-section__grid"
+              getItemId={(bankCard: BankCardItem) => bankCard.id}
+            />
+          )}
+        </div>
       )}
 
       <ModalAjout

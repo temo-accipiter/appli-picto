@@ -1,7 +1,7 @@
 'use client'
 
 // src/pages/edition/Edition.tsx
-import { CardsEdition, Separator } from '@/components'
+import { CardsEdition } from '@/components'
 import { useToast } from '@/contexts'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
@@ -430,10 +430,8 @@ export default function Edition({
       <h1 className="sr-only">{t('edition.title')}</h1>
 
       <section className="edition-sections">
-        <Separator />
-
         <section className="taches-edition" aria-label="Bibliothèque de cartes">
-          {/* ✅ Nouveau système : Cards uniquement */}
+          <h2 className="edition__library-title">Bibliothèque de cartes</h2>
           <CardsEdition
             items={visibleCards.map(c => ({
               id: c.id,
@@ -457,6 +455,7 @@ export default function Edition({
             onToggleCardInTimeline={handleToggleCardInTimeline}
             checkboxDisabled={checkboxDisabled}
             lockedCardIds={lockedCardIds}
+            totalPersonalCount={cards.length}
             // 🆕 Props cartes banque (avec catégories hydratées)
             bankCards={bankCardsForDisplay.map(bc => ({
               id: bc.id,

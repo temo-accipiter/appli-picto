@@ -100,6 +100,14 @@
     }
   }
 }
+// ── Titre visible "Bibliothèque de cartes" ──
+.edition__library-title {
+  font-size: font-size('xl');
+  font-weight: font-weight('semibold');
+  color: text('dark');
+  margin: 0 0 spacing('sm');
+}
+
 .recompenses-edition__message {
   padding: spacing('md');
   font-size: font-size('base');

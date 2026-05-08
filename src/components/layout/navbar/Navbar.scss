@@ -168,10 +168,131 @@
   white-space: nowrap;
 }
 
+// === PROFILE SELECTOR — /edition uniquement (desktop ≥ 1024px) ===
+
+.navbar__profile-placeholder {
+  display: inline-flex;
+  align-items: center;
+}
+
+.navbar__profile-selector {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+
+  // Pont transparent : comble le gap entre le trigger et le popover
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: spacing('xs');
+  }
+}
+
+.navbar__profile-trigger {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  border-radius: radius('full');
+  padding: 0;
+
+  &:focus-visible {
+    outline: a11y('focus-ring-width') solid color('base');
+    outline-offset: a11y('focus-ring-offset');
+  }
+}
+
+.navbar__profile-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: size('32');
+  height: size('32');
+  border-radius: radius('full');
+  background: color('base');
+  color: text('invert');
+  font-size: font-size('sm');
+  font-weight: font-weight('bold');
+  line-height: 1;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.navbar__profile-name {
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
+  color: text('dark');
+  padding-left: spacing('xs');
+  max-width: size('120');
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navbar__profile-popover {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: spacing('xs');
+  display: flex;
+  align-items: center;
+  gap: spacing('sm');
+  padding: spacing('sm');
+  background: surface('bg');
+  border: border-width('thin') solid surface('border');
+  border-radius: radius('card');
+  box-shadow: shadow('elevation-md');
+  z-index: z-index('modal');
+}
+
+.navbar__profile-item {
+  border: none;
+  background: transparent;
+  padding: 0;
+  border-radius: radius('full');
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  @include safe-transition(
+    (transform, box-shadow),
+    timing('fast'),
+    easing('ease-out')
+  );
+
+  &:hover:not(:disabled) {
+    transform: translateY(calc(-1 * #{border-width('thin')}));
+    box-shadow: shadow('elevation-sm');
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: opacity('0-6');
+    cursor: not-allowed;
+  }
+
+  &--active .navbar__profile-avatar {
+    outline: border-width('medium') solid color('base');
+    outline-offset: 2px;
+  }
+}
+
 // === RÉDUCTION MOUVEMENT — TSA ===
 
 @media (prefers-reduced-motion: reduce) {
   .navbar__item {
+    transition: none;
+  }
+
+  .navbar__profile-item {
     transition: none;
   }
 }

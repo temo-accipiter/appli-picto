@@ -2,10 +2,17 @@
 
 import { SettingsMenu } from '@/components'
 import { useAuth, useI18n, useAccountStatus } from '@/hooks'
+import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { LayoutDashboard, Pencil, User, Shield } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  useState,
+  useEffect,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react'
 import './Navbar.scss'
 
 /**
@@ -38,6 +45,59 @@ export default function Navbar() {
   const { user } = useAuth()
   const { isAdmin } = useAccountStatus()
   const { t } = useI18n()
+
+  // Profile selector — visible sur /edition uniquement (desktop ≥ 1024px)
+  const {
+    activeChildId,
+    activeChildProfile,
+    childProfiles,
+    loading: childProfilesLoading,
+    setActiveChildId,
+    isVisitor,
+  } = useChildProfile()
+  const selectorRef = useRef<HTMLDivElement | null>(null)
+  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false)
+  const [isDesktop, setIsDesktop] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const sync = () => setIsDesktop(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    if (!isProfilePopoverOpen) return
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        selectorRef.current &&
+        !selectorRef.current.contains(event.target as Node)
+      ) {
+        setIsProfilePopoverOpen(false)
+      }
+    }
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsProfilePopoverOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isProfilePopoverOpen])
+
+  const handleProfileTriggerKeyDown = (
+    event: ReactKeyboardEvent<HTMLButtonElement>
+  ) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      setIsProfilePopoverOpen(prev => !prev)
+    }
+    if (event.key === 'Escape') setIsProfilePopoverOpen(false)
+  }
 
   // Masquée sur /tableau (kiosk mode TSA) et pour les non-authentifiés
   if (!user || pathname === '/tableau') return null
@@ -119,6 +179,93 @@ export default function Navbar() {
           <div className="navbar-actions">
             {/* SettingsMenu : outil contextuel page Édition, hors navigation */}
             {isEdition && <SettingsMenu />}
+
+            {/* Profile selector — édition uniquement, non-visiteur */}
+            {isEdition &&
+              !isVisitor &&
+              (childProfilesLoading || childProfiles.length === 0 ? (
+                <div className="navbar__profile-placeholder">
+                  <span className="navbar__profile-avatar" aria-hidden="true">
+                    ?
+                  </span>
+                </div>
+              ) : (
+                <div
+                  className="navbar__profile-selector"
+                  ref={selectorRef}
+                  onMouseEnter={() => {
+                    if (isDesktop) setIsProfilePopoverOpen(true)
+                  }}
+                  onMouseLeave={() => {
+                    if (isDesktop) setIsProfilePopoverOpen(false)
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="navbar__profile-trigger"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfilePopoverOpen}
+                    aria-label={
+                      activeChildProfile
+                        ? `Profil enfant actif : ${activeChildProfile.name}`
+                        : 'Aucun profil enfant'
+                    }
+                    onClick={() => setIsProfilePopoverOpen(prev => !prev)}
+                    onFocus={() => setIsProfilePopoverOpen(true)}
+                    onKeyDown={handleProfileTriggerKeyDown}
+                  >
+                    <span className="navbar__profile-avatar" aria-hidden="true">
+                      {activeChildProfile?.name?.charAt(0).toUpperCase() || '?'}
+                    </span>
+                    {activeChildProfile && (
+                      <span className="navbar__profile-name" aria-hidden="true">
+                        {activeChildProfile.name}
+                      </span>
+                    )}
+                  </button>
+
+                  {isProfilePopoverOpen && (
+                    <div
+                      className="navbar__profile-popover"
+                      role="menu"
+                      aria-label="Sélectionner un profil enfant"
+                    >
+                      {childProfiles.map(profile => {
+                        const isActive = profile.id === activeChildId
+                        const isLocked = profile.status === 'locked'
+                        return (
+                          <button
+                            key={profile.id}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={isActive}
+                            aria-label={
+                              isLocked
+                                ? `${profile.name} — verrouillé (lecture seule)`
+                                : `Sélectionner ${profile.name}`
+                            }
+                            className={`navbar__profile-item${isActive ? ' navbar__profile-item--active' : ''}`}
+                            disabled={isLocked}
+                            onClick={() => {
+                              if (isLocked) return
+                              setActiveChildId(profile.id)
+                              setIsProfilePopoverOpen(false)
+                            }}
+                          >
+                            <span
+                              className="navbar__profile-avatar"
+                              aria-hidden="true"
+                            >
+                              {profile.name.charAt(0).toUpperCase()}
+                            </span>
+                            <span className="sr-only">{profile.name}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
 
             {/* Icônes de navigation */}
             {navItems.map(({ href, label, ariaLabel, Icon, active }) => (

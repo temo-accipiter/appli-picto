@@ -90,19 +90,6 @@ export default function SettingsMenu() {
             }}
           />
         )}
-
-        <div className="settings-menu__divider" />
-
-        <Button
-          variant="default"
-          className="settings-menu__link"
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('cookie-preferences:open'))
-            setOpen(false)
-          }}
-        >
-          🍪 {t('settings.cookiePreferences')}
-        </Button>
       </div>
     </>
   )

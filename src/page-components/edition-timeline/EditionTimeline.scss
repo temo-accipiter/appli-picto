@@ -7,20 +7,171 @@
 .edition-timeline {
   display: flex;
   flex-direction: column;
-  gap: spacing('md'); // ✅ Aligné avec checklist-edition
-  padding: spacing('lg'); // ✅ Padding uniforme comme checklist-edition
-  background: semantic('info', 'bg'); // ✅ Harmonisé avec checklist-edition
-  border-radius: radius(
-    'card'
-  ); // §D.3 : panneau principal → radius('card') 12px
-  // Ombre supprimée §F.3 : composant non-flottant, état statique
-  min-width: 0; // ✅ Empêche l'extension au-delà du parent (flex-item)
+  gap: spacing('md');
+  padding: spacing('lg');
+  background: semantic('info', 'bg');
+  // Pas de border-radius : section pleine largeur selon le modèle
+  min-width: 0;
 
+  // Desktop : compense la navbar fixe (64px) pour éviter que le top-bar soit masqué
+  @include respond-to(lg) {
+    margin-top: size('nav-height-desktop');
+  }
+
+  // ── Top-bar : masqué sur mobile, visible sur desktop ≥ 1024px ──
   &__top-bar {
+    display: none;
+
+    @include respond-to(lg) {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: spacing('md');
+    }
+  }
+
+  &__top-bar-left {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: spacing('xs');
+  }
+
+  &__top-bar-right {
+    display: flex;
     align-items: center;
     gap: spacing('sm');
+    flex-shrink: 0;
+  }
+
+  // ── Icône info mobile : visible mobile, masqué desktop ──
+  &__info-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+
+    @include respond-to(lg) {
+      display: none;
+    }
+  }
+
+  &__info-btn {
+    border: none;
+    background: transparent;
+    color: text('muted');
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: size('touch-target-min');
+    min-height: size('touch-target-min');
+    border-radius: radius('button');
+    @include safe-transition(color, timing('fast'), easing('ease-out'));
+
+    &:hover {
+      color: text('dark');
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  &__info-popover {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: z-index('modal');
+    background: surface('bg');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('card');
+    box-shadow: shadow('elevation-md');
+    padding: spacing('md');
+    min-width: size('260');
+    margin-top: spacing('xs');
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+  }
+
+  &__info-actions {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex-wrap: wrap;
+  }
+
+  // ── Bouton "Réinitialiser la session" ──
+  &__reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: spacing('xs');
+    padding: spacing('xs') spacing('sm');
+    border: border-width('thin') solid transparent;
+    background: transparent;
+    color: semantic('warning');
+    font-size: font-size('sm');
+    font-weight: font-weight('medium');
+    border-radius: radius('button');
+    cursor: pointer;
+    min-height: size('touch-target-min');
+    white-space: nowrap;
+    @include safe-transition(
+      (background, border-color),
+      timing('fast'),
+      easing('ease-out')
+    );
+
+    &:hover:not(:disabled) {
+      background: semantic('warning', 'bg');
+      border-color: semantic('warning', 'light');
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    &:disabled {
+      opacity: opacity('0-6');
+      cursor: not-allowed;
+    }
+
+    &--confirm {
+      background: semantic('warning', 'bg');
+      border-color: semantic('warning');
+      color: semantic('warning', 'dark');
+    }
+  }
+
+  // ── Bouton "Annuler" la confirmation ──
+  &__cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: spacing('xs') spacing('sm');
+    border: border-width('thin') solid surface('border');
+    background: transparent;
+    color: text('muted');
+    font-size: font-size('sm');
+    border-radius: radius('button');
+    cursor: pointer;
+    min-height: size('touch-target-min');
+    @include safe-transition(
+      (background, color),
+      timing('fast'),
+      easing('ease-out')
+    );
+
+    &:hover {
+      background: surface('card');
+      color: text('dark');
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
   }
 
   &__profile-placeholder {
@@ -122,18 +273,14 @@
   }
 
   &__title {
-    font-size: font-size('2xl');
-    font-weight: font-weight('bold');
+    font-size: font-size('lg');
+    font-weight: font-weight('semibold');
     color: text('dark');
     margin: 0;
-
-    @include respond-to('md') {
-      font-size: font-size('3xl');
-    }
   }
 
   &__subtitle {
-    font-size: font-size('base');
+    font-size: font-size('sm');
     color: text('muted');
     margin: 0;
     line-height: line-height('relaxed');

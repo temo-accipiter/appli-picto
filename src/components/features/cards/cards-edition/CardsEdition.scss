@@ -233,3 +233,140 @@
     color: color('base');
   }
 }
+
+// ============================================================================
+// ONGLETS Mes cartes / Banque
+// ============================================================================
+
+.cards-edition__tabs {
+  display: flex;
+  gap: spacing('xs');
+  border-bottom: border-width('thin') solid surface('border');
+  padding-bottom: 0;
+}
+
+.cards-edition__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: spacing('xs') spacing('md');
+  min-height: size('touch-target-min'); // ≥ 44px WCAG 2.2
+  border: none;
+  background: transparent;
+  color: text('muted');
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
+  border-radius: radius('button') radius('button') 0 0;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-bottom: calc(
+    -1 * #{border-width('thin')}
+  ); // Recouvre la bordure du tabs-bar
+  border-bottom: border-width('medium') solid transparent;
+  @include safe-transition(
+    (color, background, border-color),
+    timing('fast'),
+    easing('ease-out')
+  );
+
+  &:hover:not([aria-selected='true']) {
+    background: surface('soft');
+    color: text('dark');
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    color: color('base');
+    font-weight: font-weight('semibold');
+    border-bottom-color: color('base');
+    background: transparent;
+  }
+}
+
+.cards-edition__tab-content {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+  padding-top: spacing('sm');
+}
+
+.cards-edition__tab-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: spacing('sm');
+  align-items: center;
+
+  // Aligne le trigger Select avec les boutons — masque le label visuellement
+  // (conservé dans le DOM pour les lecteurs d'écran)
+  .select-with-image {
+    position: relative;
+    min-width: size(
+      '180'
+    ); // Largeur minimale pour afficher "sans catégorie" sans tronquer
+
+    .select-with-image__label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+  }
+}
+
+// ── Filtres catégorie en pills ──
+.cards-edition__filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: spacing('xs');
+}
+
+.cards-edition__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: spacing('xs') spacing('sm');
+  min-height: size('touch-target-min'); // ≥ 44px WCAG 2.2
+  border: border-width('thin') solid surface('border');
+  background: surface('soft');
+  color: text('muted');
+  font-size: font-size('sm');
+  font-weight: font-weight('medium');
+  border-radius: radius('full'); // Forme pill
+  cursor: pointer;
+  white-space: nowrap;
+  @include safe-transition(
+    (background, border-color, color),
+    timing('fast'),
+    easing('ease-out')
+  );
+
+  &:hover:not(.cards-edition__pill--active) {
+    background: surface('hover');
+    color: text('dark');
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  &--active {
+    background: semantic('info', 'bg');
+    border-color: semantic('info');
+    color: semantic('info');
+    font-weight: font-weight('semibold');
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards-edition__tab,
+  .cards-edition__pill {
+    transition: none;
+  }
+}

@@ -46,8 +46,7 @@ import useAdminBankCards from '@/hooks/useAdminBankCards'
 import usePersonalCards, { type PersonalCard } from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import type { Sequence } from '@/hooks/useSequences'
-import { useInlineConfirm } from '@/hooks'
-import { Button, Loader, Modal } from '@/components'
+import { Loader, Modal } from '@/components'
 import { SequenceEditor } from '@/components/features/sequences'
 import { SlotItem } from '../slot-item/SlotItem'
 import './SlotsEditor.scss'
@@ -79,10 +78,11 @@ interface SlotsEditorProps {
    */
   validatedSlotIds?: Set<string>
   /**
-   * Réinitialiser la progression de session via la fonction DB dédiée.
+   * @deprecated Le bouton reset est maintenant dans EditionTimeline.__top-bar.
+   * Prop conservée pour compatibilité mais ignorée dans le rendu.
    */
-  onResetSession: () => Promise<{ error: Error | null }>
-  /** Le reset est-il actuellement autorisé ? */
+  onResetSession?: () => Promise<{ error: Error | null }>
+  /** @deprecated Voir onResetSession */
   canResetSession?: boolean
   /**
    * S8 : Désactiver toutes les actions structurelles si le navigateur est offline.
@@ -116,8 +116,6 @@ export function SlotsEditor({
   onRemoveSlot,
   sessionState = null,
   validatedSlotIds,
-  onResetSession,
-  canResetSession = false,
   isOffline = false,
   isExecutionOnly = false,
   bankCards: bankCardsProp,
@@ -129,13 +127,6 @@ export function SlotsEditor({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [swappingCards, setSwappingCards] = useState(false)
   const [addingStep, setAddingStep] = useState(false)
-  const [resettingSession, setResettingSession] = useState(false)
-  // Confirmation inline 1-clic (TSA anti-surprise)
-  const {
-    requireConfirm: requireResetConfirm,
-    cancelConfirm: cancelResetConfirm,
-    isConfirming: isResetConfirming,
-  } = useInlineConfirm()
   const [actionError, setActionError] = useState<string | null>(null)
   const [optimisticSlots, setOptimisticSlots] = useState<Slot[] | null>(null)
   const [activeDragSlotId, setActiveDragSlotId] = useState<string | null>(null)
@@ -188,12 +179,6 @@ export function SlotsEditor({
   useEffect(() => {
     setOptimisticSlots(null)
   }, [slots])
-
-  useEffect(() => {
-    if (!canResetSession) {
-      cancelResetConfirm()
-    }
-  }, [canResetSession, cancelResetConfirm])
 
   useEffect(() => {
     if (!activeSequenceSlot) return
@@ -311,22 +296,6 @@ export function SlotsEditor({
     }
   }
 
-  const handleResetSession = async () => {
-    if (!canResetSession) return
-    // Premier clic → demande confirmation
-    if (!isResetConfirming('reset')) {
-      requireResetConfirm('reset')
-      return
-    }
-    // Deuxième clic → exécute
-    cancelResetConfirm()
-    setResettingSession(true)
-    setActionError(null)
-    const { error: err } = await onResetSession()
-    setResettingSession(false)
-    if (err) setActionError('Impossible de réinitialiser la session. Réessaie.')
-  }
-
   // §4.4 S8 : Actions structurelles désactivées si offline
   // §6.1 catégorie #8 S9 : Actions structurelles désactivées si execution-only
   // §session-lock : Composition verrouillée pendant active_started
@@ -338,17 +307,9 @@ export function SlotsEditor({
     addingStep ||
     swappingCards ||
     !!busyId ||
-    resettingSession ||
     isOffline ||
     isExecutionOnly ||
     isSessionActive
-
-  // Busy pour le contrôle de session (réinitialiser) :
-  // N'inclut PAS isSessionActive ni isExecutionOnly — le reset doit rester accessible
-  // pendant active_started (c'est la seule sortie pour l'adulte).
-  // Seul frein légitime : offline (DB inaccessible).
-  const isControlBusy =
-    addingStep || swappingCards || !!busyId || resettingSession || isOffline
 
   const displayedSlots = optimisticSlots ?? slots
 
@@ -494,70 +455,82 @@ export function SlotsEditor({
         </div>
       )}
 
-      {/* ── Liste des slots ──────────────────────────────────────────────────── */}
-      {slots.length > 0 ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragEnd={event => {
-            void handleDragEnd(event)
-          }}
-        >
-          <ul className="slots-editor__list" aria-label="Slots de la timeline">
-            {
-              sortedSlots.reduce<{
-                stepCount: number
-                elements: React.ReactNode[]
-              }>(
-                (acc, slot, idx) => {
-                  if (slot.kind === 'step') acc.stepCount++
-                  const stepNumber =
-                    slot.kind === 'step' ? acc.stepCount : undefined
+      {/* ── Liste des slots + slot fantôme ──────────────────────────────────── */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={event => {
+          void handleDragEnd(event)
+        }}
+      >
+        <ul className="slots-editor__list" aria-label="Slots de la timeline">
+          {
+            sortedSlots.reduce<{
+              stepCount: number
+              elements: React.ReactNode[]
+            }>(
+              (acc, slot, idx) => {
+                if (slot.kind === 'step') acc.stepCount++
+                const stepNumber =
+                  slot.kind === 'step' ? acc.stepCount : undefined
 
-                  // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
-                  const sequence = slot.card_id
-                    ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
-                      null)
-                    : null
+                // Séquence liée à la carte assignée (0..1 séquence par mother_card_id)
+                const sequence = slot.card_id
+                  ? (sequences.find(s => s.mother_card_id === slot.card_id) ??
+                    null)
+                  : null
 
-                  acc.elements.push(
-                    <SlotItem
-                      key={slot.id}
-                      slot={slot}
-                      positionLabel={idx + 1}
-                      {...(stepNumber !== undefined ? { stepNumber } : {})}
-                      onUpdate={onUpdateSlot}
-                      onRemove={handleRemove}
-                      bankCards={bankCards as BankCard[]}
-                      personalCards={personalCards as PersonalCard[]}
-                      busy={busyId === slot.id || swappingCards}
-                      canRemove={slot.kind === 'step' && stepSlotsCount > 1}
-                      sessionState={sessionState}
-                      isValidated={validatedSlotIds?.has(slot.id) ?? false}
-                      sequence={sequence as Sequence | null}
-                      onCreateSequence={createSequence}
-                      onDeleteSequence={deleteSequence}
-                      canCreateSequence={canCreateSequence}
-                      onOpenSequenceEditor={openSequenceEditor}
-                      isSequenceEditorOpen={activeSequenceSlot?.id === slot.id}
-                      isOffline={isOffline}
-                      isExecutionOnly={isExecutionOnly}
-                      dndSlotId={slot.id}
-                      isDragActive={activeDragSlotId === slot.id}
-                      setSlotRef={node => setSlotRef(slot.id, node)}
-                    />
-                  )
-                  return acc
-                },
-                { stepCount: 0, elements: [] }
-              ).elements
-            }
-          </ul>
-        </DndContext>
-      ) : (
-        <p className="slots-editor__empty">Aucun slot dans cette timeline.</p>
-      )}
+                acc.elements.push(
+                  <SlotItem
+                    key={slot.id}
+                    slot={slot}
+                    positionLabel={idx + 1}
+                    {...(stepNumber !== undefined ? { stepNumber } : {})}
+                    onUpdate={onUpdateSlot}
+                    onRemove={handleRemove}
+                    bankCards={bankCards as BankCard[]}
+                    personalCards={personalCards as PersonalCard[]}
+                    busy={busyId === slot.id || swappingCards}
+                    canRemove={slot.kind === 'step' && stepSlotsCount > 1}
+                    sessionState={sessionState}
+                    isValidated={validatedSlotIds?.has(slot.id) ?? false}
+                    sequence={sequence as Sequence | null}
+                    onCreateSequence={createSequence}
+                    onDeleteSequence={deleteSequence}
+                    canCreateSequence={canCreateSequence}
+                    onOpenSequenceEditor={openSequenceEditor}
+                    isSequenceEditorOpen={activeSequenceSlot?.id === slot.id}
+                    isOffline={isOffline}
+                    isExecutionOnly={isExecutionOnly}
+                    dndSlotId={slot.id}
+                    isDragActive={activeDragSlotId === slot.id}
+                    setSlotRef={node => setSlotRef(slot.id, node)}
+                  />
+                )
+                return acc
+              },
+              { stepCount: 0, elements: [] }
+            ).elements
+          }
+          {/* Slot fantôme — toujours en fin de liste, remplace le bouton + Étape */}
+          <li className="slots-editor__phantom">
+            <button
+              className="slots-editor__phantom-btn"
+              onClick={handleAddStep}
+              disabled={isStructuralBusy}
+              aria-label="Ajouter une étape"
+            >
+              <span className="slots-editor__phantom-icon" aria-hidden="true">
+                +
+              </span>
+              <span className="slots-editor__phantom-label">
+                {addingStep ? 'Ajout…' : 'Étape'}
+              </span>
+            </button>
+          </li>
+        </ul>
+      </DndContext>
 
       {/* ── Message d'erreur action ──────────────────────────────────────────── */}
       {actionError && (
@@ -566,57 +539,12 @@ export function SlotsEditor({
         </p>
       )}
 
-      {/* ── Boutons d'ajout ──────────────────────────────────────────────────── */}
-      <div className="slots-editor__actions">
-        <Button
-          variant="default"
-          className="slots-editor__btn slots-editor__btn--step"
-          onClick={handleAddStep}
-          disabled={isStructuralBusy}
-          isLoading={addingStep}
-        >
-          {addingStep ? 'Ajout…' : '+ Étape 🎯'}
-        </Button>
-        {isSessionActive && (
-          <p className="slots-editor__session-lock-hint" role="note">
-            Session en cours — annulez pour modifier les étapes
-          </p>
-        )}
-      </div>
-
-      {/* ── Bouton "Réinitialiser la session" (runtime piloté en édition) ───── */}
-      <div className="slots-editor__reset-session">
-        <Button
-          variant="default"
-          className={`slots-editor__btn slots-editor__btn--reset${isResetConfirming('reset') ? ' slots-editor__btn--reset-confirm' : ''}`}
-          onClick={handleResetSession}
-          disabled={isControlBusy || !canResetSession}
-          isLoading={resettingSession}
-          aria-label={
-            isResetConfirming('reset')
-              ? 'Confirmer la réinitialisation de la session'
-              : canResetSession
-                ? 'Réinitialiser la session (recommencer depuis le début)'
-                : 'La réinitialisation devient disponible après le début de la progression'
-          }
-        >
-          {resettingSession
-            ? 'Réinitialisation…'
-            : isResetConfirming('reset')
-              ? 'Confirmer la réinitialisation ?'
-              : 'Réinitialiser la session 🔄'}
-        </Button>
-        {/* Annuler la confirmation */}
-        {isResetConfirming('reset') && canResetSession && (
-          <Button
-            variant="default"
-            className="slots-editor__btn slots-editor__btn--cancel"
-            onClick={cancelResetConfirm}
-          >
-            Annuler
-          </Button>
-        )}
-      </div>
+      {/* ── Verrou session — visible si session active ───────────────────────── */}
+      {isSessionActive && (
+        <p className="slots-editor__session-lock-hint" role="note">
+          Session en cours — annulez pour modifier les étapes
+        </p>
+      )}
 
       {resolvedActiveSequenceSlot?.card_id && (
         <Modal isOpen onClose={closeSequenceEditor} size="large">

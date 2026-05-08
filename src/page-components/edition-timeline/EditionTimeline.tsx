@@ -21,15 +21,12 @@
  * - Sélection de profil = rechargement propre (reloadKey pattern).
  */
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type KeyboardEvent as ReactKeyboardEvent,
-} from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { RotateCcw, Info } from 'lucide-react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
 import { useToast } from '@/contexts'
+import { useInlineConfirm } from '@/hooks'
 import useSessionValidations from '@/hooks/useSessionValidations'
 import useExecutionOnly from '@/hooks/useExecutionOnly'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
@@ -89,17 +86,8 @@ export default function EditionTimeline({
   resetSession,
   refreshSession,
 }: EditionTimelineProps) {
-  const {
-    activeChildId,
-    activeChildProfile,
-    childProfiles,
-    loading: childProfilesLoading,
-    setActiveChildId,
-    isVisitor,
-  } = useChildProfile()
-  const selectorRef = useRef<HTMLDivElement | null>(null)
-  const [isProfilePopoverOpen, setIsProfilePopoverOpen] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(false)
+  const { activeChildId } = useChildProfile()
+  const [isInfoOpen, setIsInfoOpen] = useState(false)
 
   // ── S8 : Offline guard (§4.4) ───────────────────────────────────────────────
   // isOnline : détermine si les actions structurelles sont autorisées
@@ -126,44 +114,6 @@ export default function EditionTimeline({
   useEffect(() => {
     setReloadKey(k => k + 1)
   }, [activeChildId])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const mediaQuery = window.matchMedia('(min-width: 768px)')
-    const syncViewport = () => setIsDesktop(mediaQuery.matches)
-
-    syncViewport()
-    mediaQuery.addEventListener('change', syncViewport)
-    return () => mediaQuery.removeEventListener('change', syncViewport)
-  }, [])
-
-  useEffect(() => {
-    if (!isProfilePopoverOpen) return
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        selectorRef.current &&
-        !selectorRef.current.contains(event.target as Node)
-      ) {
-        setIsProfilePopoverOpen(false)
-      }
-    }
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsProfilePopoverOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [isProfilePopoverOpen])
 
   // ── SLOTS : Reçus en props depuis page.tsx (source unique partagée) ─────────
   // Plus de useSlots local → désync Timeline ↔ Bibliothèque résolu
@@ -297,111 +247,162 @@ export default function EditionTimeline({
   }
   const canResetSession = session?.state === 'active_started'
 
-  const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
-  const activeInitial = activeChildProfile?.name?.charAt(0).toUpperCase() || '?'
+  // ── Confirmation inline 2-clics pour reset (TSA anti-surprise) ────────────
+  const {
+    requireConfirm: requireResetConfirm,
+    cancelConfirm: cancelResetConfirm,
+    isConfirming: isResetConfirming,
+  } = useInlineConfirm()
+  const [resettingSession, setResettingSession] = useState(false)
 
-  const handleProfileTriggerKeyDown = (
-    event: ReactKeyboardEvent<HTMLButtonElement>
-  ) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault()
-      setIsProfilePopoverOpen(prev => !prev)
+  const handleResetSession = async () => {
+    if (!canResetSession) return
+    if (!isResetConfirming('reset')) {
+      requireResetConfirm('reset')
+      return
     }
-    if (event.key === 'Escape') {
-      setIsProfilePopoverOpen(false)
-    }
+    cancelResetConfirm()
+    setResettingSession(true)
+    await safeResetSession()
+    setResettingSession(false)
   }
+
+  const RootTag: 'main' | 'section' = embedded ? 'section' : 'main'
 
   return (
     <RootTag className="edition-timeline" aria-label="Édition de la timeline">
+      {/* ── Desktop ≥ 1024px : top-bar visible ──────────────────────────────────
+           Titre + compteur à gauche, bouton reset à droite.
+      ── */}
       <div className="edition-timeline__top-bar">
-        <p className="edition-timeline__subtitle">
-          Glisse l&apos;image d&apos;un slot sur un autre pour échanger. Glisse
-          sur Récompense pour la remplir.
-        </p>
-        {!isVisitor &&
-          (childProfilesLoading || childProfiles.length === 0 ? (
-            <div className="edition-timeline__profile-placeholder">
-              <span className="avatar-circle" aria-hidden="true">
-                ?
-              </span>
-              <span className="sr-only">Aucun profil enfant</span>
-            </div>
-          ) : (
-            <div
-              className="edition-timeline__profile-selector"
-              ref={selectorRef}
-              onMouseEnter={() => {
-                if (isDesktop) setIsProfilePopoverOpen(true)
-              }}
-              onMouseLeave={() => {
-                if (isDesktop) setIsProfilePopoverOpen(false)
-              }}
+        <div className="edition-timeline__top-bar-left">
+          <h2 className="edition-timeline__title">Séquence du jour</h2>
+          <p className="edition-timeline__subtitle">
+            Glisse l&apos;image d&apos;un slot sur un autre pour échanger.
+            Glisse sur Récompense pour la remplir.
+          </p>
+        </div>
+        <div className="edition-timeline__top-bar-right">
+          {isResetConfirming('reset') && canResetSession && (
+            <button
+              type="button"
+              className="edition-timeline__cancel-btn"
+              onClick={cancelResetConfirm}
             >
-              <button
-                type="button"
-                className="edition-timeline__profile-trigger"
-                aria-haspopup="menu"
-                aria-expanded={isProfilePopoverOpen}
-                aria-label={
-                  activeChildProfile
-                    ? `Profil enfant actif : ${activeChildProfile.name}`
-                    : 'Aucun profil enfant'
-                }
-                onClick={() => setIsProfilePopoverOpen(prev => !prev)}
-                onFocus={() => setIsProfilePopoverOpen(true)}
-                onKeyDown={handleProfileTriggerKeyDown}
-              >
-                <span className="avatar-circle" aria-hidden="true">
-                  {activeInitial}
-                </span>
-              </button>
+              Annuler
+            </button>
+          )}
+          <button
+            type="button"
+            className={`edition-timeline__reset-btn${isResetConfirming('reset') ? ' edition-timeline__reset-btn--confirm' : ''}`}
+            onClick={handleResetSession}
+            disabled={!canResetSession || resettingSession || !isOnline}
+            aria-label={
+              isResetConfirming('reset')
+                ? 'Confirmer la réinitialisation de la session'
+                : canResetSession
+                  ? 'Réinitialiser la session (recommencer depuis le début)'
+                  : 'La réinitialisation devient disponible après le début de la progression'
+            }
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+            {resettingSession
+              ? 'Réinitialisation…'
+              : isResetConfirming('reset')
+                ? 'Confirmer ?'
+                : 'Réinitialiser la session'}
+          </button>
+        </div>
+      </div>
 
-              {isProfilePopoverOpen && (
-                <div
-                  className="edition-timeline__profile-popover"
-                  role="menu"
-                  aria-label="Sélectionner un profil enfant"
+      {/* ── Mobile < 1024px : icône info cliquable ──────────────────────────────
+           Remplace le top-bar pour réduire la charge visuelle.
+           Clic → popover avec titre, compteur et bouton reset.
+      ── */}
+      <div className="edition-timeline__info-trigger">
+        <button
+          type="button"
+          className="edition-timeline__info-btn"
+          aria-label={
+            isInfoOpen
+              ? 'Fermer les informations'
+              : 'Afficher les informations sur la séquence'
+          }
+          aria-expanded={isInfoOpen}
+          onClick={() => setIsInfoOpen(prev => !prev)}
+        >
+          <Info size={20} aria-hidden="true" />
+        </button>
+        {isInfoOpen && (
+          <div
+            className="edition-timeline__info-popover"
+            role="dialog"
+            aria-label="Informations sur la séquence du jour"
+          >
+            <h2 className="edition-timeline__title">Séquence du jour</h2>
+            <p className="edition-timeline__subtitle">
+              Glisse l&apos;image d&apos;un slot sur un autre pour échanger.
+              Glisse sur Récompense pour la remplir.
+            </p>
+            {canResetSession && (
+              <div className="edition-timeline__info-actions">
+                {isResetConfirming('reset') && (
+                  <button
+                    type="button"
+                    className="edition-timeline__cancel-btn"
+                    onClick={cancelResetConfirm}
+                  >
+                    Annuler
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={`edition-timeline__reset-btn${isResetConfirming('reset') ? ' edition-timeline__reset-btn--confirm' : ''}`}
+                  onClick={handleResetSession}
+                  disabled={resettingSession || !isOnline}
                 >
-                  {childProfiles.map(profile => {
-                    const isActive = profile.id === activeChildId
-                    const isLocked = profile.status === 'locked'
-                    const initial = profile.name.charAt(0).toUpperCase()
-
-                    return (
-                      <button
-                        key={profile.id}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={isActive}
-                        aria-label={
-                          isLocked
-                            ? `${profile.name} — verrouillé (lecture seule)`
-                            : `Sélectionner ${profile.name}`
-                        }
-                        className={`edition-timeline__profile-item ${
-                          isActive
-                            ? 'edition-timeline__profile-item--active'
-                            : ''
-                        }`}
-                        disabled={isLocked}
-                        onClick={() => {
-                          if (isLocked) return
-                          setActiveChildId(profile.id)
-                          setIsProfilePopoverOpen(false)
-                        }}
-                      >
-                        <span className="avatar-circle" aria-hidden="true">
-                          {initial}
-                        </span>
-                        <span className="sr-only">{profile.name}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+                  <RotateCcw size={14} aria-hidden="true" />
+                  {resettingSession
+                    ? 'Réinitialisation…'
+                    : isResetConfirming('reset')
+                      ? 'Confirmer ?'
+                      : 'Réinitialiser la session'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+        <div className="edition-timeline__info-actions">
+          {isResetConfirming('reset') && canResetSession && (
+            <button
+              type="button"
+              className="edition-timeline__cancel-btn"
+              onClick={cancelResetConfirm}
+            >
+              Annuler
+            </button>
+          )}
+          <button
+            type="button"
+            className={`edition-timeline__reset-btn${isResetConfirming('reset') ? ' edition-timeline__reset-btn--confirm' : ''}`}
+            onClick={handleResetSession}
+            disabled={!canResetSession || resettingSession || !isOnline}
+            aria-label={
+              isResetConfirming('reset')
+                ? 'Confirmer la réinitialisation de la session'
+                : canResetSession
+                  ? 'Réinitialiser la session'
+                  : 'Réinitialisation indisponible'
+            }
+          >
+            <RotateCcw size={14} aria-hidden="true" />
+            {resettingSession
+              ? 'Réinitialisation…'
+              : isResetConfirming('reset')
+                ? 'Confirmer ?'
+                : 'Réinitialiser'}
+          </button>
+        </div>
       </div>
 
       {/* ── S8 : Bandeau offline (§4.4.1) ──────────────────────────────────────
@@ -421,11 +422,7 @@ export default function EditionTimeline({
 
       {!timeline && (
         <p className="edition-timeline__no-timeline" role="status">
-          {childProfilesLoading
-            ? 'Chargement du profil enfant...'
-            : !activeChildProfile && !isVisitor
-              ? 'Aucun profil enfant disponible.'
-              : 'Chargement de la timeline...'}
+          Chargement de la timeline…
         </p>
       )}
 
@@ -445,8 +442,6 @@ export default function EditionTimeline({
           onRemoveSlot={safeRemoveSlot}
           sessionState={session?.state ?? null}
           validatedSlotIds={validatedSlotIds}
-          onResetSession={safeResetSession}
-          canResetSession={canResetSession}
           isOffline={!isOnline}
           isExecutionOnly={isExecutionOnly}
           {...(bankCards != null ? { bankCards } : {})}
