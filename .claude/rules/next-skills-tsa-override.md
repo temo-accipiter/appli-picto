@@ -135,3 +135,37 @@ Ces 3 systèmes ne doivent JAMAIS être fusionnés dans aucun nom de composant, 
 - Live regions pour les toasts (Contexte Édition uniquement).
 - `aria-label` sur tous les boutons icône.
 - Pas de contenu animé sans `prefers-reduced-motion` guard.
+
+---
+
+## 8. Skill `frontend-design` (Anthropic) — restrictions TSA
+
+La skill `frontend-design` est installée et autorisée **uniquement pour le Contexte Édition**.
+Elle est **neutralisée pour le Contexte Tableau** via les interdictions ci-dessous.
+
+### Interdit dans `src/app/**/tableau/**` et `src/components/**/tableau/**`
+
+- **Aucune direction esthétique "audacieuse"** : pas de brutalist, maximalist,
+  retro-futuristic, editorial, industrial. Le Contexte Tableau est émotionnellement
+  neutre par définition — prévisible et rassurant prime sur mémorable.
+- **Aucune animation décorative** : scroll-triggered effects, staggered reveals,
+  parallax, hover surprises — tous interdits. Seules les transitions fonctionnelles
+  ≤ 0.3s easing linear sont autorisées (voir §1).
+- **Aucun fond texturé ou effet visuel** : pas de gradient mesh, noise texture,
+  grain overlay, geometric patterns. Fond uni via token `surface('bg')` uniquement.
+- **Aucune typographie "distinctive"** : la police est Lexend (déjà chargée via
+  `next/font`). Ne pas introduire de display font, de font pairing, ni changer
+  la hiérarchie typographique existante.
+- **Aucune asymétrie ou layout "inattendu"** : grille stricte, pas d'overlap,
+  pas de diagonal flow, pas de grid-breaking elements. La prévisibilité spatiale
+  est une exigence TSA non négociable.
+- **Aucun curseur custom** : le curseur système par défaut uniquement.
+
+### Autorisé dans `src/app/**/edition/**` et `src/components/**/edition/**`
+
+La skill `frontend-design` s'applique librement pour le Contexte Édition adulte,
+sous réserve de respecter :
+
+- La discipline tokens SCSS (§4) — jamais de valeurs hardcodées même pour un effet visuel.
+- Les zones tactiles ≥ 44px (§7).
+- Le `prefers-reduced-motion` guard sur toute animation (§7).
