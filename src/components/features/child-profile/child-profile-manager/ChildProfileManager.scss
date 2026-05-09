@@ -71,14 +71,30 @@
     flex-shrink: 0;
     background: blue(500); // défaut
 
-    &[data-color='blue'] { background: blue(500); }
-    &[data-color='green'] { background: green(500); }
-    &[data-color='orange'] { background: orange(500); }
-    &[data-color='purple'] { background: purple(500); }
-    &[data-color='red'] { background: red(500); }
-    &[data-color='yellow'] { background: yellow(400); }
-    &[data-color='teal'] { background: teal(500); }
-    &[data-color='pink'] { background: pink(500); }
+    &[data-color='blue'] {
+      background: blue(500);
+    }
+    &[data-color='green'] {
+      background: green(500);
+    }
+    &[data-color='orange'] {
+      background: orange(500);
+    }
+    &[data-color='purple'] {
+      background: purple(500);
+    }
+    &[data-color='red'] {
+      background: red(500);
+    }
+    &[data-color='yellow'] {
+      background: yellow(400);
+    }
+    &[data-color='teal'] {
+      background: teal(500);
+    }
+    &[data-color='pink'] {
+      background: pink(500);
+    }
   }
 
   &__actions {
@@ -143,14 +159,30 @@
     padding: 0;
     @include safe-transition(border-color box-shadow);
 
-    &[data-color='blue'] { background: blue(500); }
-    &[data-color='green'] { background: green(500); }
-    &[data-color='orange'] { background: orange(500); }
-    &[data-color='purple'] { background: purple(500); }
-    &[data-color='red'] { background: red(500); }
-    &[data-color='yellow'] { background: yellow(400); }
-    &[data-color='teal'] { background: teal(500); }
-    &[data-color='pink'] { background: pink(500); }
+    &[data-color='blue'] {
+      background: blue(500);
+    }
+    &[data-color='green'] {
+      background: green(500);
+    }
+    &[data-color='orange'] {
+      background: orange(500);
+    }
+    &[data-color='purple'] {
+      background: purple(500);
+    }
+    &[data-color='red'] {
+      background: red(500);
+    }
+    &[data-color='yellow'] {
+      background: yellow(400);
+    }
+    &[data-color='teal'] {
+      background: teal(500);
+    }
+    &[data-color='pink'] {
+      background: pink(500);
+    }
 
     &--selected {
       border-color: text('primary');
