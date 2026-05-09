@@ -293,24 +293,26 @@ export default function Navbar() {
                 </div>
               ))}
 
-            {/* Icônes de navigation */}
-            {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
-              <Link
-                key={href}
-                href={href}
-                className={`navbar__item${active ? ' navbar__item--active' : ''}`}
-                aria-label={ariaLabel}
-                aria-current={active ? 'page' : undefined}
-              >
-                <Icon
-                  size={20}
-                  strokeWidth={2}
-                  aria-hidden="true"
-                  className="navbar__icon"
-                />
-                <span className="navbar__label">{label}</span>
-              </Link>
-            ))}
+            {/* Groupe de navigation — séparé des outils contextuels */}
+            <div className="navbar__nav-group">
+              {navItems.map(({ href, label, ariaLabel, Icon, active }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`navbar__item${active ? ' navbar__item--active' : ''}`}
+                  aria-label={ariaLabel}
+                  aria-current={active ? 'page' : undefined}
+                >
+                  <Icon
+                    size={20}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                    className="navbar__icon"
+                  />
+                  <span className="navbar__label">{label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </nav>

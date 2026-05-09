@@ -9,8 +9,8 @@
   flex-direction: column;
   gap: spacing('md');
   padding: spacing('lg');
-  background: semantic('info', 'bg');
-  // Pas de border-radius : section pleine largeur selon le modèle
+  background: tsa-pastel('blue-light');
+  box-shadow: shadow('elevation-sm');
   min-width: 0;
 
   // Desktop : compense la navbar fixe (64px) pour éviter que le top-bar soit masqué

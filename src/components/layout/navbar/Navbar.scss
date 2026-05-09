@@ -126,18 +126,33 @@
   flex-shrink: 0;
 }
 
+// === GROUPE DE NAVIGATION ===
+
+.navbar__nav-group {
+  display: flex;
+  align-items: center;
+  gap: spacing('xs');
+  background: surface('soft');
+  padding: spacing('xs');
+  border-radius: radius('badge');
+}
+
 // === ITEM DE NAVIGATION ===
 
 .navbar__item {
   display: flex;
   align-items: center;
-  gap: spacing('xs');
+  gap: spacing('sm');
   min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
   padding: spacing('xs') spacing('sm');
   text-decoration: none;
   color: text('muted');
-  border-radius: radius('button');
-  @include safe-transition(color, timing('fast'), easing('ease-out'));
+  border-radius: radius('badge');
+  @include safe-transition(
+    (color, background-color),
+    timing('fast'),
+    easing('ease-out')
+  );
 
   &:focus-visible {
     @include focus-ring();
@@ -148,12 +163,13 @@
     color: text('muted');
   }
 
-  // Page courante : couleur primary (cohérence avec BottomNav)
+  // Page courante : pilule blanche + texte foncé
   &--active {
-    color: var(--color-primary);
+    color: text();
+    background-color: surface('bg');
 
     &:visited {
-      color: var(--color-primary);
+      color: text();
     }
   }
 }
@@ -164,10 +180,9 @@
 
 .navbar__label {
   font-size: font-size('sm');
-  font-weight: font-weight('medium');
+  font-weight: font-weight('semibold');
   white-space: nowrap;
 }
-
 // === PROFILE SELECTOR — /edition uniquement (desktop ≥ 1024px) ===
 
 .navbar__profile-placeholder {
@@ -323,14 +338,18 @@
 }
 
 .navbar__profile-item {
-  border: none;
   background: transparent;
-  padding: 0;
   width: 100%;
-  border-radius: radius('badge');
+  min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
+  gap: spacing('6');
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  padding: spacing('sm') spacing('md');
+  margin: 0;
+  border: 0;
+  border-radius: radius('full');
+  cursor: pointer;
   cursor: pointer;
   @include safe-transition(
     (transform, box-shadow),
