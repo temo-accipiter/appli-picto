@@ -62,6 +62,25 @@
     color: text('primary');
   }
 
+  // Pastille de couleur identifiant visuel de l'espace
+  &__color-dot {
+    display: inline-block;
+    width: size('12');
+    height: size('12');
+    border-radius: radius('full');
+    flex-shrink: 0;
+    background: blue(500); // défaut
+
+    &[data-color='blue'] { background: blue(500); }
+    &[data-color='green'] { background: green(500); }
+    &[data-color='orange'] { background: orange(500); }
+    &[data-color='purple'] { background: purple(500); }
+    &[data-color='red'] { background: red(500); }
+    &[data-color='yellow'] { background: yellow(400); }
+    &[data-color='teal'] { background: teal(500); }
+    &[data-color='pink'] { background: pink(500); }
+  }
+
   &__actions {
     display: flex;
     align-items: center;
@@ -94,9 +113,58 @@
 
   &__edit {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: spacing('xs');
     flex: 1;
+  }
+
+  &__edit-row {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+  }
+
+  &__color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing('xs');
+    padding: spacing('xs') 0;
+  }
+
+  &__color-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size('touch-target-min');
+    height: size('touch-target-min');
+    border-radius: radius('full');
+    border: border-width('medium') solid transparent;
+    cursor: pointer;
+    padding: 0;
+    @include safe-transition(border-color box-shadow);
+
+    &[data-color='blue'] { background: blue(500); }
+    &[data-color='green'] { background: green(500); }
+    &[data-color='orange'] { background: orange(500); }
+    &[data-color='purple'] { background: purple(500); }
+    &[data-color='red'] { background: red(500); }
+    &[data-color='yellow'] { background: yellow(400); }
+    &[data-color='teal'] { background: teal(500); }
+    &[data-color='pink'] { background: pink(500); }
+
+    &--selected {
+      border-color: text('primary');
+      box-shadow: shadow('elevation-sm');
+    }
+
+    &:focus-visible {
+      @include focus-ring();
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   &__edit-input {

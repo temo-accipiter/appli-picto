@@ -53,36 +53,59 @@ export function ChildProfileManager() {
   // ── État édition inline ─────────────────────────────────────────────────────
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingName, setEditingName] = useState('')
+  const [editingColor, setEditingColor] = useState('blue')
   const [editSaving, setEditSaving] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
+
+  const SPACE_COLORS = [
+    'blue',
+    'green',
+    'orange',
+    'purple',
+    'red',
+    'yellow',
+    'teal',
+    'pink',
+  ] as const
 
   const handleStartEdit = (profile: ChildProfile) => {
     setEditingId(profile.id)
     setEditingName(profile.name)
-    // Focus géré par autoFocus sur l'input
+    setEditingColor(profile.color ?? 'blue')
   }
 
   const handleCancelEdit = () => {
     setEditingId(null)
     setEditingName('')
+    setEditingColor('blue')
   }
 
-  const handleSaveEdit = async (profileId: string, originalName: string) => {
+  const handleSaveEdit = async (
+    profileId: string,
+    originalName: string,
+    originalColor: string
+  ) => {
     const trimmed = editingName.trim()
-    if (!trimmed || trimmed === originalName) {
+    const nameUnchanged = !trimmed || trimmed === originalName
+    const colorUnchanged = editingColor === originalColor
+
+    if (nameUnchanged && colorUnchanged) {
       handleCancelEdit()
       return
     }
+
+    const updates: { name?: string; color?: string } = {}
+    if (!nameUnchanged) updates.name = trimmed
+    if (!colorUnchanged) updates.color = editingColor
+
     setEditSaving(true)
-    const { success, error } = await updateChildProfile(profileId, {
-      name: trimmed,
-    })
+    const { success, error } = await updateChildProfile(profileId, updates)
     setEditSaving(false)
     if (success) {
-      showToast(`Espace renommé avec succès`, 'success')
+      showToast(`Espace mis à jour`, 'success')
       setEditingId(null)
     } else {
-      showToast(error ?? "Impossible de renommer l'espace", 'error')
+      showToast(error ?? "Impossible de mettre à jour l'espace", 'error')
     }
   }
 
@@ -220,48 +243,84 @@ export function ChildProfileManager() {
                   {editingId === profile.id ? (
                     // ── Mode édition inline ────────────────────────────────
                     <div className="child-profile-manager__edit">
-                      <input
-                        ref={editInputRef}
-                        className="child-profile-manager__edit-input"
-                        value={editingName}
-                        onChange={e => setEditingName(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter')
-                            void handleSaveEdit(profile.id, profile.name)
-                          if (e.key === 'Escape') handleCancelEdit()
-                        }}
-                        maxLength={50}
-                        autoFocus
-                        disabled={editSaving}
-                        aria-label={`Modifier le nom de l'espace ${profile.name}`}
-                      />
-                      <div className="child-profile-manager__edit-actions">
-                        <button
-                          type="button"
-                          className="child-profile-manager__edit-btn child-profile-manager__edit-btn--save"
-                          onClick={() =>
-                            void handleSaveEdit(profile.id, profile.name)
-                          }
-                          disabled={editSaving || !editingName.trim()}
-                          aria-label="Enregistrer le nouveau nom"
-                        >
-                          <Check size={16} aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
-                          className="child-profile-manager__edit-btn child-profile-manager__edit-btn--cancel"
-                          onClick={handleCancelEdit}
+                      <div className="child-profile-manager__edit-row">
+                        <input
+                          ref={editInputRef}
+                          className="child-profile-manager__edit-input"
+                          value={editingName}
+                          onChange={e => setEditingName(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter')
+                              void handleSaveEdit(
+                                profile.id,
+                                profile.name,
+                                profile.color ?? 'blue'
+                              )
+                            if (e.key === 'Escape') handleCancelEdit()
+                          }}
+                          maxLength={50}
+                          autoFocus
                           disabled={editSaving}
-                          aria-label="Annuler la modification"
-                        >
-                          <X size={16} aria-hidden="true" />
-                        </button>
+                          aria-label={`Modifier le nom de l'espace ${profile.name}`}
+                        />
+                        <div className="child-profile-manager__edit-actions">
+                          <button
+                            type="button"
+                            className="child-profile-manager__edit-btn child-profile-manager__edit-btn--save"
+                            onClick={() =>
+                              void handleSaveEdit(
+                                profile.id,
+                                profile.name,
+                                profile.color ?? 'blue'
+                              )
+                            }
+                            disabled={editSaving || !editingName.trim()}
+                            aria-label="Enregistrer les modifications"
+                          >
+                            <Check size={16} aria-hidden="true" />
+                          </button>
+                          <button
+                            type="button"
+                            className="child-profile-manager__edit-btn child-profile-manager__edit-btn--cancel"
+                            onClick={handleCancelEdit}
+                            disabled={editSaving}
+                            aria-label="Annuler la modification"
+                          >
+                            <X size={16} aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Sélecteur de couleur */}
+                      <div
+                        className="child-profile-manager__color-picker"
+                        role="radiogroup"
+                        aria-label="Couleur de l'espace"
+                      >
+                        {SPACE_COLORS.map(colorOption => (
+                          <button
+                            key={colorOption}
+                            type="button"
+                            role="radio"
+                            aria-checked={editingColor === colorOption}
+                            aria-label={colorOption}
+                            className={`child-profile-manager__color-option${editingColor === colorOption ? ' child-profile-manager__color-option--selected' : ''}`}
+                            data-color={colorOption}
+                            onClick={() => setEditingColor(colorOption)}
+                            disabled={editSaving}
+                          />
+                        ))}
                       </div>
                     </div>
                   ) : (
                     // ── Mode affichage ─────────────────────────────────────
                     <>
                       <div className="child-profile-manager__info">
+                        <span
+                          className="child-profile-manager__color-dot"
+                          data-color={profile.color ?? 'blue'}
+                          aria-hidden="true"
+                        />
                         <span className="child-profile-manager__name">
                           {profile.name}
                         </span>

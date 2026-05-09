@@ -59,7 +59,11 @@ function ProfileCard({ profile, isActive, onSelect }: ProfileCardProps) {
       }
     >
       {/* Avatar lettre */}
-      <span className="child-profile-card__avatar" aria-hidden="true">
+      <span
+        className="child-profile-card__avatar"
+        data-color={profile.color ?? 'blue'}
+        aria-hidden="true"
+      >
         {initial}
       </span>
 

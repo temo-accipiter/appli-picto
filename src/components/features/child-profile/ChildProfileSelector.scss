@@ -126,12 +126,22 @@
     width: size('32');
     height: size('32');
     border-radius: radius('full');
-    background: color('base');
+    background: blue(500); // défaut
     color: text('invert');
     font-size: font-size('lg');
     font-weight: font-weight('bold');
     line-height: line-height('none');
     flex-shrink: 0;
+
+    // Couleurs dynamiques via data-color (DB : 8 valeurs)
+    &[data-color='blue'] { background: blue(500); }
+    &[data-color='green'] { background: green(500); }
+    &[data-color='orange'] { background: orange(500); }
+    &[data-color='purple'] { background: purple(500); }
+    &[data-color='red'] { background: red(500); }
+    &[data-color='yellow'] { background: yellow(400); color: text('primary'); }
+    &[data-color='teal'] { background: teal(500); }
+    &[data-color='pink'] { background: pink(500); }
   }
 
   // ── Nom du profil ────────────────────────────────────────────────────────────

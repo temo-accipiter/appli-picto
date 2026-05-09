@@ -207,14 +207,18 @@ export default function Navbar() {
                     aria-expanded={isProfilePopoverOpen}
                     aria-label={
                       activeChildProfile
-                        ? `Profil enfant actif : ${activeChildProfile.name}`
-                        : 'Aucun profil enfant'
+                        ? `Espace actif : ${activeChildProfile.name}`
+                        : 'Aucun espace enfant'
                     }
                     onClick={() => setIsProfilePopoverOpen(prev => !prev)}
                     onFocus={() => setIsProfilePopoverOpen(true)}
                     onKeyDown={handleProfileTriggerKeyDown}
                   >
-                    <span className="navbar__profile-avatar" aria-hidden="true">
+                    <span
+                      className="navbar__profile-avatar"
+                      data-color={activeChildProfile?.color ?? 'blue'}
+                      aria-hidden="true"
+                    >
                       {activeChildProfile?.name?.charAt(0).toUpperCase() || '?'}
                     </span>
                     {activeChildProfile && (
@@ -228,7 +232,7 @@ export default function Navbar() {
                     <div
                       className="navbar__profile-popover"
                       role="menu"
-                      aria-label="Sélectionner un profil enfant"
+                      aria-label="Sélectionner un espace enfant"
                     >
                       {childProfiles.map(profile => {
                         const isActive = profile.id === activeChildId
@@ -254,6 +258,7 @@ export default function Navbar() {
                           >
                             <span
                               className="navbar__profile-avatar"
+                              data-color={profile.color ?? 'blue'}
                               aria-hidden="true"
                             >
                               {profile.name.charAt(0).toUpperCase()}
