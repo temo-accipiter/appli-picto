@@ -264,6 +264,7 @@ export type Database = {
       child_profiles: {
         Row: {
           account_id: string
+          color: string
           created_at: string
           id: string
           name: string
@@ -272,6 +273,7 @@ export type Database = {
         }
         Insert: {
           account_id: string
+          color?: string
           created_at?: string
           id?: string
           name: string
@@ -280,6 +282,7 @@ export type Database = {
         }
         Update: {
           account_id?: string
+          color?: string
           created_at?: string
           id?: string
           name?: string
