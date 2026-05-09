@@ -65,32 +65,6 @@
   }
 }
 
-.profil-header__avatar {
-  flex-shrink: 0;
-}
-
-.profil-header__avatar-img {
-  width: size('64');
-  height: size('64');
-  border-radius: radius('full');
-  object-fit: cover;
-  border: border-width('medium') solid surface('border');
-}
-
-.profil-header__avatar-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: size('64');
-  height: size('64');
-  border-radius: radius('full');
-  background: surface('soft');
-  color: semantic('info');
-  font-size: font-size('2xl');
-  font-weight: font-weight('bold');
-  border: border-width('medium') solid surface('border');
-}
-
 .profil-header__info {
   display: flex;
   flex-direction: column;
@@ -440,48 +414,7 @@
 
 // === MODALS — CONTENU ===
 
-// Modal 1 : Informations personnelles
-
-.profil-modal-identity {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: spacing('lg');
-}
-
-.profil-modal-identity__form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: spacing('md');
-}
-
-.profil-modal-identity__email {
-  display: flex;
-  flex-direction: column;
-  gap: spacing('xs');
-  padding: spacing('md');
-  background: surface('soft');
-  border-radius: radius('card');
-  border: border-width('thin') solid surface('border');
-}
-
-.profil-modal-identity__email-label {
-  font-size: font-size('sm');
-  font-weight: font-weight('semibold');
-  color: text('muted');
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.profil-modal-identity__email-value {
-  font-size: font-size('base');
-  font-weight: font-weight('medium');
-  color: text('default');
-  word-break: break-all;
-}
-
-// Modal 2 : Préférences d'affichage
+// Modal : Préférences d'affichage
 
 .profil-modal-preferences {
   display: flex;
@@ -490,7 +423,7 @@
   padding: spacing('sm') 0;
 }
 
-// Modal 3 : Profils enfants
+// Modal : Profils enfants
 
 .profil-modal-children {
   display: flex;
@@ -498,7 +431,7 @@
   gap: spacing('md');
 }
 
-// Modal 4 : Mes appareils
+// Modal : Mes appareils
 
 .profil-modal-devices {
   display: flex;
@@ -515,7 +448,7 @@
   border-radius: radius('card');
 }
 
-// Modal 6 : RGPD et mentions légales
+// Modal : RGPD et mentions légales
 
 .profil-modal-rgpd {
   display: flex;

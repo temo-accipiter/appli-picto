@@ -49,6 +49,7 @@ export interface ChildProfileUI {
   id: string
   name: string
   status: 'active' | 'locked'
+  color: string
 }
 
 // ─── Constantes VISITOR ────────────────────────────────────────────────────────
@@ -61,6 +62,7 @@ const VISITOR_PROFILE: ChildProfileUI = {
   id: 'visitor-local',
   name: 'Mon enfant',
   status: 'active',
+  color: 'blue',
 }
 
 /**
@@ -111,7 +113,17 @@ interface ChildProfileContextValue {
     name: string
   ) => Promise<{ profile: ChildProfile | null; error: string | null }>
   /**
-   * Supprimer un profil enfant (DB-first).
+   * Mettre à jour un espace enfant (DB-first).
+   * Permet de changer le nom et/ou la couleur.
+   * Retourne { success, error } — error est un message UX neutre.
+   * ⚠️ NON DISPONIBLE en mode visitor (pas de DB).
+   */
+  updateChildProfile: (
+    id: string,
+    updates: { name?: string; color?: string }
+  ) => Promise<{ success: boolean; error: string | null }>
+  /**
+   * Supprimer un espace enfant (DB-first).
    * Retourne { success, error } — error est un message UX neutre.
    * ⚠️ NON DISPONIBLE en mode visitor (pas de DB).
    */
@@ -150,6 +162,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     error: dbError,
     refetch: dbRefetch,
     createProfile: dbCreateProfile,
+    updateChildProfile: dbUpdateProfile,
     deleteProfile: dbDeleteProfile,
   } = useChildProfiles()
 
@@ -271,6 +284,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       id: dbProfile.id,
       name: dbProfile.name,
       status: dbProfile.status,
+      color: dbProfile.color ?? 'blue',
     }
   }, [isVisitor, resolvedState.effectiveChildId, dbProfiles])
 
@@ -329,6 +343,23 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
     [isVisitor, dbCreateProfile, setActiveChildId]
   )
 
+  // ── Wrapping updateProfile (no-op pour visitor) ─────────────────────────────
+  const updateChildProfile = useCallback(
+    async (
+      id: string,
+      updates: { name?: string; color?: string }
+    ): Promise<{ success: boolean; error: string | null }> => {
+      if (isVisitor) {
+        return {
+          success: false,
+          error: 'Fonctionnalité non disponible en mode visiteur',
+        }
+      }
+      return dbUpdateProfile(id, updates)
+    },
+    [isVisitor, dbUpdateProfile]
+  )
+
   // ── Wrapping deleteProfile (no-op pour visitor) ─────────────────────────────
   const deleteChildProfile = useCallback(
     async (
@@ -361,6 +392,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       loading: isVisitor ? false : dbLoading,
       error: isVisitor ? null : dbError,
       createChildProfile,
+      updateChildProfile,
       deleteChildProfile,
       refetchProfiles,
       isVisitor,
@@ -374,6 +406,7 @@ export function ChildProfileProvider({ children }: ChildProfileProviderProps) {
       dbLoading,
       dbError,
       createChildProfile,
+      updateChildProfile,
       deleteChildProfile,
       refetchProfiles,
     ]

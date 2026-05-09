@@ -2,15 +2,11 @@
 
 // src/page-components/profil/Profil.tsx
 import {
-  AvatarProfil,
   Button,
   ChildProfileSelector,
   DeleteAccountModal,
-  InputWithValidation,
   LangSelector,
   Modal,
-  ModalConfirm,
-  SignedImage,
   ThemeToggle,
 } from '@/components'
 import { ChildProfileManager } from '@/components/features/child-profile'
@@ -24,16 +20,8 @@ import {
   useDevices,
 } from '@/hooks'
 import useDeviceRegistration from '@/hooks/useDeviceRegistration'
-import {
-  getDisplayPseudo,
-  makeNoDoubleSpaces,
-  makeNoEdgeSpaces,
-  makeValidatePseudo,
-  normalizeSpaces,
-  supabase,
-} from '@/utils'
-import { buildRLSPath } from '@/utils/storage/uploadImage'
-import React, { useEffect, useMemo, useState, useRef } from 'react'
+import { supabase } from '@/utils'
+import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
@@ -47,22 +35,11 @@ import {
   LogOut,
   Settings,
   Smartphone,
-  User,
   Users,
 } from 'lucide-react'
 import './Profil.scss'
 
-type ActiveModal =
-  | 'identity'
-  | 'preferences'
-  | 'children'
-  | 'devices'
-  | 'rgpd'
-  | null
-
-function wait(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
+type ActiveModal = 'preferences' | 'children' | 'devices' | 'rgpd' | null
 
 export default function Profil() {
   const { t } = useI18n()
@@ -91,13 +68,6 @@ export default function Profil() {
     }
   }, [registrationError, showToast, t])
 
-  // ── États identité ──────────────────────────────────────────────────────────
-  const [pseudo, setPseudo] = useState('')
-  const [tempAvatarPath, setTempAvatarPath] = useState<string | null>(null)
-  const [avatarKey, setAvatarKey] = useState(0)
-  const [isSaving, setIsSaving] = useState(false)
-  const [confirmDeleteAvatar, setConfirmDeleteAvatar] = useState(false)
-
   // ── États modals ────────────────────────────────────────────────────────────
   const [activeModal, setActiveModal] = useState<ActiveModal>(null)
 
@@ -115,17 +85,6 @@ export default function Profil() {
   // ── État suppression compte ─────────────────────────────────────────────────
   const [deleteAccountOpen, setDeleteAccountOpen] = useState(false)
 
-  const displayPseudo = getDisplayPseudo(user, pseudo)
-
-  const noEdgeSpaces = useMemo(() => makeNoEdgeSpaces(t), [t])
-  const noDoubleSpaces = useMemo(() => makeNoDoubleSpaces(t), [t])
-  const validatePseudoMaxLength = useMemo(() => makeValidatePseudo(t), [t])
-
-  useEffect(() => {
-    if (!user) return
-    setPseudo(String(user.user_metadata?.pseudo || '').trim())
-  }, [user])
-
   // Fermeture modal avec restitution du focus sur le déclencheur
   const closeModal = () => {
     const current = activeModal
@@ -133,93 +92,6 @@ export default function Profil() {
     requestAnimationFrame(() => {
       if (current) triggerRefs.current[current]?.focus()
     })
-  }
-
-  // ── Logique métier identité ─────────────────────────────────────────────────
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user || isSaving) return
-    setIsSaving(true)
-    try {
-      const pseudoMsg = noEdgeSpaces(pseudo) || noDoubleSpaces(pseudo)
-      if (pseudoMsg) {
-        showToast(t('profil.fixFieldErrors'), 'error')
-        return
-      }
-      const pseudoClean = normalizeSpaces(pseudo || '')
-      const payload = { pseudo: pseudoClean === '' ? null : pseudoClean }
-      const { error: metaError } = await supabase.auth.updateUser({
-        data: { pseudo: payload.pseudo },
-      })
-      if (metaError) {
-        showToast(t('profil.profileUpdateError'), 'error')
-      } else {
-        setPseudo(payload.pseudo || '')
-        showToast(t('profil.profileUpdated'), 'success')
-      }
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleAvatarUpload = async (file: File) => {
-    if (!user) return
-    const previousAvatar = user.user_metadata?.avatar
-    const fileName = buildRLSPath(user.id, file.name, 'avatars')
-    if (previousAvatar) {
-      const { error: deleteError } = await supabase.storage
-        .from('personal-images')
-        .remove([previousAvatar])
-      if (deleteError)
-        console.warn('⚠️ Suppression ancien avatar :', deleteError)
-      await wait(200)
-    }
-    const { data, error: uploadError } = await supabase.storage
-      .from('personal-images')
-      .upload(fileName, file, { upsert: true })
-    if (uploadError) {
-      showToast(t('errors.uploadFailed'), 'error')
-      return
-    }
-    if (!data || !data.path) {
-      showToast(t('errors.uploadDataInvalid'), 'error')
-      return
-    }
-    await wait(300)
-    setTempAvatarPath(data.path)
-    setAvatarKey(k => k + 1)
-    const { error: metaError } = await supabase.auth.updateUser({
-      data: { avatar: data.path },
-    })
-    if (metaError) {
-      showToast(t('profil.profileUpdateError'), 'error')
-      setTempAvatarPath(null)
-    } else {
-      showToast(t('profil.avatarUpdated'), 'success')
-    }
-  }
-
-  const handleAvatarDelete = async () => {
-    if (!user) return
-    const avatarPath = user.user_metadata?.avatar
-    if (!avatarPath) return
-    const { error: deleteError } = await supabase.storage
-      .from('personal-images')
-      .remove([avatarPath])
-    if (deleteError) {
-      showToast(t('errors.deletionFailed'), 'error')
-      return
-    }
-    const { error: metaError } = await supabase.auth.updateUser({
-      data: { avatar: null },
-    })
-    if (metaError) showToast(t('profil.profileUpdateError'), 'error')
-    else {
-      setTempAvatarPath(null)
-      setAvatarKey(k => k + 1)
-      showToast(t('profil.avatarDeleted'), 'success')
-    }
   }
 
   const resetPassword = async () => {
@@ -283,8 +155,6 @@ export default function Profil() {
     setCaptchaKey(k => k + 1)
   }
 
-  const avatarPath = tempAvatarPath || user?.user_metadata?.avatar || null
-  const initials = displayPseudo?.[0]?.toUpperCase() || '?'
   const childCount = childProfiles?.length ?? 0
   const deviceCount = devices?.length ?? 0
 
@@ -301,21 +171,8 @@ export default function Profil() {
     <div className="profil-page">
       {/* ── EN-TÊTE UTILISATEUR ──────────────────────────────────────────── */}
       <header className="profil-header">
-        <div className="profil-header__avatar" aria-hidden="true">
-          {avatarPath ? (
-            <SignedImage
-              filePath={avatarPath}
-              bucket="personal-images"
-              alt=""
-              size={64}
-              className="profil-header__avatar-img"
-            />
-          ) : (
-            <div className="profil-header__avatar-fallback">{initials}</div>
-          )}
-        </div>
         <div className="profil-header__info">
-          <h1 className="profil-header__name">{displayPseudo}</h1>
+          <h1 className="profil-header__name">{t('profil.myProfile')}</h1>
           <p className="profil-header__email">{user.email}</p>
           <div className="profil-header__badges">
             {!loading &&
@@ -337,37 +194,7 @@ export default function Profil() {
 
       {/* ── CARTES NAVIGABLES ─────────────────────────────────────────────── */}
       <nav className="profil-nav" aria-label="Sections du profil">
-        {/* 1. Informations personnelles */}
-        <button
-          ref={el => {
-            triggerRefs.current['identity'] = el
-          }}
-          className="profil-nav-card"
-          onClick={() => setActiveModal('identity')}
-          aria-label={t('profile.personalInfoLabel')}
-        >
-          <span
-            className="profil-nav-card__icon-wrap profil-nav-card__icon-wrap--blue"
-            aria-hidden="true"
-          >
-            <User size={20} />
-          </span>
-          <div className="profil-nav-card__body">
-            <span className="profil-nav-card__title">
-              {t('profile.personalInfo')}
-            </span>
-            <span className="profil-nav-card__sub">
-              {t('profile.personalInfoSub')}
-            </span>
-          </div>
-          <ChevronRight
-            className="profil-nav-card__chevron"
-            size={18}
-            aria-hidden="true"
-          />
-        </button>
-
-        {/* 2. Préférences d'affichage */}
+        {/* 1. Préférences d'affichage */}
         <button
           ref={el => {
             triggerRefs.current['preferences'] = el
@@ -397,7 +224,7 @@ export default function Profil() {
           />
         </button>
 
-        {/* 3. Profils enfants */}
+        {/* 2. Profils enfants */}
         <button
           ref={el => {
             triggerRefs.current['children'] = el
@@ -427,7 +254,7 @@ export default function Profil() {
           />
         </button>
 
-        {/* 4. Mes appareils */}
+        {/* 3. Mes appareils */}
         <button
           ref={el => {
             triggerRefs.current['devices'] = el
@@ -458,7 +285,7 @@ export default function Profil() {
           />
         </button>
 
-        {/* 5. Abonnement (non-admins uniquement) */}
+        {/* 4. Abonnement (non-admins uniquement) */}
         {!isAdmin && (
           <button
             className="profil-nav-card"
@@ -489,7 +316,7 @@ export default function Profil() {
           </button>
         )}
 
-        {/* 6. RGPD et mentions légales */}
+        {/* 5. RGPD et mentions légales */}
         <button
           ref={el => {
             triggerRefs.current['rgpd'] = el
@@ -615,51 +442,7 @@ export default function Profil() {
 
       {/* ── MODALS ─────────────────────────────────────────────────────────── */}
 
-      {/* Modal 1 : Informations personnelles */}
-      <Modal
-        isOpen={activeModal === 'identity'}
-        onClose={closeModal}
-        title="Informations personnelles"
-        size="large"
-      >
-        <div className="profil-modal-identity">
-          <AvatarProfil
-            key={avatarKey}
-            avatarPath={avatarPath}
-            pseudo={displayPseudo}
-            onUpload={handleAvatarUpload}
-            onDelete={() => setConfirmDeleteAvatar(true)}
-          />
-          <form onSubmit={handleSave} className="profil-modal-identity__form">
-            <InputWithValidation
-              id="pseudo"
-              label={t('profil.pseudo')}
-              value={pseudo}
-              rules={[noEdgeSpaces, noDoubleSpaces, validatePseudoMaxLength]}
-              onChange={val => setPseudo(val)}
-              onValid={val => setPseudo(normalizeSpaces(val))}
-              ariaLabel={t('profil.pseudo')}
-              placeholder="ex. Alex"
-            />
-            <div className="profil-modal-identity__email">
-              <span className="profil-modal-identity__email-label">
-                {t('profil.email')}
-              </span>
-              <span className="profil-modal-identity__email-value">
-                {user.email}
-              </span>
-            </div>
-            <Button
-              type="submit"
-              label={isSaving ? t('app.loading') : t('profil.save')}
-              variant="primary"
-              disabled={isSaving}
-            />
-          </form>
-        </div>
-      </Modal>
-
-      {/* Modal 2 : Préférences d'affichage */}
+      {/* Modal : Préférences d'affichage */}
       <Modal
         isOpen={activeModal === 'preferences'}
         onClose={closeModal}
@@ -672,7 +455,7 @@ export default function Profil() {
         </div>
       </Modal>
 
-      {/* Modal 3 : Profils enfants */}
+      {/* Modal : Profils enfants */}
       <Modal
         isOpen={activeModal === 'children'}
         onClose={closeModal}
@@ -688,7 +471,7 @@ export default function Profil() {
         </div>
       </Modal>
 
-      {/* Modal 4 : Mes appareils */}
+      {/* Modal : Mes appareils */}
       <Modal
         isOpen={activeModal === 'devices'}
         onClose={closeModal}
@@ -704,7 +487,7 @@ export default function Profil() {
         </div>
       </Modal>
 
-      {/* Modal 6 : RGPD et mentions légales */}
+      {/* Modal : RGPD et mentions légales */}
       <Modal
         isOpen={activeModal === 'rgpd'}
         onClose={closeModal}
@@ -794,19 +577,6 @@ export default function Profil() {
         onConfirm={handleDeleteAccount}
       />
 
-      {/* Confirmation suppression avatar */}
-      <ModalConfirm
-        isOpen={confirmDeleteAvatar}
-        onClose={() => setConfirmDeleteAvatar(false)}
-        confirmLabel={t('profil.deleteAccountConfirm')}
-        cancelLabel={t('profil.deleteAccountCancel')}
-        onConfirm={() => {
-          handleAvatarDelete()
-          setConfirmDeleteAvatar(false)
-        }}
-      >
-        ❗ {t('profil.deleteAvatarConfirm')}
-      </ModalConfirm>
     </div>
   )
 }

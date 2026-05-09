@@ -1,5 +1,5 @@
 /**
- * Hook de lecture et gestion des profils enfants (table child_profiles)
+ * Hook de lecture et gestion des espaces enfants (table child_profiles)
  *
  * ⚠️ DB-FIRST STRICT
  * - Aucune logique de quota côté client.
@@ -8,7 +8,7 @@
  *
  * @example
  * ```tsx
- * const { profiles, loading, error, createProfile } = useChildProfiles()
+ * const { profiles, loading, error, createProfile, updateChildProfile } = useChildProfiles()
  * ```
  */
 
@@ -22,7 +22,7 @@ type ChildProfileInsert =
   Database['public']['Tables']['child_profiles']['Insert']
 
 interface UseChildProfilesReturn {
-  /** Liste des profils enfants du compte (triés par created_at ASC) */
+  /** Liste des espaces enfants du compte (triés par created_at ASC) */
   profiles: ChildProfile[]
   /** Chargement en cours */
   loading: boolean
@@ -31,14 +31,24 @@ interface UseChildProfilesReturn {
   /** Rafraîchir la liste depuis la DB */
   refetch: () => void
   /**
-   * Créer un nouveau profil enfant (best-effort DB-first).
+   * Créer un nouvel espace enfant (best-effort DB-first).
    * Si la DB refuse (quota, constraint), retourne l'erreur sans exposer les règles.
    */
   createProfile: (
     name: string
   ) => Promise<{ profile: ChildProfile | null; error: string | null }>
   /**
-   * Supprimer un profil enfant (DB-first).
+   * Mettre à jour un espace enfant (DB-first).
+   * Permet de changer le nom et/ou la couleur.
+   * Retourne { success, error } — error est un message UX neutre.
+   * ⚠️ Réservé adulte — jamais en mode Tableau.
+   */
+  updateChildProfile: (
+    id: string,
+    updates: { name?: string; color?: string }
+  ) => Promise<{ success: boolean; error: string | null }>
+  /**
+   * Supprimer un espace enfant (DB-first).
    * La DB refuse si c'est le dernier profil (trigger min 1).
    * Retourne { success, error } — error est un message UX neutre.
    * ⚠️ Réservé adulte — jamais en mode Tableau.
@@ -172,6 +182,53 @@ export default function useChildProfiles(): UseChildProfilesReturn {
     [user]
   )
 
+  const updateChildProfile = useCallback(
+    async (
+      id: string,
+      updates: { name?: string; color?: string }
+    ): Promise<{ success: boolean; error: string | null }> => {
+      if (!user) {
+        return { success: false, error: 'Non connecté' }
+      }
+
+      // Validation légère alignée sur contraintes DB
+      if (updates.name !== undefined) {
+        const trimmed = updates.name.trim()
+        if (trimmed.length === 0) {
+          return {
+            success: false,
+            error: "Le nom de l'espace ne peut pas être vide.",
+          }
+        }
+        if (trimmed.length > 50) {
+          return {
+            success: false,
+            error: 'Le nom ne doit pas dépasser 50 caractères.',
+          }
+        }
+        updates = { ...updates, name: trimmed }
+      }
+
+      const { error: updateError } = await supabase
+        .from('child_profiles')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (updateError) {
+        console.error('[useChildProfiles] Erreur mise à jour:', updateError)
+        return {
+          success: false,
+          error: "Impossible de mettre à jour l'espace. Réessaie plus tard.",
+        }
+      }
+
+      // Rafraîchir la liste
+      setFetchTick(t => t + 1)
+      return { success: true, error: null }
+    },
+    [user]
+  )
+
   const deleteProfile = useCallback(
     async (
       profileId: string
@@ -227,6 +284,7 @@ export default function useChildProfiles(): UseChildProfilesReturn {
     error,
     refetch,
     createProfile,
+    updateChildProfile,
     deleteProfile,
   }
 }
