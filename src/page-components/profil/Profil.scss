@@ -32,17 +32,25 @@
   max-width: 100%;
   min-height: 100vh;
   padding: spacing('md');
+  padding-bottom: size('64'); // Espace sous BottomNav fixe (mobile < 1024px)
   background: surface('soft');
 
   @include respond-to(md) {
     max-width: size('800');
     margin: 0 auto;
     padding: spacing('xl') spacing('lg');
+    padding-bottom: size('64'); // BottomNav encore visible sur tablette
+  }
+
+  @include respond-to(lg) {
+    padding-top: size('64'); // Offset Navbar fixe desktop (≥ 1024px, h=64px)
+    padding-bottom: spacing('xl'); // BottomNav masquée sur desktop
   }
 
   @include respond-to(xl) {
     max-width: size('900');
     padding: spacing('xl');
+    padding-top: size('64'); // Maintien offset Navbar fixe
   }
 }
 
@@ -86,6 +94,14 @@
   }
 }
 
+.profil-header__email-row {
+  display: flex;
+  align-items: center;
+  gap: spacing('xs');
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .profil-header__email {
   font-size: font-size('sm');
   color: text('muted');
@@ -93,13 +109,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.profil-header__badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: spacing('xs');
-  margin-top: spacing('xs');
+  min-width: 0;
 }
 
 // === BADGES STATUT ===

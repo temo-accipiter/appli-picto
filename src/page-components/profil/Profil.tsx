@@ -173,21 +173,18 @@ export default function Profil() {
       <header className="profil-header">
         <div className="profil-header__info">
           <h1 className="profil-header__name">{t('profil.myProfile')}</h1>
-          <p className="profil-header__email">{user.email}</p>
-          <div className="profil-header__badges">
+          <div className="profil-header__email-row">
+            <p className="profil-header__email">{user.email}</p>
             {!loading &&
-              (isActive ? (
+              (isAdmin ? (
+                <span className="profil-badge profil-badge--info">Admin</span>
+              ) : isActive ? (
                 <span className="profil-badge profil-badge--success">
                   {t('subscription.subscriberLabel')}
                 </span>
               ) : (
-                <span className="profil-badge profil-badge--neutral">
-                  Gratuit
-                </span>
+                <span className="profil-badge profil-badge--neutral">Free</span>
               ))}
-            {isAdmin && (
-              <span className="profil-badge profil-badge--info">Admin</span>
-            )}
           </div>
         </div>
       </header>

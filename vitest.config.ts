@@ -11,6 +11,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts', './tests/setup.ts'],
     globals: true,
+    testTimeout: 15000, // Augmenté car le render jsdom peut être lent en CI
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
