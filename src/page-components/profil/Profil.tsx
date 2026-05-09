@@ -576,7 +576,6 @@ export default function Profil() {
         onClose={() => setDeleteAccountOpen(false)}
         onConfirm={handleDeleteAccount}
       />
-
     </div>
   )
 }
