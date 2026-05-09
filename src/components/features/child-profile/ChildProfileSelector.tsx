@@ -1,20 +1,20 @@
 'use client'
 
 /**
- * ChildProfileSelector — Sélecteur de profil enfant actif
+ * ChildProfileSelector — Sélecteur d'espace enfant actif
  *
  * Mobile-first, TSA-friendly.
  *
  * Comportements :
- * - Affiche la liste des profils du compte.
- * - Profil actif : style distinct.
- * - Profil "locked" : désactivé + badge visuel neutre.
+ * - Affiche la liste des espaces du compte.
+ * - Espace actif : style distinct.
+ * - Espace "locked" : désactivé + badge visuel neutre.
  * - Bouton "+" : ouvre un mini-formulaire de création inline.
  * - Création : DB-first, gère les refus DB proprement (message neutre).
  *
  * ⚠️ RÈGLES TSA
  * - Transitions douces ≤ 0.3s.
- * - Pas de flash visuel au changement de profil.
+ * - Pas de flash visuel au changement d'espace.
  * - Pas de jargon technique dans les messages.
  * - Cibles tactiles ≥ 44px.
  */
@@ -99,11 +99,11 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
 
     // Validation formelle côté client (alignée sur les contraintes DB)
     if (trimmed.length > 50) {
-      setErrorMsg('Le prénom ne doit pas dépasser 50 caractères.')
+      setErrorMsg('Le nom ne doit pas dépasser 50 caractères.')
       return
     }
     if (/\s{2,}/.test(trimmed)) {
-      setErrorMsg('Le prénom ne doit pas contenir de doubles espaces.')
+      setErrorMsg('Le nom ne doit pas contenir de doubles espaces.')
       return
     }
 
@@ -125,18 +125,18 @@ function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     <form
       onSubmit={handleSubmit}
       className="child-profile-create-form"
-      aria-label="Créer un profil enfant"
+      aria-label="Créer un espace enfant"
     >
       <Input
         id="create-profile-name"
         className="child-profile-create-form__input"
         value={name}
         onChange={e => setName(e.target.value)}
-        placeholder="Prénom de l'enfant"
+        placeholder="Nom de l'espace"
         maxLength={50}
         autoFocus
         disabled={submitting}
-        aria-label="Prénom de l'enfant"
+        aria-label="Nom de l'espace enfant"
         aria-required={true}
       />
 
@@ -192,7 +192,7 @@ export function ChildProfileSelector({
       <div
         className="child-profile-selector"
         aria-busy="true"
-        aria-label="Chargement des profils"
+        aria-label="Chargement des espaces"
       >
         <Loader variant="inline" />
       </div>
@@ -208,9 +208,9 @@ export function ChildProfileSelector({
             type="button"
             className="child-profile-selector__add-btn"
             onClick={() => setShowCreateForm(true)}
-            aria-label="Ajouter un profil enfant"
+            aria-label="Ajouter un espace enfant"
           >
-            + Ajouter un enfant
+            + Ajouter un espace
           </button>
         )}
       </div>
@@ -221,16 +221,16 @@ export function ChildProfileSelector({
     return (
       <div
         className="child-profile-selector"
-        aria-label="Créer un profil enfant"
+        aria-label="Créer un espace enfant"
       >
         {showCreateButton && !showCreateForm && (
           <button
             type="button"
             className="child-profile-selector__add-btn"
             onClick={() => setShowCreateForm(true)}
-            aria-label="Ajouter un profil enfant"
+            aria-label="Ajouter un espace enfant"
           >
-            + Ajouter un enfant
+            + Ajouter un espace
           </button>
         )}
         {showCreateForm && (
@@ -244,7 +244,7 @@ export function ChildProfileSelector({
     <div
       className="child-profile-selector"
       role="group"
-      aria-label="Choisir un profil enfant"
+      aria-label="Choisir un espace enfant"
     >
       {/* Liste des profils */}
       <div className="child-profile-selector__list" role="list">
@@ -264,7 +264,7 @@ export function ChildProfileSelector({
             type="button"
             className="child-profile-selector__add-btn child-profile-selector__add-btn--icon"
             onClick={() => setShowCreateForm(true)}
-            aria-label="Ajouter un profil enfant"
+            aria-label="Ajouter un espace enfant"
           >
             +
           </button>

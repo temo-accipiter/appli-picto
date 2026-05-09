@@ -62,6 +62,112 @@
     color: text('primary');
   }
 
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex-shrink: 0;
+  }
+
+  &__edit-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size('touch-target-min');
+    height: size('touch-target-min');
+    border: none;
+    background: none;
+    border-radius: radius('sm');
+    color: text('muted');
+    cursor: pointer;
+    @include safe-transition(color background);
+
+    &:hover {
+      color: text('primary');
+      background: surface('hover');
+    }
+
+    &:focus-visible {
+      @include focus-ring();
+    }
+  }
+
+  &__edit {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex: 1;
+  }
+
+  &__edit-input {
+    flex: 1;
+    min-width: 0;
+    padding: spacing('xs') spacing('sm');
+    font-size: font-size('md');
+    font-family: inherit;
+    color: text('primary');
+    background: surface('bg');
+    border: border-width('thin') solid surface('border');
+    border-radius: radius('sm');
+    min-height: size('touch-target-min');
+    @include safe-transition(border-color);
+
+    &:focus {
+      outline: none;
+      border-color: semantic('info');
+    }
+  }
+
+  &__edit-actions {
+    display: flex;
+    align-items: center;
+    gap: spacing('xs');
+    flex-shrink: 0;
+  }
+
+  &__edit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: size('touch-target-min');
+    height: size('touch-target-min');
+    border: border-width('thin') solid transparent;
+    border-radius: radius('sm');
+    cursor: pointer;
+    @include safe-transition(background border-color);
+
+    &:focus-visible {
+      @include focus-ring();
+    }
+
+    &--save {
+      background: semantic('success', 'bg');
+      color: semantic('success', 'dark');
+      border-color: semantic('success');
+
+      &:hover:not(:disabled) {
+        background: semantic('success');
+        color: text('invert');
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &--cancel {
+      background: surface('hover');
+      color: text('muted');
+
+      &:hover:not(:disabled) {
+        background: semantic('error', 'bg');
+        color: semantic('error');
+        border-color: semantic('error', 'border');
+      }
+    }
+  }
+
   &__modal-title {
     margin-bottom: spacing('md');
   }

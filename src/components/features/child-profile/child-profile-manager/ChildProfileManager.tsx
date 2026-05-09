@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * ChildProfileManager — Gestion des profils enfants avec suppression (page Profil)
+ * ChildProfileManager — Gestion des espaces enfants avec suppression (page Compte)
  *
  * Fonctionnalités :
  * - Liste des profils enfants avec bouton de suppression par profil
@@ -23,11 +23,12 @@
  *   best-effort ici avant le DELETE (chemin probable : {account_id}/children/{profile_id})
  */
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useToast } from '@/contexts'
 import { useOnlineStatus, useExecutionOnly } from '@/hooks'
 import { ButtonDelete, ModalConfirm } from '@/components'
+import { Pencil, Check, X } from 'lucide-react'
 import type { ChildProfile } from '@/hooks/useChildProfiles'
 import './ChildProfileManager.scss'
 
@@ -38,11 +39,52 @@ interface DeleteState {
 }
 
 export function ChildProfileManager() {
-  const { childProfiles, activeChildId, setActiveChildId, deleteChildProfile } =
-    useChildProfile()
+  const {
+    childProfiles,
+    activeChildId,
+    setActiveChildId,
+    deleteChildProfile,
+    updateChildProfile,
+  } = useChildProfile()
   const { showToast } = useToast()
   const { isOnline } = useOnlineStatus()
   const { isExecutionOnly } = useExecutionOnly()
+
+  // ── État édition inline ─────────────────────────────────────────────────────
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const editInputRef = useRef<HTMLInputElement>(null)
+
+  const handleStartEdit = (profile: ChildProfile) => {
+    setEditingId(profile.id)
+    setEditingName(profile.name)
+    // Focus géré par autoFocus sur l'input
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditingName('')
+  }
+
+  const handleSaveEdit = async (profileId: string, originalName: string) => {
+    const trimmed = editingName.trim()
+    if (!trimmed || trimmed === originalName) {
+      handleCancelEdit()
+      return
+    }
+    setEditSaving(true)
+    const { success, error } = await updateChildProfile(profileId, {
+      name: trimmed,
+    })
+    setEditSaving(false)
+    if (success) {
+      showToast(`Espace renommé avec succès`, 'success')
+      setEditingId(null)
+    } else {
+      showToast(error ?? "Impossible de renommer l'espace", 'error')
+    }
+  }
 
   const [deleteState, setDeleteState] = useState<DeleteState>({
     isOpen: false,
@@ -102,7 +144,7 @@ export function ChildProfileManager() {
       // Dernier profil → guard UX + sécurité trigger DB
       if (childProfiles.length <= 1) {
         showToast(
-          'Impossible de supprimer le dernier profil enfant. Supprimez votre compte entier si vous souhaitez effacer toutes vos données.',
+          'Impossible de supprimer le dernier espace enfant. Supprimez votre compte entier si vous souhaitez effacer toutes vos données.',
           'warning'
         )
         setDeleteState(prev => ({ ...prev, loading: false }))
@@ -126,7 +168,7 @@ export function ChildProfileManager() {
 
       // ✅ Suppression réussie
       setDeleteState({ isOpen: false, profile: null, loading: false })
-      showToast(`Profil "${profile.name}" supprimé avec succès`, 'success')
+      showToast(`Espace "${profile.name}" supprimé avec succès`, 'success')
 
       // Le hook rafraîchit automatiquement via setFetchTick — refetchProfiles() n'est plus nécessaire
 
@@ -154,7 +196,7 @@ export function ChildProfileManager() {
   if (childProfiles.length === 0) {
     return (
       <p className="child-profile-manager__empty">
-        Aucun profil enfant. Créez-en un pour commencer.
+        Aucun espace enfant. Créez-en un pour commencer.
       </p>
     )
   }
@@ -175,44 +217,104 @@ export function ChildProfileManager() {
                 role="listitem"
               >
                 <div className="child-profile-manager__card">
-                  {/* Nom profil */}
-                  <div className="child-profile-manager__info">
-                    <span className="child-profile-manager__name">
-                      {profile.name}
-                    </span>
+                  {editingId === profile.id ? (
+                    // ── Mode édition inline ────────────────────────────────
+                    <div className="child-profile-manager__edit">
+                      <input
+                        ref={editInputRef}
+                        className="child-profile-manager__edit-input"
+                        value={editingName}
+                        onChange={e => setEditingName(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter')
+                            void handleSaveEdit(profile.id, profile.name)
+                          if (e.key === 'Escape') handleCancelEdit()
+                        }}
+                        maxLength={50}
+                        autoFocus
+                        disabled={editSaving}
+                        aria-label={`Modifier le nom de l'espace ${profile.name}`}
+                      />
+                      <div className="child-profile-manager__edit-actions">
+                        <button
+                          type="button"
+                          className="child-profile-manager__edit-btn child-profile-manager__edit-btn--save"
+                          onClick={() =>
+                            void handleSaveEdit(profile.id, profile.name)
+                          }
+                          disabled={editSaving || !editingName.trim()}
+                          aria-label="Enregistrer le nouveau nom"
+                        >
+                          <Check size={16} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
+                          className="child-profile-manager__edit-btn child-profile-manager__edit-btn--cancel"
+                          onClick={handleCancelEdit}
+                          disabled={editSaving}
+                          aria-label="Annuler la modification"
+                        >
+                          <X size={16} aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // ── Mode affichage ─────────────────────────────────────
+                    <>
+                      <div className="child-profile-manager__info">
+                        <span className="child-profile-manager__name">
+                          {profile.name}
+                        </span>
 
-                    {isActive && (
-                      <span
-                        className="child-profile-manager__badge"
-                        aria-label="Profil actif"
-                      >
-                        Actif
-                      </span>
-                    )}
+                        {isActive && (
+                          <span
+                            className="child-profile-manager__badge"
+                            aria-label="Espace actif"
+                          >
+                            Actif
+                          </span>
+                        )}
 
-                    {isLocked && (
-                      <span
-                        className="child-profile-manager__badge child-profile-manager__badge--locked"
-                        aria-label="Profil verrouillé"
-                      >
-                        🔒 Verrouillé
-                      </span>
-                    )}
-                  </div>
+                        {isLocked && (
+                          <span
+                            className="child-profile-manager__badge child-profile-manager__badge--locked"
+                            aria-label="Espace verrouillé"
+                          >
+                            🔒 Verrouillé
+                          </span>
+                        )}
+                      </div>
 
-                  {/* Bouton suppression */}
-                  <ButtonDelete
-                    onClick={() => handleOpenDeleteModal(profile)}
-                    disabled={isLastProfile || isLocked}
-                    aria-label={`Supprimer le profil ${profile.name}`}
-                    title={
-                      isLastProfile
-                        ? 'Au moins 1 profil doit être conservé'
-                        : isLocked
-                          ? 'Profil verrouillé, suppression impossible'
-                          : `Supprimer ${profile.name}`
-                    }
-                  />
+                      <div className="child-profile-manager__actions">
+                        {/* Bouton édition */}
+                        {!isLocked && (
+                          <button
+                            type="button"
+                            className="child-profile-manager__edit-trigger"
+                            onClick={() => handleStartEdit(profile)}
+                            aria-label={`Renommer l'espace ${profile.name}`}
+                            title={`Renommer ${profile.name}`}
+                          >
+                            <Pencil size={16} aria-hidden="true" />
+                          </button>
+                        )}
+
+                        {/* Bouton suppression */}
+                        <ButtonDelete
+                          onClick={() => handleOpenDeleteModal(profile)}
+                          disabled={isLastProfile || isLocked}
+                          aria-label={`Supprimer l'espace ${profile.name}`}
+                          title={
+                            isLastProfile
+                              ? 'Au moins 1 espace doit être conservé'
+                              : isLocked
+                                ? 'Espace verrouillé, suppression impossible'
+                                : `Supprimer ${profile.name}`
+                          }
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </li>
             )
@@ -231,7 +333,7 @@ export function ChildProfileManager() {
           closeOnConfirm={false}
         >
           <h3 className="child-profile-manager__modal-title">
-            Supprimer le profil &quot;{deleteState.profile.name}&quot; ?
+            Supprimer l&apos;espace &quot;{deleteState.profile.name}&quot; ?
           </h3>
           <p>
             Cette action est <strong>irréversible</strong> et supprimera{' '}

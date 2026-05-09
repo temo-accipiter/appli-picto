@@ -193,7 +193,7 @@ export default function Profil() {
       </header>
 
       {/* ── CARTES NAVIGABLES ─────────────────────────────────────────────── */}
-      <nav className="profil-nav" aria-label="Sections du profil">
+      <nav className="profil-nav" aria-label="Sections du compte">
         {/* 1. Préférences d'affichage */}
         <button
           ref={el => {
@@ -244,7 +244,7 @@ export default function Profil() {
               {t('profile.childProfiles')}
             </span>
             <span className="profil-nav-card__sub">
-              {childCount} profil{childCount !== 1 ? 's' : ''}
+              {childCount} espace{childCount !== 1 ? 's' : ''}
             </span>
           </div>
           <ChevronRight
@@ -455,11 +455,11 @@ export default function Profil() {
         </div>
       </Modal>
 
-      {/* Modal : Profils enfants */}
+      {/* Modal : Espaces enfants */}
       <Modal
         isOpen={activeModal === 'children'}
         onClose={closeModal}
-        title="Profils enfants"
+        title="Espaces enfants"
         size="large"
       >
         <div className="profil-modal-children">
