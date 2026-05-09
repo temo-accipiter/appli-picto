@@ -197,12 +197,17 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  border-radius: radius('full');
+  border-radius: radius('badge');
   padding: 0;
 
   &:focus-visible {
     outline: a11y('focus-ring-width') solid color('base');
     outline-offset: a11y('focus-ring-offset');
+  }
+
+  &--static {
+    cursor: default;
+    pointer-events: none;
   }
 }
 
@@ -249,15 +254,53 @@
   }
 }
 
-.navbar__profile-name {
+.navbar__profile-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: spacing('xs') spacing('sm');
+  border-radius: radius('badge');
+  background: blue(500);
+  color: text('invert');
   font-size: font-size('sm');
   font-weight: font-weight('medium');
-  color: text('dark');
-  padding-left: spacing('xs');
-  max-width: size('120');
+  line-height: 1;
+  max-width: size('200');
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+
+  // Dans le popover : s'étire sur toute la largeur de l'item
+  .navbar__profile-popover & {
+    width: 100%;
+  }
+
+  // Couleurs dynamiques via data-color (DB : 8 valeurs)
+  &[data-color='blue'] {
+    background: blue(500);
+  }
+  &[data-color='green'] {
+    background: green(500);
+  }
+  &[data-color='orange'] {
+    background: orange(500);
+  }
+  &[data-color='purple'] {
+    background: purple(500);
+  }
+  &[data-color='red'] {
+    background: red(500);
+  }
+  &[data-color='yellow'] {
+    background: yellow(400);
+    color: text('primary');
+  }
+  &[data-color='teal'] {
+    background: teal(500);
+  }
+  &[data-color='pink'] {
+    background: pink(500);
+  }
 }
 
 .navbar__profile-popover {
@@ -266,9 +309,12 @@
   right: 0;
   margin-top: spacing('xs');
   display: flex;
-  align-items: center;
-  gap: spacing('sm');
-  padding: spacing('sm');
+  flex-direction: column;
+  gap: spacing('xs');
+  padding: spacing('xs');
+  min-width: size('120');
+  max-height: size('200');
+  overflow-y: auto;
   background: surface('bg');
   border: border-width('thin') solid surface('border');
   border-radius: radius('card');
@@ -280,10 +326,11 @@
   border: none;
   background: transparent;
   padding: 0;
-  border-radius: radius('full');
-  display: inline-flex;
+  width: 100%;
+  border-radius: radius('badge');
+  display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   cursor: pointer;
   @include safe-transition(
     (transform, box-shadow),
@@ -304,11 +351,6 @@
   &:disabled {
     opacity: opacity('0-6');
     cursor: not-allowed;
-  }
-
-  &--active .navbar__profile-avatar {
-    outline: border-width('medium') solid color('base');
-    outline-offset: 2px;
   }
 }
 

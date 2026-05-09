@@ -62,6 +62,7 @@
   gap: spacing('md');
   padding: spacing('md');
   margin-bottom: spacing('lg');
+  margin-top: spacing('md');
   background: surface('bg');
   border-radius: radius('card');
   border: border-width('thin') solid surface('border');
@@ -118,7 +119,7 @@
   display: inline-flex;
   align-items: center;
   padding: spacing('xs') spacing('sm');
-  border-radius: radius('full');
+  border-radius: radius('badge');
   font-size: font-size('xs');
   font-weight: font-weight('semibold');
   white-space: nowrap;

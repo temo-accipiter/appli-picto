@@ -276,8 +276,8 @@ $radius-semantic: (
   // 6px - Précision motrice (champs)
   'modal': map.get(p.$radius-primitives, 'lg'),
   // 20px - Contenance et douceur (dialogues)
-  'badge': map.get(p.$radius-primitives, 'full'),
-  // 50% - Badges pill
+  'badge': 3.125rem,
+  // 50px — Badges/pills (coins arrondis fixes, non ovale)
   'avatar': map.get(p.$radius-primitives, 'full'), // 50% - Avatars ronds
 ) !default;
 

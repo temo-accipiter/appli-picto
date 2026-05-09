@@ -12,13 +12,8 @@ import {
 import { ChildProfileManager } from '@/components/features/child-profile'
 import DeviceList from '@/components/features/profil/device-list/DeviceList'
 import { useToast } from '@/contexts'
-import {
-  useAuth,
-  useI18n,
-  useAccountStatus,
-  useChildProfiles,
-  useDevices,
-} from '@/hooks'
+import { useChildProfile } from '@/contexts/ChildProfileContext'
+import { useAuth, useI18n, useAccountStatus, useDevices } from '@/hooks'
 import useDeviceRegistration from '@/hooks/useDeviceRegistration'
 import { supabase } from '@/utils'
 import React, { useEffect, useState, useRef } from 'react'
@@ -54,8 +49,8 @@ export default function Profil() {
   const { show: showToast } = useToast()
   const router = useRouter()
 
-  // Compteurs dynamiques pour les sous-textes des cartes
-  const { profiles: childProfiles } = useChildProfiles()
+  // Compteurs dynamiques — partagés avec ChildProfileManager via contexte
+  const { childProfiles } = useChildProfile()
   const { devices } = useDevices()
 
   // ── S10 : Enregistrement device ────────────────────────────────────────────

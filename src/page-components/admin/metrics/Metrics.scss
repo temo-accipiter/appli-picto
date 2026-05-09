@@ -165,7 +165,7 @@
   display: inline-flex;
   align-items: center;
   padding: spacing('2') spacing('sm'); // 2px vertical — sans alias sémantique (§E.7 exception)
-  border-radius: radius('full');
+  border-radius: radius('badge');
   font-size: font-size('xs');
   font-weight: font-weight('semibold');
 

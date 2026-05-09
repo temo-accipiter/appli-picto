@@ -1279,8 +1279,8 @@ $radius-tokens: (
   // Inputs, selects (= md)
   'avatar': 50%,
   // Avatars circulaires (= full)
-  'badge': 50%,
-  // Badges, pills (= full)
+  'badge': 3.125rem,
+  // Badges, pills — 50px fixe (coins arrondis, non ovale)
   'modal': 16px,
   // Modals, drawers (= lg)
   'drawer': 16px,

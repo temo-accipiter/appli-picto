@@ -339,7 +339,7 @@
   color: text('muted');
   font-size: font-size('sm');
   font-weight: font-weight('medium');
-  border-radius: radius('full'); // Forme pill
+  border-radius: radius('badge'); // Forme pill
   cursor: pointer;
   white-space: nowrap;
   @include safe-transition(

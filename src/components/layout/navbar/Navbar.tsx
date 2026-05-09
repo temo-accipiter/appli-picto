@@ -185,7 +185,7 @@ export default function Navbar() {
               !isVisitor &&
               (childProfilesLoading || childProfiles.length === 0 ? (
                 <div className="navbar__profile-placeholder">
-                  <span className="navbar__profile-avatar" aria-hidden="true">
+                  <span className="navbar__profile-badge" aria-hidden="true">
                     ?
                   </span>
                 </div>
@@ -200,75 +200,96 @@ export default function Navbar() {
                     if (isDesktop) setIsProfilePopoverOpen(false)
                   }}
                 >
-                  <button
-                    type="button"
-                    className="navbar__profile-trigger"
-                    aria-haspopup="menu"
-                    aria-expanded={isProfilePopoverOpen}
-                    aria-label={
-                      activeChildProfile
-                        ? `Espace actif : ${activeChildProfile.name}`
-                        : 'Aucun espace enfant'
-                    }
-                    onClick={() => setIsProfilePopoverOpen(prev => !prev)}
-                    onFocus={() => setIsProfilePopoverOpen(true)}
-                    onKeyDown={handleProfileTriggerKeyDown}
-                  >
-                    <span
-                      className="navbar__profile-avatar"
-                      data-color={activeChildProfile?.color ?? 'blue'}
-                      aria-hidden="true"
-                    >
-                      {activeChildProfile?.name?.charAt(0).toUpperCase() || '?'}
-                    </span>
-                    {activeChildProfile && (
-                      <span className="navbar__profile-name" aria-hidden="true">
-                        {activeChildProfile.name}
-                      </span>
-                    )}
-                  </button>
-
-                  {isProfilePopoverOpen && (
-                    <div
-                      className="navbar__profile-popover"
-                      role="menu"
-                      aria-label="Sélectionner un espace enfant"
-                    >
-                      {childProfiles.map(profile => {
-                        const isActive = profile.id === activeChildId
-                        const isLocked = profile.status === 'locked'
-                        return (
+                  {(() => {
+                    const otherProfiles = childProfiles.filter(
+                      p => p.id !== activeChildId
+                    )
+                    const hasOthers = otherProfiles.length > 0
+                    return (
+                      <>
+                        {hasOthers ? (
                           <button
-                            key={profile.id}
                             type="button"
-                            role="menuitemradio"
-                            aria-checked={isActive}
+                            className="navbar__profile-trigger"
+                            aria-haspopup="menu"
+                            aria-expanded={isProfilePopoverOpen}
                             aria-label={
-                              isLocked
-                                ? `${profile.name} — verrouillé (lecture seule)`
-                                : `Sélectionner ${profile.name}`
+                              activeChildProfile
+                                ? `Espace actif : ${activeChildProfile.name}`
+                                : 'Aucun espace enfant'
                             }
-                            className={`navbar__profile-item${isActive ? ' navbar__profile-item--active' : ''}`}
-                            disabled={isLocked}
-                            onClick={() => {
-                              if (isLocked) return
-                              setActiveChildId(profile.id)
-                              setIsProfilePopoverOpen(false)
-                            }}
+                            onClick={() =>
+                              setIsProfilePopoverOpen(prev => !prev)
+                            }
+                            onFocus={() => setIsProfilePopoverOpen(true)}
+                            onKeyDown={handleProfileTriggerKeyDown}
                           >
                             <span
-                              className="navbar__profile-avatar"
-                              data-color={profile.color ?? 'blue'}
+                              className="navbar__profile-badge"
+                              data-color={activeChildProfile?.color ?? 'blue'}
                               aria-hidden="true"
                             >
-                              {profile.name.charAt(0).toUpperCase()}
+                              {activeChildProfile?.name || '?'}
                             </span>
-                            <span className="sr-only">{profile.name}</span>
                           </button>
-                        )
-                      })}
-                    </div>
-                  )}
+                        ) : (
+                          <div className="navbar__profile-trigger navbar__profile-trigger--static">
+                            <span
+                              className="navbar__profile-badge"
+                              data-color={activeChildProfile?.color ?? 'blue'}
+                              aria-label={
+                                activeChildProfile
+                                  ? `Espace actif : ${activeChildProfile.name}`
+                                  : 'Aucun espace enfant'
+                              }
+                            >
+                              {activeChildProfile?.name || '?'}
+                            </span>
+                          </div>
+                        )}
+
+                        {isProfilePopoverOpen && hasOthers && (
+                          <div
+                            className="navbar__profile-popover"
+                            role="menu"
+                            aria-label="Sélectionner un espace enfant"
+                          >
+                            {otherProfiles.map(profile => {
+                              const isLocked = profile.status === 'locked'
+                              return (
+                                <button
+                                  key={profile.id}
+                                  type="button"
+                                  role="menuitemradio"
+                                  aria-checked={false}
+                                  aria-label={
+                                    isLocked
+                                      ? `${profile.name} — verrouillé (lecture seule)`
+                                      : `Sélectionner ${profile.name}`
+                                  }
+                                  className="navbar__profile-item"
+                                  disabled={isLocked}
+                                  onClick={() => {
+                                    if (isLocked) return
+                                    setActiveChildId(profile.id)
+                                    setIsProfilePopoverOpen(false)
+                                  }}
+                                >
+                                  <span
+                                    className="navbar__profile-badge"
+                                    data-color={profile.color ?? 'blue'}
+                                    aria-hidden="true"
+                                  >
+                                    {profile.name}
+                                  </span>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </>
+                    )
+                  })()}
                 </div>
               ))}
 

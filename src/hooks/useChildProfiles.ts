@@ -209,16 +209,39 @@ export default function useChildProfiles(): UseChildProfilesReturn {
         updates = { ...updates, name: trimmed }
       }
 
-      const { error: updateError } = await supabase
+      const { data: updatedRows, error: updateError } = await supabase
         .from('child_profiles')
         .update({ ...updates, updated_at: new Date().toISOString() })
         .eq('id', id)
+        .select('id')
 
       if (updateError) {
-        console.error('[useChildProfiles] Erreur mise à jour:', updateError)
+        // PostgrestError extends Error → message est non-énumérable, logger explicitement
+        console.error(
+          '[useChildProfiles] Erreur mise à jour — code:',
+          updateError.code,
+          '| message:',
+          updateError.message,
+          '| details:',
+          updateError.details,
+          '| hint:',
+          updateError.hint
+        )
         return {
           success: false,
           error: "Impossible de mettre à jour l'espace. Réessaie plus tard.",
+        }
+      }
+
+      // Guard contre succès fantôme RLS (0 lignes affectées sans erreur explicite)
+      if (!updatedRows || updatedRows.length === 0) {
+        console.error(
+          '[useChildProfiles] Mise à jour silencieuse — 0 lignes affectées (RLS ou ID invalide)'
+        )
+        return {
+          success: false,
+          error:
+            "Impossible de mettre à jour l'espace. Vérifiez vos permissions.",
         }
       }
 
