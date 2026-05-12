@@ -92,3 +92,7 @@ supabase/migrations/.DS_Store
 .claude/.edit-count
 # Next.js auto-generated, should not be tracked
 next-env.d.ts
+
+# PWA build artifacts (générés automatiquement, ne pas versionner)
+public/sw.js*
+public/workbox-*.js

@@ -71,7 +71,7 @@ export default function Signup() {
       options: {
         emailRedirectTo: `${window.location.origin}/login`,
         captchaToken,
-        // Note : Le trigger DB crée automatiquement le profil enfant "Mon enfant"
+        // Note : Le trigger DB crée automatiquement le profil enfant "Espace 1"
       },
     })
 

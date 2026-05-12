@@ -76,6 +76,7 @@
   &--active {
     color: text();
     background-color: surface('hover');
+    box-shadow: shadow('elevation-xs');
 
     &:visited {
       color: text();

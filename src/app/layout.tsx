@@ -14,7 +14,6 @@ const lexend = Lexend({
 export const metadata: Metadata = {
   title: 'Appli-Picto',
   description: 'Dashboard motivationnel pour enfants TSA',
-  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

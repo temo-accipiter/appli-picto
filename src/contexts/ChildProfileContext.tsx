@@ -14,7 +14,7 @@
  * - Visitor (user=null) → profil local implicite unique (ux.md §2566-2570)
  *
  * ⚠️ MODE VISITOR
- * - Profil local unique constant (id='visitor-local', name='Mon enfant')
+ * - Profil local unique constant (id='visitor-local', name='Espace 1')
  * - localStorage dédié : applipicto:visitor:activeChildId
  * - ZÉRO appel DB (données 100% locales)
  * - activeChildId TOUJOURS défini (jamais null)
@@ -60,7 +60,7 @@ export interface ChildProfileUI {
  */
 const VISITOR_PROFILE: ChildProfileUI = {
   id: 'visitor-local',
-  name: 'Mon enfant',
+  name: 'Espace 1',
   status: 'active',
   color: 'blue',
 }

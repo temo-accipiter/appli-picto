@@ -134,7 +134,7 @@ DECLARE
   v_profile uuid := (SELECT val FROM _p2_ids WHERE key = 'profile');
   v_timeline uuid := (SELECT val FROM _p2_ids WHERE key = 'timeline');
 BEGIN
-  -- 1 profil auto-créé nommé "Mon enfant"
+  -- 1 profil auto-créé nommé "Espace 1"
   SELECT COUNT(*), MIN(name) INTO v_profile_count, v_profile_name
   FROM child_profiles WHERE account_id = 'aa000000-0000-0000-0000-000000000002';
 
@@ -142,8 +142,8 @@ BEGIN
     RAISE EXCEPTION 'TEST 3 FAILED: aucun profil auto-créé';
   END IF;
 
-  IF v_profile_name != 'Mon enfant' THEN
-    RAISE EXCEPTION 'TEST 3 FAILED: profil nommé "%" au lieu de "Mon enfant"', v_profile_name;
+  IF v_profile_name != 'Espace 1' THEN
+    RAISE EXCEPTION 'TEST 3 FAILED: profil nommé "%" au lieu de "Espace 1"', v_profile_name;
   END IF;
 
   -- 1 timeline auto-créée
@@ -162,7 +162,7 @@ BEGIN
     RAISE EXCEPTION 'TEST 3 FAILED: slots=% (step=%, reward=%), attendu 2 (1+1)', v_slot_count, v_step_count, v_reward_count;
   END IF;
 
-  RAISE NOTICE '✅ TEST 3 PASS — Auto-création cascade (profil "Mon enfant" + timeline + 2 slots)';
+  RAISE NOTICE '✅ TEST 3 PASS — Auto-création cascade (profil "Espace 1" + timeline + 2 slots)';
 END $$;
 
 

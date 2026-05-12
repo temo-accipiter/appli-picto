@@ -167,6 +167,7 @@
   &--active {
     color: text();
     background-color: surface('bg');
+    box-shadow: shadow('elevation-xs');
 
     &:visited {
       color: text();
@@ -348,7 +349,6 @@
   padding: spacing('sm') spacing('md');
   margin: 0;
   border: 0;
-  border-radius: radius('full');
   cursor: pointer;
   cursor: pointer;
   @include safe-transition(

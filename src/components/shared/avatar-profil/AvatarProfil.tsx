@@ -4,6 +4,7 @@
 // Sélecteur d'avatar. Conserve l'API (onUpload/onDelete), mais aligne les imports et passe à 100 Ko.
 
 import React, { useRef, useState } from 'react'
+import Image from 'next/image'
 import { SignedImage } from '@/components'
 import {
   compressImageIfNeeded,
@@ -94,9 +95,14 @@ export default function AvatarProfil({
           className="avatar-profil"
         />
       ) : (
-        <div className="avatar-fallback">
-          {pseudo?.charAt(0)?.toUpperCase() || 'U'}
-        </div>
+        <Image
+          src="/images/default-avatar.png"
+          alt={avatarAlt}
+          width={160}
+          height={160}
+          className="avatar-profil"
+          priority={false}
+        />
       )}
 
       <button

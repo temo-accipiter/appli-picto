@@ -34,7 +34,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Créer le compte (déclenche auto-create: profil "Mon enfant" + timeline + 2 slots)
+-- Créer le compte (déclenche auto-create: profil "Espace 1" + timeline + 2 slots)
 INSERT INTO accounts (id, status, timezone)
 VALUES ('a0000000-0000-0000-0000-000000000001', 'subscriber', 'Europe/Paris')
 ON CONFLICT (id) DO NOTHING;
