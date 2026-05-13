@@ -96,3 +96,6 @@ next-env.d.ts
 # PWA build artifacts (générés automatiquement, ne pas versionner)
 public/sw.js*
 public/workbox-*.js
+
+# Brand source files (exports Figma, conservés en local)
+.brand-sources/
