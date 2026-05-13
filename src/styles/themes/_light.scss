@@ -12,7 +12,9 @@
 
 :root {
   // === COLORS - LIGHT THEME ===
-  --color-primary: #0077c2; // Bleu brand
+  --color-primary: #2871a8; // Bleu brand logo (WCAG AA 5.20:1)
+  --color-primary-hover: #1f5e8e; // ~10% plus sombre que primary
+  --color-primary-subtle: #bcd8f1; // Bleu logo très clair (arrière-plans)
   --color-secondary: #{red(500)}; // Rouge accent
   --color-accent: #{color('base', 'accent')}; // Accent décoratif
 
@@ -59,7 +61,9 @@
 // Data attribute override (for theme switcher)
 [data-theme='light'] {
   // Light theme colors (tokens-first)
-  --color-primary: #0077c2;
+  --color-primary: #2871a8;
+  --color-primary-hover: #1f5e8e;
+  --color-primary-subtle: #bcd8f1;
   --color-secondary: #{red(500)};
   --color-accent: #{color('base', 'accent')};
   --color-text: #{gray(900)};

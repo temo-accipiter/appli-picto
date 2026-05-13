@@ -174,6 +174,29 @@ $palettes-primitives: (
     )
 );
 
+/// Palette BRAND-BLUE (Bleu logo — source de vérité identité marque)
+/// Extrait des SVG logo, aligné WCAG AA (600 = 5.20:1 sur blanc)
+$brand-blue-tokens: (
+  50: #bcd8f1,
+  // Bleu très clair (logo gradient step 1)
+  100: #a9cde9,
+  // Bleu clair (logo gradient step 2)
+  200: #97c1e4,
+  // Bleu moyen (logo gradient step 3)
+  600: #2871a8, // Bleu saturé WCAG AA (primary — 5.20:1 sur blanc)
+);
+
+/// Fonction helper pour accéder aux tokens brand-blue
+/// @param {Number} $shade - Nuance (50, 100, 200, 600)
+/// @return {Color} Couleur brand-blue
+@function brand-blue($shade) {
+  $color: map.get($brand-blue-tokens, $shade);
+  @if not $color {
+    @error "Brand-blue shade '#{$shade}' not found. Available: #{map.keys($brand-blue-tokens)}";
+  }
+  @return $color;
+}
+
 /// Fonction helper pour accéder aux palettes primitives
 /// @param {String} $palette - Nom palette (neutral, brand, success, etc.)
 /// @param {Number} $shade - Nuance (50-900)
