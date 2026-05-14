@@ -456,35 +456,40 @@ width: size('icon-md'); // 24px
 
 Retournent des valeurs de motion. Source : `$motion-tokens` dans `_tokens.scss`. Définis dans `_motion.scss`.
 
+→ **Doctrine complète** : `docs/refonte_front/motion-doctrine.md`
+
 **Timing** :
 
-| Clé                     | Valeur | Usage                          |
-| ----------------------- | ------ | ------------------------------ |
-| `'xs'` / `'fast'`       | 0.15s  | Hover, focus (immédiat)        |
-| `'sm'`                  | 0.2s   | Transitions de couleur rapides |
-| `'base'` / `'slow'`     | 0.3s   | Standard (max TSA)             |
-| `'lg'` / `'slower'`     | 0.5s   | Reveals, transforms            |
-| `'xl'`                  | 0.8s   | Séquences complexes            |
-| `'fade'` / `'slide'`    | 0.3s   | Animations nommées             |
-| `'spin'`                | 1.5s   | Rotation continue              |
-| `'pulse'` / `'shimmer'` | 2s     | Effets de respiration          |
+| Clé                     | Valeur | Usage                           |
+| ----------------------- | ------ | ------------------------------- |
+| `'xs'` / `'fast'`       | 0.15s  | Hover, focus, feedback immédiat |
+| `'sm'`                  | 0.2s   | Transitions de couleur rapides  |
+| `'base'` / `'slow'`     | 0.3s   | Standard (max TSA feedback)     |
+| `'lg'` / `'slower'`     | 0.5s   | Reveals, transforms             |
+| `'xl'`                  | 0.8s   | Séquences complexes             |
+| `'fade'` / `'slide'`    | 0.3s   | Animations nommées              |
+| `'spin'`                | 1.5s   | Rotation continue               |
+| `'pulse'` / `'shimmer'` | 2s     | Effets de respiration           |
 
-**Easing** :
+**Easing — tokens autorisés (doctrine motion v1.0)** :
 
-| Clé             | Valeur CSS                             | Usage              |
-| --------------- | -------------------------------------- | ------------------ |
-| `'smooth'`      | `ease`                                 | Par défaut         |
-| `'ease-out'`    | `ease-out`                             | Sorties (exits)    |
-| `'ease-in'`     | `ease-in`                              | Entrées (enters)   |
-| `'ease-in-out'` | `ease-in-out`                          | Les deux côtés     |
-| `'linear'`      | `linear`                               | Vitesse constante  |
-| `'smooth-out'`  | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` | Sortie naturelle   |
-| `'smooth-pop'`  | `cubic-bezier(0.34, 1.56, 0.64, 1)`    | Pop avec overshoot |
+| Clé          | Valeur CSS | Catégorie d'usage                                |
+| ------------ | ---------- | ------------------------------------------------ |
+| `'linear'`   | `linear`   | Cat. 1 feedback (obligatoire) + Cat. 3 décoratif |
+| `'ease-out'` | `ease-out` | Cat. 2 apparitions/disparitions                  |
+
+**Easings supprimés** (retirés de `$motion-tokens`) : `ease-in`, `ease-in-out`, `smooth`, `smooth-in`, `smooth-out`, `smooth-pop`, `bounce-easy`. Voir doctrine pour justification.
 
 ⚠️ **T2-E** : `timing()` et `easing()` lisent uniquement `$motion-tokens` (legacy). Les aliases sémantiques de `$motion-semantic` ne sont pas branchés.
 
 ```scss
-@include safe-transition(background color, timing('fast'), easing('smooth'));
+// Cat. 1 — feedback interactif
+@include safe-transition(background-color, timing('xs'), easing('linear'));
+
+// Cat. 2 — apparition
+@include safe-animation(fadeIn, timing('fast'), easing('ease-out'));
+
+// Cat. 3 — décoratif ambiant
 @include safe-animation(spinner-rotate, timing('slower'), easing('linear'));
 ```
 

@@ -51,9 +51,12 @@
   background: var(--color-surface-secondary);
   border: border-width('medium') solid var(--color-border-primary);
   border-radius: radius('full');
-  transition:
-    background-color var(--motion-duration-quick) var(--motion-easing-default),
-    border-color var(--motion-duration-quick) var(--motion-easing-default);
+  // Cat. 1 — feedback interactif. CSS vars remplacées par tokens Sass (vars introuvables en runtime).
+  @include safe-transition(
+    background-color border-color,
+    timing('xs'),
+    easing('linear')
+  );
 
   // État checked
   .toggle--checked & {
@@ -79,8 +82,8 @@
   background: white(); // Token couleur blanc pur (#ffffff)
   border-radius: radius('full');
   // Pas de box-shadow sur composant atomique (v1.1 §F.3)
-  transition: transform var(--motion-duration-quick)
-    var(--motion-easing-default);
+  // Cat. 1 — feedback interactif.
+  @include safe-transition(transform, timing('xs'), easing('linear'));
 
   // État checked : déplacement vers la droite (44px - 16px - 4px = 24px, mais arrondi à 20px pour centrage visuel)
   .toggle--checked & {
