@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:fast": "next dev --turbopack & sleep 30 && node scripts/precompile-routes.cjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "build:prod": "next build",
     "build:analyze": "ANALYZE=true next build",
     "start": "next start",

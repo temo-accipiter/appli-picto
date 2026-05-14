@@ -1,5 +1,7 @@
-// @ducanh2912/next-pwa désactivé : incompatible avec Turbopack (Next.js 16 builds)
-// Le manifest PWA est géré nativement par src/app/manifest.ts
+// Service Worker PWA — activé en production uniquement (build webpack)
+// Désactivé en dev pour compatibilité Turbopack
+// manifest.ts reste la source de vérité (géré par Next.js App Router)
+import withPWA from '@ducanh2912/next-pwa'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -176,4 +178,10 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withPWA({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
+  reloadOnOnline: true,
+})(nextConfig)

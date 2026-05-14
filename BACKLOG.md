@@ -36,13 +36,15 @@
 
 **Checklist Étape 1** :
 
-- [ ] Audit Phase 1 : état actuel next.config.js + package.json + manifest.ts
-- [ ] Vérification non-régression manifest.ts (source de vérité unique)
-- [ ] Configuration conservative
-- [ ] Build vert avec --webpack
+- [x] Audit Phase 1 : état actuel next.config.js + package.json + manifest.ts
+- [x] Vérification non-régression manifest.ts (source de vérité unique)
+- [x] Configuration conservative
+- [x] Build vert avec --webpack
 - [ ] Test offline réel : charger l'app, mode avion, recharger → shell cached
 - [ ] Test installation PWA Android (icône brand visible)
 - [ ] Commit conventional
+
+**Résolu le 14 mai 2026** — `withPWA` restauré dans `next.config.js` avec `disable: process.env.NODE_ENV === 'development'` (dev Turbopack non affecté). Build webpack via `next build --webpack`. `sw.js` + `workbox-*.js` générés dans `public/`. `manifest.ts` reste source de vérité (pas de `public/manifest.json` généré).
 
 ---
 
