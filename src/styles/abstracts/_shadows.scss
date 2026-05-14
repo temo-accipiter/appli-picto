@@ -273,7 +273,9 @@ $ENABLE_LEGACY_SUPPORT: true !default;
 ///   .card { @include card-shadow-interactive; }
 @mixin card-shadow-interactive {
   box-shadow: card-shadow('default');
-  transition: box-shadow timing('xs') easing('smooth');
+  transition-property: box-shadow;
+  transition-duration: timing('xs');
+  transition-timing-function: easing('smooth');
 
   &:hover,
   &:focus-within {

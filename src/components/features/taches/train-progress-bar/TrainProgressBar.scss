@@ -75,7 +75,10 @@
       stroke-width: spacing('sm');
       fill: none;
       stroke-dasharray: spacing('14') spacing('14'); // §E.7 : 14px SVG stroke-dasharray, sans CSS var → exception documentée
-      animation: dash-rail timing('slowest') linear infinite;
+      animation-name: dash-rail;
+      animation-duration: timing('slowest');
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
     }
 
     .station {
@@ -97,7 +100,9 @@
         justify-content: center;
 
         &.arrivee {
-          animation: pop-rebond timing('base') ease;
+          animation-name: pop-rebond;
+          animation-duration: timing('base');
+          animation-timing-function: ease;
         }
 
         img {
@@ -121,7 +126,9 @@
       }
 
       &.active .dot {
-        animation: station-pop timing('base') ease;
+        animation-name: station-pop;
+        animation-duration: timing('base');
+        animation-timing-function: ease;
         background: semantic('info-primary');
       }
 
@@ -164,7 +171,7 @@
       @include safe-transition(
         (left, transform),
         timing('slow'),
-        easing('in-out')
+        easing('ease-in-out')
       );
 
       // Modificateur : désactiver animations si reduced_motion (TSA-friendly)
@@ -199,7 +206,9 @@
 }
 
 .train--animated {
-  animation: trainStart timing('base') ease-out;
+  animation-name: trainStart;
+  animation-duration: timing('base');
+  animation-timing-function: ease-out;
 }
 
 .dot-logo.fixed-logo {

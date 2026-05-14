@@ -15,7 +15,10 @@
   width: 100%;
   background-color: color('base'); // Legacy support
   background-size: 200% auto;
-  animation: shimmer timing('slower') linear infinite; // Legacy support
+  animation-name: shimmer; // Legacy support
+  animation-duration: timing('slower');
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
   border-radius: radius('xs'); // Phase 6: 4px (primitive)
   opacity: opacity('half'); // Legacy support
 }

@@ -22,7 +22,9 @@
   border: border-width('thin') solid surface('border');
   border-radius: radius('large'); // 20px — conteneur guard §D.2
   // Shadow supprimée au repos (§F.3)
-  animation: deleteGuardFadeIn timing('base') ease-out;
+  animation-name: deleteGuardFadeIn;
+  animation-duration: timing('base');
+  animation-timing-function: ease-out;
 }
 
 @media (prefers-color-scheme: dark) {

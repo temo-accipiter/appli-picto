@@ -141,7 +141,10 @@
     border-color: surface('border');
 
     .status-icon {
-      animation: spin timing('slow') linear infinite;
+      animation-name: spin;
+      animation-duration: timing('slow');
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
     }
   }
 
@@ -220,7 +223,9 @@
 .account-status-badge {
   &.suspended,
   &.deletion_scheduled {
-    animation: pulse timing('slower') infinite;
+    animation-name: pulse;
+    animation-duration: timing('slower');
+    animation-iteration-count: infinite;
   }
 }
 

@@ -13,7 +13,6 @@ import { ToastProvider } from '@/contexts/ToastContext'
 import { OfflineProvider } from '@/contexts/OfflineContext'
 import { RealtimeBankCardsProvider } from '@/contexts/RealtimeBankCardsContext'
 import InitializationLoader from '@/components/shared/initialization-loader/InitializationLoader'
-import Loader from '@/components/ui/loader/Loader'
 
 export function Providers({ children }: { children: ReactNode }) {
   useEffect(() => {
@@ -37,7 +36,7 @@ export function Providers({ children }: { children: ReactNode }) {
                 <LoadingProvider>
                   <ToastProvider>
                     <InitializationLoader>
-                      <Suspense fallback={<Loader />}>
+                      <Suspense fallback={null}>
                         {children}
                         {/* Bottom Navigation Bar - Mobile only (< 1024px) */}
                         <BottomNav />

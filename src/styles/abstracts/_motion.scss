@@ -112,7 +112,9 @@
 ///   @include transition(color, 'xs', 'smooth');
 ///   @include transition((color, background-color), 'sm');
 @mixin transition($property: all, $timing-key: 'base', $easing-key: 'smooth') {
-  transition: $property timing($timing-key) easing($easing-key);
+  transition-property: $property;
+  transition-duration: timing($timing-key);
+  transition-timing-function: easing($easing-key);
 }
 
 /// Applique un preset motion complet

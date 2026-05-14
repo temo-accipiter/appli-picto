@@ -43,7 +43,10 @@
     border: border-width('base') solid surface('border');
     background: surface('soft');
     background-size: 200% 200%;
-    animation: skeleton-loading timing('slower') easing('ease-in-out') infinite;
+    animation-name: skeleton-loading;
+    animation-duration: timing('slower');
+    animation-timing-function: easing('ease-in-out');
+    animation-iteration-count: infinite;
     filter: blur(size('2'));
   }
 

@@ -329,7 +329,9 @@
 
 // Animations
 .logs-page {
-  animation: fadeIn timing('base') easing('smooth');
+  animation-name: fadeIn;
+  animation-duration: timing('base');
+  animation-timing-function: easing('smooth');
 }
 
 @keyframes fadeIn {

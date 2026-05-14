@@ -44,7 +44,10 @@
     border: border-width('base') solid surface('border');
     border-top: border-width('base') solid color('base');
     border-radius: radius('full');
-    animation: spin timing('slow') linear infinite;
+    animation-name: spin;
+    animation-duration: timing('slow');
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
   }
 }
 

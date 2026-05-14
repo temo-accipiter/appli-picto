@@ -29,7 +29,9 @@
     .personalization-icon {
       font-size: font-size('5xl');
       margin-bottom: spacing('lg');
-      animation: bounce timing('slower') infinite;
+      animation-name: bounce;
+      animation-duration: timing('slower');
+      animation-iteration-count: infinite;
     }
 
     h3 {

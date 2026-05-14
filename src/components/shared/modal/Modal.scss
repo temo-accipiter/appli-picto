@@ -34,7 +34,9 @@
   align-items: center;
   justify-content: center;
   z-index: z-index('modal-backdrop');
-  animation: fadeIn timing('fast') easing('ease-out');
+  animation-name: fadeIn;
+  animation-duration: timing('fast');
+  animation-timing-function: easing('ease-out');
   overflow-y: auto;
   // Mobile par défaut (320px-575px)
   padding: spacing('sm');
@@ -63,7 +65,9 @@
   ); // Fonction dédiée modal — shadow('modal') retourne une map
   display: flex;
   flex-direction: column;
-  animation: scaleIn timing('fast') easing('ease-out');
+  animation-name: scaleIn;
+  animation-duration: timing('fast');
+  animation-timing-function: easing('ease-out');
 
   // Mobile par défaut (320px-575px)
   width: 95vw;
@@ -377,7 +381,9 @@
   max-height: 70vh;
   border-radius: radius('modal') radius('modal') 0 0; // 20px — drawer mobile coins supérieurs §D.2
   margin: 0;
-  animation: slideUpIn timing('base') easing('ease-out');
+  animation-name: slideUpIn;
+  animation-duration: timing('base');
+  animation-timing-function: easing('ease-out');
   position: relative;
 
   // Handle bar at top (visual indicator)
@@ -416,7 +422,9 @@
     max-width: size('modal-width-md');
     max-height: 90vh;
     border-radius: radius('modal'); // 20px — drawer tablette §D.2
-    animation: scaleIn timing('fast') easing('ease-out');
+    animation-name: scaleIn;
+    animation-duration: timing('fast');
+    animation-timing-function: easing('ease-out');
     margin: 0;
     position: relative;
 

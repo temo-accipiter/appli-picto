@@ -110,7 +110,9 @@
     ); // 20px — menu flottant, alias générique §D.2
     overflow-y: auto;
     max-height: 70vh;
-    animation: slideInUp timing('fast') easing('ease-out') !important;
+    animation-name: slideInUp !important;
+    animation-duration: timing('fast') !important;
+    animation-timing-function: easing('ease-out') !important;
 
     // Desktop (768px+) : positioned top-right
     @include respond-to(md) {
@@ -120,7 +122,9 @@
       left: auto !important;
       bottom: auto !important;
       max-height: calc(100vh - #{size('100')});
-      animation: slideInDown timing('fast') easing('ease-out') !important;
+      animation-name: slideInDown !important;
+      animation-duration: timing('fast') !important;
+      animation-timing-function: easing('ease-out') !important;
     }
   }
 

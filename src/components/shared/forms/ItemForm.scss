@@ -57,7 +57,9 @@
   color: semantic('success');
   font-weight: font-weight('semibold');
   text-align: center;
-  animation: slideDown timing('base') easing('ease-out');
+  animation-name: slideDown;
+  animation-duration: timing('base');
+  animation-timing-function: easing('ease-out');
 }
 
 .item-form__error-section {

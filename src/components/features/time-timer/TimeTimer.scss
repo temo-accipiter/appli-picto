@@ -318,7 +318,9 @@
       color: text('invert');
       border-color: transparent;
       font-weight: font-weight('bold');
-      animation: pop timing('base') easing('smooth');
+      animation-name: pop;
+      animation-duration: timing('base');
+      animation-timing-function: easing('smooth');
 
       &:hover {
         background: semantic('info', 'dark');

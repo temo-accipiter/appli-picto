@@ -92,7 +92,7 @@
   @include safe-transition(
     (transform, box-shadow),
     timing('slow'),
-    easing('spring')
+    easing('smooth-pop')
   );
 
   /* Hover uniquement */
@@ -204,7 +204,7 @@
 
   /* Légère rotation pour l'effet de soulèvement */
   transform: rotate(3deg) scale(1.05);
-  @include safe-transition(transform, timing('fast'), easing('spring'));
+  @include safe-transition(transform, timing('fast'), easing('smooth-pop'));
 }
 
 .reset-all-zone {

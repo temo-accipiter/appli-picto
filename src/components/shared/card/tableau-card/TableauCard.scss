@@ -31,7 +31,9 @@
   overflow: visible;
 
   // Animation d'apparition lors du swap
-  animation: card-swap-in timing('base') easing('bounce');
+  animation-name: card-swap-in;
+  animation-duration: timing('base');
+  animation-timing-function: easing('ease-out');
 
   // Transitions optimisées pour éviter les sauts
   @include safe-transition(

@@ -7,48 +7,6 @@
 
 ## 🔴 Haute priorité (pré-commercialisation, bugs fonctionnels)
 
-### T-timetimer — Fix contraste WCAG actif TimeTimer.scss
-
-**Type** : Bug WCAG actif
-**Estimation** : 30 min
-**Bloquant commercialisation** : Oui (conformité accessibilité)
-
-**Contexte** :
-
-- Fichier : `src/components/features/time-timer/TimeTimer.scss` ligne ~187
-- Pattern actuel : `background: semantic('info-primary')` (#66c3f7) + `color: white`
-- Ratio mesuré : **1.74:1** → FAIL WCAG AA (minimum 4.5:1 pour texte)
-- Composant visible en Contexte Tableau enfant (TSA-sensible)
-
-**Solution proposée** : inversion fond/texte
-
-```scss
-// AVANT (FAIL)
-background: semantic('info-primary'); // #66c3f7
-color: white;
-
-// APRÈS (PASS)
-background: semantic('info-subtle'); // fond clair
-color: semantic('info-dark'); // texte sombre
-```
-
-**Justification de l'approche** :
-
-- Fond clair = perception plus douce, aligné positionnement TSA "doux/chaleureux"
-- Cohérent avec le pattern visuel de la nouvelle palette brand
-- Texte sombre sur fond clair = lecture plus facile pour tous publics
-
-**Checklist** :
-
-- [ ] Audit lecture TimeTimer.scss complet
-- [ ] Vérifier que `info-subtle` et `info-dark` existent dans les tokens
-- [ ] Fix du contraste
-- [ ] Test visuel du composant
-- [ ] Test contraste avec Lighthouse/WAVE
-- [ ] Commit conventional
-
----
-
 ### T-pwa-sw — Réactiver Service Worker pour support offline
 
 **Type** : Fonctionnalité critique (offline)
@@ -89,6 +47,45 @@ color: semantic('info-dark'); // texte sombre
 ---
 
 ## 🟠 Moyenne priorité (qualité, à faire avant launch)
+
+### T-tokens-motion — `timing()` et `easing()` non résolus par Turbopack
+
+**Type** : Bug systémique design system / compilateur SCSS
+**Estimation** : 2-3h (audit + migration)
+**Bloquant commercialisation** : Non (contournements en place), mais affecte toutes les transitions
+
+**Contexte** :
+
+Découvert lors du débogage du loader (mai 2026). Le compilateur SCSS de Turbopack (dev) et Next.js (build) ne résout **pas** les fonctions `timing()` et `easing()` lorsqu'elles sont utilisées dans des propriétés CSS shorthand (`animation:`, `transition:`).
+
+Le CSS compilé contient littéralement `timing("base")` et `easing("ease-out")` au lieu des valeurs résolues `0.3s` et `ease-out`. Le navigateur reçoit des valeurs invalides et utilise les défauts CSS :
+
+- `transition-duration: 0s` → transitions instantanées (visuellement OK, mais pas les durées prévues)
+- `animation-duration: 0s` → animations jouées en 0 seconde → dots figés (bug visible)
+
+Les fonctions fonctionnent correctement dans les propriétés sub-longhand (`transition-duration: timing('base')`) mais pas dans les shorthands.
+
+**Preuve** : inspecter `.next/static/chunks/*.css` → `transition:color timing("fast")easing("ease-out")` partout.
+
+**Contournement actuel** : `Loader.scss` utilise `0.3s` hardcodé pour l'animation des dots.
+
+**Solution proposée** :
+
+- Option A (rapide) : remplacer `timing()` et `easing()` par leurs valeurs résolues dans tous les shorthands animation/transition (grep + sed ciblé)
+- Option B (propre) : utiliser les propriétés sub-longhand séparées plutôt que les shorthands : `transition-property`, `transition-duration`, `transition-timing-function` — les fonctions SCSS s'y résolvent correctement
+- Option C (investigation) : comprendre pourquoi Turbopack ne résout pas ces fonctions (bug Turbopack ? problème `@use`/`@forward` dans l'abstracts index ?) et corriger à la source
+
+**Checklist** :
+
+- [x] Audit Phase 1 : grep exhaustif de tous les `timing()` et `easing()` dans les shorthands SCSS
+- [x] Compter l'impact : combien de fichiers, combien de propriétés affectées
+- [x] Choisir Option A, B ou C selon ampleur
+- [x] Migration + build vert
+- [x] Vérifier visuellement que les durées de transition sont correctes après fix
+
+**Résolu le 14 mai 2026** — Cause racine : `_motion.scss` n'était pas forwardé dans `_index.scss`, SCSS traitait `timing()` / `easing()` comme des fonctions CSS inconnues. Fix : `@forward './motion' show timing, easing, motion-preset` + migration 34 shorthands → sub-longhands + correction 3 clés easing invalides (`'bounce'`, `'in-out'`, `'spring'`).
+
+---
 
 ### T-logo-usage — Audit + standardisation usage du logo
 
@@ -297,60 +294,3 @@ Note vue dans DevTools : "id is not specified in the manifest, start_url is used
 **Solution** : ajouter `id: '/'` dans `src/app/manifest.ts` pour garantir un App ID stable même si `start_url` change.
 
 ---
-
-## ⏸️ En attente / Bloqué
-
-(Aucun ticket bloqué actuellement)
-
----
-
-## ✅ Tickets terminés (archive)
-
-### Migration palette brand WCAG AA — 13 mai 2026
-
-Travaux réalisés en une session, 4 commits atomiques :
-
-**Commit B** — `feat(brand): align logo blue with WCAG AA primary color`
-
-- Remplacement `#3F93CC` → `#2871A8` dans `logo-principal.svg`, `logo-dark.svg`, `logo-vertical.svg`, `logo-app-icon.svg`
-- `logo-monochrome.svg` inchangé (gris/noir)
-
-**Commit C** — `refactor(tokens): align primary palette with brand logo (WCAG AA)`
-
-- Migration `$primary-color-tokens.base` `#0077c2` → `#2871A8`
-- Migration `$primary-color-tokens.dark` `#1565c0` → `#1F5E8E`
-- Ajout palette primitive `$brand-blue-tokens` (50/100/200/600)
-- Ajout fonction `brand-blue()`
-- Migration `--color-primary` mode light dans `_light.scss`
-- Ajout CSS vars `--color-primary-hover` et `--color-primary-subtle`
-- Migration 3 shadow tokens rgba(0,119,194,X) → rgba(40,113,168,X)
-- `pnpm lint:hardcoded` vert, build vert
-
-**Commit D (icônes PWA)** — `feat(pwa): finalize PWA icons with brand-aligned palette`
-
-- Resize `src/app/icon.png` 1024×1024 → 32×32 (favicon)
-- Resize `src/app/apple-icon.png` 1024×1024 → 180×180 (Apple HIG)
-- Ajout `public/icons/icon-{192,512}x{192,512}.png` (purpose any)
-- Ajout `public/icons/icon-maskable-{192,512}x{192,512}.png` (purpose maskable)
-- Fix `manifest.ts` : `theme_color #5A9FB8` → `#2871A8`, `background_color #E8F4F8` → `#BCD8F1`
-- Fix `layout.tsx` : `themeColor #5A9FB8` → `#2871A8`
-- Déplacement fichiers maîtres Figma vers `.brand-sources/` gitignored
-- Test maskable Minimum safe area validé sur maskable.app
-- Manifest détecté correctement en mode production
-
-**Décisions design verrouillées** :
-
-- Palette brand source de vérité (vs tokens, choix α)
-- `#2871A8` retenu (ratio 5.20:1) vs `#3F93CC` initial (ratio 3.71:1 FAIL)
-- Palette `$brand-blue` : `#BCD8F1` / `#A9CDE9` / `#97C1E4` / `#2871A8`
-- 4ème variant logo identifie la "fin / accomplissement" — cohérent avec métaphore progression du produit
-
----
-
-## Notes de méthode
-
-- **Discipline atomique** : un commit par sous-phase logique, conventional commits, local-only jusqu'à validation
-- **Audit avant fix** : tous les prompts Claude Code CLI structurés en 2 phases (audit read-only puis fix après review)
-- **Show before write** : aucun fichier modifié sans diff montré au préalable
-- **Pre-commit** : `pnpm check`, `pnpm test`, `pnpm build`, `pnpm type-check` avant chaque commit
-- **DB-first** : aucun ticket front ne touche à la logique métier (gérée par RLS/triggers DB)

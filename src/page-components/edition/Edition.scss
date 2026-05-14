@@ -117,7 +117,9 @@
 }
 
 .recompenses-edition {
-  animation: fadeIn timing('fast') easing('smooth');
+  animation-name: fadeIn;
+  animation-duration: timing('fast');
+  animation-timing-function: easing('smooth');
 }
 
 .edition-sections {

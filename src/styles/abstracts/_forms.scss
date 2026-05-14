@@ -216,7 +216,9 @@
   background-color: form-bg('default');
   border: 1px solid form-border-color('default');
   border-radius: form-radius('input');
-  transition: all timing('xs') easing('smooth');
+  transition-property: all;
+  transition-duration: timing('xs');
+  transition-timing-function: easing('smooth');
 
   &:hover:not(:disabled) {
     background-color: form-bg('hover');

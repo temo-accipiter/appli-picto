@@ -30,6 +30,7 @@ import usePersonalCards from '@/hooks/usePersonalCards'
 import useSequencesWithVisitor from '@/hooks/useSequencesWithVisitor'
 import useSequenceStepsWithVisitor from '@/hooks/useSequenceStepsWithVisitor'
 import { useReducedMotion } from '@/hooks'
+import Loader from '@/components/ui/loader/Loader'
 import {
   TrainProgressBar,
   FloatingTimeTimer,
@@ -398,18 +399,8 @@ export default function Tableau(_props: TableauProps = {}) {
     personalLoading
 
   // ── Rendu : état de chargement ──────────────────────────────────────────────
-  // TSA : indicateur de chargement calme, sans texte technique
   if (isLoading) {
-    return (
-      <div className="tableau-magique" aria-busy="true" aria-label="Chargement">
-        <h1 className="sr-only">Planning</h1>
-        <div className="tableau-magique__loading">
-          <div className="tableau-magique__dot" />
-          <div className="tableau-magique__dot" />
-          <div className="tableau-magique__dot" />
-        </div>
-      </div>
-    )
+    return <Loader />
   }
 
   // ── Rendu : pas de timeline configurée ─────────────────────────────────────

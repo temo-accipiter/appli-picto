@@ -21,7 +21,9 @@
   justify-content: center;
   align-items: center;
   z-index: z-index('max');
-  animation: fadeIn timing('fast') easing('ease-in-out');
+  animation-name: fadeIn;
+  animation-duration: timing('fast');
+  animation-timing-function: easing('ease-in-out');
 }
 
 .global-loader-content {
@@ -29,27 +31,30 @@
   flex-direction: column;
   align-items: center;
   gap: spacing('lg');
-}
 
-.loader-bounce {
-  display: flex;
-  gap: spacing('sm');
-}
+  .loader-bounce {
+    display: flex;
+    gap: spacing('sm');
+  }
 
-.dot {
-  width: size('icon-sm');
-  height: size('icon-sm');
-  background-color: color('base');
-  border-radius: radius('full');
-  animation: bounce timing('base') infinite easing('ease-in-out');
-}
+  .dot {
+    width: size('icon-sm');
+    height: size('icon-sm');
+    background-color: color('base');
+    border-radius: radius('full');
+    animation-name: bounce;
+    animation-duration: timing('base');
+    animation-timing-function: easing('ease-in-out');
+    animation-iteration-count: infinite;
 
-.dot:nth-child(2) {
-  animation-delay: timing('fast');
-}
+    &:nth-child(2) {
+      animation-delay: timing('fast');
+    }
 
-.dot:nth-child(3) {
-  animation-delay: timing('base');
+    &:nth-child(3) {
+      animation-delay: timing('base');
+    }
+  }
 }
 
 .loader-message {
@@ -88,7 +93,7 @@
     animation: none;
   }
 
-  .dot {
+  .global-loader-content .dot {
     animation: none;
     opacity: opacity('half');
   }

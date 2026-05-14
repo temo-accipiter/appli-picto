@@ -49,7 +49,9 @@
   }
 
   .card-edition.no-actions {
-    animation: pulse-light timing('slowest') infinite;
+    animation-name: pulse-light;
+    animation-duration: timing('slowest');
+    animation-iteration-count: infinite;
     border-radius: radius('card'); // 12px — card flottante §D.3
     overflow: hidden;
   }

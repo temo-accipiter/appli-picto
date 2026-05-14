@@ -34,11 +34,14 @@ $ENABLE_LEGACY_SUPPORT: true !default;
 // Forward uniquement les fonctions radius() de _radius.scss (Phase 6 wrapper)
 @forward './radius' show radius, radius-value;
 
+// --- Fonctions motion (sans CSS généré) ---
+// `show` strict : expose uniquement les fonctions, pas le CSS (:root, @media) de _motion.scss
+@forward './motion' show timing, easing, motion-preset;
+
 // --- Systèmes qui génèrent du CSS (NE PAS FORWARD) ---
 // Les maps et CSS vars de colors sont importés directement dans main.scss
 // @forward './typography';
 // @forward './spacing';
-// @forward './motion';
 // @forward './radius';
 // @forward './shadows';
 // @forward './forms';

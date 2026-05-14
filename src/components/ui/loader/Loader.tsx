@@ -18,9 +18,9 @@ export default function Loader({ variant = 'fullscreen' }: LoaderProps) {
       aria-label="Chargement en cours"
     >
       <div className="loader-bounce" aria-hidden="true">
-        <div className="dot" />
-        <div className="dot" />
-        <div className="dot" />
+        <div className="loader-dot" />
+        <div className="loader-dot" />
+        <div className="loader-dot" />
       </div>
       <span className="sr-only">Chargement en cours...</span>
     </div>

@@ -35,7 +35,9 @@
     ); // Fonction dédiée modal — shadow('modal') retourne une map
 
     // Animation douce d'apparition (TSA-friendly)
-    animation: fadeInScale timing('base') easing('ease-out');
+    animation-name: fadeInScale;
+    animation-duration: timing('base');
+    animation-timing-function: easing('ease-out');
   }
 
   &__icon {
@@ -43,7 +45,10 @@
     margin-bottom: spacing('md');
 
     // Animation douce de balancement
-    animation: gentleSwing timing('slower') easing('ease-in-out') infinite;
+    animation-name: gentleSwing;
+    animation-duration: timing('slower');
+    animation-timing-function: easing('ease-in-out');
+    animation-iteration-count: infinite;
   }
 
   &__title {

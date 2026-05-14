@@ -25,7 +25,7 @@ export default function InitializationLoader({
     return (
       <div className="initialization-loader">
         <div className="initialization-loader__content">
-          <Loader />
+          <Loader variant="inline" />
           <p className="initialization-loader__text">Chargement...</p>
         </div>
       </div>

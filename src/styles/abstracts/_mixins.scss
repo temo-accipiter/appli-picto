@@ -189,7 +189,9 @@
 
 /// Applique une transition douce générique
 @mixin transition-smooth {
-  transition: all motion.timing('base') ease-in-out;
+  transition-property: all;
+  transition-duration: motion.timing('base');
+  transition-timing-function: ease-in-out;
 }
 
 /// Style de base pour une carte ou un conteneur avec fond
@@ -220,7 +222,9 @@
   $duration: motion.timing('fast'),
   $easing: ease
 ) {
-  transition: $property $duration $easing;
+  transition-property: $property;
+  transition-duration: $duration;
+  transition-timing-function: $easing;
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
@@ -233,7 +237,9 @@
   $duration: motion.timing('base'),
   $timing: ease-in-out
 ) {
-  animation: $name $duration $timing;
+  animation-name: $name;
+  animation-duration: $duration;
+  animation-timing-function: $timing;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -552,7 +558,9 @@
   }
 
   // Application animation TSA-compliant
-  animation: glow-#{$type} motion.timing('fast') motion.easing('ease-in-out');
+  animation-name: glow-#{$type};
+  animation-duration: motion.timing('fast');
+  animation-timing-function: motion.easing('ease-in-out');
 
   // Respect prefers-reduced-motion (WCAG 2.2 AA)
   @media (prefers-reduced-motion: reduce) {

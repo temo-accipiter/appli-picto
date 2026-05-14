@@ -49,7 +49,9 @@
   pointer-events: auto;
   max-width: size('card-max-width');
   min-width: size('thumbnail-md');
-  animation: slideDown timing('fast') easing('ease-out');
+  animation-name: slideDown;
+  animation-duration: timing('fast');
+  animation-timing-function: easing('ease-out');
 
   // Position: left (défaut)
   &--left {
