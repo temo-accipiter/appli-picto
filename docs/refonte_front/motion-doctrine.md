@@ -217,6 +217,42 @@ Token supprimé : durée > 300 ms sans cas d'usage identifié.
 
 ---
 
+## Dette de migration en cours
+
+Les tokens suivants sont **non conformes** à la doctrine mais restent présents dans le système pour compatibilité. Ils sont en cours de migration et **ne doivent pas être utilisés dans du nouveau code**.
+
+| Token                         | Statut   | Usages détectés              | Migration cible                                                                           |
+| ----------------------------- | -------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
+| `easing('smooth')` (= `ease`) | À migrer | ~50 dans le projet           | `easing('linear')` pour feedback (Cat. 1), `easing('ease-out')` pour apparitions (Cat. 2) |
+| `easing('ease-in-out')`       | À migrer | ~6 dans le projet            | `easing('linear')` (la doctrine interdit `ease-in-out`)                                   |
+| `easing('smooth-pop')`        | À migrer | 2 dans le projet (TachesDnd) | À qualifier Cat. 3 (décoratif, à conserver justifié) OU remplacer par `easing('linear')`  |
+
+### Pourquoi ces tokens sont encore là
+
+Lors de l'application de la doctrine v1.0, un audit phase 1 a sous-estimé le nombre d'usages réels de ces tokens (~50 pour `smooth` annoncés à 0, ~6 pour `ease-in-out` annoncés à 2). La suppression immédiate aurait cassé le build sur des dizaines de call sites nécessitant une classification au cas par cas (Cat. 1 vs Cat. 2). La décision a été prise de :
+
+1. Livrer la doctrine et les 4 fixes prioritaires (Toggle, Checkbox, Loader, Button)
+2. Documenter explicitement la dette ici
+3. Traiter la migration de ces tokens dans un sprint dédié
+
+### Règles pendant la migration
+
+- **Nouveau code** : utiliser exclusivement `easing('linear')` et `easing('ease-out')`. Les tokens listés ci-dessus sont interdits.
+- **Code existant** : migration progressive, fichier par fichier, avec classification explicite (Cat. 1 vs Cat. 2) pour chaque call site.
+- **Une fois la migration terminée** : suppression des tokens correspondants dans `_tokens.scss` et mise à jour de cette section.
+
+### Tokens déjà supprimés (référence historique)
+
+Les tokens suivants ont été supprimés en doctrine v1.0 (0 usage détecté) :
+
+- `easing('ease-in')`
+- `easing('smooth-in')`
+- `easing('bounce-easy')`
+- `easing('smooth-out')`
+- Timing `bounce` (0.6s)
+
+---
+
 ## Maintenance
 
 ### Ajouter une nouvelle animation
