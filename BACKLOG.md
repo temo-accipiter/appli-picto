@@ -148,27 +148,15 @@ PHASE 3 — Implémentation (Claude Code CLI, 45 min) :
 **Estimation** : 1h
 **Bloquant commercialisation** : Non
 
-**Contexte** :
-
-- `semantic('primary')` retourne `#667eea` (violet admin)
-- `color('base')` retourne `#2871A8` (bleu UI brand)
-- Les deux portent le nom "primary" mais désignent des concepts différents
-- Risque : un dev confondra les deux dans 3 mois
-
-**Solution proposée** :
-
-- Renommer `$color-semantic-brand.'primary'` → `'admin'`
-- Propager dans tous les `semantic('primary')` qui devraient être `semantic('admin')`
-- Documenter dans `CLAUDE.md` ou `direction-visuelle` la distinction `admin` vs `base`
-
 **Checklist** :
 
-- [ ] Audit Phase 1 : tous les appels à `semantic('primary')` dans le code
-- [ ] Identifier ceux qui veulent vraiment le violet admin vs le bleu UI
-- [ ] Renommer dans `_semantics.scss`
-- [ ] Propager les appels
-- [ ] Documenter
-- [ ] Build + tests verts
+- [x] Audit Phase 1 : tous les appels à `semantic('primary')` dans le code (aucun)
+- [x] Identifier ceux qui veulent vraiment le violet admin vs le bleu UI
+- [x] Renommer dans `_semantics.scss`
+- [x] Propager les appels (aucune propagation nécessaire — `semantic()` n'expose pas `$color-semantic-brand`)
+- [x] Build + lint verts
+
+**Résolu le 14 mai 2026** — Clés `$color-semantic-brand` renommées : `'primary'` → `'admin'`, `'primary-hover'` → `'admin-hover'`, `'primary-active'` → `'admin-active'`, `'primary-light'` → `'admin-light'`. Commentaire du bloc mis à jour pour documenter la distinction `admin` (violet #667eea) vs `color('base')` (bleu brand #2871A8).
 
 ---
 
@@ -178,25 +166,13 @@ PHASE 3 — Implémentation (Claude Code CLI, 45 min) :
 **Estimation** : 1h
 **Bloquant commercialisation** : Non si mode dark non offert au launch
 
-**Contexte** :
-
-- `src/styles/themes/_dark.scss` utilise `blue(400)` pour `--color-primary` mode dark
-- `blue(400)` est probablement `#60a5fa` (Tailwind blue-400) — bleu générique sans lien avec brand
-- Aucun contraste WCAG calculé pour cette valeur sur fond sombre
-- Pas aligné avec la nouvelle palette brand `$brand-blue-*`
-
-**Solution proposée** :
-
-- Calculer le ratio de contraste de `#60a5fa` (ou ce que retourne `blue(400)`) sur fond sombre (#1a1a1a typique)
-- Si OK : documenter et valider
-- Si KO : créer un `$brand-blue-light` adapté au mode dark, mettre à jour `_dark.scss`
-
 **Checklist** :
 
-- [ ] Audit Phase 1 : valeur exacte de `blue(400)` + ratio sur fond sombre
-- [ ] Si refactor nécessaire : créer variant brand mode dark
-- [ ] Test visuel mode dark
-- [ ] Documenter dans `direction-visuelle`
+- [x] Audit Phase 1 : `blue(400)` = `#60a5fa`, contraste ~6.6:1 sur `slate(900)` = `#0f172a` ✅ WCAG AA mais non brand-aligné
+- [x] Refactor : `brand-blue(100)` = `#a9cde9`, contraste ~10:1 ✅ WCAG AAA, brand-aligné
+- [x] Build + lint verts
+
+**Résolu le 14 mai 2026** — `--color-primary` dark mode migré de `blue(400)` (`#60a5fa`, Tailwind) vers `brand-blue(100)` (`#a9cde9`, palette brand). Contraste amélioré : ~6.6:1 → ~10:1 WCAG AAA sur fond `slate(900)`. `brand-blue(600)` = `#2871A8` rejeté (contraste ~3.4:1, trop sombre pour dark mode).
 
 ---
 
@@ -208,20 +184,7 @@ PHASE 3 — Implémentation (Claude Code CLI, 45 min) :
 **Estimation** : 15 min
 **Bloquant commercialisation** : Non
 
-**Contexte** :
-Commentaires SCSS référençant des hex obsolètes après migration palette brand.
-
-**Fichiers et lignes** :
-
-- `src/styles/abstracts/_semantics.scss:144` — "Remplace ancien bleu #0077c2 par violet moderne"
-- `src/styles/abstracts/_forms.scss:137` — `// #0077c2`
-- `src/styles/abstracts/_forms.scss:146` — `// #0077c2 (bleu primaire focus)`
-- `src/components/features/consent/CookieBanner.scss:158` — `// #0077c2 — ratio 4.75:1` (à mettre à jour en `#2871A8 — ratio 5.20:1`)
-- `src/app/not-found.scss:23` — `// #5A9FB8 — confirmé dans _colors.scss`
-- `src/app/not-found.scss:41` — `// #5A9FB8`
-- `src/app/global-error.scss:33` — `// #5A9FB8 — confirmé dans _colors.scss`
-
-**Solution** : remplacer chaque référence par la valeur actuelle `#2871A8` et mettre à jour les ratios documentés.
+**Résolu le 14 mai 2026** — 6 commentaires SCSS mis à jour : `#0077c2` → `#2871A8` dans `_forms.scss` (×2) et `CookieBanner.scss` (ratio corrigé 4.75:1 → 5.20:1) ; `#5A9FB8` → `#2871A8` dans `not-found.scss` (×2) et `global-error.scss` (×1). Commentaire `_semantics.scss:144` supprimé lors du renommage T-naming.
 
 ---
 

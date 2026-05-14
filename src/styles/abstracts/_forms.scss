@@ -134,7 +134,7 @@
 /// @param {String} $state - État du contrôle ('default', 'hover', 'focus', 'error', 'disabled')
 /// @return {Color} Couleur de bordure
 /// @example
-///   border-color: form-border-color('focus');  // #0077c2
+///   border-color: form-border-color('focus');  // #2871A8
 ///   border-color: form-border-color('error');  // semantic error
 @function form-border-color($state: 'default') {
   $colors: (
@@ -143,7 +143,7 @@
     'hover': blue(200),
     // #bfdbfe (bleu clair hover)
     'focus': color('base'),
-    // #0077c2 (bleu primaire focus)
+    // #2871A8 (bleu brand primaire focus)
     'error': semantic('error', 'base'),
     // #ef4444 (rouge error)
     'disabled': surface('border'), // #e1e1e1 (bordure neutre)

@@ -14,7 +14,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     // === COLORS - DARK THEME ===
-    --color-primary: #{blue(400)}; // Bleu clair en dark mode
+    --color-primary: #{brand-blue(100)}; // #a9cde9 — bleu brand (contraste ~10:1 WCAG AAA)
     --color-secondary: #{red(400)}; // Rouge clair
     --color-accent: #{color('light', 'accent')}; // Accent décoratif
 
@@ -53,7 +53,7 @@
 // Dark theme explicit (data attribute)
 [data-theme='dark'] {
   // === COLORS - DARK THEME ===
-  --color-primary: #{blue(400)};
+  --color-primary: #{brand-blue(100)}; // #a9cde9 — bleu brand (contraste ~10:1 WCAG AAA)
   --color-secondary: #{red(400)};
   --color-accent: #{color('light', 'accent')};
 

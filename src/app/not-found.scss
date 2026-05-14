@@ -20,7 +20,7 @@
       '4xl'
     ); // 2.25rem = 36px (original: 4rem — token disponible le plus proche)
     margin-bottom: spacing('md'); // 1rem = 16px
-    color: var(--color-primary); // #5A9FB8 — confirmé dans _colors.scss
+    color: var(--color-primary); // #2871A8 (via --color-primary, light theme)
   }
 
   &__title {
@@ -38,7 +38,9 @@
   &__action {
     padding: spacing('sm') spacing('md'); // 0.5rem 1rem
     font-size: font-size('base'); // 1rem = 16px
-    background-color: var(--color-primary); // #5A9FB8
+    background-color: var(
+      --color-primary
+    ); // #2871A8 (via --color-primary, light theme)
     color: white; // Pas de token texte inversé disponible
     text-decoration: none;
     border-radius: radius('button'); // 8px

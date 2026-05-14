@@ -139,17 +139,17 @@ $color-semantic-roles: (
   'visitor-gradient-end': p.palette('warning', 700)
 ) !default;
 
-// === PRIMARY/SECONDARY COLORS - Couleurs de marque ===
-// NOTE: New Brand Identity (Violet #667eea) - Phase 6 Design Refresh
-// Remplace ancien bleu #0077c2 par violet moderne pour identité admin/principal
+// === BRAND ADMIN COLORS - Couleurs interface admin ===
+// 'admin' = violet #667eea (interface admin/back-office)
+// DISTINCT de color('base') = #2871A8 (bleu brand logo)
 $color-semantic-brand: (
-  'primary': p.palette('brand', 500),
-  // #667eea - Violet principal (NEW Brand Identity)
-  'primary-hover': p.palette('brand', 600),
+  'admin': p.palette('brand', 500),
+  // #667eea - Violet admin (identité interface back-office)
+  'admin-hover': p.palette('brand', 600),
   // #5a67d8
-  'primary-active': p.palette('brand', 700),
+  'admin-active': p.palette('brand', 700),
   // #4c5ac4
-  'primary-light': p.palette('brand', 100),
+  'admin-light': p.palette('brand', 100),
   // #e0e7ff
   'secondary': p.palette('error', 500),
   // #ef4444 - Rouge secondaire
