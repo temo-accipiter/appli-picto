@@ -106,11 +106,6 @@ interface SlotItemProps {
    * §6.1 catégorie #8 : CRUD structure interdit, exécution (sessions, validations) autorisée.
    */
   isExecutionOnly?: boolean
-  /**
-   * Ticket 3 : Séquençage en lecture seule.
-   * Free cloud → readonly, Visitor local → éditable, Subscriber/Admin cloud → éditable.
-   */
-  isSequenceReadOnly?: boolean
   /** Numéro de l'étape parmi les étapes uniquement (1, 2, 3…) — undefined pour les rewards */
   stepNumber?: number
   /** ID DnD du slot (même valeur que slot.id) */
