@@ -34,6 +34,7 @@
   align-items: center;
   justify-content: center;
   z-index: z-index('modal-backdrop');
+  // Cat. 2 — apparition (backdrop). ease-out justifié (ralentissement à l'arrivée, effet de pose).
   animation-name: fadeIn;
   animation-duration: timing('fast');
   animation-timing-function: easing('ease-out');
@@ -65,6 +66,7 @@
   ); // Fonction dédiée modal — shadow('modal') retourne une map
   display: flex;
   flex-direction: column;
+  // Cat. 2 — apparition (conteneur modal). ease-out justifié (ralentissement à l'arrivée, effet de pose).
   animation-name: scaleIn;
   animation-duration: timing('fast');
   animation-timing-function: easing('ease-out');

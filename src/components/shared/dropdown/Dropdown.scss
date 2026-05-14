@@ -49,6 +49,7 @@
   pointer-events: auto;
   max-width: size('card-max-width');
   min-width: size('thumbnail-md');
+  // Cat. 2 — apparition (dropdown). ease-out justifié (ralentissement à l'arrivée, effet de pose).
   animation-name: slideDown;
   animation-duration: timing('fast');
   animation-timing-function: easing('ease-out');

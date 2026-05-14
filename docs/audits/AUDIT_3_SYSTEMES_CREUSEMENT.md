@@ -10,6 +10,7 @@
 ### 1.1 Import
 
 **Ligne 50**
+
 ```typescript
 import { SequenceEditor } from '@/components/features/sequences'
 ```
@@ -17,37 +18,40 @@ import { SequenceEditor } from '@/components/features/sequences'
 ### 1.2 Rendu JSX de SequenceEditor
 
 **Lignes 549–564**
+
 ```tsx
-{resolvedActiveSequenceSlot?.card_id && (
-  <Modal isOpen onClose={closeSequenceEditor} size="large">
-    <SequenceEditor
-      motherCardId={resolvedActiveSequenceSlot.card_id}
-      motherCardLabel={activeMotherCard?.name ?? 'Carte'}
-      sequence={activeSequence as Sequence | null}
-      bankCards={bankCards as BankCard[]}
-      personalCards={personalCards as PersonalCard[]}
-      onCreateSequence={createSequence}
-      onDeleteSequence={deleteSequence}
-      canCreateSequence={canCreateSequence}
-      creationAvailabilityLoading={sequenceCreationAvailabilityLoading}
-      isReadOnly={isSequenceReadOnly}
-    />
-  </Modal>
-)}
+{
+  resolvedActiveSequenceSlot?.card_id && (
+    <Modal isOpen onClose={closeSequenceEditor} size="large">
+      <SequenceEditor
+        motherCardId={resolvedActiveSequenceSlot.card_id}
+        motherCardLabel={activeMotherCard?.name ?? 'Carte'}
+        sequence={activeSequence as Sequence | null}
+        bankCards={bankCards as BankCard[]}
+        personalCards={personalCards as PersonalCard[]}
+        onCreateSequence={createSequence}
+        onDeleteSequence={deleteSequence}
+        canCreateSequence={canCreateSequence}
+        creationAvailabilityLoading={sequenceCreationAvailabilityLoading}
+        isReadOnly={isSequenceReadOnly}
+      />
+    </Modal>
+  )
+}
 ```
 
 ### 1.3 États séquence dans SlotsEditor
 
 **Lignes 133–135**
+
 ```typescript
-const [activeSequenceSlot, setActiveSequenceSlot] = useState<Slot | null>(
-  null
-)
+const [activeSequenceSlot, setActiveSequenceSlot] = useState<Slot | null>(null)
 ```
 
 ### 1.4 Handlers séquence dans SlotsEditor
 
 **Lignes 389–392**
+
 ```typescript
 const openSequenceEditor = useCallback((slot: Slot) => {
   if (slot.kind !== 'step' || !slot.card_id) return
@@ -56,6 +60,7 @@ const openSequenceEditor = useCallback((slot: Slot) => {
 ```
 
 **Lignes 394–396**
+
 ```typescript
 const closeSequenceEditor = useCallback(() => {
   setActiveSequenceSlot(null)
@@ -65,12 +70,14 @@ const closeSequenceEditor = useCallback(() => {
 ### 1.5 Hooks/Supabase séquence dans SlotsEditor
 
 **Lignes 170–171**
+
 ```typescript
 const { sequences, createSequence, deleteSequence, isVisitorSource } =
   useSequencesWithVisitor()
 ```
 
 **Lignes 173–177** (dérivations depuis le hook)
+
 ```typescript
 const canWriteCloudSequences = !isExecutionOnly
 const canCreateSequence = isVisitorSource || canWriteCloudSequences
@@ -80,11 +87,11 @@ const sequenceCreationAvailabilityLoading =
 ```
 
 **Lignes 434–439** (résolution activeSequence)
+
 ```typescript
 const activeSequence = resolvedActiveSequenceSlot?.card_id
   ? (sequences.find(
-      sequence =>
-        sequence.mother_card_id === resolvedActiveSequenceSlot.card_id
+      sequence => sequence.mother_card_id === resolvedActiveSequenceSlot.card_id
     ) ?? null)
   : null
 ```
@@ -100,6 +107,7 @@ SlotsEditor possède 1 état React dédié aux séquences (`activeSequenceSlot`)
 ### 2.1 Import
 
 **Ligne 29**
+
 ```typescript
 import { SequenceMiniTimeline } from '@/components/features/sequences'
 ```
@@ -107,30 +115,35 @@ import { SequenceMiniTimeline } from '@/components/features/sequences'
 ### 2.2 Rendu JSX de SequenceMiniTimeline
 
 **Lignes 157–169**
+
 ```tsx
-{hasSequence && (
-  <SequenceMiniTimeline
-    isOpen={miniTimelineOpen}
-    loading={sequenceStepsLoading}
-    steps={sequenceSteps}
-    doneStepIds={doneStepIds}
-    onToggleDone={handleToggleDone}
-    bankCards={bankCards}
-    personalCards={personalCards}
-    onClose={() => setMiniTimelineOpen(false)}
-    motherCard={card}
-  />
-)}
+{
+  hasSequence && (
+    <SequenceMiniTimeline
+      isOpen={miniTimelineOpen}
+      loading={sequenceStepsLoading}
+      steps={sequenceSteps}
+      doneStepIds={doneStepIds}
+      onToggleDone={handleToggleDone}
+      bankCards={bankCards}
+      personalCards={personalCards}
+      onClose={() => setMiniTimelineOpen(false)}
+      motherCard={card}
+    />
+  )
+}
 ```
 
 ### 2.3 États séquence dans SlotCard
 
 **Ligne 71**
+
 ```typescript
 const [miniTimelineOpen, setMiniTimelineOpen] = useState(false)
 ```
 
 **Ligne 72**
+
 ```typescript
 const [doneStepIds, setDoneStepIds] = useState<Set<string>>(() => new Set())
 ```
@@ -138,6 +151,7 @@ const [doneStepIds, setDoneStepIds] = useState<Set<string>>(() => new Set())
 ### 2.4 Handlers séquence dans SlotCard
 
 **Lignes 104–114**
+
 ```typescript
 const handleToggleDone = useCallback((stepId: string) => {
   setDoneStepIds(prev => {
@@ -170,6 +184,7 @@ SlotCard possède 2 états React liés à la séquence (`miniTimelineOpen`, `don
 **Dont props séquence : 7**
 
 **Lignes 41–125**
+
 ```typescript
 interface SlotItemProps {
   slot: Slot
@@ -219,27 +234,29 @@ interface SlotItemProps {
 
 ### 3.2 Usage des 7 props
 
-| Prop | Ligne(s) | Catégorie | Extrait |
-|---|---|---|---|
-| `sequence` | 202–203, 362 | `logique` + `condition-rendu` | `const canManageSequence = isStep && slot.card_id !== null && (onCreateSequence \|\| onDeleteSequence)` — conditionne le rendu du bouton séquence |
-| `onCreateSequence` | 148, 202–203 | `logique` | Valeur par défaut `undefined`, présence vérifiée dans `canManageSequence` |
-| `onDeleteSequence` | 149, 202–203 | `logique` | Valeur par défaut `undefined`, présence vérifiée dans `canManageSequence` |
-| `canCreateSequence` | 150, 374 | `condition-rendu` | `aria-label={canCreateSequence ? 'Créer une séquence' : 'Voir la séquence'}` |
-| `onOpenSequenceEditor` | 151, 363 | `transmission-pure` | `onClick={() => onOpenSequenceEditor?.(slot)}` sur le bouton séquence |
-| `isSequenceEditorOpen` | 152, 365 | `condition-rendu` | `aria-expanded={isSequenceEditorOpen}` sur le bouton séquence |
-| `isSequenceReadOnly` | 113 (interface) | — | Déclarée dans l'interface, non utilisée dans le corps du composant rendu |
+| Prop                   | Ligne(s)        | Catégorie                     | Extrait                                                                                                                                           |
+| ---------------------- | --------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sequence`             | 202–203, 362    | `logique` + `condition-rendu` | `const canManageSequence = isStep && slot.card_id !== null && (onCreateSequence \|\| onDeleteSequence)` — conditionne le rendu du bouton séquence |
+| `onCreateSequence`     | 148, 202–203    | `logique`                     | Valeur par défaut `undefined`, présence vérifiée dans `canManageSequence`                                                                         |
+| `onDeleteSequence`     | 149, 202–203    | `logique`                     | Valeur par défaut `undefined`, présence vérifiée dans `canManageSequence`                                                                         |
+| `canCreateSequence`    | 150, 374        | `condition-rendu`             | `aria-label={canCreateSequence ? 'Créer une séquence' : 'Voir la séquence'}`                                                                      |
+| `onOpenSequenceEditor` | 151, 363        | `transmission-pure`           | `onClick={() => onOpenSequenceEditor?.(slot)}` sur le bouton séquence                                                                             |
+| `isSequenceEditorOpen` | 152, 365        | `condition-rendu`             | `aria-expanded={isSequenceEditorOpen}` sur le bouton séquence                                                                                     |
+| `isSequenceReadOnly`   | 113 (interface) | —                             | Déclarée dans l'interface, non utilisée dans le corps du composant rendu                                                                          |
 
 ### 3.3 États et effets séquence dans SlotItem
 
 Pas d'état `useState` ni `useEffect` séquence. Deux variables dérivées calculées à chaque rendu :
 
 **Lignes 202–203**
+
 ```typescript
 const canManageSequence =
   isStep && slot.card_id !== null && (onCreateSequence || onDeleteSequence)
 ```
 
 **Ligne 205**
+
 ```typescript
 const isSequenceActionDisabled = isFullyLocked || !canManageSequence
 ```
@@ -289,8 +306,8 @@ SlotItem reçoit 7 props dédiées aux séquences parmi 25 props totales. Ces pr
 
 ## Récapitulatif chiffré
 
-| Zone | Imports séquence | États séquence | Handlers séquence | Hooks séquence | Props séquence reçues |
-|---|---|---|---|---|---|
-| SlotsEditor | 1 | 1 (`activeSequenceSlot`) | 2 (`open`, `close`) | 1 (`useSequencesWithVisitor`) | N/A (produit les props) |
-| SlotCard | 1 | 2 (`miniTimelineOpen`, `doneStepIds`) | 1 (`handleToggleDone`) | 0 | 6 (toutes en props du parent) |
-| SlotItem | 0 (props only) | 0 (2 variables dérivées) | 0 | 0 | 7 (toutes de SlotsEditor) |
+| Zone        | Imports séquence | États séquence                        | Handlers séquence      | Hooks séquence                | Props séquence reçues         |
+| ----------- | ---------------- | ------------------------------------- | ---------------------- | ----------------------------- | ----------------------------- |
+| SlotsEditor | 1                | 1 (`activeSequenceSlot`)              | 2 (`open`, `close`)    | 1 (`useSequencesWithVisitor`) | N/A (produit les props)       |
+| SlotCard    | 1                | 2 (`miniTimelineOpen`, `doneStepIds`) | 1 (`handleToggleDone`) | 0                             | 6 (toutes en props du parent) |
+| SlotItem    | 0 (props only)   | 0 (2 variables dérivées)              | 0                      | 0                             | 7 (toutes de SlotsEditor)     |

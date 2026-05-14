@@ -8,11 +8,11 @@
 
 ## Identification des racines des 3 systèmes
 
-| Système | Localisation | Tables DB | Composants clés |
-|---|---|---|---|
-| **Planning visuel** | `src/components/features/timeline/` + `tableau/` | `timelines`, `slots` | `SlotsEditor`, `SlotItem`, `CardPicker` + `SlotCard`, `SessionComplete` |
-| **Économie de jetons** | `src/components/features/recompenses/`, `tableau/tokens-grid/` | `slots.tokens` (colonne, kind=step) | `TokensGrid`, `SelectedRewardFloating` |
-| **Séquençage** | `src/components/features/sequences/` | `sequences`, `sequence_steps` | `SequenceEditor`, `SequenceMiniTimeline` |
+| Système                | Localisation                                                   | Tables DB                           | Composants clés                                                         |
+| ---------------------- | -------------------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| **Planning visuel**    | `src/components/features/timeline/` + `tableau/`               | `timelines`, `slots`                | `SlotsEditor`, `SlotItem`, `CardPicker` + `SlotCard`, `SessionComplete` |
+| **Économie de jetons** | `src/components/features/recompenses/`, `tableau/tokens-grid/` | `slots.tokens` (colonne, kind=step) | `TokensGrid`, `SelectedRewardFloating`                                  |
+| **Séquençage**         | `src/components/features/sequences/`                           | `sequences`, `sequence_steps`       | `SequenceEditor`, `SequenceMiniTimeline`                                |
 
 **Remarque structure** : Le système Tableau (contexte enfant d'exécution) mélange Planning et Séquençage pour l'affichage intégré. C'est attendu au niveau page (`Tableau.tsx`), pas au niveau composant.
 
@@ -23,6 +23,7 @@
 ### Infractions détectées
 
 **Infraction 1.1 — SlotsEditor importe SequenceEditor**
+
 - **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/components/features/timeline/slots-editor/SlotsEditor.tsx`
 - **Ligne** : 50
 - **Code** : `import { SequenceEditor } from '@/components/features/sequences'`
@@ -30,6 +31,7 @@
 - **Impact** : Le Planning (édition timeline) contient la logique complète du Séquençage dans la même UI
 
 **Infraction 1.2 — SlotCard importe SequenceMiniTimeline**
+
 - **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/components/features/tableau/slot-card/SlotCard.tsx`
 - **Ligne** : 29
 - **Code** : `import { SequenceMiniTimeline } from '@/components/features/sequences'`
@@ -43,6 +45,7 @@
 ## Vérification 2 — Types partagés à tort
 
 **Fichiers inspectés** :
+
 - `/Users/accipiter_tell/projets/new_sup/appli-picto/src/types/cards.ts` — Types isolés pour cartes personnelles (OK)
 - `/Users/accipiter_tell/projets/new_sup/appli-picto/src/types/supabase.ts` — Types générés Supabase (tables `timelines`, `slots`, `sequences`, `sequence_steps` respectivement isolées dans la DB)
 
@@ -57,7 +60,8 @@
 **Fichier** : `/Users/accipiter_tell/projets/new_sup/appli-picto/src/components/features/timeline/slot-item/SlotItem.tsx`
 
 **Props de Séquençage dans SlotItem (composant Planning)** :
-- Ligne 76 : `sequence?: Sequence | null` 
+
+- Ligne 76 : `sequence?: Sequence | null`
 - Ligne 81-84 : `onCreateSequence?: (...) => Promise<{ id: string | null; error: Error | null }>`
 - Ligne 89 : `onDeleteSequence?: (sequenceId: string) => Promise<{ error: Error | null }>`
 - Ligne 94 : `canCreateSequence?: boolean`
@@ -74,6 +78,7 @@
 ## Vérification 4 — Hooks/services couplés
 
 **Fichiers inspectés** :
+
 - `useSlots.ts` — Retourne slots (Planning uniquement) ✅
 - `useSequences.ts` — Retourne sequences (Séquençage uniquement) ✅
 - `useSequenceSteps.ts` — Retourne sequence_steps (Séquençage uniquement) ✅
@@ -82,10 +87,12 @@
 - `useSessionValidations.ts` — Validations (exécution, indépendant) ✅
 
 **Hooks composites vérifiés** :
+
 - `useSequencesWithVisitor()` — Unifie Visitor local + DB Supabase pour Séquençage uniquement ✅
 - `useSequenceStepsWithVisitor()` — Unifie Visitor local + DB Supabase pour étapes séquence uniquement ✅
 
 **Calcul des jetons** :
+
 - Effectué dans `Tableau.tsx` lignes 379-391 (useMemo)
 - Formule : somme des `slot.tokens` pour slots validés / somme totale
 - Dérivée de la table `slots` (Planning), pas mélangée avec Séquençage
@@ -98,6 +105,7 @@
 ## Vérification 5 — BEM croisé en SCSS
 
 **Fichiers inspectés** :
+
 - `timeline/slots-editor/SlotsEditor.scss` — Préfixe `.slots-editor` ✅
 - `timeline/slot-item/SlotItem.scss` — Préfixe `.slot-item`, inclut `&__tokens-control`, `&__tokens-select`, `&__sequence-toggle` ✅
 - `tableau/slot-card/SlotCard.scss` — Préfixe `.slot-card`, inclut `&__sequence-toggle` ✅
@@ -107,6 +115,7 @@
 - `recompenses/selected-reward-floating/SelectedRewardFloating.scss` — Préfixe `.reward` ✅
 
 **Analyse** :
+
 - Chaque système a son propre préfixe BEM
 - `.sequence-mini-timeline` est un nom légitime (mini-timeline pour séquence, non-croisé)
 - Les éléments comme `.__tokens-` et `.__sequence-toggle` sont dans le composant qui les utilise
@@ -131,10 +140,12 @@
 **Pattern 1 — Recherche de séquence par slot.card_id**
 
 Détecté dans :
+
 - `SlotsEditor.tsx` lignes 479-480
 - `Tableau.tsx` lignes 466-467
 
 Code type :
+
 ```typescript
 const sequence = slot.card_id
   ? (sequences.find(s => s.mother_card_id === slot.card_id) ?? null)
@@ -146,6 +157,7 @@ const sequence = slot.card_id
 **Pattern 2 — État local dans SlotCard pour séquence**
 
 `SlotCard.tsx` lignes 71-73 :
+
 ```typescript
 const [miniTimelineOpen, setMiniTimelineOpen] = useState(false)
 const [doneStepIds, setDoneStepIds] = useState<Set<string>>(() => new Set())
@@ -156,6 +168,7 @@ const [doneStepIds, setDoneStepIds] = useState<Set<string>>(() => new Set())
 **Pattern 3 — Calculs de jetons**
 
 `Tableau.tsx` lignes 379-391 :
+
 ```typescript
 const earnedTokens = useMemo(() => {
   for (const slot of visibleStepSlots) {
@@ -178,6 +191,7 @@ const earnedTokens = useMemo(() => {
 ### Infractions critiques (couplage logique, à corriger en priorité)
 
 ❌ **1 infraction critique** :
+
 - **Couplage fort : SlotsEditor ↔ SequenceEditor**
   - L'éditeur Planning contient complètement le modal Séquençage
   - Tight coupling architectural qui viole la séparation des trois systèmes
@@ -186,10 +200,12 @@ const earnedTokens = useMemo(() => {
 ### Infractions structurelles (imports, types, composants)
 
 ⚠️ **2 infractions structurelles** :
-1. `/src/components/features/timeline/slots-editor/SlotsEditor.tsx:50` — Import `SequenceEditor` 
+
+1. `/src/components/features/timeline/slots-editor/SlotsEditor.tsx:50` — Import `SequenceEditor`
 2. `/src/components/features/tableau/slot-card/SlotCard.tsx:29` — Import `SequenceMiniTimeline`
 
 ⚠️ **1 couplage de props** :
+
 - `SlotItem` a 7 props optionnelles de Séquençage mélangées avec props Planning
 - **Recommandation** : Extraire les props séquençage dans un objet wrapper ou une prop `sequenceConfig?`
 
@@ -201,7 +217,7 @@ const earnedTokens = useMemo(() => {
 
 ## Zones grises rencontrées
 
-1. **Tableau = contexte page composite** 
+1. **Tableau = contexte page composite**
    - Tableau mélange intentionnellement Planning (slots validés) + Séquençage (étapes visibles)
    - Ceci est **inévitable** au niveau page d'exécution enfant
    - Mais les imports et props croisées dans les composants sont à éviter
@@ -235,4 +251,3 @@ La séparation des 3 systèmes est **globalement respectée au niveau des hooks,
 - ⚠️ Props mélangées dans SlotItem et SlotCard
 
 **Priorité de fix** : Extraire SequenceEditor hors de SlotsEditor (réduire tight coupling Planning ↔ Séquençage). Les autres infractions sont mineures (optional props, affichage composite page).
-

@@ -75,6 +75,7 @@
       stroke-width: spacing('sm');
       fill: none;
       stroke-dasharray: spacing('14') spacing('14'); // §E.7 : 14px SVG stroke-dasharray, sans CSS var → exception documentée
+      // Cat. 3 — animation continue ambiante (SVG dash). linear et durée longue justifiés.
       animation-name: dash-rail;
       animation-duration: timing('slowest');
       animation-timing-function: linear;

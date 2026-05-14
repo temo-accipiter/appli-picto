@@ -1098,8 +1098,7 @@ $motion-tokens: (
       // Breathing pulse effect
       'shimmer': 2s,
       // Skeleton shimmer effect
-      'bounce': 0.6s,
-      // Bounce effect
+      // 'bounce': 0.6s supprimé (doctrine motion v1.0 — 0 usage, > 300ms sans cas d'usage)
       'shake': 0.3s,
       // Shake/vibration effect
       // === Progress bar animations ===
@@ -1135,15 +1134,12 @@ $motion-tokens: (
       // Slow end (preferred for exits)
       'ease-in-out': ease-in-out,
       // Both sides slow
-      // === Cubic-bezier custom (TSA-friendly) ===
+      // === Cubic-bezier custom ===
       'smooth-pop': cubic-bezier(0.34, 1.56, 0.64, 1),
-      // Overshoot for playful pop
-      'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55),
-      // Bounce effect
-      'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      // Smooth natural exit
-      'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19),
-      // Smooth natural enter
+      // Overshoot — utilisé dans TachesDnd (drag). Suppression bloquée : voir doctrine motion v1.0.
+      // 'bounce-easy': cubic-bezier(0.68, -0.55, 0.265, 1.55) — supprimé (0 usage, doctrine v1.0)
+      // 'smooth-out': cubic-bezier(0.25, 0.46, 0.45, 0.94) — supprimé (0 usage, redondant avec ease-out, doctrine v1.0)
+       // 'smooth-in': cubic-bezier(0.55, 0.055, 0.675, 0.19) — supprimé (0 usage, doctrine v1.0)
     ),
   // === MOTION PRESETS - Paires timing+easing prédéfinies ===
   'preset': (

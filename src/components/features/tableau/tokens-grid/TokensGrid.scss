@@ -36,6 +36,7 @@
     }
 
     // ── Animation d'apparition (sauf reduced-motion) ──
+    // Cat. 2 — apparition individuelle de jeton. ease-out justifié (effet de pose à l'arrivée).
     &--animated {
       animation: token-pop 0.25s ease-out both;
     }
