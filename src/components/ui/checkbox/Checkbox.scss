@@ -54,11 +54,11 @@
     width: size('icon-sm'); // ✅ 20px (dimensions, pas respiration)
     height: size('icon-sm');
 
-    // Transitions TSA-compliant (pas de box-shadow — v1.1 §F.3)
+    // Cat. 1 — feedback interactif. linear obligatoire (anti-TSA).
     @include safe-transition(
       background-color border-color,
       timing('fast'),
-      easing('smooth')
+      easing('linear')
     );
 
     // Desktop (576px+) = taille normale
@@ -72,10 +72,11 @@
       background-color: color('base');
       border-color: color('base');
 
+      // Cat. 1 — feedback de tap sur validation. Absorption douce, pas de rebond (anti-TSA).
       @include safe-animation(
-        checkbox-bounce,
+        checkbox-tap-feedback,
         timing('fast'),
-        easing('smooth-pop') // ✅ Token TSA-friendly bounce
+        easing('linear')
       );
     }
 
@@ -200,17 +201,15 @@
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// KEYFRAMES - Checkbox Bounce (Local - Checkbox-specific)
+// KEYFRAMES - Checkbox Tap Feedback (Cat. 1 — absorption douce, anti-TSA)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-@keyframes checkbox-bounce {
+@keyframes checkbox-tap-feedback {
   0% {
     transform: scale(1);
   }
   50% {
-    transform: scale(
-      1.1
-    ); // Bounce adouci TSA (v1.1 §A.6 — animations non-agressives)
+    transform: scale(0.95);
   }
   100% {
     transform: scale(1);

@@ -58,11 +58,9 @@
   background-color: color('base'); // Bleu principal
   border-radius: radius('full'); // Cercle parfait
 
-  animation: loader-dot-bounce 0.3s ease-in-out infinite;
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
+  // Cat. 3 — décoratif ambiant. linear pour cohérence boucle.
+  @include safe-animation(loader-dot-bounce, timing('base'), easing('linear'));
+  animation-iteration-count: infinite;
 
   &:nth-child(2) {
     animation-delay: 0.15s;
