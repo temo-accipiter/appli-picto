@@ -59,7 +59,7 @@ echo ""
 
 # 5. Vérifier touch targets (WARNING uniquement)
 echo "👆 [5/7] Vérification touch targets WCAG AA..."
-if pnpm validate:touch-targets 2>/dev/null; then
+if pnpm validate:touch-targets >/dev/null 2>&1; then
   echo "✅ Touch targets : OK"
 else
   echo "⚠️  WARNING: Problèmes touch targets détectés"

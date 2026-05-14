@@ -95,50 +95,7 @@ Les fonctions fonctionnent correctement dans les propriétés sub-longhand (`tra
 **Estimation** : 1h30 (audit 20 min + décisions 15 min + impl 45 min)
 **Bloquant commercialisation** : Non, mais important pour cohérence brand
 
-**Contexte** :
-
-- 5 variants SVG existent : `logo-principal`, `logo-dark`, `logo-vertical`, `logo-monochrome`, `logo-app-icon`
-- Composant `BrandLogo.tsx` existe avec 4 variantes via `next/image`
-- Mais usage actuel non audité : tous les variants sont-ils vraiment chargés ?
-- Navbar et NavbarVisiteur dupliquent `logo-app-icon.svg` inline (dette)
-- Aucun logo cliquable redirigeant vers homepage actuellement
-
-**Proposition UX validée** :
-
-- Logo cliquable dans la Navbar redirigeant vers homepage sur toutes les pages
-- **EXCLUSION** : Contexte Tableau enfant (anti-shock UX TSA, mode kiosque)
-- Pattern conventionnel, réduit charge cognitive, filet de sécurité utilisateur perdu
-
-**Questions à trancher avant implémentation** :
-
-1. Quel variant pour la Navbar ? `logo-app-icon.svg` (compact 4 carrés actuel) ou `logo-principal.svg` (avec texte) ?
-2. Redirection conditionnelle selon auth ? `/` si visiteur, `/edition` si connecté ?
-3. Comportement Tableau enfant : logo absent / présent non-cliquable / cliquable adulte uniquement (long-press) ?
-4. Auto-swap selon contexte : light/dark mode, mobile narrow / desktop wide ?
-
-**Plan en 3 phases** :
-
-PHASE 1 — Audit (Claude Code, READ-ONLY, 20 min) :
-
-- Recherche exhaustive imports/refs aux 5 SVG logos
-- Recherche appels au composant `<BrandLogo>`
-- Inventaire par page : Login, Profil, Édition, Admin, Tableau, Public, Légal
-- Rapport : où le logo EST, où il DEVRAIT être, ce qui est dupliqué
-
-PHASE 2 — Décisions design (toi + Claude conversational, 15 min) :
-
-- Trancher les 4 questions ci-dessus
-- Documenter dans `direction-visuelle` v1.2 ou v1.3
-
-PHASE 3 — Implémentation (Claude Code CLI, 45 min) :
-
-- Standardiser usage via `<BrandLogo>` partout où pertinent
-- Rendre cliquable avec redirection appropriée
-- Auto-swap variant selon contexte
-- Exclure du Tableau enfant
-- Dédupliquer SVG inline Navbar (intersection avec T-navbar-dedup)
-
-**Note** : ce ticket englobe T-navbar-dedup ci-dessous (déduplication).
+**Résolu le 14 mai 2026** — SVG custom inline remplacé par les assets officiels `/public/brand/` via composant partagé `NavbarLogoIcon`. Auto-swap CSS sans JS : mobile+light → `logo-app-icon.svg`, desktop+light → `logo-principal.svg`, dark (tous écrans) → `logo-dark.svg`. Double mécanisme dark mode : `@media (prefers-color-scheme: dark)` + `[data-theme='dark']` (anti-flash TSA). `BrandLogo.tsx` orphelin supprimé. Redirection `/edition` pour Navbar et NavbarVisiteur. Tableau enfant exclu (aucune Navbar). Build webpack vert, pnpm check vert.
 
 ---
 
@@ -192,18 +149,9 @@ PHASE 3 — Implémentation (Claude Code CLI, 45 min) :
 
 **Type** : Dette technique (déduplication)
 **Estimation** : 30 min
-**Note** : Englobé dans T-logo-usage si traité ensemble
+**Note** : Traité conjointement avec T-logo-usage.
 
-**Contexte** :
-
-- SVG `logo-app-icon` dupliqué inline dans :
-  - `src/components/.../Navbar.tsx`
-  - `src/components/.../NavbarVisiteur.tsx`
-- Même code SVG répété → si modif logo, 2 endroits à toucher
-
-**Solution** : extraire un composant `<NavbarLogoIcon>` partagé.
-
-**À traiter** : conjointement avec T-logo-usage ou séparément si T-logo-usage est reporté.
+**Résolu le 14 mai 2026** — Composant `NavbarLogoIcon` créé dans `src/components/layout/navbar-logo/`. SVG inline supprimé de `Navbar.tsx` et `NavbarVisiteur.tsx`, remplacé par `<NavbarLogoIcon />`. Classes SCSS orphelines `.navbar-logo__icon`, `.navbar-logo__text`, `.navbar-visiteur__logo-icon`, `.navbar-visiteur__logo-text` supprimées.
 
 ---
 

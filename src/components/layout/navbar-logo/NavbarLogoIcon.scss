@@ -1,0 +1,72 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// NAVBAR LOGO ICON — Logo Appli-Picto avec auto-swap CSS
+// ============================================================================
+// Auto-swap sans JS (pas de flash TSA) :
+//   Mobile + light  → logo-app-icon   (icône compacte)
+//   Desktop + light → logo-principal  (logo horizontal complet)
+//   Dark (tous)     → logo-dark       (texte adapté au fond sombre)
+//
+// La logique dark surcharge le desktop : source order (dark après respond-to)
+// + spécificité ([data-theme='dark'] = 0,2,0 vs class seule = 0,1,0)
+// ============================================================================
+
+.navbar-logo-icon {
+  display: flex;
+  align-items: center;
+
+  // === Mobile + light (défaut) ===
+  &__app-icon {
+    display: block;
+  }
+
+  &__principal {
+    display: none;
+  }
+
+  &__dark {
+    display: none;
+  }
+
+  // === Desktop + light (≥ 1024px) — surcharge mobile ===
+  @include respond-to(lg) {
+    &__app-icon {
+      display: none;
+    }
+
+    &__principal {
+      display: block;
+    }
+  }
+
+  // === Dark mode — surcharge mobile ET desktop ===
+  // Double sélecteur : préférence système + toggle manuel (anti-flash TSA)
+  @media (prefers-color-scheme: dark) {
+    &__app-icon {
+      display: none;
+    }
+
+    &__principal {
+      display: none;
+    }
+
+    &__dark {
+      display: block;
+    }
+  }
+
+  [data-theme='dark'] & {
+    &__app-icon {
+      display: none;
+    }
+
+    &__principal {
+      display: none;
+    }
+
+    &__dark {
+      display: block;
+    }
+  }
+}
