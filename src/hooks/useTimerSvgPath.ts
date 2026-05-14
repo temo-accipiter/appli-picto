@@ -92,9 +92,9 @@ export function useTimerSvgPath(
   compact: boolean = false
 ): SvgPathResult {
   return useMemo(() => {
-    // Calcul des dimensions
-    const radius = compact ? 70 : 130
-    const margin = compact ? 25 : 30
+    // Calcul des dimensions — rayon agrandi, marge réduite pour plus de présence
+    const radius = compact ? 78 : 145
+    const margin = compact ? 20 : 24
     const svgSize = 2 * (radius + margin)
     const centerX = svgSize / 2
     const centerY = svgSize / 2
@@ -102,8 +102,8 @@ export function useTimerSvgPath(
     // Convertir le pourcentage en angle (0° = haut, sens horaire)
     const angle = (percentage / 100) * 360
 
-    // Rayon du disque (réduit de 2px pour rester dans le cercle blanc)
-    const diskRadius = radius - 2
+    // Rayon du disque — aligné sur le bord extérieur des graduations
+    const diskRadius = radius
 
     // Le rouge part de la position du temps écoulé et va jusqu'à 360°
     const elapsedAngle = 360 - angle
@@ -140,10 +140,10 @@ export function getNumberPosition(
   centerY: number,
   compact: boolean
 ): { x: number; y: number } {
-  // Convertir la valeur en angle (0 = haut, sens horaire)
-  const angleInDegrees = (value / 60) * 360 - 90 // -90 pour commencer en haut
+  // Convertir la valeur en angle (0 = haut, sens anti-horaire)
+  const angleInDegrees = -(value / 60) * 360 - 90
   const angleInRadians = (angleInDegrees * Math.PI) / 180
-  const numberRadius = radius + (compact ? 12 : 18)
+  const numberRadius = radius + (compact ? 12 : 16)
 
   return {
     x: centerX + numberRadius * Math.cos(angleInRadians),

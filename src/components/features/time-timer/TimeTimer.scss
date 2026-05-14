@@ -84,18 +84,34 @@
   }
 
   &__circle-bg {
-    /* Cercle de fond blanc avec bordure noire */
+    fill: surface('bg');
   }
 
   &__red-disk {
-    /* Disque rouge secteur circulaire (temps restant) */
-    @include safe-transition(opacity, timing('base'), easing('smooth'));
+    @include safe-transition(d, timing('base'), easing('smooth'));
+  }
+
+  &__tick {
+    stroke: text('light');
+    stroke-width: border-width('hairline');
+    stroke-linecap: round;
+  }
+
+  &__tick--major {
+    stroke: text('default');
+    stroke-width: border-width('base');
   }
 
   &__number {
-    /* Numéros autour du cadran */
     user-select: none;
     pointer-events: none;
+    fill: text('default');
+    font-size: font-size('xs');
+    font-weight: font-weight('normal');
+
+    @include when-inside('.time-timer--compact') {
+      font-size: font-size('xs');
+    }
   }
 
   &__time-display {
@@ -111,14 +127,15 @@
   }
 
   &__time-text {
-    font-size: font-size('5xl');
-    font-weight: font-weight('bold');
-    color: text('default');
+    font-size: calc(font-size('5xl') + spacing('8'));
+    font-weight: font-weight('black');
+    color: text('dark');
     line-height: line-height('none');
     font-variant-numeric: tabular-nums;
+    -webkit-text-stroke: border-width('hairline') text('dark');
 
     @include when-inside('.time-timer--compact') {
-      font-size: font-size('xl');
+      font-size: font-size('2xl');
     }
   }
 
@@ -182,13 +199,15 @@
       outline-offset: 2px;
     }
 
-    /* Variant: Primary */
+    /* Variant: Primary — même fond blanc que secondary, texte coloré pour distinction */
     &--primary {
-      background: semantic('info-primary');
-      color: text('invert');
+      background: surface('bg');
+      color: semantic('info', 'dark');
+      border: border-width('base') solid semantic('info', 'border');
 
       &:hover:not(:disabled) {
-        background: semantic('info', 'dark');
+        background: semantic('info', 'bg');
+        border-color: semantic('info', 'dark');
       }
     }
 
@@ -196,11 +215,11 @@
     &--secondary {
       background: surface('bg');
       color: text('default');
-      border: border-width('base') solid surface('border');
+      border: border-width('base') solid semantic('info', 'border');
 
       &:hover:not(:disabled) {
         background: surface('soft');
-        border-color: semantic('info', 'border');
+        border-color: semantic('info', 'dark');
       }
     }
   }
@@ -250,52 +269,6 @@
       border-radius: radius('subtle'); // 4px — note info, alias sémantique §D.3
       border-left: size('4') solid semantic('info-primary');
     }
-  }
-
-  &__checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: spacing('md');
-    cursor: pointer;
-    padding: spacing('md');
-    border-radius: radius(
-      'medium'
-    ); // 12px — zone sélection, alias générique §D.2
-    @include safe-transition(background, timing('fast'), easing('smooth'));
-
-    &:hover {
-      background: surface('soft');
-    }
-
-    /* État désactivé (disabled) */
-    &--disabled {
-      opacity: opacity('half');
-      cursor: not-allowed;
-
-      &:hover {
-        background: transparent; // Pas de hover quand disabled
-      }
-
-      .time-timer__checkbox {
-        cursor: not-allowed;
-      }
-
-      .time-timer__checkbox-text {
-        color: text('light'); // Texte grisé
-      }
-    }
-  }
-
-  &__checkbox {
-    width: size('icon-md');
-    height: size('icon-md');
-    cursor: pointer;
-  }
-
-  &__checkbox-text {
-    font-size: font-size('base');
-    font-weight: font-weight('medium');
-    color: text('default');
   }
 
   &__preset-grid {
@@ -495,6 +468,12 @@
     font-size: font-size('base');
     @include safe-transition(border-color, timing('fast'), easing('smooth'));
 
+    // Flèches toujours visibles (pas uniquement au hover)
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      opacity: 1;
+    }
+
     &:hover {
       border-color: semantic('info', 'border');
     }
@@ -643,6 +622,7 @@
 @media (prefers-reduced-motion: reduce) {
   .time-timer {
     &__red-disk,
+    &__tick,
     &__btn,
     &__preset-btn {
       transition: none;

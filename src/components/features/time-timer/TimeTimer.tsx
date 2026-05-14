@@ -1,7 +1,7 @@
 'use client'
 
 // src/components/features/time-timer/TimeTimer.tsx
-import { useCallback, useEffect, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import Link from 'next/link'
 import {
   useI18n,
@@ -13,6 +13,7 @@ import {
 } from '@/hooks'
 import type { DiskColor } from '@/hooks/useTimerPreferences'
 import { Modal } from '@/components'
+import Checkbox from '@/components/ui/checkbox/Checkbox'
 import Separator from '@/components/shared/separator/Separator'
 import './TimeTimer.scss'
 
@@ -167,12 +168,28 @@ export default function TimeTimer({
 
   const intervalRef = useRef<number | null>(null)
 
-  // Calculer le pourcentage restant
-  const percentage = (state.timeLeft / (state.duration * 60)) * 100
+  // Pourcentage sur échelle fixe 60 min (comme le Time Timer physique)
+  const percentage = (state.timeLeft / 3600) * 100
 
   // Hook SVG path (calculs géométriques)
   const { redDiskPath, dimensions } = useTimerSvgPath(percentage, compact)
   const { radius, svgSize, centerX, centerY } = dimensions
+
+  // 60 graduations autour du cadran (fines chaque minute, épaisses chaque 5 min)
+  const ticks = useMemo(() => {
+    return Array.from({ length: 60 }, (_, i) => {
+      const angleRad = ((i / 60) * 360 - 90) * (Math.PI / 180)
+      const isMajor = i % 5 === 0
+      const innerR = radius - (isMajor ? 14 : 7)
+      return {
+        x1: centerX + radius * Math.cos(angleRad),
+        y1: centerY + radius * Math.sin(angleRad),
+        x2: centerX + innerR * Math.cos(angleRad),
+        y2: centerY + innerR * Math.sin(angleRad),
+        isMajor,
+      }
+    })
+  }, [radius, centerX, centerY])
 
   // Formater le temps restant en MM:SS
   const formatTime = useCallback((seconds: number) => {
@@ -288,8 +305,8 @@ export default function TimeTimer({
     return selectedColor ? selectedColor.cssVar : 'var(--disk-color-red)'
   }
 
-  // Numéros autour du cadran (0, 5, 10, 15...60)
-  const timeMarkers = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
+  // Numéros autour du cadran — multiples de 5, 0 en haut à la place de 60
+  const timeMarkers = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0]
 
   const containerClass = compact
     ? 'time-timer time-timer--compact'
@@ -319,15 +336,12 @@ export default function TimeTimer({
           viewBox={`0 0 ${svgSize} ${svgSize}`}
           aria-hidden="true"
         >
-          {/* Cercle de fond blanc avec bordure noire */}
+          {/* Fond blanc du cadran — fill/stroke via CSS tokens */}
           <circle
             className="time-timer__circle-bg"
             cx={centerX}
             cy={centerY}
             r={radius}
-            fill="white"
-            stroke="#1f2937"
-            strokeWidth="3"
           />
 
           {/* Disque secteur circulaire (temps restant) */}
@@ -340,9 +354,24 @@ export default function TimeTimer({
             />
           )}
 
-          {/* Numéros autour du cadran (conditionnels - uniquement pour 60 min) */}
+          {/* 60 graduations autour du cadran */}
+          {ticks.map((tick, i) => (
+            <line
+              key={i}
+              x1={tick.x1}
+              y1={tick.y1}
+              x2={tick.x2}
+              y2={tick.y2}
+              className={
+                tick.isMajor
+                  ? 'time-timer__tick time-timer__tick--major'
+                  : 'time-timer__tick'
+              }
+            />
+          ))}
+
+          {/* Numéros multiples de 10 (toujours sur l'échelle 60 min) */}
           {preferences.showNumbers &&
-            state.duration === 60 &&
             timeMarkers.map(value => {
               const pos = getNumberPosition(
                 value,
@@ -359,9 +388,6 @@ export default function TimeTimer({
                   className="time-timer__number"
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fill="#1f2937"
-                  fontSize={compact ? '10' : '14'}
-                  fontWeight="600"
                 >
                   {value}
                 </text>
@@ -463,12 +489,12 @@ export default function TimeTimer({
                 </button>
               ))}
 
-              {/* Input personnalisé intégré après 60 min */}
+              {/* Input personnalisé — flèches toujours visibles via CSS */}
               <input
                 type="number"
                 min="1"
                 max="999"
-                placeholder="⏱️ min"
+                placeholder="⏱️"
                 className="time-timer__custom-input"
                 id="custom-duration-input"
                 onKeyDown={e => {
@@ -507,29 +533,6 @@ export default function TimeTimer({
 
           <Separator />
 
-          {/* Option sonore */}
-          <div className="time-timer__settings-section">
-            <label className="time-timer__checkbox-label">
-              <input
-                type="checkbox"
-                checked={!preferences.isSilentMode}
-                onChange={toggleSilentMode}
-                className="time-timer__checkbox"
-              />
-              <span className="time-timer__checkbox-text">
-                🔔{' '}
-                {preferences.isSilentMode
-                  ? 'Activer la sonnerie'
-                  : 'Désactiver la sonnerie'}
-              </span>
-            </label>
-            <p className="time-timer__settings-hint">
-              Joue un son doux à la fin du timer
-            </p>
-          </div>
-
-          <Separator />
-
           {/* Choix de la couleur du disque */}
           <div className="time-timer__settings-section">
             <h3 className="time-timer__settings-subtitle">
@@ -563,61 +566,33 @@ export default function TimeTimer({
 
           <Separator />
 
-          {/* Option afficher/masquer chiffres horaires */}
+          {/* Préférences groupées : son + chiffres + vibration */}
           <div className="time-timer__settings-section">
-            <label
-              className={`time-timer__checkbox-label ${
-                state.duration !== 60
-                  ? 'time-timer__checkbox-label--disabled'
-                  : ''
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={preferences.showNumbers}
-                onChange={toggleShowNumbers}
-                disabled={state.duration !== 60}
-                className="time-timer__checkbox"
+            <h3 className="time-timer__settings-subtitle">Préférences</h3>
+
+            <Checkbox
+              id="timer-pref-sound"
+              checked={!preferences.isSilentMode}
+              onChange={toggleSilentMode}
+              label={`🔔 ${preferences.isSilentMode ? 'Activer la sonnerie' : 'Désactiver la sonnerie'}`}
+            />
+
+            <Checkbox
+              id="timer-pref-numbers"
+              checked={preferences.showNumbers}
+              onChange={toggleShowNumbers}
+              label={`🔢 ${preferences.showNumbers ? 'Masquer les chiffres' : 'Afficher les chiffres'}`}
+            />
+
+            {typeof navigator !== 'undefined' && 'vibrate' in navigator && (
+              <Checkbox
+                id="timer-pref-vibration"
+                checked={preferences.enableVibration}
+                onChange={toggleVibration}
+                label={`📳 ${preferences.enableVibration ? 'Désactiver la vibration' : 'Activer la vibration'}`}
               />
-              <span className="time-timer__checkbox-text">
-                🔢{' '}
-                {preferences.showNumbers
-                  ? 'Masquer les chiffres horaires'
-                  : 'Afficher les chiffres horaires'}
-              </span>
-            </label>
-            {state.duration !== 60 && (
-              <p className="time-timer__settings-hint time-timer__settings-hint--info">
-                💡 Les chiffres horaires ne s&apos;affichent qu&apos;avec une
-                durée de 60 minutes
-              </p>
             )}
           </div>
-
-          <Separator />
-
-          {/* Option vibration (mobile uniquement) */}
-          {typeof navigator !== 'undefined' && 'vibrate' in navigator && (
-            <div className="time-timer__settings-section">
-              <label className="time-timer__checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={preferences.enableVibration}
-                  onChange={toggleVibration}
-                  className="time-timer__checkbox"
-                />
-                <span className="time-timer__checkbox-text">
-                  📳{' '}
-                  {preferences.enableVibration
-                    ? 'Désactiver la vibration'
-                    : 'Activer la vibration'}
-                </span>
-              </label>
-              <p className="time-timer__settings-hint">
-                Vibration à la fin du timer (mobile uniquement)
-              </p>
-            </div>
-          )}
         </div>
       </Modal>
 
