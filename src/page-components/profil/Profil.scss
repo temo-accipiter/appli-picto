@@ -62,7 +62,7 @@
   padding: spacing('md');
   margin-bottom: spacing('lg');
   margin-top: spacing('md');
-  background: surface('bg');
+  background: semantic('info', 'bg');
   border-radius: radius('card');
   border: border-width('thin') solid surface('border');
 
@@ -165,7 +165,7 @@
   width: 100%;
   min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
   padding: spacing('md');
-  background: surface('bg');
+  background: blue(50);
   border: border-width('thin') solid surface('border');
   border-radius: radius('card');
   cursor: pointer;
@@ -275,7 +275,7 @@
   width: 100%;
   min-height: size('touch-target-min'); // ≥ 44px — WCAG 2.2 AA
   padding: spacing('md');
-  background: surface('bg');
+  background: purple(50);
   border: border-width('thin') solid surface('border');
   border-radius: radius('card');
   cursor: pointer;
