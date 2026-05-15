@@ -560,7 +560,7 @@
   // Application animation TSA-compliant
   animation-name: glow-#{$type};
   animation-duration: motion.timing('fast');
-  animation-timing-function: motion.easing('ease-in-out');
+  animation-timing-function: motion.easing('linear');
 
   // Respect prefers-reduced-motion (WCAG 2.2 AA)
   @media (prefers-reduced-motion: reduce) {

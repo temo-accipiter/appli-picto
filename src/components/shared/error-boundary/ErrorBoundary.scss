@@ -47,7 +47,9 @@
     // Animation douce de balancement
     animation-name: gentleSwing;
     animation-duration: timing('slower');
-    animation-timing-function: easing('ease-in-out');
+    animation-timing-function: easing(
+      'linear'
+    ); // Cat. 3 — animation continue ambiante.
     animation-iteration-count: infinite;
   }
 

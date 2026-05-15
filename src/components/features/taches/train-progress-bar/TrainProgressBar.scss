@@ -169,10 +169,11 @@
       left: var(--train-left);
       transform: var(--train-transform);
       z-index: z-index('dropdown');
+      // Cat. 3 — célébration de progression narrative. Durée volontairement narrative pour souligner l'avancement.
       @include safe-transition(
         (left, transform),
         timing('slow'),
-        easing('ease-in-out')
+        easing('linear')
       );
 
       // Modificateur : désactiver animations si reduced_motion (TSA-friendly)

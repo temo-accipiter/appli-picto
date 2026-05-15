@@ -45,7 +45,9 @@
     background-size: 200% 200%;
     animation-name: skeleton-loading;
     animation-duration: timing('slower');
-    animation-timing-function: easing('ease-in-out');
+    animation-timing-function: easing(
+      'linear'
+    ); // Cat. 3 — skeleton animation continue.
     animation-iteration-count: infinite;
     filter: blur(size('2'));
   }

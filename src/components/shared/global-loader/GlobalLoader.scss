@@ -23,7 +23,7 @@
   z-index: z-index('max');
   animation-name: fadeIn;
   animation-duration: timing('fast');
-  animation-timing-function: easing('ease-in-out');
+  animation-timing-function: easing('ease-out'); // Cat. 2 — apparition overlay.
 }
 
 .global-loader-content {
@@ -44,7 +44,9 @@
     border-radius: radius('full');
     animation-name: bounce;
     animation-duration: timing('base');
-    animation-timing-function: easing('ease-in-out');
+    animation-timing-function: easing(
+      'linear'
+    ); // Cat. 3 — animation continue ambiante.
     animation-iteration-count: infinite;
 
     &:nth-child(2) {
