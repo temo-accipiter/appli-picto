@@ -14,6 +14,7 @@ la config Vitest. Le fallback hardcodé (`https://tklcztqoqvnialaqfcjm.supabase.
 rendant tous les handlers MSW sur `localhost:54321` inopérants en tests d'intégration.
 
 **Fix** :
+
 ```typescript
 // vitest.config.ts
 env: {
@@ -34,6 +35,7 @@ Sans `ws.link()`, MSW émettait 2 warnings par run pour
 `ws://localhost:54321/realtime/v1/websocket`.
 
 **Fix appliqué** :
+
 ```typescript
 import { http, HttpResponse, ws } from 'msw'
 
@@ -51,15 +53,15 @@ callback vide est nécessaire et suffisante.
 
 ## Validation
 
-| Critère | Résultat |
-|---|---|
-| Warnings MSW avant | 5 (3× cards HTTP + 2× WebSocket) |
-| Warnings MSW après | **0** |
-| Test Tableau 10/10 runs | ✅ 3/3 tests, 0 warning, 0 échec |
-| `pnpm check` | ✅ OK |
-| `pnpm tsc --noEmit` | ✅ 0 erreur |
+| Critère                            | Résultat                                       |
+| ---------------------------------- | ---------------------------------------------- |
+| Warnings MSW avant                 | 5 (3× cards HTTP + 2× WebSocket)               |
+| Warnings MSW après                 | **0**                                          |
+| Test Tableau 10/10 runs            | ✅ 3/3 tests, 0 warning, 0 échec               |
+| `pnpm check`                       | ✅ OK                                          |
+| `pnpm tsc --noEmit`                | ✅ 0 erreur                                    |
 | `pnpm vitest run` (suite complète) | ✅ 28/28 fichiers, 216 tests passés, 4 skipped |
-| `pnpm build` | ✅ Build production réussi |
+| `pnpm build`                       | ✅ Build production réussi                     |
 
 ---
 
