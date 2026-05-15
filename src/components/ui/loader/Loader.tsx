@@ -7,7 +7,10 @@ type LoaderProps = {
   message?: string
 }
 
-export default function Loader({ variant = 'fullscreen', message }: LoaderProps) {
+export default function Loader({
+  variant = 'fullscreen',
+  message,
+}: LoaderProps) {
   const dots = (
     <div className="loader-bounce" aria-hidden="true">
       <div className="loader-dot" />
