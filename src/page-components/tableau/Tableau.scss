@@ -138,7 +138,7 @@
     width: 100%;
     animation-name: slide-up;
     animation-duration: timing('base');
-    animation-timing-function: easing('smooth');
+    animation-timing-function: easing('ease-out');
 
     @include respond-to(lg) {
       width: size('300');

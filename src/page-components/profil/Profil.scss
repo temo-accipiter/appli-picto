@@ -366,7 +366,7 @@
   @include safe-transition(
     (max-height, opacity),
     timing('base'),
-    easing('smooth')
+    easing('ease-out')
   );
 
   &--open {

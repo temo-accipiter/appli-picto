@@ -196,12 +196,16 @@
         slideDownAndFade,
         timing('fast'),
         // 0.15s
-        easing('smooth') // Easing doux (tokens-first)
+        easing('ease-out') // Cat. 2 — apparition dropdown.
       );
     }
 
     &[data-state='closed'] {
-      @include safe-animation(slideUpAndFade, timing('fast'), easing('smooth'));
+      @include safe-animation(
+        slideUpAndFade,
+        timing('fast'),
+        easing('ease-out')
+      );
     }
   }
 
