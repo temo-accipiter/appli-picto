@@ -157,10 +157,11 @@
 
   // === Easings standards ===
   --easing-linear: #{easing('linear')};
-  --easing-smooth: #{easing('smooth')};
   --easing-smooth-in: #{easing('ease-in')};
   --easing-smooth-out: #{easing('ease-out')};
-  --easing-smooth-in-out: #{easing('ease-in-out')};
+  // Supprimés (migration doctrine motion v1.0 — mai 2026) :
+  // --easing-smooth: ease — remplacé par linear/ease-out selon doctrine
+  // --easing-smooth-in-out: ease-in-out — idem
 }
 
 /// ============================================================================

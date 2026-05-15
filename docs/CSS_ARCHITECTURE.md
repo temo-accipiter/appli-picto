@@ -478,7 +478,7 @@ Retournent des valeurs de motion. Source : `$motion-tokens` dans `_tokens.scss`.
 | `'linear'`   | `linear`   | Cat. 1 feedback (obligatoire) + Cat. 3 décoratif |
 | `'ease-out'` | `ease-out` | Cat. 2 apparitions/disparitions                  |
 
-**Easings supprimés** (retirés de `$motion-tokens`) : `ease-in`, `ease-in-out`, `smooth`, `smooth-in`, `smooth-out`, `smooth-pop`, `bounce-easy`. Voir doctrine pour justification.
+**Easings supprimés** (retirés de `$motion-tokens`) : `ease-in`, `ease-in-out`, `smooth`, `smooth-in`, `smooth-out`, `smooth-pop`, `bounce-easy`. Migration terminée mai 2026 — voir `docs/audits/MOTION_MIGRATION_DONE.md` et doctrine pour justification.
 
 ⚠️ **T2-E** : `timing()` et `easing()` lisent uniquement `$motion-tokens` (legacy). Les aliases sémantiques de `$motion-semantic` ne sont pas branchés.
 
@@ -554,7 +554,7 @@ border-radius: radius('button');
 font-size: font-size('base');
 background: surface('bg');
 width: size('modal-width-sm');
-@include safe-transition(all, timing('base'), easing('smooth'));
+@include safe-transition(all, timing('base'), easing('linear'));
 box-shadow: shadow('elevation-sm');
 ```
 
@@ -744,9 +744,9 @@ font-size: font-size('2xl'); // 24px
 
 // ✅ CORRECT — prefers-reduced-motion inclus
 .mon-element {
-  @include safe-transition(background, timing('sm'), easing('smooth'));
+  @include safe-transition(background, timing('sm'), easing('linear'));
   // Génère automatiquement :
-  // transition: background 0.2s ease;
+  // transition: background 0.2s linear;
   // @media (prefers-reduced-motion: reduce) { transition-duration: 0.01ms; }
 }
 ```
