@@ -25,8 +25,8 @@
   user-select: none; // Empêcher sélection texte pendant drag
   cursor: grab; // Curseur grab sur toute la surface
 
-  /* Animation douce */
-  @include safe-transition((transform), timing('fast'), easing('smooth'));
+  // Cat. 1 — feedback de saisie.
+  @include safe-transition((transform), timing('fast'), easing('linear'));
 
   /* States */
   &--dragging {
@@ -129,7 +129,7 @@
     @include safe-transition(
       (transform, opacity),
       timing('fast'),
-      easing('smooth')
+      easing('linear')
     );
 
     // Icônes cachées par défaut, visibles au hover du conteneur
@@ -139,7 +139,7 @@
         'xs'
       ); // 10-11px - remplir 60-70% du cercle (10px / 16px = 62.5%)
       font-weight: bold; // Plus visible
-      @include safe-transition(opacity, timing('fast'), easing('smooth'));
+      @include safe-transition(opacity, timing('fast'), easing('linear'));
     }
 
     &:hover {

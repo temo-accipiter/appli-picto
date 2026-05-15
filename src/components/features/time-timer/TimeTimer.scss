@@ -164,7 +164,7 @@
     font-size: font-size('base');
     font-weight: font-weight('semibold');
     cursor: pointer;
-    @include safe-transition(all, timing('base'), easing('smooth'));
+    @include safe-transition(all, timing('base'), easing('linear'));
     box-shadow: shadow(
       'elevation-sm'
     ); // Conservé : bouton interactif (exception §F.3 Tableau enfant)
@@ -292,7 +292,7 @@
     font-size: font-size('base');
     font-weight: font-weight('medium');
     cursor: pointer;
-    @include safe-transition(all, timing('fast'), easing('smooth'));
+    @include safe-transition(all, timing('fast'), easing('linear'));
 
     &:hover {
       background: surface('soft');
@@ -320,7 +320,9 @@
       font-weight: font-weight('bold');
       animation-name: pop;
       animation-duration: timing('base');
-      animation-timing-function: easing('smooth');
+      animation-timing-function: easing(
+        'ease-out'
+      ); // Cat. 2 — apparition d'état sélectionné.
 
       &:hover {
         background: semantic('info', 'dark');
@@ -352,7 +354,7 @@
     ); // 6px — bouton couleur, alias sémantique §D.3
     background: surface('bg');
     cursor: pointer;
-    @include safe-transition(all, timing('fast'), easing('smooth'));
+    @include safe-transition(all, timing('fast'), easing('linear'));
 
     &:hover {
       background: surface('soft');
@@ -415,7 +417,7 @@
     font-size: font-size('base');
     font-weight: font-weight('medium');
     cursor: pointer;
-    @include safe-transition(all, timing('fast'), easing('smooth'));
+    @include safe-transition(all, timing('fast'), easing('linear'));
 
     &:hover {
       background: surface('soft');
@@ -468,7 +470,7 @@
     background: surface('bg');
     color: text('default');
     font-size: font-size('base');
-    @include safe-transition(border-color, timing('fast'), easing('smooth'));
+    @include safe-transition(border-color, timing('fast'), easing('linear'));
 
     // Flèches toujours visibles (pas uniquement au hover)
     &::-webkit-inner-spin-button,
@@ -498,7 +500,7 @@
     font-size: font-size('base');
     font-weight: font-weight('semibold');
     cursor: pointer;
-    @include safe-transition(all, timing('fast'), easing('smooth'));
+    @include safe-transition(all, timing('fast'), easing('linear'));
 
     &:hover {
       background: semantic('info', 'dark');
@@ -550,7 +552,7 @@
     background: transparent;
     color: text('light');
     cursor: pointer;
-    @include safe-transition(all, timing('fast'), easing('smooth'));
+    @include safe-transition(all, timing('fast'), easing('linear'));
 
     &:hover {
       background: semantic('error', 'light');
