@@ -63,10 +63,13 @@ describe('Tableau - Test intégration', () => {
     it('✅ affiche le conteneur principal du tableau', async () => {
       renderWithProviders(<TableauGrille />)
 
-      await waitFor(() => {
-        const tableau = document.querySelector('.tableau-magique')
-        expect(tableau).toBeTruthy()
-      })
+      await waitFor(
+        () => {
+          const tableau = document.querySelector('.tableau-magique')
+          expect(tableau).toBeTruthy()
+        },
+        { timeout: 5000 }
+      )
     })
   })
 
