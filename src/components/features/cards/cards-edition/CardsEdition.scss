@@ -32,7 +32,7 @@
   ); // 20px — section conteneur, alias générique §D.2
   background: surface('page');
   // Shadow supprimée : conteneur statique (§F.3)
-  @include safe-transition(background-color, timing('base'), easing('smooth'));
+  @include safe-transition(background-color, timing('base'), easing('linear'));
 
   /* Button label avec chevron toggle */
   .button-label {
@@ -41,7 +41,7 @@
     gap: spacing('sm');
 
     .chevron {
-      @include safe-transition(transform, timing('fast'), easing('smooth'));
+      @include safe-transition(transform, timing('fast'), easing('linear'));
       margin-left: auto;
     }
 
@@ -114,7 +114,7 @@
   @include safe-transition(
     (border-color, background-color),
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   &.over {

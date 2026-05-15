@@ -156,7 +156,7 @@
     background: transparent;
     border-color: transparent;
 
-    @include safe-transition(color, timing('fast'), easing('smooth'));
+    @include safe-transition(color, timing('fast'), easing('linear'));
 
     @media (prefers-reduced-motion: no-preference) {
       &.is-ok {

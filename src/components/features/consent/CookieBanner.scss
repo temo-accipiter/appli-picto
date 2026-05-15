@@ -139,7 +139,7 @@
     @include safe-transition(
       (transform, background-color, border-color),
       timing('xs'),
-      easing('smooth')
+      easing('linear')
     );
 
     &:active {

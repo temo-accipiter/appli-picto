@@ -120,7 +120,7 @@
     display: flex;
     gap: spacing('xl');
     width: 100%;
-    @include safe-transition(all, timing('base'), easing('smooth'));
+    @include safe-transition(all, timing('base'), easing('linear'));
 
     // Mode avec TimeTimer : disposition côte à côte
     &--with-timer {
@@ -185,7 +185,7 @@
   }
 
   circle {
-    @include safe-transition(fill, timing('base'), easing('smooth'));
+    @include safe-transition(fill, timing('base'), easing('linear'));
   }
 }
 

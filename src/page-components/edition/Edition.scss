@@ -85,7 +85,7 @@
     @include safe-transition(
       (transform, color),
       timing('fast'),
-      easing('smooth')
+      easing('linear')
     );
     margin-left: spacing('sm');
 
@@ -165,7 +165,7 @@
   }
 
   .chevron {
-    @include safe-transition(transform, timing('fast'), easing('smooth'));
+    @include safe-transition(transform, timing('fast'), easing('linear'));
     margin-left: auto;
   }
 

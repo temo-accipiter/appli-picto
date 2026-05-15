@@ -122,7 +122,7 @@
         @include safe-transition(
           (background-color, border-color),
           timing('base'),
-          easing('smooth')
+          easing('linear')
         );
       }
 

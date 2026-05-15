@@ -174,7 +174,7 @@
   @include safe-transition(
     (background, box-shadow, transform),
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   &:hover {
@@ -288,7 +288,7 @@
   @include safe-transition(
     (background, border-color),
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   &:hover {
@@ -332,7 +332,7 @@
   color: semantic('error', 'dark');
   font-size: font-size('base');
   font-weight: font-weight('semibold');
-  @include safe-transition(background, timing('fast'), easing('smooth'));
+  @include safe-transition(background, timing('fast'), easing('linear'));
 
   &:hover {
     background: semantic('error', 'bg');
@@ -479,7 +479,7 @@
   font-size: font-size('base');
   color: text('default');
   text-align: left;
-  @include safe-transition(background, timing('fast'), easing('smooth'));
+  @include safe-transition(background, timing('fast'), easing('linear'));
 
   &:hover {
     background: surface('hover');

@@ -56,7 +56,7 @@
   @include safe-transition(
     (border-color, background-color),
     timing('base'),
-    easing('smooth')
+    easing('linear')
   );
 
   /* Slot survolé pendant un drag */
@@ -89,10 +89,11 @@
   height: auto;
   min-height: initial;
   padding: spacing('xs');
+  // Cat. 1 — feedback de hover. Pas de rebond (anti-TSA).
   @include safe-transition(
     (transform, box-shadow),
-    timing('slow'),
-    easing('smooth-pop')
+    timing('base'),
+    easing('linear')
   );
 
   /* Hover uniquement */
@@ -135,7 +136,7 @@
     flex-shrink: 0;
     cursor: pointer;
     position: relative;
-    @include safe-transition(background, timing('fast'), easing('smooth'));
+    @include safe-transition(background, timing('fast'), easing('linear'));
 
     /* [Mobile-first] Base = mobile */
     width: size('16');
@@ -204,7 +205,8 @@
 
   /* Légère rotation pour l'effet de soulèvement */
   transform: rotate(3deg) scale(1.05);
-  @include safe-transition(transform, timing('fast'), easing('smooth-pop'));
+  // Cat. 1 — feedback de saisie. Rotation + scale suffisent, pas de rebond.
+  @include safe-transition(transform, timing('fast'), easing('linear'));
 }
 
 .reset-all-zone {
