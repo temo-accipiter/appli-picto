@@ -12,7 +12,7 @@
  * - POST /rest/v1/rpc/function_name - RPC functions
  */
 
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse, ws } from 'msw'
 import type {
   MockTache,
   MockRecompense,
@@ -46,6 +46,9 @@ import {
 } from './data'
 
 const SUPABASE_URL = 'http://localhost:54321'
+
+// Handler WebSocket MSW v2 — silencer Supabase Realtime en tests
+const supabaseRealtime = ws.link('ws://localhost:54321/realtime/v1/websocket')
 
 // État mutable pour simuler la base de données
 let tachesDb: MockTache[] = [...mockTaches]
@@ -426,9 +429,7 @@ export const handlers = [
 
   http.get(`${SUPABASE_URL}/rest/v1/slots`, ({ request }) => {
     const url = new URL(request.url)
-    const timelineId = url.searchParams
-      .get('timeline_id')
-      ?.replace('eq.', '')
+    const timelineId = url.searchParams.get('timeline_id')?.replace('eq.', '')
 
     let filtered = slotsDb
     if (timelineId) {
@@ -509,9 +510,7 @@ export const handlers = [
     const childProfileId = url.searchParams
       .get('child_profile_id')
       ?.replace('eq.', '')
-    const timelineId = url.searchParams
-      .get('timeline_id')
-      ?.replace('eq.', '')
+    const timelineId = url.searchParams.get('timeline_id')?.replace('eq.', '')
     const stateParam = url.searchParams.get('state')
 
     let filtered = sessionsDb
@@ -524,7 +523,10 @@ export const handlers = [
     if (stateParam) {
       // Format PostgREST : in.(active_preview,active_started) ou eq.completed
       if (stateParam.startsWith('in.(')) {
-        const states = stateParam.replace('in.(', '').replace(')', '').split(',')
+        const states = stateParam
+          .replace('in.(', '')
+          .replace(')', '')
+          .split(',')
         filtered = filtered.filter(s => states.includes(s.state))
       } else {
         const state = stateParam.replace('eq.', '')
@@ -685,10 +687,7 @@ export const handlers = [
       sequencesDb.splice(index, 1)
       return new HttpResponse(null, { status: 204 })
     }
-    return HttpResponse.json(
-      { message: 'Sequence not found' },
-      { status: 404 }
-    )
+    return HttpResponse.json({ message: 'Sequence not found' }, { status: 404 })
   }),
 
   // ========================================
@@ -697,9 +696,7 @@ export const handlers = [
 
   http.get(`${SUPABASE_URL}/rest/v1/sequence_steps`, ({ request }) => {
     const url = new URL(request.url)
-    const sequenceId = url.searchParams
-      .get('sequence_id')
-      ?.replace('eq.', '')
+    const sequenceId = url.searchParams.get('sequence_id')?.replace('eq.', '')
 
     const filtered = sequenceId
       ? sequenceStepsDb.filter(s => s.sequence_id === sequenceId)
@@ -800,4 +797,7 @@ export const handlers = [
   http.all('*/realtime/*', () => {
     return new HttpResponse(null, { status: 200 })
   }),
+
+  // MSW v2 WebSocket handler — intercepte la connexion Supabase Realtime (ws://)
+  supabaseRealtime.addEventListener('connection', () => {}),
 ]

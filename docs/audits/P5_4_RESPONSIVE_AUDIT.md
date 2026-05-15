@@ -8,6 +8,7 @@
 ## Méthode
 
 Patterns grep utilisés :
+
 - `grep -rn "@media.*max-width" src/ --include="*.scss"` — violations directes
 - `grep -rn "max-width" src/ --include="*.scss"` — séparation propriété vs media query
 - `grep -rn "@media (min-width:" src/ --include="*.scss"` — breakpoints hardcodés
@@ -19,6 +20,7 @@ Fichiers SCSS scannés : **116 fichiers** (hors `_breakpoints.scss`)
 Périmètre : `src/components/**`, `src/page-components/**`, `src/styles/**`, `src/app/**`
 
 Exclusions légitimes appliquées :
+
 - `@media (prefers-reduced-motion: ...)` — non-breakpoint
 - `@media (prefers-color-scheme: ...)` — non-breakpoint
 - `@media (forced-colors: active)` — non-breakpoint
@@ -72,9 +74,9 @@ tokens-first.
 
 ## Récap par fichier
 
-| Fichier | Nb violations |
-|---|---|
-| Tous les 116 fichiers scannés | **0** |
+| Fichier                       | Nb violations |
+| ----------------------------- | ------------- |
+| Tous les 116 fichiers scannés | **0**         |
 
 ---
 
@@ -110,6 +112,7 @@ violations actives.
 **P5.4 est conforme à 100%.**
 
 Le codebase applique rigoureusement la discipline mobile-first :
+
 - Tous les breakpoints responsive passent par `@include respond-to()`
 - Zéro `@media (max-width: ...)` utilisé comme breakpoint de viewport
 - Zéro breakpoint hardcodé en pixels

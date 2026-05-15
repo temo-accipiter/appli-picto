@@ -12,6 +12,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts', './tests/setup.ts'],
     globals: true,
     testTimeout: 15000, // Augmenté car le render jsdom peut être lent en CI
+    env: {
+      NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+    },
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
