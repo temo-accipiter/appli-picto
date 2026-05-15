@@ -21,7 +21,7 @@
 ///   - Role colors ($role-color-tokens) → role-color('admin'), gradient()
 ///   - Typography ($font-size-tokens, etc.) → font-size('xl'), font-weight('bold')
 ///   - Sizes ($size-tokens) → size('400'), size('modal-width-md')
-///   - Motion ($motion-tokens) → timing('fast'), easing('smooth')
+///   - Motion ($motion-tokens) → timing('fast'), easing('ease-out')
 ///   - Border-width ($border-width-tokens) → border-width('medium')
 ///   - Z-index ($z-index-tokens) → z-index('modal')
 ///   - Opacity ($opacity-tokens) → opacity('half')
@@ -1060,7 +1060,7 @@ $font-weight-tokens: (
 ///   - Respecter prefers-reduced-motion (géré dans _motion.scss)
 ///
 /// Usage :
-///   transition: timing('xs') easing('smooth');
+///   transition: timing('xs') easing('ease-out');
 ///   animation: fade-in timing('fade') easing('smooth-out');
 ///
 /// ⚠️ RÈGLES :

@@ -14,7 +14,6 @@
 //    - shadow('elevation-sm'/'elevation-md') → Boutons interactifs — exception §F.3 ✅
 //    - filter: drop-shadow sur cercle SVG → visuel TSA, conservé ✅
 //    - timing('base'/'fast') → Primitives Phase 6 (0.2s/0.15s) ✅
-//    - easing('smooth') → Primitives Phase 6 ✅
 //    - surface('bg'/'soft'/'border') → Semantics Phase 6 ✅
 //    - text('default'/'invert'/'light') → Semantics Phase 6 ✅
 //    - safe-transition() → Mixin Phase 6 ✅

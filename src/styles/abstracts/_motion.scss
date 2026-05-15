@@ -20,8 +20,8 @@
 ///   - Toutes animations respectent prefers-reduced-motion
 ///
 /// Utilisation:
-///   transition: color timing('xs') easing('smooth');
-///   animation: fade-in timing('fade') easing('smooth-out') forwards;
+///   transition: color timing('xs') easing('ease-out');
+///   animation: fade-in timing('fade') easing('ease-out') forwards;
 ///
 /// Migration v2.1:
 ///   - ✅ Supprimé toutes variables individuelles ($transition-xs, etc.)
@@ -60,8 +60,8 @@
 /// @param {String} $key - Clé dans easing scale ('linear', 'smooth', 'ease-in', 'ease-out', 'smooth-pop', etc.)
 /// @return {String} Easing function CSS (ease, linear, cubic-bezier(...))
 /// @example
-///   transition: all 0.3s easing('smooth');        // ease
-///   animation: pop 0.4s easing('smooth-pop');     // cubic-bezier(0.34, 1.56, 0.64, 1)
+///   transition: all 0.3s easing('ease-out');      // ease-out
+///   animation: pop 0.4s easing('ease-out');       // ease-out
 @function easing($key) {
   $easing-map: map.get($motion-tokens, 'easing');
 
@@ -103,19 +103,6 @@
 /// ============================================================================
 /// MIXINS - Helpers pour transitions courantes
 /// ============================================================================
-
-/// Applique une transition standard avec timing/easing personnalisables
-/// @param {String|List} $property - Propriété CSS à animer (default: all)
-/// @param {String} $timing-key - Clé timing (default: 'base')
-/// @param {String} $easing-key - Clé easing (default: 'smooth')
-/// @example
-///   @include transition(color, 'xs', 'smooth');
-///   @include transition((color, background-color), 'sm');
-@mixin transition($property: all, $timing-key: 'base', $easing-key: 'smooth') {
-  transition-property: $property;
-  transition-duration: timing($timing-key);
-  transition-timing-function: easing($easing-key);
-}
 
 /// Applique un preset motion complet
 /// @param {String} $preset - Preset name ('quick-feedback', 'state-change', etc.)
@@ -182,8 +169,7 @@
 ///   train-move, station-pop, dash-rail, infinite
 ///
 /// EASING DISPONIBLES :
-///   linear, smooth, ease-in, ease-out, ease-in-out
-///   smooth-pop, bounce-easy, smooth-out, smooth-in
+///   linear, ease-in, ease-out
 ///
 /// PRESETS DISPONIBLES :
 ///   quick-feedback (150ms ease) - Interactions immédiates
@@ -196,8 +182,8 @@
 /// EXEMPLES :
 ///
 /// ✅ CORRECT :
-///   transition: color timing('xs') easing('smooth');
-///   animation: fade-in timing('fade') easing('smooth-out');
+///   transition: color timing('xs') easing('ease-out');
+///   animation: fade-in timing('fade') easing('ease-out');
 ///   @include transition(background-color, 'sm', 'ease-out');
 ///   @include motion-preset-transition('state-change', color);
 ///
