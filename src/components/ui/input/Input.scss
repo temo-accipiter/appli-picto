@@ -56,7 +56,7 @@
   @include touch-target('min'); // 44px WCAG AA
 
   // Transitions TSA-compliant
-  @include safe-transition(border outline, timing('fast'), easing('smooth'));
+  @include safe-transition(border outline, timing('fast'), easing('linear'));
 
   // Focus WCAG 2.2 AA (v1.1 §F.5 — outline direct, pas de box-shadow)
   &:focus {
@@ -160,7 +160,7 @@ input[type='file'].input-field__input {
   @include safe-transition(
     opacity background-color,
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   &:hover {

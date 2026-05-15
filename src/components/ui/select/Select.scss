@@ -75,7 +75,7 @@
     @include safe-transition(
       border-color background-color,
       timing('fast'),
-      easing('smooth')
+      easing('linear')
     );
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -160,7 +160,7 @@
     color: text();
     font-size: font-size('xs');
 
-    @include safe-transition(transform, timing('fast'), easing('smooth'));
+    @include safe-transition(transform, timing('fast'), easing('linear'));
 
     [data-state='open'] & {
       transform: rotate(180deg);
@@ -239,7 +239,7 @@
     @include safe-transition(
       background-color color,
       timing('fast'),
-      easing('smooth')
+      easing('linear')
     );
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

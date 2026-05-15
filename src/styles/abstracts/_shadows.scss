@@ -275,7 +275,7 @@ $ENABLE_LEGACY_SUPPORT: true !default;
   box-shadow: card-shadow('default');
   transition-property: box-shadow;
   transition-duration: timing('xs');
-  transition-timing-function: easing('smooth');
+  transition-timing-function: easing('linear');
 
   &:hover,
   &:focus-within {
