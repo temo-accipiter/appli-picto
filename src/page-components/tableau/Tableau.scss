@@ -200,7 +200,7 @@
   @include safe-transition(
     (transform, filter, opacity),
     timing('base'),
-    easing('smooth')
+    easing('ease-out') // Cat. 2 — apparition badge récompense.
   );
   opacity: opacity('half');
   filter: grayscale(100%);

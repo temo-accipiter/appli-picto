@@ -88,7 +88,8 @@
   }
 
   &__red-disk {
-    @include safe-transition(d, timing('base'), easing('smooth'));
+    // Cat. 3 — animation autonome SVG disque. linear justifié : mouvement continu dépourvu de feedback.
+    @include safe-transition(d, timing('base'), easing('linear'));
   }
 
   &__tick {

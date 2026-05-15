@@ -102,7 +102,11 @@
   white-space: normal;
   text-overflow: unset;
 
-  @include safe-transition(opacity, timing('fast'), easing('smooth'));
+  @include safe-transition(
+    opacity,
+    timing('fast'),
+    easing('ease-out')
+  ); // Cat. 2 — apparition message d'erreur.
 
   &:empty {
     opacity: opacity('none'); // 0
