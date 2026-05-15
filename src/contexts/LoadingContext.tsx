@@ -12,7 +12,7 @@ import {
   useCallback,
   type ReactNode,
 } from 'react'
-import GlobalLoader from '@/components/shared/global-loader/GlobalLoader'
+import Loader from '@/components/ui/loader/Loader'
 
 interface LoadingContextValue {
   isLoading: boolean
@@ -70,7 +70,7 @@ export function LoadingProvider({ children }: LoadingProviderProps) {
       }}
     >
       {children}
-      {isLoading && <GlobalLoader message={loadingMessage} />}
+      {isLoading && <Loader variant="overlay" message={loadingMessage} />}
     </LoadingContext.Provider>
   )
 }

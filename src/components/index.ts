@@ -94,7 +94,6 @@ export { default as Separator } from './shared/separator/Separator'
 export { default as SignedImage } from './shared/signed-image/SignedImage'
 export { default as ThemeToggle } from './shared/theme-toggle/ThemeToggle'
 export { default as SearchInput } from './shared/search-input/SearchInput'
-export { default as GlobalLoader } from './shared/global-loader/GlobalLoader'
 export { default as WebVitals } from './shared/web-vitals/WebVitals'
 
 // Modals
