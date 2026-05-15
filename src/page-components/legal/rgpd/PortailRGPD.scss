@@ -79,7 +79,7 @@
     ); // §D.3 : bouton action → radius('button') 6px
     font-weight: font-weight('semibold');
     cursor: pointer;
-    @include safe-transition(background, timing('fast'), easing('smooth'));
+    @include safe-transition(background, timing('fast'), easing('linear'));
 
     &:hover {
       background: semantic('info', 'light');

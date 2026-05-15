@@ -41,7 +41,7 @@
   @include touch-target('min');
   display: inline-flex;
   align-items: center;
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   // Neutralise a:visited global (spécificité 0,1,1 < 0,2,1)
   &:visited {

@@ -131,7 +131,7 @@
   font-size: font-size('sm');
   color: color('base');
   text-decoration: none;
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');
@@ -186,7 +186,7 @@
   text-decoration: underline;
   text-align: left;
   @include touch-target('min'); // 44px WCAG AA
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');
@@ -267,7 +267,7 @@
   color: color('base');
   font-weight: font-weight('semibold');
   text-decoration: none;
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');

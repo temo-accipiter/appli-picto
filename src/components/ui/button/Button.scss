@@ -48,7 +48,7 @@
 
   // UX
   cursor: pointer;
-  @include safe-transition(background color, timing('fast'), easing('smooth'));
+  @include safe-transition(background color, timing('fast'), easing('linear'));
 
   // Focus WCAG 2.2 AA — §F.5
   &:focus-visible {

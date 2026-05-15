@@ -243,7 +243,7 @@
   color: color('base');
   text-decoration: underline;
   font-weight: font-weight('medium');
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');
@@ -306,7 +306,7 @@
   color: color('base');
   font-weight: font-weight('semibold');
   text-decoration: none;
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');
@@ -354,7 +354,7 @@
   color: color('base');
   font-weight: font-weight('semibold');
   text-decoration: none;
-  @include safe-transition(color, timing('fast'), easing('smooth'));
+  @include safe-transition(color, timing('fast'), easing('linear'));
 
   &:hover {
     color: color('dark');

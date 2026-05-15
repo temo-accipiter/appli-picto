@@ -33,7 +33,7 @@
     align-items: center;
     gap: spacing('xs');
     min-height: a11y('min-touch-target');
-    @include safe-transition(opacity, timing('fast'), easing('smooth'));
+    @include safe-transition(opacity, timing('fast'), easing('linear'));
 
     &:hover {
       opacity: opacity('0-35');

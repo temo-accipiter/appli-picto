@@ -244,7 +244,7 @@
   font-size: font-size('sm');
   font-weight: font-weight('semibold');
   white-space: nowrap;
-  @include safe-transition(background-color, timing('fast'), easing('smooth'));
+  @include safe-transition(background-color, timing('fast'), easing('linear'));
 
   // Neutralise a:visited global
   &:visited {

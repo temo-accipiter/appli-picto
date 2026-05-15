@@ -48,7 +48,7 @@
   @include safe-transition(
     background-color transform,
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   // Focus WCAG 2.2 AA

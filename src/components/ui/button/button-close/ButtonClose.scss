@@ -50,7 +50,7 @@
   @include safe-transition(
     background-color color transform,
     timing('fast'),
-    easing('smooth')
+    easing('linear')
   );
 
   // Focus WCAG 2.2 AA (v1.1 §F.5 — outline direct)
