@@ -245,3 +245,87 @@ export const mockStations: MockStation[] = [
   { id: '2', name: 'Gare du Nord', ligne: 1 },
   { id: '3', name: 'République', ligne: 1 },
 ]
+
+// ─── Tables Tableau (timelines, slots, sessions, cards, sequences…) ────────────
+
+export interface MockTimeline {
+  id: string
+  child_profile_id: string
+  created_at: string
+  updated_at: string
+}
+
+export const mockTimelines: MockTimeline[] = []
+
+export interface MockSlot {
+  id: string
+  timeline_id: string
+  kind: 'step' | 'reward'
+  position: number
+  card_id: string | null
+  tokens: number | null
+  created_at: string
+  updated_at: string
+}
+
+export const mockSlots: MockSlot[] = []
+
+export interface MockSession {
+  id: string
+  child_profile_id: string
+  timeline_id: string
+  state: 'active_preview' | 'active_started' | 'completed'
+  epoch: number
+  steps_total_snapshot: number | null
+  created_at: string
+  updated_at: string
+  started_at: string | null
+  completed_at: string | null
+}
+
+export const mockSessions: MockSession[] = []
+
+export interface MockCard {
+  id: string
+  type: 'bank' | 'personal'
+  name: string
+  image_url: string
+  account_id: string | null
+  published: boolean | null
+  created_at: string
+  updated_at: string
+}
+
+export const mockCards: MockCard[] = []
+
+export interface MockUserCardCategory {
+  id: string
+  user_id: string
+  card_id: string
+  category_id: string
+  created_at: string
+  updated_at: string
+}
+
+export const mockUserCardCategories: MockUserCardCategory[] = []
+
+export interface MockSequence {
+  id: string
+  account_id: string
+  mother_card_id: string
+  created_at: string
+  updated_at: string
+}
+
+export const mockSequences: MockSequence[] = []
+
+export interface MockSequenceStep {
+  id: string
+  sequence_id: string
+  step_card_id: string
+  position: number
+  created_at: string
+  updated_at: string
+}
+
+export const mockSequenceSteps: MockSequenceStep[] = []
