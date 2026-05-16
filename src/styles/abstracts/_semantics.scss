@@ -38,7 +38,11 @@ $color-semantic-text: (
   // #ffffff - Texte inversé (sur foncé)
   'muted': p.palette('neutral', 500),
   // #64748b - Texte désactivé
-  'dark': p.palette('neutral', 900), // #0f172a - Texte très fort (headings)
+  'dark': p.palette('neutral', 900),
+  // #0f172a - Texte très fort (headings)
+  'default': p.palette('neutral', 800),
+  // #1e293b - Alias migration depuis legacy $text-color-tokens.default (#333333)
+   // 49 composants utilisent text() ou text('default') — migration automatique vers Phase 6
 ) !default;
 
 // === SURFACE COLORS - Couleurs de surfaces/backgrounds ===
@@ -57,7 +61,11 @@ $color-semantic-surface: (
   // #f1f5f9 - Séparateurs
   'hover': p.palette('neutral', 50),
   // #f8fafc - Background hover
-  'soft': p.palette('neutral', 50), // #f8fafc - Background doux
+  'soft': p.palette('neutral', 50),
+  // #f8fafc - Background doux
+  'surface': p.palette('neutral', 50),
+  // #f8fafc - Alias migration depuis legacy $surface-color-tokens.surface (#f7f7f7)
+   // Delta visuel minimal (gris neutre → Slate-50). 9 composants migrés automatiquement.
 ) !default;
 
 // === FEEDBACK COLORS - États système (success, warning, error, info) ===
@@ -96,7 +104,14 @@ $color-semantic-feedback: (
   // #e0f2fe - Background
   'info-dark': p.palette('info', 700),
   // #0369a1 - Texte
-  'info-border': p.palette('info', 300) // #7dd3fc
+  'info-border': p.palette('info', 300),
+  // #7dd3fc
+  // Info-decorative (bleu décoratif léger — remplace info-primary legacy)
+  'info-decorative-base': p.palette('info', 300),
+  // #7dd3fc — Sky-300 Tailwind — pour backgrounds/borders décoratifs uniquement
+  // ⚠️ Ne pas utiliser pour du texte sur fond clair : ratio 2.32:1 (WCAG AA requiert 4.5:1)
+  // → Violations WCAG textuelles restent OUVERTES : TimeTimer:265, CookiePreferences:150
+   //   Migrer vers semantic('info', 'dark') lors du refactor de ces composants.
 ) !default;
 
 // === ROLE COLORS - Couleurs par rôle utilisateur (admin, abonné, free, visitor) ===
@@ -276,7 +291,7 @@ $radius-semantic: (
   // 6px - Précision motrice (champs)
   'modal': map.get(p.$radius-primitives, 'lg'),
   // 20px - Contenance et douceur (dialogues)
-  'badge': 3.125rem,
+  'badge': map.get(p.$radius-primitives, 'badge'),
   // 50px — Badges/pills (coins arrondis fixes, non ovale)
   'avatar': map.get(p.$radius-primitives, 'full'), // 50% - Avatars ronds
 ) !default;

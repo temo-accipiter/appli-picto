@@ -79,13 +79,16 @@ $ENABLE_LEGACY_SUPPORT: true !default;
 ///   // Phase 5 (legacy - fallback automatique)
 ///   color: semantic('info', 'dark');      // Legacy nested map
 @function semantic($name, $variant: 'base') {
-  // ⚠️ Compatibilité : anciennes clés plates (legacy hardcodées)
+  // Alias deprecated : info-primary → info-decorative
   @if $name == 'info-primary' {
-    // ⚠️  LEGACY — valeur intentionnellement conservée (#66c3f7, bleu clair décoratif)
-    // Utilisé uniquement pour : TrainProgressBar, TachesDnd, TimeTimer, CardsEdition (backgrounds/borders décoratifs)
-    // NE PAS utiliser pour du texte sur fond blanc (ratio 1.96:1 insuffisant WCAG AA)
-    // Migration vers color('base') ou semantic('info', 'dark') uniquement si usage textuel détecté
-    @return #66c3f7;
+    // ⚠️ DEPRECATED — utiliser semantic('info-decorative') à la place
+    // 21 sites en attente de migration (queue refactor composants)
+    // ⚠️ 2 violations WCAG textuelles OUVERTES après T1-C :
+    //    - TimeTimer.scss:265 (color sur fond blanc, ratio 2.32:1)
+    //    - CookiePreferences.scss:150 (color sur fond blanc, ratio 2.32:1)
+    //    → Migrer vers semantic('info', 'dark') (#0369a1, ratio 5.82:1) lors du refactor composant.
+    @warn "semantic('info-primary') est deprecated. Utiliser semantic('info-decorative'). 21 sites en attente de migration vers la queue composants.";
+    @return map.get(sem.$color-semantic-feedback, 'info-decorative-base');
   }
 
   // 1. Priorité : Semantics (Phase 6 - clés plates avec tirets)

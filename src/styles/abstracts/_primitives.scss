@@ -406,7 +406,10 @@ $radius-primitives: (
   // 6px (utilisé 12x) → sm
   'rounded-10px': 0.625rem,
   // 10px (utilisé 1x) → Nouveau
-  'rounded-12px': 0.75rem, // 12px (utilisé 10x) → md
+  'rounded-12px': 0.75rem,
+  // 12px (utilisé 10x) → md
+  // === Badges/Pills ===
+  'badge': 3.125rem, // 50px — Pills/badges (coins arrondis fixes, non ovale sur dimensions variables)
 ) !default;
 
 // =============================================================================
