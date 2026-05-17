@@ -38,6 +38,7 @@ html {
 body {
   min-height: 100vh;
   line-height: 1.45;
+  font-family: var(--font-tsa);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--surface-bg, #ffffff);

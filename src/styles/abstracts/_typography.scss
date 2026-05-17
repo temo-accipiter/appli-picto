@@ -29,19 +29,6 @@
 /// FONT STACKS - Polices d'écriture système
 /// ============================================================================
 
-/// Font stack pour le texte corps (lisibilité maximale)
-$text-font-stack:
-  system-ui,
-  -apple-system,
-  'Segoe UI',
-  Roboto,
-  Helvetica,
-  Arial,
-  sans-serif;
-
-/// Font stack pour les headings (distinction)
-$heading-font-stack: Georgia, 'Times New Roman', Times, serif;
-
 /// Font stack pour accessibilité TSA
 /// Lexend : meilleure distinction des lettres pour enfants dyslexiques
 $lexend-font-stack:
@@ -163,20 +150,6 @@ $mono-font-stack: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
   font-family: $lexend-font-stack;
 }
 
-/// Applique le font stack corps de texte
-/// @example
-///   @include font-text;
-@mixin font-text {
-  font-family: $text-font-stack;
-}
-
-/// Applique le font stack headings
-/// @example
-///   @include font-heading;
-@mixin font-heading {
-  font-family: $heading-font-stack;
-}
-
 /// ============================================================================
 /// CSS CUSTOM PROPERTIES - Pour accès runtime JavaScript
 /// ============================================================================
@@ -203,8 +176,6 @@ $mono-font-stack: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
   --line-height-relaxed: #{line-height('relaxed')};
 
   // Font stacks
-  --font-text: #{$text-font-stack};
-  --font-heading: #{$heading-font-stack};
   --font-tsa: #{$lexend-font-stack};
 }
 
