@@ -39,6 +39,7 @@ export type Database = {
           account_id: string
           confetti_enabled: boolean
           created_at: string
+          progress_style: string
           reduced_motion: boolean
           toasts_enabled: boolean
           train_line: string | null
@@ -50,6 +51,7 @@ export type Database = {
           account_id: string
           confetti_enabled?: boolean
           created_at?: string
+          progress_style?: string
           reduced_motion?: boolean
           toasts_enabled?: boolean
           train_line?: string | null
@@ -61,6 +63,7 @@ export type Database = {
           account_id?: string
           confetti_enabled?: boolean
           created_at?: string
+          progress_style?: string
           reduced_motion?: boolean
           toasts_enabled?: boolean
           train_line?: string | null
