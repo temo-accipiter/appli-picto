@@ -53,26 +53,6 @@
   text-align: center;
 }
 
-.login-page__logo {
-  // Couleur du SVG inline (fill="currentColor" sur le rect de fond)
-  color: color('base');
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: spacing('xs');
-}
-
-.login-page__title {
-  font-size: font-size('2xl');
-  font-weight: font-weight('bold');
-  color: text('dark');
-  margin: 0;
-
-  @include respond-to(md) {
-    font-size: font-size('3xl');
-  }
-}
-
 .login-page__tagline {
   font-size: font-size('base');
   color: text('muted');

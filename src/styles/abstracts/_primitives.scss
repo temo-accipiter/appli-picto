@@ -343,8 +343,8 @@ $size-primitives: (
   // 320px - Modal compact (utilisé 2x)
   'modal-width-md': 33.75rem,
   // 540px - Modal standard (utilisé 6x) ← FRÉQUENT
-  'modal-width-lg': 45rem,
-  // 720px - Modal large (utilisé 5x)
+  'modal-width-lg': 48rem,
+  // 768px - Modal large (utilisé 5x) — corrigé 45rem→48rem pour aligner sur $size-tokens (source de vérité usage réel)
   'sidebar-width': 17.5rem,
   // 280px - Sidebar
   'container-lg': 64rem,

@@ -260,7 +260,12 @@ $size-semantic: (
   // 720px
   'sidebar-width': map.get(p.$size-primitives, 'sidebar-width'),
   // 280px
-  'container-lg': map.get(p.$size-primitives, 'container-lg') // 1024px
+  'container-lg': map.get(p.$size-primitives, 'container-lg'),
+  // 1024px
+  // === Branding (Component-specific semantic aliases — sans primitive correspondante) ===
+  'logo-auth-sm': 7.5rem,
+  // 120px — Largeur du logo Appli-Picto sur les pages d'authentification (mobile).
+  'logo-auth-lg': 10rem // 160px — Largeur du logo Appli-Picto sur les pages d'authentification (desktop).
 ) !default;
 
 // =============================================================================

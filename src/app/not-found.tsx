@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Footer } from '@/components'
+import AuthLogo from '@/components/layout/auth-logo/AuthLogo'
 import './not-found.scss'
 
 // Force dynamic rendering (no prerendering) due to client-only dependencies in global providers
@@ -9,6 +10,10 @@ export default function NotFound() {
   return (
     <>
       <div className="not-found">
+        <header className="not-found__header">
+          <AuthLogo />
+          <p className="not-found__tagline">La journée en pictogrammes</p>
+        </header>
         <h1 className="not-found__code">404</h1>
         <h2 className="not-found__title">Page non trouvée</h2>
         <p className="not-found__subtitle">

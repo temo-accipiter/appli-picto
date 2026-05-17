@@ -9,6 +9,7 @@ import { useI18n } from '@/hooks'
 import { Input, Button } from '@/components'
 import Turnstile from 'react-turnstile'
 import i18n from '@/config/i18n/i18n'
+import AuthLogo from '@/components/layout/auth-logo/AuthLogo'
 import './ForgotPassword.scss'
 
 export default function ForgotPassword() {
@@ -65,24 +66,7 @@ export default function ForgotPassword() {
     <div className="forgot-page">
       {/* ── HEADER MARQUE ── */}
       <header className="forgot-page__header">
-        {/* Logo décoratif : aria-hidden car "Appli-Picto" est écrit en clair ci-dessous */}
-        <div className="forgot-page__logo" aria-hidden="true">
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 56 56"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <rect width="56" height="56" rx="12" fill="currentColor" />
-            <rect x="11" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="11" y="31" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="31" width="14" height="14" rx="2" fill="white" />
-          </svg>
-        </div>
-        <h1 className="forgot-page__title">Appli-Picto</h1>
+        <AuthLogo />
         <p className="forgot-page__tagline">La journée en pictogrammes</p>
       </header>
 

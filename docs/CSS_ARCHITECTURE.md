@@ -118,9 +118,9 @@ Retourne une couleur de marque primaire, secondaire ou accent.
 
 | Clé       | Type      | Valeur    |
 | --------- | --------- | --------- |
-| `'base'`  | primary   | `#0077c2` |
+| `'base'`  | primary   | `#2871a8` |
 | `'light'` | primary   | `#4dabf7` |
-| `'dark'`  | primary   | `#1565c0` |
+| `'dark'`  | primary   | `#1f5e8e` |
 | `'base'`  | secondary | `#ef5350` |
 | `'dark'`  | secondary | `#d32f2f` |
 | `'base'`  | accent    | `#ffb400` |
@@ -129,8 +129,10 @@ Retourne une couleur de marque primaire, secondaire ou accent.
 
 ```scss
 // Usage
-background-color: color('base'); // #0077c2 (primary par défaut)
-background-color: color('dark'); // #1565c0
+background-color: color(
+  'base'
+); // #2871a8 (primary par défaut — bleu brand logo)
+background-color: color('dark'); // #1f5e8e
 background-color: color('base', 'secondary'); // #ef5350
 ```
 
@@ -427,6 +429,18 @@ outline: border-width('focus') solid var(--color-primary); // 2px focus ring
 
 Retourne une dimension structurelle. **Uniquement pour `width`, `height`, `min-width`, `max-width`, `min-height`, `max-height`, positionnement absolu.**
 
+**Ordre de résolution** : Semantics → Primitives → Legacy
+
+```
+size($key)
+  1. $size-semantic    (priorité — tokens nommés sémantiquement)
+  2. $size-primitives  (valeurs brutes Phase 6)
+  3. $size-tokens      (legacy — si $ENABLE_LEGACY_SUPPORT: true)
+  4. @error            (clé introuvable)
+```
+
+**Tokens sémantiques (priorité)** :
+
 | Clé notable                | Valeur | Usage                 |
 | -------------------------- | ------ | --------------------- |
 | `'touch-target-min'`       | 44px   | WCAG AA cible tactile |
@@ -441,6 +455,13 @@ Retourne une dimension structurelle. **Uniquement pour `width`, `height`, `min-w
 | `'avatar-md'`              | 40px   | Avatar standard       |
 | `'card-min-height'`        | 140px  | Card minimale         |
 
+**Branding** :
+
+| Clé              | Valeur | Usage                                 |
+| ---------------- | ------ | ------------------------------------- |
+| `'logo-auth-sm'` | 120px  | Logo Appli-Picto pages auth (mobile)  |
+| `'logo-auth-lg'` | 160px  | Logo Appli-Picto pages auth (desktop) |
+
 ❌ `size('44')` → **ERREUR BUILD** — clé inexistante dans `$size-tokens`
 ✅ `size('touch-target-min')` → 44px
 
@@ -448,6 +469,7 @@ Retourne une dimension structurelle. **Uniquement pour `width`, `height`, `min-w
 width: size('modal-width-md'); // 540px
 min-height: size('touch-target-min'); // 44px
 width: size('icon-md'); // 24px
+width: size('logo-auth-sm'); // 120px (mobile) — via $size-semantic
 ```
 
 ---
@@ -1032,6 +1054,14 @@ Non-fusionnable avec la palette sémantique d'action. Interface adulte uniquemen
 
 **Contournement** : utiliser les clés de l'échelle legacy (`font-size('base')`, `font-size('lg')`, `timing('xs')`, etc.).
 
+### ✅ T2-F — `size()` orphelin de `$size-semantic` — RÉSOLU 2026-05-17
+
+**Nature** : le wrapper `size()` lisait uniquement `$size-tokens` (legacy). `$size-semantic` était défini mais non branché — même classe de bug que T2-E.
+
+**Résolution** : `_size.scss` refactorisé pour implémenter la chaîne 3 layers (Semantics → Primitives → Legacy avec `$ENABLE_LEGACY_SUPPORT: true`), calquée sur le pattern existant de `_spacing.scss`. Les 2 tokens logo (`logo-auth-sm`, `logo-auth-lg`) relocalisés de `$size-tokens` vers `$size-semantic`. Divergence `modal-width-lg` (45rem vs 48rem) corrigée dans `$size-primitives` avant bascule de priorité.
+
+**Commit** : non encore commité (branche `feature/re-design-edition`). Audit complet : `docs/audits/FIX_SIZE_WRAPPER_T2F_PHASE1_2026-05-17.md` et `FIX_SIZE_WRAPPER_T2F_PHASE2_2026-05-17.md`.
+
 ### `semantic('info-primary')` — Legacy décoratif
 
 **Nature** : valeur hardcodée `#66c3f7` (bleu clair, ratio contraste 1.96:1).
@@ -1065,4 +1095,4 @@ Reproduite depuis `docs/refonte_front/direction-visuelle-v1.1.md` (Annexe — Ch
 
 ---
 
-_Document généré le 2026-04-26. Prochaine mise à jour après résolution T1-B et T2-E._
+_Document généré le 2026-04-26. Mis à jour le 2026-05-17 : T2-F résolu (§11), chaîne de résolution `size()` mise à jour (§3.12), tokens logo ajoutés (§3.12), couleurs primaires corrigées (§3.1 — T1-C). Prochaine mise à jour après résolution T1-B et T2-E._

@@ -1,20 +1,21 @@
 # Clôture T1-C — Phase 2 : Rapport d'Implémentation
+
 **Date** : 2026-05-17 | **Branch** : feature/re-design-edition
 
 ---
 
 ## 1. Résumé
 
-| Sous-phase | Statut | Description |
-|---|---|---|
-| Pré-phase (fix font-size) | ✅ Exécutée | `TimeTimer.scss:597` : `font-size('6xl')` → `'5xl'` |
-| B4 — Primitive `badge` | ✅ Exécutée | `_primitives.scss` : `'badge': 3.125rem` ajouté |
-| B3 — Semantic `badge` | ✅ Exécutée | `_semantics.scss:279` : hardcodé → `map.get(p.$radius-primitives, 'badge')` |
-| B1 — `text('default')` | ✅ Exécutée | `_semantics.scss` : `'default': palette('neutral', 800)` dans `$color-semantic-text` |
-| B2 — `surface('surface')` | ✅ Exécutée | `_semantics.scss` : `'surface': palette('neutral', 50)` dans `$color-semantic-surface` |
-| C1 — `info-decorative` map | ✅ Exécutée | `_semantics.scss` : `'info-decorative-base': palette('info', 300)` dans `$color-semantic-feedback` |
+| Sous-phase                  | Statut      | Description                                                                                                |
+| --------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| Pré-phase (fix font-size)   | ✅ Exécutée | `TimeTimer.scss:597` : `font-size('6xl')` → `'5xl'`                                                        |
+| B4 — Primitive `badge`      | ✅ Exécutée | `_primitives.scss` : `'badge': 3.125rem` ajouté                                                            |
+| B3 — Semantic `badge`       | ✅ Exécutée | `_semantics.scss:279` : hardcodé → `map.get(p.$radius-primitives, 'badge')`                                |
+| B1 — `text('default')`      | ✅ Exécutée | `_semantics.scss` : `'default': palette('neutral', 800)` dans `$color-semantic-text`                       |
+| B2 — `surface('surface')`   | ✅ Exécutée | `_semantics.scss` : `'surface': palette('neutral', 50)` dans `$color-semantic-surface`                     |
+| C1 — `info-decorative` map  | ✅ Exécutée | `_semantics.scss` : `'info-decorative-base': palette('info', 300)` dans `$color-semantic-feedback`         |
 | C1 — `info-primary` wrapper | ✅ Exécutée | `_colors.scss` : hex `#66c3f7` → `map.get(sem.$color-semantic-feedback, 'info-decorative-base')` + `@warn` |
-| Commentaires composants | ✅ Vérifiée | Button.scss, ImagePreview.scss, FloatingPencil.scss — désormais factuellement corrects |
+| Commentaires composants     | ✅ Vérifiée | Button.scss, ImagePreview.scss, FloatingPencil.scss — désormais factuellement corrects                     |
 
 **Aucune sous-phase skippée.**
 
@@ -24,10 +25,10 @@
 
 Conformément aux ajustements obligatoires de Temo (point 4) :
 
-| Fichier | Ligne | Propriété | Valeur après T1-C | Ratio WCAG | Statut |
-|---|---|---|---|---|---|
-| `TimeTimer.scss` | 265 | `color` sur fond blanc | `#7dd3fc` (Sky-300) | 2.32:1 | ❌ OUVERT — < 4.5:1 |
-| `CookiePreferences.scss` | 150 | `color` sur fond blanc | `#7dd3fc` (Sky-300) | 2.32:1 | ❌ OUVERT — < 4.5:1 |
+| Fichier                  | Ligne | Propriété              | Valeur après T1-C   | Ratio WCAG | Statut              |
+| ------------------------ | ----- | ---------------------- | ------------------- | ---------- | ------------------- |
+| `TimeTimer.scss`         | 265   | `color` sur fond blanc | `#7dd3fc` (Sky-300) | 2.32:1     | ❌ OUVERT — < 4.5:1 |
+| `CookiePreferences.scss` | 150   | `color` sur fond blanc | `#7dd3fc` (Sky-300) | 2.32:1     | ❌ OUVERT — < 4.5:1 |
 
 **Action différée** : lors du refactor de ces composants (queue priorité 1 et 5), migrer ces deux usages vers `semantic('info', 'dark')` = `#0369a1` (ratio 5.82:1 ✅ WCAG AA).
 
@@ -139,20 +140,20 @@ Conformément aux ajustements obligatoires de Temo (point 4) :
 
 ### Pré-phase
 
-| Commande | Résultat |
-|---|---|
-| `pnpm check` | ✅ Passed |
-| `pnpm test` | ✅ 216 passed, 4 skipped |
+| Commande     | Résultat                 |
+| ------------ | ------------------------ |
+| `pnpm check` | ✅ Passed                |
+| `pnpm test`  | ✅ 216 passed, 4 skipped |
 | `pnpm build` | ✅ Compiled successfully |
 
 ### Phase 2 complète
 
-| Commande | Résultat | Notes |
-|---|---|---|
-| `pnpm check` | ✅ Passed | Lint + format |
-| `pnpm test` | ✅ 216 passed, 4 skipped | Tests unitaires |
-| `pnpm build` | ✅ Compiled successfully | Build Next.js complet |
-| `pnpm type-check` | ✅ Passed | Zéro erreur TypeScript |
+| Commande              | Résultat                  | Notes                        |
+| --------------------- | ------------------------- | ---------------------------- |
+| `pnpm check`          | ✅ Passed                 | Lint + format                |
+| `pnpm test`           | ✅ 216 passed, 4 skipped  | Tests unitaires              |
+| `pnpm build`          | ✅ Compiled successfully  | Build Next.js complet        |
+| `pnpm type-check`     | ✅ Passed                 | Zéro erreur TypeScript       |
 | `pnpm lint:hardcoded` | ✅ Aucun hardcode détecté | Aucune valeur hex résiduelle |
 
 > **Note sur `@warn` Sass** : Les avertissements de dépréciation `semantic('info-primary')` sont bien présents dans le code SCSS. La sortie Next.js/webpack ne les expose pas visuellement en sortie terminal standard — ils seraient visibles avec un compilateur Sass standalone (`sass --style expanded`). Le mécanisme de dépréciation est en place et fonctionnel.
@@ -161,12 +162,12 @@ Conformément aux ajustements obligatoires de Temo (point 4) :
 
 ## 5. Fichiers modifiés
 
-| Chemin | Type | Nb lignes diff |
-|---|---|---|
-| `src/components/features/time-timer/TimeTimer.scss` | Fix composant (pré-phase) | 1 |
-| `src/styles/abstracts/_primitives.scss` | Ajout primitive `'badge'` | +3 |
-| `src/styles/abstracts/_semantics.scss` | Ajout 4 clés + correction `'badge'` | +14 |
-| `src/styles/abstracts/_colors.scss` | Remplacement handler `info-primary` | +10 / -5 |
+| Chemin                                              | Type                                | Nb lignes diff |
+| --------------------------------------------------- | ----------------------------------- | -------------- |
+| `src/components/features/time-timer/TimeTimer.scss` | Fix composant (pré-phase)           | 1              |
+| `src/styles/abstracts/_primitives.scss`             | Ajout primitive `'badge'`           | +3             |
+| `src/styles/abstracts/_semantics.scss`              | Ajout 4 clés + correction `'badge'` | +14            |
+| `src/styles/abstracts/_colors.scss`                 | Remplacement handler `info-primary` | +10 / -5       |
 
 **Total** : 4 fichiers, ~23 lignes nettes ajoutées. Aucun composant touché.
 
@@ -176,15 +177,16 @@ Conformément aux ajustements obligatoires de Temo (point 4) :
 
 Temo doit effectuer une validation visuelle manuelle sur ces 5 contextes pour confirmer l'absence de régression :
 
-| Contexte | URL locale | Composants impactés | Ce qu'il faut vérifier |
-|---|---|---|---|
-| **Login** | `localhost:3000/login` | Button (surface 'surface', text 'default'), Input | Fond boutons secondary, texte labels |
-| **Profil** | `localhost:3000/profil` | Profil, AccountStatusBadge, Button | Badges (radius 'badge'), fonds |
-| **Édition** | `localhost:3000/edition` | CardsEdition (info-primary), EditionTimeline | Teinte bleue décorative TrainProgressBar |
-| **Tableau enfant** | `localhost:3000/tableau` | TachesDnd (info-primary), TimeTimer (info-primary) | Fonds bleu clair tâches, minuteur |
-| **Settings / Abonnement** | `localhost:3000/profil` → settings | CookiePreferences (info-primary), Modal | Toggles catégories cookies, fond modal |
+| Contexte                  | URL locale                         | Composants impactés                                | Ce qu'il faut vérifier                   |
+| ------------------------- | ---------------------------------- | -------------------------------------------------- | ---------------------------------------- |
+| **Login**                 | `localhost:3000/login`             | Button (surface 'surface', text 'default'), Input  | Fond boutons secondary, texte labels     |
+| **Profil**                | `localhost:3000/profil`            | Profil, AccountStatusBadge, Button                 | Badges (radius 'badge'), fonds           |
+| **Édition**               | `localhost:3000/edition`           | CardsEdition (info-primary), EditionTimeline       | Teinte bleue décorative TrainProgressBar |
+| **Tableau enfant**        | `localhost:3000/tableau`           | TachesDnd (info-primary), TimeTimer (info-primary) | Fonds bleu clair tâches, minuteur        |
+| **Settings / Abonnement** | `localhost:3000/profil` → settings | CookiePreferences (info-primary), Modal            | Toggles catégories cookies, fond modal   |
 
 **Delta visuel attendu** :
+
 - `text('default')` : `#333333` → `#1e293b` — quasi imperceptible (gris chaud → gris slate)
 - `surface('surface')` : `#f7f7f7` → `#f8fafc` — imperceptible en pratique
 - `semantic('info-primary')` : `#66c3f7` → `#7dd3fc` — légèrement plus clair, même famille bleue
@@ -196,11 +198,11 @@ Temo doit effectuer une validation visuelle manuelle sur ces 5 contextes pour co
 
 Conformément au point 6 des ajustements obligatoires :
 
-| Fichier | Ligne | Commentaire | Statut après T1-C |
-|---|---|---|---|
-| `Button.scss:17` | `surface('surface'/'hover') → Semantics Phase 6 ✅` | ✅ **Correct** — résout maintenant via Phase 6 |
-| `ImagePreview.scss:16` | `surface('surface') → Semantics Phase 6 (#f8fafc) ✅` | ✅ **Correct** — résout `#f8fafc` via Phase 6 |
-| `FloatingPencil.scss:38` | `// Fond doux neutre` | ✅ **Sans claim Phase 6** — aucune correction nécessaire |
+| Fichier                  | Ligne                                                 | Commentaire                                              | Statut après T1-C |
+| ------------------------ | ----------------------------------------------------- | -------------------------------------------------------- | ----------------- |
+| `Button.scss:17`         | `surface('surface'/'hover') → Semantics Phase 6 ✅`   | ✅ **Correct** — résout maintenant via Phase 6           |
+| `ImagePreview.scss:16`   | `surface('surface') → Semantics Phase 6 (#f8fafc) ✅` | ✅ **Correct** — résout `#f8fafc` via Phase 6            |
+| `FloatingPencil.scss:38` | `// Fond doux neutre`                                 | ✅ **Sans claim Phase 6** — aucune correction nécessaire |
 
 **Aucune modification nécessaire** : les commentaires étaient écrits en anticipation de la correction Phase 6, et sont maintenant factuellement corrects.
 
@@ -212,11 +214,11 @@ Conformément au point 6 des ajustements obligatoires :
 
 **§3.1 tableau couleurs primaires** :
 
-| Section | Valeur actuelle dans la doc | Valeur réelle | Correction |
-|---|---|---|---|
-| `color('base')` primary | `#0077c2` | `#2871a8` | Remplacer |
-| `color('dark')` primary | `#1565c0` | `#1f5e8e` | Remplacer |
-| Exemple de code | `// #0077c2` | `// #2871a8` | Remplacer |
+| Section                 | Valeur actuelle dans la doc | Valeur réelle | Correction |
+| ----------------------- | --------------------------- | ------------- | ---------- |
+| `color('base')` primary | `#0077c2`                   | `#2871a8`     | Remplacer  |
+| `color('dark')` primary | `#1565c0`                   | `#1f5e8e`     | Remplacer  |
+| Exemple de code         | `// #0077c2`                | `// #2871a8`  | Remplacer  |
 
 ---
 

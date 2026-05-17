@@ -1,6 +1,11 @@
 @charset 'UTF-8';
 @use 'sass:map';
-@use 'tokens' as *;
+@use 'tokens' as *; // Legacy tokens (fallback si $ENABLE_LEGACY_SUPPORT)
+@use 'semantics' as sem; // Phase 6 semantics (priorité)
+@use 'primitives' as prim; // Phase 6 primitives (si sémantique absent)
+
+// Feature flag (défini dans _index.scss)
+$ENABLE_LEGACY_SUPPORT: true !default;
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 📐 SIZE SYSTEM - Dimensions structurelles (width, height, min/max)
@@ -82,10 +87,22 @@
 ///     &--lg { width: size('icon-lg'); }           // 32px
 ///   }
 @function size($key) {
-  @if not map.has-key($size-tokens, $key) {
-    @error "Size token '#{$key}' not found in $size-tokens. Available keys: #{map.keys($size-tokens)}. If you need a new size token, add it to src/styles/abstracts/_tokens.scss in the $size-tokens map.";
+  @if map.has-key(sem.$size-semantic, $key) {
+    @return map.get(
+      sem.$size-semantic,
+      $key
+    ); // 1. Semantics (priorité Phase 6)
+  } @else if map.has-key(prim.$size-primitives, $key) {
+    @return map.get(prim.$size-primitives, $key); // 2. Primitives Phase 6
+  } @else if $ENABLE_LEGACY_SUPPORT and map.has-key($size-tokens, $key) {
+    @return map.get($size-tokens, $key); // 3. Legacy tokens (fallback)
+  } @else {
+    @if $ENABLE_LEGACY_SUPPORT {
+      @error "Size '#{$key}' not found in semantics, primitives, nor legacy tokens. Available semantic keys: #{map.keys(sem.$size-semantic)}. If you need a new size token, add it to $size-semantic in src/styles/abstracts/_semantics.scss.";
+    } @else {
+      @error "Size '#{$key}' not found in semantics or primitives (legacy support disabled). Available semantic keys: #{map.keys(sem.$size-semantic)}.";
+    }
   }
-  @return map.get($size-tokens, $key);
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

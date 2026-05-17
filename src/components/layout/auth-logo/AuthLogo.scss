@@ -1,0 +1,75 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// AUTH LOGO — Logo Appli-Picto pour pages d'authentification
+// ============================================================================
+// Contexte : login, signup, forgot-password, reset-password
+// Destination clic : /edition
+//
+// Auto-swap dark mode (sans JS, sans flash) :
+//   Light → logo-vertical.svg  (texte #1A222C quasi-noir — lisible sur fond clair)
+//   Dark  → logo-vertical-dark.svg (texte #F3F4F6 quasi-blanc — contraste ~16:1)
+//
+// Pattern calqué sur NavbarLogoIcon.scss :
+//   double sélecteur dark (prefers-color-scheme + data-theme) pour éviter le flash
+// ============================================================================
+
+.auth-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  border-radius: radius('sm');
+
+  @include safe-transition(opacity, timing('fast'), linear);
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus-visible {
+    @include focus-ring();
+  }
+
+  // === Image — dimensions responsives via tokens validés ===
+  &__image {
+    width: size('logo-auth-sm'); // 120px — mobile
+    height: auto; // préserve le ratio 228/122
+
+    @include respond-to(md) {
+      width: size('logo-auth-lg'); // 160px — desktop
+    }
+  }
+
+  // === Light mode (défaut) ===
+  &__image--light {
+    display: block;
+  }
+
+  &__image--dark {
+    display: none;
+  }
+
+  // === Dark mode via préférence système ===
+  @media (prefers-color-scheme: dark) {
+    &__image--light {
+      display: none;
+    }
+
+    &__image--dark {
+      display: block;
+    }
+  }
+
+  // === Dark mode via toggle utilisateur (data-theme) ===
+  // Calqué exactement sur NavbarLogoIcon.scss pour cohérence
+  [data-theme='dark'] & {
+    &__image--light {
+      display: none;
+    }
+
+    &__image--dark {
+      display: block;
+    }
+  }
+}

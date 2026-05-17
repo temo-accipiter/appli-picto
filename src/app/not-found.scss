@@ -15,6 +15,20 @@
   padding: spacing('xl'); // 2rem = 32px
   text-align: center;
 
+  &__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: spacing('xs');
+    margin-bottom: spacing('lg');
+  }
+
+  &__tagline {
+    font-size: font-size('base');
+    color: text('muted');
+    margin: 0;
+  }
+
   &__code {
     font-size: font-size(
       '4xl'

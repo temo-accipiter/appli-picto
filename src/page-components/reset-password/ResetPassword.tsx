@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase, validatePasswordStrength } from '@/utils'
 import { useI18n } from '@/hooks'
 import { Input, Button, PasswordChecklist } from '@/components'
+import AuthLogo from '@/components/layout/auth-logo/AuthLogo'
 import './ResetPassword.scss'
 
 export default function ResetPassword() {
@@ -100,24 +101,7 @@ export default function ResetPassword() {
     <div className="reset-page">
       {/* ── HEADER MARQUE ── */}
       <header className="reset-page__header">
-        {/* Logo décoratif : aria-hidden car "Appli-Picto" est écrit en clair ci-dessous */}
-        <div className="reset-page__logo" aria-hidden="true">
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 56 56"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <rect width="56" height="56" rx="12" fill="currentColor" />
-            <rect x="11" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="11" y="31" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="31" width="14" height="14" rx="2" fill="white" />
-          </svg>
-        </div>
-        <h1 className="reset-page__title">Appli-Picto</h1>
+        <AuthLogo />
         <p className="reset-page__tagline">La journée en pictogrammes</p>
       </header>
 

@@ -5,6 +5,7 @@ import type { FormEvent, ChangeEvent } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import AuthLogo from '@/components/layout/auth-logo/AuthLogo'
 import { supabase } from '@/utils/supabaseClient'
 import { useAuth, useI18n } from '@/hooks'
 import { useToast } from '@/contexts'
@@ -121,24 +122,7 @@ export default function Login() {
     <div className="login-page">
       {/* ── HEADER MARQUE ── */}
       <header className="login-page__header">
-        {/* Logo décoratif : aria-hidden car "Appli-Picto" est écrit en clair ci-dessous */}
-        <div className="login-page__logo" aria-hidden="true">
-          <svg
-            width="56"
-            height="56"
-            viewBox="0 0 56 56"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <rect width="56" height="56" rx="12" fill="currentColor" />
-            <rect x="11" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="11" width="14" height="14" rx="2" fill="white" />
-            <rect x="11" y="31" width="14" height="14" rx="2" fill="white" />
-            <rect x="31" y="31" width="14" height="14" rx="2" fill="white" />
-          </svg>
-        </div>
-        <h1 className="login-page__title">Appli-Picto</h1>
+        <AuthLogo />
         <p className="login-page__tagline">La journée en pictogrammes</p>
       </header>
 
