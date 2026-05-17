@@ -396,6 +396,24 @@ export type Database = {
           },
         ]
       }
+      progress_stations: {
+        Row: {
+          label: string
+          position: number
+          style: string
+        }
+        Insert: {
+          label: string
+          position: number
+          style: string
+        }
+        Update: {
+          label?: string
+          position?: number
+          style?: string
+        }
+        Relationships: []
+      }
       sequence_steps: {
         Row: {
           created_at: string

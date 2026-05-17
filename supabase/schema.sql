@@ -4167,6 +4167,21 @@ COMMENT ON COLUMN "public"."devices"."revoked_at" IS 'Timestamp révocation manu
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."progress_stations" (
+    "style" "text" NOT NULL,
+    "position" integer NOT NULL,
+    "label" "text" NOT NULL,
+    CONSTRAINT "progress_stations_label_chk" CHECK ((("btrim"("label") <> ''::"text") AND ("char_length"("label") <= 200))),
+    CONSTRAINT "progress_stations_position_chk" CHECK (("position" > 0)),
+    CONSTRAINT "progress_stations_style_chk" CHECK (("style" = ANY (ARRAY['train-soleil'::"text", 'train-foret'::"text", 'train-ocean'::"text"])))
+);
+
+ALTER TABLE ONLY "public"."progress_stations" FORCE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."progress_stations" OWNER TO "postgres";
+
+
 CREATE TABLE IF NOT EXISTS "public"."sequence_steps" (
     "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
     "sequence_id" "uuid" NOT NULL,
@@ -4615,6 +4630,11 @@ ALTER TABLE ONLY "public"."devices"
 
 ALTER TABLE ONLY "public"."devices"
     ADD CONSTRAINT "devices_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."progress_stations"
+    ADD CONSTRAINT "progress_stations_pkey" PRIMARY KEY ("style", "position");
 
 
 
@@ -5626,6 +5646,17 @@ COMMENT ON POLICY "devices_update_owner" ON "public"."devices" IS 'Owner-only: u
 
 
 
+ALTER TABLE "public"."progress_stations" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "progress_stations_select_anon" ON "public"."progress_stations" FOR SELECT TO "anon" USING (true);
+
+
+
+CREATE POLICY "progress_stations_select_authenticated" ON "public"."progress_stations" FOR SELECT TO "authenticated" USING (true);
+
+
+
 ALTER TABLE "public"."sequence_steps" ENABLE ROW LEVEL SECURITY;
 
 
@@ -6461,6 +6492,12 @@ GRANT ALL ON TABLE "public"."consent_events" TO "service_role";
 
 GRANT ALL ON TABLE "public"."devices" TO "service_role";
 GRANT SELECT,INSERT,UPDATE ON TABLE "public"."devices" TO "authenticated";
+
+
+
+GRANT ALL ON TABLE "public"."progress_stations" TO "anon";
+GRANT ALL ON TABLE "public"."progress_stations" TO "authenticated";
+GRANT ALL ON TABLE "public"."progress_stations" TO "service_role";
 
 
 
