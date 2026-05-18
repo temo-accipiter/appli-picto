@@ -145,7 +145,7 @@ interface TableauProps {
 
 export default function Tableau(_props: TableauProps = {}) {
   const { activeChildId } = useChildProfile()
-  const { showTrain, showTimeTimer } = useDisplay()
+  const { showTimeTimer } = useDisplay()
   const prefersReducedMotion = useReducedMotion()
   // ── Chargement des données de base ─────────────────────────────────────────
   const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
@@ -430,15 +430,11 @@ export default function Tableau(_props: TableauProps = {}) {
       {/* Accessible : titre pour lecteurs d'écran */}
       <h1 className="sr-only">Tableau de la journée</h1>
 
-      {/* Barre de progression (train) */}
-      {showTrain && (
-        <section aria-labelledby="progress-heading">
-          <h2 id="progress-heading" className="sr-only">
-            Progression
-          </h2>
-          <TrainProgressBar total={totalForProgress} done={validatedCount} />
-        </section>
-      )}
+      {/* Barre de progression (train) — auto-désactivée par la garde
+          interne de TrainProgressBar si train_progress_enabled === false.
+          role="progressbar" + aria-label sont portés par le composant
+          lui-même (Phase 2.b) : pas de wrapper <section>/<h2> redondant. */}
+      <TrainProgressBar total={totalForProgress} done={validatedCount} />
 
       {/* Grille de jetons */}
       {totalTokens > 0 && (

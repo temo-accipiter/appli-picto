@@ -3914,7 +3914,7 @@ CREATE TABLE IF NOT EXISTS "public"."account_preferences" (
     "confetti_enabled" boolean DEFAULT true NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "train_progress_enabled" boolean DEFAULT false NOT NULL,
+    "train_progress_enabled" boolean DEFAULT true NOT NULL,
     "train_line" "text",
     "train_type" "public"."transport_type" DEFAULT 'metro'::"public"."transport_type" NOT NULL,
     "progress_style" "text" DEFAULT 'train-soleil'::"text" NOT NULL,

@@ -11,8 +11,6 @@ import {
 import { useIsVisitor } from '@/hooks'
 
 interface DisplayContextValue {
-  showTrain: boolean
-  setShowTrain: (value: boolean) => void
   showAutre: boolean
   setShowAutre: (value: boolean) => void
   showTimeTimer: boolean
@@ -31,19 +29,6 @@ export const DisplayContext = createContext<DisplayContextValue | null>(null)
 export function DisplayProvider({ children }: DisplayProviderProps) {
   const { isVisitor, authReady } = useIsVisitor()
   const loading = !authReady // alias pour compat avec l'ancienne logique
-
-  const [showTrain, setShowTrain] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return isVisitor ? true : localStorage.getItem('showTrain') === 'true'
-  })
-  useEffect(() => {
-    if (!loading && isVisitor && !showTrain) setShowTrain(true)
-  }, [isVisitor, loading, showTrain])
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !isVisitor) {
-      localStorage.setItem('showTrain', showTrain ? 'true' : 'false')
-    }
-  }, [showTrain, isVisitor])
 
   const [showAutre, setShowAutre] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -68,8 +53,6 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
   return (
     <DisplayContext.Provider
       value={{
-        showTrain,
-        setShowTrain,
         showAutre,
         setShowAutre,
         showTimeTimer,

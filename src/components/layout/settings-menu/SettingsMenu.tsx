@@ -15,8 +15,7 @@ export default function SettingsMenu() {
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const { preferences, updatePreferences } = useAccountPreferences()
-  const { showTrain, setShowTrain, showTimeTimer, setShowTimeTimer } =
-    useDisplay()
+  const { showTimeTimer, setShowTimeTimer } = useDisplay()
 
   const triggerButton = (
     <Button
@@ -60,13 +59,6 @@ export default function SettingsMenu() {
             }}
           />
         )}
-
-        <Checkbox
-          id="settings-train"
-          label={t('edition.train')}
-          checked={showTrain}
-          onChange={e => setShowTrain(e.target.checked)}
-        />
 
         <Checkbox
           id="settings-timer"

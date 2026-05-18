@@ -171,7 +171,6 @@ describe('Tableau completion reveal', () => {
 
     mockUseChildProfile.mockReturnValue({ activeChildId: 'child-1' })
     mockUseDisplay.mockReturnValue({
-      showTrain: true,
       showTimeTimer: false,
     })
     mockUseOffline.mockReturnValue({
