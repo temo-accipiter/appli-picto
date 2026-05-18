@@ -124,7 +124,6 @@ export default function NavbarVisiteur() {
 
           {/* Actions droite */}
           <div className="navbar-visiteur__actions">
-            {/* Bouton menu — burger identique à SettingsMenu */}
             <button
               ref={menuTriggerRef}
               type="button"

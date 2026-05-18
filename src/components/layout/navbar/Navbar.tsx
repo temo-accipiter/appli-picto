@@ -1,6 +1,5 @@
 'use client'
 
-import { SettingsMenu } from '@/components'
 import NavbarLogoIcon from '@/components/layout/navbar-logo/NavbarLogoIcon'
 import { useAuth, useI18n, useAccountStatus } from '@/hooks'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
@@ -28,7 +27,6 @@ import './Navbar.scss'
  * - Logo Appli-Picto à gauche (lien vers /edition)
  * - Non-admin (3 icônes) : Tableau · Édition · Profil
  * - Admin (4 icônes) : Tableau · Édition · Profil · Admin
- * - SettingsMenu (sur /edition uniquement, hors nav)
  *
  * Sur mobile (< 1024px) : BottomNav prend le relai
  */
@@ -163,9 +161,6 @@ export default function Navbar() {
 
           {/* Actions — droite */}
           <div className="navbar-actions">
-            {/* SettingsMenu : outil contextuel page Édition, hors navigation */}
-            {isEdition && <SettingsMenu />}
-
             {/* Profile selector — édition uniquement, non-visiteur */}
             {isEdition &&
               !isVisitor &&
