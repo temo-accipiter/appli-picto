@@ -78,7 +78,8 @@ export default function TrainProgressBar({
   // Si la session compte plus d'arrêts que le catalogue (20 par thème),
   // on sature sur le dernier libellé — pas de cycle (anti-surprise TSA).
   const stations: Station[] = Array.from({ length: stationCount }, (_, i) => ({
-    label: currentStations[Math.min(i, currentStations.length - 1)]?.label ?? '',
+    label:
+      currentStations[Math.min(i, currentStations.length - 1)]?.label ?? '',
     left: `${(i / Math.max(stationCount - 1, 1)) * 100}%`,
     isActive: i === done,
   }))
