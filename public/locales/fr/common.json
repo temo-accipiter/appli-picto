@@ -138,6 +138,19 @@
     "appearance": "Apparence",
     "preferences": "Préférences"
   },
+  "trainTheme": {
+    "toggleLabel": "Afficher le train de progression",
+    "themeHeading": "Thème du train",
+    "soonBadge": "Bientôt",
+    "themeSoleil": "Soleil",
+    "themeForet": "Forêt",
+    "themeOcean": "Océan",
+    "themeMontgolfiere": "Montgolfière",
+    "themeArbre": "Arbre qui fleurit",
+    "selectThemeAria": "Choisir le thème {{theme}}",
+    "soonThemeAria": "Thème {{theme}} — bientôt disponible",
+    "visitorHint": "Connectez-vous pour personnaliser ces réglages"
+  },
   "subscription": {
     "title": "Abonnement",
     "free": "Gratuit",

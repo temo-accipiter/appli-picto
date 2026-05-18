@@ -1,0 +1,165 @@
+// src/components/features/settings/train-theme-selector/TrainThemeSelector.scss
+// TrainThemeSelector — toggle d'activation + grille de thèmes du train.
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// TRAIN THEME SELECTOR — Tokens-First
+// ============================================================================
+// Composant de configuration (contexte Édition / adulte).
+// Couleur de chaque vignette pilotée par [data-progress-style] →
+// --progress-theme-color (tokens progress-theme()). Fallback neutre pour
+// les vignettes « Bientôt ». Transitions ≤ timing('base') (200ms),
+// easing linear — conforme TSA, aucune animation ambiante.
+// Mobile-first : 1 colonne (smartphone) → 2 (sm) → 3 (md).
+// ============================================================================
+
+.train-theme-selector {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+
+  &__toggle-row {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+  }
+
+  &__toggle-label {
+    font-weight: font-weight('semibold');
+    color: text('default');
+  }
+
+  &__visitor-hint {
+    margin: 0;
+    font-size: font-size('xs');
+    color: text('muted');
+  }
+
+  &__heading {
+    margin: 0;
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    color: text('default');
+  }
+
+  &__grid {
+    display: grid;
+    gap: spacing('sm');
+
+    // [Mobile-first] Base = smartphone : 1 colonne, vignette pleine largeur.
+    grid-template-columns: 1fr;
+
+    // Tablette (576px+) : 2 colonnes.
+    @include respond-to('sm') {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    // Desktop (768px+) : 3 colonnes.
+    @include respond-to('md') {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    // Toggle OFF : grille dimmée (les boutons sont déjà disabled côté TSX).
+    &--disabled {
+      // Opacité hardcodée alignée sur le précédent Toggle.scss.
+      // DETTE : créer un token a11y('disabled-opacity') et migrer
+      // Toggle + TrainThemeSelector en même temps (Phase 5 ou V2).
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+
+.train-theme-vignette {
+  all: unset;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: spacing('xs');
+  padding: spacing('sm');
+  cursor: pointer;
+
+  // Cible tactile WCAG 2.2 AA
+  min-height: a11y('min-touch-target');
+
+  background: surface('card');
+  border: border-width('medium') solid surface('border');
+  border-radius: radius('md');
+
+  // Fallback neutre — surchargé par [data-progress-style] ci-dessous.
+  --progress-theme-color: #{surface('divider')};
+
+  @include safe-transition(
+    (border-color, background-color),
+    timing('base'),
+    easing('linear')
+  );
+
+  &[data-progress-style='train-soleil'] {
+    --progress-theme-color: #{progress-theme('soleil')};
+  }
+  &[data-progress-style='train-foret'] {
+    --progress-theme-color: #{progress-theme('foret')};
+  }
+  &[data-progress-style='train-ocean'] {
+    --progress-theme-color: #{progress-theme('ocean')};
+  }
+
+  &:focus-visible {
+    outline: border-width('focus') solid var(--color-primary);
+    outline-offset: spacing('2');
+  }
+
+  // Vignette sélectionnée : bordure primaire + fond teinté (indicateur clair).
+  &--selected {
+    border-color: var(--color-primary);
+    background: surface('hover');
+  }
+
+  // Vignette « Bientôt » : dimmée, curseur interdit.
+  &--soon {
+    cursor: not-allowed;
+    // Opacité hardcodée alignée sur le précédent Toggle.scss.
+    // DETTE : créer un token a11y('disabled-opacity') et migrer
+    // Toggle + TrainThemeSelector en même temps (Phase 5 ou V2).
+    opacity: 0.55;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+
+  &__preview {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  &__rail {
+    stroke: var(--progress-theme-color);
+    stroke-width: spacing('1');
+    fill: none;
+  }
+
+  &__train {
+    fill: var(--progress-theme-color);
+  }
+
+  &__label {
+    font-size: font-size('sm');
+    font-weight: font-weight('semibold');
+    color: text('default');
+    text-align: center;
+  }
+
+  &__badge {
+    font-size: font-size('xs');
+    font-weight: font-weight('semibold');
+    color: text('default');
+    background: surface('soft');
+    padding: spacing('1') spacing('xs');
+    border-radius: radius('sm');
+  }
+}

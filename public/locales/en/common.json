@@ -138,6 +138,19 @@
     "appearance": "Appearance",
     "preferences": "Preferences"
   },
+  "trainTheme": {
+    "toggleLabel": "Show the progress train",
+    "themeHeading": "Train theme",
+    "soonBadge": "Coming soon",
+    "themeSoleil": "Sun",
+    "themeForet": "Forest",
+    "themeOcean": "Ocean",
+    "themeMontgolfiere": "Hot-air balloon",
+    "themeArbre": "Blossoming tree",
+    "selectThemeAria": "Choose the {{theme}} theme",
+    "soonThemeAria": "{{theme}} theme — coming soon",
+    "visitorHint": "Sign in to customize these settings"
+  },
   "subscription": {
     "title": "Subscription",
     "free": "Free",

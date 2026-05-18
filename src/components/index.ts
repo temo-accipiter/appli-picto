@@ -38,6 +38,7 @@ export { default as CookiePreferences } from './features/consent/CookiePreferenc
 // Settings (compte utilisateur)
 export { default as DeleteAccountGuard } from './features/settings/DeleteAccountGuard'
 export { default as DeleteAccountModal } from './features/settings/DeleteAccountModal'
+export { default as TrainThemeSelector } from './features/settings/train-theme-selector/TrainThemeSelector'
 
 // Profil (S11 — Plateforme)
 export { default as DeleteProfileModal } from './features/profil/DeleteProfileModal'
