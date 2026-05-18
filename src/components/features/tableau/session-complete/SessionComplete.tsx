@@ -19,7 +19,6 @@ import type { BankCard } from '@/hooks/useBankCards'
 import type { PersonalCard } from '@/hooks/usePersonalCards'
 import { resolveStorageImageUrl } from '@/utils/storage/resolveStorageImageUrl'
 import { useAccountPreferences, useReducedMotion } from '@/hooks'
-import { TrainProgressBar } from '@/components'
 import './SessionComplete.scss'
 
 interface SessionCompleteProps {
@@ -27,8 +26,6 @@ interface SessionCompleteProps {
   rewardSlot: Slot | null
   /** Carte associée au slot récompense */
   rewardCard: BankCard | PersonalCard | null
-  /** Afficher la barre de progression (train) */
-  showTrain: boolean
   /** Nombre total d'étapes (pour afficher le train à 100%) */
   totalSteps: number
   /** Variante d'affichage : intégrée au Tableau ou écran dédié */
@@ -38,7 +35,6 @@ interface SessionCompleteProps {
 export function SessionComplete({
   rewardSlot,
   rewardCard,
-  showTrain,
   totalSteps,
   variant = 'screen',
 }: SessionCompleteProps) {
@@ -107,19 +103,6 @@ export function SessionComplete({
           colors={['#FFE5E5', '#E5F3FF', '#FFF5E5', '#F0E5FF', '#E5FFE5']}
           gravity={0.15}
         />
-      )}
-
-      {/* Barre de progression (train) - montrant 100% */}
-      {showTrain && (
-        <section
-          className="session-complete__train"
-          aria-labelledby="progress-complete-heading"
-        >
-          <h2 id="progress-complete-heading" className="sr-only">
-            Progression complète
-          </h2>
-          <TrainProgressBar total={totalSteps} done={totalSteps} />
-        </section>
       )}
 
       {/* Message de félicitation — toujours positif */}

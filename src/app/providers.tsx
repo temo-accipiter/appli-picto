@@ -7,7 +7,6 @@ import WebVitals from '@/components/shared/web-vitals/WebVitals'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ChildProfileProvider } from '@/contexts/ChildProfileContext'
-import { DisplayProvider } from '@/contexts/DisplayContext'
 import { LoadingProvider } from '@/contexts/LoadingContext'
 import { ToastProvider } from '@/contexts/ToastContext'
 import { OfflineProvider } from '@/contexts/OfflineContext'
@@ -32,19 +31,17 @@ export function Providers({ children }: { children: ReactNode }) {
           {/* Realtime Channel Persistant pour synchronisation cartes banque */}
           <RealtimeBankCardsProvider>
             <ChildProfileProvider>
-              <DisplayProvider>
-                <LoadingProvider>
-                  <ToastProvider>
-                    <InitializationLoader>
-                      <Suspense fallback={null}>
-                        {children}
-                        {/* Bottom Navigation Bar - Mobile only (< 1024px) */}
-                        <BottomNav />
-                      </Suspense>
-                    </InitializationLoader>
-                  </ToastProvider>
-                </LoadingProvider>
-              </DisplayProvider>
+              <LoadingProvider>
+                <ToastProvider>
+                  <InitializationLoader>
+                    <Suspense fallback={null}>
+                      {children}
+                      {/* Bottom Navigation Bar - Mobile only (< 1024px) */}
+                      <BottomNav />
+                    </Suspense>
+                  </InitializationLoader>
+                </ToastProvider>
+              </LoadingProvider>
             </ChildProfileProvider>
           </RealtimeBankCardsProvider>
         </AuthProvider>

@@ -413,15 +413,10 @@
   },
   "tableau": {
     "toolbar": "Barre d'outils",
-    "selectLine": "Choisis une ligne",
-    "progression": "Progression",
     "progressionAriaLabel": "Progression : {{done}} sur {{total}} tâches",
     "reset": "Réinitialiser",
     "resetAllTasks": "Réinitialiser toutes les tâches",
-    "loadingData": "Chargement de vos données...",
-    "line1": "Ligne 1",
-    "line6": "Ligne 6",
-    "line12": "Ligne 12"
+    "loadingData": "Chargement de vos données..."
   },
   "profil": {
     "myProfile": "Compte",
@@ -462,7 +457,6 @@
   },
   "edition": {
     "confetti": "🎉 Confettis",
-    "train": "🚆 Train",
     "reward": "🎁 Récompense",
     "timer": "⏱ Time Timer",
     "notifications": "💬 Notifications",
@@ -470,9 +464,7 @@
     "confettiDisabled": "🎊 Confettis désactivés",
     "toastsEnabled": "💬 Notifications activées",
     "toastsDisabled": "🔕 Notifications désactivées",
-    "showTrain": "🚆 Afficher le train",
     "showReward": "🎁 Afficher la récompense",
-    "showTimeTimer": "⏱ Afficher le Time Timer",
     "hideTimeTimer": "⏱ Masquer le Time Timer",
     "taskAdded": "Tâche ajoutée ✅",
     "taskRenamed": "Tâche renommée",

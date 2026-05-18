@@ -413,15 +413,10 @@
   },
   "tableau": {
     "toolbar": "Toolbar",
-    "selectLine": "Choose a line",
-    "progression": "Progress",
     "progressionAriaLabel": "Progress: {{done}} of {{total}} tasks",
     "reset": "Reset",
     "resetAllTasks": "Reset all tasks",
-    "loadingData": "Loading your data...",
-    "line1": "Line 1",
-    "line6": "Line 6",
-    "line12": "Line 12"
+    "loadingData": "Loading your data..."
   },
   "profil": {
     "myProfile": "Account",
@@ -462,7 +457,6 @@
   },
   "edition": {
     "confetti": "🎉 Confetti",
-    "train": "🚆 Train",
     "reward": "🎁 Reward",
     "timer": "⏱ Time Timer",
     "notifications": "💬 Notifications",
@@ -470,9 +464,7 @@
     "confettiDisabled": "🎊 Confetti disabled",
     "toastsEnabled": "💬 Notifications enabled",
     "toastsDisabled": "🔕 Notifications disabled",
-    "showTrain": "🚆 Show train",
     "showReward": "🎁 Show reward",
-    "showTimeTimer": "⏱ Show Time Timer",
     "hideTimeTimer": "⏱ Hide Time Timer",
     "taskAdded": "Task added ✅",
     "taskRenamed": "Task renamed",

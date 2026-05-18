@@ -17,7 +17,6 @@ import { type ReactElement, type ReactNode } from 'react'
 import {
   AuthProvider,
   ToastProvider,
-  DisplayProvider,
   LoadingProvider,
   OfflineProvider,
   ChildProfileProvider,
@@ -46,11 +45,9 @@ export function AllTheProviders({ children }: AllTheProvidersProps) {
       <AuthProvider>
         <RealtimeBankCardsProvider>
           <ChildProfileProvider>
-            <DisplayProvider>
-              <LoadingProvider>
-                <ToastProvider>{children}</ToastProvider>
-              </LoadingProvider>
-            </DisplayProvider>
+            <LoadingProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </LoadingProvider>
           </ChildProfileProvider>
         </RealtimeBankCardsProvider>
       </AuthProvider>

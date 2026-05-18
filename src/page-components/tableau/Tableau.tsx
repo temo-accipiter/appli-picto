@@ -494,7 +494,6 @@ export default function Tableau(_props: TableauProps = {}) {
             <SessionComplete
               rewardSlot={rewardSlot}
               rewardCard={rewardCard}
-              showTrain={false}
               totalSteps={totalForProgress}
               variant="overlay"
             />
