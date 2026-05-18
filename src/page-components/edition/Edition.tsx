@@ -1,7 +1,7 @@
 'use client'
 
 // src/pages/edition/Edition.tsx
-import { CardsEdition } from '@/components'
+import { CardsEdition, SettingsPanel } from '@/components'
 import { useToast } from '@/contexts'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
 import { useOffline } from '@/contexts/OfflineContext'
@@ -477,6 +477,8 @@ export default function Edition({
           />
         </section>
       </section>
+
+      <SettingsPanel />
 
       <Suspense fallback={null}>
         <ModalConfirm

@@ -1,0 +1,46 @@
+// src/components/features/settings/settings-panel/SettingsPanel.scss
+// Panneau Paramètres de la page Édition — tokens-first.
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// SETTINGS PANEL — Tokens-First
+// ============================================================================
+// Panneau de configuration (contexte Édition / adulte). Regroupe 3 toggles
+// simples + le bloc TrainThemeSelector. Carte délimitée (fond + bordure +
+// radius) cohérente avec le bloc quotas d'Edition.scss.
+// ============================================================================
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md');
+  padding: spacing('lg');
+
+  background: surface('card');
+  border: border-width('thin') solid surface('border');
+  border-radius: radius('card');
+
+  &__title {
+    margin: 0;
+    font-size: font-size('xl');
+    font-weight: font-weight('semibold');
+    color: text('dark');
+  }
+
+  &__toggles {
+    display: flex;
+    flex-direction: column;
+    gap: spacing('sm');
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: spacing('sm');
+  }
+
+  &__label {
+    font-weight: font-weight('semibold');
+    color: text('default');
+  }
+}
