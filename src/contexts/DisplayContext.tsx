@@ -13,8 +13,6 @@ import { useIsVisitor } from '@/hooks'
 interface DisplayContextValue {
   showAutre: boolean
   setShowAutre: (value: boolean) => void
-  showTimeTimer: boolean
-  setShowTimeTimer: (value: boolean) => void
   loading: boolean
   isVisitor: boolean
 }
@@ -40,23 +38,11 @@ export function DisplayProvider({ children }: DisplayProviderProps) {
       localStorage.setItem('showAutre', showAutre ? 'true' : 'false')
   }, [showAutre, isVisitor])
 
-  const [showTimeTimer, setShowTimeTimer] = useState(() => {
-    if (typeof window === 'undefined') return false
-    if (loading) return localStorage.getItem('showTimeTimer') === 'true'
-    return isVisitor ? false : localStorage.getItem('showTimeTimer') === 'true'
-  })
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !isVisitor)
-      localStorage.setItem('showTimeTimer', showTimeTimer ? 'true' : 'false')
-  }, [showTimeTimer, isVisitor])
-
   return (
     <DisplayContext.Provider
       value={{
         showAutre,
         setShowAutre,
-        showTimeTimer,
-        setShowTimeTimer,
         loading, // expose l'alias si d'autres consommateurs l'utilisent
         isVisitor, // utile à l'UI
       }}

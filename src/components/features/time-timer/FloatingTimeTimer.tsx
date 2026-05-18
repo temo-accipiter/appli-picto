@@ -2,8 +2,7 @@
 
 // src/components/features/time-timer/FloatingTimeTimer.tsx
 import React, { useCallback, useEffect, useState } from 'react'
-import { useDisplay } from '@/contexts/DisplayContext'
-import { useIsVisitor } from '@/hooks'
+import { useIsVisitor, useAccountPreferences } from '@/hooks'
 import TimeTimer from './TimeTimer'
 import './FloatingTimeTimer.scss'
 
@@ -19,8 +18,8 @@ interface FloatingTimeTimerProps {
 export default function FloatingTimeTimer({
   onComplete,
 }: FloatingTimeTimerProps) {
-  // Contexte d'affichage pour synchroniser avec la checkbox des paramètres
-  const { setShowTimeTimer } = useDisplay()
+  // Préférence DB : activation du Time Timer (source de vérité unique).
+  const { preferences, updatePreferences } = useAccountPreferences()
 
   // Vérifier le rôle de l'utilisateur - ne pas afficher pour les visiteurs
   const { authReady, isVisitor } = useIsVisitor()
@@ -187,11 +186,14 @@ export default function FloatingTimeTimer({
     }
   }, [isDragging, dragOffset, savePosition, position, getTimerSize])
 
-  // Gérer la fermeture - décoche le time timer dans les paramètres
-  const handleClose = () => {
-    // Décoche la checkbox du time timer dans edition/paramètres
-    setShowTimeTimer(false)
-    // Note: Le composant sera démonté par le parent qui vérifie showTimeTimer
+  // Gérer la fermeture - désactive durablement le Time Timer en DB.
+  // Le bouton rouge est un bouton de désactivation explicite (pas un
+  // simple masquage de session) : il écrit time_timer_enabled = false.
+  // Contexte Tableau enfant — next-skills-tsa-override §1 : aucun toast,
+  // aucun message technique. En cas d'échec réseau, la fermeture reste
+  // silencieusement sans effet (la garde interne ne se déclenche pas).
+  const handleClose = async () => {
+    await updatePreferences({ time_timer_enabled: false })
   }
 
   // Toggle fullscreen
@@ -230,6 +232,8 @@ export default function FloatingTimeTimer({
   // Ne pas afficher le timer pour les visiteurs (après tous les hooks)
   if (!authReady) return null // Attendre le chargement auth
   if (isVisitor) return null // Masquer pour les visiteurs
+  // Garde interne : préférence DB explicitement désactivée → masqué.
+  if (preferences?.time_timer_enabled === false) return null
 
   return (
     <div

@@ -19,7 +19,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useChildProfile } from '@/contexts/ChildProfileContext'
-import { useDisplay } from '@/contexts'
 import { useOffline } from '@/contexts/OfflineContext'
 import useSessions from '@/hooks/useSessions'
 import useSessionValidations from '@/hooks/useSessionValidations'
@@ -145,7 +144,6 @@ interface TableauProps {
 
 export default function Tableau(_props: TableauProps = {}) {
   const { activeChildId } = useChildProfile()
-  const { showTimeTimer } = useDisplay()
   const prefersReducedMotion = useReducedMotion()
   // ── Chargement des données de base ─────────────────────────────────────────
   const { timeline, loading: timelineLoading } = useTimelines(activeChildId)
@@ -417,8 +415,9 @@ export default function Tableau(_props: TableauProps = {}) {
             La journée n&apos;est pas encore préparée.
           </p>
         </div>
-        {/* TimeTimer indépendant des slots (préférences utilisateur) */}
-        {showTimeTimer && <FloatingTimeTimer />}
+        {/* TimeTimer indépendant des slots — auto-désactivé par la garde
+            interne de FloatingTimeTimer si time_timer_enabled === false. */}
+        <FloatingTimeTimer />
         <FloatingPencil />
       </div>
     )
@@ -504,7 +503,7 @@ export default function Tableau(_props: TableauProps = {}) {
       )}
 
       {/* Time Timer flottant */}
-      {!isSessionCompleted && showTimeTimer && <FloatingTimeTimer />}
+      {!isSessionCompleted && <FloatingTimeTimer />}
 
       {/* FAB adulte — sortie kiosk vers /edition */}
       <FloatingPencil />

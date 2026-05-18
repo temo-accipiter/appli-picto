@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import Tableau from './Tableau'
 
 const mockUseChildProfile = vi.fn()
-const mockUseDisplay = vi.fn()
 const mockUseOffline = vi.fn()
 const mockUseTimelines = vi.fn()
 const mockUseSlots = vi.fn()
@@ -20,10 +19,6 @@ let validatedSlotIds = new Set<string>()
 
 vi.mock('@/contexts/ChildProfileContext', () => ({
   useChildProfile: () => mockUseChildProfile(),
-}))
-
-vi.mock('@/contexts', () => ({
-  useDisplay: () => mockUseDisplay(),
 }))
 
 vi.mock('@/contexts/OfflineContext', () => ({
@@ -170,9 +165,6 @@ describe('Tableau completion reveal', () => {
     validatedSlotIds = new Set(['slot-1'])
 
     mockUseChildProfile.mockReturnValue({ activeChildId: 'child-1' })
-    mockUseDisplay.mockReturnValue({
-      showTimeTimer: false,
-    })
     mockUseOffline.mockReturnValue({
       isOnline: true,
       enqueueValidation: vi.fn(),

@@ -41,6 +41,7 @@ export type Database = {
           created_at: string
           progress_style: string
           reduced_motion: boolean
+          time_timer_enabled: boolean
           toasts_enabled: boolean
           train_line: string | null
           train_progress_enabled: boolean
@@ -53,6 +54,7 @@ export type Database = {
           created_at?: string
           progress_style?: string
           reduced_motion?: boolean
+          time_timer_enabled?: boolean
           toasts_enabled?: boolean
           train_line?: string | null
           train_progress_enabled?: boolean
@@ -65,6 +67,7 @@ export type Database = {
           created_at?: string
           progress_style?: string
           reduced_motion?: boolean
+          time_timer_enabled?: boolean
           toasts_enabled?: boolean
           train_line?: string | null
           train_progress_enabled?: boolean

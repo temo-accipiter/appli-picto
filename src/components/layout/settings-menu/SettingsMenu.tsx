@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Checkbox, Dropdown } from '@/components'
-import { useDisplay, useToast } from '@/contexts'
+import { useToast } from '@/contexts'
 import { useI18n, useAccountPreferences } from '@/hooks'
 import { Settings } from 'lucide-react'
 import { useRef, useState } from 'react'
@@ -15,7 +15,6 @@ export default function SettingsMenu() {
   const btnRef = useRef<HTMLButtonElement>(null)
 
   const { preferences, updatePreferences } = useAccountPreferences()
-  const { showTimeTimer, setShowTimeTimer } = useDisplay()
 
   const triggerButton = (
     <Button
@@ -59,13 +58,6 @@ export default function SettingsMenu() {
             }}
           />
         )}
-
-        <Checkbox
-          id="settings-timer"
-          label={t('edition.timer')}
-          checked={showTimeTimer}
-          onChange={e => setShowTimeTimer(e.target.checked)}
-        />
 
         {preferences && (
           <Checkbox
