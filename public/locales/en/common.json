@@ -402,6 +402,7 @@
     "toolbar": "Toolbar",
     "selectLine": "Choose a line",
     "progression": "Progress",
+    "progressionAriaLabel": "Progress: {{done}} of {{total}} tasks",
     "reset": "Reset",
     "resetAllTasks": "Reset all tasks",
     "loadingData": "Loading your data...",

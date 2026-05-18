@@ -1,58 +1,34 @@
 // src/components/features/taches/train-progress-bar/TrainProgressBar.scss
-// Styles barre de progression train (TSA-friendly : pastel, calm)
+// Barre de progression « train » — lecture seule, TSA-friendly.
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// TRAIN PROGRESS BAR COMPONENT - Tokens-First
+// TRAIN PROGRESS BAR — Tokens-First
 // ============================================================================
-// ✅ CONFORME TOKENS-FIRST : Toutes valeurs via fonctions tokens
-// ✅ PHASE 6 VALIDÉ + MIGRÉ v1.1 :
-//    - size('600'/'10'/'60') → Legacy support actif
-//    - spacing('sm'/'md'/'lg'/'xs'/'140'/'8'/'14'/'62'/'20'/'100'/'80'/'28'/'39'/'56') → Primitives Phase 6 ✅
-//    - semantic('info'/'warning', all variants) → Semantics Phase 6 ✅
-//    - radius('card'/'full') → Aliases sémantiques v1.1 ✅
-//    - Shadow supprimée sur badge statique (§F.3) ✅
-//    - surface('bg') → Semantics Phase 6 ✅
-//    - text('default') → Semantics Phase 6 ✅
-//    - timing('slowest'/'base'/'slow') → Primitives Phase 6 (2s/0.2s/0.5s) ✅
-//    - easing('smooth'/'in-out') → Primitives Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - border-width('base') → Legacy support actif
-//    - font-size('lg'/'xs'/'sm') → Legacy support actif
-//    - font-weight('bold'/'semibold') → Legacy support actif
-//    - z-index('dropdown'/'base') → Legacy support actif
+// Composant READ-ONLY : aucune barre d'outils, aucun contrôle.
+// Couleur de thème pilotée par l'attribut [data-progress-style] — la CSS
+// var --progress-theme-color est définie ICI depuis les tokens
+// progress-theme(), jamais injectée en JS.
+// Aucune animation ambiante : le rail est statique, seul le train se
+// déplace (transition fonctionnelle déclenchée par la progression).
 // ============================================================================
 
 .train-progress-bar {
   text-align: center;
   min-width: size('600');
 
-  .toolbar {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: spacing('sm');
-    margin: spacing('md');
-    padding: 0 spacing('lg');
-    z-index: z-index('dropdown');
+  // Couleur de thème : le runtime ne fait que choisir le thème via
+  // l'attribut data-progress-style ; la valeur vient des tokens Sass.
+  &[data-progress-style='train-soleil'] {
+    --progress-theme-color: #{progress-theme('soleil')};
+  }
 
-    .progression {
-      font-size: font-size('lg');
-      font-weight: font-weight('bold');
-      color: semantic('info-primary');
-      text-align: center;
-      background: semantic('warning', 'bg');
-      padding: spacing('xs') spacing('md');
-      border-radius: radius(
-        'card'
-      ); // 12px — badge progression, alias sémantique §D.3
-      display: inline-block;
-      // Shadow supprimée : badge statique (§F.3)
-      margin: 0;
-    }
+  &[data-progress-style='train-foret'] {
+    --progress-theme-color: #{progress-theme('foret')};
+  }
+
+  &[data-progress-style='train-ocean'] {
+    --progress-theme-color: #{progress-theme('ocean')};
   }
 
   .metroline {
@@ -70,53 +46,23 @@
     }
 
     .rail-line {
-      // Couleur injectée via document.documentElement.style.setProperty('--couleur-ligne', couleur)
-      stroke: var(--couleur-ligne);
+      stroke: var(--progress-theme-color);
       stroke-width: spacing('sm');
       fill: none;
-      stroke-dasharray: spacing('14') spacing('14'); // §E.7 : 14px SVG stroke-dasharray, sans CSS var → exception documentée
-      // Cat. 3 — animation continue ambiante (SVG dash). linear et durée longue justifiés.
-      animation-name: dash-rail;
-      animation-duration: timing('slowest');
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
     }
 
     .station {
       position: absolute;
       top: 50%;
-      // Position horizontale injectée via style={{ '--station-left': left }}
       left: var(--station-left);
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: z-index('base');
 
-      .dot-logo {
-        width: spacing('62');
-        height: spacing('62');
-        border-radius: radius('full');
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        &.arrivee {
-          animation-name: pop-rebond;
-          animation-duration: timing('base');
-          animation-timing-function: ease;
-        }
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-        }
-      }
-
       .dot {
         width: var(--spacing-20); // §E.7 : 20px sans alias sémantique → CSS var
         height: var(--spacing-20);
-        border: border-width('base') solid semantic('info-primary');
+        border: border-width('base') solid var(--progress-theme-color);
         background: surface('bg');
         border-radius: radius('full');
         @include safe-transition(
@@ -130,11 +76,11 @@
         animation-name: station-pop;
         animation-duration: timing('base');
         animation-timing-function: ease;
-        background: semantic('info-primary');
+        background: var(--progress-theme-color);
       }
 
       &.passed .dot {
-        background: semantic('info-primary');
+        background: var(--progress-theme-color);
       }
 
       .label {
@@ -150,11 +96,11 @@
         overflow: visible;
         display: block;
 
-        /* [Mobile-first] Base = mobile (plus petit pour éviter chevauchement) */
+        /* [Mobile-first] Base = smartphone (plus petit, anti-chevauchement) */
         font-size: font-size('xs');
         max-width: size('60');
 
-        /* Desktop (576px+) = taille normale */
+        /* Tablette / desktop (576px+) */
         @include respond-to(sm) {
           font-size: font-size('sm');
           max-width: spacing('100');
@@ -165,74 +111,38 @@
     .train {
       position: absolute;
       top: calc(#{size('10')} * -1);
-      // Position et transform injectés via style={{ '--train-left': ..., '--train-transform': ... }}
       left: var(--train-left);
       transform: var(--train-transform);
       z-index: z-index('dropdown');
-      // Cat. 3 — célébration de progression narrative. Durée volontairement narrative pour souligner l'avancement.
+      // Transition fonctionnelle : déplacement du train déclenché par la
+      // progression. Désactivée sous prefers-reduced-motion (safe-transition).
       @include safe-transition(
         (left, transform),
         timing('slow'),
         easing('linear')
       );
 
-      // Modificateur : désactiver animations si reduced_motion (TSA-friendly)
+      // Modificateur : désactiver la transition si reduced_motion (TSA).
       &--no-motion {
         transition: none;
       }
 
       .train-icon {
+        display: block;
         height: auto;
 
-        /* [Mobile-first] Base = mobile */
+        /* [Mobile-first] Base = smartphone */
         width: size('60');
 
-        /* Desktop (576px+) */
+        /* Tablette / desktop (576px+) */
         @include respond-to(sm) {
           width: spacing('80');
         }
+
+        .train-icon__body {
+          fill: var(--progress-theme-color);
+        }
       }
     }
-  }
-}
-
-@keyframes trainStart {
-  from {
-    transform: translateX(-100%) scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.train--animated {
-  animation-name: trainStart;
-  animation-duration: timing('base');
-  animation-timing-function: ease-out;
-}
-
-.dot-logo.fixed-logo {
-  position: absolute;
-  right: calc(#{size('28')} * -1);
-  z-index: z-index('dropdown');
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  /* [Mobile-first] Base = mobile */
-  top: calc(#{size('12')} * -1);
-  width: spacing('28');
-  height: spacing('28');
-
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    top: spacing('39');
-    width: spacing('56');
-    height: spacing('56');
   }
 }

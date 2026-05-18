@@ -197,6 +197,28 @@ $brand-blue-tokens: (
   @return $color;
 }
 
+/// Palette PROGRESS-THEME — thèmes de la barre TrainProgressBar.
+/// Tokens DÉDIÉS (désengagement copyright RATP, refonte 2026).
+/// Hex dédiés non dérivés de palettes : même exception documentée que
+/// $brand-blue-tokens. Tons désaturés, low-arousal, contraste graphique
+/// >= 3:1 sur fond clair (WCAG 2.2 — 1.4.11 Non-text Contrast).
+$progress-theme-tokens: (
+  'soleil': #a87d28,
+  'foret': #4f7a55,
+  'ocean': #3d7286,
+);
+
+/// Helper d'accès aux tokens de thème de progression
+/// @param {String} $theme - Thème ('soleil', 'foret', 'ocean')
+/// @return {Color} Couleur du thème
+@function progress-theme($theme) {
+  $color: map.get($progress-theme-tokens, $theme);
+  @if not $color {
+    @error "Progress theme '#{$theme}' not found. Available: #{map.keys($progress-theme-tokens)}";
+  }
+  @return $color;
+}
+
 /// Fonction helper pour accéder aux palettes primitives
 /// @param {String} $palette - Nom palette (neutral, brand, success, etc.)
 /// @param {Number} $shade - Nuance (50-900)

@@ -1,25 +1,18 @@
 'use client'
 
-import React from 'react'
-import Image from 'next/image'
-import { Select } from '@/components'
-import type { SelectOption } from '@/components'
-import { COULEURS_LIGNES } from '@/config/constants/colors'
+import React, { useEffect, useState } from 'react'
 import {
   useI18n,
-  useStations,
+  useProgressStations,
   useAccountPreferences,
   useReducedMotion,
   useIsVisitor,
 } from '@/hooks'
-import { useEffect, useState } from 'react'
 import './TrainProgressBar.scss'
 
 interface TrainProgressBarProps {
   total: number
   done: number
-  isDemo?: boolean
-  onLineChange?: (action: string) => void
 }
 
 interface Station {
@@ -28,51 +21,65 @@ interface Station {
   isActive: boolean
 }
 
+// Thème par défaut — sert aussi de fallback Visitor (voir plus bas).
+const DEFAULT_PROGRESS_STYLE = 'train-soleil'
+
+/**
+ * Barre de progression « train » — composant STRICTEMENT lecture seule.
+ *
+ * N'affiche qu'une progression : aucun contrôle, aucune écriture DB.
+ * La configuration (activer/désactiver, choix du thème) se fait
+ * exclusivement depuis la page Édition.
+ */
 export default function TrainProgressBar({
   total,
   done,
-  isDemo = false,
-  onLineChange,
 }: TrainProgressBarProps) {
   const { t } = useI18n()
-  const { preferences, updatePreferences } = useAccountPreferences()
+  const { preferences } = useAccountPreferences()
   const prefersReducedMotion = useReducedMotion()
-  // Visitor : ligne forcée à '1', aucune modification possible (contrat §7.2)
   const { isVisitor } = useIsVisitor()
 
-  const [ligne, setLigne] = useState('1')
-  const couleur =
-    COULEURS_LIGNES[ligne as unknown as keyof typeof COULEURS_LIGNES] || '#999'
-  const stationCount = Number(total) + 1
+  // Fallback Visitor : le visitor n'a pas de row account_preferences en
+  // base. `preferences` est donc null → progress_style retombe sur
+  // 'train-soleil' et la barre reste affichée (train_progress_enabled
+  // n'est jamais explicitement false). Le visitor voit toujours la
+  // barre, en thème soleil, sans configuration possible.
+  const progressStyle =
+    (!isVisitor && preferences?.progress_style) || DEFAULT_PROGRESS_STYLE
 
-  const { stations: ligneStations, loading, error } = useStations(ligne)
+  const {
+    stations: themeStations,
+    loading,
+    error,
+  } = useProgressStations(progressStyle)
   const [currentStations, setCurrentStations] = useState<
     Array<{ label: string }>
   >([])
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--couleur-ligne', couleur)
-  }, [couleur])
-
-  // Synchroniser ligne avec preferences quand preferences change
-  // Guard Visitor : ne jamais synchroniser la ligne depuis les préférences DB
-  useEffect(() => {
-    if (!isVisitor && preferences?.train_line) {
-      setLigne(preferences.train_line)
+    if (!loading && themeStations.length > 0) {
+      setCurrentStations(themeStations)
     }
-  }, [preferences?.train_line, isVisitor])
+  }, [loading, themeStations])
 
-  useEffect(() => {
-    if (!loading && ligneStations.length > 0) {
-      setCurrentStations(ligneStations)
-    }
-  }, [loading, ligneStations])
+  // Auto-désactivation : si la préférence DB est explicitement false, la
+  // barre ne s'affiche pas. Le fallback Visitor (preferences null) ne
+  // déclenche jamais ce return — la barre reste visible.
+  if (preferences?.train_progress_enabled === false) return null
 
-  if (error) return <p>{t('errors.generic')}</p>
+  // Erreur réseau : silence côté Tableau (zéro message technique pour
+  // l'enfant TSA — règle next-skills-tsa-override §1).
+  if (error) return null
 
+  const stationCount = Number(total) + 1
+
+  // Saturation : aucune limite produit ne plafonne le nombre de tâches.
+  // Si la session compte plus d'arrêts que le catalogue (20 par thème),
+  // on sature sur le dernier libellé — pas de cycle (anti-surprise TSA).
   const stations: Station[] = Array.from({ length: stationCount }, (_, i) => ({
-    label: currentStations[i % currentStations.length]?.label || '',
-    left: `${(i / (stationCount - 1)) * 100}%`,
+    label: currentStations[Math.min(i, currentStations.length - 1)]?.label ?? '',
+    left: `${(i / Math.max(stationCount - 1, 1)) * 100}%`,
     isActive: i === done,
   }))
 
@@ -90,13 +97,20 @@ export default function TrainProgressBar({
   }
 
   return (
-    <div className="train-progress-bar">
+    <div
+      className="train-progress-bar"
+      data-progress-style={progressStyle}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuenow={done}
+      aria-valuemax={total}
+      aria-label={t('tableau.progressionAriaLabel', { done, total })}
+    >
       <div className="metroline">
         <svg viewBox="0 0 1000 60" className="metrosvg">
           <path d="M 0 30 H 1000" className="rail-line" />
         </svg>
 
-        {/* Affichage des stations sans le logo */}
         {stations.map(({ label, left, isActive }, index) => (
           <div
             key={index}
@@ -110,7 +124,6 @@ export default function TrainProgressBar({
           </div>
         ))}
 
-        {/* Train en mouvement */}
         <div
           className={`train ${prefersReducedMotion ? 'train--no-motion' : ''}`}
           style={
@@ -120,80 +133,25 @@ export default function TrainProgressBar({
             } as React.CSSProperties
           }
         >
-          <Image
-            src="/images/train.png"
-            alt="Métro"
-            width={40}
-            height={40}
+          {/* PLACEHOLDER géométrique — à remplacer par asset
+              illustrateur définitif */}
+          <svg
             className="train-icon"
-            priority
-          />
+            viewBox="0 0 48 24"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect
+              x="1"
+              y="1"
+              width="46"
+              height="22"
+              rx="6"
+              ry="6"
+              className="train-icon__body"
+            />
+          </svg>
         </div>
-
-        {/* Logo ligne figé à droite */}
-        <div className="dot-logo fixed-logo">
-          <Image
-            src={`/images/ligne/ligne${ligne}.png`}
-            alt={`Ligne ${ligne}`}
-            width={32}
-            height={32}
-            loading="lazy"
-            quality={85}
-          />
-        </div>
-      </div>
-
-      <div className="toolbar">
-        {/* Sélecteur de ligne : masqué pour Visitor (contrat §7.2 — aucune modification possible) */}
-        {!isVisitor && (
-          <Select
-            id="ligne"
-            label={t('tableau.selectLine')}
-            value={ligne}
-            onChange={value => {
-              const nouvelleLigne = String(value)
-
-              // En mode démo, empêcher le changement de ligne et ouvrir la modal
-              if (isDemo && nouvelleLigne !== '1') {
-                if (onLineChange) {
-                  onLineChange('line_change')
-                }
-                return
-              }
-
-              // Mode normal : changer la ligne et persister en DB
-              setLigne(nouvelleLigne)
-              updatePreferences({ train_line: nouvelleLigne })
-            }}
-            options={
-              [
-                {
-                  value: '1',
-                  label: t('tableau.line1'),
-                  image: '/images/ligne/ligne1.png',
-                  imageAlt: 'Ligne 1',
-                },
-                {
-                  value: '6',
-                  label: t('tableau.line6'),
-                  image: '/images/ligne/ligne6.png',
-                  imageAlt: 'Ligne 6',
-                },
-                {
-                  value: '12',
-                  label: t('tableau.line12'),
-                  image: '/images/ligne/ligne12.png',
-                  imageAlt: 'Ligne 12',
-                },
-              ] as SelectOption[]
-            }
-          />
-        )}
-
-        <p className="progression">
-          {t('tableau.progression')} : {done} / {total}{' '}
-          {t('tasks.title').toLowerCase()}
-        </p>
       </div>
     </div>
   )

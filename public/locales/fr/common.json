@@ -402,6 +402,7 @@
     "toolbar": "Barre d'outils",
     "selectLine": "Choisis une ligne",
     "progression": "Progression",
+    "progressionAriaLabel": "Progression : {{done}} sur {{total}} tâches",
     "reset": "Réinitialiser",
     "resetAllTasks": "Réinitialiser toutes les tâches",
     "loadingData": "Chargement de vos données...",
