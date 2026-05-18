@@ -26,8 +26,6 @@ interface SessionCompleteProps {
   rewardSlot: Slot | null
   /** Carte associée au slot récompense */
   rewardCard: BankCard | PersonalCard | null
-  /** Nombre total d'étapes (pour afficher le train à 100%) */
-  totalSteps: number
   /** Variante d'affichage : intégrée au Tableau ou écran dédié */
   variant?: 'overlay' | 'screen'
 }
@@ -35,7 +33,6 @@ interface SessionCompleteProps {
 export function SessionComplete({
   rewardSlot,
   rewardCard,
-  totalSteps,
   variant = 'screen',
 }: SessionCompleteProps) {
   const hasReward =
