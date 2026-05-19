@@ -1,28 +1,6 @@
 'use client'
 
-/**
- * Composant : ThemeToggle
- *
- * Rôle :
- *   Permet de basculer entre les thèmes clair et sombre pour l'application.
- *   • Récupère le thème enregistré en localStorage ou utilise la préférence système.
- *   • Applique le thème en ajoutant l'attribut `data-theme` à la balise `<html>`.
- *   • Propose un bouton affichant l'icône correspondante (🌙 ou ☀️).
- *
- * Hooks & bibliothèques utilisés :
- *   • useState, useEffect (React)
- *   • Sun, Moon (lucide-react) – icônes pour clair / sombre
- *
- * Props :
- *   (aucune)
- *
- * Exemple d'utilisation :
- *   <ThemeToggle />
- */
-
-import { Moon, Sun } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button } from '@/components'
 import './ThemeToggle.scss'
 
 type Theme = 'light' | 'dark'
@@ -31,13 +9,11 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('light')
 
   useEffect(() => {
-    // Détermination du thème initial
     const savedTheme =
       (localStorage.getItem('theme') as Theme) ||
       (window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light')
-
     document.documentElement.setAttribute('data-theme', savedTheme)
     setTheme(savedTheme)
   }, [])
@@ -49,15 +25,63 @@ export default function ThemeToggle() {
     setTheme(newTheme)
   }
 
+  const isDark = theme === 'dark'
+
   return (
-    <Button
-      className="theme-toggle"
+    <button
+      className="theme-toggle-pill"
+      role="switch"
+      aria-checked={isDark}
       onClick={toggleTheme}
-      aria-label={
-        theme === 'light' ? 'Activer le thème sombre' : 'Activer le thème clair'
-      }
+      aria-label={isDark ? 'Activer le thème clair' : 'Activer le thème sombre'}
     >
-      {theme === 'light' ? <Moon size={24} /> : <Sun size={24} />}
-    </Button>
+      <svg
+        className="theme-toggle-pill__stars"
+        width="76"
+        height="38"
+        aria-hidden="true"
+      >
+        <circle cx="14" cy="12" r="1" fill="currentColor" />
+        <circle cx="22" cy="22" r="0.8" fill="currentColor" />
+        <circle cx="32" cy="10" r="0.6" fill="currentColor" />
+      </svg>
+
+      <span className="theme-toggle-pill__knob" aria-hidden="true">
+        <svg
+          className="theme-toggle-pill__icon theme-toggle-pill__icon--sun"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="4" fill="currentColor" />
+          {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
+            <rect
+              key={angle}
+              x="11"
+              y="2"
+              width="2"
+              height="3"
+              fill="currentColor"
+              transform={`rotate(${angle} 12 12)`}
+              rx="1"
+            />
+          ))}
+        </svg>
+
+        <svg
+          className="theme-toggle-pill__icon theme-toggle-pill__icon--moon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+        >
+          <path
+            d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"
+            fill="currentColor"
+          />
+        </svg>
+      </span>
+    </button>
   )
 }

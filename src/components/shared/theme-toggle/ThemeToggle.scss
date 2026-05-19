@@ -1,69 +1,131 @@
 @use '@styles/abstracts' as *;
 
 // ============================================================================
-// THEME TOGGLE COMPONENT
+// THEME TOGGLE PILL — Interrupteur Soleil / Lune
 // ============================================================================
-// ✅ PHASE 6 VALIDÉ : Wrappers radius/text/surface/timing avec fallback
-//    - radius('full') → Primitives Phase 6 (50%) ✅
-//    - text() → Semantics Phase 6 (#1e293b) ✅
-//    - surface('hover') → Semantics Phase 6 (#f1f5f9) ✅
-//    - timing('fast') → Primitives Phase 6 (0.15s) ✅
-//    - easing('ease-out') → Primitives Phase 6 ✅
-//    - color('base') → Semantics Phase 6 ✅
-//    - safe-transition() → Mixin Phase 6 ✅
-//    - respond-to() → Mixin responsive Phase 6 ✅
-//    - size('touch-target-min'/'touch-target-optimal'/'icon-sm'/'icon-md'/'2') → Legacy support actif
-//    - border-width('focus') → Legacy support actif
+// Composant contexte Édition (adulte). Reproduit fidèlement le modèle
+// docs/_inspirations/toggle/ avec crossfade + légère rotation du pouce.
+//
+// Tokens utilisés :
+//   - semantic('warning', 'bg')   → track clair (#fef3c7)
+//   - color('base', 'accent')     → bouton soleil (#ffb400)
+//   - blue(800)                   → track sombre (#1e3a8a, proche navy #1E293B)
+//   - gray(50)                    → bouton lune (#fafafa, proche #F8FAFC)
+//   - timing('base')              → 300ms (max TSA)
+//   - easing('ease-out')          → sortie douce
+//   - safe-transition()           → guard prefers-reduced-motion ✅
 // ============================================================================
 
-.theme-toggle {
-  display: flex;
+// Dimensions du pill via tokens (modèle inspiration : 76×38, knob 30)
+// size('80') = 80px, size('40') = 40px, size('32') = 32px, size('4') = 4px
+$pill-width: size('80');
+$pill-height: size('40');
+$knob-size: size('32');
+$knob-offset: size('4');
+$knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 2.5rem = 40px
+
+.theme-toggle-pill {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  width: $pill-width;
+  height: $pill-height;
+  padding: $knob-offset;
   border: none;
   border-radius: radius('full');
-  background-color: transparent;
-  color: text();
   cursor: pointer;
 
-  /* [Mobile-first] Base = mobile (320px+) */
-  width: size('touch-target-min');
-  height: size('touch-target-min');
+  // État : thème clair
+  background-color: semantic('warning', 'bg');
 
   @include safe-transition(
-    background-color transform,
-    timing('fast'),
+    background-color,
+    timing('base'),
     easing('ease-out')
   );
 
-  &:hover {
-    background-color: surface('hover');
-    transform: scale(1.1);
+  // État : thème sombre (aria-checked reflète l'état du switch)
+  &[aria-checked='true'] {
+    background-color: blue(800);
   }
 
-  // WCAG 2.4.7 - Focus visible accessible
+  // Focus visible WCAG 2.4.7
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: 2px solid color('base', 'primary');
+    outline-offset: spacing('2');
   }
 
-  svg {
-    display: block;
+  // ── Étoiles decoratives (mode sombre uniquement) ──────────────────────────
+  &__stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: gray(50);
+    opacity: 0;
 
-    /* [Mobile-first] Base = mobile */
-    width: size('icon-sm');
-    height: size('icon-sm');
+    @include safe-transition(opacity, timing('base'), easing('ease-out'));
 
-    /* Desktop (576px+) */
-    @include respond-to(sm) {
-      width: size('icon-md');
-      height: size('icon-md');
+    .theme-toggle-pill[aria-checked='true'] & {
+      opacity: 1;
     }
   }
 
-  /* Desktop (576px+) */
-  @include respond-to(sm) {
-    width: size('touch-target-optimal');
-    height: size('touch-target-optimal');
+  // ── Pouce (knob) ──────────────────────────────────────────────────────────
+  &__knob {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: $knob-size;
+    height: $knob-size;
+    border-radius: radius('full');
+    flex-shrink: 0;
+    z-index: 1;
+
+    // État clair : fond ambre/soleil
+    background-color: color('base', 'accent');
+    box-shadow: shadow('elevation-xs');
+
+    // Translation : départ = gauche (thème clair)
+    transform: translateX(0) rotate(0deg);
+
+    @include safe-transition(
+      transform background-color box-shadow,
+      timing('base'),
+      easing('ease-out')
+    );
+
+    .theme-toggle-pill[aria-checked='true'] & {
+      // État sombre : fond blanc-cassé/lune, déplacé à droite
+      background-color: gray(50);
+      box-shadow: shadow('elevation-xs');
+      transform: translateX($knob-travel) rotate(-25deg);
+    }
+  }
+
+  // ── Icônes dans le knob ───────────────────────────────────────────────────
+  &__icon {
+    position: absolute;
+
+    // Icône Soleil — visible en mode clair
+    &--sun {
+      color: gray(50);
+      opacity: 1;
+      @include safe-transition(opacity, timing('sm'), easing('ease-out'));
+
+      .theme-toggle-pill[aria-checked='true'] & {
+        opacity: 0;
+      }
+    }
+
+    // Icône Lune — visible en mode sombre (délai léger pour crossfade)
+    &--moon {
+      color: blue(800);
+      opacity: 0;
+      @include safe-transition(opacity, timing('sm'), easing('ease-out'));
+
+      .theme-toggle-pill[aria-checked='true'] & {
+        opacity: 1;
+      }
+    }
   }
 }
