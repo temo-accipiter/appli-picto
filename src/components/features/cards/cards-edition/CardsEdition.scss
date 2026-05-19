@@ -85,7 +85,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: semantic('info-primary');
+    background: semantic('info-decorative');
     border-radius: radius('subtle'); // 4px — alias sémantique §D.3
 
     &:hover {
@@ -117,12 +117,12 @@
   );
 
   &.over {
-    border-color: semantic('info-primary');
+    border-color: semantic('info-decorative');
     background: semantic('info', 'bg');
   }
 
   &.dragging-from {
-    border-color: semantic('info-primary');
+    border-color: semantic('info-decorative');
     background: semantic('info', 'bg');
     opacity: opacity('half');
   }

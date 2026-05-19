@@ -262,12 +262,12 @@
 
     /* Variant info (message d'information) */
     &--info {
-      color: semantic('info-primary');
+      color: semantic('info-decorative');
       font-weight: font-weight('medium');
       padding: spacing('sm') spacing('md');
       background: semantic('info', 'bg');
       border-radius: radius('subtle'); // 4px — note info, alias sémantique §D.3
-      border-left: size('4') solid semantic('info-primary');
+      border-left: size('4') solid semantic('info-decorative');
     }
   }
 
@@ -314,7 +314,7 @@
     }
 
     &--active {
-      background: semantic('info-primary');
+      background: semantic('info-decorative');
       color: text('invert');
       border-color: transparent;
       font-weight: font-weight('bold');
@@ -376,7 +376,7 @@
     }
 
     &--selected {
-      border-color: semantic('info-primary');
+      border-color: semantic('info-decorative');
       border-width: border-width('thick');
       background: semantic('info', 'bg');
     }
@@ -439,7 +439,7 @@
     }
 
     &--selected {
-      background: semantic('info-primary');
+      background: semantic('info-decorative');
       color: text('invert');
       border-color: transparent;
       font-weight: font-weight('bold');
@@ -485,7 +485,7 @@
     &:focus-visible {
       outline: 2px solid var(--color-primary); // §F.5 : focus visible WCAG 2.2
       outline-offset: 2px;
-      border-color: semantic('info-primary');
+      border-color: semantic('info-decorative');
     }
   }
 
@@ -495,7 +495,7 @@
     border-radius: radius(
       'button'
     ); // 6px — bouton ajout, alias sémantique §D.3
-    background: semantic('info-primary');
+    background: semantic('info-decorative');
     color: text('invert');
     font-size: font-size('base');
     font-weight: font-weight('semibold');

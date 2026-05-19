@@ -43,7 +43,7 @@
   margin: 0;
 
   &:focus-within {
-    border-color: semantic('info-primary');
+    border-color: semantic('info-decorative');
   }
 }
 
@@ -112,7 +112,7 @@
   input[type='checkbox'] {
     width: var(--spacing-20); // §E.7 : 20px sans alias sémantique → CSS var
     height: var(--spacing-20);
-    accent-color: semantic('info-primary');
+    accent-color: semantic('info-decorative');
     cursor: pointer;
 
     &:disabled {
@@ -147,7 +147,7 @@
     }
 
     a {
-      color: semantic('info-primary');
+      color: semantic('info-decorative');
       text-decoration: underline;
       text-underline-offset: 2px;
 
