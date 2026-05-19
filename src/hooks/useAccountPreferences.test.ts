@@ -17,22 +17,27 @@ import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
 // (si le mock retourne un nouvel objet à chaque appel, useCallback([user])
 // se recréé à chaque rendu → l'effet re-fetch → consomme les mocks à tort)
 // stableUser est exporté pour pouvoir le réutiliser dans beforeEach après resetAllMocks()
-const { mockSupabase, mockWithAbortSafe, mockIsAbortLike, mockUseAuth, stableUser } =
-  vi.hoisted(() => {
-    const stableUser = { id: 'test-user-id', email: 'test@example.com' }
-    return {
-      mockSupabase: {
-        from: vi.fn(),
-      },
-      mockWithAbortSafe: vi.fn(),
-      mockIsAbortLike: vi.fn(() => false),
-      mockUseAuth: vi.fn(() => ({
-        user: stableUser as { id: string; email: string } | null,
-        authReady: true,
-      })),
-      stableUser,
-    }
-  })
+const {
+  mockSupabase,
+  mockWithAbortSafe,
+  mockIsAbortLike,
+  mockUseAuth,
+  stableUser,
+} = vi.hoisted(() => {
+  const stableUser = { id: 'test-user-id', email: 'test@example.com' }
+  return {
+    mockSupabase: {
+      from: vi.fn(),
+    },
+    mockWithAbortSafe: vi.fn(),
+    mockIsAbortLike: vi.fn(() => false),
+    mockUseAuth: vi.fn(() => ({
+      user: stableUser as { id: string; email: string } | null,
+      authReady: true,
+    })),
+    stableUser,
+  }
+})
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
