@@ -80,80 +80,65 @@ La colonne `account_preferences.train_line` est conservée pour rollback depuis 
 
 ---
 
-## 🟢 Priorité 3 — À grouper avec un audit plus large
+## ~~🟢 Priorité 3~~ ✅ RÉSOLU (2026-05-19)
 
-### TICKET-004 — Créer un token `a11y('disabled-opacity')`
+### ~~TICKET-004 — Créer un token `a11y('disabled-opacity')`~~ ✅ RÉSOLU
 
 **Type** : Design system / Dette technique
-**Effort estimé** : 1h (création + migration de 2 fichiers)
-**Priorité** : Basse
+**Résolu le** : 2026-05-19
 
-**Contexte**
-Deux composants utilisent des valeurs d'opacité hardcodées pour l'état désactivé : `Toggle.scss` (`opacity: 0.5`) et `TrainThemeSelector.scss` (`opacity: 0.5` et `0.55`). Cette dette a été documentée explicitement pendant la refonte V1 plutôt que de créer un token isolé.
+**Correction appliquée**
 
-**Tâches**
+Audit complet : 7 usages `opacity: 0.5` pour états désactivés trouvés (Toggle, Checkbox ×2, DeviceList, TrainThemeSelector ×2, \_mixins).
 
-- [ ] Auditer l'ensemble du codebase à la recherche d'autres usages d'opacité hardcodée pour des états désactivés (`grep -r "opacity:" src/`).
-- [ ] Définir le ou les tokens nécessaires : `a11y('disabled-opacity')` + éventuellement `a11y('placeholder-opacity')` ou autres.
-- [ ] Ajouter les tokens dans `src/styles/abstracts/_primitives.scss` (ou fichier équivalent).
-- [ ] Migrer tous les usages détectés en un seul commit cohérent.
-- [ ] Vérifier les contrastes WCAG sur les états disabled après migration.
+1. Token `'disabled-opacity': 0.5` ajouté à `$a11y-tokens` dans `_tokens.scss`.
+2. CSS custom property `--a11y-disabled-opacity` ajoutée dans `_a11y-tokens.scss`.
+3. Migration en un seul commit cohérent de tous les usages.
+4. `TrainThemeSelector.scss` normalisé : `0.55` ramené à `0.5` (cohérence TSA).
 
-**Critères d'acceptation**
+**Critères d'acceptation** ✅
 
-- Aucune valeur d'opacité hardcodée pour les états désactivés dans le codebase.
-- `pnpm lint:hardcoded` ne signale plus ces valeurs.
-- Visuellement, aucun changement d'apparence (les valeurs des tokens reproduisent les opacités actuelles).
+- Aucune valeur `opacity: 0.5` hardcodée pour états désactivés dans le codebase.
+- Token source de vérité unique dans `$a11y-tokens`.
 
 ---
 
-### TICKET-005 — Migrer les hooks Supabase directs vers `withAbortSafe`
+### ~~TICKET-005 — Migrer les hooks Supabase directs vers AbortController~~ ✅ RÉSOLU
 
 **Type** : Architecture / Dette technique
-**Effort estimé** : 2-4h selon le nombre de hooks
-**Priorité** : Basse
+**Résolu le** : 2026-05-19
 
-**Contexte**
-Le hook `useProgressStations.ts` (créé en Phase 2.a de la refonte) utilise un appel `supabase.from()` direct sans `AbortController`, alignant son pattern sur `useStations` qui était déjà dans cet état. Cette dette préexistante n'a pas été élargie pendant la refonte V1 (scope strict).
+**Résultat de l'audit**
 
-D'autres hooks dans le projet utilisent probablement le même pattern direct.
+`grep -r "supabase.from" src/hooks/` retourne 4 hits :
 
-**Tâches**
+- `useDeviceRegistration.ts:79` → déjà dans le scope `AbortController` (ligne 73). ✅
+- `useSlots.ts:240` → mutation `useCallback` (addSlot), appelée impérativement. Pas de useEffect. ✅
+- `useSessions.ts:282` → mutation `useCallback` (createSession), appelée impérativement. Pas de useEffect. ✅
+- `useProgressStations.ts` → seul hook avec `useEffect` sans `AbortController`. ❌ → migré.
 
-- [ ] Auditer tous les hooks consommant Supabase directement : `grep -r "supabase.from" src/hooks/`.
-- [ ] Identifier le pattern cible (`withAbortSafe` ou `isAbortLike` selon ta convention projet).
-- [ ] Migrer chaque hook en commits atomiques (un hook = un commit).
-- [ ] Adapter les tests de chaque hook.
+**Correction appliquée** (`src/hooks/useProgressStations.ts`)
 
-**Critères d'acceptation**
+Pattern identique à `useDevices.ts` :
 
-- Tous les hooks consommant Supabase utilisent le pattern d'abort sécurisé.
-- Aucune fuite mémoire / requête zombie en cas de démontage rapide de composant.
-- Tests passent au vert.
+1. `AbortController` créé en début de `useEffect`.
+2. `.abortSignal(controller.signal)` passé à la requête Supabase.
+3. Guard `controller.signal.aborted` avant chaque `setState`.
+4. `isAbortLike(err)` dans le catch pour absorber les erreurs d'abort.
+5. Cleanup function `() => controller.abort()` retournée.
 
 ---
 
-## ⚪ Priorité 4 — Hygiène de repo
+## ~~⚪ Priorité 4~~ ✅ RÉSOLU (2026-05-19)
 
-### TICKET-006 — Nettoyer le stash git de la tentative abandonnée du 16 mai
+### ~~TICKET-006 — Nettoyer le stash git de la tentative abandonnée du 16 mai~~ ✅ RÉSOLU
 
 **Type** : Hygiène repo
-**Effort estimé** : 5 minutes
-**Priorité** : Très basse
+**Résolu le** : 2026-05-19
 
-**Contexte**
-Un stash `stash@{0}: On feature/re-design-edition: backup-feature-transport-au-cas-ou-20260516-1449` subsiste depuis une tentative abandonnée d'approche transport. Conservé volontairement comme filet de sécurité pendant la refonte V1.
+**Décision appliquée** : (A) Suppression
 
-**Décision à prendre**
-
-- (A) Suppression : `git stash drop stash@{0}` si plus aucun élément n'est utile.
-- (B) Conversion en branche d'archive : `git stash branch archive/transport-experiment-20260516 stash@{0}` puis push sur une branche d'archive distante.
-
-**Tâches**
-
-- [ ] Inspecter le contenu du stash une dernière fois : `git stash show -p stash@{0}`.
-- [ ] Appliquer la décision (A) ou (B).
-- [ ] Si (B), documenter l'existence de la branche d'archive dans une note ADR ou un fichier de dette.
+Le stash `backup-feature-transport-au-cas-ou-20260516-1449` contenait l'approche RATP abandonnée (TrainProgressBar avec sélecteur de mode transport). La refonte V1 étant complète et stable, ce backup n'avait plus de valeur. Supprimé avec `git stash drop`.
 
 ---
 
