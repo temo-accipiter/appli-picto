@@ -107,6 +107,8 @@ export { default as ModalRecompense } from './shared/modal/modal-recompense/Moda
 export { default as PersonalizationModal } from './shared/modal/modal-personalization/PersonalizationModal'
 export type { PersonalizationContext } from './shared/modal/modal-personalization/PersonalizationModal'
 export { default as CreateBankCardModal } from './shared/modal/create-bank-card-modal/CreateBankCardModal'
+export { default as CreateCardModal } from './shared/modal/create-card-modal/CreateCardModal'
+export type { CreateCardModalProps } from './shared/modal/create-card-modal/CreateCardModal'
 
 // ========================================
 // UI - Primitives UI pures

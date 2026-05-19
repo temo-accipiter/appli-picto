@@ -1,0 +1,346 @@
+@use '@styles/abstracts' as *;
+
+// ============================================================================
+// CREATE CARD MODAL — Design system-first, TSA-friendly, Mobile-First
+// ============================================================================
+// Reproduit le design de docs/_inspirations/modal/
+// Utilisé pour : cartes banque (admin) et cartes personnelles
+// ============================================================================
+
+// ── Champ de formulaire ─────────────────────────────────────────────────────
+
+.create-card-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('sm');
+
+  & + & {
+    margin-top: spacing('lg');
+  }
+}
+
+// ── En-tête de champ (label + compteur ou format-hint) ──────────────────────
+
+.create-card-modal__field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: spacing('sm');
+}
+
+// ── Label ────────────────────────────────────────────────────────────────────
+
+.create-card-modal__label {
+  font-size: font-size('base');
+  font-weight: font-weight('semibold');
+  color: text('default');
+}
+
+.create-card-modal__required {
+  color: semantic('error', 'dark');
+  margin-left: spacing('xs');
+}
+
+// ── Compteur de caractères ────────────────────────────────────────────────────
+
+.create-card-modal__counter {
+  font-size: font-size('sm');
+  color: text('light');
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Hint format image ────────────────────────────────────────────────────────
+
+.create-card-modal__format-hint {
+  font-size: font-size('sm');
+  color: text('light');
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ── Input texte ───────────────────────────────────────────────────────────────
+
+.create-card-modal__input {
+  width: 100%;
+  padding: spacing('sm') spacing('md');
+  font-size: font-size('base');
+  color: text('default');
+  background: surface('bg');
+  border: border-width('base') solid surface('border');
+  border-radius: radius('button');
+  @include safe-transition(border-color box-shadow);
+  // ✅ Cible tactile WCAG 44px minimum
+  min-height: size('touch-target-min');
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: text('light');
+  }
+
+  &:focus {
+    outline: none;
+    border-color: semantic('info', 'border');
+    box-shadow: 0 0 0 #{size('2')} rgba(59, 130, 246, 0.15);
+  }
+
+  &:disabled {
+    opacity: opacity('0-6');
+    cursor: not-allowed;
+  }
+}
+
+// ── Input file natif masqué ────────────────────────────────────────────────
+
+.create-card-modal__file-native {
+  position: absolute;
+  width: size('2');
+  height: size('2');
+  margin: -(size('2'));
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+// ── Zone de dépôt (Drag & Drop) ───────────────────────────────────────────
+
+.create-card-modal__dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: spacing('xs');
+  padding: spacing('lg') spacing('md');
+  background: surface('soft');
+  border: border-width('medium') dashed surface('border');
+  border-radius: radius('card');
+  cursor: pointer;
+  @include safe-transition(background border-color);
+  text-align: center;
+  // ✅ Cible tactile WCAG
+  min-height: size('touch-target-min');
+
+  &:hover,
+  &:focus-visible {
+    background: surface('hover');
+    border-color: semantic('info', 'border');
+    outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow: 0 0 0 #{size('2')} rgba(59, 130, 246, 0.25);
+  }
+
+  &--active {
+    background: surface('hover');
+    border-color: semantic('info', 'border');
+  }
+}
+
+.create-card-modal__dropzone-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: size('48');
+  height: size('48');
+  border-radius: radius('full');
+  border: border-width('base') solid surface('border');
+  background: surface('bg');
+  color: text('light');
+  margin-bottom: spacing('xs');
+}
+
+.create-card-modal__dropzone-text {
+  margin: 0;
+  font-size: font-size('base');
+  color: text('default');
+  line-height: line-height('normal');
+}
+
+.create-card-modal__dropzone-link {
+  color: semantic('info', 'dark');
+  font-weight: font-weight('semibold');
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.create-card-modal__dropzone-hint {
+  margin: 0;
+  font-size: font-size('sm');
+  color: text('light');
+}
+
+// ── Prévisualisation fichier ──────────────────────────────────────────────
+
+.create-card-modal__preview {
+  display: flex;
+  align-items: center;
+  gap: spacing('md');
+  padding: spacing('md');
+  background: surface('soft');
+  border: border-width('base') solid surface('border');
+  border-radius: radius('card');
+}
+
+.create-card-modal__preview-thumb {
+  flex-shrink: 0;
+  width: size('48');
+  height: size('48');
+  border-radius: radius('sm');
+  background: surface('bg');
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.create-card-modal__preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.create-card-modal__preview-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+}
+
+.create-card-modal__preview-filename {
+  font-size: font-size('base');
+  font-weight: font-weight('semibold');
+  color: text('default');
+  // Truncation si nom trop long
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.create-card-modal__preview-meta {
+  font-size: font-size('sm');
+  color: text('light');
+}
+
+// Barre de progression
+.create-card-modal__progress-bar {
+  width: 100%;
+  height: size('4');
+  background: surface('border');
+  border-radius: radius('full');
+  overflow: hidden;
+}
+
+.create-card-modal__progress-fill {
+  height: 100%;
+  background: semantic('success', 'dark');
+  border-radius: radius('full');
+  @include safe-transition(width);
+}
+
+// Bouton suppression image
+.create-card-modal__preview-delete {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: size('40');
+  height: size('40');
+  min-height: size('touch-target-min');
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: radius('sm');
+  color: text('light');
+  cursor: pointer;
+  @include safe-transition(color background);
+
+  &:hover:not(:disabled) {
+    color: semantic('error', 'dark');
+    background: semantic('error', 'bg');
+  }
+
+  &:focus-visible {
+    outline: 2px solid semantic('error', 'border');
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: opacity('0-6');
+    cursor: not-allowed;
+  }
+}
+
+// ── Erreur image ──────────────────────────────────────────────────────────
+
+.create-card-modal__image-error {
+  margin: 0;
+  font-size: font-size('sm');
+  color: semantic('error', 'dark');
+}
+
+// ── Champ toggle publié/brouillon (bank) ──────────────────────────────────
+
+.create-card-modal__toggle-field {
+  display: flex;
+  align-items: flex-start;
+  gap: spacing('md');
+  margin-top: spacing('lg');
+  padding: spacing('md');
+  background: surface('soft');
+  border: border-width('base') solid surface('border');
+  border-radius: radius('card');
+}
+
+.create-card-modal__toggle-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+}
+
+.create-card-modal__toggle-label {
+  font-size: font-size('base');
+  font-weight: font-weight('semibold');
+  color: text('default');
+  line-height: line-height('tight');
+}
+
+.create-card-modal__toggle-hint {
+  font-size: font-size('sm');
+  color: text('light');
+  line-height: line-height('normal');
+}
+
+// ============================================================================
+// RESPONSIVE — Mobile-first (320px → 576px → 768px)
+// ============================================================================
+
+// Mobile (base < 576px) — colonnes étroites, textes compacts
+.create-card-modal__field-header {
+  flex-wrap: wrap;
+}
+
+.create-card-modal__format-hint,
+.create-card-modal__counter {
+  font-size: font-size('xs');
+
+  @include respond-to(sm) {
+    font-size: font-size('sm');
+  }
+}
+
+// Tablette (576px+) — dropzone plus haute
+@include respond-to(sm) {
+  .create-card-modal__dropzone {
+    padding: spacing('xl') spacing('lg');
+  }
+
+  .create-card-modal__toggle-field {
+    align-items: center;
+  }
+}

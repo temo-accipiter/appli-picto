@@ -34,9 +34,8 @@ import './Edition.scss'
 const ModalConfirm = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalConfirm }))
 )
-// 🆕 Modal création carte banque (admin uniquement)
-const CreateBankCardModal = lazy(() =>
-  import('@/components').then(m => ({ default: m.CreateBankCardModal }))
+const CreateCardModal = lazy(() =>
+  import('@/components').then(m => ({ default: m.CreateCardModal }))
 )
 const ModalQuota = lazy(() =>
   import('@/components').then(m => ({ default: m.ModalQuota }))
@@ -526,10 +525,11 @@ export default function Edition({
         </ModalConfirm>
       </Suspense>
 
-      {/* 🆕 Modal création carte banque (admin uniquement) */}
+      {/* Modal création carte banque (admin uniquement) */}
       <Suspense fallback={null}>
         {showCreateBankCardModal && (
-          <CreateBankCardModal
+          <CreateCardModal
+            variant="bank"
             onClose={() => setShowCreateBankCardModal(false)}
             onSuccess={handleBankCardCreated}
             overlayClassName="modal-overlay--transparent"

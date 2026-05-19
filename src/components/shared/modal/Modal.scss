@@ -164,12 +164,20 @@
   }
 }
 
+// === HEADER TEXT (titre + sous-titre) ===
+.modal__header-text {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('xs');
+  flex: 1;
+  min-width: 0;
+}
+
 // === TITLE ===
 .modal__title {
   margin: 0;
   font-weight: font-weight('bold');
   color: color('base');
-  flex: 1;
 
   // Mobile par défaut (320px-575px): titre plus petit
   font-size: font-size('lg');
@@ -178,6 +186,14 @@
   @include respond-to(sm) {
     font-size: font-size('xl');
   }
+}
+
+// === SUBTITLE ===
+.modal__subtitle {
+  margin: 0;
+  font-size: font-size('sm');
+  color: text('light');
+  line-height: line-height('normal');
 }
 
 // === CONTENU ===

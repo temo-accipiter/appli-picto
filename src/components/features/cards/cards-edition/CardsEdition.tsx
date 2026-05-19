@@ -3,7 +3,7 @@
 import {
   Button,
   EditionCard,
-  ModalAjout,
+  CreateCardModal,
   ModalCategory,
   ModalConfirm,
   Select,
@@ -510,18 +510,18 @@ export default function CardsEdition({
         </div>
       )}
 
-      <ModalAjout
-        isOpen={modalCardOpen}
-        onClose={() => setModalCardOpen(false)}
-        includeCategory
-        categories={categories}
-        assetType="card_image"
-        overlayClassName="modal-overlay--transparent"
-        onSubmit={values => {
-          onSubmitCard(values)
-          setModalCardOpen(false)
-        }}
-      />
+      {modalCardOpen && (
+        <CreateCardModal
+          variant="personal"
+          onClose={() => setModalCardOpen(false)}
+          categories={categories}
+          overlayClassName="modal-overlay--transparent"
+          onSubmit={values => {
+            onSubmitCard(values)
+            setModalCardOpen(false)
+          }}
+        />
+      )}
 
       <ModalCategory
         isOpen={manageCatOpen}

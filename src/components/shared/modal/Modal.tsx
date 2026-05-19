@@ -23,6 +23,7 @@ interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title?: string
+  subtitle?: string
   children: ReactNode
   actions?: ModalAction[]
   className?: string
@@ -37,6 +38,7 @@ export default function Modal({
   isOpen,
   onClose,
   title,
+  subtitle,
   children,
   actions = [],
   className = '',
@@ -95,11 +97,14 @@ export default function Modal({
       >
         {/* Header avec titre et close button */}
         <div className="modal__header">
-          {title && (
-            <h2 className="modal__title" id="modal-title">
-              {title}
-            </h2>
-          )}
+          <div className="modal__header-text">
+            {title && (
+              <h2 className="modal__title" id="modal-title">
+                {title}
+              </h2>
+            )}
+            {subtitle && <p className="modal__subtitle">{subtitle}</p>}
+          </div>
           {showCloseButton && <ButtonClose onClick={onClose} size="modal" />}
         </div>
 
