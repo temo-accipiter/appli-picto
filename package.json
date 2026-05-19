@@ -132,6 +132,7 @@
     "jsdom": "^27.2.0",
     "msw": "^2.12.2",
     "prettier": "^3.6.2",
+    "supabase": "2.98.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   },

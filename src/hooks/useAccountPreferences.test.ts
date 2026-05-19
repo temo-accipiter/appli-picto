@@ -16,7 +16,8 @@ import { vi, describe, it, expect, beforeEach, beforeAll } from 'vitest'
 // ✅ vi.hoisted() pour les mocks — mockUser est une référence STABLE
 // (si le mock retourne un nouvel objet à chaque appel, useCallback([user])
 // se recréé à chaque rendu → l'effet re-fetch → consomme les mocks à tort)
-const { mockSupabase, mockWithAbortSafe, mockIsAbortLike, mockUseAuth } =
+// stableUser est exporté pour pouvoir le réutiliser dans beforeEach après resetAllMocks()
+const { mockSupabase, mockWithAbortSafe, mockIsAbortLike, mockUseAuth, stableUser } =
   vi.hoisted(() => {
     const stableUser = { id: 'test-user-id', email: 'test@example.com' }
     return {
@@ -29,6 +30,7 @@ const { mockSupabase, mockWithAbortSafe, mockIsAbortLike, mockUseAuth } =
         user: stableUser as { id: string; email: string } | null,
         authReady: true,
       })),
+      stableUser,
     }
   })
 
@@ -36,15 +38,15 @@ vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
 }))
 
-vi.mock('@/hooks', async () => {
-  const actual = await vi.importActual('@/hooks')
-  return {
-    ...actual,
-    useAuth: mockUseAuth,
-    withAbortSafe: mockWithAbortSafe,
-    isAbortLike: mockIsAbortLike,
-  }
-})
+// ✅ Mock minimal : on n'exporte que les 3 symboles utilisés par useAccountPreferences.
+// Ne PAS utiliser vi.importActual('@/hooks') ici : le barrel importe useSequencesLocal
+// et useSequenceStepsLocal qui initialisent IndexedDB, causant des timeouts sous charge
+// de suite complète (concurrence de workers Vitest).
+vi.mock('@/hooks', () => ({
+  useAuth: mockUseAuth,
+  withAbortSafe: mockWithAbortSafe,
+  isAbortLike: mockIsAbortLike,
+}))
 
 describe('useAccountPreferences', () => {
   // Import dynamique du hook (après les mocks)
@@ -55,7 +57,13 @@ describe('useAccountPreferences', () => {
   })
 
   beforeEach(() => {
-    vi.clearAllMocks()
+    // resetAllMocks (pas clearAllMocks) : remet à zéro les implémentations définies
+    // par mockReturnValue/mockImplementation entre tests, évitant la contamination
+    // d'état (ex : test "user non connecté" qui override mockUseAuth pour les suivants)
+    vi.resetAllMocks()
+
+    // Remettre les implémentations par défaut après le reset
+    mockUseAuth.mockReturnValue({ user: stableUser, authReady: true })
     mockIsAbortLike.mockReturnValue(false)
 
     // Mock withAbortSafe qui prend une promesse et retourne {data, error, aborted}

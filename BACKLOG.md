@@ -7,56 +7,44 @@
 
 ## 🔴 Priorité 1 — À traiter avant activation CI / prochain onboarding dev
 
-### TICKET-001 — Stabiliser le test flaky `useAccountPreferences.test.ts`
+### ~~TICKET-001 — Stabiliser le test flaky `useAccountPreferences.test.ts`~~ ✅ RÉSOLU
 
 **Type** : Bug / Dette technique
-**Effort estimé** : 2-3h
-**Priorité** : Haute (bloquera la CI quand elle sera activée)
+**Résolu le** : 2026-05-19
 
-**Contexte**
-Le fichier `src/hooks/useAccountPreferences.test.ts` plante de manière intermittente avec un timeout de 10 secondes lorsque la suite complète est exécutée. Le même fichier passe systématiquement au vert quand il est lancé en isolation.
+**Cause racine identifiée**
+`vi.mock('@/hooks', async () => { const actual = await vi.importActual('@/hooks') ... })`
+déclenchait l'import du barrel complet, incluant `useSequencesLocal` et `useSequenceStepsLocal`
+qui initialisent IndexedDB. Sous charge de suite complète (workers Vitest en parallèle),
+ces initialisations async entraient en compétition et causaient des timeouts intermittents.
 
-**Occurrences historiques** : 3 occurrences confirmées pendant la refonte TrainProgressBar V1 (Phase 1.c, Phase 2.b, Commit 2 bis).
+Problème secondaire : `vi.clearAllMocks()` ne remettait pas à zéro les `mockReturnValue`,
+causant une contamination d'état inter-tests (ex : test "user non connecté" polluant les suivants).
 
-**Hypothèses à investiguer**
+**Correction appliquée** (`src/hooks/useAccountPreferences.test.ts`)
 
-- `waitFor` timeout trop court (10s) pour la charge plein-suite.
-- Mocks indexedDB concurrents non déterministes.
-- Tests voisins gourmands en ressources qui saturent l'environnement Vitest.
-- Possible fuite d'état entre tests (cleanup insuffisant).
+1. Suppression de `vi.importActual` → mock minimal synchrone (3 symboles seulement)
+2. `vi.clearAllMocks()` → `vi.resetAllMocks()` + re-setup explicite dans `beforeEach`
+3. Export de `stableUser` depuis `vi.hoisted()` pour le réutiliser après le reset
 
-**Critères d'acceptation**
-
-- Le fichier passe en isolation ET en plein-suite, 10 runs consécutives sans échec.
-- Si la cause est un test voisin, identifier et corriger à la source.
-- Ne pas augmenter aveuglément le timeout sans avoir compris la cause.
-
-**Notes**
-
-- Règle actuelle face à cette flakiness : 3 tentatives max au hook pre-commit, puis STOP.
-- Ne pas contourner via `--no-verify` (interdit par la discipline projet).
+**Vérification** : 10 runs consécutifs sans échec (isolation + suite complète).
 
 ---
 
-### TICKET-002 — Pinner la version du CLI Supabase
+### ~~TICKET-002 — Pinner la version du CLI Supabase~~ ✅ RÉSOLU
 
 **Type** : Outillage / Dette technique
-**Effort estimé** : 15 minutes
-**Priorité** : Haute (rend la régénération de `schema.sql` non déterministe entre devs/environnements)
+**Résolu le** : 2026-05-19
 
-**Contexte**
-Aucun pin de version Supabase CLI n'existe dans le repo (`.tool-versions` absent, `package.json` sans `engines.supabase` ni devDependency). Conséquence : `pnpm context:update` génère des fichiers `schema.sql` et `supabase.ts` différents selon la version locale du CLI. Cette dette a coûté un commit dédié pendant la refonte V1 (alignement baseline).
+**Solution appliquée**
 
-**Tâches**
+Stratégie choisie : `devDependencies` (asdf absent sur la machine de développement).
 
-- [ ] Choisir la stratégie : `.tool-versions` (recommandé si tu utilises asdf) ou `devDependencies` (recommandé si tu veux que `pnpm install` installe le CLI).
-- [ ] Pinner la version actuellement utilisée (v2.98.2 au moment de la refonte V1).
-- [ ] Documenter la procédure de mise à jour CLI dans le README ou PLATFORM.md.
+1. Ajout de `"supabase": "2.98.2"` dans `devDependencies` de `package.json` (version exacte, sans `^`).
+2. `pnpm install` → CLI téléchargé dans `node_modules/.bin/supabase` via le postinstall du paquet.
+3. Procédure de mise à jour documentée dans `docs/PLATFORM.md`.
 
-**Critères d'acceptation**
-
-- Tout dev qui clone le repo + lance `pnpm context:update` génère un `schema.sql` identique à celui commité.
-- La procédure de mise à jour CLI est documentée (un seul endroit à modifier).
+**Vérification** : `./node_modules/.bin/supabase --version` retourne `2.98.2`.
 
 ---
 
