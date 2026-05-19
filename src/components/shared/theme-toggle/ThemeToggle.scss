@@ -16,23 +16,22 @@
 //   - safe-transition()           → guard prefers-reduced-motion ✅
 // ============================================================================
 
-// Dimensions du pill via tokens (modèle inspiration : 76×38, knob 30)
-// size('80') = 80px, size('40') = 40px, size('32') = 32px, size('4') = 4px
+// Dimensions du pill via tokens
+// pill : 80×40px | knob : 36px | gap : 2px (identique au Toggle standard)
 $pill-width: size('80');
 $pill-height: size('40');
-$knob-size: size('32');
-$knob-offset: size('4');
-$knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 2.5rem = 40px
+$knob-offset: spacing('2'); // 2px — même gap que Toggle.scss
+$knob-size: $pill-height - $knob-offset * 2; // 40px - 4px = 36px (calculé pour garder le gap constant)
+$knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 80 - 36 - 4 = 40px
+$knob-rotation-dark: -25deg; // Rotation décorative lune — pas de token rotation dans le DS
 
 .theme-toggle-pill {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  display: inline-block;
   width: $pill-width;
   height: $pill-height;
-  padding: $knob-offset;
   border: none;
-  border-radius: radius('full');
+  border-radius: radius('badge');
   cursor: pointer;
 
   // État : thème clair
@@ -51,8 +50,8 @@ $knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 2.5rem = 40px
 
   // Focus visible WCAG 2.4.7
   &:focus-visible {
-    outline: 2px solid color('base', 'primary');
-    outline-offset: spacing('2');
+    outline: border-width('focus') solid color('base', 'primary');
+    outline-offset: a11y('focus-ring-offset');
   }
 
   // ── Étoiles decoratives (mode sombre uniquement) ──────────────────────────
@@ -72,20 +71,21 @@ $knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 2.5rem = 40px
 
   // ── Pouce (knob) ──────────────────────────────────────────────────────────
   &__knob {
-    position: relative;
+    // Positionnement absolu — ancré au bord gauche (soleil) ou droit (lune)
+    position: absolute;
+    top: $knob-offset;
+    left: $knob-offset;
     display: grid;
     place-items: center;
     width: $knob-size;
     height: $knob-size;
     border-radius: radius('full');
-    flex-shrink: 0;
     z-index: 1;
 
     // État clair : fond ambre/soleil
     background-color: color('base', 'accent');
     box-shadow: shadow('elevation-xs');
 
-    // Translation : départ = gauche (thème clair)
     transform: translateX(0) rotate(0deg);
 
     @include safe-transition(
@@ -98,7 +98,7 @@ $knob-travel: $pill-width - $knob-size - ($knob-offset * 2); // = 2.5rem = 40px
       // État sombre : fond blanc-cassé/lune, déplacé à droite
       background-color: gray(50);
       box-shadow: shadow('elevation-xs');
-      transform: translateX($knob-travel) rotate(-25deg);
+      transform: translateX($knob-travel) rotate($knob-rotation-dark);
     }
   }
 

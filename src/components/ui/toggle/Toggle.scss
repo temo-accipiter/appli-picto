@@ -28,10 +28,10 @@
   min-height: a11y('min-touch-target');
   padding: spacing('xs');
 
-  // Focus visible (v1.1 §F.5 — outline direct 2px)
+  // Focus visible (v1.1 §F.5 — outline direct)
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    outline: border-width('focus') solid var(--color-primary);
+    outline-offset: a11y('focus-ring-offset');
     border-radius: radius('full');
   }
 
@@ -48,9 +48,9 @@
   display: block;
   width: a11y('min-touch-target');
   height: spacing('lg');
-  background: var(--color-surface-secondary);
+  background: slate(300);
   border: border-width('medium') solid var(--color-border-primary);
-  border-radius: radius('full');
+  border-radius: radius('badge');
   // Cat. 1 — feedback interactif. CSS vars remplacées par tokens Sass (vars introuvables en runtime).
   @include safe-transition(
     background-color border-color,
@@ -77,8 +77,8 @@
     '2'
   ); // §E.7 : 2px positionnement sub-grille, sans CSS var → exception documentée
   left: spacing('2');
-  width: spacing('md');
-  height: spacing('md');
+  width: size('20');
+  height: size('20');
   background: white(); // Token couleur blanc pur (#ffffff)
   border-radius: radius('full');
   // Pas de box-shadow sur composant atomique (v1.1 §F.3)

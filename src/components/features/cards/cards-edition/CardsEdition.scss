@@ -238,16 +238,42 @@
 // ============================================================================
 
 .cards-edition__tabs {
+  position: relative; // ancrage pour l'indicateur glissant ::before
   display: flex;
   align-items: center;
   gap: spacing('xs');
   background: surface('soft');
   padding: spacing('xs');
-  border-radius: radius('badge');
+  border-radius: radius('button'); // 6px = 0.375rem — cohérent avec les boutons
   box-shadow: shadow('elevation-xs');
+
+  // Indicateur glissant — (W - padding×2 - gap×1) / 2 onglets
+  &::before {
+    content: '';
+    position: absolute;
+    top: spacing('xs');
+    left: spacing('xs');
+    width: calc((100% - #{spacing('xs')} * 3) / 2);
+    height: calc(100% - #{spacing('xs')} * 2);
+    background-color: surface('bg');
+    border-radius: radius('button');
+    box-shadow: shadow('elevation-xs');
+    transform: translateX(0);
+    pointer-events: none;
+    z-index: 0;
+    @include safe-transition(transform, timing('xs'), easing('linear'));
+  }
+
+  // Onglet "Banque" actif → déplace l'indicateur à droite
+  &:has([role='tab']:last-child[aria-selected='true'])::before {
+    transform: translateX(calc(100% + #{spacing('xs')}));
+  }
 }
 
 .cards-edition__tab {
+  flex: 1; // largeur égale entre onglets (requis pour le calcul de l'indicateur)
+  position: relative; // au-dessus de l'indicateur ::before
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -258,17 +284,12 @@
   color: text('muted');
   font-size: font-size('sm');
   font-weight: font-weight('medium');
-  border-radius: radius('badge');
+  border-radius: radius('button'); // 6px = 0.375rem — cohérent avec les boutons
   cursor: pointer;
   white-space: nowrap;
-  @include safe-transition(
-    (color, background-color, box-shadow),
-    timing('fast'),
-    easing('ease-out')
-  );
+  @include safe-transition(color, timing('xs'), easing('linear'));
 
   &:hover:not([aria-selected='true']) {
-    background: surface('hover');
     color: text('dark');
   }
 
@@ -278,8 +299,6 @@
 
   &--active {
     color: text();
-    background-color: surface('bg');
-    box-shadow: shadow('elevation-xs');
     font-weight: font-weight('semibold');
   }
 }
