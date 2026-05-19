@@ -50,33 +50,20 @@ Stratégie choisie : `devDependencies` (asdf absent sur la machine de développe
 
 ## 🟡 Priorité 2 — À traiter dans le mois suivant la mise en prod V1
 
-### TICKET-003 — Phase 6 : Suppression de la colonne `train_line`
+### ~~TICKET-003 — Phase 6 : Suppression de la colonne `train_line`~~ ✅ RÉSOLU
 
 **Type** : Migration DB / Nettoyage
-**Effort estimé** : 30 minutes
-**Priorité** : Moyenne (déprécation planifiée, pas bloquante)
+**Résolu le** : 2026-05-19
 
-**Contexte**
-La colonne `account_preferences.train_line` est conservée pour rollback depuis la Phase 1.a de la refonte (passage à `progress_style`). Une fois validé que la V1 fonctionne correctement en production pendant quelques semaines, la colonne peut être supprimée définitivement.
+**Solution appliquée**
 
-**Pré-requis**
+1. Audit confirmé : aucune référence `train_line` dans le code applicatif (hors fichiers auto-générés et tests de mock).
+2. Migration `20260519000000_drop_train_line_column.sql` créée et appliquée (DROP CONSTRAINT + DROP COLUMN).
+3. `pnpm context:update` exécuté — `schema.sql` et `supabase.ts` régénérés sans `train_line`.
+4. `useAccountPreferences.test.ts` mis à jour : mocks nettoyés (suppression `train_line: null` et `train_line: '1'`).
+5. Chaîne qualité au vert : 30 fichiers, 229 tests passés.
 
-- V1 en production depuis au moins 2 semaines sans rollback nécessaire.
-- Confirmation qu'aucun code applicatif ne lit ou n'écrit plus `train_line` (audit final).
-
-**Tâches**
-
-- [ ] Audit final : `grep -r "train_line"` dans le repo applicatif doit être vide.
-- [ ] Créer une migration SQL : `ALTER TABLE public.account_preferences DROP COLUMN train_line;`.
-- [ ] Régénérer `schema.sql` et `supabase.ts`.
-- [ ] Sanity check + chaîne qualité au vert.
-- [ ] Commit unique : `chore(db): drop deprecated train_line column`.
-
-**Critères d'acceptation**
-
-- Colonne supprimée en DB.
-- `schema.sql` et `supabase.ts` ne contiennent plus de référence.
-- Tous les tests passent.
+**Commit** : `8b63547 chore(db): drop deprecated train_line column`
 
 ---
 
