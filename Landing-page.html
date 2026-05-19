@@ -1,0 +1,1945 @@
+<!--
+═══════════════════════════════════════════════════════════════════
+  APPLI-PICTO · LANDING PAGE — MOCKUP VISUEL v4
+  Itération 3 : copy + finitions éditoriales
+═══════════════════════════════════════════════════════════════════
+
+  CHANGEMENTS PAR RAPPORT À v3 :
+  · Copy uniquement — aucune modification structurelle.
+  · Positionnement « Pensé pour TSA, utile au-delà » (modèle
+    Atkinson Hyperlegible).
+  · Hero : eyebrow + sous-titre + réassurance retravaillés.
+  · Section systèmes : nouveau paragraphe d'intro plus inclusif.
+  · Tableau enfant : « bibliothèque de pictogrammes prêts à
+    l'emploi » (au lieu de pictogrammes personnalisables).
+  · Tablette : variantes A (pratique) et B (émotionnel) affichées
+    côte à côte pour arbitrage visuel — temporaire.
+  · Audiences : sous-libellés élargis (TSA, TDAH, besoins spéc.).
+  · Couleurs, logo, structure, bezels, footer, popup : INCHANGÉS.
+
+═══════════════════════════════════════════════════════════════════
+-->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appli-Picto — Le quotidien de votre enfant, en images claires</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ───────────────────────────────────────────────────────────
+     TOKENS
+     ─────────────────────────────────────────────────────────── */
+  :root {
+    /* ─── PRIMARY (Bleu marque, extrait du logo) ─── */
+    --primary:        #2871a8;
+    --primary-hover:  #205c8a;
+    --primary-tint:   #bcd8f1;
+    --primary-ink:    #ffffff;
+
+    /* ─── SURFACES ─── */
+    --bg:         #f8fafc;
+    --surface:    #ffffff;
+    --surface-2:  #f1f5f9;
+
+    /* ─── TEXT ─── */
+    --ink:        #1e293b;
+    --ink-muted:  #475569;
+    --ink-soft:   #94a3b8;
+
+    /* ─── BORDERS ─── */
+    --border:      #e2e8f0;
+    --border-soft: #f1f5f9;
+
+    /* ─── FEEDBACK (usages limités) ─── */
+    --success:        #10b981;
+    --success-tint:   #d1fae5;
+    --success-border: #6ee7b7;
+    --danger:         #ef4444;
+
+    /* ─── PROGRESSION (orange = uniquement dots phone bezel) ─── */
+    --progress-active: #f97316;
+    --progress-rest:   #cbd5e1;
+
+    /* Type */
+    --font-sans: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    /* Radius */
+    --radius-sm: 8px;
+    --radius:    12px;          /* composants adulte */
+    --radius-lg: 18px;          /* aperçus enfant */
+    --radius-pill: 999px;
+
+    /* Spacing — base 4 */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 20px;
+    --s-6: 24px;
+    --s-8: 32px;
+    --s-10: 40px;
+    --s-12: 48px;
+    --s-16: 64px;
+    --s-20: 80px;
+    --s-24: 96px;
+    --s-32: 128px;
+
+    /* Shadow — UNE seule profondeur, diffuse, faible opacité */
+    --shadow-card: 0 2px 4px rgba(30, 41, 59, 0.04),
+                   0 12px 32px rgba(30, 41, 59, 0.06);
+
+    /* Motion */
+    --t-fast: 120ms;
+    --t: 200ms;
+    --t-slow: 280ms;
+    --ease: cubic-bezier(0.3, 0, 0.2, 1);
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     RESET
+     ─────────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  img { max-width: 100%; display: block; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     TYPE SCALE
+     ─────────────────────────────────────────────────────────── */
+  .h1 {
+    font-size: clamp(2rem, 5.5vw + 1rem, 3.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .h2 {
+    font-size: clamp(1.625rem, 2.5vw + 1rem, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .h3 {
+    font-size: 1.375rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+    margin: 0;
+  }
+  .h4 {
+    font-size: 1.0625rem;
+    line-height: 1.35;
+    font-weight: 700;
+    margin: 0;
+  }
+  .body  { font-size: 1.0625rem; line-height: 1.6; }
+  .small { font-size: 0.875rem; line-height: 1.5; color: var(--ink-muted); }
+  .mono  { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.02em; }
+
+  .lede {
+    font-size: 1.125rem;
+    line-height: 1.55;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+    max-width: 36ch;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     LAYOUT
+     ─────────────────────────────────────────────────────────── */
+  .wrap {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 var(--s-5);
+  }
+  section { padding: var(--s-12) 0; }
+
+  /* ───────────────────────────────────────────────────────────
+     HEADER
+     ─────────────────────────────────────────────────────────── */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(248, 250, 252, 0.85);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    gap: var(--s-4);
+  }
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    font-size: 1.0625rem;
+  }
+  .logo__mark {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    background: var(--primary);
+    position: relative;
+  }
+  .logo__mark::before,
+  .logo__mark::after {
+    content: "";
+    position: absolute;
+    background: var(--primary-ink);
+    border-radius: 2px;
+  }
+  .logo__mark::before {
+    inset: 6px 12px 12px 6px;
+  }
+  .logo__mark::after {
+    inset: 12px 6px 6px 12px;
+    opacity: 0.65;
+  }
+  .logo__type b { font-weight: 700; }
+  .logo__type span { color: var(--ink-muted); font-weight: 400; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+  }
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+  }
+  .lang-switch button {
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ink-muted);
+    transition: color var(--t) var(--ease), background var(--t) var(--ease);
+  }
+  .lang-switch button[aria-pressed="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(30, 41, 59, 0.06);
+  }
+  .link-login {
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    transition: background var(--t) var(--ease);
+  }
+  .link-login:hover { background: var(--surface-2); }
+
+  /* ───────────────────────────────────────────────────────────
+     BUTTONS
+     ─────────────────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-2);
+    padding: 14px 22px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background var(--t) var(--ease),
+                color var(--t) var(--ease),
+                transform var(--t-fast) var(--ease);
+    min-height: 48px;  /* hit target */
+  }
+  .btn--primary {
+    background: var(--primary);
+    color: var(--primary-ink);
+  }
+  .btn--primary:hover { background: var(--primary-hover); }
+  .btn--primary:active { transform: translateY(1px); }
+
+  .btn--link {
+    color: var(--ink);
+    padding: 14px 8px;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--ink-soft);
+  }
+  .btn--link:hover { text-decoration-color: var(--primary); color: var(--primary-hover); }
+
+  .btn--lg { padding: 18px 28px; font-size: 1.0625rem; min-height: 56px; }
+
+  /* ───────────────────────────────────────────────────────────
+     HERO
+     ─────────────────────────────────────────────────────────── */
+  .hero {
+    padding-top: var(--s-10);
+    padding-bottom: var(--s-12);
+  }
+  .hero__grid {
+    display: grid;
+    gap: var(--s-10);
+  }
+  .hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    background: var(--primary-tint);
+    color: var(--primary-hover);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    margin-bottom: var(--s-5);
+    width: max-content;
+    max-width: 100%;
+  }
+  .hero__eyebrow::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+  .hero h1 { margin-bottom: var(--s-5); }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--primary);
+    position: relative;
+    white-space: nowrap;
+  }
+  .hero__sub {
+    color: var(--ink-muted);
+    font-size: 1.125rem;
+    line-height: 1.55;
+    margin: 0 0 var(--s-8);
+    text-wrap: pretty;
+    max-width: 38ch;
+  }
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+    margin-bottom: var(--s-6);
+  }
+  .hero__reassure {
+    display: flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+  }
+  /* ─── Variantes copy tablette (temporaire — arbitrage) ─── */
+  .preview__tablet-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-6);
+    margin: 0 auto var(--s-10);
+    max-width: 920px;
+    text-align: left;
+  }
+  .tablet-variant {
+    padding: var(--s-5);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+  }
+  .tablet-variant__tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--s-3);
+  }
+  .tablet-variant__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 var(--s-3);
+  }
+  .tablet-variant h3 {
+    margin: 0 0 var(--s-3);
+    text-wrap: balance;
+  }
+  .tablet-variant p {
+    color: var(--ink-muted);
+    margin: 0;
+  }
+  .tablet-variant__sep {
+    height: 1px;
+    background: var(--border);
+    margin: var(--s-1) 0;
+    border: 0;
+  }
+  @media (min-width: 768px) {
+    .preview__tablet-head {
+      flex-direction: row;
+      gap: var(--s-8);
+      align-items: stretch;
+      text-align: left;
+    }
+    .tablet-variant { flex: 1; }
+    .tablet-variant__sep {
+      width: 1px;
+      height: auto;
+      margin: 0;
+      align-self: stretch;
+    }
+  }
+
+  .hero__reassure::before {
+    content: "";
+    display: inline-block;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--success-tint);
+    border: 2px solid var(--success);
+  }
+
+  /* Hero preview — small inline timeline preview */
+  .hero__preview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--s-5);
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  .hero__preview-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--s-4);
+  }
+  .hero__preview-label .mono {
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+  .hero__preview-dots {
+    display: flex;
+    gap: 4px;
+  }
+  .hero__preview-dots span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+  }
+  .hero__preview-dots span:first-child { background: var(--primary); }
+
+  .mini-timeline {
+    display: grid;
+    gap: var(--s-3);
+  }
+  .mini-step {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: var(--s-3);
+    padding: var(--s-3);
+    border-radius: var(--radius);
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+  }
+  .mini-step__num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+  .mini-step__picto {
+    /* striped placeholder, single solid block */
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+    flex: 1;
+    min-width: 0;
+  }
+  .picto-ph {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #e2e8f0 0 6px,
+        #f1f5f9 6px 12px
+      );
+    border: 1px solid var(--border);
+    flex: none;
+  }
+  .mini-step__label {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mini-step__time {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+  .mini-step--done {
+    background: var(--success-tint);
+    border-color: var(--success-border);
+  }
+  .mini-step--done .mini-step__num {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+  .mini-step--done .mini-step__label {
+    text-decoration: line-through;
+    text-decoration-color: var(--success);
+    color: var(--ink-muted);
+  }
+  .mini-step--current {
+    border-color: var(--primary);
+    background: var(--primary-tint);
+  }
+  .mini-step--current .mini-step__num {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-ink);
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     SYSTEMS — 3 cartes strictement séparées
+     ─────────────────────────────────────────────────────────── */
+  .systems {
+    padding-top: var(--s-12);
+    padding-bottom: var(--s-12);
+  }
+  .systems__intro { margin-bottom: var(--s-10); }
+  .systems__eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: var(--s-3);
+  }
+  .systems__intro h2 { max-width: 22ch; }
+  .systems__intro p {
+    color: var(--ink-muted);
+    max-width: 50ch;
+    margin: var(--s-4) 0 0;
+    text-wrap: pretty;
+  }
+  .systems__grid {
+    display: grid;
+    gap: var(--s-5);
+  }
+  .system-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--s-6);
+    box-shadow: var(--shadow-card);
+    display: grid;
+    gap: var(--s-4);
+    align-content: start;
+  }
+  .system-card__head {
+    display: flex;
+    align-items: center;
+    gap: var(--s-3);
+  }
+  .system-card__icon {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .system-card__tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    background: var(--primary-tint);
+    padding: 4px 8px;
+    border-radius: var(--radius-pill);
+  }
+  .system-card h3 { letter-spacing: -0.01em; }
+  .system-card p {
+    color: var(--ink-muted);
+    margin: 0;
+    text-wrap: pretty;
+  }
+
+  /* Icons — geometry only, no figurative SVG
+     Toutes les icônes utilisent uniquement neutres + primary,
+     la différenciation passe par la forme (pas la couleur). */
+  .icon-planning {
+    background: var(--primary-tint);
+    position: relative;
+  }
+  .icon-planning::before,
+  .icon-planning::after {
+    content: "";
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--primary);
+  }
+  .icon-planning::before { top: 12px; }
+  .icon-planning::after  { bottom: 12px; opacity: 0.45; }
+  .icon-planning > i {
+    position: absolute;
+    left: 10px; right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 4px;
+    border-radius: 2px;
+    background: var(--primary);
+    opacity: 0.75;
+  }
+
+  .icon-tokens {
+    background: var(--primary-tint);
+    position: relative;
+  }
+  .icon-tokens::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+  }
+  .icon-tokens::after {
+    content: "";
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary);
+    transform: translate(-50%, -50%);
+  }
+
+  .icon-sequence {
+    background: var(--primary-tint);
+    position: relative;
+  }
+  .icon-sequence > i {
+    position: absolute;
+    top: 50%;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--primary);
+    transform: translateY(-50%);
+  }
+  .icon-sequence > i:nth-child(1) { left: 8px; }
+  .icon-sequence > i:nth-child(2) { left: 50%; transform: translate(-50%, -50%); opacity: 0.8; }
+  .icon-sequence > i:nth-child(3) { right: 8px; opacity: 0.6; }
+  .icon-sequence::before,
+  .icon-sequence::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    height: 2px;
+    background: var(--primary);
+    opacity: 0.45;
+    transform: translateY(-50%);
+  }
+  .icon-sequence::before { left: 16px; width: 8px; }
+  .icon-sequence::after  { right: 16px; width: 8px; }
+
+  /* ───────────────────────────────────────────────────────────
+     PREVIEW — Phone bezel statique, timeline verticale
+     ─────────────────────────────────────────────────────────── */
+  .preview {
+    background: var(--surface-2);
+    border-radius: 0;
+    padding: var(--s-16) 0;
+    margin: var(--s-12) 0 0;
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .preview__inner {
+    display: grid;
+    gap: var(--s-10);
+    align-items: center;
+  }
+  .preview__copy h2 { margin-bottom: var(--s-4); }
+  .preview__copy p { color: var(--ink-muted); margin: 0 0 var(--s-4); max-width: 42ch; }
+  .preview__caption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: var(--s-3);
+  }
+  .preview__list {
+    list-style: none;
+    margin: var(--s-5) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s-3);
+  }
+  .preview__list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s-3);
+    color: var(--ink);
+    font-size: 0.9375rem;
+  }
+  .preview__list li::before {
+    content: "";
+    flex: none;
+    margin-top: 7px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--primary);
+  }
+
+  /* Phone bezel — CSS only, no JS */
+  .phone {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    background: #1e293b;
+    border-radius: 42px;
+    padding: 12px;
+    box-shadow:
+      0 1px 0 #475569 inset,
+      0 -1px 0 #0f172a inset,
+      0 30px 60px -20px rgba(30, 41, 59, 0.25),
+      0 8px 20px -8px rgba(30, 41, 59, 0.15);
+    position: relative;
+  }
+  .phone__screen {
+    background: var(--bg);
+    border-radius: 32px;
+    overflow: hidden;
+    aspect-ratio: 9 / 19.5;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone__notch {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px; height: 24px;
+    background: #0f172a;
+    border-radius: 999px;
+    z-index: 2;
+  }
+  .phone__status {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 24px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .phone__status-right { display: inline-flex; gap: 4px; align-items: center; }
+  .phone__status-right span {
+    width: 14px; height: 8px;
+    background: var(--ink);
+    border-radius: 2px;
+    opacity: 0.7;
+  }
+  .phone__status-right span:nth-child(2) { opacity: 0.4; width: 4px; height: 4px; border-radius: 50%; }
+
+  .phone__app {
+    flex: 1;
+    padding: 16px 16px 32px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .phone__appbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 4px 8px;
+  }
+  .phone__greeting {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .phone__greeting .small { font-size: 0.6875rem; color: var(--ink-soft); }
+  .phone__greeting strong { font-size: 0.9375rem; font-weight: 700; }
+
+  .phone__avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--primary-tint);
+    border: 2px solid var(--primary);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: var(--primary-hover);
+    font-size: 0.875rem;
+  }
+  .phone__progress {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .phone__progress-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .phone__progress-head strong { font-size: 0.8125rem; }
+  .phone__progress-head .mono { color: var(--primary); font-weight: 700; }
+  .phone__bar {
+    height: 6px;
+    background: var(--border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .phone__bar > i {
+    display: block;
+    width: 40%;
+    height: 100%;
+    background: var(--primary);
+    border-radius: inherit;
+  }
+
+  .phone__timeline {
+    display: grid;
+    gap: 8px;
+    flex: 1;
+    overflow: hidden;
+  }
+  .phone-step {
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-lg);
+    padding: 10px;
+  }
+  .phone-step__dot {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+  }
+  .phone-step__body {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .phone-step .picto-ph {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+  }
+  .phone-step__label {
+    font-weight: 700;
+    font-size: 0.8125rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .phone-step__time {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--ink-soft);
+  }
+  /* Orange réservé aux dots de la timeline du phone bezel (signal motivant). */
+  .phone-step--done {
+    background: var(--surface);
+    border-color: var(--border);
+  }
+  .phone-step--done .phone-step__dot {
+    background: var(--progress-active);
+    border-color: var(--progress-active);
+    color: white;
+  }
+  .phone-step--done .phone-step__label {
+    color: var(--ink-muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-soft);
+  }
+  .phone-step .phone-step__dot {
+    /* étapes restantes : gris neutre */
+    border-color: var(--progress-rest);
+    color: var(--ink-soft);
+  }
+  .phone-step--current {
+    border-color: var(--primary);
+    background: var(--primary-tint);
+    box-shadow: 0 0 0 3px rgba(40, 113, 168, 0.12);
+  }
+  .phone-step--current .phone-step__dot {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-ink);
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     AUDIENCES — sober, no fake testimonials
+     ─────────────────────────────────────────────────────────── */
+  .audiences h2 { margin-bottom: var(--s-3); }
+  .audiences__sub { color: var(--ink-muted); margin: 0 0 var(--s-8); max-width: 44ch; }
+  .audiences__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s-3);
+  }
+  .audience {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-5);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius);
+  }
+  .audience__index {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    width: 28px;
+    flex: none;
+  }
+  .audience__label {
+    font-weight: 700;
+    font-size: 1.0625rem;
+  }
+  .audience__meta {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+    margin-top: 2px;
+  }
+  .audience__body { min-width: 0; }
+
+  /* ───────────────────────────────────────────────────────────
+     CTA REMINDER
+     ─────────────────────────────────────────────────────────── */
+  .cta-band {
+    padding: var(--s-16) 0;
+    text-align: center;
+  }
+  .cta-band__inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--s-10) var(--s-6);
+    max-width: 720px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-card);
+  }
+  .cta-band h2 { margin-bottom: var(--s-4); }
+  .cta-band p { color: var(--ink-muted); margin: 0 auto var(--s-6); max-width: 38ch; }
+
+  /* ───────────────────────────────────────────────────────────
+     FOOTER
+     ─────────────────────────────────────────────────────────── */
+  .site-footer {
+    border-top: 1px solid var(--border-soft);
+    padding: var(--s-10) 0 var(--s-8);
+    background: var(--surface-2);
+  }
+  .site-footer__inner {
+    display: grid;
+    gap: var(--s-6);
+  }
+  .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .site-footer__links a {
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+    padding: 4px 0;
+  }
+  .site-footer__links a:hover { color: var(--ink); }
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--border-soft);
+  }
+  .site-footer__copy {
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     PREVIEW — Bloc B : Tablet bezel + cards + popup
+     ─────────────────────────────────────────────────────────── */
+  .preview__tablet {
+    margin-top: var(--s-16);
+    padding-top: var(--s-12);
+    border-top: 1px solid var(--border-soft);
+  }
+  /* (Anciennes règles .preview__tablet-head / .preview__tablet-eyebrow déplacées plus haut
+     dans le bloc « Variantes copy tablette » — v4) */
+  .preview__mobile-note {
+    display: block;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    margin-top: var(--s-6);
+    padding: 0 var(--s-4);
+  }
+
+  /* Stage qui contient tablette + popup (positionnement relatif desktop) */
+  .tablet-stage {
+    position: relative;
+    margin: 0 auto;
+    max-width: 720px;
+    display: none; /* mobile : masqué, voir media query ≥768 */
+  }
+  .preview__tablet-head {
+    display: none; /* idem */
+  }
+
+  /* Tablet bezel */
+  .tablet {
+    background: #1e293b;
+    border-radius: 28px;
+    padding: 14px;
+    box-shadow:
+      0 1px 0 #475569 inset,
+      0 -1px 0 #0f172a inset,
+      0 30px 60px -24px rgba(30, 41, 59, 0.22),
+      0 10px 24px -12px rgba(30, 41, 59, 0.14);
+  }
+  .tablet__screen {
+    background: var(--bg);
+    border-radius: 16px;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 18px 18px 16px;
+    gap: 14px;
+  }
+  .tablet__appbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .tablet__greeting {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tablet__greeting .small { font-size: 0.75rem; color: var(--ink-soft); }
+  .tablet__greeting strong { font-size: 1rem; font-weight: 700; }
+  .tablet__avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--primary-tint);
+    border: 2px solid var(--primary);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: var(--primary-hover);
+    font-size: 0.875rem;
+  }
+
+  /* 10 dots de progression */
+  .tablet__dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+  }
+  .tablet__dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--progress-rest);
+    flex: none;
+  }
+  .tablet__dots span.is-done {
+    background: var(--progress-active);
+  }
+
+  /* Grille de cards */
+  .tablet__cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+  .tablet-card {
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-lg);
+    border: 2px solid #7dd3fc;
+    background: var(--surface);
+    overflow: hidden;
+    min-width: 0;
+  }
+  .tablet-card__picto {
+    flex: 1;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+  .tablet-card__picto-ph {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #e2e8f0 0 6px,
+        #f1f5f9 6px 12px
+      );
+    border: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 6px;
+  }
+  .tablet-card__picto-ph .mono {
+    color: var(--ink-soft);
+    background: rgba(255, 255, 255, 0.7);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.625rem;
+  }
+  .tablet-card__label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 6px 6px 8px;
+    line-height: 1.2;
+  }
+  .tablet-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 6px 8px;
+    border-top: 1px solid var(--border);
+  }
+  .tablet-card__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .tablet-card__check::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 3px;
+    flex: none;
+  }
+  .tablet-card__substeps-btn {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+    border-radius: 6px;
+    padding: 3px 6px;
+    background: var(--surface);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* Label long vs court pour la place dispo */
+  .tablet-card__substeps-btn .lg { display: none; }
+  .tablet-card__substeps-btn .sm { display: inline; }
+  /* État validé */
+  .tablet-card.is-done {
+    border-color: var(--success-border);
+    background: var(--success-tint);
+  }
+  .tablet-card.is-done .tablet-card__footer {
+    border-top-color: var(--success-border);
+  }
+  .tablet-card.is-done .tablet-card__check {
+    color: var(--ink);
+  }
+  .tablet-card.is-done .tablet-card__check::before {
+    background: var(--success);
+    border-color: var(--success);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M3 8.5l3.2 3.2L13 5'/></svg>");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80%;
+  }
+  /* Picto plus visible sur fond vert */
+  .tablet-card.is-done .tablet-card__picto-ph {
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #ffffff 0 6px,
+        #f1f5f9 6px 12px
+      );
+    border-color: #a7e6c8;
+  }
+
+  /* Popup séquençage (DESKTOP par défaut display:none ; on l'active à ≥768) */
+  .sequence-popup {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 14px;
+  }
+  .sequence-popup__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .sequence-popup__picto {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #e2e8f0 0 5px,
+        #f1f5f9 5px 10px
+      );
+    border: 1px dashed #cbd5e1;
+    flex: none;
+  }
+  .sequence-popup__title {
+    flex: 1;
+    min-width: 0;
+  }
+  .sequence-popup__title strong {
+    display: block;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+  }
+  .sequence-popup__title .small {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+  .sequence-popup__close {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    color: var(--ink-soft);
+    font-size: 1.125rem;
+    line-height: 1;
+    background: var(--surface-2);
+  }
+  .sequence-popup__steps {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .substep {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .substep__num {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink-soft);
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+  }
+  .substep__picto-ph {
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #e2e8f0 0 5px,
+        #f1f5f9 5px 10px
+      );
+    border: 1px dashed #cbd5e1;
+  }
+  .substep__label {
+    font-size: 0.6875rem;
+    color: var(--ink);
+    line-height: 1.25;
+    text-align: center;
+    font-weight: 700;
+  }
+  .sequence-popup__chevron {
+    align-self: center;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    user-select: none;
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     DESKTOP (768+)
+     ─────────────────────────────────────────────────────────── */
+  @media (min-width: 768px) {
+    .wrap { padding: 0 var(--s-8); }
+    section { padding: var(--s-20) 0; }
+
+    .hero { padding-top: var(--s-16); padding-bottom: var(--s-20); }
+    .hero__grid {
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: var(--s-12);
+      align-items: center;
+    }
+
+    .systems__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--s-6);
+    }
+    .systems__intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-12);
+      align-items: end;
+      margin-bottom: var(--s-12);
+    }
+    .systems__intro p { margin-top: 0; }
+
+    .preview { padding: var(--s-24) 0; }
+    .preview__inner {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--s-16);
+    }
+    .preview__copy { order: 1; }
+    .preview__visual { order: 2; }
+
+    .audiences__list {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .audience { flex-direction: column; align-items: flex-start; padding: var(--s-6); }
+    .audience__index { width: auto; }
+
+    .cta-band__inner { padding: var(--s-16) var(--s-12); }
+
+    .site-footer__inner { grid-template-columns: 1fr auto; align-items: center; }
+    .site-footer__bottom { grid-column: 1 / -1; }
+
+    /* Tablet block becomes visible at ≥768 */
+    .preview__mobile-note { display: none; }
+    .preview__tablet-head { display: flex; }
+    .tablet-stage { display: block; }
+    .preview__tablet { margin-top: var(--s-20); padding-top: var(--s-16); }
+    .preview__tablet-head h3 { font-size: 1.5rem; }
+    .tablet-stage { max-width: 760px; }
+    .tablet__screen { padding: 22px 22px 20px; gap: 16px; }
+    .tablet__dots span { width: 14px; height: 14px; gap: 8px; }
+    .tablet__cards { gap: 14px; }
+    .tablet-card__label { font-size: 0.875rem; padding: 8px 8px 10px; }
+    .tablet-card__check { font-size: 0.8125rem; }
+    .tablet-card__check::before { width: 16px; height: 16px; }
+    .tablet-card__substeps-btn { font-size: 0.75rem; padding: 5px 8px; }
+
+    /* Popup visible, en flow normal sous la tablette (pas superposé) */
+    .sequence-popup {
+      display: block;
+      margin: var(--s-6) auto 0;
+      max-width: 520px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .phone { max-width: 360px; }
+
+    .preview__tablet { margin-top: var(--s-24); }
+    .tablet-stage { max-width: 880px; }
+
+    /* Label long du bouton uniquement à partir du desktop (évite l'overflow en tablette 768–1023) */
+    .tablet-card__substeps-btn .lg { display: inline; }
+    .tablet-card__substeps-btn .sm { display: none; }
+
+    /* Popup superposé : bas-gauche débordant de la card #4 */
+    .sequence-popup {
+      position: absolute;
+      bottom: -32px;
+      left: 52%;
+      width: 440px;
+      max-width: 440px;
+      margin: 0;
+      z-index: 3;
+      box-shadow:
+        0 1px 2px rgba(30, 41, 59, 0.06),
+        0 20px 40px -16px rgba(30, 41, 59, 0.22);
+    }
+    /* Espace réservé sous la tablette pour le débord du popup */
+    .preview__tablet { padding-bottom: var(--s-12); }
+  }
+
+  /* ───────────────────────────────────────────────────────────
+     REDUCED MOTION
+     ─────────────────────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Selection */
+  ::selection { background: var(--primary-tint); color: var(--primary-hover); }
+
+  /* Logo SVG sizing */
+  .logo svg { display: block; height: 20px; width: auto; }
+  @media (min-width: 768px) {
+    .logo svg { height: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════ HEADER ═════════ -->
+<header class="site-header" role="banner">
+  <div class="wrap site-header__inner">
+    <a class="logo" href="#" aria-label="Appli-Picto, accueil">
+      <svg width="180" height="20" viewBox="0 0 239 25" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Appli-Picto">
+        <rect width="24" height="24" rx="6" fill="#BCD8F1"></rect>
+        <rect x="30" width="24" height="24" rx="6" fill="#A9CDE9"></rect>
+        <rect x="60" width="24" height="24" rx="6" fill="#97C1E4"></rect>
+        <rect x="90" width="24" height="24" rx="6" fill="#2871A8"></rect>
+        <path d="M139.42 24.4V9.38H142.46L142.58 11.76L141.98 11.58C142.073 11.14 142.3 10.74 142.66 10.38C143.02 10.02 143.473 9.73333 144.02 9.52C144.58 9.29333 145.167 9.18 145.78 9.18C146.687 9.18 147.493 9.42 148.2 9.9C148.907 10.3667 149.46 11.0133 149.86 11.84C150.273 12.6533 150.48 13.6 150.48 14.68C150.48 15.7467 150.273 16.6933 149.86 17.52C149.46 18.3467 148.9 19 148.18 19.48C147.473 19.9467 146.66 20.18 145.74 20.18C145.14 20.18 144.567 20.0667 144.02 19.84C143.473 19.6133 143.013 19.3067 142.64 18.92C142.267 18.5333 142.02 18.1133 141.9 17.66L142.64 17.38V24.4H139.42ZM144.96 17.48C145.44 17.48 145.86 17.3667 146.22 17.14C146.58 16.9 146.86 16.5733 147.06 16.16C147.26 15.7467 147.36 15.2533 147.36 14.68C147.36 14.12 147.26 13.6333 147.06 13.22C146.86 12.7933 146.58 12.4667 146.22 12.24C145.873 12 145.453 11.88 144.96 11.88C144.467 11.88 144.04 11.9933 143.68 12.22C143.32 12.4467 143.04 12.7733 142.84 13.2C142.64 13.6267 142.54 14.12 142.54 14.68C142.54 15.2533 142.64 15.7467 142.84 16.16C143.04 16.5733 143.32 16.9 143.68 17.14C144.04 17.3667 144.467 17.48 144.96 17.48ZM152.784 20V9.38H155.984V20H152.784ZM154.384 7.28C153.784 7.28 153.31 7.14 152.964 6.86C152.63 6.56667 152.464 6.15333 152.464 5.62C152.464 5.14 152.637 4.74667 152.984 4.44C153.33 4.13333 153.797 3.98 154.384 3.98C154.984 3.98 155.45 4.12667 155.784 4.42C156.117 4.7 156.284 5.1 156.284 5.62C156.284 6.11333 156.11 6.51333 155.764 6.82C155.43 7.12667 154.97 7.28 154.384 7.28ZM163.65 20.2C162.624 20.2 161.704 19.96 160.89 19.48C160.077 19 159.43 18.3467 158.95 17.52C158.484 16.68 158.25 15.7333 158.25 14.68C158.25 13.6267 158.484 12.6867 158.95 11.86C159.43 11.02 160.077 10.36 160.89 9.88C161.704 9.4 162.624 9.16 163.65 9.16C164.597 9.16 165.464 9.32667 166.25 9.66C167.05 9.99333 167.684 10.46 168.15 11.06L166.41 13.14C166.224 12.9267 166.004 12.7267 165.75 12.54C165.497 12.3533 165.217 12.2067 164.91 12.1C164.604 11.9933 164.284 11.94 163.95 11.94C163.444 11.94 162.997 12.06 162.61 12.3C162.224 12.5267 161.924 12.8467 161.71 13.26C161.497 13.6733 161.39 14.1467 161.39 14.68C161.39 15.1867 161.497 15.6467 161.71 16.06C161.937 16.4733 162.244 16.8 162.63 17.04C163.017 17.28 163.457 17.4 163.95 17.4C164.297 17.4 164.617 17.36 164.91 17.28C165.204 17.1867 165.47 17.0533 165.71 16.88C165.964 16.7067 166.197 16.4933 166.41 16.24L168.13 18.34C167.677 18.9133 167.044 19.3667 166.23 19.7C165.43 20.0333 164.57 20.2 163.65 20.2ZM170.769 20V6.7H173.969V20H170.769ZM168.889 12.18V9.38H176.029V12.18H168.889ZM182.76 20.2C181.653 20.2 180.667 19.96 179.8 19.48C178.947 19 178.267 18.3467 177.76 17.52C177.267 16.6933 177.02 15.7467 177.02 14.68C177.02 13.6133 177.267 12.6667 177.76 11.84C178.267 11.0133 178.947 10.36 179.8 9.88C180.667 9.4 181.653 9.16 182.76 9.16C183.867 9.16 184.847 9.4 185.7 9.88C186.567 10.36 187.247 11.0133 187.74 11.84C188.233 12.6667 188.48 13.6133 188.48 14.68C188.48 15.7467 188.233 16.6933 187.74 17.52C187.247 18.3467 186.567 19 185.7 19.48C184.847 19.96 183.867 20.2 182.76 20.2ZM182.76 17.44C183.24 17.44 183.667 17.32 184.04 17.08C184.413 16.84 184.707 16.5133 184.92 16.1C185.133 15.6867 185.233 15.2133 185.22 14.68C185.233 14.1467 185.133 13.6733 184.92 13.26C184.707 12.8333 184.413 12.5 184.04 12.26C183.667 12.02 183.24 11.9 182.76 11.9C182.28 11.9 181.847 12.02 181.46 12.26C181.087 12.5 180.793 12.8333 180.58 13.26C180.367 13.6733 180.267 14.1467 180.28 14.68C180.267 15.2133 180.367 15.6867 180.58 16.1C180.793 16.5133 181.087 16.84 181.46 17.08C181.847 17.32 182.28 17.44 182.76 17.44Z" fill="#1A222C"></path>
+        <path d="M191.852 14.94C191.252 14.94 190.786 14.7733 190.452 14.44C190.132 14.1067 189.972 13.6333 189.972 13.02C189.972 12.46 190.146 12 190.492 11.64C190.839 11.28 191.292 11.1 191.852 11.1C192.439 11.1 192.899 11.2667 193.232 11.6C193.566 11.9333 193.732 12.4067 193.732 13.02C193.732 13.58 193.559 14.04 193.212 14.4C192.866 14.76 192.412 14.94 191.852 14.94ZM196.403 20V9.1C196.403 8.36667 196.563 7.7 196.883 7.1C197.203 6.5 197.65 6.02 198.223 5.66C198.796 5.3 199.463 5.12 200.223 5.12C200.756 5.12 201.243 5.19333 201.683 5.34C202.136 5.48667 202.556 5.69333 202.943 5.96L201.943 8.62C201.77 8.56667 201.61 8.52667 201.463 8.5C201.316 8.46 201.19 8.44 201.083 8.44C200.856 8.44 200.67 8.48 200.523 8.56C200.39 8.64 200.29 8.76 200.223 8.92C200.17 9.08 200.143 9.27333 200.143 9.5V20H198.283C197.83 20 197.443 20 197.123 20C196.816 20 196.576 20 196.403 20ZM194.903 12.66V9.68H202.183V12.66H194.903ZM203.823 20V5.2H207.543V20H203.823ZM215.302 20.2C214.168 20.2 213.155 19.96 212.262 19.48C211.368 19 210.668 18.3467 210.162 17.52C209.655 16.6933 209.402 15.74 209.402 14.66C209.402 13.58 209.655 12.6267 210.162 11.8C210.668 10.9733 211.368 10.32 212.262 9.84C213.155 9.36 214.168 9.12 215.302 9.12C216.435 9.12 217.442 9.36 218.322 9.84C219.215 10.32 219.915 10.9733 220.422 11.8C220.928 12.6267 221.182 13.58 221.182 14.66C221.182 15.74 220.928 16.6933 220.422 17.52C219.915 18.3467 219.215 19 218.322 19.48C217.442 19.96 216.435 20.2 215.302 20.2ZM215.302 17.06C215.702 17.06 216.062 16.96 216.382 16.76C216.715 16.5467 216.968 16.26 217.142 15.9C217.328 15.5267 217.422 15.1133 217.422 14.66C217.422 14.18 217.328 13.76 217.142 13.4C216.968 13.04 216.715 12.76 216.382 12.56C216.062 12.3467 215.702 12.24 215.302 12.24C214.888 12.24 214.522 12.3467 214.202 12.56C213.882 12.76 213.628 13.0467 213.442 13.42C213.255 13.78 213.162 14.1933 213.162 14.66C213.162 15.1133 213.255 15.5267 213.442 15.9C213.628 16.26 213.882 16.5467 214.202 16.76C214.522 16.96 214.888 17.06 215.302 17.06ZM225.038 20L221.578 9.34H225.518L227.238 15.8L226.818 15.72L228.758 10.7H230.918L233.018 15.72L232.598 15.78L234.298 9.34H238.238L234.598 20H231.798L229.778 14.76H229.918L227.838 20H225.038Z" fill="#2871A8"></path>
+      </svg>
+    </a>
+    <nav class="nav-right" aria-label="Navigation principale">
+      <div class="lang-switch" role="group" aria-label="Choix de la langue">
+        <button type="button" aria-pressed="true" aria-label="Français">FR</button>
+        <button type="button" aria-pressed="false" aria-label="English">EN</button>
+      </div>
+      <a class="link-login" href="#">Se connecter</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ═════════ HERO ═════════ -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero__grid">
+      <div class="hero__copy">
+        <span class="hero__eyebrow">Pensé pour les enfants TSA. Utile au-delà.</span>
+        <h1 class="h1" id="hero-title">
+          Le quotidien de votre enfant,<br>en <em>images claires</em>.
+        </h1>
+        <p class="hero__sub">
+          Conçue avec des familles et des professionnels du soin,
+          pour structurer le quotidien sans surcharge ni distraction.
+        </p>
+        <div class="hero__cta">
+          <a href="#" class="btn btn--primary btn--lg">Essayer maintenant</a>
+          <a href="#" class="btn btn--link">Créer un compte</a>
+        </div>
+        <p class="hero__reassure">Essayez gratuitement, allez plus loin avec un compte gratuit.</p>
+      </div>
+
+      <!-- Aperçu inline statique — pas une illustration animée -->
+      <aside class="hero__preview" aria-label="Aperçu d'une journée">
+        <div class="hero__preview-label">
+          <span class="mono">Lundi · matin</span>
+          <span class="hero__preview-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+        </div>
+        <div class="mini-timeline">
+          <div class="mini-step mini-step--done">
+            <div class="mini-step__num" aria-hidden="true">✓</div>
+            <div class="mini-step__picto">
+              <div class="picto-ph" aria-hidden="true"></div>
+              <span class="mini-step__label">Se lever</span>
+            </div>
+            <span class="mini-step__time">07:30</span>
+          </div>
+          <div class="mini-step mini-step--done">
+            <div class="mini-step__num" aria-hidden="true">✓</div>
+            <div class="mini-step__picto">
+              <div class="picto-ph" aria-hidden="true"></div>
+              <span class="mini-step__label">S'habiller</span>
+            </div>
+            <span class="mini-step__time">07:45</span>
+          </div>
+          <div class="mini-step mini-step--current" style="background-color: rgb(230, 242, 250)">
+            <div class="mini-step__num" aria-hidden="true">3</div>
+            <div class="mini-step__picto">
+              <div class="picto-ph" aria-hidden="true"></div>
+              <span class="mini-step__label">Se brosser les dents</span>
+            </div>
+            <span class="mini-step__time">08:00</span>
+          </div>
+          <div class="mini-step" style="background-color: rgb(230, 242, 250)">
+            <div class="mini-step__num" aria-hidden="true">4</div>
+            <div class="mini-step__picto">
+              <div class="picto-ph" aria-hidden="true"></div>
+              <span class="mini-step__label">Petit-déjeuner</span>
+            </div>
+            <span class="mini-step__time">08:15</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ═════════ 3 SYSTÈMES ═════════ -->
+  <section class="systems" aria-labelledby="systems-title">
+    <div class="wrap">
+      <header class="systems__intro">
+        <div>
+          <p class="systems__eyebrow">Trois systèmes distincts</p>
+          <h2 class="h2" id="systems-title">Trois outils, à utiliser séparément.</h2>
+        </div>
+        <p>
+          Chaque famille, chaque accompagnant choisit l'outil qui
+          correspond au besoin du moment. Les trois restent
+          indépendants&nbsp;: on ne mélange jamais planning,
+          récompense et séquence.
+        </p>
+      </header>
+
+      <div class="systems__grid" role="list">
+        <article class="system-card" role="listitem">
+          <div class="system-card__head">
+            <div class="system-card__icon icon-planning" aria-hidden="true"><i></i></div>
+            <span class="system-card__tag">Système 01</span>
+          </div>
+          <h3 class="h3">Planning visuel</h3>
+          <p>
+            La journée se lit en une timeline de cartes-pictogrammes.
+            L'enfant voit ce qui vient, ce qui est fait, ce qui reste.
+            Il valide chaque étape lui-même.
+          </p>
+        </article>
+
+        <article class="system-card" role="listitem">
+          <div class="system-card__head">
+            <div class="system-card__icon icon-tokens" aria-hidden="true"></div>
+            <span class="system-card__tag">Système 02</span>
+          </div>
+          <h3 class="h3">Économie de jetons</h3>
+          <p>
+            Un système de récompense paramétrable&nbsp;: l'enfant gagne
+            des jetons pour les actions choisies par l'adulte, puis
+            les échange contre une récompense convenue à l'avance.
+          </p>
+        </article>
+
+        <article class="system-card" role="listitem">
+          <div class="system-card__head">
+            <div class="system-card__icon icon-sequence" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </div>
+            <span class="system-card__tag">Système 03</span>
+          </div>
+          <h3 class="h3">Séquençage</h3>
+          <p>
+            Une tâche complexe se décompose en sous-étapes visuelles.
+            L'enfant suit la séquence à son rythme, étape par étape,
+            sans surcharge cognitive.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════ APERÇU VISUEL ═════════ -->
+  <section class="preview" aria-labelledby="preview-title">
+    <div class="wrap preview__inner">
+      <div class="preview__copy">
+        <h2 class="h2" id="preview-title">Un Tableau enfant pensé pour la clarté.</h2>
+        <p>
+          Un écran, une journée, une étape à la fois. Pas de
+          publicité, pas de distractions, pas de notifications.
+          L'enfant garde la main, l'adulte garde le contrôle.
+        </p>
+        <ul class="preview__list">
+          <li>Validation tactile d'une seule étape à la fois</li>
+          <li>Accès à une bibliothèque de pictogrammes prêts à l'emploi</li>
+          <li>Aucune publicité, aucune sollicitation externe</li>
+        </ul>
+        <p class="preview__caption">Capture statique — Tableau enfant, vue matinée</p>
+      </div>
+
+      <div class="preview__visual">
+        <!-- Phone bezel, CSS only, no JS -->
+        <div class="phone" role="img" aria-label="Capture d'écran de l'application Appli-Picto sur téléphone, montrant le Tableau enfant avec une timeline de cinq étapes pour la matinée. Les deux premières étapes sont validées, la troisième est en cours.">
+          <span class="phone__notch" aria-hidden="true"></span>
+          <div class="phone__screen">
+            <div class="phone__status" aria-hidden="true">
+              <span>9:41</span>
+              <span class="phone__status-right">
+                <span></span><span></span><span></span>
+              </span>
+            </div>
+            <div class="phone__app" aria-hidden="true">
+              <div class="phone__appbar">
+                <div class="phone__greeting">
+                  <span class="small">Lundi · 8 avril</span>
+                  <strong>Bonjour, Léo</strong>
+                </div>
+                <div class="phone__avatar">L</div>
+              </div>
+
+              <div class="phone__progress">
+                <div class="phone__progress-head">
+                  <strong>Ma matinée</strong>
+                  <span class="mono">2 / 5</span>
+                </div>
+                <div class="phone__bar"><i></i></div>
+              </div>
+
+              <div class="phone__timeline">
+                <div class="phone-step phone-step--done">
+                  <div class="phone-step__dot">✓</div>
+                  <div class="phone-step__body">
+                    <div class="picto-ph"></div>
+                    <span class="phone-step__label">Se lever</span>
+                  </div>
+                  <span class="phone-step__time">07:30</span>
+                </div>
+                <div class="phone-step phone-step--done">
+                  <div class="phone-step__dot">✓</div>
+                  <div class="phone-step__body">
+                    <div class="picto-ph"></div>
+                    <span class="phone-step__label">S'habiller</span>
+                  </div>
+                  <span class="phone-step__time">07:45</span>
+                </div>
+                <div class="phone-step phone-step--current">
+                  <div class="phone-step__dot">3</div>
+                  <div class="phone-step__body">
+                    <div class="picto-ph"></div>
+                    <span class="phone-step__label">Brosser les dents</span>
+                  </div>
+                  <span class="phone-step__time">08:00</span>
+                </div>
+                <div class="phone-step">
+                  <div class="phone-step__dot">4</div>
+                  <div class="phone-step__body">
+                    <div class="picto-ph"></div>
+                    <span class="phone-step__label">Petit-déjeuner</span>
+                  </div>
+                  <span class="phone-step__time">08:15</span>
+                </div>
+                <div class="phone-step">
+                  <div class="phone-step__dot">5</div>
+                  <div class="phone-step__body">
+                    <div class="picto-ph"></div>
+                    <span class="phone-step__label">Préparer le sac</span>
+                  </div>
+                  <span class="phone-step__time">08:30</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═════ BLOC B — Aperçu tablette (≥768px) ═════ -->
+    <div class="wrap preview__tablet">
+      <!--
+        ZONE TEMPORAIRE — les deux variantes A et B sont affichées
+        côte à côte pour arbitrage visuel. Une seule sera conservée
+        dans la version finale (le tag « Variante » et le fond teinté
+        signalent qu'il s'agit de propositions à arbitrer).
+      -->
+      <header class="preview__tablet-head" role="group" aria-label="Variantes de copy à arbitrer">
+        <!-- VARIANTE A — Pratique -->
+        <div class="tablet-variant">
+          <span class="tablet-variant__tag">Variante A — Pratique</span>
+          <p class="tablet-variant__eyebrow">Aussi pensé pour la tablette</p>
+          <h3 class="h3">Une vue large pour les sessions accompagnées.</h3>
+          <p>
+            Sur tablette ou grand écran, l'accompagnant et l'enfant
+            regardent ensemble la timeline complète. Idéal en cabinet,
+            en classe ou à la maison sur grand écran.
+          </p>
+        </div>
+
+        <hr class="tablet-variant__sep" aria-hidden="true">
+
+        <!-- VARIANTE B — Émotionnel -->
+        <div class="tablet-variant">
+          <span class="tablet-variant__tag">Variante B — Émotionnel</span>
+          <p class="tablet-variant__eyebrow">Aussi pensé pour la tablette</p>
+          <h3 class="h3">Pour les moments où vous accompagnez ensemble.</h3>
+          <p>
+            Un format pensé pour les temps partagés&nbsp;: l'enfant
+            valide, l'adulte observe sans pression. Pas de course,
+            pas de chrono. Juste le quotidien, étape par étape.
+          </p>
+        </div>
+      </header>
+
+      <div class="tablet-stage">
+        <!-- Tablet bezel, CSS only -->
+        <div class="tablet" role="img" aria-label="Capture statique de l'application Appli-Picto sur tablette en mode paysage. Une barre de progression de dix points, dont six oranges, est suivie de quatre cartes-pictogrammes horizontales représentant les étapes du matin. Les deux premières étapes sont validées, les deux dernières ne le sont pas.">
+          <div class="tablet__screen" aria-hidden="true">
+            <div class="tablet__appbar">
+              <div class="tablet__greeting">
+                <span class="small">Lundi · 8 avril</span>
+                <strong>Bonjour, Léo</strong>
+              </div>
+              <div class="tablet__avatar">L</div>
+            </div>
+
+            <!-- 10 dots : 6 done + 4 rest -->
+            <div class="tablet__dots" role="presentation">
+              <span class="is-done"></span>
+              <span class="is-done"></span>
+              <span class="is-done"></span>
+              <span class="is-done"></span>
+              <span class="is-done"></span>
+              <span class="is-done"></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div class="tablet__cards">
+              <!-- Card 1 — validée -->
+              <article class="tablet-card is-done">
+                <div class="tablet-card__picto">
+                  <div class="tablet-card__picto-ph"><span class="mono">picto</span></div>
+                </div>
+                <div class="tablet-card__label">Mettre les chaussures</div>
+                <div class="tablet-card__footer">
+                  <span class="tablet-card__check">Validé</span>
+                </div>
+              </article>
+
+              <!-- Card 2 — validée -->
+              <article class="tablet-card is-done">
+                <div class="tablet-card__picto">
+                  <div class="tablet-card__picto-ph"><span class="mono">picto</span></div>
+                </div>
+                <div class="tablet-card__label">Se laver les mains</div>
+                <div class="tablet-card__footer">
+                  <span class="tablet-card__check">Validé</span>
+                </div>
+              </article>
+
+              <!-- Card 3 — non validée, sans sous-étapes -->
+              <article class="tablet-card">
+                <div class="tablet-card__picto">
+                  <div class="tablet-card__picto-ph"><span class="mono">picto</span></div>
+                </div>
+                <div class="tablet-card__label">Petit-déjeuner</div>
+                <div class="tablet-card__footer">
+                  <span class="tablet-card__check">Valider</span>
+                </div>
+              </article>
+
+              <!-- Card 4 — non validée, AVEC sous-étapes (bouton "Voir les étapes") -->
+              <article class="tablet-card">
+                <div class="tablet-card__picto">
+                  <div class="tablet-card__picto-ph"><span class="mono">picto</span></div>
+                </div>
+                <div class="tablet-card__label">Brosser les dents</div>
+                <div class="tablet-card__footer">
+                  <span class="tablet-card__check">Valider</span>
+                  <button type="button" class="tablet-card__substeps-btn">
+                    <span class="lg">Voir les étapes</span>
+                    <span class="sm">Étapes</span>
+                  </button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popup séquençage — Système 03, distinct des cards -->
+        <aside class="sequence-popup" role="complementary" aria-label="Aperçu du système de séquençage pour brosser les dents">
+          <header class="sequence-popup__head">
+            <div class="sequence-popup__picto" aria-hidden="true"></div>
+            <div class="sequence-popup__title">
+              <strong>brosser les dents</strong>
+              <span class="small">0 sur 3 étapes</span>
+            </div>
+            <button type="button" class="sequence-popup__close" aria-label="Fermer">×</button>
+          </header>
+          <div class="sequence-popup__steps">
+            <div class="substep">
+              <div class="substep__num">1</div>
+              <div class="substep__picto-ph" aria-hidden="true"></div>
+              <div class="substep__label">ouvrir le robinet</div>
+            </div>
+            <span class="sequence-popup__chevron" aria-hidden="true">›</span>
+            <div class="substep">
+              <div class="substep__num">2</div>
+              <div class="substep__picto-ph" aria-hidden="true"></div>
+              <div class="substep__label">brosser les dents</div>
+            </div>
+            <span class="sequence-popup__chevron" aria-hidden="true">›</span>
+            <div class="substep">
+              <div class="substep__num">3</div>
+              <div class="substep__picto-ph" aria-hidden="true"></div>
+              <div class="substep__label">mettre le savon</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <small class="preview__mobile-note">L'application est également optimisée pour tablette.</small>
+    </div>
+  </section>
+
+  <!-- ═════════ POUR QUI ═════════ -->
+  <section class="audiences" aria-labelledby="audiences-title">
+    <div class="wrap">
+      <h2 class="h2" id="audiences-title">Pour qui&nbsp;?</h2>
+      <p class="audiences__sub">
+        Appli-Picto se construit avec les adultes qui accompagnent
+        les enfants au quotidien.
+      </p>
+      <ul class="audiences__list">
+        <li class="audience">
+          <span class="audience__index">01</span>
+          <div class="audience__body">
+            <div class="audience__label">Parents</div>
+            <div class="audience__meta">d'enfants TSA, TDAH ou avec besoins spécifiques</div>
+          </div>
+        </li>
+        <li class="audience">
+          <span class="audience__index">02</span>
+          <div class="audience__body">
+            <div class="audience__label">Éducateurs</div>
+            <div class="audience__meta">en école, institution ou à domicile</div>
+          </div>
+        </li>
+        <li class="audience">
+          <span class="audience__index">03</span>
+          <div class="audience__body">
+            <div class="audience__label">Orthophonistes &amp; psychomotriciens</div>
+            <div class="audience__meta">en cabinet ou en libéral</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═════════ CTA RAPPEL ═════════ -->
+  <section class="cta-band" aria-labelledby="cta-title">
+    <div class="wrap">
+      <div class="cta-band__inner">
+        <h2 class="h2" id="cta-title">Prêt à essayer&nbsp;?</h2>
+        <p>Aucune inscription requise. Aucun email demandé. Vous découvrez l'application en quelques secondes.</p>
+        <a href="#" class="btn btn--primary btn--lg">Essayer maintenant</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═════════ FOOTER ═════════ -->
+<footer class="site-footer" role="contentinfo">
+  <div class="wrap site-footer__inner">
+    <ul class="site-footer__links">
+      <li><a href="#">Mentions légales</a></li>
+      <li><a href="#">CGU</a></li>
+      <li><a href="#">Confidentialité</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <div class="lang-switch" role="group" aria-label="Choix de la langue">
+      <button type="button" aria-pressed="true">FR</button>
+      <button type="button" aria-pressed="false">EN</button>
+    </div>
+    <div class="site-footer__bottom">
+      <span class="site-footer__copy">© 2026 Appli-Picto. Tous droits réservés.</span>
+      <span class="site-footer__copy mono">v0.1 · mockup design</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
