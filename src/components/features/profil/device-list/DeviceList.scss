@@ -208,7 +208,7 @@
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: a11y('disabled-opacity');
       cursor: not-allowed;
     }
 

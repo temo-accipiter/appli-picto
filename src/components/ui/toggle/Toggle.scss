@@ -38,7 +38,7 @@
   // État désactivé
   &--disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: a11y('disabled-opacity');
   }
 }
 

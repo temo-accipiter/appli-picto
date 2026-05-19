@@ -1576,7 +1576,10 @@ $a11y-tokens: (
   // WCAG 1.4.12 paragraph spacing
   'letter-spacing-min': 0.12em,
   // WCAG 1.4.12 letter spacing
-  'word-spacing-min': 0.16em // WCAG 1.4.12 word spacing
+  'word-spacing-min': 0.16em,
+  // WCAG 1.4.12 word spacing
+  // === Disabled states ===
+  'disabled-opacity': 0.5 // Opacité WCAG AA pour éléments désactivés (Toggle, Checkbox, DeviceList...)
 ) !default;
 
 // =============================================================================

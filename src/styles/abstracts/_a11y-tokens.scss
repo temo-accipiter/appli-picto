@@ -81,6 +81,9 @@
   // === Spacing ===
   --a11y-line-spacing-min: #{a11y('line-spacing-min')};
   --a11y-paragraph-spacing-min: #{a11y('paragraph-spacing-min')};
+
+  // === Disabled states ===
+  --a11y-disabled-opacity: #{a11y('disabled-opacity')};
 }
 
 // =============================================================================
@@ -123,6 +126,9 @@
 ///   - paragraph-spacing-min (1.5em)
 ///   - letter-spacing-min (0.12em)
 ///   - word-spacing-min (0.16em)
+///
+///   === Disabled states ===
+///   - disabled-opacity (0.5) — éléments désactivés WCAG AA (Toggle, Checkbox, DeviceList...)
 ///
 /// EXEMPLES :
 ///

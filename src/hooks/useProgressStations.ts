@@ -1,5 +1,6 @@
 import { supabase } from '@/utils/supabaseClient'
 import { useEffect, useState } from 'react'
+import { isAbortLike } from '@/hooks/_net'
 import type { Database } from '@/types/supabase'
 
 type ProgressStation = Database['public']['Tables']['progress_stations']['Row']
@@ -19,10 +20,6 @@ interface UseProgressStationsReturn {
  * Lecture déterministe : tri strict par position croissante, AUCUNE
  * randomisation ni cycle. La prévisibilité de l'ordre des arrêts est
  * une exigence UX TSA (anti-surprise).
- *
- * Pattern réseau aligné sur useStations (supabase.from direct, sans
- * AbortController). La migration vers withAbortSafe/isAbortLike reste
- * une dette hors périmètre de cette mission.
  */
 export default function useProgressStations(
   style: string = 'train-soleil'
@@ -33,23 +30,37 @@ export default function useProgressStations(
 
   useEffect(() => {
     if (!style) return
-    ;(async () => {
-      setLoading(true)
-      setError(null)
-      const { data, error: err } = await supabase
-        .from('progress_stations')
-        .select('style,position,label')
-        .eq('style', style)
-        .order('position', { ascending: true })
 
-      if (err) {
-        setError(err as unknown as Error)
-        setStations([])
-      } else {
+    const controller = new AbortController()
+    setLoading(true)
+    setError(null)
+
+    const fetchStations = async () => {
+      try {
+        const { data, error: err } = await supabase
+          .from('progress_stations')
+          .select('style,position,label')
+          .eq('style', style)
+          .order('position', { ascending: true })
+          .abortSignal(controller.signal)
+
+        if (controller.signal.aborted) return
+        if (err) throw err
+
         setStations((data ?? []) as ProgressStation[])
+      } catch (err) {
+        if (controller.signal.aborted || isAbortLike(err)) return
+        setError(err as Error)
+        setStations([])
+      } finally {
+        if (!controller.signal.aborted) setLoading(false)
       }
-      setLoading(false)
-    })()
+    }
+
+    void fetchStations()
+    return () => {
+      controller.abort()
+    }
   }, [style])
 
   return { stations, loading, error }

@@ -92,7 +92,7 @@
 
     // State: Disabled
     &:disabled {
-      opacity: 0.5;
+      opacity: a11y('disabled-opacity');
       cursor: not-allowed;
       background-color: surface('card');
       border-color: surface('border');
@@ -150,7 +150,7 @@
 
   // Label disabled (when input is disabled)
   &__input:disabled ~ &__label {
-    opacity: 0.5;
+    opacity: a11y('disabled-opacity');
     cursor: not-allowed;
   }
 

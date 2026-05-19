@@ -61,10 +61,7 @@
 
     // Toggle OFF : grille dimmée (les boutons sont déjà disabled côté TSX).
     &--disabled {
-      // Opacité hardcodée alignée sur le précédent Toggle.scss.
-      // DETTE : créer un token a11y('disabled-opacity') et migrer
-      // Toggle + TrainThemeSelector en même temps (Phase 5 ou V2).
-      opacity: 0.5;
+      opacity: a11y('disabled-opacity');
       pointer-events: none;
     }
   }
@@ -121,10 +118,7 @@
   // Vignette « Bientôt » : dimmée, curseur interdit.
   &--soon {
     cursor: not-allowed;
-    // Opacité hardcodée alignée sur le précédent Toggle.scss.
-    // DETTE : créer un token a11y('disabled-opacity') et migrer
-    // Toggle + TrainThemeSelector en même temps (Phase 5 ou V2).
-    opacity: 0.55;
+    opacity: a11y('disabled-opacity');
   }
 
   &:disabled {
