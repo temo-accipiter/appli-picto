@@ -43,7 +43,6 @@ export type Database = {
           reduced_motion: boolean
           time_timer_enabled: boolean
           toasts_enabled: boolean
-          train_line: string | null
           train_progress_enabled: boolean
           train_type: Database['public']['Enums']['transport_type']
           updated_at: string
@@ -56,7 +55,6 @@ export type Database = {
           reduced_motion?: boolean
           time_timer_enabled?: boolean
           toasts_enabled?: boolean
-          train_line?: string | null
           train_progress_enabled?: boolean
           train_type?: Database['public']['Enums']['transport_type']
           updated_at?: string
@@ -69,7 +67,6 @@ export type Database = {
           reduced_motion?: boolean
           time_timer_enabled?: boolean
           toasts_enabled?: boolean
-          train_line?: string | null
           train_progress_enabled?: boolean
           train_type?: Database['public']['Enums']['transport_type']
           updated_at?: string

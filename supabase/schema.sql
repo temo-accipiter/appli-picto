@@ -3915,12 +3915,10 @@ CREATE TABLE IF NOT EXISTS "public"."account_preferences" (
     "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "updated_at" timestamp with time zone DEFAULT "now"() NOT NULL,
     "train_progress_enabled" boolean DEFAULT true NOT NULL,
-    "train_line" "text",
     "train_type" "public"."transport_type" DEFAULT 'metro'::"public"."transport_type" NOT NULL,
     "progress_style" "text" DEFAULT 'train-soleil'::"text" NOT NULL,
     "time_timer_enabled" boolean DEFAULT true NOT NULL,
-    CONSTRAINT "account_preferences_progress_style_chk" CHECK (("progress_style" = ANY (ARRAY['train-soleil'::"text", 'train-foret'::"text", 'train-ocean'::"text"]))),
-    CONSTRAINT "account_preferences_train_line_chk" CHECK ((("train_line" IS NULL) OR ((("char_length"("train_line") >= 1) AND ("char_length"("train_line") <= 32)) AND ("train_line" ~ '^[0-9A-Za-z][0-9A-Za-z]*$'::"text"))))
+    CONSTRAINT "account_preferences_progress_style_chk" CHECK (("progress_style" = ANY (ARRAY['train-soleil'::"text", 'train-foret'::"text", 'train-ocean'::"text"])))
 );
 
 ALTER TABLE ONLY "public"."account_preferences" FORCE ROW LEVEL SECURITY;
