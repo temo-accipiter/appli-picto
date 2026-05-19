@@ -97,16 +97,24 @@ export default function ModalCategory({
                 transition={{ duration: 0.2 }}
               >
                 {cat.label}
-                <ButtonDelete
-                  onClick={() => handleDelete(cat.value)} // Envoie le 'value' (slug)
-                  title={`${t('edition.deleteCategoryTitle')} ${cat.label}`}
-                />
+                {cat.label.toLowerCase().trim() !== 'sans catégorie' && (
+                  <ButtonDelete
+                    onClick={() => handleDelete(cat.value)}
+                    title={`${t('edition.deleteCategoryTitle')} ${cat.label}`}
+                  />
+                )}
               </motion.li>
             ))}
           </AnimatePresence>
         </ul>
 
         <form className="category-form" onSubmit={handleSubmit}>
+          <label htmlFor="new-category" className="category-form__label">
+            Nom de la catégorie{' '}
+            <span className="category-form__required" aria-hidden="true">
+              *
+            </span>
+          </label>
           <InputWithValidation
             id="new-category"
             value={newCategory}
@@ -115,11 +123,14 @@ export default function ModalCategory({
             rules={validationRules}
             ariaLabel={t('edition.newCategory')}
           />
-          <Button
-            label={t('actions.add')}
-            type="submit"
-            disabled={isSubmitting || hasError}
-          />
+          <div className="category-form__actions">
+            <Button
+              label={t('actions.add')}
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting || hasError}
+            />
+          </div>
         </form>
       </Modal>
     </>

@@ -70,6 +70,7 @@ export default function CreateCardModal({
   const [imageError, setImageError] = useState('')
   const [isDragOver, setIsDragOver] = useState(false)
   const [published, setPublished] = useState(false)
+  const [nameTouched, setNameTouched] = useState(false)
 
   // ── Upload ──────────────────────────────────────────────────────────────────
   const [isUploading, setIsUploading] = useState(false)
@@ -103,9 +104,21 @@ export default function CreateCardModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uploadedImagePath])
 
+  // ── Validation du nom ─────────────────────────────────────────────────────
+  const nameError: string | null = (() => {
+    if (name.startsWith(' '))
+      return 'Le nom ne peut pas commencer par un espace.'
+    if (name.endsWith(' '))
+      return 'Le nom ne peut pas se terminer par un espace.'
+    if (name.includes('  ')) return 'Les espaces doubles ne sont pas autorisés.'
+    if (nameTouched && name.trim() === '') return 'Le nom est obligatoire.'
+    return null
+  })()
+
   // ── Validation formulaire ──────────────────────────────────────────────────
   const isValid =
     name.trim() !== '' &&
+    !nameError &&
     imageFile !== null &&
     !isUploading &&
     !imageError &&
@@ -320,14 +333,11 @@ export default function CreateCardModal({
   }
 
   // ── Config selon variant ───────────────────────────────────────────────────
-  const subtitle =
-    variant === 'bank'
-      ? 'Ajouter un pictogramme à la banque'
-      : 'Ajouter un pictogramme personnel'
-
   const categoryOptions = [
     { value: 'none', label: 'Sans catégorie' },
-    ...categories.map(c => ({ value: c.id, label: c.name })),
+    ...categories
+      .filter(c => c.name.toLowerCase().trim() !== 'sans catégorie')
+      .map(c => ({ value: c.id, label: c.name })),
   ]
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -339,7 +349,6 @@ export default function CreateCardModal({
       isOpen={true}
       onClose={onClose}
       title="Nouvelle carte"
-      subtitle={subtitle}
       size="medium"
       closeOnOverlay={!isUploading}
       closeOnEscape={!isUploading}
@@ -347,13 +356,7 @@ export default function CreateCardModal({
       overlayClassName={overlayClassName}
       actions={[
         {
-          label: 'Annuler',
-          onClick: onClose,
-          variant: 'secondary',
-          disabled: isUploading,
-        },
-        {
-          label: isUploading ? 'Création…' : 'Créer la carte',
+          label: isUploading ? 'Ajout en cours…' : 'Ajouter',
           onClick: handleCreate,
           variant: 'primary',
           disabled: !isValid || isUploading,
@@ -363,36 +366,34 @@ export default function CreateCardModal({
     >
       {/* ── Saisie du nom ──────────────────────────────────────────────────── */}
       <div className="create-card-modal__field">
-        <div className="create-card-modal__field-header">
-          <label
-            htmlFor="create-card-name"
-            className="create-card-modal__label"
-          >
-            Nom de la carte{' '}
-            <span className="create-card-modal__required" aria-hidden="true">
-              *
-            </span>
-          </label>
-          <span
-            className="create-card-modal__counter"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {name.length}/100
+        <label htmlFor="create-card-name" className="create-card-modal__label">
+          Nom de la carte{' '}
+          <span className="create-card-modal__required" aria-hidden="true">
+            *
           </span>
-        </div>
+        </label>
         <input
           id="create-card-name"
           type="text"
           className="create-card-modal__input"
           value={name}
           onChange={e => setName(e.target.value)}
+          onBlur={() => setNameTouched(true)}
           placeholder="Ex : Se brosser les dents"
           maxLength={100}
           disabled={isUploading}
           autoFocus
           aria-required="true"
+          aria-describedby="create-card-name-error"
+          aria-invalid={!!nameError}
         />
+        <p
+          id="create-card-name-error"
+          className="create-card-modal__name-error"
+          role="alert"
+        >
+          {nameError ?? ''}
+        </p>
       </div>
 
       {/* ── Catégorie (personal uniquement) ────────────────────────────────── */}
@@ -411,17 +412,12 @@ export default function CreateCardModal({
 
       {/* ── Upload image ────────────────────────────────────────────────────── */}
       <div className="create-card-modal__field">
-        <div className="create-card-modal__field-header">
-          <label className="create-card-modal__label">
-            Image{' '}
-            <span className="create-card-modal__required" aria-hidden="true">
-              *
-            </span>
-          </label>
-          <span className="create-card-modal__format-hint">
-            JPEG, PNG, WebP · max 100 Ko
+        <label className="create-card-modal__label">
+          Image{' '}
+          <span className="create-card-modal__required" aria-hidden="true">
+            *
           </span>
-        </div>
+        </label>
 
         {/* Input natif masqué */}
         <input
@@ -435,116 +431,119 @@ export default function CreateCardModal({
           tabIndex={-1}
         />
 
-        {!imageFile ? (
-          /* Zone drag & drop */
-          <div
-            className={`create-card-modal__dropzone${isDragOver ? ' create-card-modal__dropzone--active' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            role="button"
-            tabIndex={0}
-            aria-label="Zone de dépôt d'image. Cliquez ou déposez une image."
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                handleBrowseClick()
-              }
-            }}
-            onClick={handleBrowseClick}
-          >
-            <span
-              className="create-card-modal__dropzone-icon"
-              aria-hidden="true"
+        <div className="create-card-modal__upload-zone">
+          {!imageFile ? (
+            /* Zone drag & drop */
+            <div
+              className={`create-card-modal__dropzone${isDragOver ? ' create-card-modal__dropzone--active' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              role="button"
+              tabIndex={0}
+              aria-label="Zone de dépôt d'image. Cliquez ou déposez une image."
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  handleBrowseClick()
+                }
+              }}
+              onClick={handleBrowseClick}
             >
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="17 8 12 3 7 8" />
-                <line x1="12" y1="3" x2="12" y2="15" />
-              </svg>
-            </span>
-            <p className="create-card-modal__dropzone-text">
-              Glisser une image ou{' '}
-              <span className="create-card-modal__dropzone-link" role="link">
-                parcourir
-              </span>
-            </p>
-            <p className="create-card-modal__dropzone-hint">
-              Carré recommandé · sera compressée automatiquement
-            </p>
-          </div>
-        ) : (
-          /* Prévisualisation fichier */
-          <div className="create-card-modal__preview">
-            <div className="create-card-modal__preview-thumb">
-              {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Aperçu de la carte"
-                  className="create-card-modal__preview-img"
-                />
-              )}
-            </div>
-            <div className="create-card-modal__preview-info">
-              <span className="create-card-modal__preview-filename">
-                {imageInfo?.filename ?? imageFile.name}
-              </span>
-              {imageInfo && (
-                <span className="create-card-modal__preview-meta">
-                  {imageInfo.sizeKo} Ko · {imageInfo.width} × {imageInfo.height}{' '}
-                  px
-                </span>
-              )}
-              <div
-                className="create-card-modal__progress-bar"
-                role="progressbar"
-                aria-valuenow={uploadProgress}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={isUploading ? 'Upload en cours' : 'Image prête'}
-              >
-                <div
-                  className="create-card-modal__progress-fill"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="default"
-              className="create-card-modal__preview-delete"
-              onClick={handleRemoveImage}
-              disabled={isUploading}
-              aria-label="Supprimer l'image sélectionnée"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <span
+                className="create-card-modal__dropzone-icon"
                 aria-hidden="true"
               >
-                <polyline points="3 6 5 6 21 6" />
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                <path d="M10 11v6M14 11v6" />
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-              </svg>
-            </Button>
-          </div>
-        )}
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+              </span>
+              <p className="create-card-modal__dropzone-text">
+                Glisser une image ou{' '}
+                <span className="create-card-modal__dropzone-link" role="link">
+                  parcourir
+                </span>
+              </p>
+            </div>
+          ) : (
+            /* Prévisualisation fichier */
+            <div className="create-card-modal__preview">
+              <div className="create-card-modal__preview-thumb">
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Aperçu de la carte"
+                    className="create-card-modal__preview-img"
+                  />
+                )}
+              </div>
+              <div className="create-card-modal__preview-info">
+                <span className="create-card-modal__preview-filename">
+                  {imageInfo?.filename ?? imageFile.name}
+                </span>
+                {isUploading && (
+                  <div className="create-card-modal__progress-wrapper">
+                    <div
+                      className="create-card-modal__progress-bar"
+                      role="progressbar"
+                      aria-valuenow={uploadProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Progression de l'upload"
+                    >
+                      <div
+                        className="create-card-modal__progress-fill"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <span
+                      className="create-card-modal__progress-label"
+                      aria-hidden="true"
+                    >
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="default"
+                className="create-card-modal__preview-delete"
+                onClick={handleRemoveImage}
+                disabled={isUploading}
+                aria-label="Supprimer l'image sélectionnée"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6M14 11v6" />
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                </svg>
+              </Button>
+            </div>
+          )}
+        </div>
 
         {imageError && (
           <p className="create-card-modal__image-error" role="alert">
@@ -560,19 +559,12 @@ export default function CreateCardModal({
             id="create-card-published"
             checked={published}
             onChange={setPublished}
-            aria-label={published ? 'Publiée immédiatement' : 'En brouillon'}
+            aria-label={published ? 'Publiée' : 'Dépubliée'}
             disabled={isUploading}
           />
-          <div className="create-card-modal__toggle-text">
-            <span className="create-card-modal__toggle-label">
-              {published ? 'Publiée immédiatement' : 'En brouillon'}
-            </span>
-            <span className="create-card-modal__toggle-hint">
-              {published
-                ? 'La carte sera visible par tous les utilisateurs dès la création.'
-                : 'Visible uniquement par les administrateurs. Publiable plus tard.'}
-            </span>
-          </div>
+          <span className="create-card-modal__toggle-label">
+            {published ? 'Publiée' : 'Dépubliée'}
+          </span>
         </div>
       )}
     </Modal>

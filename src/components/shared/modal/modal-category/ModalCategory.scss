@@ -56,3 +56,36 @@
     }
   }
 }
+
+// ── Formulaire d'ajout de catégorie ──────────────────────────────────────────
+
+.category-form {
+  display: flex;
+  flex-direction: column;
+  gap: spacing('md'); // 16px — espace entre le champ et le bouton
+
+  // Override focus — même style que create-card-modal__input
+  .input-field__input {
+    &:focus-visible {
+      outline: none;
+      border-color: semantic('info', 'border');
+      box-shadow: shadow('focus');
+    }
+  }
+}
+
+.category-form__label {
+  font-size: font-size('base');
+  font-weight: font-weight('semibold');
+  color: text('default');
+}
+
+.category-form__required {
+  color: semantic('error', 'dark');
+  margin-left: spacing('xs');
+}
+
+.category-form__actions {
+  display: flex;
+  justify-content: center;
+}

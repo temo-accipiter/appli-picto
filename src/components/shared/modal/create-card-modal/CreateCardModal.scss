@@ -104,9 +104,19 @@
   border-width: 0;
 }
 
+// ── Conteneur upload à hauteur fixe (évite le saut lors de la sélection) ──
+
+.create-card-modal__upload-zone {
+  display: flex;
+  flex-direction: column;
+  // Hauteur stable quel que soit l'état (dropzone ou preview)
+  min-height: calc(#{spacing('xl')} * 4); // 128px mobile
+}
+
 // ── Zone de dépôt (Drag & Drop) ───────────────────────────────────────────
 
 .create-card-modal__dropzone {
+  flex: 1; // remplit create-card-modal__upload-zone
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -119,8 +129,6 @@
   cursor: pointer;
   @include safe-transition(background border-color);
   text-align: center;
-  // ✅ Cible tactile WCAG
-  min-height: size('touch-target-min');
 
   &:hover,
   &:focus-visible {
@@ -175,6 +183,7 @@
 // ── Prévisualisation fichier ──────────────────────────────────────────────
 
 .create-card-modal__preview {
+  flex: 1; // remplit create-card-modal__upload-zone
   display: flex;
   align-items: center;
   gap: spacing('md');
@@ -226,9 +235,15 @@
   color: text('light');
 }
 
-// Barre de progression
+// Barre de progression — visible uniquement pendant l'upload
+.create-card-modal__progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: spacing('xs');
+}
+
 .create-card-modal__progress-bar {
-  width: 100%;
+  flex: 1;
   height: size('4');
   background: surface('border');
   border-radius: radius('full');
@@ -237,9 +252,18 @@
 
 .create-card-modal__progress-fill {
   height: 100%;
-  background: semantic('success', 'dark');
+  background: semantic('info', 'dark');
   border-radius: radius('full');
-  @include safe-transition(width);
+  @include safe-transition(width, timing('base'), easing('ease-out'));
+}
+
+.create-card-modal__progress-label {
+  font-size: font-size('xs');
+  color: text('light');
+  white-space: nowrap;
+  min-width: 2.5em;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 // Bouton suppression image
@@ -275,12 +299,47 @@
   }
 }
 
-// ── Erreur image ──────────────────────────────────────────────────────────
+// ── Messages d'erreur champs ──────────────────────────────────────────────
+
+.create-card-modal__name-error {
+  margin: 0;
+  font-size: font-size('sm');
+  color: semantic('error', 'dark');
+  // Espace réservé à l'avance — l'apparition du message ne modifie pas la hauteur du modal
+  min-height: spacing('16');
+  line-height: line-height('tight');
+
+  &:empty {
+    opacity: opacity('none');
+  }
+}
 
 .create-card-modal__image-error {
   margin: 0;
   font-size: font-size('sm');
   color: semantic('error', 'dark');
+}
+
+// ── Bouton validation centré ──────────────────────────────────────────────
+
+.create-card-modal {
+  .modal__footer {
+    justify-content: center;
+  }
+}
+
+// ── Select catégorie — focus identique à l'input du nom ───────────────────
+// Override spécifique au modal pour harmoniser le comportement visuel
+
+.create-card-modal {
+  .select-with-image__trigger {
+    &[data-state='open'],
+    &:focus-visible {
+      outline: none;
+      border-color: semantic('info', 'border');
+      box-shadow: shadow('focus');
+    }
+  }
 }
 
 // ── Champ toggle publié/brouillon (bank) ──────────────────────────────────
@@ -334,8 +393,12 @@
   }
 }
 
-// Tablette (576px+) — dropzone plus haute
+// Tablette (576px+) — dropzone plus haute, upload-zone ajustée
 @include respond-to(sm) {
+  .create-card-modal__upload-zone {
+    min-height: calc(#{spacing('xl')} * 5); // 160px tablette
+  }
+
   .create-card-modal__dropzone {
     padding: spacing('xl') spacing('lg');
   }

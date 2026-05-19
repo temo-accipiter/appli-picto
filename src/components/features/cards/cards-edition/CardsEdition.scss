@@ -334,6 +334,16 @@
       clip: rect(0, 0, 0, 0);
       white-space: nowrap;
     }
+
+    // Override focus — même style que les inputs du modal de création
+    .select-with-image__trigger {
+      &[data-state='open'],
+      &:focus-visible {
+        outline: none;
+        border-color: semantic('info', 'border');
+        box-shadow: shadow('focus');
+      }
+    }
   }
 }
 
