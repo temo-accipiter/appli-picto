@@ -14,8 +14,8 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-const { mockSupabase, mockUser, mockUseAuth, mockUseAccountStatus } = vi.hoisted(
-  () => ({
+const { mockSupabase, mockUser, mockUseAuth, mockUseAccountStatus } =
+  vi.hoisted(() => ({
     mockSupabase: {
       from: vi.fn(),
     },
@@ -24,8 +24,7 @@ const { mockSupabase, mockUser, mockUseAuth, mockUseAccountStatus } = vi.hoisted
     },
     mockUseAuth: vi.fn(),
     mockUseAccountStatus: vi.fn(),
-  })
-)
+  }))
 
 vi.mock('@/utils/supabaseClient', () => ({
   supabase: mockSupabase,
@@ -108,9 +107,12 @@ describe('useBankCards — hydratation category_id', () => {
     await waitFor(() => expect(result.current.loading).toBe(false))
 
     expect(result.current.cards).toHaveLength(2)
-    expect(result.current.cards[0].category_id).toBe('cat-repas')
+    const [first, second] = result.current.cards
+    expect(first).toBeDefined()
+    expect(second).toBeDefined()
+    expect(first?.category_id).toBe('cat-repas')
     // card-2 sans mapping → fallback null (ux.md §12 "Sans catégorie" applicatif)
-    expect(result.current.cards[1].category_id).toBeNull()
+    expect(second?.category_id).toBeNull()
   })
 
   it('renvoie category_id=null pour toutes les cartes si aucun mapping', async () => {
@@ -135,7 +137,9 @@ describe('useBankCards — hydratation category_id', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false))
 
-    expect(result.current.cards[0].category_id).toBeNull()
+    const [card] = result.current.cards
+    expect(card).toBeDefined()
+    expect(card?.category_id).toBeNull()
   })
 
   it('skip la requête pivot quand visitor (anon) et renvoie category_id=null', async () => {
@@ -161,7 +165,9 @@ describe('useBankCards — hydratation category_id', () => {
     // Vérif : pas de requête sur le pivot user_card_categories (visitor → skip)
     const tablesQueried = mockSupabase.from.mock.calls.map(call => call[0])
     expect(tablesQueried).not.toContain('user_card_categories')
-    expect(result.current.cards[0].category_id).toBeNull()
+    const [card] = result.current.cards
+    expect(card).toBeDefined()
+    expect(card?.category_id).toBeNull()
   })
 })
 

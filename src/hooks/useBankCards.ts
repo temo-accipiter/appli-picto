@@ -48,6 +48,7 @@ export default function useBankCards(): UseBankCardsReturn {
 
   // ✅ Contexte utilisateur pour filtrage Realtime RLS-aware
   const { user, authReady } = useAuth()
+  const userId = user?.id ?? null
   const { isAdmin } = useAccountStatus()
 
   // ✅ Channel persistant pour broadcasts (partagé avec useAdminBankCards)
@@ -81,11 +82,11 @@ export default function useBankCards(): UseBankCardsReturn {
         // Skip si visitor (anon) : pas de catégorisation possible sans compte
         // Dette perf documentée : pourrait être optimisé en une RPC ou JOIN côté DB
         let mappingsMap = new Map<string, string>()
-        if (user) {
+        if (userId) {
           const { data: mappingsData, error: mappingsError } = await supabase
             .from('user_card_categories')
             .select('card_id, category_id')
-            .eq('user_id', user.id)
+            .eq('user_id', userId)
             .abortSignal(controller.signal)
 
           if (controller.signal.aborted) return
@@ -183,7 +184,7 @@ export default function useBankCards(): UseBankCardsReturn {
     return () => {
       controller.abort()
     }
-  }, [refreshKey, authReady, isAdmin, persistentChannel, user?.id])
+  }, [refreshKey, authReady, isAdmin, persistentChannel, userId])
 
   const refresh = useCallback(() => {
     setRefreshKey(k => k + 1)
