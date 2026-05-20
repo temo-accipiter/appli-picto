@@ -339,6 +339,32 @@ export default function Edition({
     show('Catégorie modifiée', 'success')
   }
 
+  // ✅ Catégorisation cartes banque (ux.md §12 — classement local par utilisateur)
+  // Décision 3 : pas de hook partagé extrait — updateCardCategory écrit dans
+  // user_card_categories sans contrainte sur cards.type, donc réutilisable tel quel.
+  // L'UPSERT côté DB n'a aucune logique spécifique aux cartes personnelles.
+  const handleUpdateBankCardCategorie = async (
+    id: string | number,
+    categoryId: string
+  ) => {
+    const effectiveCategoryId = categoryId || systemCategoryId || null
+    if (!effectiveCategoryId) {
+      show('Aucune catégorie disponible', 'error')
+      return
+    }
+
+    const { error } = await updateCardCategory(String(id), effectiveCategoryId)
+
+    if (error) {
+      console.error('[Edition] Erreur update catégorie carte banque:', error)
+      show('Impossible de modifier la catégorie', 'error')
+      return
+    }
+
+    refreshBankCards()
+    show('Catégorie modifiée', 'success')
+  }
+
   const handleUpdateLabel = async (id: string | number, label: string) => {
     const { error } = await updateCard(String(id), { name: label })
     if (error) {
@@ -456,15 +482,25 @@ export default function Edition({
             checkboxDisabled={checkboxDisabled}
             lockedCardIds={lockedCardIds}
             totalPersonalCount={cards.length}
-            // 🆕 Props cartes banque (avec catégories hydratées)
-            bankCards={bankCardsForDisplay.map(bc => ({
-              id: bc.id,
-              name: bc.name,
-              image_url: bc.image_url,
-              type: 'bank' as const,
-              published: bc.published, // ✅ Statut réel de publication
-              category_id: bc.category_id ?? null, // ✅ Catégorie utilisateur (§ux.md 12)
-            }))}
+            // 🆕 Props cartes banque (avec catégories hydratées + filtrage transversal)
+            bankCards={bankCardsForDisplay
+              .filter(
+                bc =>
+                  filterCategory === 'all' ||
+                  (bc.category_id || 'none') === filterCategory
+              )
+              .map(bc => ({
+                id: bc.id,
+                name: bc.name,
+                image_url: bc.image_url,
+                type: 'bank' as const,
+                published: bc.published, // ✅ Statut réel de publication
+                category_id: bc.category_id ?? null, // ✅ Catégorie utilisateur (§ux.md 12)
+              }))}
+            totalBankCount={bankCardsForDisplay.length}
+            {...(!(isVisitor || isFree)
+              ? { onUpdateBankCardCategorie: handleUpdateBankCardCategorie }
+              : {})}
             {...(isAdmin
               ? {
                   onCreateBankCard: handleCreateBankCard,

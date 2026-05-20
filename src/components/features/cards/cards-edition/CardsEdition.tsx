@@ -106,6 +106,16 @@ interface CardsEditionProps {
    * Si fourni, l'onglet "Mes cartes" affiche toujours ce total même avec un filtre actif.
    */
   totalPersonalCount?: number
+  /**
+   * Nombre total de cartes banque (sans filtre catégorie).
+   * Si fourni, l'onglet "Banque" affiche toujours ce total même avec un filtre actif.
+   */
+  totalBankCount?: number
+  /**
+   * Handler assignation catégorie sur carte banque (UPSERT pivot user_card_categories).
+   * ✅ Gating Subscriber/Admin : non passé en mode Free (décision 2).
+   */
+  onUpdateBankCardCategorie?: (id: string | number, categoryId: string) => void
 }
 
 export default function CardsEdition({
@@ -136,6 +146,8 @@ export default function CardsEdition({
   isAdmin = false,
   isFree = false,
   totalPersonalCount,
+  totalBankCount,
+  onUpdateBankCardCategorie,
 }: CardsEditionProps) {
   const [modalCardOpen, setModalCardOpen] = useState(false)
   const [manageCatOpen, setManageCatOpen] = useState(false)
@@ -269,6 +281,22 @@ export default function CardsEdition({
   // ✅ Subscriber/Admin : Affichage complet avec onglets Mes cartes / Banque
   return (
     <div className="checklist-edition">
+      {/* ── Filtre catégorie transversal (au-dessus des onglets) ─────────── */}
+      {/* Décision 1 : un seul filtre, appliqué simultanément aux 2 panneaux */}
+      {/* Décision 2 : pas affiché en mode Free (early-return plus haut) */}
+      <div className="cards-edition__filter">
+        <Select
+          id="filter-category"
+          label={t('tasks.filterByCategory')}
+          options={[
+            { value: 'all', label: t('tasks.all') },
+            ...categories.map(c => ({ value: c.id, label: c.name })),
+          ]}
+          value={filterCategory}
+          onChange={value => onChangeFilterCategory(String(value))}
+        />
+      </div>
+
       {/* ── Onglets Mes cartes / Banque ──────────────────────────────────── */}
       <div
         className="cards-edition__tabs"
@@ -293,7 +321,7 @@ export default function CardsEdition({
           className={`cards-edition__tab${activeTab === 'bank' ? ' cards-edition__tab--active' : ''}`}
           onClick={() => setActiveTab('bank')}
         >
-          Banque ({bankCards?.length ?? 0})
+          Banque ({totalBankCount ?? bankCards?.length ?? 0})
         </button>
       </div>
 
@@ -321,16 +349,6 @@ export default function CardsEdition({
                 }
               }}
             />
-            <Select
-              id="filter-category"
-              label={t('tasks.filterByCategory')}
-              options={[
-                { value: 'all', label: t('tasks.all') },
-                ...categories.map(c => ({ value: c.id, label: c.name })),
-              ]}
-              value={filterCategory}
-              onChange={value => onChangeFilterCategory(String(value))}
-            />
           </div>
           {items.length === 0 ? (
             <div
@@ -338,7 +356,9 @@ export default function CardsEdition({
               role="status"
               aria-live="polite"
             >
-              💤 Aucune carte personnelle
+              {filterCategory === 'all'
+                ? 'Aucune carte personnelle'
+                : 'Aucune carte personnelle dans cette catégorie'}
             </div>
           ) : (
             <DndGrid
@@ -420,7 +440,9 @@ export default function CardsEdition({
               role="status"
               aria-live="polite"
             >
-              💤 Aucune carte de banque disponible
+              {filterCategory === 'all'
+                ? 'Aucune carte de banque disponible'
+                : 'Aucune carte de banque dans cette catégorie'}
             </div>
           ) : (
             <DndGrid
@@ -434,6 +456,8 @@ export default function CardsEdition({
                 const canDeleteBankCard = isAdmin && !!onDeleteBankCard
                 const canTogglePublished =
                   isAdmin && !!onUpdateBankCardPublished
+                // ✅ Catégorisation banque : disponible Subscriber+Admin (décision 2)
+                const canCategorize = !!onUpdateBankCardCategorie
 
                 return (
                   <EditionCard
@@ -448,6 +472,20 @@ export default function CardsEdition({
                     labelId={bankCard.id}
                     label={drafts[bankCard.id] ?? bankCard.name}
                     editable={canEditBankCard}
+                    {...(canCategorize
+                      ? {
+                          categorie: bankCard.category_id || '',
+                          ...(systemCategoryId != null
+                            ? { defaultCategoryId: systemCategoryId }
+                            : {}),
+                          onCategorieChange: (val: string) =>
+                            onUpdateBankCardCategorie?.(bankCard.id, val),
+                          categorieOptions: categories.map(c => ({
+                            value: c.id,
+                            label: c.name,
+                          })),
+                        }
+                      : {})}
                     {...(canEditBankCard
                       ? {
                           onLabelChange: (val: string) =>
