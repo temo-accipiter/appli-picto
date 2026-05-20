@@ -112,8 +112,14 @@ export default function Edition({
   }
 
   const { categories, addCategory, deleteCategory } = useCategories(reload)
-  const { cards, createCard, updateCard, updateCardCategory, deleteCard } =
-    usePersonalCards()
+  const {
+    cards,
+    createCard,
+    updateCard,
+    updateCardCategory,
+    deleteCard,
+    refresh: refreshPersonalCards,
+  } = usePersonalCards()
 
   // 🆕 Statut admin + free (détection cosmétique)
   const { isAdmin, isFree } = useAccountStatus()
@@ -312,7 +318,13 @@ export default function Edition({
   const handleDeleteCategory = async (
     value: string | number
   ): Promise<void> => {
-    await deleteCategory(String(value))
+    const { error } = await deleteCategory(String(value))
+    if (error) return
+    // DB-first : le trigger categories_before_delete_remap_to_system a reassigne
+    // les mappings vers la categorie systeme. Refetch des caches locaux pour eviter
+    // que les Select affichent le placeholder sur les cartes a category_id obsolete.
+    refreshBankCards()
+    refreshPersonalCards()
   }
 
   const handleUpdateCategorie = async (
