@@ -347,6 +347,29 @@
   }
 }
 
+// ── Filtre catégorie transversal (au-dessus des onglets) ──
+// Wrapper neutre du Select de filtre : layout + alignement, sans surcharge visuelle.
+// L'espacement vertical avec .cards-edition__tabs est géré par .checklist-edition
+// (gap: spacing('md')) — pas de margin nécessaire ici.
+.cards-edition__filter {
+  display: flex;
+  align-items: center;
+  gap: spacing('sm');
+
+  // Mobile-first : Select prend la largeur disponible (tap facile au pouce)
+  .select-with-image {
+    flex: 1 1 auto;
+    min-width: size('180');
+  }
+
+  // Tablette+ (≥ 768px) : Select reprend sa largeur intrinsèque
+  @include respond-to('md') {
+    .select-with-image {
+      flex: 0 0 auto;
+    }
+  }
+}
+
 // ── Filtres catégorie en pills ──
 .cards-edition__filter-pills {
   display: flex;
