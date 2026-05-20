@@ -78,14 +78,16 @@ export default function useBankCards(): UseBankCardsReturn {
         const rawCards = (data as Card[]) || []
 
         // ✅ Catégorisation par utilisateur (§ux.md 12 — classement local par user)
-        // 2e requête sur user_card_categories filtrée auth.uid()
+        // 2e requête sur user_card_categories filtrée auth.uid() + embed is_system
         // Skip si visitor (anon) : pas de catégorisation possible sans compte
-        // Dette perf documentée : pourrait être optimisé en une RPC ou JOIN côté DB
-        let mappingsMap = new Map<string, string>()
+        // Normalisation : si la catégorie liée est is_system=true ("Sans catégorie"),
+        // on force category_id à null pour aligner avec le cas "jamais catégorisée"
+        // (invariant TSA : même signification = même rendu)
+        const mappingsMap = new Map<string, string | null>()
         if (userId) {
           const { data: mappingsData, error: mappingsError } = await supabase
             .from('user_card_categories')
-            .select('card_id, category_id')
+            .select('card_id, category_id, categories(is_system)')
             .eq('user_id', userId)
             .abortSignal(controller.signal)
 
@@ -97,7 +99,9 @@ export default function useBankCards(): UseBankCardsReturn {
             )
           } else if (mappingsData) {
             mappingsData.forEach(m => {
-              mappingsMap.set(m.card_id, m.category_id)
+              const embed = m.categories as { is_system?: boolean } | null
+              const isSystem = embed?.is_system === true
+              mappingsMap.set(m.card_id, isSystem ? null : m.category_id)
             })
           }
         }

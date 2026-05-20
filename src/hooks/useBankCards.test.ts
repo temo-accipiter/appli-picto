@@ -61,6 +61,7 @@ const cardsFetchChain = (data: unknown, error: unknown = null) => ({
 })
 
 // Chaîne fetch pivot : .from('user_card_categories').select(...).eq('user_id', id).abortSignal()
+// Le select inclut désormais l'embed categories(is_system) pour la normalisation systemId→null
 const pivotFetchChain = (data: unknown, error: unknown = null) => ({
   select: vi.fn().mockReturnValue({
     eq: vi.fn().mockReturnValue({
@@ -96,7 +97,13 @@ describe('useBankCards — hydratation category_id', () => {
         image_url: 'b.jpg',
       },
     ]
-    const mappings = [{ card_id: 'card-1', category_id: 'cat-repas' }]
+    const mappings = [
+      {
+        card_id: 'card-1',
+        category_id: 'cat-repas',
+        categories: { is_system: false },
+      },
+    ]
 
     mockSupabase.from
       .mockReturnValueOnce(cardsFetchChain(bankCards))
@@ -113,6 +120,42 @@ describe('useBankCards — hydratation category_id', () => {
     expect(first?.category_id).toBe('cat-repas')
     // card-2 sans mapping → fallback null (ux.md §12 "Sans catégorie" applicatif)
     expect(second?.category_id).toBeNull()
+  })
+
+  it('normalise category_id vers null si la categorie liee est is_system=true (carte reassignee par le trigger DB)', async () => {
+    mockUseAuth.mockReturnValue({ user: mockUser, authReady: true })
+
+    const bankCards = [
+      {
+        id: 'card-1',
+        type: 'bank',
+        published: true,
+        account_id: null,
+        name: 'Manger',
+        image_url: 'a.jpg',
+      },
+    ]
+    // Simule l'etat post-trigger : category_id pointe vers la categorie systeme
+    const mappings = [
+      {
+        card_id: 'card-1',
+        category_id: 'cat-system-id',
+        categories: { is_system: true },
+      },
+    ]
+
+    mockSupabase.from
+      .mockReturnValueOnce(cardsFetchChain(bankCards))
+      .mockReturnValueOnce(pivotFetchChain(mappings))
+
+    const { result } = renderHook(() => useBankCards())
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    const [card] = result.current.cards
+    expect(card).toBeDefined()
+    // Invariant TSA : reassignee vers systeme = jamais categorisee = null
+    expect(card?.category_id).toBeNull()
   })
 
   it('renvoie category_id=null pour toutes les cartes si aucun mapping', async () => {

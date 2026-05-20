@@ -94,10 +94,12 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
 
         const rawCards = (cardsData as Card[]) || []
 
-        // ✅ Query 2 : Mappings user_card_categories (catégories associées)
+        // ✅ Query 2 : Mappings user_card_categories + embed is_system
+        // Normalisation : catégorie système (is_system=true) → null
+        // pour aligner avec le cas "jamais catégorisée" (invariant TSA)
         const { data: mappingsData, error: mappingsError } = await supabase
           .from('user_card_categories')
-          .select('card_id, category_id')
+          .select('card_id, category_id, categories(is_system)')
           .eq('user_id', user.id)
           .abortSignal(controller.signal)
 
@@ -110,10 +112,12 @@ export default function usePersonalCards(): UsePersonalCardsReturn {
         }
 
         // ✅ Hydratation : Associer category_id à chaque carte via mapping
-        const mappingsMap = new Map<string, string>()
+        const mappingsMap = new Map<string, string | null>()
         if (mappingsData) {
           mappingsData.forEach(m => {
-            mappingsMap.set(m.card_id, m.category_id)
+            const embed = m.categories as { is_system?: boolean } | null
+            const isSystem = embed?.is_system === true
+            mappingsMap.set(m.card_id, isSystem ? null : m.category_id)
           })
         }
 
