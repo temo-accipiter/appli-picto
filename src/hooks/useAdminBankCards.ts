@@ -20,6 +20,7 @@ export type AdminBankCard = Card & {
   type: 'bank'
   account_id: null
   published: boolean // ✅ NOT NULL pour bank (contrainte DB)
+  category_id?: string | null // ✅ Catégorie associée via user_card_categories (hydraté client-side, null si absent)
 }
 
 // Résultat des actions (erreur DB retournée telle quelle)
@@ -102,7 +103,38 @@ export default function useAdminBankCards(): UseAdminBankCardsReturn {
         if (controller.signal.aborted) return
         if (fetchError) throw fetchError
 
-        setCards((data as AdminBankCard[]) || [])
+        const rawCards = (data as Card[]) || []
+
+        // ✅ Catégorisation par utilisateur (§ux.md 12 — classement local par user)
+        // 2e requête sur user_card_categories filtrée auth.uid()
+        // Dette perf documentée : pourrait être optimisé en une RPC ou JOIN côté DB
+        const mappingsMap = new Map<string, string>()
+        if (user) {
+          const { data: mappingsData, error: mappingsError } = await supabase
+            .from('user_card_categories')
+            .select('card_id, category_id')
+            .eq('user_id', user.id)
+            .abortSignal(controller.signal)
+
+          if (controller.signal.aborted) return
+          if (mappingsError) {
+            console.warn(
+              '[useAdminBankCards] Erreur mappings catégories (non bloquant):',
+              mappingsError
+            )
+          } else if (mappingsData) {
+            mappingsData.forEach(m => {
+              mappingsMap.set(m.card_id, m.category_id)
+            })
+          }
+        }
+
+        const hydratedCards: AdminBankCard[] = rawCards.map(card => ({
+          ...(card as AdminBankCard),
+          category_id: mappingsMap.get(card.id) ?? null,
+        }))
+
+        setCards(hydratedCards)
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
         setError(err as Error)

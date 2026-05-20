@@ -60,6 +60,7 @@ interface EditionProps {
     name: string
     image_url: string
     published: boolean
+    category_id?: string | null // ✅ Catégorie utilisateur via user_card_categories (hydraté par useBankCards/useAdminBankCards)
   }>
   /** Rafraîchir les cartes de banque depuis la DB */
   refreshBankCards: () => void
@@ -462,6 +463,7 @@ export default function Edition({
               image_url: bc.image_url,
               type: 'bank' as const,
               published: bc.published, // ✅ Statut réel de publication
+              category_id: bc.category_id ?? null, // ✅ Catégorie utilisateur (§ux.md 12)
             }))}
             {...(isAdmin
               ? {

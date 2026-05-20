@@ -16,13 +16,14 @@ import type { Categorie } from '@/types/global'
 import type { CardFormData, CardItem } from '@/types/cards'
 import './CardsEdition.scss'
 
-// 🆕 Carte de banque (lecture seule, utilisable dans timeline)
+// 🆕 Carte de banque (lecture seule au niveau métier, mais user peut la catégoriser localement)
 interface BankCardItem {
   id: string
   name: string
   image_url?: string
   type: 'bank'
   published: boolean
+  category_id?: string | null // ✅ Catégorie utilisateur via user_card_categories (§ux.md 12)
 }
 
 interface CardsEditionProps {

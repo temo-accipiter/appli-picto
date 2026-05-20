@@ -19,6 +19,7 @@ export type BankCard = Card & {
   type: 'bank'
   published: boolean
   account_id: null
+  category_id?: string | null // ✅ Catégorie associée via user_card_categories (hydraté client-side, null si Visitor ou absent)
 }
 
 interface UseBankCardsReturn {
@@ -46,7 +47,7 @@ export default function useBankCards(): UseBankCardsReturn {
   const [refreshKey, setRefreshKey] = useState(0)
 
   // ✅ Contexte utilisateur pour filtrage Realtime RLS-aware
-  const { authReady } = useAuth()
+  const { user, authReady } = useAuth()
   const { isAdmin } = useAccountStatus()
 
   // ✅ Channel persistant pour broadcasts (partagé avec useAdminBankCards)
@@ -73,7 +74,39 @@ export default function useBankCards(): UseBankCardsReturn {
         if (controller.signal.aborted) return
         if (fetchError) throw fetchError
 
-        setCards((data as BankCard[]) || [])
+        const rawCards = (data as Card[]) || []
+
+        // ✅ Catégorisation par utilisateur (§ux.md 12 — classement local par user)
+        // 2e requête sur user_card_categories filtrée auth.uid()
+        // Skip si visitor (anon) : pas de catégorisation possible sans compte
+        // Dette perf documentée : pourrait être optimisé en une RPC ou JOIN côté DB
+        let mappingsMap = new Map<string, string>()
+        if (user) {
+          const { data: mappingsData, error: mappingsError } = await supabase
+            .from('user_card_categories')
+            .select('card_id, category_id')
+            .eq('user_id', user.id)
+            .abortSignal(controller.signal)
+
+          if (controller.signal.aborted) return
+          if (mappingsError) {
+            console.warn(
+              '[useBankCards] Erreur mappings catégories (non bloquant):',
+              mappingsError
+            )
+          } else if (mappingsData) {
+            mappingsData.forEach(m => {
+              mappingsMap.set(m.card_id, m.category_id)
+            })
+          }
+        }
+
+        const hydratedCards: BankCard[] = rawCards.map(card => ({
+          ...(card as BankCard),
+          category_id: mappingsMap.get(card.id) ?? null,
+        }))
+
+        setCards(hydratedCards)
       } catch (err) {
         if (controller.signal.aborted || isAbortLike(err)) return
         console.error('[useBankCards] Erreur lecture banque cartes:', err)
@@ -150,7 +183,7 @@ export default function useBankCards(): UseBankCardsReturn {
     return () => {
       controller.abort()
     }
-  }, [refreshKey, authReady, isAdmin, persistentChannel])
+  }, [refreshKey, authReady, isAdmin, persistentChannel, user?.id])
 
   const refresh = useCallback(() => {
     setRefreshKey(k => k + 1)

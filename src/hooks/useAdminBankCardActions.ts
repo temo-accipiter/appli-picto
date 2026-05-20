@@ -7,6 +7,7 @@ interface RawBankCard {
   name: string
   image_url: string
   published: boolean
+  category_id?: string | null // ✅ Catégorie utilisateur via user_card_categories (hydraté par useBankCards/useAdminBankCards)
 }
 
 type ToastType = 'info' | 'success' | 'warning' | 'error'
@@ -65,7 +66,8 @@ export function useAdminBankCardActions({
         updatePublished: undefined,
       }
 
-  // ── Mapping pour affichage (sans catégories) ──────────────────────────────
+  // ── Mapping pour affichage ────────────────────────────────────────────────
+  // ✅ category_id propagé depuis useBankCards/useAdminBankCards (pivot user_card_categories)
   const bankCardsForDisplay = useMemo(
     () =>
       rawBankCards.map(bc => ({
@@ -73,6 +75,7 @@ export function useAdminBankCardActions({
         name: bc.name,
         image_url: bc.image_url || '',
         published: bc.published,
+        category_id: bc.category_id ?? null,
       })),
     [rawBankCards]
   )
