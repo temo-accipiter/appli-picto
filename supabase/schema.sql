@@ -510,10 +510,9 @@ CREATE OR REPLACE FUNCTION "public"."cards_prevent_delete_bank_if_referenced"() 
     LANGUAGE "plpgsql"
     AS $$
 DECLARE
-  v_has_slot BOOLEAN;
-  v_has_pivot BOOLEAN;
+  v_has_slot       BOOLEAN;
   v_has_seq_mother BOOLEAN;
-  v_has_seq_step BOOLEAN;
+  v_has_seq_step   BOOLEAN;
 BEGIN
   IF OLD.type <> 'bank' THEN
     RETURN OLD;
@@ -522,20 +521,17 @@ BEGIN
   SELECT EXISTS (SELECT 1 FROM slots WHERE card_id = OLD.id)
     INTO v_has_slot;
 
-  SELECT EXISTS (SELECT 1 FROM user_card_categories WHERE card_id = OLD.id)
-    INTO v_has_pivot;
-
   SELECT EXISTS (SELECT 1 FROM sequences WHERE mother_card_id = OLD.id)
     INTO v_has_seq_mother;
 
   SELECT EXISTS (SELECT 1 FROM sequence_steps WHERE step_card_id = OLD.id)
     INTO v_has_seq_step;
 
-  IF v_has_slot OR v_has_pivot OR v_has_seq_mother OR v_has_seq_step THEN
+  IF v_has_slot OR v_has_seq_mother OR v_has_seq_step THEN
     RAISE EXCEPTION
-      'Cannot delete bank card %: still referenced (slots=% , categories=% , seq_mother=% , seq_steps=%)',
-      OLD.id, v_has_slot, v_has_pivot, v_has_seq_mother, v_has_seq_step
-      USING HINT = 'Unpublish the bank card instead of deleting while referenced';
+      'Cannot delete bank card %: still referenced (slots=% , seq_mother=% , seq_steps=%)',
+      OLD.id, v_has_slot, v_has_seq_mother, v_has_seq_step
+      USING HINT = 'Unpublish the bank card instead of deleting while referenced in slots or sequences';
   END IF;
 
   RETURN OLD;
@@ -546,7 +542,7 @@ $$;
 ALTER FUNCTION "public"."cards_prevent_delete_bank_if_referenced"() OWNER TO "postgres";
 
 
-COMMENT ON FUNCTION "public"."cards_prevent_delete_bank_if_referenced"() IS 'Blocks deletion of bank cards while referenced (slots, user_card_categories, sequences, sequence_steps).';
+COMMENT ON FUNCTION "public"."cards_prevent_delete_bank_if_referenced"() IS 'Blocks deletion of bank cards while referenced in slots or sequences. Note: user_card_categories is excluded — FK CASCADE handles cleanup automatically.';
 
 
 
