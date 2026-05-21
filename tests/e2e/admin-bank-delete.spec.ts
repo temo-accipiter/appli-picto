@@ -27,7 +27,37 @@ import { loginAs, getTestClient } from './helpers'
 const ADMIN_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-000000000001'
 const E2E_IMAGE = 'bank-images/e2e-placeholder.png'
 
+// Timeout étendu : loginAs inclut reload + networkidle qui peut prendre 15-20s sur cold start
+test.setTimeout(60000)
+// 1 retry pour absorber les pannes réseau transitoires (Supabase cold start, Docker)
+test.describe.configure({ retries: 1 })
+
 test.beforeEach(async ({ page }) => {
+  // Pré-injecter le consentement cookies avant CHAQUE navigation (addInitScript).
+  // La CookieBanner a position:fixed + z-index élevé et se retrouve sur la zone des
+  // boutons de la modal sur mobile → pointer interception sur Mobile Chrome / Safari.
+  // addInitScript s'exécute avant chaque page.goto / page.reload → bannière invisible.
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'cookie_consent_v2',
+      JSON.stringify({
+        version: '1.0.0',
+        ts: new Date().toISOString(),
+        mode: 'refuse',
+        choices: { necessary: true, analytics: false, marketing: false },
+      })
+    )
+  })
+
+  // ⚠️ Remettre toasts_enabled à true avant chaque test.
+  // La préférence admin peut être désactivée via l'UI entre deux sessions.
+  // Sans ce reset, show('...', 'success') est silencieux → assertion toast échoue.
+  const db = getTestClient()
+  await db
+    .from('account_preferences')
+    .update({ toasts_enabled: true })
+    .eq('account_id', ADMIN_ID)
+
   await loginAs(page, 'admin')
 })
 
@@ -46,7 +76,7 @@ test.describe('T1 — Pivot user_card_categories ne bloque plus la suppression',
         type: 'bank',
         name: 'Carte E2E — pivot',
         image_url: E2E_IMAGE,
-        published: false,
+        published: true,
         account_id: null,
       })
       .select('id')
@@ -85,7 +115,7 @@ test.describe('T1 — Pivot user_card_categories ne bloque plus la suppression',
     await page.getByRole('tab', { name: /Banque/ }).click()
 
     const card = page.locator(`[data-testid="base-card-${cardId}"]`)
-    await expect(card).toBeVisible({ timeout: 10000 })
+    await expect(card).toBeVisible({ timeout: 15000 })
 
     // Vérifier que le Select catégorie est rendu (categorieOptions.length > 0)
     const selectTrigger = card.locator(`#select-categorie-${cardId}`)
@@ -106,7 +136,10 @@ test.describe('T1 — Pivot user_card_categories ne bloque plus la suppression',
 
     // Supprimer la carte via le bouton de la carte
     await card.getByRole('button', { name: /card\.delete|Supprimer/i }).click()
-    const modal = page.getByRole('dialog')
+    // Filtre sur "Confirmer la suppression" pour éviter le match sur le cookie banner (role="dialog" aussi)
+    const modal = page
+      .getByRole('dialog')
+      .filter({ hasText: 'Confirmer la suppression' })
     await expect(modal).toBeVisible({ timeout: 5000 })
     await modal.getByRole('button', { name: 'Supprimer' }).click()
 
@@ -138,7 +171,7 @@ test.describe('T2 — Garde-fou slot conservé après correction', () => {
         type: 'bank',
         name: 'Carte E2E — slot',
         image_url: E2E_IMAGE,
-        published: false,
+        published: true,
         account_id: null,
       })
       .select('id')
@@ -223,11 +256,14 @@ test.describe('T2 — Garde-fou slot conservé après correction', () => {
     await page.getByRole('tab', { name: /Banque/ }).click()
 
     const card = page.locator(`[data-testid="base-card-${cardId}"]`)
-    await expect(card).toBeVisible({ timeout: 10000 })
+    await expect(card).toBeVisible({ timeout: 15000 })
 
     // Tenter la suppression
     await card.getByRole('button', { name: /card\.delete|Supprimer/i }).click()
-    const modal = page.getByRole('dialog')
+    // Filtre sur "Confirmer la suppression" pour éviter le match sur le cookie banner (role="dialog" aussi)
+    const modal = page
+      .getByRole('dialog')
+      .filter({ hasText: 'Confirmer la suppression' })
     await expect(modal).toBeVisible({ timeout: 5000 })
     await modal.getByRole('button', { name: 'Supprimer' }).click()
 
