@@ -10,10 +10,10 @@
 
 ## TECH-001 — Dérive "Sans catégorie" : UPSERT au lieu d'absence de ligne
 
-| Champ       | Valeur                                    |
-| ----------- | ----------------------------------------- |
-| **Statut**  | Ouvert                                    |
-| **Priorité** | Moyenne                                  |
+| Champ        | Valeur  |
+| ------------ | ------- |
+| **Statut**   | Ouvert  |
+| **Priorité** | Moyenne |
 
 ### Contexte
 
@@ -53,10 +53,10 @@ Contrat et implémentation alignés sur **une seule représentation** de l'état
 
 ## TECH-002 — Clé i18n `card.delete` absente
 
-| Champ       | Valeur                           |
-| ----------- | -------------------------------- |
-| **Statut**  | Ouvert                           |
-| **Priorité** | Basse                           |
+| Champ        | Valeur |
+| ------------ | ------ |
+| **Statut**   | Ouvert |
+| **Priorité** | Basse  |
 
 ### Contexte
 
@@ -96,9 +96,9 @@ Le sélecteur E2E peut être simplifié en `/Supprimer la carte/i`.
 
 ## TECH-003 — Toast d'erreur relaie le message Postgres brut
 
-| Champ       | Valeur                           |
-| ----------- | -------------------------------- |
-| **Statut**  | Ouvert                           |
+| Champ        | Valeur                          |
+| ------------ | ------------------------------- |
+| **Statut**   | Ouvert                          |
 | **Priorité** | Basse (admin-facing, tolérable) |
 
 ### Contexte
@@ -128,7 +128,7 @@ Exemple de mapping :
 // Dans useAdminBankCards.ts, avant de retourner l'erreur :
 const message = deleteError.message?.includes('still referenced')
   ? 'Cette carte est utilisée dans un planning ou une séquence et ne peut pas être supprimée.'
-  : deleteError.message ?? 'Erreur lors de la suppression'
+  : (deleteError.message ?? 'Erreur lors de la suppression')
 ```
 
 Ou centraliser dans un utilitaire `formatDeleteError(err)` si d'autres hooks
